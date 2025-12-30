@@ -1,0 +1,21 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "allow": [
+      "Bash(cmd /c \"cargo init --name vb6-lsp\")",
+      "Bash(cmd /c \"where cargo\")",
+      "Bash(cargo search:*)",
+      "Bash(tree:*)",
+      "Bash(npx tree-sitter generate)",
+      "Bash(cargo check:*)",
+      "Bash(cmd /c \"cargo check 2>&1\")",
+      "Bash(cmd /c \"cargo check\")",
+      "Bash(dir:*)",
+      "Bash(npx tree-sitter test:*)",
+      "Bash(npx tree-sitter:*)"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "grammars": [
+    {
+      "name": "vb6",
+      "camelcase": "VB6",
+      "scope": "source.vb6",
+      "path": ".",
+      "file-types": ["bas", "cls", "frm", "vb", "ctl"],
+      "highlights": "queries/highlights.scm",
+      "locals": "queries/locals.scm",
+      "tags": "queries/tags.scm",
+      "injection-regex": "^(vb6|vba|visualbasic)$"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "MIT",
+    "description": "Tree-sitter grammar for VB6/VBA"
+  },
+  "bindings": {
+    "rust": {
+      "path": "bindings/rust"
+    }
+  }
+}
