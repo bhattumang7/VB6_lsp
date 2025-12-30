@@ -150,12 +150,14 @@ impl<'a> SymbolTableBuilder<'a> {
     /// Visit a node and its children
     fn visit_node(&mut self, node: &Node) {
         match node.kind() {
-            // Form designer sections - SKIP entirely (these are visual control definitions, not code)
-            "form_block" | "form_property_line" | "form_property_block" |
+            // Form designer property lines - skip (Height, Width, Left, etc.)
+            "form_property_line" | "form_property_block" |
             "module_config" | "module_config_element" => {
-                // Don't process form designer content as code symbols
                 return;
             }
+
+            // Form blocks - create symbol for the control name, then recurse for nested controls
+            "form_block" => self.visit_form_block(node),
 
             // Declarations that create symbols
             "variable_declaration" => self.visit_variable_declaration(node),
@@ -668,6 +670,69 @@ impl<'a> SymbolTableBuilder<'a> {
                 name_range,
                 self.current_scope(),
             );
+        }
+    }
+
+    /// Visit form block (creates FormControl symbol for controls like TextBox, Label, etc.)
+    fn visit_form_block(&mut self, node: &Node) {
+        // form_block has: Begin <type> <name> ... End
+        // type field: "VB.TextBox", "VB.Label", etc.
+        // name field: control name like "txtAmountWithdrawn"
+
+        // Debug: log what we're seeing
+        tracing::debug!("visit_form_block: node kind={}", node.kind());
+
+        if let Some(name_node) = self.find_field(node, "name") {
+            let name = self.node_text(&name_node).to_string();
+            let definition_range = self.node_range(node);
+            let name_range = self.node_range(&name_node);
+
+            tracing::debug!("Creating FormControl symbol: {}", name);
+
+            // Get the control type (e.g., "VB.TextBox" -> "TextBox")
+            let type_info = self.find_field(node, "type").map(|type_node| {
+                let full_type = self.node_text(&type_node).to_string();
+                // Extract just the control type (after the dot)
+                let type_name = full_type.split('.').last().unwrap_or(&full_type).to_string();
+                TypeInfo {
+                    name: type_name,
+                    is_array: false,
+                    is_new: false,
+                }
+            });
+
+            let symbol_id = self.table.create_symbol(
+                name,
+                SymbolKind::FormControl,
+                Visibility::Private, // Controls are private to the form
+                definition_range,
+                name_range,
+                self.current_scope(),
+            );
+
+            if let Some(ti) = type_info {
+                self.table.set_type_info(symbol_id, ti);
+            }
+        }
+
+        // Recurse into children to find nested form_block elements (nested controls)
+        // Controls are nested inside form_element nodes:
+        // form_block -> form_element -> form_block (nested control)
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                "form_block" => self.visit_form_block(&child),
+                "form_element" => {
+                    // form_element can contain form_block (nested controls)
+                    let mut inner_cursor = child.walk();
+                    for inner_child in child.children(&mut inner_cursor) {
+                        if inner_child.kind() == "form_block" {
+                            self.visit_form_block(&inner_child);
+                        }
+                    }
+                }
+                _ => {}
+            }
         }
     }
 }

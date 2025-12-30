@@ -521,6 +521,11 @@ impl Analyzer {
         let mut symbols = Vec::new();
 
         for symbol in table.module_symbols() {
+            // Skip form controls from document outline - they're for go-to-definition only
+            if symbol.kind == SymbolKind::FormControl {
+                continue;
+            }
+
             #[allow(deprecated)]
             symbols.push(DocumentSymbol {
                 name: symbol.name.clone(),

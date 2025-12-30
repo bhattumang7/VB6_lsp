@@ -39,6 +39,9 @@ pub enum SymbolKind {
     ForLoopVariable,
     ForEachVariable,
     Label,
+
+    // Form controls (TextBox, Label, Button, etc.)
+    FormControl,
 }
 
 impl SymbolKind {
@@ -63,6 +66,7 @@ impl SymbolKind {
             SymbolKind::Event => LspKind::EVENT,
             SymbolKind::Parameter => LspKind::VARIABLE,
             SymbolKind::Label => LspKind::NULL,
+            SymbolKind::FormControl => LspKind::FIELD,
         }
     }
 
@@ -87,6 +91,7 @@ impl SymbolKind {
             SymbolKind::TypeMember => CompletionItemKind::FIELD,
             SymbolKind::Event => CompletionItemKind::EVENT,
             SymbolKind::Label => CompletionItemKind::REFERENCE,
+            SymbolKind::FormControl => CompletionItemKind::FIELD,
         }
     }
 
@@ -139,6 +144,7 @@ impl SymbolKind {
             SymbolKind::Parameter => "Parameter",
             SymbolKind::ForLoopVariable | SymbolKind::ForEachVariable => "Loop Variable",
             SymbolKind::Label => "Label",
+            SymbolKind::FormControl => "Control",
         }
     }
 }
@@ -417,6 +423,14 @@ impl Symbol {
             }
             SymbolKind::Label => {
                 format!("{}:", self.name)
+            }
+            SymbolKind::FormControl => {
+                let type_str = self
+                    .type_info
+                    .as_ref()
+                    .map(|t| t.display())
+                    .unwrap_or_else(|| "Control".to_string());
+                format!("{} As {}", self.name, type_str)
             }
         }
     }
