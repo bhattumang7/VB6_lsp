@@ -436,6 +436,11 @@ impl SymbolTable {
         self.symbols.iter().filter(|s| s.kind.is_procedure())
     }
 
+    /// Get all scopes
+    pub fn all_scopes(&self) -> impl Iterator<Item = &super::scope::Scope> {
+        self.scopes.iter()
+    }
+
     /// Get the count of symbols
     pub fn symbol_count(&self) -> usize {
         self.symbols.len()
