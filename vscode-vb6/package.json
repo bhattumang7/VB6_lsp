@@ -1,0 +1,47 @@
+{
+  "name": "vb6-lsp",
+  "displayName": "VB6 Language Support",
+  "description": "Visual Basic 6 language support with LSP",
+  "version": "0.1.0",
+  "publisher": "vb6-lsp",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:vb6"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "vb6",
+        "aliases": ["Visual Basic 6", "VB6", "vb6"],
+        "extensions": [".bas", ".cls", ".frm", ".vb", ".ctl"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "VB6 LSP",
+      "properties": {
+        "vb6.lsp.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the VB6 LSP server executable"
+        },
+        "vb6.lsp.trace.server": {
+          "type": "string",
+          "enum": ["off", "messages", "verbose"],
+          "default": "verbose",
+          "description": "Traces the communication between VS Code and the language server"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  }
+}

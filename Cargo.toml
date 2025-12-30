@@ -1,0 +1,56 @@
+[package]
+name = "vb6-lsp"
+version = "0.1.0"
+edition = "2021"
+description = "A Language Server Protocol implementation for Visual Basic 6 with Claude AI integration"
+license = "MIT"
+authors = ["Your Name <your.email@example.com>"]
+repository = "https://github.com/yourusername/vb6-lsp"
+
+[dependencies]
+# LSP Server Framework
+tower-lsp = "0.20"
+
+# Async Runtime
+tokio = { version = "1", features = ["full"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# HTTP Client for Claude API
+reqwest = { version = "0.12", features = ["json"] }
+
+# Concurrent data structures
+dashmap = "6"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Tree-sitter for parsing
+tree-sitter = "0.24"
+tree-sitter-vb6 = { path = "./tree-sitter-vb6" }
+streaming-iterator = "0.1"
+
+# Utilities
+once_cell = "1"
+regex = "1"
+ropey = "1"  # Efficient text rope for document handling
+
+[dev-dependencies]
+tokio-test = "0.4"
+pretty_assertions = "1"
+
+[[bin]]
+name = "vb6-lsp"
+path = "src/main.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true

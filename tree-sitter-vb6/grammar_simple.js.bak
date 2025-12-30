@@ -1,0 +1,741 @@
+/**
+ * @file VB6/VBA grammar for tree-sitter
+ * @author VB6 LSP Team
+ * @license MIT
+ *
+ * Simplified baseline grammar - covers core VB6 constructs.
+ * Additional features will be added incrementally.
+ */
+
+/// <reference types="tree-sitter-cli/dsl" />
+// @ts-check
+
+// Operator precedence (lowest to highest)
+const PREC = {
+  OR: 1,
+  AND: 2,
+  NOT: 3,
+  COMPARE: 4,
+  ADD: 5,
+  MUL: 6,
+  UNARY: 7,
+  CALL: 8,
+};
+
+// Case-insensitive keyword helper
+const ci = (word) => alias(new RegExp(word, 'i'), word);
+
+module.exports = grammar({
+  name: 'vb6',
+
+  extras: $ => [
+    /[ \t]+/,
+    /[ \t]*_[ \t]*\r?\n/,  // Line continuation
+  ],
+
+  word: $ => $.identifier,
+
+  conflicts: $ => [
+    [$._expression, $.call_expression],
+    [$._expression, $._lvalue],
+    [$._expression, $.call_expression, $._lvalue],
+    [$._expression, $.call_expression, $.dotted_name],
+  ],
+
+  rules: {
+    // ============================================
+    // ROOT
+    // ============================================
+    source_file: $ => repeat($._module_element),
+
+    _module_element: $ => choice(
+      $.option_statement,
+      $.attribute_statement,
+      $.variable_declaration,
+      $.constant_declaration,
+      $.type_declaration,
+      $.enum_declaration,
+      $.sub_declaration,
+      $.function_declaration,
+      $.property_declaration,
+      $.preproc_const,
+      $.preproc_if,
+      $.comment,
+      $._newline,
+    ),
+
+    // ============================================
+    // CONDITIONAL COMPILATION
+    // ============================================
+    preproc_const: $ => seq(
+      '#',
+      ci('const'),
+      field('name', $.identifier),
+      '=',
+      field('value', $._preproc_expression),
+      $._terminator,
+    ),
+
+    preproc_if: $ => seq(
+      '#',
+      ci('if'),
+      field('condition', $._preproc_expression),
+      ci('then'),
+      $._terminator,
+      optional($._preproc_body),
+      repeat($.preproc_elseif),
+      optional($.preproc_else),
+      '#',
+      ci('end'),
+      ci('if'),
+      $._terminator,
+    ),
+
+    preproc_elseif: $ => seq(
+      '#',
+      ci('elseif'),
+      field('condition', $._preproc_expression),
+      ci('then'),
+      $._terminator,
+      optional($._preproc_body),
+    ),
+
+    preproc_else: $ => seq(
+      '#',
+      ci('else'),
+      $._terminator,
+      optional($._preproc_body),
+    ),
+
+    _preproc_body: $ => repeat1($._module_element),
+
+    _preproc_expression: $ => choice(
+      $.preproc_binary_expression,
+      $.preproc_unary_expression,
+      $.preproc_parenthesized,
+      $.identifier,
+      $.integer_literal,
+      $.boolean_literal,
+    ),
+
+    preproc_binary_expression: $ => choice(
+      prec.left(PREC.OR, seq($._preproc_expression, ci('or'), $._preproc_expression)),
+      prec.left(PREC.AND, seq($._preproc_expression, ci('and'), $._preproc_expression)),
+      prec.left(PREC.COMPARE, seq($._preproc_expression, choice('=', '<>', '<', '>', '<=', '>='), $._preproc_expression)),
+    ),
+
+    preproc_unary_expression: $ => prec(PREC.NOT, seq(ci('not'), $._preproc_expression)),
+
+    preproc_parenthesized: $ => seq('(', $._preproc_expression, ')'),
+
+    // ============================================
+    // OPTION STATEMENTS
+    // ============================================
+    option_statement: $ => seq(
+      ci('option'),
+      choice(
+        ci('explicit'),
+        seq(ci('base'), choice('0', '1')),
+        seq(ci('compare'), choice(ci('binary'), ci('text'), ci('database'))),
+        seq(ci('private'), ci('module')),
+      ),
+      $._terminator,
+    ),
+
+    // ============================================
+    // ATTRIBUTE STATEMENTS
+    // ============================================
+    attribute_statement: $ => seq(
+      ci('attribute'),
+      $.dotted_name,
+      '=',
+      $._expression,
+      $._terminator,
+    ),
+
+    // ============================================
+    // DECLARATIONS
+    // ============================================
+    variable_declaration: $ => seq(
+      optional($._visibility),
+      optional(ci('static')),
+      choice(ci('dim'), $._visibility_only),
+      optional(ci('withevents')),
+      $.variable_list,
+      $._terminator,
+    ),
+
+    _visibility_only: $ => choice(), // placeholder, visibility already captured
+
+    variable_list: $ => seq(
+      $.variable_declarator,
+      repeat(seq(',', $.variable_declarator)),
+    ),
+
+    variable_declarator: $ => seq(
+      field('name', $.identifier),
+      optional($.array_bounds),
+      optional($.as_clause),
+    ),
+
+    array_bounds: $ => seq(
+      '(',
+      optional(seq(
+        $._expression,
+        repeat(seq(',', $._expression)),
+      )),
+      ')',
+    ),
+
+    as_clause: $ => seq(
+      ci('as'),
+      optional(ci('new')),
+      field('type', $._type),
+    ),
+
+    _type: $ => choice(
+      $.builtin_type,
+      $.dotted_name,
+    ),
+
+    builtin_type: $ => choice(
+      ci('boolean'), ci('byte'), ci('currency'), ci('date'),
+      ci('double'), ci('integer'), ci('long'), ci('longlong'),
+      ci('longptr'), ci('object'), ci('single'), ci('string'),
+      ci('variant'), ci('any'),
+    ),
+
+    constant_declaration: $ => seq(
+      optional($._visibility),
+      ci('const'),
+      $.constant_declarator,
+      repeat(seq(',', $.constant_declarator)),
+      $._terminator,
+    ),
+
+    constant_declarator: $ => seq(
+      field('name', $.identifier),
+      optional($.as_clause),
+      '=',
+      field('value', $._expression),
+    ),
+
+    type_declaration: $ => seq(
+      optional($._visibility),
+      ci('type'),
+      field('name', $.identifier),
+      $._terminator,
+      repeat($.type_member),
+      ci('end'),
+      ci('type'),
+      $._terminator,
+    ),
+
+    type_member: $ => seq(
+      field('name', $.identifier),
+      optional($.array_bounds),
+      $.as_clause,
+      $._terminator,
+    ),
+
+    enum_declaration: $ => seq(
+      optional($._visibility),
+      ci('enum'),
+      field('name', $.identifier),
+      $._terminator,
+      repeat($.enum_member),
+      ci('end'),
+      ci('enum'),
+      $._terminator,
+    ),
+
+    enum_member: $ => seq(
+      field('name', $.identifier),
+      optional(seq('=', field('value', $._expression))),
+      $._terminator,
+    ),
+
+    // ============================================
+    // PROCEDURES
+    // ============================================
+    sub_declaration: $ => seq(
+      optional($._visibility),
+      optional(ci('static')),
+      ci('sub'),
+      field('name', $.identifier),
+      optional($.parameter_list),
+      $._terminator,
+      optional($.block),
+      ci('end'),
+      ci('sub'),
+      $._terminator,
+    ),
+
+    function_declaration: $ => seq(
+      optional($._visibility),
+      optional(ci('static')),
+      ci('function'),
+      field('name', $.identifier),
+      optional($.parameter_list),
+      optional($.as_clause),
+      $._terminator,
+      optional($.block),
+      ci('end'),
+      ci('function'),
+      $._terminator,
+    ),
+
+    property_declaration: $ => seq(
+      optional($._visibility),
+      optional(ci('static')),
+      ci('property'),
+      field('accessor', choice(ci('get'), ci('let'), ci('set'))),
+      field('name', $.identifier),
+      optional($.parameter_list),
+      optional($.as_clause),
+      $._terminator,
+      optional($.block),
+      ci('end'),
+      ci('property'),
+      $._terminator,
+    ),
+
+    parameter_list: $ => seq(
+      '(',
+      optional(seq(
+        $.parameter,
+        repeat(seq(',', $.parameter)),
+      )),
+      ')',
+    ),
+
+    parameter: $ => seq(
+      optional(ci('optional')),
+      optional(choice(ci('byval'), ci('byref'))),
+      optional(ci('paramarray')),
+      field('name', $.identifier),
+      optional(seq('(', ')')),  // Array param
+      optional($.as_clause),
+      optional(seq('=', field('default', $._expression))),
+    ),
+
+    // ============================================
+    // STATEMENTS
+    // ============================================
+    block: $ => repeat1($._statement),
+
+    _statement: $ => choice(
+      $.assignment_statement,
+      $.set_statement,
+      $.if_statement,
+      $.for_statement,
+      $.for_each_statement,
+      $.do_statement,
+      $.while_statement,
+      $.with_statement,
+      $.select_statement,
+      $.exit_statement,
+      $.return_statement,
+      $.goto_statement,
+      $.on_error_statement,
+      $.call_statement,
+      $.redim_statement,
+      $.erase_statement,
+      $.raiseevent_statement,
+      $.preproc_if_statement,
+      $.label,
+      $.comment,
+      $._newline,
+    ),
+
+    // Conditional compilation within statements
+    preproc_if_statement: $ => seq(
+      '#',
+      ci('if'),
+      field('condition', $._preproc_expression),
+      ci('then'),
+      $._terminator,
+      optional($.block),
+      repeat($.preproc_elseif_statement),
+      optional($.preproc_else_statement),
+      '#',
+      ci('end'),
+      ci('if'),
+      $._terminator,
+    ),
+
+    preproc_elseif_statement: $ => seq(
+      '#',
+      ci('elseif'),
+      field('condition', $._preproc_expression),
+      ci('then'),
+      $._terminator,
+      optional($.block),
+    ),
+
+    preproc_else_statement: $ => seq(
+      '#',
+      ci('else'),
+      $._terminator,
+      optional($.block),
+    ),
+
+    label: $ => seq(
+      choice($.identifier, $.integer_literal),
+      ':',
+    ),
+
+    assignment_statement: $ => seq(
+      optional(ci('let')),
+      field('target', $._lvalue),
+      '=',
+      field('value', $._expression),
+      $._terminator,
+    ),
+
+    set_statement: $ => seq(
+      ci('set'),
+      field('target', $._lvalue),
+      '=',
+      optional(ci('new')),
+      field('value', $._expression),
+      $._terminator,
+    ),
+
+    call_statement: $ => seq(
+      optional(ci('call')),
+      $.call_expression,
+      $._terminator,
+    ),
+
+    if_statement: $ => seq(
+      ci('if'),
+      field('condition', $._expression),
+      ci('then'),
+      choice(
+        // Block If
+        seq(
+          $._terminator,
+          optional($.block),
+          repeat($.elseif_clause),
+          optional($.else_clause),
+          ci('end'),
+          ci('if'),
+          $._terminator,
+        ),
+        // Single-line If
+        seq(
+          $._inline_statement,
+          optional(seq(ci('else'), $._inline_statement)),
+          $._terminator,
+        ),
+      ),
+    ),
+
+    elseif_clause: $ => seq(
+      ci('elseif'),
+      field('condition', $._expression),
+      ci('then'),
+      $._terminator,
+      optional($.block),
+    ),
+
+    else_clause: $ => seq(
+      ci('else'),
+      $._terminator,
+      optional($.block),
+    ),
+
+    _inline_statement: $ => choice(
+      seq(optional(ci('let')), $._lvalue, '=', $._expression),
+      seq(ci('set'), $._lvalue, '=', optional(ci('new')), $._expression),
+      seq(ci('goto'), $.identifier),
+      $.call_expression,
+    ),
+
+    for_statement: $ => seq(
+      ci('for'),
+      field('counter', $.identifier),
+      '=',
+      field('start', $._expression),
+      ci('to'),
+      field('end', $._expression),
+      optional(seq(ci('step'), field('step', $._expression))),
+      $._terminator,
+      optional($.block),
+      ci('next'),
+      optional($.identifier),
+      $._terminator,
+    ),
+
+    for_each_statement: $ => seq(
+      ci('for'),
+      ci('each'),
+      field('element', $.identifier),
+      ci('in'),
+      field('collection', $._expression),
+      $._terminator,
+      optional($.block),
+      ci('next'),
+      optional($.identifier),
+      $._terminator,
+    ),
+
+    do_statement: $ => choice(
+      // Do...Loop
+      seq(
+        ci('do'),
+        optional(seq(choice(ci('while'), ci('until')), $._expression)),
+        $._terminator,
+        optional($.block),
+        ci('loop'),
+        optional(seq(choice(ci('while'), ci('until')), $._expression)),
+        $._terminator,
+      ),
+    ),
+
+    while_statement: $ => seq(
+      ci('while'),
+      field('condition', $._expression),
+      $._terminator,
+      optional($.block),
+      ci('wend'),
+      $._terminator,
+    ),
+
+    with_statement: $ => seq(
+      ci('with'),
+      field('object', $._expression),
+      $._terminator,
+      optional($.block),
+      ci('end'),
+      ci('with'),
+      $._terminator,
+    ),
+
+    select_statement: $ => seq(
+      ci('select'),
+      ci('case'),
+      field('test', $._expression),
+      $._terminator,
+      repeat($.case_clause),
+      optional($.case_else_clause),
+      ci('end'),
+      ci('select'),
+      $._terminator,
+    ),
+
+    case_clause: $ => seq(
+      ci('case'),
+      $.case_values,
+      $._terminator,
+      optional($.block),
+    ),
+
+    case_else_clause: $ => seq(
+      ci('case'),
+      ci('else'),
+      $._terminator,
+      optional($.block),
+    ),
+
+    case_values: $ => seq(
+      $._case_value,
+      repeat(seq(',', $._case_value)),
+    ),
+
+    _case_value: $ => choice(
+      seq($._expression, ci('to'), $._expression),
+      seq(ci('is'), $._compare_op, $._expression),
+      $._expression,
+    ),
+
+    exit_statement: $ => seq(
+      ci('exit'),
+      choice(ci('sub'), ci('function'), ci('property'), ci('do'), ci('for')),
+      $._terminator,
+    ),
+
+    return_statement: $ => seq(
+      ci('return'),
+      $._terminator,
+    ),
+
+    goto_statement: $ => seq(
+      choice(ci('goto'), ci('gosub')),
+      choice($.identifier, $.integer_literal),
+      $._terminator,
+    ),
+
+    on_error_statement: $ => seq(
+      ci('on'),
+      optional(ci('local')),
+      ci('error'),
+      choice(
+        seq(ci('goto'), choice($.identifier, $.integer_literal, '0')),
+        seq(ci('resume'), ci('next')),
+      ),
+      $._terminator,
+    ),
+
+    redim_statement: $ => seq(
+      ci('redim'),
+      optional(ci('preserve')),
+      $.redim_variable,
+      repeat(seq(',', $.redim_variable)),
+      $._terminator,
+    ),
+
+    redim_variable: $ => seq(
+      $._lvalue,
+      '(',
+      $._expression,
+      repeat(seq(',', $._expression)),
+      ')',
+      optional($.as_clause),
+    ),
+
+    erase_statement: $ => seq(
+      ci('erase'),
+      $.identifier,
+      repeat(seq(',', $.identifier)),
+      $._terminator,
+    ),
+
+    raiseevent_statement: $ => seq(
+      ci('raiseevent'),
+      $.identifier,
+      optional($.argument_list),
+      $._terminator,
+    ),
+
+    // ============================================
+    // EXPRESSIONS
+    // ============================================
+    _expression: $ => choice(
+      $.literal,
+      $.identifier,
+      $.parenthesized_expression,
+      $.unary_expression,
+      $.binary_expression,
+      $.new_expression,
+      $.member_expression,
+      $.index_expression,
+      $.call_expression,
+    ),
+
+    literal: $ => choice(
+      $.integer_literal,
+      $.float_literal,
+      $.string_literal,
+      $.boolean_literal,
+      $.nothing_literal,
+    ),
+
+    integer_literal: $ => choice(
+      /\d+/,
+      /&[hH][0-9a-fA-F]+/,
+      /&[oO][0-7]+/,
+    ),
+
+    float_literal: $ => /\d*\.\d+([eE][+-]?\d+)?|\d+[eE][+-]?\d+/,
+
+    string_literal: $ => /"([^"]|"")*"/,
+
+    boolean_literal: $ => choice(ci('true'), ci('false')),
+
+    nothing_literal: $ => choice(ci('nothing'), ci('null'), ci('empty')),
+
+    parenthesized_expression: $ => seq('(', $._expression, ')'),
+
+    unary_expression: $ => choice(
+      prec(PREC.UNARY, seq('-', $._expression)),
+      prec(PREC.NOT, seq(ci('not'), $._expression)),
+    ),
+
+    binary_expression: $ => choice(
+      prec.left(PREC.MUL, seq($._expression, choice('*', '/'), $._expression)),
+      prec.left(PREC.MUL, seq($._expression, '\\', $._expression)),
+      prec.left(PREC.MUL, seq($._expression, ci('mod'), $._expression)),
+      prec.left(PREC.ADD, seq($._expression, choice('+', '-'), $._expression)),
+      prec.left(PREC.ADD, seq($._expression, '&', $._expression)),
+      prec.left(PREC.COMPARE, seq($._expression, $._compare_op, $._expression)),
+      prec.left(PREC.COMPARE, seq($._expression, ci('like'), $._expression)),
+      prec.left(PREC.COMPARE, seq($._expression, ci('is'), $._expression)),
+      prec.left(PREC.AND, seq($._expression, ci('and'), $._expression)),
+      prec.left(PREC.OR, seq($._expression, ci('or'), $._expression)),
+      prec.left(PREC.OR, seq($._expression, ci('xor'), $._expression)),
+    ),
+
+    _compare_op: $ => choice('=', '<>', '<', '>', '<=', '>='),
+
+    new_expression: $ => prec(PREC.CALL, seq(ci('new'), $._type)),
+
+    member_expression: $ => prec.left(PREC.CALL, seq(
+      field('object', $._expression),
+      choice('.', '!'),
+      field('member', $.identifier),
+    )),
+
+    index_expression: $ => prec(PREC.CALL, seq(
+      field('object', $._expression),
+      '(',
+      optional($.argument_list_inner),
+      ')',
+    )),
+
+    call_expression: $ => prec(PREC.CALL, seq(
+      field('function', choice($.identifier, $.member_expression)),
+      optional($.argument_list),
+    )),
+
+    argument_list: $ => seq('(', optional($.argument_list_inner), ')'),
+
+    argument_list_inner: $ => seq(
+      $._argument,
+      repeat(seq(',', $._argument)),
+    ),
+
+    _argument: $ => choice(
+      seq($.identifier, ':=', $._expression),  // Named
+      $._expression,  // Positional
+    ),
+
+    _lvalue: $ => choice(
+      $.identifier,
+      $.member_expression,
+      $.index_expression,
+    ),
+
+    // ============================================
+    // IDENTIFIERS
+    // ============================================
+    identifier: $ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+
+    dotted_name: $ => prec.left(seq(
+      $.identifier,
+      repeat(seq('.', $.identifier)),
+    )),
+
+    // ============================================
+    // VISIBILITY
+    // ============================================
+    _visibility: $ => choice(
+      ci('public'),
+      ci('private'),
+      ci('friend'),
+      ci('global'),
+    ),
+
+    // ============================================
+    // COMMENTS AND TERMINATORS
+    // ============================================
+    comment: $ => token(choice(
+      seq("'", /[^\r\n]*/),
+      seq(/[rR][eE][mM]/, /[ \t]/, /[^\r\n]*/),
+    )),
+
+    _terminator: $ => choice($._newline, ':'),
+    _newline: $ => /\r?\n/,
+  },
+});

@@ -1,0 +1,56 @@
+{
+  "name": "tree-sitter-vb6",
+  "version": "0.1.0",
+  "description": "VB6/VBA grammar for tree-sitter",
+  "main": "bindings/node",
+  "types": "bindings/node",
+  "scripts": {
+    "build": "tree-sitter generate && node-gyp build",
+    "build-wasm": "tree-sitter build --wasm",
+    "test": "tree-sitter test",
+    "parse": "tree-sitter parse"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/tree-sitter-vb6"
+  },
+  "keywords": [
+    "parser",
+    "tree-sitter",
+    "vb6",
+    "vba",
+    "visual-basic"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^8.0.0",
+    "node-gyp-build": "^4.8.0"
+  },
+  "devDependencies": {
+    "tree-sitter-cli": "^0.24.0"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.21.0"
+  },
+  "peerDependenciesMeta": {
+    "tree-sitter": {
+      "optional": true
+    }
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.vb6",
+      "file-types": [
+        "bas",
+        "cls",
+        "frm",
+        "vb",
+        "ctl"
+      ],
+      "highlights": "queries/highlights.scm",
+      "locals": "queries/locals.scm",
+      "tags": "queries/tags.scm"
+    }
+  ]
+}

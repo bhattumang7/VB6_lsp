@@ -1,0 +1,37 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+
+# Build artifacts
+/dist/
+/build/
+
+# Environment
+.env
+.env.local
+
+# Local tool configs
+.serena/
+.claude/
+
+Rubberduck-next/*
+tree-sitter-vb6/node_modules/*
+vb6_examples/*
+tree-sitter-vb6/test/tools/*
