@@ -18,8 +18,11 @@
     "description": "Tree-sitter grammar for VB6/VBA"
   },
   "bindings": {
-    "rust": {
-      "path": "bindings/rust"
-    }
+    "c": true,
+    "go": false,
+    "node": true,
+    "python": false,
+    "rust": true,
+    "swift": false
   }
 }
