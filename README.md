@@ -2,6 +2,13 @@
 
 A modern Language Server Protocol implementation for Visual Basic 6, written in Rust with Claude Sonnet AI integration for intelligent code assistance.
 
+## Two Ways to Use
+
+| Component | Purpose | Language |
+|-----------|---------|----------|
+| **vb6-lsp** | Traditional LSP for IDEs (VS Code, Neovim, etc.) | Rust |
+| **vb6-mcp-server** | MCP server for Claude Code AI integration | TypeScript |
+
 ## Features
 
 ### Core LSP Features
@@ -15,7 +22,7 @@ A modern Language Server Protocol implementation for Visual Basic 6, written in 
 - **Code Formatting** - Automatic code indentation and formatting
 - **Rename Refactoring** - Safe symbol renaming across files
 
-### Claude AI Integration
+### Claude AI Integration (LSP)
 When `ANTHROPIC_API_KEY` is set, additional AI-powered features:
 - **Intelligent Code Completion** - Context-aware suggestions
 - **Code Explanations** - Natural language explanations of VB6 code
@@ -24,11 +31,21 @@ When `ANTHROPIC_API_KEY` is set, additional AI-powered features:
 - **Documentation Generation** - Automatic comment generation
 - **Migration Assistance** - Help converting VB6 to VB.NET/C#
 
+### MCP Server Tools (for Claude Code)
+The MCP server exposes these tools to Claude:
+- **vb6_get_symbols** - List all symbols (variables, functions, types) in a file
+- **vb6_find_definition** - Go to where a symbol is defined
+- **vb6_find_references** - Find all usages of a symbol
+- **vb6_get_hover** - Get type/signature info at a position
+- **vb6_get_completions** - Get code completion suggestions
+- **vb6_get_diagnostics** - Get parse errors and warnings
+
 ## Architecture
 
+### Option 1: Traditional LSP (for IDEs)
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        VSCode / Editor                           │
+│                     VSCode / Neovim / IDE                        │
 │                    (LSP Client via JSON-RPC)                     │
 └─────────────────────────────────────────────────────────────────┘
                               │
@@ -48,7 +65,32 @@ When `ANTHROPIC_API_KEY` is set, additional AI-powered features:
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+### Option 2: MCP Server (for Claude Code)
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Claude Code                              │
+│                    (MCP Client via stdio)                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                 vb6-mcp-server (TypeScript)                      │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
+│  │  MCP SDK    │  │ Tree-Sitter │  │     Tool Handlers       │  │
+│  │  (Server)   │◄─┤   Parser    │  │  (symbols, refs, etc)   │  │
+│  │             │  │   (VB6)     │  │                         │  │
+│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
+│         │               │                    │                   │
+│         ▼               ▼                    ▼                   │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │     Symbol Table + Analyzer (ported from Rust)              ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Prerequisites
+
+### For Rust LSP Server (vb6-lsp)
 
 1. **Rust** (1.70+) with MSVC toolchain
    ```powershell
@@ -65,28 +107,70 @@ When `ANTHROPIC_API_KEY` is set, additional AI-powered features:
      - Windows SDK (10.0.19041.0 or later)
      - C++ Clang tools (provides headers like `stdbool.h`)
 
-3. **Claude API Key** (Optional - for AI features)
+3. **Claude API Key** (Optional - for AI features in LSP)
    - Sign up at https://console.anthropic.com
    - Generate an API key
    - Set environment variable: `ANTHROPIC_API_KEY=your_key_here`
 
+### For MCP Server (vb6-mcp-server)
+
+1. **Node.js** (18.0+)
+   ```powershell
+   # Download from https://nodejs.org/ or use a package manager
+   winget install OpenJS.NodeJS.LTS
+   ```
+
+2. **Visual Studio Build Tools 2022** (same as above - needed for native addon)
+
 ## Installation
 
-### Build from Source
+### Option 1: Rust LSP Server
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/vb6-lsp.git
 cd vb6-lsp
 
-# Option 1: Use the build script (sets up MSVC environment)
+# Option A: Use the build script (sets up MSVC environment)
 build_with_vs.bat
 
-# Option 2: Build directly (if environment is already configured)
+# Option B: Build directly (if environment is already configured)
 cargo build --release
 
 # Binary will be at: target/release/vb6-lsp.exe
 ```
+
+### Option 2: MCP Server (for Claude Code)
+
+```bash
+# From the repository root
+cd vb6-mcp-server
+
+# Install dependencies (this also builds the tree-sitter native addon)
+npm install
+
+# Build TypeScript
+npm run build
+
+# The server is now ready at: dist/index.js
+```
+
+#### Configure Claude Code
+
+Add to your MCP configuration file (`~/.mcp.json` or project `.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "vb6": {
+      "command": "node",
+      "args": ["C:/projects/VB6_lsp/vb6-mcp-server/dist/index.js"]
+    }
+  }
+}
+```
+
+Now when working with VB6 files, Claude Code will automatically have access to the VB6 analysis tools.
 
 ### VSCode Extension Setup
 
@@ -172,38 +256,61 @@ See the `examples/` directory:
 
 ```
 vb6-lsp/
-├── src/
-│   ├── main.rs              # Entry point
-│   ├── lsp/                 # LSP server implementation
-│   │   ├── mod.rs           # Main LSP handlers
-│   │   ├── capabilities.rs  # LSP capabilities
-│   │   ├── document.rs      # Document management
-│   │   └── handlers.rs      # Request handlers
-│   ├── parser/              # VB6 parser
-│   │   ├── mod.rs           # Parser logic & tree-sitter integration
-│   │   ├── ast.rs           # AST definitions
-│   │   ├── tree_sitter.rs   # Tree-sitter parser wrapper
-│   │   ├── converter.rs     # Tree-sitter to AST conversion
-│   │   └── lexer.rs         # Legacy tokenizer
-│   ├── analysis/            # Code analysis & symbol table
-│   │   ├── mod.rs           # Analyzer with symbol table support
-│   │   ├── symbol_table.rs  # Symbol table with query methods
-│   │   ├── builder.rs       # Builds symbol table from parse tree
-│   │   ├── symbol.rs        # Symbol, SymbolKind, TypeInfo
-│   │   ├── scope.rs         # Scope hierarchy management
-│   │   └── position.rs      # Source positions and ranges
-│   └── claude/              # Claude AI integration
-│       └── mod.rs           # API client
-├── tree-sitter-vb6/         # Tree-sitter grammar for VB6
-│   ├── grammar.js           # Grammar definition
-│   ├── src/                 # Generated parser (C)
-│   └── test/                # Grammar tests
-├── examples/                # Example VB6 files
-├── Cargo.toml              # Dependencies
+├── src/                         # Rust LSP Server
+│   ├── main.rs                  # Entry point
+│   ├── lsp/                     # LSP server implementation
+│   │   ├── mod.rs               # Main LSP handlers
+│   │   ├── capabilities.rs      # LSP capabilities
+│   │   ├── document.rs          # Document management
+│   │   └── handlers.rs          # Request handlers
+│   ├── parser/                  # VB6 parser
+│   │   ├── mod.rs               # Parser logic & tree-sitter integration
+│   │   ├── ast.rs               # AST definitions
+│   │   ├── tree_sitter.rs       # Tree-sitter parser wrapper
+│   │   ├── converter.rs         # Tree-sitter to AST conversion
+│   │   └── lexer.rs             # Legacy tokenizer
+│   ├── analysis/                # Code analysis & symbol table
+│   │   ├── mod.rs               # Analyzer with symbol table support
+│   │   ├── symbol_table.rs      # Symbol table with query methods
+│   │   ├── builder.rs           # Builds symbol table from parse tree
+│   │   ├── symbol.rs            # Symbol, SymbolKind, TypeInfo
+│   │   ├── scope.rs             # Scope hierarchy management
+│   │   └── position.rs          # Source positions and ranges
+│   └── claude/                  # Claude AI integration
+│       └── mod.rs               # API client
+│
+├── vb6-mcp-server/              # TypeScript MCP Server
+│   ├── src/
+│   │   ├── index.ts             # MCP server entry point
+│   │   └── analysis/            # Analysis code (ported from Rust)
+│   │       ├── types.ts         # Symbol, SymbolKind, TypeInfo
+│   │       ├── position.ts      # Source positions and ranges
+│   │       ├── scope.ts         # Scope hierarchy
+│   │       ├── symbolTable.ts   # Symbol table with queries
+│   │       └── builder.ts       # Tree-sitter walker
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── tree-sitter-vb6/             # Tree-sitter grammar for VB6
+│   ├── grammar.js               # Grammar definition
+│   ├── binding.gyp              # Node.js native addon build config
+│   ├── bindings/
+│   │   ├── node/                # Node.js bindings
+│   │   ├── rust/                # Rust bindings
+│   │   └── c/                   # C bindings
+│   ├── src/                     # Generated parser (C)
+│   │   ├── parser.c
+│   │   └── scanner.c            # External scanner
+│   └── test/                    # Grammar tests
+│
+├── examples/                    # Example VB6 files
+├── Cargo.toml                   # Rust dependencies
 └── README.md
 ```
 
 ### Building and Testing
+
+#### Rust LSP Server
 
 ```bash
 # Debug build
@@ -223,6 +330,40 @@ cargo fmt
 
 # Lint
 cargo clippy
+```
+
+#### MCP Server (TypeScript)
+
+```bash
+cd vb6-mcp-server
+
+# Install dependencies
+npm install
+
+# Build
+npm run build
+
+# Watch mode (rebuild on changes)
+npm run dev
+
+# Test the server starts correctly
+timeout 2 node dist/index.js
+# Should print "VB6 MCP Server started" then timeout
+```
+
+#### Tree-sitter Grammar
+
+```bash
+cd tree-sitter-vb6
+
+# Regenerate parser from grammar.js
+npx tree-sitter generate
+
+# Run grammar tests
+npx tree-sitter test
+
+# Parse a sample file
+npx tree-sitter parse ../examples/sample.bas
 ```
 
 ### Adding New Features
@@ -336,6 +477,7 @@ MIT License - see LICENSE file for details
 
 - **tower-lsp**: Excellent LSP framework for Rust
 - **tree-sitter**: Fast incremental parsing with error recovery
+- **Model Context Protocol (MCP)**: For enabling AI tool integration
 - **ANTLR4 VBA Grammar**: Reference grammar used for validation
 - **Anthropic**: Claude AI for intelligent assistance
 - **VB6 Community**: For keeping the legacy alive
@@ -348,6 +490,7 @@ MIT License - see LICENSE file for details
 ## Resources
 
 - [LSP Specification](https://microsoft.github.io/language-server-protocol/)
+- [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
 - [VB6 Language Reference](https://learn.microsoft.com/en-us/previous-versions/visualstudio/visual-basic-6/visual-basic-6.0-documentation)
 - [Claude API Documentation](https://docs.anthropic.com/)
-- [Rust Language Server](https://github.com/rust-lang/rls)
+- [Tree-sitter Documentation](https://tree-sitter.github.io/tree-sitter/)
