@@ -33,7 +33,13 @@ impl<'a> SymbolTableBuilder<'a> {
 
     /// Build the symbol table from a parse tree
     pub fn build(mut self, tree: &Tree) -> SymbolTable {
+        // First pass: collect all symbol definitions
         self.visit_node(&tree.root_node());
+
+        // Second pass: collect all references to symbols
+        self.scope_stack = vec![self.table.module_scope];
+        self.collect_references(&tree.root_node());
+
         self.table
     }
 
@@ -734,6 +740,233 @@ impl<'a> SymbolTableBuilder<'a> {
                 _ => {}
             }
         }
+    }
+
+    // ==========================================
+    // Second Pass: Reference Collection
+    // ==========================================
+
+    /// Collect references by walking all identifier nodes
+    fn collect_references(&mut self, node: &Node) {
+        match node.kind() {
+            // Skip nodes that contain declarations (names are definitions, not references)
+            "form_property_line" | "form_property_block" |
+            "module_config" | "module_config_element" | "form_block" => {
+                return;
+            }
+
+            // Scope-entering constructs - we need to track scope for proper resolution
+            "sub_declaration" | "function_declaration" | "property_declaration" => {
+                self.collect_references_in_procedure(node);
+                return;
+            }
+
+            // With statements create a scope
+            "with_statement" => {
+                self.collect_references_in_with(node);
+                return;
+            }
+
+            // For loops create a scope
+            "for_statement" | "for_each_statement" => {
+                self.collect_references_in_for(node);
+                return;
+            }
+
+            // Identifiers - check if this is a reference (not a declaration)
+            "identifier" => {
+                self.try_add_reference(node);
+            }
+
+            // Default: recurse into children
+            _ => {}
+        }
+
+        // Recurse into all children
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.collect_references(&child);
+        }
+    }
+
+    /// Collect references within a procedure (Sub/Function/Property)
+    fn collect_references_in_procedure(&mut self, node: &Node) {
+        // Find the procedure scope - look for the procedure by name
+        if let Some(name_node) = self.find_field(node, "name") {
+            let name = self.node_text(&name_node).to_string();
+            // Find the scope for this procedure
+            if let Some(scope_id) = self.find_procedure_scope(&name) {
+                self.scope_stack.push(scope_id);
+            }
+        }
+
+        // Recurse into children (skipping the parameter list which contains declarations)
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                // Skip parameter list - parameters are declarations, not references
+                "parameter_list" => continue,
+                // Skip the procedure name itself - it's a declaration
+                "identifier" if self.find_field(node, "name").map(|n| n.id()) == Some(child.id()) => continue,
+                _ => self.collect_references(&child),
+            }
+        }
+
+        // Pop scope
+        if self.scope_stack.len() > 1 {
+            self.scope_stack.pop();
+        }
+    }
+
+    /// Collect references within a With statement
+    fn collect_references_in_with(&mut self, node: &Node) {
+        // Find the With scope
+        let range = self.node_range(node);
+        if let Some(scope_id) = self.find_scope_at_range(&range, ScopeKind::WithBlock) {
+            self.scope_stack.push(scope_id);
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.collect_references(&child);
+        }
+
+        if self.scope_stack.len() > 1 {
+            self.scope_stack.pop();
+        }
+    }
+
+    /// Collect references within a For loop
+    fn collect_references_in_for(&mut self, node: &Node) {
+        // Find the For scope
+        let range = self.node_range(node);
+        let scope_kind = if node.kind() == "for_each_statement" {
+            ScopeKind::ForEachLoop
+        } else {
+            ScopeKind::ForLoop
+        };
+        if let Some(scope_id) = self.find_scope_at_range(&range, scope_kind) {
+            self.scope_stack.push(scope_id);
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            // Skip the loop variable declaration
+            match child.kind() {
+                "identifier" if self.find_field(node, "variable").map(|n| n.id()) == Some(child.id()) => continue,
+                _ => self.collect_references(&child),
+            }
+        }
+
+        if self.scope_stack.len() > 1 {
+            self.scope_stack.pop();
+        }
+    }
+
+    /// Find the scope for a procedure by looking up the symbol and then finding its scope
+    fn find_procedure_scope(&self, name: &str) -> Option<ScopeId> {
+        // Find the symbol for this procedure
+        let name_lower = name.to_lowercase();
+        for symbol in self.table.all_symbols() {
+            if symbol.name.to_lowercase() == name_lower && symbol.kind.creates_scope() {
+                // Find the scope that has this symbol as its defining symbol
+                for scope in self.table.all_scopes() {
+                    if scope.defining_symbol == Some(symbol.id) {
+                        return Some(scope.id);
+                    }
+                }
+            }
+        }
+        None
+    }
+
+    /// Find a scope at a specific range with a specific kind
+    fn find_scope_at_range(&self, range: &SourceRange, kind: ScopeKind) -> Option<ScopeId> {
+        for scope in self.table.all_scopes() {
+            if scope.kind == kind && scope.range.start == range.start {
+                return Some(scope.id);
+            }
+        }
+        None
+    }
+
+    /// Try to add a reference for an identifier node
+    fn try_add_reference(&mut self, node: &Node) {
+        // Check if this identifier is part of a declaration (skip those)
+        if self.is_declaration_name(node) {
+            return;
+        }
+
+        let name = self.node_text(node).to_string();
+        let range = self.node_range(node);
+        let scope_id = self.current_scope();
+
+        // Check if this is an assignment target
+        let is_assignment = self.is_assignment_target(node);
+
+        // Try to resolve this identifier to a symbol
+        if let Some(symbol) = self.table.lookup_symbol(&name, scope_id) {
+            let symbol_id = symbol.id;
+            self.table.add_reference(symbol_id, range, scope_id, is_assignment);
+        }
+    }
+
+    /// Check if an identifier node is the name part of a declaration
+    fn is_declaration_name(&self, node: &Node) -> bool {
+        if let Some(parent) = node.parent() {
+            match parent.kind() {
+                // Direct declaration names
+                "variable_declarator" | "constant_declarator" | "enum_member" |
+                "type_member" | "parameter" |
+                "sub_declaration" | "function_declaration" | "property_declaration" |
+                "type_declaration" | "enum_declaration" |
+                "declare_statement" | "event_statement" |
+                "for_statement" | "for_each_statement" => {
+                    // Check if this identifier is the "name" field
+                    if let Some(name_node) = parent.child_by_field_name("name") {
+                        return name_node.id() == node.id();
+                    }
+                    // Also check "variable" field for For loops
+                    if let Some(var_node) = parent.child_by_field_name("variable") {
+                        return var_node.id() == node.id();
+                    }
+                }
+                // Labels
+                "label" => return true,
+                _ => {}
+            }
+        }
+        false
+    }
+
+    /// Check if an identifier is an assignment target (left side of assignment)
+    fn is_assignment_target(&self, node: &Node) -> bool {
+        if let Some(parent) = node.parent() {
+            if parent.kind() == "assignment_statement" || parent.kind() == "set_statement" {
+                // Check if this is the left side (target)
+                if let Some(target) = parent.child_by_field_name("target") {
+                    // The target might be a member_expression or just an identifier
+                    if target.id() == node.id() {
+                        return true;
+                    }
+                    // Check if node is within the target subtree
+                    return self.is_descendant_of(node, &target);
+                }
+            }
+        }
+        false
+    }
+
+    /// Check if node is a descendant of ancestor
+    fn is_descendant_of(&self, node: &Node, ancestor: &Node) -> bool {
+        let mut current = node.parent();
+        while let Some(parent) = current {
+            if parent.id() == ancestor.id() {
+                return true;
+            }
+            current = parent.parent();
+        }
+        false
     }
 }
 
