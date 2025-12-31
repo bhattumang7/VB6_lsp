@@ -26,7 +26,7 @@ pub struct SymbolReference {
 }
 
 /// The complete symbol table for a document
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SymbolTable {
     /// Document URI
     pub uri: Url,

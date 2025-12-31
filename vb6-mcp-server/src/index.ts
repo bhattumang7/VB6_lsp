@@ -12,7 +12,8 @@ import {
   ListToolsRequestSchema,
   type Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import { readFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync } from "fs";
+import { spawn } from "child_process";
 import Parser from "tree-sitter";
 import Vb6 from "tree-sitter-vb6";
 
@@ -33,6 +34,61 @@ const documentCache = new Map<
   string,
   { source: string; symbolTable: SymbolTable }
 >();
+
+/**
+ * Call the Rust vb6-lsp binary for resource file operations
+ */
+async function callRustCli(
+  command: string,
+  args: string[]
+): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    // Try to find the vb6-lsp binary
+    // First check in the parent directory's target/release or target/debug
+    const possiblePaths = [
+      "../target/release/vb6-lsp",
+      "../target/debug/vb6-lsp",
+      "../target/release/vb6-lsp.exe",
+      "../target/debug/vb6-lsp.exe",
+    ];
+
+    let binaryPath = "vb6-lsp"; // Fallback to PATH
+    for (const path of possiblePaths) {
+      if (existsSync(path)) {
+        binaryPath = path;
+        break;
+      }
+    }
+
+    const proc = spawn(binaryPath, [command, ...args]);
+    let stdout = "";
+    let stderr = "";
+
+    proc.stdout.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on("close", (code) => {
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        reject(new Error(`CLI exited with code ${code}: ${stderr}`));
+      }
+    });
+
+    proc.on("error", (error) => {
+      reject(
+        new Error(
+          `Failed to spawn vb6-lsp binary (${binaryPath}): ${error.message}`
+        )
+      );
+    });
+  });
+}
 
 /**
  * Get or create a symbol table for a file
@@ -187,6 +243,91 @@ const tools: Tool[] = [
         },
       },
       required: ["file_path"],
+    },
+  },
+  {
+    name: "vb6_read_res_file",
+    description:
+      "Read and parse a VB6 resource file (.res). Returns all resource entries including bitmaps, icons, strings, and custom resources with their types, names, and metadata.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        file_path: {
+          type: "string",
+          description: "Absolute path to the .res file",
+        },
+      },
+      required: ["file_path"],
+    },
+  },
+  {
+    name: "vb6_write_res_file",
+    description:
+      "Write resource entries to a VB6 resource file (.res). Creates or overwrites the file with the provided resources.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        file_path: {
+          type: "string",
+          description: "Absolute path to the output .res file",
+        },
+        resources: {
+          type: "array",
+          description: "Array of resource entries to write",
+          items: {
+            type: "object",
+            properties: {
+              resource_type: {
+                type: "string",
+                description: "Resource type (e.g., 'Bitmap', 'Icon', 'String', or 'Named(\"CUSTOM\")')",
+              },
+              name: {
+                type: "object",
+                description: "Resource identifier (either numeric ID or string name)",
+                properties: {
+                  type: {
+                    type: "string",
+                    enum: ["Id", "Name"],
+                  },
+                  value: {
+                    description: "Numeric ID or string name",
+                  },
+                },
+                required: ["type", "value"],
+              },
+              language_id: {
+                type: "number",
+                description: "Language identifier (e.g., 0x0409 for US English)",
+              },
+              data_base64: {
+                type: "string",
+                description: "Resource data encoded as base64",
+              },
+            },
+            required: ["resource_type", "name", "language_id", "data_base64"],
+          },
+        },
+      },
+      required: ["file_path", "resources"],
+    },
+  },
+  {
+    name: "vb6_get_string_table",
+    description:
+      "Parse a string table resource from a .res file. Returns individual string entries with their IDs and values.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        file_path: {
+          type: "string",
+          description: "Absolute path to the .res file",
+        },
+        block_id: {
+          type: "number",
+          description: "String table block ID (resource name must be numeric)",
+        },
+      },
+      required: ["file_path", "block_id"],
     },
   },
 ];
@@ -404,6 +545,97 @@ async function handleToolCall(
         errorCount: errors.length,
         diagnostics: errors,
       };
+    }
+
+    case "vb6_read_res_file": {
+      const filePath = args.file_path as string;
+
+      if (!existsSync(filePath)) {
+        return { error: `File not found: ${filePath}` };
+      }
+
+      try {
+        // Call Rust CLI to read the .res file
+        const { stdout } = await callRustCli("read-res", [filePath]);
+        const result = JSON.parse(stdout);
+
+        return {
+          file: filePath,
+          resourceCount: result.resources?.length || 0,
+          resources: result.resources || [],
+        };
+      } catch (error) {
+        return {
+          error: `Failed to read .res file: ${error instanceof Error ? error.message : String(error)}`,
+        };
+      }
+    }
+
+    case "vb6_write_res_file": {
+      const filePath = args.file_path as string;
+      const resources = args.resources as Array<{
+        resource_type: string;
+        name: { type: string; value: number | string };
+        language_id: number;
+        data_base64: string;
+      }>;
+
+      try {
+        // Create temporary JSON file with resources
+        const tempFile = `${filePath}.tmp.json`;
+        writeFileSync(
+          tempFile,
+          JSON.stringify({ resources }, null, 2),
+          "utf-8"
+        );
+
+        // Call Rust CLI to write the .res file
+        await callRustCli("write-res", [tempFile, filePath]);
+
+        // Clean up temp file
+        if (existsSync(tempFile)) {
+          require("fs").unlinkSync(tempFile);
+        }
+
+        return {
+          success: true,
+          file: filePath,
+          resourceCount: resources.length,
+        };
+      } catch (error) {
+        return {
+          error: `Failed to write .res file: ${error instanceof Error ? error.message : String(error)}`,
+        };
+      }
+    }
+
+    case "vb6_get_string_table": {
+      const filePath = args.file_path as string;
+      const blockId = args.block_id as number;
+
+      if (!existsSync(filePath)) {
+        return { error: `File not found: ${filePath}` };
+      }
+
+      try {
+        // Call Rust CLI to parse string table
+        const { stdout } = await callRustCli("parse-string-table", [
+          filePath,
+          blockId.toString(),
+        ]);
+        const result = JSON.parse(stdout);
+
+        return {
+          file: filePath,
+          blockId,
+          stringCount: result.strings?.length || 0,
+          strings: result.strings || [],
+        };
+      } catch (error) {
+        return {
+          error: `Failed to parse string table: ${error instanceof Error ? error.message : String(error)}`,
+        };
+      }
     }
 
     default:

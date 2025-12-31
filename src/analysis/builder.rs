@@ -979,7 +979,7 @@ pub fn build_symbol_table(uri: Url, source: &str, tree: &Tree) -> SymbolTable {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::tree_sitter::TreeSitterVb6Parser;
+    use crate::parser::TreeSitterVb6Parser;
 
     fn parse_and_build(source: &str) -> SymbolTable {
         let mut parser = TreeSitterVb6Parser::new().unwrap();

@@ -17,6 +17,8 @@ use tower_lsp::{Client, LanguageServer};
 use crate::analysis::{build_symbol_table, Analyzer, SymbolTable};
 use crate::claude::ClaudeClient;
 use crate::parser::Vb6Parser;
+use crate::utils::Encoding;
+use crate::workspace::WorkspaceManager;
 
 /// Document information stored in memory
 pub struct Document {
@@ -24,6 +26,8 @@ pub struct Document {
     pub content: Rope,
     /// The document version
     pub version: i32,
+    /// Detected encoding (UTF-8 or Windows-1252)
+    pub encoding: Encoding,
     /// Parsed AST (if available)
     pub ast: Option<crate::parser::Vb6Ast>,
     /// Tree-sitter tree for incremental parsing
@@ -56,6 +60,8 @@ pub struct Vb6LanguageServer {
     analyzer: Arc<Analyzer>,
     /// Claude AI client (optional)
     claude: Option<Arc<ClaudeClient>>,
+    /// Workspace manager for multi-project support
+    workspace: Arc<RwLock<WorkspaceManager>>,
 }
 
 impl Vb6LanguageServer {
@@ -77,6 +83,7 @@ impl Vb6LanguageServer {
             parser: Arc::new(RwLock::new(Vb6Parser::new())),
             analyzer: Arc::new(Analyzer::new()),
             claude,
+            workspace: Arc::new(RwLock::new(WorkspaceManager::new())),
         }
     }
 
@@ -131,6 +138,14 @@ impl Vb6LanguageServer {
                             symbol_table.symbol_count(),
                             symbol_table.scope_count()
                         );
+
+                        // Register with workspace manager for cross-project navigation
+                        if let Ok(file_path) = uri.to_file_path() {
+                            let mut workspace = self.workspace.write().unwrap();
+                            // Clone the symbol table for workspace (document keeps its own copy)
+                            workspace.set_symbol_table(&file_path, symbol_table.clone());
+                        }
+
                         doc.symbol_table = Some(symbol_table);
                     }
 
@@ -166,12 +181,65 @@ impl Vb6LanguageServer {
         let parser = self.parser.read().unwrap();
         parser.get_tree().cloned()
     }
+
+    /// Extract word at position from source
+    fn get_word_at_position(&self, source: &str, position: Position) -> Option<String> {
+        let lines: Vec<&str> = source.lines().collect();
+        let line = lines.get(position.line as usize)?;
+        let col = position.character as usize;
+
+        if col > line.len() {
+            return None;
+        }
+
+        let chars: Vec<char> = line.chars().collect();
+
+        // Find word boundaries
+        let mut start = col;
+        while start > 0 && is_identifier_char(chars[start - 1]) {
+            start -= 1;
+        }
+
+        let mut end = col;
+        while end < chars.len() && is_identifier_char(chars[end]) {
+            end += 1;
+        }
+
+        if start == end {
+            None
+        } else {
+            Some(chars[start..end].iter().collect())
+        }
+    }
+}
+
+/// Check if a character is valid in a VB6 identifier
+fn is_identifier_char(c: char) -> bool {
+    c.is_alphanumeric() || c == '_'
 }
 
 #[tower_lsp::async_trait]
 impl LanguageServer for Vb6LanguageServer {
-    async fn initialize(&self, _params: InitializeParams) -> Result<InitializeResult> {
+    async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
         tracing::info!("Initializing VB6 Language Server");
+
+        // Scan workspace folders for VBP projects
+        if let Some(workspace_folders) = params.workspace_folders {
+            let mut workspace = self.workspace.write().unwrap();
+            for folder in workspace_folders {
+                if let Ok(path) = folder.uri.to_file_path() {
+                    let discovered = workspace.add_root(path);
+                    tracing::info!("Discovered {} VBP projects in {}", discovered.len(), folder.uri);
+                }
+            }
+        } else if let Some(root_uri) = params.root_uri {
+            // Fallback to root_uri if workspace_folders not provided
+            if let Ok(path) = root_uri.to_file_path() {
+                let mut workspace = self.workspace.write().unwrap();
+                let discovered = workspace.add_root(path);
+                tracing::info!("Discovered {} VBP projects in root", discovered.len());
+            }
+        }
 
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
@@ -280,11 +348,13 @@ impl LanguageServer for Vb6LanguageServer {
 
         tracing::debug!("Document opened: {}", uri);
 
+        // Documents opened via LSP are already decoded by the client as UTF-8
         self.documents.insert(
             uri.clone(),
             Document {
                 content: Rope::from_str(&content),
                 version,
+                encoding: Encoding::Utf8, // LSP protocol uses UTF-8
                 ast: None,
                 tree: None,
                 symbol_table: None,
@@ -326,6 +396,13 @@ impl LanguageServer for Vb6LanguageServer {
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
         tracing::debug!("Document closed: {}", uri);
+
+        // Remove from workspace manager
+        if let Ok(file_path) = uri.to_file_path() {
+            let mut workspace = self.workspace.write().unwrap();
+            workspace.remove_symbol_table(&file_path);
+        }
+
         self.documents.remove(&uri);
     }
 
@@ -345,9 +422,10 @@ impl LanguageServer for Vb6LanguageServer {
 
         // Get completions from analyzer
         if let Some(doc) = self.documents.get(uri) {
+            let content = doc.content.to_string();
             // Prefer symbol table for context-aware completions
             if let Some(ref table) = doc.symbol_table {
-                let items = self.analyzer.get_completions_with_symbols(table, position);
+                let items = self.analyzer.get_completions_with_symbols(table, position, &content);
                 return Ok(Some(CompletionResponse::Array(items)));
             }
             // Fall back to AST-based completions
@@ -391,7 +469,21 @@ impl LanguageServer for Vb6LanguageServer {
             let content = doc.content.to_string();
             // Prefer symbol table for precise definition lookup
             if let Some(ref table) = doc.symbol_table {
-                return Ok(self.analyzer.get_definition_with_symbols(table, &content, position));
+                // Try local lookup first
+                if let Some(result) = self.analyzer.get_definition_with_symbols(table, &content, position) {
+                    return Ok(Some(result));
+                }
+
+                // If local lookup failed, try workspace-wide lookup
+                let word = self.get_word_at_position(&content, position);
+                if let Some(word) = word {
+                    if let Ok(file_path) = uri.to_file_path() {
+                        let workspace = self.workspace.read().unwrap();
+                        if let Some(location) = workspace.resolve_symbol(&word, &file_path) {
+                            return Ok(Some(GotoDefinitionResponse::Scalar(location)));
+                        }
+                    }
+                }
             }
             // Fall back to AST-based definition
             if let Some(ref ast) = doc.ast {

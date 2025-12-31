@@ -33,12 +33,19 @@ When `ANTHROPIC_API_KEY` is set, additional AI-powered features:
 
 ### MCP Server Tools (for Claude Code)
 The MCP server exposes these tools to Claude:
+
+**Code Analysis:**
 - **vb6_get_symbols** - List all symbols (variables, functions, types) in a file
 - **vb6_find_definition** - Go to where a symbol is defined
 - **vb6_find_references** - Find all usages of a symbol
 - **vb6_get_hover** - Get type/signature info at a position
 - **vb6_get_completions** - Get code completion suggestions
 - **vb6_get_diagnostics** - Get parse errors and warnings
+
+**Resource Files:**
+- **vb6_read_res_file** - Read and parse a compiled .res file (all Win32 resource types: bitmaps, icons, strings, cursors, dialogs, etc.)
+- **vb6_write_res_file** - Write resources to a compiled .res file
+- **vb6_get_string_table** - Parse string table entries from a .res file
 
 ## Architecture
 
@@ -223,7 +230,7 @@ lspconfig.vb6_lsp.setup{}
 
 ## Usage
 
-### Running the Server
+### Running the LSP Server
 
 The LSP server communicates via stdin/stdout:
 
@@ -234,6 +241,43 @@ The LSP server communicates via stdin/stdout:
 # With logging
 RUST_LOG=vb6_lsp=debug ./target/release/vb6-lsp
 ```
+
+### CLI Commands for Resource Files ✨ NEW
+
+The vb6-lsp binary provides powerful CLI commands for working with VB6 compiled resource files (.res):
+
+```bash
+# Read a .res file (outputs JSON with all Win32 resources)
+# Supports: bitmaps, icons, cursors, strings, dialogs, menus, version info, and custom resources
+vb6-lsp read-res Game2048.RES
+
+# Example output:
+# {
+#   "resources": [
+#     {
+#       "resource_type": "Icon",
+#       "name": {"type": "Id", "value": 101},
+#       "language_id": 1033,
+#       "data_size": 2216,
+#       "data_base64": "AAABAAEAEBAAAAEAIABoBA..."
+#     }
+#   ]
+# }
+
+# Write resources from JSON to a .res file
+vb6-lsp write-res input.json output.res
+
+# Parse string table from a .res file
+vb6-lsp parse-string-table Game2048.RES 1
+```
+
+These commands enable:
+- **Resource extraction** - Extract icons, bitmaps, strings from compiled .res files
+- **Resource modification** - Edit resources via JSON and write back to .res
+- **MCP integration** - Used by vb6-mcp-server for Claude AI to work with VB6 resources
+- **Build automation** - Programmatic resource file manipulation in build scripts
+
+See [docs/RESOURCE_FILES.md](docs/RESOURCE_FILES.md) for detailed documentation on resource file formats and usage examples.
 
 ### Configuration
 
@@ -257,7 +301,8 @@ See the `examples/` directory:
 ```
 vb6-lsp/
 ├── src/                         # Rust LSP Server
-│   ├── main.rs                  # Entry point
+│   ├── main.rs                  # Entry point + CLI commands
+│   ├── lib.rs                   # Library exports for external use
 │   ├── lsp/                     # LSP server implementation
 │   │   ├── mod.rs               # Main LSP handlers
 │   │   ├── capabilities.rs      # LSP capabilities
@@ -273,9 +318,23 @@ vb6-lsp/
 │   │   ├── mod.rs               # Analyzer with symbol table support
 │   │   ├── symbol_table.rs      # Symbol table with query methods
 │   │   ├── builder.rs           # Builds symbol table from parse tree
-│   │   ├── symbol.rs            # Symbol, SymbolKind, TypeInfo
+│   │   ├── symbol.rs            # Symbol, SymbolKind, TypeInfo, FormControl
 │   │   ├── scope.rs             # Scope hierarchy management
 │   │   └── position.rs          # Source positions and ranges
+│   ├── controls/                # Form control support ✨ NEW
+│   │   ├── mod.rs               # Control parsing and management
+│   │   ├── properties.rs        # VB6 control property definitions
+│   │   ├── colors.rs            # VB6 color constants and conversions
+│   │   └── frx.rs               # FRX binary format parser
+│   ├── workspace/               # Workspace & project management
+│   │   ├── mod.rs               # Workspace manager
+│   │   ├── project.rs           # Project structure definitions
+│   │   ├── vbp_parser.rs        # VB6 project file (.vbp) parser
+│   │   ├── frx_parser.rs        # Binary form resource (.frx) parser
+│   │   └── res_parser.rs        # Compiled resource file (.res) parser ✨ NEW
+│   ├── utils/                   # Utility functions ✨ NEW
+│   │   ├── mod.rs               # Utility module exports
+│   │   └── encoding.rs          # VB6 text encoding (ANSI/Unicode)
 │   └── claude/                  # Claude AI integration
 │       └── mod.rs               # API client
 │
@@ -304,6 +363,12 @@ vb6-lsp/
 │   └── test/                    # Grammar tests
 │
 ├── examples/                    # Example VB6 files
+├── tests/                       # Integration tests ✨ NEW
+│   ├── integration_vbp_parsing.rs  # VBP project file parsing tests
+│   ├── test_real_res.rs         # RES resource file tests
+│   └── fixtures/                # Test data files
+├── docs/                        # Documentation ✨ NEW
+│   └── RESOURCE_FILES.md        # Resource file format documentation
 ├── Cargo.toml                   # Rust dependencies
 └── README.md
 ```
@@ -373,6 +438,42 @@ npx tree-sitter parse ../examples/sample.bas
 3. **Analysis**: Extend `src/analysis/mod.rs`
 4. **Claude Integration**: Add methods to `src/claude/mod.rs`
 
+### Using the FRX Parser
+
+The FRX parser is available for direct use in your code:
+
+```rust
+use vb6_lsp::workspace::{resource_file_resolver, list_resolver};
+
+// Example 1: Load an icon from a form's FRX file
+let icon_data = resource_file_resolver("MyForm.frx", 0x0C)?;
+println!("Icon is {} bytes", icon_data.len());
+
+// Example 2: Extract combo box items from a UserControl's FRX file
+let list_data = resource_file_resolver("MyControl.frx", 0x18)?;
+let items = list_resolver(&list_data);
+for item in items {
+    println!("List item: {}", item);
+}
+
+// Example 3: Load a picture from a PropertyPage
+let picture_data = resource_file_resolver("MyPage.frx", 0x24)?;
+// picture_data can be saved or processed as needed
+
+// Example 4: Handle empty resources (removed icons)
+match resource_file_resolver("MyForm.frx", 0x00) {
+    Ok(data) if data.is_empty() => println!("Icon was removed"),
+    Ok(data) => println!("Got {} bytes", data.len()),
+    Err(e) => eprintln!("Error: {}", e),
+}
+```
+
+**Works universally for:**
+- Forms (`.frm` + `.frx`)
+- UserControls (`.ctl` + `.frx`)
+- PropertyPages (`.pag` + `.frx`)
+- UserDocuments (`.dob` + `.frx`)
+
 ## Supported VB6 Language Features
 
 ### Currently Supported (via Tree-Sitter Grammar)
@@ -407,11 +508,106 @@ npx tree-sitter parse ../examples/sample.bas
 - ✅ Type member resolution
 - ✅ Enum member resolution
 
+### VBP Project File Parsing ✅
+
+The LSP includes comprehensive VB6 project file (.vbp) parsing with support for:
+
+**Project Structure:**
+- Project types: Standard EXE, ActiveX DLL, ActiveX EXE, ActiveX Control
+- All source file types: Modules (.bas), Classes (.cls), Forms (.frm), User Controls (.ctl), Property Pages (.pag), User Documents (.dob), Designers (.dsr)
+- Related documents and resources
+
+**References & Dependencies:**
+- Type library references with UUID validation
+- SubProject references (*\A format)
+- ActiveX/OCX component references
+- External library tracking (ADO, MSComCtl, etc.)
+
+**Compilation Settings:**
+- Compilation type (P-Code vs Native Code)
+- Optimization settings (speed vs size)
+- Debug options (bounds check, overflow check, floating point check)
+- Conditional compilation arguments
+
+**Version Information:**
+- Major/Minor/Revision versioning
+- Company name, copyright, product name
+- Auto-increment support
+
+**Threading & Compatibility:**
+- Threading model (Single-threaded vs Apartment-threaded)
+- Start mode (Stand-alone vs Automation)
+- Compatibility mode (None, Project, Binary)
+- Compatible EXE tracking
+
+**Workspace Management:**
+- Automatic VBP discovery in workspace folders
+- Multi-project support
+- Cross-project symbol resolution
+- Public symbol indexing across entire workspace
+- File-to-project mapping for navigation
+
+### FRX Binary Resource File Parsing ✅
+
+The LSP includes comprehensive binary resource file (.frx) parsing with universal support for all VB6 visual designers:
+
+**Universal Format Support:**
+- **Forms (.frm → .frx)** - Form binary resources
+- **UserControls (.ctl → .frx)** - User control binary resources
+- **Property Pages (.pag → .frx)** - Property page binary resources
+- **UserDocuments (.dob → .frx)** - User document binary resources
+
+The FRX binary format is **identical** across all these file types - VB6 uses the same encoding scheme regardless of the parent file type.
+
+**Resource Types Parsed:**
+- **Images & Icons** - Binary image data (12-byte header with `lt\0\0` signature)
+- **String Resources** - Text properties stored in binary format (16-bit records)
+- **List Items** - ComboBox/ListBox items (list records with 0x03/0x07 signature)
+- **Font Data** - Binary font descriptors
+- **Control Properties** - Binary-serialized control data
+- **OLE Objects** - Embedded object data
+
+**Record Format Support:**
+- **12-byte header records** - Large binary blobs (images, OLE objects)
+- **16-bit records** - Short string/binary data (marked with 0xFF)
+- **List records** - List box/combo box items with item count header
+- **4-byte header records** - Medium-sized text/binary data
+- **8-bit records** - Very small resources (fallback type)
+
+**Features:**
+- Offset-based resource access (no file header required)
+- Automatic record type detection based on signatures
+- VB6 off-by-one error handling (size correction)
+- Empty record detection (removed icons/images)
+- List item extraction with UTF-8 conversion
+- Comprehensive error handling with detailed messages
+
+**API Functions:**
+```rust
+// Load any resource from any FRX file type
+resource_file_resolver(file_path: &str, offset: usize) -> Result<Vec<u8>, io::Error>
+
+// Parse list items from FRX binary data
+list_resolver(buffer: &[u8]) -> Vec<String>
+```
+
+### Completed Features ✅
+- ✅ Project-wide symbol resolution (.vbp parsing)
+- ✅ Binary resource file parsing (.frx for all visual designers)
+- ✅ Compiled resource file support (.res read/write for Win32 resources)
+- ✅ Form control support with comprehensive property parsing
+- ✅ CLI commands for resource file operations (read-res, write-res, parse-string-table)
+- ✅ MCP server resource file tools for Claude AI integration
+- ✅ Workspace management with multi-project support
+- ✅ Cross-file symbol lookup and navigation
+- ✅ Reference tracking across project files
+- ✅ VB6 text encoding utilities (ANSI/Unicode conversion)
+- ✅ Integration test suite for VBP and RES parsing
+
 ### Planned Features
-- ⏳ Form designer integration (.frx parsing)
-- ⏳ Project-wide symbol resolution (.vbp parsing)
-- ⏳ Cross-file go-to-definition
-- ⏳ Reference tracking and rename refactoring
+- ⏳ Full cross-file rename refactoring
+- ⏳ Workspace-wide code actions
+- ⏳ Type library (.tlb/.olb) parsing for external references
 
 ## Performance
 
@@ -422,10 +618,9 @@ npx tree-sitter parse ../examples/sample.bas
 
 ## Limitations
 
-- **Single-file analysis**: Symbol resolution is currently per-file only
-- **No project files**: Doesn't parse .vbp project files yet
-- **Forms**: Limited support for .frm visual designer syntax (.frx not parsed)
-- **Reference tracking**: References are collected but not yet fully integrated
+- **External libraries**: Type library references are parsed but not yet resolved for IntelliSense
+- **ActiveX controls**: OCX references are tracked but type definitions not yet loaded
+- **Form designer**: Visual layout and control positioning not yet integrated into LSP features
 
 ## Roadmap
 
@@ -439,18 +634,29 @@ npx tree-sitter parse ../examples/sample.bas
 - [x] Complete AST with all language constructs
 - [x] Symbol table with hierarchical scopes
 - [x] Position-based symbol lookup
-- [ ] VBP project file parsing
-- [ ] Multi-file symbol resolution
+- [x] VBP project file parsing (comprehensive support)
+- [x] FRX binary resource file parsing (universal support for all designers)
+- [x] RES compiled resource file support (read/write all Win32 resource types)
+- [x] Multi-file symbol resolution
+- [x] Workspace management with VBP discovery
 
-### Phase 3: Advanced Features (Current)
+### Phase 3: Advanced Features ✅
 - [x] Semantic highlighting
-- [x] Go-to-definition (single file)
-- [x] Find all references (single file)
+- [x] Go-to-definition (single file + cross-file for public symbols)
+- [x] Find all references (single file + cross-project)
 - [x] Document symbols (outline)
-- [ ] Cross-file go-to-definition
-- [ ] Cross-file find references
-- [ ] Rename refactoring
+- [x] Cross-file symbol lookup (project-wide)
+- [x] Public symbol indexing across workspace
+- [x] Binary resource parsing for Forms, UserControls, PropertyPages, UserDocuments
+- [x] Form control support with property parsing
+- [x] CLI commands for resource file operations
+- [x] Compiled resource file (.res) support (read/write all Win32 resource types)
+- [x] MCP server resource file tools (vb6_read_res_file, vb6_write_res_file, vb6_get_string_table)
+- [x] Encoding utilities for VB6 text formats
+- [x] Integration test suite for VBP and RES parsing
+- [ ] Full cross-file rename refactoring
 - [ ] Code actions (quick fixes)
+- [ ] Type library (.tlb/.olb) resolution for external references
 
 ### Phase 4: AI-Powered
 - [ ] Claude-powered smart completions
