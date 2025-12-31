@@ -15,12 +15,18 @@ A modern Language Server Protocol implementation for Visual Basic 6, written in 
 - **Syntax Highlighting** - Semantic token-based highlighting
 - **Code Completion** - IntelliSense-style completions for variables, functions, keywords
 - **Hover Information** - Type information and documentation on hover
-- **Go to Definition** - Navigate to symbol definitions
-- **Find References** - Find all references to a symbol
+- **Go to Definition** - Navigate to symbol definitions (including form controls)
+- **Find References** - Find all references to a symbol across the workspace
 - **Document Symbols** - Outline view of file structure
 - **Diagnostics** - Real-time syntax and semantic error checking
 - **Code Formatting** - Automatic code indentation and formatting
 - **Rename Refactoring** - Safe symbol renaming across files
+
+### Supported File Types
+- **Source Files:** `.bas` (modules), `.cls` (classes), `.frm` (forms), `.ctl` (UserControls), `.pag` (PropertyPages), `.dob` (UserDocuments)
+- **Binary Resources:** `.frx` files automatically parsed when opening `.frm`, `.ctl`, `.pag`, or `.dob` files
+- **Project Files:** `.vbp` files parsed for workspace-wide symbol resolution
+- **Compiled Resources:** `.res` files can be read/written via CLI commands
 
 ### Claude AI Integration (LSP)
 When `ANTHROPIC_API_KEY` is set, additional AI-powered features:
@@ -199,11 +205,20 @@ Create a VSCode extension to use the LSP server:
      "genericLSP.servers": {
        "vb6": {
          "command": "C:\\path\\to\\vb6-lsp.exe",
-         "filetypes": ["vb", "bas", "cls", "frm", "ctl"]
+         "filetypes": ["vb", "bas", "cls", "frm", "ctl", "pag", "dob"]
        }
      }
    }
    ```
+
+   **Supported File Types:**
+   - `.bas` - Standard modules
+   - `.cls` - Class modules
+   - `.frm` - Forms (with automatic `.frx` binary resource parsing)
+   - `.ctl` - UserControls (with automatic `.frx` binary resource parsing)
+   - `.pag` - PropertyPages (with automatic `.frx` binary resource parsing)
+   - `.dob` - UserDocuments (with automatic `.frx` binary resource parsing)
+   - `.vbp` - Project files (parsed for workspace-wide symbol resolution)
 
 ### Using with Neovim
 
@@ -217,7 +232,7 @@ if not configs.vb6_lsp then
   configs.vb6_lsp = {
     default_config = {
       cmd = {'C:\\path\\to\\vb6-lsp.exe'},
-      filetypes = {'vb', 'bas', 'cls', 'frm', 'ctl'},
+      filetypes = {'vb', 'bas', 'cls', 'frm', 'ctl', 'pag', 'dob'},
       root_dir = lspconfig.util.root_pattern('.git', '.vbp'),
       settings = {},
     },
@@ -510,11 +525,12 @@ match resource_file_resolver("MyForm.frx", 0x00) {
 
 ### VBP Project File Parsing ✅
 
-The LSP includes comprehensive VB6 project file (.vbp) parsing with support for:
+The LSP includes comprehensive VB6 project file (.vbp) parsing with full workspace support:
 
 **Project Structure:**
 - Project types: Standard EXE, ActiveX DLL, ActiveX EXE, ActiveX Control
-- All source file types: Modules (.bas), Classes (.cls), Forms (.frm), User Controls (.ctl), Property Pages (.pag), User Documents (.dob), Designers (.dsr)
+- All source file types: Modules (`.bas`), Classes (`.cls`), Forms (`.frm`), User Controls (`.ctl`), Property Pages (`.pag`), User Documents (`.dob`), Designers (`.dsr`)
+- Automatic `.frx` binary resource parsing for all visual designer files (`.frm`, `.ctl`, `.pag`, `.dob`)
 - Related documents and resources
 
 **References & Dependencies:**
