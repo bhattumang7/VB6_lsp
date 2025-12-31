@@ -674,12 +674,6 @@ list_resolver(buffer: &[u8]) -> Vec<String>
 - [ ] Code actions (quick fixes)
 - [ ] Type library (.tlb/.olb) resolution for external references
 
-### Phase 4: AI-Powered
-- [ ] Claude-powered smart completions
-- [ ] Migration suggestions (VB6 → modern languages)
-- [ ] Code quality analysis
-- [ ] Legacy code explanation
-
 ## Contributing
 
 Contributions welcome! Please:
