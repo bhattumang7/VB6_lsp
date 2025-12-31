@@ -41,10 +41,19 @@ streaming-iterator = "0.1"
 once_cell = "1"
 regex = "1"
 ropey = "1"  # Efficient text rope for document handling
+walkdir = "2"  # Directory traversal for VBP discovery
+uuid = "1"  # UUID parsing and validation for type library references
+encoding_rs = "0.8"  # Character encoding detection and conversion (Windows-1252 support)
+byteorder = "1"  # Binary reading/writing for resource files
+base64 = "0.22"  # Base64 encoding for JSON resource data
 
 [dev-dependencies]
 tokio-test = "0.4"
 pretty_assertions = "1"
+
+[lib]
+name = "vb6_lsp"
+path = "src/lib.rs"
 
 [[bin]]
 name = "vb6-lsp"

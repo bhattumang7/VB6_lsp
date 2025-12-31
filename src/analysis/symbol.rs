@@ -430,7 +430,47 @@ impl Symbol {
                     .as_ref()
                     .map(|t| t.display())
                     .unwrap_or_else(|| "Control".to_string());
-                format!("{} As {}", self.name, type_str)
+
+                // Try to get control definition from controls module
+                let control_info = crate::controls::get_control(&type_str);
+
+                if let Some(control) = control_info {
+                    // Rich hover with description
+                    let mut result = format!("{} As {}", self.name, type_str);
+                    result.push_str(&format!("\n\n{}", control.description));
+
+                    // Show a few key properties
+                    if !control.properties.is_empty() {
+                        result.push_str("\n\n**Common Properties:**");
+                        for prop in control.properties.iter().take(5) {
+                            result.push_str(&format!("\n- `{}`: {}", prop.name, prop.description));
+                        }
+                        if control.properties.len() > 5 {
+                            result.push_str(&format!("\n- ... and {} more properties", control.properties.len() - 5));
+                        }
+                    }
+
+                    // Show key events
+                    if !control.events.is_empty() {
+                        result.push_str("\n\n**Common Events:**");
+                        for event in control.events.iter().take(3) {
+                            let params = if event.parameters.is_empty() {
+                                "()".to_string()
+                            } else {
+                                format!("({})", event.parameters)
+                            };
+                            result.push_str(&format!("\n- `{}_{}`: {}", self.name, event.name, event.description));
+                        }
+                        if control.events.len() > 3 {
+                            result.push_str(&format!("\n- ... and {} more events", control.events.len() - 3));
+                        }
+                    }
+
+                    result
+                } else {
+                    // Fallback to simple format
+                    format!("{} As {}", self.name, type_str)
+                }
             }
         }
     }

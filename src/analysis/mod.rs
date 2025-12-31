@@ -501,9 +501,15 @@ impl Analyzer {
         &self,
         table: &SymbolTable,
         position: Position,
+        source: &str,
     ) -> Vec<CompletionItem> {
         let pos = SourcePosition::from_lsp(position);
         let mut items = Vec::new();
+
+        // Check if we're completing after a dot (member access)
+        if let Some(member_completions) = self.get_member_completions(table, position, source) {
+            return member_completions;
+        }
 
         // Get visible symbols at this position
         for symbol in table.visible_symbols(pos) {
@@ -514,6 +520,116 @@ impl Analyzer {
         items.extend(self.get_keyword_completions());
 
         items
+    }
+
+    /// Get member completions (e.g., after typing "txtName.")
+    fn get_member_completions(
+        &self,
+        table: &SymbolTable,
+        position: Position,
+        source: &str,
+    ) -> Option<Vec<CompletionItem>> {
+        use tower_lsp::lsp_types::CompletionItemKind;
+
+        // Get the line up to cursor position
+        let line_idx = position.line as usize;
+        let char_idx = position.character as usize;
+
+        let lines: Vec<&str> = source.lines().collect();
+        if line_idx >= lines.len() {
+            return None;
+        }
+
+        let line = lines[line_idx];
+        if char_idx > line.len() {
+            return None;
+        }
+
+        let before_cursor = &line[..char_idx];
+
+        // Check if we just typed a dot
+        if !before_cursor.ends_with('.') {
+            return None;
+        }
+
+        // Get the identifier before the dot
+        let before_dot = before_cursor.trim_end_matches('.');
+        let last_word = before_dot
+            .split(|c: char| !c.is_alphanumeric() && c != '_')
+            .last()?;
+
+        if last_word.is_empty() {
+            return None;
+        }
+
+        // Look up the symbol
+        let pos = SourcePosition::from_lsp(position);
+        let symbol = table.lookup_at_position(last_word, pos)?;
+
+        // Check if it's a form control
+        if symbol.kind == SymbolKind::FormControl {
+            let type_name = symbol.type_info.as_ref()?.name.clone();
+            let control = crate::controls::get_control(&type_name)?;
+
+            let mut completions = Vec::new();
+
+            // Add properties
+            for prop in control.properties {
+                let mut item = CompletionItem {
+                    label: prop.name.to_string(),
+                    kind: Some(CompletionItemKind::PROPERTY),
+                    detail: Some(prop.description.to_string()),
+                    documentation: Some(Documentation::String(format!(
+                        "**Type:** {}\n\n{}\n\n**Default:** {}",
+                        prop.property_type.vb6_type(),
+                        prop.description,
+                        prop.default_value.unwrap_or("(none)")
+                    ))),
+                    insert_text: None,
+                    insert_text_format: None,
+                    ..Default::default()
+                };
+
+                // For enum properties, show valid values
+                if !prop.valid_values.is_empty() {
+                    let mut doc = format!(
+                        "**Type:** {}\n\n{}\n\n**Valid Values:**\n",
+                        prop.property_type.vb6_type(),
+                        prop.description
+                    );
+                    for value in prop.valid_values.iter().take(10) {
+                        doc.push_str(&format!("\n- `{}` ({}): {}", value.value, value.name, value.description));
+                    }
+                    if prop.valid_values.len() > 10 {
+                        doc.push_str(&format!("\n- ... and {} more values", prop.valid_values.len() - 10));
+                    }
+                    item.documentation = Some(Documentation::String(doc));
+                }
+
+                completions.push(item);
+            }
+
+            // Add methods
+            for method in control.methods {
+                completions.push(CompletionItem {
+                    label: method.name.to_string(),
+                    kind: Some(CompletionItemKind::METHOD),
+                    detail: Some(method.description.to_string()),
+                    documentation: Some(Documentation::String(format!(
+                        "{}\n\n**Signature:** `{}`",
+                        method.description,
+                        method.signature
+                    ))),
+                    insert_text: Some(format!("{}($1)", method.name)),
+                    insert_text_format: Some(InsertTextFormat::SNIPPET),
+                    ..Default::default()
+                });
+            }
+
+            return Some(completions);
+        }
+
+        None
     }
 
     /// Get document symbols using symbol table

@@ -31,7 +31,11 @@ Desktop.ini
 .serena/
 .claude/
 
+# Test artifacts
+tests/fixtures/*_copy.RES
+
 Rubberduck-next/*
 tree-sitter-vb6/node_modules/*
 vb6_examples/*
 tree-sitter-vb6/test/tools/*
+vb6-mcp-server/node_modules/*
