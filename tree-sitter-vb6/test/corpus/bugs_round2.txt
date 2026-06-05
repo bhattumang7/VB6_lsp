@@ -1,0 +1,226 @@
+; ============================================================
+; Bug #1 — numeric Long-literal suffix (&) not recognized
+; ============================================================
+
+==================
+Bug1r2 Long literal: zero
+==================
+
+x = 0&
+
+---
+
+(source_file
+  (assignment_statement
+    target: (identifier)
+    value: (literal
+      (integer_literal))))
+
+==================
+Bug1r2 Long literal: positive
+==================
+
+x = 1&
+
+---
+
+(source_file
+  (assignment_statement
+    target: (identifier)
+    value: (literal
+      (integer_literal))))
+
+==================
+Bug1r2 Long literal: negative (unary minus)
+==================
+
+Private Const INFINITE = -1&
+
+---
+
+(source_file
+  (constant_declaration
+    (constant_declarator
+      name: (identifier)
+      value: (unary_expression
+        (literal
+          (integer_literal))))))
+
+==================
+Bug1r2 Long literal: typed constant with As Long
+==================
+
+Private Const EVENT_MIN As Long = 1&
+
+---
+
+(source_file
+  (constant_declaration
+    (constant_declarator
+      name: (identifier)
+      (as_clause
+        type: (builtin_type))
+      value: (literal
+        (integer_literal)))))
+
+==================
+Bug1r2 Long literal: as function argument
+==================
+
+Sub S()
+  r = F(h, 0&, a)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (identifier)
+              (literal
+                (integer_literal))
+              (identifier))))))))
+
+==================
+Bug1r2 Long literal: integer suffix %
+==================
+
+x = 0%
+
+---
+
+(source_file
+  (assignment_statement
+    target: (identifier)
+    value: (literal
+      (integer_literal))))
+
+; ============================================================
+; Bug #2 — ByVal / ByRef at the call site not supported
+; ============================================================
+
+==================
+Bug2r2 ByVal in parens call
+==================
+
+Sub S()
+  r = F(ByVal x)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (identifier))))))))
+
+==================
+Bug2r2 ByVal with expression in parens call
+==================
+
+Sub S()
+  r = F(ByVal CLng(x))
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (call_expression
+                function: (identifier)
+                (argument_list
+                  (argument_list_inner
+                    (identifier)))))))))))
+
+==================
+Bug2r2 ByRef in parens call
+==================
+
+Sub S()
+  r = F(ByRef x)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (identifier))))))))
+
+==================
+Bug2r2 ByVal in implicit call (no parens)
+==================
+
+Sub S()
+  F ByVal x
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (call_statement
+        (implicit_call_stmt
+          (identifier)
+          (argument_list_no_parens
+            (identifier)))))))
+
+==================
+Bug2r2 ByVal mixed with normal arg
+==================
+
+Sub S()
+  r = F(a, ByVal b)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (identifier)
+              (identifier))))))))

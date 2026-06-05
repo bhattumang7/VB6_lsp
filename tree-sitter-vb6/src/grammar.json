@@ -7667,7 +7667,7 @@
       "members": [
         {
           "type": "PATTERN",
-          "value": "\\d+"
+          "value": "\\d+[%&]?"
         },
         {
           "type": "PATTERN",
@@ -8762,8 +8762,46 @@
           ]
         },
         {
-          "type": "SYMBOL",
-          "name": "_expression"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "byval",
+                        "flags": "i"
+                      },
+                      "named": false,
+                      "value": "byval"
+                    },
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "byref",
+                        "flags": "i"
+                      },
+                      "named": false,
+                      "value": "byref"
+                    }
+                  ]
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_expression"
+            }
+          ]
         }
       ]
     },
@@ -8788,8 +8826,46 @@
           ]
         },
         {
-          "type": "SYMBOL",
-          "name": "_expression_no_with_member"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "byval",
+                        "flags": "i"
+                      },
+                      "named": false,
+                      "value": "byval"
+                    },
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "PATTERN",
+                        "value": "byref",
+                        "flags": "i"
+                      },
+                      "named": false,
+                      "value": "byref"
+                    }
+                  ]
+                },
+                {
+                  "type": "BLANK"
+                }
+              ]
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_expression_no_with_member"
+            }
+          ]
         }
       ]
     },

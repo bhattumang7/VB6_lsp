@@ -1306,8 +1306,12 @@ module.exports = grammar({
       $.file_number,
     ),
 
+    // Bug #1r2: decimal literals may carry a VB6 type-declaration suffix.
+    // %=Integer  &=Long  (most common in API constants such as 0& and -1&).
+    // The suffix must be part of the token so the lexer doesn't mis-read & as
+    // the binary concatenation operator.
     integer_literal: $ => choice(
-      /\d+/,
+      /\d+[%&]?/,
       /&[hH][0-9a-fA-F]+/,
       /&[oO][0-7]+/,
     ),
@@ -1410,14 +1414,15 @@ module.exports = grammar({
       repeat1(seq(',', optional($._argument))),
     ),
 
+    // Bug #2r2: VB6 allows ByVal/ByRef at the call site to force passing mode.
     _argument: $ => choice(
       seq($.identifier, ':=', $._expression),  // Named
-      $._expression,  // Positional
+      seq(optional(choice(ci('byval'), ci('byref'))), $._expression),  // Positional
     ),
 
     _argument_no_with_member: $ => choice(
       seq($.identifier, ':=', $._expression),  // Named
-      $._expression_no_with_member,  // Positional
+      seq(optional(choice(ci('byval'), ci('byref'))), $._expression_no_with_member),  // Positional
     ),
 
     _lvalue: $ => choice(
