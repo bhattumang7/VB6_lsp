@@ -56,6 +56,9 @@ pub enum ResolveError {
     LicensedBagUnavailable { clsid: Option<String>, property: String },
     /// COM decode was requested but no decoder bridge was supplied.
     NoComDecoder,
+    /// COM decode was attempted but failed for a non-license reason (control not
+    /// registered, load failed, bridge error). Also a hard error — never opaque.
+    ComDecodeFailed { property: String, message: String },
 }
 
 impl std::fmt::Display for ResolveError {
@@ -73,6 +76,9 @@ impl std::fmt::Display for ResolveError {
                 clsid.as_deref().unwrap_or("<unknown clsid>")
             ),
             ResolveError::NoComDecoder => write!(f, "COM decode requested but no decoder available"),
+            ResolveError::ComDecodeFailed { property, message } => {
+                write!(f, "COM decode of `{}` failed: {}", property, message)
+            }
         }
     }
 }
@@ -168,17 +174,33 @@ fn resolve_one(
             OcxBagPolicy::ComDecode => {
                 let com = com.ok_or(ResolveError::NoComDecoder)?;
                 // Hand the bag body to the live-control decoder (it owns the
-                // hard-error-on-missing-license contract).
-                let bag = match frx::decode_ocx_bag(bytes, offset) {
-                    FrxValue::OcxBag { data, .. } => data,
+                // hard-error-on-missing-license contract). Prefer the control's
+                // CLSID (from the Object= header); fall back to a CLSID embedded
+                // in the bag itself.
+                let (bag, embedded) = match frx::decode_ocx_bag(bytes, offset) {
+                    FrxValue::OcxBag { data, clsid } => (data, clsid),
                     other => return Ok(other),
                 };
-                com.decode_bag(clsid, &reference.property, &bag)
+                let effective = clsid
+                    .map(|s| s.to_string())
+                    .or_else(|| embedded.map(format_guid16));
+                com.decode_bag(effective.as_deref(), &reference.property, &bag)
             }
         }
     } else {
         frx::decode(bytes, offset, kind).map_err(ResolveError::Decode)
     }
+}
+
+/// Format a 16-byte CLSID into `{D1-D2-D3-D4hi-D4lo}` (Data1/2/3 LE, Data4 BE).
+fn format_guid16(g: [u8; 16]) -> String {
+    let d1 = u32::from_le_bytes([g[0], g[1], g[2], g[3]]);
+    let d2 = u16::from_le_bytes([g[4], g[5]]);
+    let d3 = u16::from_le_bytes([g[6], g[7]]);
+    format!(
+        "{{{:08X}-{:04X}-{:04X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}}}",
+        d1, d2, d3, g[8], g[9], g[10], g[11], g[12], g[13], g[14], g[15]
+    )
 }
 
 #[cfg(test)]

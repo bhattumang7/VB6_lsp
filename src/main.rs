@@ -9,6 +9,8 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod analysis;
 mod claude;
+#[cfg(windows)]
+mod com_decoder;
 mod controls;
 mod lsp;
 mod parser;
@@ -51,6 +53,31 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Build the form export IR, optionally decoding Tier-3 proprietary bags live via
+/// COM (Windows only, where a licensed control is installed). Falls back to opaque
+/// Tier-3 when `--com-decode` is off or the bridge is unavailable.
+fn build_form_export_cli(
+    path: &std::path::Path,
+    com_decode: bool,
+) -> anyhow::Result<controls::export::FormExport> {
+    if com_decode {
+        #[cfg(windows)]
+        {
+            if let Some(dec) = com_decoder::OracleComDecoder::new() {
+                return Ok(controls::export::build_form_export_with(
+                    path,
+                    controls::resources::OcxBagPolicy::ComDecode,
+                    Some(&dec),
+                )?);
+            }
+            eprintln!("--com-decode: COM bridge unavailable; using opaque Tier-3");
+        }
+        #[cfg(not(windows))]
+        eprintln!("--com-decode is Windows-only; using opaque Tier-3");
+    }
+    Ok(controls::export::build_form_export(path)?)
+}
+
 /// Handle CLI commands for resource file operations
 fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
     match args[0].as_str() {
@@ -91,12 +118,15 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
         }
 
         "read-form" => {
-            if args.len() < 2 {
-                eprintln!("Usage: vb6-lsp read-form <file.frm|.ctl|.pag|.dob>");
+            let positional: Vec<&String> =
+                args[1..].iter().filter(|a| !a.starts_with("--")).collect();
+            if positional.is_empty() {
+                eprintln!("Usage: vb6-lsp read-form <file.frm|.ctl|.pag|.dob> [--com-decode]");
                 std::process::exit(1);
             }
-            let path = std::path::Path::new(&args[1]);
-            let export = controls::export::build_form_export(path)?;
+            let path = std::path::Path::new(positional[0].as_str());
+            let com_decode = args.iter().any(|a| a == "--com-decode");
+            let export = build_form_export_cli(path, com_decode)?;
             println!("{}", serde_json::to_string_pretty(&export)?);
             Ok(())
         }

@@ -89,6 +89,7 @@ pub enum ResourceValueView {
     ItemData { items: Vec<i32> },
     PropertyPages { pages: Vec<String> },
     OcxBag { clsid: Option<String>, base64: String },
+    DecodedBag { clsid: Option<String>, properties: Vec<(String, String)> },
     Empty,
     Error { kind: String, message: String },
 }
@@ -106,12 +107,23 @@ pub struct CoverageView {
     pub errors: usize,
 }
 
-/// Read a `.frm`/`.ctl`, parse + resolve + account, and assemble the export IR.
+/// Read a `.frm`/`.ctl`, parse + resolve + account, and assemble the export IR
+/// (Tier-3 bags left opaque).
 pub fn build_form_export(frm_path: &Path) -> std::io::Result<FormExport> {
+    build_form_export_with(frm_path, OcxBagPolicy::Opaque, None)
+}
+
+/// Like [`build_form_export`] but with an explicit Tier-3 policy and optional COM
+/// decoder (for live proprietary-bag decoding where a licensed control exists).
+pub fn build_form_export_with(
+    frm_path: &Path,
+    policy: OcxBagPolicy,
+    com: Option<&dyn resources::ComDecoder>,
+) -> std::io::Result<FormExport> {
     let raw = std::fs::read(frm_path)?;
     let source = String::from_utf8_lossy(&raw);
     let designer = form_designer::parse_designer(&source);
-    let resolved = resources::resolve_form_resources(frm_path, OcxBagPolicy::Opaque, None)?;
+    let resolved = resources::resolve_form_resources(frm_path, policy, com)?;
     let cov = coverage::coverage_for_form(frm_path)?;
 
     Ok(FormExport {
@@ -201,6 +213,10 @@ fn value_view(v: &FrxValue) -> ResourceValueView {
             clsid: clsid.as_ref().map(|g| format_guid(*g)),
             base64: base64::encode(data),
         },
+        FrxValue::DecodedBag { clsid, properties } => ResourceValueView::DecodedBag {
+            clsid: clsid.as_ref().map(|g| format_guid(*g)),
+            properties: properties.clone(),
+        },
         FrxValue::Empty => ResourceValueView::Empty,
     }
 }
@@ -226,6 +242,7 @@ fn error_kind(e: &ResolveError) -> String {
         ResolveError::Decode(_) => "Decode",
         ResolveError::LicensedBagUnavailable { .. } => "LicensedBagUnavailable",
         ResolveError::NoComDecoder => "NoComDecoder",
+        ResolveError::ComDecodeFailed { .. } => "ComDecodeFailed",
     }
     .to_string()
 }

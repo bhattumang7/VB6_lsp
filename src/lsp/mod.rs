@@ -299,6 +299,10 @@ fn format_frx_value(value: &crate::controls::frx::FrxValue) -> String {
                 .unwrap_or_else(|| "unknown".to_string());
             format!("📦 proprietary control bag · {} bytes · CLSID {}", data.len(), id)
         }
+        FrxValue::DecodedBag { properties, .. } => {
+            format!("🧩 decoded control bag · {} propert{}", properties.len(),
+                if properties.len() == 1 { "y" } else { "ies" })
+        }
         FrxValue::Empty => "∅ empty resource".to_string(),
     }
 }

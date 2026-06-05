@@ -95,6 +95,12 @@ pub enum FrxValue {
     /// and nothing is silently mis-read. `clsid` is filled when a leading class id
     /// is detectable in the blob.
     OcxBag { clsid: Option<[u8; 16]>, data: Vec<u8> },
+    /// A proprietary control bag decoded *live* via COM (Tier 3) into typed
+    /// properties `(name, value-as-text)`. Produced only by a [`crate::controls::resources::ComDecoder`].
+    DecodedBag {
+        clsid: Option<[u8; 16]>,
+        properties: Vec<(String, String)>,
+    },
     /// An explicitly empty resource (e.g. a removed icon).
     Empty,
 }
@@ -510,6 +516,9 @@ pub fn encode(value: &FrxValue, kind: PropKind) -> Vec<u8> {
             // Length-framed bags re-emit the [u32 len] prefix + the body we kept.
             out.extend_from_slice(&(data.len() as u32).to_le_bytes());
             out.extend_from_slice(data);
+        }
+        FrxValue::DecodedBag { .. } => {
+            // A live-decoded bag is a semantic view, not a byte form; not round-tripped.
         }
     }
     out
