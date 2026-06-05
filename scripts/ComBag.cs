@@ -100,10 +100,18 @@ public static class ComBag
         throw last ?? new Exception("load failed");
     }
 
-    // Read 0-arg gettable property names from the object's type info, then fetch each.
+    // Read gettable scalar properties, recursing one or two levels into object-valued
+    // (collection) properties such as a grid's Columns or an ActiveBar's Bands.
     static List<string[]> ReadProps(object obj)
     {
         var result = new List<string[]>();
+        ReadPropsInto(obj, "", 2, result);
+        return result;
+    }
+
+    static void ReadPropsInto(object obj, string prefix, int depth, List<string[]> result)
+    {
+        if (obj == null || result.Count > 2000) return;
         CT.ITypeInfo ti = null;
         try
         {
@@ -112,34 +120,73 @@ public static class ComBag
             if (n > 0) disp.GetTypeInfo(0, 0, out ti);
         }
         catch { }
-        if (ti == null) return result;
+        if (ti == null) return;
 
         IntPtr pAttr; ti.GetTypeAttr(out pAttr);
         var attr = (CT.TYPEATTR)Marshal.PtrToStructure(pAttr, typeof(CT.TYPEATTR));
-        short cFuncs = attr.cFuncs; ti.ReleaseTypeAttr(pAttr);
+        short cFuncs = attr.cFuncs; short cVars = attr.cVars; ti.ReleaseTypeAttr(pAttr);
 
         var seen = new HashSet<string>();
+        // PROPERTYGET methods with no parameters (dual / vtable interfaces).
         for (int f = 0; f < cFuncs; f++)
         {
             IntPtr pf; ti.GetFuncDesc(f, out pf);
             var fd = (CT.FUNCDESC)Marshal.PtrToStructure(pf, typeof(CT.FUNCDESC));
             bool getter = (fd.invkind == CT.INVOKEKIND.INVOKE_PROPERTYGET);
             short cParams = fd.cParams;
+            int memid = fd.memid;
             ti.ReleaseFuncDesc(pf);
-            if (!getter || cParams != 0) continue;
-            string[] names = new string[1]; int cn;
-            ti.GetNames(fd.memid, names, 1, out cn);
-            if (cn == 0 || names[0] == null || !seen.Add(names[0])) continue;
-            string val;
-            try
-            {
-                object v = obj.GetType().InvokeMember(names[0], BindingFlags.GetProperty, null, obj, null);
-                val = v == null ? "" : v.ToString();
-            }
-            catch (Exception e) { val = "<err:" + (e.InnerException != null ? e.InnerException.Message : e.Message) + ">"; }
-            result.Add(new string[] { names[0], val });
+            if (getter && cParams == 0) ReadMember(obj, ti, memid, prefix, depth, seen, result);
         }
-        return result;
+        // VARDESC properties (dispinterfaces, e.g. StdFont's IFontDisp, expose
+        // their properties as variables rather than get-methods).
+        for (int vi = 0; vi < cVars; vi++)
+        {
+            IntPtr pv; ti.GetVarDesc(vi, out pv);
+            var vd = (CT.VARDESC)Marshal.PtrToStructure(pv, typeof(CT.VARDESC));
+            int memid = vd.memid;
+            ti.ReleaseVarDesc(pv);
+            ReadMember(obj, ti, memid, prefix, depth, seen, result);
+        }
+    }
+
+    // Resolve a member's name, fetch its value, and either record it or (for a
+    // collection/object) recurse.
+    static void ReadMember(object obj, CT.ITypeInfo ti, int memid, string prefix, int depth, HashSet<string> seen, List<string[]> result)
+    {
+        string[] names = new string[1]; int cn;
+        ti.GetNames(memid, names, 1, out cn);
+        if (cn == 0 || names[0] == null || !seen.Add(names[0])) return;
+        string full = prefix.Length == 0 ? names[0] : prefix + "." + names[0];
+        object v;
+        try { v = obj.GetType().InvokeMember(names[0], BindingFlags.GetProperty, null, obj, null); }
+        catch (Exception e) { result.Add(new string[] { full, "<err:" + (e.InnerException != null ? e.InnerException.Message : e.Message) + ">" }); return; }
+        if (v == null) { result.Add(new string[] { full, "" }); return; }
+        if (depth > 0 && Marshal.IsComObject(v)) ReadCollection(v, full, depth - 1, result);
+        else result.Add(new string[] { full, v.ToString() });
+    }
+
+    // A property that returned a COM object: if it exposes Count + Item, enumerate its
+    // items (capped); otherwise recurse its scalar properties.
+    static void ReadCollection(object col, string prefix, int depth, List<string[]> result)
+    {
+        int count = -1;
+        try { object c = col.GetType().InvokeMember("Count", BindingFlags.GetProperty, null, col, null); count = Convert.ToInt32(c); }
+        catch { }
+        if (count < 0) { ReadPropsInto(col, prefix, depth, result); return; }
+
+        result.Add(new string[] { prefix + ".Count", count.ToString() });
+        int cap = Math.Min(count, 100);
+        for (int i = 0; i < cap; i++)
+        {
+            object item = null;
+            try { item = col.GetType().InvokeMember("Item", BindingFlags.GetProperty, null, col, new object[] { i + 1 }); }
+            catch { try { item = col.GetType().InvokeMember("Item", BindingFlags.GetProperty, null, col, new object[] { i }); } catch { } }
+            if (item == null) continue;
+            string ip = prefix + "(" + i + ")";
+            if (Marshal.IsComObject(item)) ReadPropsInto(item, ip, depth, result);
+            else result.Add(new string[] { ip, item.ToString() });
+        }
     }
 
     // Minimal IDispatch surface needed to fetch ITypeInfo.
