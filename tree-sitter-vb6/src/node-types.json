@@ -364,6 +364,10 @@
         "required": true,
         "types": [
           {
+            "type": "call_expression",
+            "named": true
+          },
+          {
             "type": "dictionary_access",
             "named": true
           },
@@ -738,6 +742,10 @@
         },
         {
           "type": "goto_statement",
+          "named": true
+        },
+        {
+          "type": "graphics_method_statement",
           "named": true
         },
         {
@@ -3308,6 +3316,447 @@
     }
   },
   {
+    "type": "graphics_coord",
+    "named": true,
+    "fields": {
+      "x": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "addressof_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "dictionary_access",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "index_expression",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "member_expression",
+            "named": true
+          },
+          {
+            "type": "new_expression",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "time",
+            "named": false
+          },
+          {
+            "type": "typed_identifier",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
+            "type": "with_member_expression",
+            "named": true
+          }
+        ]
+      },
+      "y": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "addressof_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "dictionary_access",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "index_expression",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "member_expression",
+            "named": true
+          },
+          {
+            "type": "new_expression",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "time",
+            "named": false
+          },
+          {
+            "type": "typed_identifier",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
+            "type": "with_member_expression",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "graphics_method_statement",
+    "named": true,
+    "fields": {
+      "center": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "graphics_coord",
+            "named": true
+          }
+        ]
+      },
+      "color": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "addressof_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "dictionary_access",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "index_expression",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "member_expression",
+            "named": true
+          },
+          {
+            "type": "new_expression",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "time",
+            "named": false
+          },
+          {
+            "type": "typed_identifier",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
+            "type": "with_member_expression",
+            "named": true
+          }
+        ]
+      },
+      "flag": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "b",
+            "named": false
+          },
+          {
+            "type": "bf",
+            "named": false
+          }
+        ]
+      },
+      "from": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "graphics_coord",
+            "named": true
+          }
+        ]
+      },
+      "object": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "graphics_object",
+            "named": true
+          }
+        ]
+      },
+      "point": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "graphics_coord",
+            "named": true
+          }
+        ]
+      },
+      "radius": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "addressof_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "call_expression",
+            "named": true
+          },
+          {
+            "type": "dictionary_access",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "index_expression",
+            "named": true
+          },
+          {
+            "type": "literal",
+            "named": true
+          },
+          {
+            "type": "member_expression",
+            "named": true
+          },
+          {
+            "type": "new_expression",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "time",
+            "named": false
+          },
+          {
+            "type": "typed_identifier",
+            "named": true
+          },
+          {
+            "type": "typeof_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
+            "type": "with_member_expression",
+            "named": true
+          }
+        ]
+      },
+      "to": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "graphics_coord",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "addressof_expression",
+          "named": true
+        },
+        {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "call_expression",
+          "named": true
+        },
+        {
+          "type": "comment",
+          "named": true
+        },
+        {
+          "type": "dictionary_access",
+          "named": true
+        },
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "index_expression",
+          "named": true
+        },
+        {
+          "type": "literal",
+          "named": true
+        },
+        {
+          "type": "member_expression",
+          "named": true
+        },
+        {
+          "type": "new_expression",
+          "named": true
+        },
+        {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "typed_identifier",
+          "named": true
+        },
+        {
+          "type": "typeof_expression",
+          "named": true
+        },
+        {
+          "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
+          "type": "with_member_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "graphics_object",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "if_statement",
     "named": true,
     "fields": {
@@ -5476,6 +5925,10 @@
           "named": true
         },
         {
+          "type": "graphics_method_statement",
+          "named": true
+        },
+        {
           "type": "if_statement",
           "named": true
         },
@@ -5858,6 +6311,10 @@
         },
         {
           "type": "goto_statement",
+          "named": true
+        },
+        {
+          "type": "graphics_method_statement",
           "named": true
         },
         {
@@ -6274,6 +6731,10 @@
         },
         {
           "type": "goto_statement",
+          "named": true
+        },
+        {
+          "type": "graphics_method_statement",
           "named": true
         },
         {
@@ -7606,6 +8067,10 @@
         "required": true,
         "types": [
           {
+            "type": "call_expression",
+            "named": true
+          },
+          {
             "type": "dictionary_access",
             "named": true
           },
@@ -7919,6 +8384,10 @@
         },
         {
           "type": "goto_statement",
+          "named": true
+        },
+        {
+          "type": "graphics_method_statement",
           "named": true
         },
         {
@@ -9233,6 +9702,10 @@
     "named": false
   },
   {
+    "type": "b",
+    "named": false
+  },
+  {
     "type": "base",
     "named": false
   },
@@ -9246,6 +9719,10 @@
   },
   {
     "type": "beginproperty",
+    "named": false
+  },
+  {
+    "type": "bf",
     "named": false
   },
   {
@@ -9282,6 +9759,10 @@
   },
   {
     "type": "chdrive",
+    "named": false
+  },
+  {
+    "type": "circle",
     "named": false
   },
   {
@@ -9553,6 +10034,10 @@
     "named": false
   },
   {
+    "type": "line",
+    "named": false
+  },
+  {
     "type": "line input",
     "named": false
   },
@@ -9685,6 +10170,10 @@
     "named": false
   },
   {
+    "type": "preset",
+    "named": false
+  },
+  {
     "type": "print",
     "named": false
   },
@@ -9694,6 +10183,10 @@
   },
   {
     "type": "property",
+    "named": false
+  },
+  {
+    "type": "pset",
     "named": false
   },
   {

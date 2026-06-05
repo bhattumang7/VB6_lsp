@@ -90,6 +90,7 @@ module.exports = grammar({
     [$.implicit_call_stmt, $.with_dictionary_access],
     [$.label, $.literal],  // Bug #6: integer_literal can start a label or a literal expression
     [$.subscript, $._argument],  // Bug #3: subscript vs argument in redim bounds
+    [$.implicit_call_stmt, $.graphics_object, $._expression],  // Bug #D: "obj." prefix of a graphics method vs member/implicit call
   ],
 
   rules: {
@@ -588,6 +589,7 @@ module.exports = grammar({
       $.redim_statement,
       $.erase_statement,
       $.raiseevent_statement,
+      $.graphics_method_statement,
       // File I/O
       $.open_statement,
       $.close_statement,
@@ -938,6 +940,58 @@ module.exports = grammar({
       repeat(seq(',', $.subscript)),
       ')',
       optional($.as_clause),
+    ),
+
+    // Bug #D: VB6 graphics methods (Line/Circle/PSet/PReset). These take coordinate
+    // pairs "(x, y)" whose internal comma does not fit normal argument syntax, and
+    // "Line" is a reserved keyword with no implicit-call fallback. Optionally qualified
+    // by a drawing surface ("UserControl.Line ...", "Picture1.Circle ...").
+    graphics_method_statement: $ => seq(
+      optional(field('object', $.graphics_object)),
+      choice(
+        // Line [[Step] (x1, y1)]-[Step] (x2, y2) [, [color] [, B|BF]]
+        seq(
+          ci('line'),
+          optional(seq(optional(ci('step')), field('from', $.graphics_coord))),
+          '-',
+          optional(ci('step')),
+          field('to', $.graphics_coord),
+          optional(seq(
+            ',',
+            optional(field('color', $._expression)),
+            optional(seq(',', field('flag', choice(ci('bf'), ci('b'))))),
+          )),
+        ),
+        // Circle [Step] (x, y), radius [, color [, start [, end [, aspect]]]]
+        seq(
+          ci('circle'),
+          optional(ci('step')),
+          field('center', $.graphics_coord),
+          ',',
+          field('radius', $._expression),
+          repeat(seq(',', optional($._expression))),
+        ),
+        // PSet/PReset [Step] (x, y) [, color]
+        seq(
+          choice(ci('pset'), ci('preset')),
+          optional(ci('step')),
+          field('point', $.graphics_coord),
+          optional(seq(',', optional(field('color', $._expression)))),
+        ),
+      ),
+      $._terminator,
+    ),
+
+    // A drawing-surface qualifier: one or more "identifier." segments before the
+    // graphics keyword (e.g. "UserControl.", "Me.Picture1.").
+    graphics_object: $ => prec.left(repeat1(seq($.identifier, '.'))),
+
+    graphics_coord: $ => seq(
+      '(',
+      field('x', $._expression),
+      ',',
+      field('y', $._expression),
+      ')',
     ),
 
     erase_statement: $ => seq(
@@ -1434,6 +1488,9 @@ module.exports = grammar({
       $.with_dictionary_access,
       $.dictionary_access,
       $.index_expression,
+      // Bug #C: "a(0)" / "obj.Item(0)" is lexically a call_expression, which always wins
+      // over index_expression. Accept it as an lvalue so "Set a(0) = x" and "a(0) = x" parse.
+      $.call_expression,
       $.typed_identifier,
       $.identifier,
       ci('time'),
@@ -1455,7 +1512,10 @@ module.exports = grammar({
       // token.immediate: no whitespace allowed between identifier and type suffix.
       // Fixes & being mis-lexed as Long suffix in "a & b" (Bug #1).
       // ! excluded here so "rs!Field" is parsed as dictionary_access, not typed_identifier (Bug #4).
-      alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint),
+      // Lexical prec(1): when a suffix char (&, #, @) directly follows an identifier
+      // with no whitespace, prefer reading it as a type suffix (STATE_MIXED&, I&) over the
+      // concatenation operator '&' / member tokens, which would otherwise win at the lexer (Bug #B).
+      alias(token.immediate(prec(1, choice('%', '&', '#', '@', '$'))), $.type_hint),
     ),
 
     dotted_name: $ => prec.left(seq(

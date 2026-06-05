@@ -1,0 +1,194 @@
+; ============================================================
+; Round 4 — identifier type-suffix in value position, Set with
+; an indexed target, and VB6 graphics methods (Line/Circle/PSet)
+; ============================================================
+
+; ------------------------------------------------------------
+; B — identifier with a type-declaration suffix used as a value
+;     or index. "&" must bind as the type suffix, not as the
+;     concatenation operator with a missing operand.
+; ------------------------------------------------------------
+
+==================
+Round4-B1 suffixed identifier as a value
+==================
+
+Sub T()
+x = STATE_MIXED&
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (typed_identifier (identifier) (type_hint))))))
+
+==================
+Round4-B2 suffixed identifier as an array index
+==================
+
+Sub T()
+v = a(I&)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (typed_identifier (identifier) (type_hint)))))))))
+
+; ------------------------------------------------------------
+; C — Set with an indexed (array-element) target.
+; ------------------------------------------------------------
+
+==================
+Round4-C1 Set an array element to Nothing
+==================
+
+Sub T()
+Set a(0) = Nothing
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (set_statement
+        target: (call_expression
+          function: (identifier)
+          (argument_list (argument_list_inner (literal (integer_literal)))))
+        value: (literal (nothing_literal))))))
+
+==================
+Round4-C2 Set an array element to a new object
+==================
+
+Sub T()
+Set m(1) = New Collection
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (set_statement
+        target: (call_expression
+          function: (identifier)
+          (argument_list (argument_list_inner (literal (integer_literal)))))
+        value: (new_expression (builtin_type))))))
+
+; ------------------------------------------------------------
+; D — VB6 graphics methods. Coordinate pairs "(x, y)" and the
+;     "Line (..)-(..)" form, optionally qualified by a surface.
+; ------------------------------------------------------------
+
+==================
+Round4-D1 Line with coordinate-pair syntax on a surface
+==================
+
+Sub T()
+UserControl.Line (0, 0)-(100, 100)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (graphics_method_statement
+        object: (graphics_object (identifier))
+        from: (graphics_coord
+          x: (literal (integer_literal))
+          y: (literal (integer_literal)))
+        to: (graphics_coord
+          x: (literal (integer_literal))
+          y: (literal (integer_literal)))))))
+
+==================
+Round4-D2 Line with color and box-fill flag
+==================
+
+Sub T()
+Line (0, 0)-(50, 50), vbRed, BF
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (graphics_method_statement
+        from: (graphics_coord
+          x: (literal (integer_literal))
+          y: (literal (integer_literal)))
+        to: (graphics_coord
+          x: (literal (integer_literal))
+          y: (literal (integer_literal)))
+        color: (identifier)))))
+
+==================
+Round4-D3 Circle with radius and color
+==================
+
+Sub T()
+Circle (100, 100), 50, vbRed
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (graphics_method_statement
+        center: (graphics_coord
+          x: (literal (integer_literal))
+          y: (literal (integer_literal)))
+        radius: (literal (integer_literal))
+        (identifier)))))
+
+==================
+Round4-D4 PSet with a color
+==================
+
+Sub T()
+PSet (10, 10), vbBlack
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (graphics_method_statement
+        point: (graphics_coord
+          x: (literal (integer_literal))
+          y: (literal (integer_literal)))
+        color: (identifier)))))
