@@ -85,6 +85,11 @@ module.exports = grammar({
     [$.redim_variable, $._argument],
     [$.form_frx_literal, $.literal],
     [$.implicit_call_stmt, $.module_level_implicit_call, $._expression],
+    [$.with_dictionary_access, $._expression],
+    [$.with_dictionary_access, $._lvalue],
+    [$.implicit_call_stmt, $.with_dictionary_access],
+    [$.label, $.literal],  // Bug #6: integer_literal can start a label or a literal expression
+    [$.subscript, $._argument],  // Bug #3: subscript vs argument in redim bounds
   ],
 
   rules: {
@@ -350,7 +355,9 @@ module.exports = grammar({
         // With Dim keyword
         seq(optional(ci('static')), ci('dim')),
         // With WithEvents
-        seq(optional(ci('static')), ci('withevents'))
+        seq(optional(ci('static')), ci('withevents')),
+        // Bug #2: bare Static keyword — "Static x As Long" inside a procedure
+        ci('static'),
       ),
       $.variable_list,
       $._terminator,
@@ -363,7 +370,7 @@ module.exports = grammar({
 
     variable_declarator: $ => seq(
       field('name', $.identifier),
-      optional($.type_hint),
+      optional(alias(token.immediate(choice('%', '&', '!', '#', '@', '$')), $.type_hint)),
       optional($.array_bounds),
       optional($.as_clause),
     ),
@@ -417,7 +424,7 @@ module.exports = grammar({
 
     constant_declarator: $ => seq(
       field('name', $.identifier),
-      optional($.type_hint),
+      optional(alias(token.immediate(choice('%', '&', '!', '#', '@', '$')), $.type_hint)),
       optional($.as_clause),
       '=',
       field('value', $._expression),
@@ -547,7 +554,7 @@ module.exports = grammar({
       optional(ci('optional')),
       optional(choice(ci('byval'), ci('byref'), ci('paramarray'))),
       field('name', $.identifier),
-      optional($.type_hint),
+      optional(alias(token.immediate(choice('%', '&', '!', '#', '@', '$')), $.type_hint)),
       optional(seq('(', ')')),  // Array param
       optional($.as_clause),
       optional(seq('=', field('default', $._expression))),
@@ -660,9 +667,10 @@ module.exports = grammar({
       optional($.block),
     ),
 
-    label: $ => seq(
-      choice(alias($.label_identifier, $.identifier), $.integer_literal),
-      ':',
+    // Bug #6: numeric line numbers may appear without a colon ("10  x = 1")
+    label: $ => choice(
+      seq(alias($.label_identifier, $.identifier), ':'),
+      seq($.integer_literal, optional(':')),
     ),
 
     // Assignment statement with dynamic precedence to win over call_statement
@@ -693,7 +701,7 @@ module.exports = grammar({
     )),
 
     implicit_call_stmt: $ => seq(
-      choice($.member_expression, $.with_member_expression, alias($.callable_identifier, $.identifier), $.identifier),
+      choice($.member_expression, $.with_member_expression, $.with_dictionary_access, alias($.callable_identifier, $.identifier), $.identifier),
       optional($.argument_list_no_parens),
     ),
 
@@ -712,7 +720,7 @@ module.exports = grammar({
     // Module-level implicit call - uses callable_identifier to exclude keywords
     // This prevents "Public x" from being parsed as a call statement
     module_level_implicit_call: $ => prec(-1, seq(
-      choice($.member_expression, $.with_member_expression, alias($.callable_identifier, $.identifier), $.identifier),
+      choice($.member_expression, $.with_member_expression, $.with_dictionary_access, alias($.callable_identifier, $.identifier), $.identifier),
       optional($.argument_list_no_parens),
       $._terminator,
     )),
@@ -922,11 +930,12 @@ module.exports = grammar({
       $._terminator,
     ),
 
+    // Bug #3: use subscript (same rule as Dim) so "1 To 5" ranges are accepted
     redim_variable: $ => seq(
       field('name', choice($.typed_identifier, $.identifier, $.member_expression, $.with_member_expression, $.dictionary_access)),
       '(',
-      $._expression,
-      repeat(seq(',', $._expression)),
+      $.subscript,
+      repeat(seq(',', $.subscript)),
       ')',
       optional($.as_clause),
     ),
@@ -1161,8 +1170,10 @@ module.exports = grammar({
       $._terminator,
     ),
 
+    // Bug #5: Mid$(s, 1, 1) = "x" — the $ suffix must be accepted
     mid_statement: $ => seq(
       ci('mid'),
+      optional(token.immediate('$')),
       '(',
       $._expression,
       ',',
@@ -1260,12 +1271,13 @@ module.exports = grammar({
       $.addressof_expression,
       $.member_expression,
       $.with_member_expression,
+      $.with_dictionary_access,
       $.index_expression,
       $.dictionary_access,
       $.call_expression,
       ci('time'),
     ),
-  
+
     _expression_no_with_member: $ => choice(
       $.literal,
       $.typed_identifier,
@@ -1277,6 +1289,7 @@ module.exports = grammar({
       $.typeof_expression,
       $.addressof_expression,
       $.member_expression,
+      $.with_dictionary_access,
       $.index_expression,
       $.dictionary_access,
       $.call_expression,
@@ -1353,20 +1366,26 @@ module.exports = grammar({
       field('object', $._expression),
       '.',
       field('member', $.identifier),
-      optional($.type_hint),
+      optional(alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint)),
     )),
 
     with_member_expression: $ => prec.left(PREC.CALL, seq(
       '.',
       field('member', $.identifier),
-      optional($.type_hint),
+      optional(alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint)),
     )),
 
     dictionary_access: $ => prec.left(PREC.CALL, seq(
       field('object', $._expression),
       '!',
       field('key', $.identifier),
-      optional($.type_hint),
+      optional(alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint)),
+    )),
+
+    // Bug #4: !Key inside a With block (analogous to with_member_expression for .)
+    with_dictionary_access: $ => prec.left(PREC.CALL, seq(
+      '!',
+      field('key', $.identifier),
     )),
 
     index_expression: $ => prec(PREC.CALL, seq(
@@ -1377,8 +1396,8 @@ module.exports = grammar({
     )),
 
     call_expression: $ => prec(PREC.CALL, seq(
-      field('function', choice($.identifier, $.member_expression, $.with_member_expression, $.dictionary_access)),
-      optional($.type_hint),
+      field('function', choice($.identifier, $.member_expression, $.with_member_expression, $.dictionary_access, $.with_dictionary_access)),
+      optional(alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint)),
       $.argument_list,
     )),
 
@@ -1404,6 +1423,7 @@ module.exports = grammar({
     _lvalue: $ => choice(
       $.member_expression,
       $.with_member_expression,
+      $.with_dictionary_access,
       $.dictionary_access,
       $.index_expression,
       $.typed_identifier,
@@ -1418,7 +1438,10 @@ module.exports = grammar({
 
     typed_identifier: $ => seq(
       $.identifier,
-      $.type_hint,
+      // token.immediate: no whitespace allowed between identifier and type suffix.
+      // Fixes & being mis-lexed as Long suffix in "a & b" (Bug #1).
+      // ! excluded here so "rs!Field" is parsed as dictionary_access, not typed_identifier (Bug #4).
+      alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint),
     ),
 
     dotted_name: $ => prec.left(seq(

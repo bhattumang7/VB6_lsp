@@ -1,0 +1,424 @@
+; ============================================================
+; Bug #1 — & concatenation operator mis-lexed as Long suffix
+; ============================================================
+
+==================
+Bug1 amp concat: variable & variable
+==================
+
+Sub S()
+  x = a & b
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (binary_expression
+          (identifier)
+          (identifier))))))
+
+==================
+Bug1 amp concat: literal & variable
+==================
+
+Sub S()
+  x = "a" & b
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (binary_expression
+          (literal
+            (string_literal))
+          (identifier))))))
+
+==================
+Bug1 amp concat: variable & literal
+==================
+
+Sub S()
+  x = a & "b"
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (binary_expression
+          (identifier)
+          (literal
+            (string_literal)))))))
+
+==================
+Bug1 amp concat: chained with constant
+==================
+
+Sub S()
+  x = a & vbCrLf & "b"
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (binary_expression
+          (binary_expression
+            (identifier)
+            (identifier))
+          (literal
+            (string_literal)))))))
+
+==================
+Bug1 amp concat: literal & literal still works
+==================
+
+Sub S()
+  x = "a" & "b"
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (binary_expression
+          (literal
+            (string_literal))
+          (literal
+            (string_literal)))))))
+
+; ============================================================
+; Bug #2 — Static local variable declaration
+; ============================================================
+
+==================
+Bug2 Static local variable
+==================
+
+Sub S()
+  Static x As Long
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (variable_declaration
+        (variable_list
+          (variable_declarator
+            name: (identifier)
+            (as_clause
+              type: (builtin_type))))))))
+
+==================
+Bug2 Static local no type
+==================
+
+Sub S()
+  Static counter
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (variable_declaration
+        (variable_list
+          (variable_declarator
+            name: (identifier)))))))
+
+; ============================================================
+; Bug #3 — ReDim with lower To upper bounds
+; ============================================================
+
+==================
+Bug3 ReDim with To bounds
+==================
+
+ReDim a(1 To 5)
+
+---
+
+(source_file
+  (redim_statement
+    (redim_variable
+      name: (identifier)
+      (subscript
+        (literal
+          (integer_literal))
+        (literal
+          (integer_literal))))))
+
+==================
+Bug3 ReDim simple still works
+==================
+
+ReDim a(5)
+
+---
+
+(source_file
+  (redim_statement
+    (redim_variable
+      name: (identifier)
+      (subscript
+        (literal
+          (integer_literal))))))
+
+==================
+Bug3 ReDim multi-dim with To
+==================
+
+ReDim a(1 To 3, 1 To 4)
+
+---
+
+(source_file
+  (redim_statement
+    (redim_variable
+      name: (identifier)
+      (subscript
+        (literal
+          (integer_literal))
+        (literal
+          (integer_literal)))
+      (subscript
+        (literal
+          (integer_literal))
+        (literal
+          (integer_literal))))))
+
+; ============================================================
+; Bug #4 — ! (bang) dictionary / member-access operator
+; ============================================================
+
+==================
+Bug4 bang operator: assignment value
+==================
+
+Sub S()
+  x = rs!Field
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (dictionary_access
+          object: (identifier)
+          key: (identifier))))))
+
+==================
+Bug4 bang operator: argument to implicit call
+==================
+
+Sub S()
+  Foo rs!Field
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (call_statement
+        (implicit_call_stmt
+          (identifier)
+          (argument_list_no_parens
+            (dictionary_access
+              object: (identifier)
+              key: (identifier))))))))
+
+==================
+Bug4 bang in With block
+==================
+
+Sub S()
+  With rs
+    x = !Field
+  End With
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (with_statement
+        object: (identifier)
+        (block
+          (assignment_statement
+            target: (identifier)
+            value: (with_dictionary_access
+              key: (identifier))))))))
+
+; ============================================================
+; Bug #5 — Mid$ statement form
+; ============================================================
+
+==================
+Bug5 Mid dollar statement
+==================
+
+Sub S()
+  Mid$(s, 1, 1) = "x"
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (mid_statement
+        (identifier)
+        (literal
+          (integer_literal))
+        (literal
+          (integer_literal))
+        (literal
+          (string_literal))))))
+
+==================
+Bug5 Mid without dollar still works
+==================
+
+Sub S()
+  Mid(s, 1, 1) = "x"
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (mid_statement
+        (identifier)
+        (literal
+          (integer_literal))
+        (literal
+          (integer_literal))
+        (literal
+          (string_literal))))))
+
+; ============================================================
+; Bug #6 — Numeric line number prefixes
+; ============================================================
+
+==================
+Bug6 numeric line number no colon
+==================
+
+Sub S()
+10  x = 1
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (label
+        (integer_literal))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))
+
+==================
+Bug6 numeric line number with colon
+==================
+
+Sub S()
+10: x = 1
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (label
+        (integer_literal))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))
+
+==================
+Bug6 multiple numeric line numbers
+==================
+
+Sub S()
+10  x = 1
+20  y = 2
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (label
+        (integer_literal))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal)))
+      (label
+        (integer_literal))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))

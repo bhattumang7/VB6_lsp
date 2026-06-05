@@ -60,6 +60,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -128,6 +132,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -213,6 +221,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -277,6 +289,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -372,6 +388,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -435,6 +455,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -524,6 +548,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -603,6 +631,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -906,6 +938,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -1053,6 +1089,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -1121,6 +1161,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -1195,6 +1239,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -1263,6 +1311,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -1366,6 +1418,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -1464,6 +1520,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -1599,6 +1659,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -1677,6 +1741,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -1763,6 +1831,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -1864,6 +1936,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -1932,6 +2008,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -2011,6 +2091,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -2140,6 +2224,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -2238,6 +2326,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -2376,6 +2468,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -2444,6 +2540,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -2569,6 +2669,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -2635,6 +2739,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -2698,6 +2806,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -2992,6 +3104,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -3135,6 +3251,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -3252,6 +3372,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -3339,6 +3463,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -3382,6 +3510,10 @@
         },
         {
           "type": "member_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -3453,6 +3585,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -3538,6 +3674,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -3611,6 +3751,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -3716,6 +3860,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -3833,6 +3981,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -3904,6 +4056,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -3972,6 +4128,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -4053,6 +4213,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -4138,6 +4302,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -4206,6 +4374,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -4303,6 +4475,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -4374,6 +4550,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -4402,6 +4582,10 @@
         },
         {
           "type": "member_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -4492,6 +4676,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -4617,6 +4805,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -4692,6 +4884,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -4760,6 +4956,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -4849,6 +5049,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -4932,6 +5136,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -5039,6 +5247,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -6480,6 +6692,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -6611,6 +6827,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -6705,6 +6925,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -6763,66 +6987,14 @@
     },
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
-        {
-          "type": "addressof_expression",
-          "named": true
-        },
         {
           "type": "as_clause",
           "named": true
         },
         {
-          "type": "binary_expression",
-          "named": true
-        },
-        {
-          "type": "call_expression",
-          "named": true
-        },
-        {
-          "type": "dictionary_access",
-          "named": true
-        },
-        {
-          "type": "identifier",
-          "named": true
-        },
-        {
-          "type": "index_expression",
-          "named": true
-        },
-        {
-          "type": "literal",
-          "named": true
-        },
-        {
-          "type": "member_expression",
-          "named": true
-        },
-        {
-          "type": "new_expression",
-          "named": true
-        },
-        {
-          "type": "parenthesized_expression",
-          "named": true
-        },
-        {
-          "type": "typed_identifier",
-          "named": true
-        },
-        {
-          "type": "typeof_expression",
-          "named": true
-        },
-        {
-          "type": "unary_expression",
-          "named": true
-        },
-        {
-          "type": "with_member_expression",
+          "type": "subscript",
           "named": true
         }
       ]
@@ -6946,6 +7118,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -7014,6 +7190,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -7088,6 +7268,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -7156,6 +7340,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -7230,6 +7418,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -7298,6 +7490,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -7391,6 +7587,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -7427,6 +7627,10 @@
           },
           {
             "type": "typed_identifier",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -7493,6 +7697,10 @@
           },
           {
             "type": "unary_expression",
+            "named": true
+          },
+          {
+            "type": "with_dictionary_access",
             "named": true
           },
           {
@@ -7575,6 +7783,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -8030,6 +8242,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -8193,6 +8409,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -8257,6 +8477,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -8331,6 +8555,10 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
@@ -8399,6 +8627,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
@@ -8541,6 +8773,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -8627,10 +8863,30 @@
           "named": true
         },
         {
+          "type": "with_dictionary_access",
+          "named": true
+        },
+        {
           "type": "with_member_expression",
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "with_dictionary_access",
+    "named": true,
+    "fields": {
+      "key": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -8724,6 +8980,10 @@
             "named": true
           },
           {
+            "type": "with_dictionary_access",
+            "named": true
+          },
+          {
             "type": "with_member_expression",
             "named": true
           }
@@ -8811,6 +9071,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "with_dictionary_access",
           "named": true
         },
         {
