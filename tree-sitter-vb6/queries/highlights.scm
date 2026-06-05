@@ -2,76 +2,76 @@
 ; =====================================
 
 ; Keywords - Control Flow
+; NOTE: keyword tokens are aliased to lowercase by the grammar's ci() helper,
+; so query strings must be lowercase to match (e.g. "if", not "If").
 [
-  "If" "Then" "Else" "ElseIf" "End"
-  "Select" "Case"
-  "For" "To" "Step" "Next" "Each" "In"
-  "Do" "Loop" "While" "Until" "Wend"
-  "With"
-  "GoTo" "GoSub" "Return"
-  "Exit" "Stop"
-  "On" "Error" "Resume"
+  "if" "then" "else" "elseif" "end"
+  "select" "case"
+  "for" "to" "step" "next" "each" "in"
+  "do" "loop" "while" "until" "wend"
+  "with"
+  "goto" "gosub" "return"
+  "exit" "stop"
+  "on" "error" "resume"
 ] @keyword.control
 
 ; Keywords - Declaration
 [
-  "Dim" "Private" "Public" "Friend" "Global" "Static"
-  "Const" "Type" "Enum" "Event"
-  "Declare" "Lib" "Alias"
-  "Sub" "Function" "Property" "Get" "Let" "Set"
-  "ByVal" "ByRef" "Optional" "ParamArray"
-  "As" "New" "WithEvents"
-  "Implements"
-  "PtrSafe" "CDecl"
+  "dim" "private" "public" "friend" "global" "static"
+  "const" "type" "enum" "event"
+  "declare" "lib" "alias"
+  "sub" "function" "property" "get" "let" "set"
+  "byval" "byref" "optional" "paramarray"
+  "as" "new" "withevents"
+  "implements"
 ] @keyword
 
 ; Keywords - Operators
 [
-  "And" "Or" "Not" "Xor" "Eqv" "Imp"
-  "Mod" "Like" "Is"
-  "TypeOf" "AddressOf"
+  "and" "or" "not" "xor" "eqv" "imp"
+  "mod" "like" "is"
+  "typeof" "addressof"
 ] @keyword.operator
 
 ; Keywords - File I/O
 [
-  "Open" "Close" "Reset"
-  "Input" "Output" "Append" "Binary" "Random"
-  "Access" "Read" "Write" "Shared" "Lock"
-  "Print" "Line" "Get" "Put" "Seek"
-  "Width" "Name"
+  "open" "close" "reset"
+  "input" "output" "append" "binary" "random"
+  "access" "read" "write" "shared" "lock"
+  "print" "line" "get" "put" "seek"
+  "width" "name"
 ] @keyword
 
 ; Keywords - DefType
 [
-  "DefBool" "DefByte" "DefInt" "DefLng"
-  "DefCur" "DefSng" "DefDbl" "DefDec"
-  "DefDate" "DefStr" "DefObj" "DefVar"
+  "defbool" "defbyte" "defint" "deflng"
+  "defcur" "defsng" "defdbl" "defdec"
+  "defdate" "defstr" "defobj" "defvar"
 ] @keyword.directive
 
 ; Keywords - System Statements
 [
-  "AppActivate" "Beep" "ChDir" "ChDrive"
-  "MkDir" "RmDir" "Kill" "FileCopy"
-  "Load" "Unload" "Date" "Time"
-  "Randomize" "Error" "SendKeys"
-  "SavePicture" "SaveSetting" "DeleteSetting" "SetAttr"
+  "appactivate" "beep" "chdir" "chdrive"
+  "mkdir" "rmdir" "kill" "filecopy"
+  "load" "unload" "date" "time"
+  "randomize" "error" "sendkeys"
+  "savepicture" "savesetting" "deletesetting" "setattr"
 ] @keyword
 
 ; Keywords - Other
 [
-  "Call" "RaiseEvent"
-  "ReDim" "Preserve" "Erase"
-  "LSet" "RSet" "Mid" "Mid$" "MidB" "MidB$"
-  "Option" "Explicit" "Compare" "Base" "Module"
-  "Attribute" "Version" "Class" "Begin"
-  "Debug" "Assert"
+  "call" "raiseevent"
+  "redim" "preserve" "erase"
+  "lset" "rset" "mid"
+  "option" "explicit" "compare" "base" "module"
+  "attribute" "version" "class" "begin"
 ] @keyword
 
 ; Built-in Types
 [
-  "Boolean" "Byte" "Currency" "Date" "Double"
-  "Integer" "Long" "LongLong" "LongPtr"
-  "Object" "Single" "String" "Variant" "Any"
+  "boolean" "byte" "currency" "date" "double"
+  "integer" "long" "longlong" "longptr"
+  "object" "single" "string" "variant" "any"
 ] @type.builtin
 
 ; Preprocessor - hash symbol
