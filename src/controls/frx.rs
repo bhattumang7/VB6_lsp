@@ -79,7 +79,13 @@ pub struct FontInfo {
 #[derive(Debug, Clone, PartialEq)]
 pub enum FrxValue {
     /// Picture / Icon / MouseIcon / ToolboxBitmap: an image with detected format.
-    Picture { format: ImageFormat, data: Vec<u8> },
+    /// `clsid` holds the 16-byte class id when the on-disk framing carried one (the
+    /// form used inside ImageList/collection bags), retained for byte-exact re-encode.
+    Picture {
+        format: ImageFormat,
+        data: Vec<u8>,
+        clsid: Option<[u8; 16]>,
+    },
     /// A `StdFont`.
     Font(FontInfo),
     /// Caption / Text / long string value.
@@ -190,7 +196,12 @@ pub fn parse_frx_reference(value: &str) -> Option<FrxRef> {
 
 /// Map a designer property name (plus the `$` flag) to the expected blob kind.
 pub fn kind_for_property(name: &str, dollar: bool) -> PropKind {
-    let n = name.trim().to_ascii_lowercase();
+    // Normalize: take the final path segment (so a qualified group path like
+    // "Images.ListImage1.Picture" -> "Picture") and drop a trailing "(N)" index
+    // (so "TabPicture(0)" / "MouseIcon(1)" -> "TabPicture" / "MouseIcon").
+    let base = name.rsplit('.').next().unwrap_or(name);
+    let base = base.split('(').next().unwrap_or(base);
+    let n = base.trim().to_ascii_lowercase();
     match n.as_str() {
         "picture" | "icon" | "image" | "mouseicon" | "dragicon" | "toolboxbitmap"
         | "disabledpicture" | "downpicture" | "maskpicture" | "tabpicture"
@@ -270,27 +281,47 @@ pub fn decode_picture(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
 
 fn picture_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
     let outer = rd_u32(buf, offset)? as usize;
-    let sig = buf
-        .get(offset + 4..offset + 8)
-        .ok_or(FrxError::Truncated { needed: offset + 8, have: buf.len() })?;
-    if sig != b"lt\0\0" {
+    let body = offset + 4;
+    // The "lt\0\0" magic is either directly after the length (standard) or after a
+    // 16-byte StdPicture class id (the form used inside ImageList/collection bags).
+    let lt = if buf.get(body..body + 4).map_or(false, |s| s == b"lt\0\0") {
+        body
+    } else if buf.get(body + 16..body + 20).map_or(false, |s| s == b"lt\0\0") {
+        body + 16
+    } else {
+        return Err(FrxError::BadPictureHeader { offset });
+    };
+    let header = lt - body; // 0 (standard) or 16 (CLSID-prefixed)
+    let clsid = if header == 16 {
+        let mut g = [0u8; 16];
+        g.copy_from_slice(&buf[body..body + 16]);
+        Some(g)
+    } else {
+        None
+    };
+    let data_len = rd_u32(buf, lt + 4)? as usize;
+    if data_len == 0 {
+        // An empty slot: a bare "removed icon" (Empty) or a CLSID-framed empty
+        // (e.g. an unset TabPicture) which must keep its framing to re-encode.
+        return Ok(match clsid {
+            Some(_) => (
+                FrxValue::Picture { format: ImageFormat::Unknown, data: Vec::new(), clsid },
+                4 + outer,
+            ),
+            None => (FrxValue::Empty, 4 + outer),
+        });
+    }
+    if outer != data_len + 8 + header {
         return Err(FrxError::BadPictureHeader { offset });
     }
-    let data_len = rd_u32(buf, offset + 8)? as usize;
-    if outer == 8 && data_len == 0 {
-        return Ok((FrxValue::Empty, 12));
-    }
-    if outer != data_len + 8 {
-        return Err(FrxError::BadPictureHeader { offset });
-    }
-    let start = offset + 12;
+    let start = lt + 8;
     let end = start + data_len;
     let data = buf
         .get(start..end)
         .ok_or(FrxError::Truncated { needed: end, have: buf.len() })?
         .to_vec();
     let format = detect_image_format(&data);
-    Ok((FrxValue::Picture { format, data }, 12 + data_len))
+    Ok((FrxValue::Picture { format, data, clsid }, 4 + outer))
 }
 
 /// `StdFont`: `[u8 ver][u16 charset][u8 flags][u16 weight][u32 size=pt*10000][u8 nameLen][name]`.
@@ -482,9 +513,14 @@ pub fn encode(value: &FrxValue, kind: PropKind) -> Vec<u8> {
             out.extend_from_slice(b"lt\0\0");
             out.extend_from_slice(&0u32.to_le_bytes());
         }
-        FrxValue::Picture { data, .. } => {
+        FrxValue::Picture { data, clsid, .. } => {
             let data_len = data.len() as u32;
-            out.extend_from_slice(&(data_len + 8).to_le_bytes());
+            if let Some(c) = clsid {
+                out.extend_from_slice(&(data_len + 24).to_le_bytes());
+                out.extend_from_slice(c);
+            } else {
+                out.extend_from_slice(&(data_len + 8).to_le_bytes());
+            }
             out.extend_from_slice(b"lt\0\0");
             out.extend_from_slice(&data_len.to_le_bytes());
             out.extend_from_slice(data);
@@ -680,7 +716,7 @@ mod tests {
         b.extend_from_slice(&4u32.to_le_bytes());
         b.extend_from_slice(&[0x42, 0x4D, 0x00, 0x00]);
         match decode_picture(&b, 0).unwrap() {
-            FrxValue::Picture { format, data } => {
+            FrxValue::Picture { format, data, .. } => {
                 assert_eq!(format, ImageFormat::Bmp);
                 assert_eq!(data, vec![0x42, 0x4D, 0x00, 0x00]);
             }

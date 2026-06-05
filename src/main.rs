@@ -150,7 +150,7 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
             for r in &resolved {
                 let base = format!("{}.{}", r.reference.control_path, r.reference.property);
                 match &r.value {
-                    Ok(controls::frx::FrxValue::Picture { format, data }) => {
+                    Ok(controls::frx::FrxValue::Picture { format, data, .. }) => {
                         let fname = format!("{}.{}", base, format.ext());
                         std::fs::write(outdir.join(&fname), data)?;
                         extracted.push(serde_json::json!({

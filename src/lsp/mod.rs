@@ -265,7 +265,7 @@ fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<H
 fn format_frx_value(value: &crate::controls::frx::FrxValue) -> String {
     use crate::controls::frx::FrxValue;
     match value {
-        FrxValue::Picture { format, data } => {
+        FrxValue::Picture { format, data, .. } => {
             format!("🖼 {:?} image · {} bytes", format, data.len())
         }
         FrxValue::Font(f) => {

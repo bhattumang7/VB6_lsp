@@ -39,3 +39,8 @@ tree-sitter-vb6/node_modules/*
 vb6_examples/*
 tree-sitter-vb6/test/tools/*
 vb6-mcp-server/node_modules/*
+# node_modules anywhere (e.g. tree-sitter-vb6/build/node_modules)
+**/node_modules/
+
+# Reverse-engineering rig (oracle, corpus, downloaded tools) — not part of the build
+re_lab/

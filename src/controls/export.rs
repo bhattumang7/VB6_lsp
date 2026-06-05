@@ -187,7 +187,7 @@ fn resource_view(r: &ResolvedResource) -> ResourceView {
 
 fn value_view(v: &FrxValue) -> ResourceValueView {
     match v {
-        FrxValue::Picture { format, data } => ResourceValueView::Picture {
+        FrxValue::Picture { format, data, .. } => ResourceValueView::Picture {
             format: format!("{:?}", format),
             base64: base64::encode(data),
         },

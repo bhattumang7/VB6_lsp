@@ -146,8 +146,10 @@ fn collect_refs(ctl: &DesignerControl, path: &mut Vec<String>, out: &mut Vec<Res
 pub fn parse_designer(source: &str) -> FormDesigner {
     let mut designer = FormDesigner::default();
     let mut stack: Vec<DesignerControl> = Vec::new();
-    // Depth of BeginProperty groups currently open within the top control.
-    let mut prop_group_depth: usize = 0;
+    // Stack of BeginProperty group names currently open within the top control,
+    // so references inside e.g. an ImageList's Images/ListImageN blocks get a
+    // qualified path and are still harvested.
+    let mut prop_group_stack: Vec<String> = Vec::new();
     let mut started = false;
 
     for raw in source.lines() {
@@ -164,13 +166,15 @@ pub fn parse_designer(source: &str) -> FormDesigner {
             continue;
         }
 
-        // BeginProperty <Name> [GUID] ... EndProperty (property groups, e.g. Font)
+        // BeginProperty <Name> [GUID] ... EndProperty — a property group (e.g. Font,
+        // or an ImageList's Images / ListImageN image collection).
         if line.get(..13).map_or(false, |s| s.eq_ignore_ascii_case("beginproperty")) {
-            prop_group_depth += 1;
+            let group = line[13..].split_whitespace().next().unwrap_or("").to_string();
+            prop_group_stack.push(group);
             continue;
         }
         if line.eq_ignore_ascii_case("endproperty") {
-            prop_group_depth = prop_group_depth.saturating_sub(1);
+            prop_group_stack.pop();
             continue;
         }
 
@@ -200,11 +204,12 @@ pub fn parse_designer(source: &str) -> FormDesigner {
             continue;
         }
 
-        // Property line: Name = Value  (only meaningful inside a control)
-        if prop_group_depth == 0 {
-            if let Some((name, value)) = split_property(line) {
-                if let Some(ctl) = stack.last_mut() {
-                    let mut fref = frx::parse_frx_reference(value);
+        // Property line: Name = Value (meaningful inside a control).
+        if let Some((name, value)) = split_property(line) {
+            if let Some(ctl) = stack.last_mut() {
+                let mut fref = frx::parse_frx_reference(value);
+                if prop_group_stack.is_empty() {
+                    // Top-level control property: keep all (frx or not).
                     if let Some(r) = &mut fref {
                         r.property = name.to_string();
                     }
@@ -212,6 +217,16 @@ pub fn parse_designer(source: &str) -> FormDesigner {
                         name: name.to_string(),
                         value: value.to_string(),
                         frx: fref,
+                    });
+                } else if let Some(mut r) = fref {
+                    // Inside a BeginProperty group: harvest only references, with a
+                    // qualified path (e.g. Images.ListImage1.Picture).
+                    let qualified = format!("{}.{}", prop_group_stack.join("."), name);
+                    r.property = qualified.clone();
+                    ctl.properties.push(DesignerProp {
+                        name: qualified,
+                        value: value.to_string(),
+                        frx: Some(r),
                     });
                 }
             }
