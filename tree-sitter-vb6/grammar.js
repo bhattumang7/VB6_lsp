@@ -1306,17 +1306,20 @@ module.exports = grammar({
       $.file_number,
     ),
 
-    // Bug #1r2: decimal literals may carry a VB6 type-declaration suffix.
-    // %=Integer  &=Long  (most common in API constants such as 0& and -1&).
-    // The suffix must be part of the token so the lexer doesn't mis-read & as
-    // the binary concatenation operator.
+    // Bug #1r2 / Round3-D1: decimal literals may carry a VB6 type-declaration
+    // suffix. %=Integer &=Long !=Single #=Double @=Currency (e.g. 0&, 100#,
+    // 3.14!). ANTLR's INTEGERLITERAL allows & ! # @; VB6 also allows %, so the
+    // union is % & ! # @. The suffix must be part of the token so the lexer
+    // doesn't mis-read & as the binary concatenation operator.
     integer_literal: $ => choice(
-      /\d+[%&]?/,
+      /\d+[%&!#@]?/,
       /&[hH][0-9a-fA-F]+/,
       /&[oO][0-7]+/,
     ),
 
-    float_literal: $ => /\d*\.\d+([eE][+-]?\d+)?|\d+[eE][+-]?\d+/,
+    // Round3-D2: float literals may also carry a type-declaration suffix
+    // (1.5#, 3.14!, 2.0@, 1e3&) — matches ANTLR DOUBLELITERAL.
+    float_literal: $ => /(\d*\.\d+([eE][+-]?\d+)?|\d+[eE][+-]?\d+)[#!@&]?/,
 
     string_literal: $ => /"([^\"]|"")*"/,
 
@@ -1439,7 +1442,13 @@ module.exports = grammar({
     // ============================================ 
     // IDENTIFIERS
     // ============================================ 
-    identifier: $ => token(prec(-1, /[a-zA-Z_][a-zA-Z0-9_]*/)),
+    // Round3-D3/D4: identifiers may be bracket-escaped ([End], [Stop]) so a
+    // reserved word can be used as a name (ANTLR ambiguousIdentifier), and may
+    // contain accented Latin letters (ANTLR LETTER includes ÄÖÜÁÉ…Ç).
+    identifier: $ => token(prec(-1, choice(
+      /[a-zA-Z_À-ɏ][a-zA-Z0-9_À-ɏ]*/,
+      /\[[^\]\r\n]+\]/,
+    ))),
 
     typed_identifier: $ => seq(
       $.identifier,

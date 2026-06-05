@@ -1,0 +1,144 @@
+; ============================================================
+; Round 3 — ANTLR-port narrowings (ANTLR correct, ours too strict)
+; ============================================================
+
+; ------------------------------------------------------------
+; D1 — integer literal type suffixes # ! @ (we only had % &)
+; ------------------------------------------------------------
+
+==================
+Round3-D1 integer suffixes # ! @ % &
+==================
+
+Sub T()
+a = 100#
+b = 100!
+c = 100@
+d = 100%
+e = 0&
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (literal (integer_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal (integer_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal (integer_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal (integer_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal (integer_literal))))))
+
+; ------------------------------------------------------------
+; D2 — float literal type suffixes # ! @
+; ------------------------------------------------------------
+
+==================
+Round3-D2 float suffixes # ! @
+==================
+
+Sub T()
+a = 1.5#
+b = 3.14!
+c = 2.0@
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (literal (float_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal (float_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal (float_literal))))))
+
+; ------------------------------------------------------------
+; D3 — bracket-escaped identifiers [End], [Stop]
+; ------------------------------------------------------------
+
+==================
+Round3-D3 bracket-escaped identifier in declaration
+==================
+
+Sub T()
+Dim [End] As Long
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (variable_declaration
+        (variable_list
+          (variable_declarator
+            name: (identifier)
+            (as_clause
+              type: (builtin_type))))))))
+
+==================
+Round3-D3 bracket-escaped identifier in call
+==================
+
+Sub T()
+Call [Stop]
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (call_statement
+        (implicit_call_stmt
+          (identifier))))))
+
+; ------------------------------------------------------------
+; D4 — accented Latin identifiers (ANTLR LETTER includes ÄÖÜÁÉ…Ç)
+; ------------------------------------------------------------
+
+==================
+Round3-D4 accented identifier
+==================
+
+Sub T()
+Dim Grün As Long
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (variable_declaration
+        (variable_list
+          (variable_declarator
+            name: (identifier)
+            (as_clause
+              type: (builtin_type))))))))

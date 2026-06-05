@@ -7667,7 +7667,7 @@
       "members": [
         {
           "type": "PATTERN",
-          "value": "\\d+[%&]?"
+          "value": "\\d+[%&!#@]?"
         },
         {
           "type": "PATTERN",
@@ -7681,7 +7681,7 @@
     },
     "float_literal": {
       "type": "PATTERN",
-      "value": "\\d*\\.\\d+([eE][+-]?\\d+)?|\\d+[eE][+-]?\\d+"
+      "value": "(\\d*\\.\\d+([eE][+-]?\\d+)?|\\d+[eE][+-]?\\d+)[#!@&]?"
     },
     "string_literal": {
       "type": "PATTERN",
@@ -8918,8 +8918,17 @@
         "type": "PREC",
         "value": -1,
         "content": {
-          "type": "PATTERN",
-          "value": "[a-zA-Z_][a-zA-Z0-9_]*"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "PATTERN",
+              "value": "[a-zA-Z_À-ɏ][a-zA-Z0-9_À-ɏ]*"
+            },
+            {
+              "type": "PATTERN",
+              "value": "\\[[^\\]\\r\\n]+\\]"
+            }
+          ]
         }
       }
     },
