@@ -87,8 +87,10 @@ pub enum FrxValue {
     /// `List` items for ListBox/ComboBox. `sig` is the 2-byte type signature that
     /// follows the count, retained so the blob re-encodes byte-for-byte.
     List { items: Vec<String>, sig: u16 },
-    /// `ItemData` longs paralleling a list (`sig` retained for byte-exact re-encode).
-    ItemData { items: Vec<i32>, sig: u16 },
+    /// `ItemData` values paralleling a list. Each item is the raw little-endian
+    /// bytes of the Long exactly as stored (1-4 bytes); use [`itemdata_value`] to
+    /// read it as an `i32`. `sig` + raw bytes are retained for byte-exact re-encode.
+    ItemData { items: Vec<Vec<u8>>, sig: u16 },
     /// `PropertyPages` page-name list.
     PropertyPages(Vec<String>),
     /// Tier-3 proprietary control property bag, surfaced opaque so nothing is lost
@@ -353,10 +355,20 @@ pub fn decode_list(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
     list_span(buf, offset).map(|(v, _)| v)
 }
 
-fn list_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
+/// Decode the framing shared by `List` and `ItemData`:
+///   `[u16 count]` — and only when count>0 — `[u16 sig]` then `count` items,
+///   each `[u16 len][len bytes]`. An empty collection is just the 2-byte count
+///   (no signature), so the returned span is 2 in that case.
+fn count_sig_items<'a>(
+    buf: &'a [u8],
+    offset: usize,
+) -> Result<(u16, Vec<&'a [u8]>, usize), FrxError> {
     let count = rd_u16(buf, offset)? as usize;
+    if count == 0 {
+        return Ok((0, Vec::new(), 2));
+    }
     let sig = rd_u16(buf, offset + 2)?;
-    let mut pos = offset + 4; // skip count(2) + signature(2)
+    let mut pos = offset + 4;
     let mut items = Vec::with_capacity(count);
     for _ in 0..count {
         let len = rd_u16(buf, pos)? as usize;
@@ -365,10 +377,16 @@ fn list_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
         let bytes = buf
             .get(pos..end)
             .ok_or(FrxError::Truncated { needed: end, have: buf.len() })?;
-        items.push(decode_ansi(bytes));
+        items.push(bytes);
         pos = end;
     }
-    Ok((FrxValue::List { items, sig }, pos - offset))
+    Ok((sig, items, pos - offset))
+}
+
+fn list_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
+    let (sig, items, span) = count_sig_items(buf, offset)?;
+    let strings = items.iter().map(|b| decode_ansi(b)).collect();
+    Ok((FrxValue::List { items: strings, sig }, span))
 }
 
 /// `ItemData`: `[u16 count][u16 sig][ i32 x count ]`. Best-effort (length-validated).
@@ -377,15 +395,18 @@ pub fn decode_itemdata(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> 
 }
 
 fn itemdata_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
-    let count = rd_u16(buf, offset)? as usize;
-    let sig = rd_u16(buf, offset + 2)?;
-    let mut pos = offset + 4;
-    let mut out = Vec::with_capacity(count);
-    for _ in 0..count {
-        out.push(rd_u32(buf, pos)? as i32);
-        pos += 4;
+    let (sig, items, span) = count_sig_items(buf, offset)?;
+    let raw = items.iter().map(|b| b.to_vec()).collect();
+    Ok((FrxValue::ItemData { items: raw, sig }, span))
+}
+
+/// Interpret a raw `ItemData` item (little-endian, 1-4 bytes) as a 32-bit Long.
+pub fn itemdata_value(raw: &[u8]) -> i32 {
+    let mut b = [0u8; 4];
+    for (i, &x) in raw.iter().take(4).enumerate() {
+        b[i] = x;
     }
-    Ok((FrxValue::ItemData { items: out, sig }, pos - offset))
+    i32::from_le_bytes(b)
 }
 
 /// `PropertyPages`: `[u32 count][ {[u16 len-incl-null][name bytes][00]} x count ]`.
@@ -489,18 +510,23 @@ pub fn encode(value: &FrxValue, kind: PropKind) -> Vec<u8> {
         }
         FrxValue::List { items, sig } => {
             out.extend_from_slice(&(items.len() as u16).to_le_bytes());
-            out.extend_from_slice(&sig.to_le_bytes());
-            for it in items {
-                let b = encode_ansi(it);
-                out.extend_from_slice(&(b.len() as u16).to_le_bytes());
-                out.extend_from_slice(&b);
+            if !items.is_empty() {
+                out.extend_from_slice(&sig.to_le_bytes());
+                for it in items {
+                    let b = encode_ansi(it);
+                    out.extend_from_slice(&(b.len() as u16).to_le_bytes());
+                    out.extend_from_slice(&b);
+                }
             }
         }
         FrxValue::ItemData { items, sig } => {
             out.extend_from_slice(&(items.len() as u16).to_le_bytes());
-            out.extend_from_slice(&sig.to_le_bytes());
-            for &v in items {
-                out.extend_from_slice(&(v as u32).to_le_bytes());
+            if !items.is_empty() {
+                out.extend_from_slice(&sig.to_le_bytes());
+                for it in items {
+                    out.extend_from_slice(&(it.len() as u16).to_le_bytes());
+                    out.extend_from_slice(it);
+                }
             }
         }
         FrxValue::PropertyPages(pages) => {

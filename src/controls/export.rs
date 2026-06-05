@@ -206,7 +206,7 @@ fn value_view(v: &FrxValue) -> ResourceValueView {
             items: items.clone(),
         },
         FrxValue::ItemData { items, .. } => ResourceValueView::ItemData {
-            items: items.clone(),
+            items: items.iter().map(|b| super::frx::itemdata_value(b)).collect(),
         },
         FrxValue::PropertyPages(p) => ResourceValueView::PropertyPages { pages: p.clone() },
         FrxValue::OcxBag { clsid, data } => ResourceValueView::OcxBag {
