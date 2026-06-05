@@ -8,6 +8,10 @@
 mod properties;
 mod colors;
 pub mod frx;
+pub mod form_designer;
+pub mod resources;
+pub mod coverage;
+pub mod export;
 
 pub use colors::{SystemColor, VB6Color};
 pub use properties::{PropertyDef, PropertyType, PropertyValue};

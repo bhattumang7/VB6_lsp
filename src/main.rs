@@ -90,6 +90,76 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
             Ok(())
         }
 
+        "read-form" => {
+            if args.len() < 2 {
+                eprintln!("Usage: vb6-lsp read-form <file.frm|.ctl|.pag|.dob>");
+                std::process::exit(1);
+            }
+            let path = std::path::Path::new(&args[1]);
+            let export = controls::export::build_form_export(path)?;
+            println!("{}", serde_json::to_string_pretty(&export)?);
+            Ok(())
+        }
+
+        "extract-form" => {
+            if args.len() < 3 {
+                eprintln!("Usage: vb6-lsp extract-form <file.frm|.ctl> <output-dir>");
+                std::process::exit(1);
+            }
+            let path = std::path::Path::new(&args[1]);
+            let outdir = std::path::Path::new(&args[2]);
+            std::fs::create_dir_all(outdir)?;
+
+            let resolved = controls::resources::resolve_form_resources(
+                path,
+                controls::resources::OcxBagPolicy::Opaque,
+                None,
+            )?;
+
+            let mut extracted: Vec<serde_json::Value> = Vec::new();
+            for r in &resolved {
+                let base = format!("{}.{}", r.reference.control_path, r.reference.property);
+                match &r.value {
+                    Ok(controls::frx::FrxValue::Picture { format, data }) => {
+                        let fname = format!("{}.{}", base, format.ext());
+                        std::fs::write(outdir.join(&fname), data)?;
+                        extracted.push(serde_json::json!({
+                            "property": r.reference.property, "kind": "picture",
+                            "format": format!("{:?}", format), "file": fname, "bytes": data.len()
+                        }));
+                    }
+                    Ok(controls::frx::FrxValue::OcxBag { clsid, data }) => {
+                        let fname = format!("{}.bin", base);
+                        std::fs::write(outdir.join(&fname), data)?;
+                        if let Some(g) = clsid {
+                            std::fs::write(
+                                outdir.join(format!("{}.clsid.txt", base)),
+                                controls::export::format_guid(*g),
+                            )?;
+                        }
+                        extracted.push(serde_json::json!({
+                            "property": r.reference.property, "kind": "ocx_bag",
+                            "clsid": (*clsid).map(controls::export::format_guid),
+                            "file": fname, "bytes": data.len()
+                        }));
+                    }
+                    Ok(controls::frx::FrxValue::Text(s)) => {
+                        let fname = format!("{}.txt", base);
+                        std::fs::write(outdir.join(&fname), s)?;
+                        extracted.push(serde_json::json!({
+                            "property": r.reference.property, "kind": "text", "file": fname
+                        }));
+                    }
+                    _ => {}
+                }
+            }
+
+            println!("{}", serde_json::json!({
+                "form": args[1], "outdir": args[2], "extracted": extracted
+            }));
+            Ok(())
+        }
+
         "write-res" => {
             if args.len() < 3 {
                 eprintln!("Usage: vb6-lsp write-res <input.json> <output.res>");

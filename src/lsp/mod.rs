@@ -218,6 +218,102 @@ fn is_identifier_char(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
 }
 
+/// Hover content for a designer resource reference in a `.frm`/`.ctl`/`.pag`/`.dob`.
+///
+/// When the cursor is on a line like `Icon = "Form1.frx":0000`, this reads the
+/// referenced companion blob and summarises what it decodes to.
+fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<Hover> {
+    use crate::controls::frx;
+
+    let path = uri.to_file_path().ok()?;
+    let ext = path.extension()?.to_string_lossy().to_ascii_lowercase();
+    if !matches!(ext.as_str(), "frm" | "ctl" | "pag" | "dob") {
+        return None;
+    }
+
+    let line = content.lines().nth(position.line as usize)?;
+    let (name, value) = line.split_once('=')?;
+    let prop = name.trim();
+    let fref = frx::parse_frx_reference(value.trim())?;
+
+    let dir = path.parent()?;
+    let companion = dir.join(&fref.file);
+    let kind = frx::kind_for_property(prop, fref.dollar);
+
+    let head = format!("**{}** → `{}`:0x{:04X}", prop, fref.file, fref.offset);
+    let body = match std::fs::read(&companion) {
+        Ok(bytes) => match frx::decode(&bytes, fref.offset as usize, kind) {
+            Ok(value) => format_frx_value(&value),
+            Err(e) => format!("⚠️ could not decode: {}", e),
+        },
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            format!("⚠️ companion file `{}` not found next to the form", fref.file)
+        }
+        Err(e) => format!("⚠️ could not read companion: {}", e),
+    };
+
+    Some(Hover {
+        contents: HoverContents::Markup(MarkupContent {
+            kind: MarkupKind::Markdown,
+            value: format!("{}\n\n{}", head, body),
+        }),
+        range: None,
+    })
+}
+
+/// One-line summary of a decoded FRX value for hover display.
+fn format_frx_value(value: &crate::controls::frx::FrxValue) -> String {
+    use crate::controls::frx::FrxValue;
+    match value {
+        FrxValue::Picture { format, data } => {
+            format!("🖼 {:?} image · {} bytes", format, data.len())
+        }
+        FrxValue::Font(f) => {
+            let mut style = String::new();
+            if f.bold {
+                style.push_str(" bold");
+            }
+            if f.italic {
+                style.push_str(" italic");
+            }
+            if f.underline {
+                style.push_str(" underline");
+            }
+            format!("🔤 Font `{}` · {}pt{}", f.name, f.size_pt, style)
+        }
+        FrxValue::Text(s) => {
+            let preview: String = s.chars().take(120).collect();
+            let ellipsis = if s.chars().count() > 120 { "…" } else { "" };
+            format!("📝 \"{}{}\"", preview, ellipsis)
+        }
+        FrxValue::List { items, .. } => {
+            let preview: Vec<String> = items.iter().take(5).cloned().collect();
+            format!("📋 {} list item(s): {}", items.len(), preview.join(", "))
+        }
+        FrxValue::ItemData { items, .. } => format!("🔢 {} ItemData long(s)", items.len()),
+        FrxValue::PropertyPages(p) => format!("📑 PropertyPages: {}", p.join(", ")),
+        FrxValue::OcxBag { clsid, data } => {
+            let id = clsid
+                .as_ref()
+                .map(|g| format_guid(*g))
+                .unwrap_or_else(|| "unknown".to_string());
+            format!("📦 proprietary control bag · {} bytes · CLSID {}", data.len(), id)
+        }
+        FrxValue::Empty => "∅ empty resource".to_string(),
+    }
+}
+
+/// Format a 16-byte COM GUID (Data1/2/3 little-endian, Data4 big-endian).
+fn format_guid(g: [u8; 16]) -> String {
+    let d1 = u32::from_le_bytes([g[0], g[1], g[2], g[3]]);
+    let d2 = u16::from_le_bytes([g[4], g[5]]);
+    let d3 = u16::from_le_bytes([g[6], g[7]]);
+    format!(
+        "{{{:08X}-{:04X}-{:04X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}}}",
+        d1, d2, d3, g[8], g[9], g[10], g[11], g[12], g[13], g[14], g[15]
+    )
+}
+
 #[tower_lsp::async_trait]
 impl LanguageServer for Vb6LanguageServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
@@ -444,6 +540,11 @@ impl LanguageServer for Vb6LanguageServer {
         let position = params.text_document_position_params.position;
 
         if let Some(doc) = self.documents.get(uri) {
+            // Designer resource references (.frm/.ctl): decode the companion blob.
+            let content = doc.content.to_string();
+            if let Some(h) = frx_reference_hover(uri, &content, position) {
+                return Ok(Some(h));
+            }
             // Prefer symbol table for precise hover
             if let Some(ref table) = doc.symbol_table {
                 return Ok(self.analyzer.get_hover_with_symbols(table, position));

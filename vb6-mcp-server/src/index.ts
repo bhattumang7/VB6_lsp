@@ -261,6 +261,21 @@ const tools: Tool[] = [
     },
   },
   {
+    name: "vb6_read_form",
+    description:
+      "Read a VB6 form/control (.frm/.ctl/.pag/.dob) and return its full design as structured JSON: the control tree with properties, type-library (Object=) declarations, every companion (.frx/.ctx) resource resolved (pictures as base64 with detected format, fonts/strings/lists decoded, opaque vendor bags labelled with their CLSID), plus a byte-accounting coverage report per companion. This is the artifact for re-implementing a form in another technology.",
+    inputSchema: {
+      type: "object" as const,
+      properties: {
+        file_path: {
+          type: "string",
+          description: "Absolute path to the .frm/.ctl/.pag/.dob file",
+        },
+      },
+      required: ["file_path"],
+    },
+  },
+  {
     name: "vb6_write_res_file",
     description:
       "Write resource entries to a VB6 resource file (.res). Creates or overwrites the file with the provided resources.",
@@ -567,6 +582,24 @@ async function handleToolCall(
       } catch (error) {
         return {
           error: `Failed to read .res file: ${error instanceof Error ? error.message : String(error)}`,
+        };
+      }
+    }
+
+    case "vb6_read_form": {
+      const filePath = args.file_path as string;
+
+      if (!existsSync(filePath)) {
+        return { error: `File not found: ${filePath}` };
+      }
+
+      try {
+        // Call Rust CLI to read + resolve the form design
+        const { stdout } = await callRustCli("read-form", [filePath]);
+        return JSON.parse(stdout);
+      } catch (error) {
+        return {
+          error: `Failed to read form: ${error instanceof Error ? error.message : String(error)}`,
         };
       }
     }

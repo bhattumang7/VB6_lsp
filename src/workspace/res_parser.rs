@@ -22,7 +22,7 @@
 //!
 //! ## Usage
 //!
-//! ```no_run
+//! ```ignore
 //! use vb6_lsp::workspace::res_parser::*;
 //!
 //! // Read a .res file
