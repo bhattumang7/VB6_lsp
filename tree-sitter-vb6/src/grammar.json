@@ -9435,6 +9435,21 @@
           },
           "named": true,
           "value": "identifier"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "line",
+              "flags": "i"
+            },
+            "named": false,
+            "value": "line"
+          },
+          "named": true,
+          "value": "identifier"
         }
       ]
     },

@@ -290,3 +290,56 @@ End Sub
         target: (identifier)
         value: (literal
           (integer_literal))))))
+
+; ------------------------------------------------------------
+; "Line" is the Line graphics / Line Input keyword, but is also
+; an ordinary variable/member name. "Line = 1" is an assignment
+; to it, not the start of the Line keyword statement.
+; ------------------------------------------------------------
+
+==================
+Round7-E1 Line as an assignment L-value
+==================
+
+Sub S()
+    Line = 1
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))
+
+==================
+Round7-E2 Line graphics statement still parses (control)
+==================
+
+Sub S()
+    Line (0, 0)-(10, 10)
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (graphics_method_statement
+        from: (graphics_coord
+          x: (literal
+            (integer_literal))
+          y: (literal
+            (integer_literal)))
+        to: (graphics_coord
+          x: (literal
+            (integer_literal))
+          y: (literal
+            (integer_literal)))))))

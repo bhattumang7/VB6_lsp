@@ -1521,6 +1521,9 @@ module.exports = grammar({
       // the keyword statement; accept it as an lvalue.
       alias(ci('name'), $.identifier),
       alias(ci('width'), $.identifier),
+      // "Line" is the Line graphics / Line Input keyword, but is also a common
+      // variable/member name; "Line = 1" is an assignment to it.
+      alias(ci('line'), $.identifier),
     ),
 
     // ============================================
