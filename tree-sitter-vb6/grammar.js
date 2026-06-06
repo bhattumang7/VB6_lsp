@@ -790,7 +790,22 @@ module.exports = grammar({
       seq(ci('goto'), choice($.identifier, $.integer_literal)),
       $.implicit_call_stmt,
       $.call_expression,
+      // A single-line If body may itself be a complete single-line If, e.g.
+      // "If a Then If b Then Exit Sub" (often split across a "_" continuation).
+      // Use the terminator-less inline form so the enclosing single-line If
+      // supplies the one statement terminator.
+      alias($._inline_if, $.if_statement),
     ),
+
+    // A single-line If without its trailing terminator, for use as the body of
+    // another single-line If (nested "If … Then If … Then …").
+    _inline_if: $ => prec.right(seq(
+      ci('if'),
+      field('condition', $._expression),
+      ci('then'),
+      $._inline_statement,
+      optional(seq(ci('else'), $._inline_statement)),
+    )),
 
     for_statement: $ => seq(
       ci('for'),

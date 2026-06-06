@@ -4544,8 +4544,85 @@
         {
           "type": "SYMBOL",
           "name": "call_expression"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_inline_if"
+          },
+          "named": true,
+          "value": "if_statement"
         }
       ]
+    },
+    "_inline_if": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "if",
+              "flags": "i"
+            },
+            "named": false,
+            "value": "if"
+          },
+          {
+            "type": "FIELD",
+            "name": "condition",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_expression"
+            }
+          },
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "then",
+              "flags": "i"
+            },
+            "named": false,
+            "value": "then"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_inline_statement"
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "else",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "else"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "_inline_statement"
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        ]
+      }
     },
     "for_statement": {
       "type": "SEQ",

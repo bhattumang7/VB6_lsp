@@ -447,3 +447,63 @@ End Sub
       (error_statement
         (literal
           (integer_literal))))))
+
+; ------------------------------------------------------------
+; A single-line If body may itself be a complete single-line If
+; ("If a Then If b Then …"), including across a "_" continuation
+; that splits the outer If from its inner If.
+; ------------------------------------------------------------
+
+==================
+Round7-H1 nested single-line If on one line
+==================
+
+Sub S()
+    If a And b Then If c Then Exit Function
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (if_statement
+        condition: (binary_expression
+          (identifier)
+          (identifier))
+        (if_statement
+          condition: (identifier)
+          (implicit_call_stmt
+            (identifier)
+            (argument_list_no_parens
+              (identifier))))))))
+
+==================
+Round7-H2 nested single-line If across a line continuation
+==================
+
+Sub S()
+    If a And b Then _
+        If c Then Exit Function
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (if_statement
+        condition: (binary_expression
+          (identifier)
+          (identifier))
+        (line_continuation)
+        (if_statement
+          condition: (identifier)
+          (implicit_call_stmt
+            (identifier)
+            (argument_list_no_parens
+              (identifier))))))))
