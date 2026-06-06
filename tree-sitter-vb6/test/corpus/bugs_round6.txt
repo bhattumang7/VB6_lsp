@@ -1,0 +1,217 @@
+; ============================================================
+; Round 6 — Enum bodies with leading blank/comment lines, the
+; Time intrinsic as a bare call argument, keyword-named members
+; assigned as L-values (Name/Width), and an omitted leading
+; argument in a parenthesis-less call.
+; ============================================================
+
+; ------------------------------------------------------------
+; Enum — a blank line or comment may sit between the Enum header
+; and the first member (and between members). Those terminators
+; must be consumed inside the body, not break the first member.
+; ------------------------------------------------------------
+
+==================
+Enum with a blank line before the first member
+==================
+
+Public Enum SYSTEM_SUBFORM
+
+    SUBFORM_ADDRESSES = 1
+    SUBFORM_CUSTOMERS = 3
+End Enum
+
+---
+
+(source_file
+  (enum_declaration
+    name: (identifier)
+    (enum_member
+      name: (identifier)
+      value: (literal
+        (integer_literal)))
+    (enum_member
+      name: (identifier)
+      value: (literal
+        (integer_literal)))))
+
+==================
+Enum with a comment before the first member
+==================
+
+Public Enum X
+    'a comment
+    XA = 1
+End Enum
+
+---
+
+(source_file
+  (enum_declaration
+    name: (identifier)
+    (comment)
+    (enum_member
+      name: (identifier)
+      value: (literal
+        (integer_literal)))))
+
+==================
+Enum with a trailing comment on the header line (control)
+==================
+
+Public Enum DestResolucion 'asynchronic host resolution
+    drA = 1
+End Enum
+
+---
+
+(source_file
+  (enum_declaration
+    name: (identifier)
+    (comment)
+    (enum_member
+      name: (identifier)
+      value: (literal
+        (integer_literal)))))
+
+; ------------------------------------------------------------
+; Time — the Time intrinsic is a valid primary expression
+; anywhere Date is, including as a bare call argument. It is
+; consumed as the intrinsic token (no named node), with no ERROR.
+; ------------------------------------------------------------
+
+==================
+Time as the final bare call argument
+==================
+
+Sub S()
+    Foo "x", dtStart, Time
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (call_statement
+        (implicit_call_stmt
+          (identifier)
+          (argument_list_no_parens
+            (literal
+              (string_literal))
+            (identifier)))))))
+
+; ------------------------------------------------------------
+; Keyword-named members as assignment targets — a Function named
+; "Name" sets its return value with "Name = expr"; a control's
+; "Width" is assigned with "Width = expr". Both are assignments,
+; not the start of the Name/Width keyword statements.
+; ------------------------------------------------------------
+
+==================
+Function named Name assigns its return value
+==================
+
+Friend Function Name(index As Integer) As String
+    Name = m_strName(index)
+End Function
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        (as_clause
+          type: (builtin_type))))
+    (as_clause
+      type: (builtin_type))
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (call_expression
+          function: (identifier)
+          (argument_list
+            (argument_list_inner
+              (identifier))))))))
+
+==================
+Width as an assignment L-value
+==================
+
+Sub S()
+    Width = 6795
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))
+
+==================
+Name and Width keyword statements still parse (control)
+==================
+
+Sub S()
+    Name "a.txt" As "b.txt"
+    Width #1, 80
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (name_statement
+        (literal
+          (string_literal))
+        (literal
+          (string_literal)))
+      (width_statement
+        (literal
+          (file_number))
+        (literal
+          (integer_literal))))))
+
+; ------------------------------------------------------------
+; Omitted leading argument — VB6 allows leaving the first
+; positional slot empty in a parenthesis-less call, producing a
+; leading comma ("obj.Add , x, y").
+; ------------------------------------------------------------
+
+==================
+Omitted first argument in a parenthesis-less call
+==================
+
+Sub S()
+    oButtonMenus.Add , BUTTONMENU_SEP, CAPTION
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (call_statement
+        (implicit_call_stmt
+          (member_expression
+            object: (identifier)
+            member: (identifier))
+          (argument_list_no_parens
+            (identifier)
+            (identifier)))))))

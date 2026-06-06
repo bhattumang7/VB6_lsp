@@ -455,7 +455,10 @@ module.exports = grammar({
       ci('enum'),
       field('name', $.identifier),
       $._terminator,
-      repeat($.enum_member),
+      // A blank line or comment may sit between the Enum header and the first
+      // member (and anywhere between members); accept those terminators inside
+      // the body so they don't break the first member.
+      repeat(choice($.enum_member, $.comment, $._newline)),
       ci('end'),
       ci('enum'),
       $._terminator,
@@ -708,9 +711,13 @@ module.exports = grammar({
       optional($.argument_list_no_parens),
     ),
 
-    argument_list_no_parens: $ => seq(
-      $._argument_no_with_member,
-      repeat(seq(',', optional($._argument_no_with_member))),
+    argument_list_no_parens: $ => choice(
+      seq(
+        $._argument_no_with_member,
+        repeat(seq(',', optional($._argument_no_with_member))),
+      ),
+      // Leading omitted argument: "obj.Add , x, y" leaves the first slot empty.
+      repeat1(seq(',', optional($._argument_no_with_member))),
     ),
 
     // Explicit call statement (requires Call keyword) - safe at module level
@@ -1351,6 +1358,9 @@ module.exports = grammar({
       $.index_expression,
       $.dictionary_access,
       $.call_expression,
+      // Time is an intrinsic that is a valid primary expression anywhere Date
+      // is — including as a bare call argument ("Foo x, Time").
+      ci('time'),
     ),
 
     literal: $ => choice(
@@ -1498,9 +1508,15 @@ module.exports = grammar({
       $.typed_identifier,
       $.identifier,
       ci('time'),
+      // Some statement keywords double as ordinary member/variable names
+      // (a Function named "Name", a control's "Width"). When such a word is the
+      // left side of an assignment it is the assignment target, not the start of
+      // the keyword statement; accept it as an lvalue.
+      alias(ci('name'), $.identifier),
+      alias(ci('width'), $.identifier),
     ),
 
-    // ============================================ 
+    // ============================================
     // IDENTIFIERS
     // ============================================ 
     // Round3-D3/D4: identifiers may be bracket-escaped ([End], [Stop]) so a

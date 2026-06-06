@@ -2337,8 +2337,21 @@
           {
             "type": "REPEAT",
             "content": {
-              "type": "SYMBOL",
-              "name": "enum_member"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "enum_member"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "comment"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "_newline"
+                }
+              ]
             }
           },
           {
@@ -3973,14 +3986,43 @@
       ]
     },
     "argument_list_no_parens": {
-      "type": "SEQ",
+      "type": "CHOICE",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "_argument_no_with_member"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "_argument_no_with_member"
+            },
+            {
+              "type": "REPEAT",
+              "content": {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": ","
+                  },
+                  {
+                    "type": "CHOICE",
+                    "members": [
+                      {
+                        "type": "SYMBOL",
+                        "name": "_argument_no_with_member"
+                      },
+                      {
+                        "type": "BLANK"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
         },
         {
-          "type": "REPEAT",
+          "type": "REPEAT1",
           "content": {
             "type": "SEQ",
             "members": [
@@ -8071,6 +8113,16 @@
         {
           "type": "SYMBOL",
           "name": "call_expression"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "PATTERN",
+            "value": "time",
+            "flags": "i"
+          },
+          "named": false,
+          "value": "time"
         }
       ]
     },
@@ -9362,6 +9414,36 @@
           },
           "named": false,
           "value": "time"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "name",
+              "flags": "i"
+            },
+            "named": false,
+            "value": "name"
+          },
+          "named": true,
+          "value": "identifier"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "PATTERN",
+              "value": "width",
+              "flags": "i"
+            },
+            "named": false,
+            "value": "width"
+          },
+          "named": true,
+          "value": "identifier"
         }
       ]
     },
