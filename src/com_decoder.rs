@@ -15,7 +15,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use crate::controls::frx::FrxValue;
-use crate::controls::resources::{ComDecoder, ResolveError};
+use crate::controls::resources::{BagControl, ComDecoder, ResolveError};
 
 /// Decodes OCX bags by driving the control via 32-bit PowerShell + COM.
 pub struct OracleComDecoder {
@@ -69,14 +69,33 @@ fn locate_script() -> Option<PathBuf> {
 impl ComDecoder for OracleComDecoder {
     fn decode_bag(
         &self,
-        clsid: Option<&str>,
+        control: &BagControl,
         property: &str,
         bag: &[u8],
     ) -> Result<FrxValue, ResolveError> {
-        let clsid = clsid.ok_or_else(|| ResolveError::ComDecodeFailed {
-            property: property.to_string(),
-            message: "no CLSID available for the control".to_string(),
-        })?;
+        // The bridge resolves the coclass from each candidate typelib (loaded from
+        // the OCX path when present, else from the registry by typelib GUID+version)
+        // and picks the one matching the control's library/class name. We keep the
+        // OCX-path list index-aligned with `typelib_clsids`/`versions` (empty slot
+        // when the file isn't in a system dir), so the bridge can zip them.
+        let ocx_paths: Vec<String> = control
+            .ocx_files
+            .iter()
+            .map(|f| {
+                locate_ocx(f)
+                    .map(|p| p.to_string_lossy().to_string())
+                    .unwrap_or_default()
+            })
+            .collect();
+        let has_route = ocx_paths.iter().any(|p| !p.is_empty())
+            || !control.typelib_clsids.is_empty()
+            || control.embedded_clsid.is_some();
+        if !has_route {
+            return Err(ResolveError::ComDecodeFailed {
+                property: property.to_string(),
+                message: "no OCX path or CLSID available for the control".to_string(),
+            });
+        }
 
         let tmp = std::env::temp_dir().join(format!(
             "vb6bag_{}_{}.bin",
@@ -93,7 +112,19 @@ impl ComDecoder for OracleComDecoder {
         let output = Command::new(&self.ps32)
             .args(["-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-File"])
             .arg(&self.script)
-            .arg(clsid)
+            .arg("-OcxPaths")
+            .arg(ocx_paths.join(";"))
+            .arg("-ClassName")
+            .arg(control.class_name.as_deref().unwrap_or(""))
+            .arg("-LibName")
+            .arg(control.lib_name.as_deref().unwrap_or(""))
+            .arg("-TypelibClsids")
+            .arg(control.typelib_clsids.join(";"))
+            .arg("-Versions")
+            .arg(control.versions.join(";"))
+            .arg("-EmbeddedClsid")
+            .arg(control.embedded_clsid.as_deref().unwrap_or(""))
+            .arg("-BagFile")
             .arg(&tmp)
             .output();
         let _ = std::fs::remove_file(&tmp);
@@ -115,6 +146,12 @@ impl ComDecoder for OracleComDecoder {
                 message: format!("bad bridge output ({}): {}", e, line),
             })?;
 
+        // The bridge reports the coclass CLSID it resolved (on success *and* on
+        // failure once a coclass was identified). We don't second-guess it: the
+        // `Object=` candidates are type-library ids with no canonical "primary",
+        // so when the bridge couldn't resolve one, the control is genuinely unknown.
+        let resolved_clsid = v["clsid"].as_str().map(|s| s.to_string());
+
         if v["ok"].as_bool() == Some(true) {
             let properties = v["properties"]
                 .as_array()
@@ -131,13 +168,13 @@ impl ComDecoder for OracleComDecoder {
                 })
                 .unwrap_or_default();
             Ok(FrxValue::DecodedBag {
-                clsid: parse_guid(clsid),
+                clsid: resolved_clsid.as_deref().and_then(parse_guid),
                 properties,
             })
         } else {
             match v["error"].as_str().unwrap_or("unknown") {
                 "NOTLICENSED" => Err(ResolveError::LicensedBagUnavailable {
-                    clsid: Some(clsid.to_string()),
+                    clsid: resolved_clsid,
                     property: property.to_string(),
                 }),
                 other => Err(ResolveError::ComDecodeFailed {
@@ -147,6 +184,18 @@ impl ComDecoder for OracleComDecoder {
             }
         }
     }
+}
+
+/// Locate an OCX by filename in the usual 32-bit/64-bit system directories.
+fn locate_ocx(file: &str) -> Option<PathBuf> {
+    let sysroot = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_string());
+    for sub in ["SysWOW64", "System32"] {
+        let p = PathBuf::from(&sysroot).join(sub).join(file);
+        if p.exists() {
+            return Some(p);
+        }
+    }
+    None
 }
 
 /// Parse `{D1-D2-D3-D4hi-D4lo}` into the 16-byte layout (Data1/2/3 LE, Data4 BE).

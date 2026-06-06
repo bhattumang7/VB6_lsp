@@ -28,6 +28,36 @@ impl Default for OcxBagPolicy {
     }
 }
 
+/// Everything we know about the control that produced a bag, used by a
+/// [`ComDecoder`] to instantiate the right coclass.
+///
+/// The GUID on a `.frm` `Object=` line is the control's **type-library** id, not
+/// the **coclass** CLSID that `CoCreateInstance` needs — so the decoder is given
+/// the OCX file and class name as well, and resolves the coclass from the typelib.
+/// Identity of the control that produced a bag. `ocx_files`, `typelib_clsids`, and
+/// `versions` are **index-aligned** — entry _i_ describes one `Object=` line.
+#[derive(Debug, Default, Clone)]
+pub struct BagControl {
+    /// Control class name, e.g. `"MSChart"` (the segment after the dot in the
+    /// designer control type `"MSChart20Lib.MSChart"`).
+    pub class_name: Option<String>,
+    /// Control library name, e.g. `"MSChart20Lib"` (the segment before the dot).
+    /// Used to pick the *right* candidate typelib by its library name, so a
+    /// coclass-name collision across two referenced OCXs can't mis-resolve.
+    pub lib_name: Option<String>,
+    /// Every OCX file named by an `Object=` line, e.g. `["MShflxgd.ocx",
+    /// "MSChrt20.ocx"]`. The decoder loads each typelib and uses the one whose
+    /// library/coclass match — the library→file name is too fuzzy to match in-process.
+    pub ocx_files: Vec<String>,
+    /// The `Object=` type-library GUIDs (aligned with `ocx_files`). Used to load the
+    /// typelib from the registry when the OCX isn't in a system directory.
+    pub typelib_clsids: Vec<String>,
+    /// The `Object=` type-library versions, e.g. `"2.0"` (aligned with `ocx_files`).
+    pub versions: Vec<String>,
+    /// A CLSID embedded in the bag body itself, if one was detectable.
+    pub embedded_clsid: Option<String>,
+}
+
 /// A pluggable bridge to a live-control COM decoder (implemented out-of-process on
 /// Windows). Kept as a trait so the core stays testable and platform-independent.
 pub trait ComDecoder {
@@ -36,7 +66,7 @@ pub trait ComDecoder {
     /// exists but its license is not present — never a silent opaque fallback.
     fn decode_bag(
         &self,
-        clsid: Option<&str>,
+        control: &BagControl,
         property: &str,
         bag: &[u8],
     ) -> Result<FrxValue, ResolveError>;
@@ -111,30 +141,10 @@ pub fn resolve_form_resources(
     let mut out = Vec::new();
     for reference in designer.resource_refs() {
         let kind = frx::kind_for_property(&reference.property, reference.frx.dollar);
-        let clsid = designer
-            .root
-            .as_ref()
-            .and_then(|_| find_clsid(&designer, &reference));
-        let value = resolve_one(dir, &reference, kind, clsid.as_deref(), policy, com, &mut cache);
+        let value = resolve_one(dir, &reference, kind, &designer.objects, policy, com, &mut cache);
         out.push(ResolvedResource { reference, kind, value });
     }
     Ok(out)
-}
-
-fn find_clsid(d: &form_designer::FormDesigner, r: &ResourceRef) -> Option<String> {
-    // Match the control's library prefix to an Object= companion.
-    let lib = r.control_type.split_once('.').map(|(l, _)| l)?;
-    if lib == "VB" {
-        return None;
-    }
-    let lib_lc = lib.to_ascii_lowercase();
-    d.objects
-        .iter()
-        .find(|o| {
-            let stem = o.file.rsplit('.').nth(1).unwrap_or(&o.file).to_ascii_lowercase();
-            lib_lc.contains(&stem) || stem.contains(lib_lc.trim_end_matches("ctl").trim_end_matches("lib"))
-        })
-        .map(|o| o.clsid.clone())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -142,7 +152,7 @@ fn resolve_one(
     dir: &Path,
     reference: &ResourceRef,
     kind: PropKind,
-    clsid: Option<&str>,
+    objects: &[form_designer::ObjectEntry],
     policy: OcxBagPolicy,
     com: Option<&dyn ComDecoder>,
     cache: &mut std::collections::HashMap<String, std::io::Result<Vec<u8>>>,
@@ -174,17 +184,26 @@ fn resolve_one(
             OcxBagPolicy::ComDecode => {
                 let com = com.ok_or(ResolveError::NoComDecoder)?;
                 // Hand the bag body to the live-control decoder (it owns the
-                // hard-error-on-missing-license contract). Prefer the control's
-                // CLSID (from the Object= header); fall back to a CLSID embedded
-                // in the bag itself.
+                // hard-error-on-missing-license contract). The decoder resolves the
+                // coclass from the OCX typelib + class name; the `Object=` GUID and
+                // any CLSID embedded in the bag are passed as fallbacks.
                 let (bag, embedded) = match frx::decode_ocx_bag(bytes, offset) {
                     FrxValue::OcxBag { data, clsid } => (data, clsid),
                     other => return Ok(other),
                 };
-                let effective = clsid
-                    .map(|s| s.to_string())
-                    .or_else(|| embedded.map(format_guid16));
-                com.decode_bag(effective.as_deref(), &reference.property, &bag)
+                let (lib_name, class_name) = match reference.control_type.split_once('.') {
+                    Some((l, c)) => (Some(l.to_string()), Some(c.to_string())),
+                    None => (None, Some(reference.control_type.clone())),
+                };
+                let control = BagControl {
+                    class_name,
+                    lib_name,
+                    ocx_files: objects.iter().map(|o| o.file.clone()).collect(),
+                    typelib_clsids: objects.iter().map(|o| o.clsid.clone()).collect(),
+                    versions: objects.iter().map(|o| o.version.clone()).collect(),
+                    embedded_clsid: embedded.map(format_guid16),
+                };
+                com.decode_bag(&control, &reference.property, &bag)
             }
         }
     } else {
@@ -214,12 +233,13 @@ mod tests {
     impl ComDecoder for UnlicensedDecoder {
         fn decode_bag(
             &self,
-            clsid: Option<&str>,
+            _control: &BagControl,
             property: &str,
             _bag: &[u8],
         ) -> Result<FrxValue, ResolveError> {
+            // A stub that never resolves a coclass, so it can't name one.
             Err(ResolveError::LicensedBagUnavailable {
-                clsid: clsid.map(|s| s.to_string()),
+                clsid: None,
                 property: property.to_string(),
             })
         }
