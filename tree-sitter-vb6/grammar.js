@@ -854,7 +854,9 @@ module.exports = grammar({
       // A blank line or comment is commonly placed between the selector and the
       // first Case; consume any such terminators before the first case clause.
       repeat(choice($.comment, $._newline)),
-      repeat1(choice($.case_clause, $.case_else_clause)),
+      // Zero case clauses is legal: every Case may be commented out, leaving only
+      // the Select Case … End Select shell with comment/blank lines in the body.
+      repeat(choice($.case_clause, $.case_else_clause)),
       ci('end'),
       ci('select'),
       $._terminator,

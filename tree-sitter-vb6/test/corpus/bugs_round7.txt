@@ -1,0 +1,86 @@
+; ============================================================
+; Round 7 — empty Select Case (every Case commented out),
+; declarations before the first Case, leading-dot members as
+; call arguments, comments that end in "_", the Line keyword as
+; an L-value and in a member chain, keyword-named line labels,
+; conditional compilation that splits a regular block, and a
+; single-line If whose body is itself a single-line If.
+; ============================================================
+
+; ------------------------------------------------------------
+; A Select Case whose every Case has been commented out is still
+; a legal, compilable shell. Zero case clauses must parse, with
+; the comment/blank lines kept inside the body.
+; ------------------------------------------------------------
+
+==================
+Round7-A1 Select Case with no Case clause (only comments)
+==================
+
+Sub S()
+    Select Case x
+        'Case "a"
+        'commentary
+    End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (comment)
+        (comment)))))
+
+==================
+Round7-A2 Select Case with a blank body
+==================
+
+Sub S()
+    Select Case x
+    End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)))))
+
+==================
+Round7-A3 Select Case with a real Case still parses (control)
+==================
+
+Sub S()
+    Select Case x
+        Case 1
+            y = 1
+    End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (case_clause
+          (case_values
+            (literal
+              (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal
+                (integer_literal)))))))))
