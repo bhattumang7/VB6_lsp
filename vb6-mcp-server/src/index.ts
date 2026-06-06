@@ -14,6 +14,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import Parser from "tree-sitter";
 import Vb6 from "tree-sitter-vb6";
 
@@ -42,18 +44,29 @@ async function callRustCli(
   command: string,
   args: string[]
 ): Promise<{ stdout: string; stderr: string }> {
-  return new Promise((resolve, reject) => {
-    // Try to find the vb6-lsp binary
-    // First check in the parent directory's target/release or target/debug
-    const possiblePaths = [
-      "../target/release/vb6-lsp",
-      "../target/debug/vb6-lsp",
+  return new Promise((resolvePromise, reject) => {
+    // Resolve the vb6-lsp binary. Priority: explicit env override, then paths
+    // relative to THIS module (robust regardless of the launcher's cwd — the MCP
+    // host may start us from anywhere), then a cwd-relative guess, then PATH.
+    // NOTE: for `--com-decode`, the bridge scripts (com_bag_decode.ps1, ComBag.cs)
+    // must sit next to whichever binary is chosen, or VB6_COM_BRIDGE must point at them.
+    const moduleDir = dirname(fileURLToPath(import.meta.url));
+    // moduleDir is <repo>/vb6-mcp-server/{dist|src}; the binary is <repo>/target/...
+    const rel = (p: string) => resolve(moduleDir, p);
+    const candidates = [
+      process.env.VB6_LSP_BIN,
+      rel("../../target/release/vb6-lsp.exe"),
+      rel("../../target/debug/vb6-lsp.exe"),
+      rel("../../target/release/vb6-lsp"),
+      rel("../../target/debug/vb6-lsp"),
       "../target/release/vb6-lsp.exe",
       "../target/debug/vb6-lsp.exe",
-    ];
+      "../target/release/vb6-lsp",
+      "../target/debug/vb6-lsp",
+    ].filter((p): p is string => Boolean(p));
 
     let binaryPath = "vb6-lsp"; // Fallback to PATH
-    for (const path of possiblePaths) {
+    for (const path of candidates) {
       if (existsSync(path)) {
         binaryPath = path;
         break;
@@ -74,7 +87,7 @@ async function callRustCli(
 
     proc.on("close", (code) => {
       if (code === 0) {
-        resolve({ stdout, stderr });
+        resolvePromise({ stdout, stderr });
       } else {
         reject(new Error(`CLI exited with code ${code}: ${stderr}`));
       }
@@ -263,13 +276,18 @@ const tools: Tool[] = [
   {
     name: "vb6_read_form",
     description:
-      "Read a VB6 form/control (.frm/.ctl/.pag/.dob) and return its full design as structured JSON: the control tree with properties, type-library (Object=) declarations, every companion (.frx/.ctx) resource resolved (pictures as base64 with detected format, fonts/strings/lists decoded, opaque vendor bags labelled with their CLSID), plus a byte-accounting coverage report per companion. This is the artifact for re-implementing a form in another technology.",
+      "Read a VB6 form/control (.frm/.ctl/.pag/.dob) and return its full design as structured JSON: the control tree with properties, type-library (Object=) declarations, every companion (.frx/.ctx) resource resolved (pictures as base64 with detected format, fonts/strings/lists decoded), plus a byte-accounting coverage report per companion. This is the artifact for re-implementing a form in another technology. Proprietary vendor control bags (e.g. an MSChart OleObjectBlob) are labelled opaque with their CLSID by default; set com_decode=true to decode them live into typed properties.",
     inputSchema: {
       type: "object" as const,
       properties: {
         file_path: {
           type: "string",
           description: "Absolute path to the .frm/.ctl/.pag/.dob file",
+        },
+        com_decode: {
+          type: "boolean",
+          description:
+            "When true, decode proprietary control bags into typed properties by hosting the control via COM. Windows-only, ~2-3s per call, and requires the control to be registered and its design license present; otherwise the bag is reported as an explicit error or stays opaque. Default false (fast, opaque).",
         },
       },
       required: ["file_path"],
@@ -588,14 +606,17 @@ async function handleToolCall(
 
     case "vb6_read_form": {
       const filePath = args.file_path as string;
+      const comDecode = args.com_decode === true;
 
       if (!existsSync(filePath)) {
         return { error: `File not found: ${filePath}` };
       }
 
       try {
-        // Call Rust CLI to read + resolve the form design
-        const { stdout } = await callRustCli("read-form", [filePath]);
+        // Call Rust CLI to read + resolve the form design. With com_decode, the
+        // CLI hosts proprietary controls via COM to decode their bags (see flag docs).
+        const cliArgs = comDecode ? [filePath, "--com-decode"] : [filePath];
+        const { stdout } = await callRustCli("read-form", cliArgs);
         return JSON.parse(stdout);
       } catch (error) {
         return {
