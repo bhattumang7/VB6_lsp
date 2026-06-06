@@ -163,3 +163,75 @@ End Sub
               target: (identifier)
               value: (literal
                 (integer_literal)))))))))
+
+; ------------------------------------------------------------
+; Inside a With block, ".Member" refers to a member of the With
+; object. Such a leading-dot member is a valid call argument; it
+; was previously rejected in parenthesis-less argument lists.
+; ------------------------------------------------------------
+
+==================
+Round7-C1 leading-dot members as bare call arguments
+==================
+
+Sub S()
+    With o
+        Foo a, .X, .Y, b
+    End With
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (with_statement
+        object: (identifier)
+        (block
+          (call_statement
+            (implicit_call_stmt
+              (identifier)
+              (argument_list_no_parens
+                (identifier)
+                (with_member_expression
+                  member: (identifier))
+                (with_member_expression
+                  member: (identifier))
+                (identifier)))))))))
+
+==================
+Round7-C2 leading-dot members as method-call arguments
+==================
+
+Sub S()
+    With o
+        obj.Move 0, 0, .Width, .Height
+    End With
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (with_statement
+        object: (identifier)
+        (block
+          (call_statement
+            (implicit_call_stmt
+              (member_expression
+                object: (identifier)
+                member: (identifier))
+              (argument_list_no_parens
+                (literal
+                  (integer_literal))
+                (literal
+                  (integer_literal))
+                (with_member_expression
+                  member: (identifier))
+                (with_member_expression
+                  member: (identifier))))))))))

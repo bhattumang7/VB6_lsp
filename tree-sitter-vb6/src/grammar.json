@@ -4009,7 +4009,7 @@
                     "members": [
                       {
                         "type": "SYMBOL",
-                        "name": "_argument_no_with_member"
+                        "name": "_argument"
                       },
                       {
                         "type": "BLANK"
@@ -4035,7 +4035,7 @@
                 "members": [
                   {
                     "type": "SYMBOL",
-                    "name": "_argument_no_with_member"
+                    "name": "_argument"
                   },
                   {
                     "type": "BLANK"

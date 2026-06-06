@@ -713,11 +713,14 @@ module.exports = grammar({
 
     argument_list_no_parens: $ => choice(
       seq(
+        // The first bare argument excludes a leading-dot member so "Foo .X" is
+        // not ambiguous with the member access "Foo.X". Every later argument may
+        // be a With-block member (".X"), e.g. "Foo a, .X, .Y, b".
         $._argument_no_with_member,
-        repeat(seq(',', optional($._argument_no_with_member))),
+        repeat(seq(',', optional($._argument))),
       ),
       // Leading omitted argument: "obj.Add , x, y" leaves the first slot empty.
-      repeat1(seq(',', optional($._argument_no_with_member))),
+      repeat1(seq(',', optional($._argument))),
     ),
 
     // Explicit call statement (requires Call keyword) - safe at module level
