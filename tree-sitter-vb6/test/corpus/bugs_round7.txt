@@ -84,3 +84,82 @@ End Sub
               target: (identifier)
               value: (literal
                 (integer_literal)))))))))
+
+; ------------------------------------------------------------
+; VB6 allows declarations (and other statements) between the
+; Select Case selector and the first Case label; they belong to
+; the enclosing procedure scope. A leading Dim must not break
+; the Select.
+; ------------------------------------------------------------
+
+==================
+Round7-B1 Dim before the first Case
+==================
+
+Sub S()
+    Select Case lDay
+        Dim iIndex As Integer
+        Case 1
+            iIndex = 1
+    End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (variable_declaration
+          (variable_list
+            (variable_declarator
+              name: (identifier)
+              (as_clause
+                type: (builtin_type)))))
+        (case_clause
+          (case_values
+            (literal
+              (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal
+                (integer_literal)))))))))
+
+==================
+Round7-B2 assignment before the first Case
+==================
+
+Sub S()
+    Select Case lDay
+        x = 1
+        Case 1
+            y = 1
+    End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (assignment_statement
+          target: (identifier)
+          value: (literal
+            (integer_literal)))
+        (case_clause
+          (case_values
+            (literal
+              (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal
+                (integer_literal)))))))))

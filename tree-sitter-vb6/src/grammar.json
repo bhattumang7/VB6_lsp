@@ -5084,17 +5084,8 @@
         {
           "type": "REPEAT",
           "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "comment"
-              },
-              {
-                "type": "SYMBOL",
-                "name": "_newline"
-              }
-            ]
+            "type": "SYMBOL",
+            "name": "_statement"
           }
         },
         {

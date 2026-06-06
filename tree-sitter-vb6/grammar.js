@@ -851,9 +851,11 @@ module.exports = grammar({
       ci('case'),
       field('test', $._expression),
       $._terminator,
-      // A blank line or comment is commonly placed between the selector and the
-      // first Case; consume any such terminators before the first case clause.
-      repeat(choice($.comment, $._newline)),
+      // VB6 permits declarations/statements (and the more common blank line or
+      // comment) to sit between the selector and the first Case; they belong to
+      // the enclosing scope. Consume any such statements before the first case
+      // clause so a leading "Dim" no longer breaks the Select.
+      repeat($._statement),
       // Zero case clauses is legal: every Case may be commented out, leaving only
       // the Select Case … End Select shell with comment/blank lines in the body.
       repeat(choice($.case_clause, $.case_else_clause)),
