@@ -44,3 +44,10 @@ vb6-mcp-server/node_modules/*
 
 # Reverse-engineering rig (oracle, corpus, downloaded tools) — not part of the build
 re_lab/
+
+# tree-sitter-vb6 compiled grammar/parser build artifacts
+tree-sitter-vb6/build/
+tree-sitter-vb6/*.obj
+tree-sitter-vb6/*.lib
+tree-sitter-vb6/*.exp
+tree-sitter-vb6/test/*.exe
