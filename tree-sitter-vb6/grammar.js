@@ -1445,7 +1445,11 @@ module.exports = grammar({
     addressof_expression: $ => prec.right(PREC.CALL, seq(ci('addressof'), $._expression)),
 
     member_expression: $ => prec.left(PREC.CALL, seq(
-      field('object', $._expression),
+      // "Line" is a keyword (graphics / Line Input) but is also a common variable
+      // name. Allow it as the object of a member access so "line.Parts.Add" works;
+      // restricting it to the object-before-"." position keeps "Line (x,y)-..."
+      // unambiguously a graphics statement.
+      field('object', choice($._expression, alias(ci('line'), $.identifier))),
       '.',
       field('member', $.identifier),
       optional(alias(token.immediate(choice('%', '&', '#', '@', '$')), $.type_hint)),

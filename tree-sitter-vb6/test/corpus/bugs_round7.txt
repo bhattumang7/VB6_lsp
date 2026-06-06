@@ -343,3 +343,54 @@ End Sub
             (integer_literal))
           y: (literal
             (integer_literal)))))))
+
+; ------------------------------------------------------------
+; "Line" used as an ordinary variable in a member-access chain
+; (a method call on a variable named "line"). The keyword must
+; be demoted to an identifier when it is the object before ".".
+; ------------------------------------------------------------
+
+==================
+Round7-F1 Line as an identifier in a member-access chain
+==================
+
+Sub S()
+    line.Parts.Add pts
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (call_statement
+        (implicit_call_stmt
+          (member_expression
+            object: (member_expression
+              object: (identifier)
+              member: (identifier))
+            member: (identifier))
+          (argument_list_no_parens
+            (identifier)))))))
+
+==================
+Round7-F2 Line Input still parses (control)
+==================
+
+Sub S()
+    Line Input #1, sBuf
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (line_input_statement
+        (literal
+          (file_number))
+        (identifier)))))

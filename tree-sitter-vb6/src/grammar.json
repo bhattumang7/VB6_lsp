@@ -8813,8 +8813,28 @@
             "type": "FIELD",
             "name": "object",
             "content": {
-              "type": "SYMBOL",
-              "name": "_expression"
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "_expression"
+                },
+                {
+                  "type": "ALIAS",
+                  "content": {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "line",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "line"
+                  },
+                  "named": true,
+                  "value": "identifier"
+                }
+              ]
             }
           },
           {
