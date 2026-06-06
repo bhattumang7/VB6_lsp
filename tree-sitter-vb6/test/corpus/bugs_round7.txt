@@ -235,3 +235,58 @@ End Sub
                   member: (identifier))
                 (with_member_expression
                   member: (identifier))))))))))
+
+; ------------------------------------------------------------
+; A "'" comment runs to end-of-line; a trailing "_" inside it is
+; literal comment text, NOT a line continuation (comments cannot
+; be continued). The comment ends at the newline and the next
+; line is its own statement — no splicing into the next line.
+; ------------------------------------------------------------
+
+==================
+Round7-D1 standalone comment ending in underscore does not continue
+==================
+
+Sub S()
+    ' note _
+    y = 2
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (comment)
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))
+
+==================
+Round7-D2 trailing comment ending in underscore does not continue
+==================
+
+Sub S()
+    x = 1 ' note _
+    y = 2
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))
+        (comment))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal))))))
