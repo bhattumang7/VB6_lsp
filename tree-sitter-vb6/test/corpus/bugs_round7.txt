@@ -507,3 +507,120 @@ End Sub
             (identifier)
             (argument_list_no_parens
               (identifier))))))))
+
+; ------------------------------------------------------------
+; Conditional-compilation directives inside a procedure are line
+; directives, independent of statement-block nesting. A regular
+; If/Else/End If may be opened inside a #If arm while the #End If
+; lands in the middle of that block. Modeling the directives as
+; standalone statements lets them cross the regular blocks.
+; ------------------------------------------------------------
+
+==================
+Round7-I1 #End If splitting a regular If/Else block
+==================
+
+Sub S()
+#If COND = 1 Then
+  If a Then
+    x = 1
+  Else
+#End If 'note
+    y = 2
+  End If
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (preproc_directive
+        condition: (preproc_binary_expression
+          (identifier)
+          (integer_literal)))
+      (if_statement
+        condition: (identifier)
+        (block
+          (assignment_statement
+            target: (identifier)
+            value: (literal
+              (integer_literal))))
+        (else_clause
+          (block
+            (preproc_directive
+              (comment))
+            (assignment_statement
+              target: (identifier)
+              value: (literal
+                (integer_literal)))))))))
+
+==================
+Round7-I2 plain conditional compilation in a procedure
+==================
+
+Sub S()
+#If COND = 1 Then
+  x = 1
+#End If 'note
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (preproc_directive
+        condition: (preproc_binary_expression
+          (identifier)
+          (integer_literal)))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal)))
+      (preproc_directive
+        (comment)))))
+
+==================
+Round7-I3 all four #If/#ElseIf/#Else/#End If directive forms
+==================
+
+Sub S()
+#If A Then
+  x = 1
+#ElseIf B Then
+  x = 2
+#Else
+  x = 3
+#End If
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (preproc_directive
+        condition: (identifier))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal)))
+      (preproc_directive
+        condition: (identifier))
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal)))
+      (preproc_directive)
+      (assignment_statement
+        target: (identifier)
+        value: (literal
+          (integer_literal)))
+      (preproc_directive))))

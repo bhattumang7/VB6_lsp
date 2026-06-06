@@ -809,7 +809,7 @@
           "named": true
         },
         {
-          "type": "preproc_if_statement",
+          "type": "preproc_directive",
           "named": true
         },
         {
@@ -5813,6 +5813,52 @@
     }
   },
   {
+    "type": "preproc_directive",
+    "named": true,
+    "fields": {
+      "condition": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "boolean_literal",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "integer_literal",
+            "named": true
+          },
+          {
+            "type": "preproc_binary_expression",
+            "named": true
+          },
+          {
+            "type": "preproc_parenthesized",
+            "named": true
+          },
+          {
+            "type": "preproc_unary_expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "comment",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "preproc_else",
     "named": true,
     "fields": {},
@@ -6029,11 +6075,11 @@
           "named": true
         },
         {
-          "type": "preproc_if",
+          "type": "preproc_directive",
           "named": true
         },
         {
-          "type": "preproc_if_statement",
+          "type": "preproc_if",
           "named": true
         },
         {
@@ -6146,25 +6192,6 @@
         },
         {
           "type": "write_statement",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "preproc_else_statement",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "block",
-          "named": true
-        },
-        {
-          "type": "comment",
           "named": true
         }
       ]
@@ -6418,11 +6445,11 @@
           "named": true
         },
         {
-          "type": "preproc_if",
+          "type": "preproc_directive",
           "named": true
         },
         {
-          "type": "preproc_if_statement",
+          "type": "preproc_if",
           "named": true
         },
         {
@@ -6535,56 +6562,6 @@
         },
         {
           "type": "write_statement",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "preproc_elseif_statement",
-    "named": true,
-    "fields": {
-      "condition": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "boolean_literal",
-            "named": true
-          },
-          {
-            "type": "identifier",
-            "named": true
-          },
-          {
-            "type": "integer_literal",
-            "named": true
-          },
-          {
-            "type": "preproc_binary_expression",
-            "named": true
-          },
-          {
-            "type": "preproc_parenthesized",
-            "named": true
-          },
-          {
-            "type": "preproc_unary_expression",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "block",
-          "named": true
-        },
-        {
-          "type": "comment",
           "named": true
         }
       ]
@@ -6838,6 +6815,10 @@
           "named": true
         },
         {
+          "type": "preproc_directive",
+          "named": true
+        },
+        {
           "type": "preproc_else",
           "named": true
         },
@@ -6847,10 +6828,6 @@
         },
         {
           "type": "preproc_if",
-          "named": true
-        },
-        {
-          "type": "preproc_if_statement",
           "named": true
         },
         {
@@ -6963,64 +6940,6 @@
         },
         {
           "type": "write_statement",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
-    "type": "preproc_if_statement",
-    "named": true,
-    "fields": {
-      "condition": {
-        "multiple": false,
-        "required": true,
-        "types": [
-          {
-            "type": "boolean_literal",
-            "named": true
-          },
-          {
-            "type": "identifier",
-            "named": true
-          },
-          {
-            "type": "integer_literal",
-            "named": true
-          },
-          {
-            "type": "preproc_binary_expression",
-            "named": true
-          },
-          {
-            "type": "preproc_parenthesized",
-            "named": true
-          },
-          {
-            "type": "preproc_unary_expression",
-            "named": true
-          }
-        ]
-      }
-    },
-    "children": {
-      "multiple": true,
-      "required": false,
-      "types": [
-        {
-          "type": "block",
-          "named": true
-        },
-        {
-          "type": "comment",
-          "named": true
-        },
-        {
-          "type": "preproc_else_statement",
-          "named": true
-        },
-        {
-          "type": "preproc_elseif_statement",
           "named": true
         }
       ]
@@ -8141,7 +8060,7 @@
           "named": true
         },
         {
-          "type": "preproc_if_statement",
+          "type": "preproc_directive",
           "named": true
         },
         {
@@ -8743,11 +8662,11 @@
           "named": true
         },
         {
-          "type": "preproc_if",
+          "type": "preproc_directive",
           "named": true
         },
         {
-          "type": "preproc_if_statement",
+          "type": "preproc_if",
           "named": true
         },
         {

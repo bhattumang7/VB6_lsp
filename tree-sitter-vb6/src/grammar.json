@@ -3529,7 +3529,7 @@
         },
         {
           "type": "SYMBOL",
-          "name": "preproc_if_statement"
+          "name": "preproc_directive"
         },
         {
           "type": "SYMBOL",
@@ -3545,193 +3545,128 @@
         }
       ]
     },
-    "preproc_if_statement": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "#"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "if",
-            "flags": "i"
+    "preproc_directive": {
+      "type": "PREC_DYNAMIC",
+      "value": -1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "#"
           },
-          "named": false,
-          "value": "if"
-        },
-        {
-          "type": "FIELD",
-          "name": "condition",
-          "content": {
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "if",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "if"
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "condition",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_preproc_expression"
+                    }
+                  },
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "then",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "then"
+                  }
+                ]
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "elseif",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "elseif"
+                  },
+                  {
+                    "type": "FIELD",
+                    "name": "condition",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_preproc_expression"
+                    }
+                  },
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "then",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "then"
+                  }
+                ]
+              },
+              {
+                "type": "ALIAS",
+                "content": {
+                  "type": "PATTERN",
+                  "value": "else",
+                  "flags": "i"
+                },
+                "named": false,
+                "value": "else"
+              },
+              {
+                "type": "SEQ",
+                "members": [
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "end",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "end"
+                  },
+                  {
+                    "type": "ALIAS",
+                    "content": {
+                      "type": "PATTERN",
+                      "value": "if",
+                      "flags": "i"
+                    },
+                    "named": false,
+                    "value": "if"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "type": "SYMBOL",
-            "name": "_preproc_expression"
+            "name": "_terminator"
           }
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "then",
-            "flags": "i"
-          },
-          "named": false,
-          "value": "then"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_terminator"
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "block"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
-          "type": "REPEAT",
-          "content": {
-            "type": "SYMBOL",
-            "name": "preproc_elseif_statement"
-          }
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "preproc_else_statement"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
-          "type": "STRING",
-          "value": "#"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "end",
-            "flags": "i"
-          },
-          "named": false,
-          "value": "end"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "if",
-            "flags": "i"
-          },
-          "named": false,
-          "value": "if"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_terminator"
-        }
-      ]
-    },
-    "preproc_elseif_statement": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "#"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "elseif",
-            "flags": "i"
-          },
-          "named": false,
-          "value": "elseif"
-        },
-        {
-          "type": "FIELD",
-          "name": "condition",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_preproc_expression"
-          }
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "then",
-            "flags": "i"
-          },
-          "named": false,
-          "value": "then"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_terminator"
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "block"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        }
-      ]
-    },
-    "preproc_else_statement": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "#"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "PATTERN",
-            "value": "else",
-            "flags": "i"
-          },
-          "named": false,
-          "value": "else"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_terminator"
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "block"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        }
-      ]
+        ]
+      }
     },
     "label": {
       "type": "CHOICE",
@@ -9873,30 +9808,24 @@
     ],
     [
       "preproc_if",
-      "preproc_if_statement"
-    ],
-    [
-      "preproc_else"
-    ],
-    [
-      "preproc_else_statement"
+      "preproc_directive"
     ],
     [
       "preproc_else",
-      "preproc_else_statement"
+      "preproc_directive"
+    ],
+    [
+      "preproc_elseif",
+      "preproc_directive"
+    ],
+    [
+      "preproc_else"
     ],
     [
       "else_clause"
     ],
     [
       "preproc_elseif"
-    ],
-    [
-      "preproc_elseif_statement"
-    ],
-    [
-      "preproc_elseif",
-      "preproc_elseif_statement"
     ],
     [
       "elseif_clause"

@@ -82,9 +82,7 @@
 (preproc_if) @keyword.directive
 (preproc_elseif) @keyword.directive
 (preproc_else) @keyword.directive
-(preproc_if_statement) @keyword.directive
-(preproc_elseif_statement) @keyword.directive
-(preproc_else_statement) @keyword.directive
+(preproc_directive) @keyword.directive
 
 (preproc_const
   name: (identifier) @constant.definition)

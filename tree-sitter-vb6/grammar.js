@@ -63,14 +63,12 @@ module.exports = grammar({
     [$.block],  // Block boundaries without explicit delimiters
     [$._expression, $.dotted_name],  // Single identifier can be both
     [$.parenthesized_expression, $._argument],  // Parens in argument position
-    [$.preproc_if, $.preproc_if_statement],  // Preprocessor if at module vs statement level
+    [$.preproc_if, $.preproc_directive],  // Module-level structured #If vs lone statement-level directive
+    [$.preproc_else, $.preproc_directive],  // Module-level #Else vs lone directive
+    [$.preproc_elseif, $.preproc_directive],  // Module-level #ElseIf vs lone directive
     [$.preproc_else],  // Empty vs non-empty else block
-    [$.preproc_else_statement],  // Empty vs non-empty else statement block
-    [$.preproc_else, $.preproc_else_statement],  // Preprocessor else at module vs statement level
     [$.else_clause],  // Empty vs non-empty else clause
     [$.preproc_elseif],  // Empty vs non-empty elseif block
-    [$.preproc_elseif_statement],  // Empty vs non-empty elseif statement block
-    [$.preproc_elseif, $.preproc_elseif_statement],  // Preprocessor elseif at module vs statement level
     [$.elseif_clause],  // Empty vs non-empty elseif clause
     [$.case_clause],  // Empty vs non-empty case clause
     [$.case_else_clause],  // Empty vs non-empty case else clause
@@ -635,43 +633,31 @@ module.exports = grammar({
       $.setattr_statement,
       $.reset_statement,
       // Preprocessor in statements
-      $.preproc_if_statement,
+      $.preproc_directive,
       $.label,
       $.comment,
       $._newline,
     ),
 
-    // Conditional compilation within statements
-    preproc_if_statement: $ => seq(
+    // Conditional compilation within statements.
+    //
+    // Inside a procedure body, conditional-compilation directives are NOT
+    // required to nest with the regular statement-block structure: a developer
+    // may open a regular If/Else/End If inside a #If arm while the matching
+    // #End If lands in the middle of that block (so toggling the constant
+    // comments out one arm). Modeling #If/#ElseIf/#Else/#End If as standalone
+    // line directives — each its own statement — lets the directives and the
+    // regular blocks cross freely without forcing an ERROR.
+    preproc_directive: $ => prec.dynamic(-1, seq(
       '#',
-      ci('if'),
-      field('condition', $._preproc_expression),
-      ci('then'),
+      choice(
+        seq(ci('if'), field('condition', $._preproc_expression), ci('then')),
+        seq(ci('elseif'), field('condition', $._preproc_expression), ci('then')),
+        ci('else'),
+        seq(ci('end'), ci('if')),
+      ),
       $._terminator,
-      optional($.block),
-      repeat($.preproc_elseif_statement),
-      optional($.preproc_else_statement),
-      '#',
-      ci('end'),
-      ci('if'),
-      $._terminator,
-    ),
-
-    preproc_elseif_statement: $ => seq(
-      '#',
-      ci('elseif'),
-      field('condition', $._preproc_expression),
-      ci('then'),
-      $._terminator,
-      optional($.block),
-    ),
-
-    preproc_else_statement: $ => seq(
-      '#',
-      ci('else'),
-      $._terminator,
-      optional($.block),
-    ),
+    )),
 
     // Bug #6: numeric line numbers may appear without a colon ("10  x = 1")
     label: $ => choice(
