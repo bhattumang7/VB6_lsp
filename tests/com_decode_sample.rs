@@ -90,3 +90,56 @@ fn sample_form_resolves_picture_and_decodes_mschart_bag() {
         ),
     }
 }
+
+#[test]
+fn extract_form_writes_picture_and_decoded_bag() {
+    let frm = fixture_frm();
+    if !frm.exists() {
+        eprintln!("SKIP: fixture not present at {}", frm.display());
+        return;
+    }
+    let outdir = std::env::temp_dir().join(format!("vb6extract_{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&outdir);
+
+    let out = Command::new(env!("CARGO_BIN_EXE_vb6-lsp"))
+        .args([
+            "extract-form",
+            frm.to_str().unwrap(),
+            outdir.to_str().unwrap(),
+            "--com-decode",
+        ])
+        .output()
+        .expect("run extract-form");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let json: serde_json::Value =
+        serde_json::from_str(&stdout).unwrap_or_else(|e| panic!("extract-form stdout not JSON: {e}\n{stdout}"));
+    let extracted = json["extracted"].as_array().expect("extracted array");
+
+    // Control-independent: the MouseIcon is extracted as a real .ico on disk.
+    let pic = extracted
+        .iter()
+        .find(|e| e["property"] == "MouseIcon")
+        .expect("MouseIcon extracted");
+    assert_eq!(pic["kind"], "picture");
+    assert!(outdir.join(pic["file"].as_str().unwrap()).exists(), "icon file written");
+
+    // Tier-3: when decoded, a .properties.json with the bag's typed properties is
+    // written. Skipped when the control/bridge is unavailable.
+    let ole = extracted
+        .iter()
+        .find(|e| e["property"] == "OleObjectBlob")
+        .expect("OleObjectBlob extracted");
+    if ole["kind"] == "decoded_bag" {
+        let pjson = outdir.join(ole["file"].as_str().unwrap());
+        assert!(pjson.exists(), "decoded properties json written");
+        let doc: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&pjson).unwrap()).unwrap();
+        let props = doc["properties"].as_array().unwrap();
+        let has = |k: &str| props.iter().any(|p| p[0] == k);
+        assert!(has("RowCount") && has("ColumnCount"), "decoded props present: {props:?}");
+    } else {
+        eprintln!("SKIP decoded-bag file assertion: kind={}", ole["kind"]);
+    }
+
+    let _ = std::fs::remove_dir_all(&outdir);
+}

@@ -74,6 +74,15 @@ public static class ComBag
         IntPtr po = Marshal.AllocHGlobal(8); s.Seek(0, 0, po); Marshal.FreeHGlobal(po); return s;
     }
 
+    // Current seek position of a stream = bytes the control consumed during Load.
+    static long StreamPos(IStream s)
+    {
+        IntPtr p = Marshal.AllocHGlobal(8);
+        try { s.Seek(0, 1 /*STREAM_SEEK_CUR*/, p); return Marshal.ReadInt64(p); }
+        catch { return 0; }
+        finally { Marshal.FreeHGlobal(p); }
+    }
+
     static bool TryGuid(string s, out Guid g)
     {
         g = Guid.Empty;
@@ -214,7 +223,9 @@ public static class ComBag
     {
         // A bag may begin with a class id / VB framing (e.g. OleObjectBlob's "LB"
         // header) before the persisted stream; try a few leading-offset skips with
-        // both persistence interfaces.
+        // both persistence interfaces. A Load that returns S_OK but consumes zero
+        // bytes hasn't really loaded (a lenient control accepting a wrong offset),
+        // so we require the control to have advanced the stream before accepting.
         int[] skips = { 0, 16, 20, 24 };
         Exception last = null;
         foreach (int skip in skips)
@@ -222,10 +233,12 @@ public static class ComBag
             if (skip >= bag.Length) continue;
             byte[] d = bag;
             if (skip > 0) { d = new byte[bag.Length - skip]; Array.Copy(bag, skip, d, 0, d.Length); }
-            try { ((IPersistStreamInit)obj).Load(StreamFromBytes(d)); return; } catch (Exception e) { last = e; }
-            try { ((IPersistStream)obj).Load(StreamFromBytes(d)); return; } catch (Exception e) { last = e; }
+            IStream s1 = StreamFromBytes(d);
+            try { ((IPersistStreamInit)obj).Load(s1); if (StreamPos(s1) > 0) return; } catch (Exception e) { last = e; }
+            IStream s2 = StreamFromBytes(d);
+            try { ((IPersistStream)obj).Load(s2); if (StreamPos(s2) > 0) return; } catch (Exception e) { last = e; }
         }
-        throw last ?? new Exception("load failed");
+        throw last ?? new Exception("load failed or consumed no bytes");
     }
 
     // Read a known list of property names off the live control (schema-driven).

@@ -78,6 +78,29 @@ fn build_form_export_cli(
     Ok(controls::export::build_form_export(path)?)
 }
 
+/// Resolve a form's companion resources for the CLI, optionally decoding
+/// proprietary control bags via COM (Windows + a registered/licensed control).
+/// Mirrors [`build_form_export_cli`]'s decoder selection but returns the raw
+/// resolved resources, for callers (e.g. `extract-form`) that need the values.
+fn resolve_form_cli(
+    path: &std::path::Path,
+    com_decode: bool,
+) -> anyhow::Result<Vec<controls::resources::ResolvedResource>> {
+    use controls::resources::{resolve_form_resources, OcxBagPolicy};
+    if com_decode {
+        #[cfg(windows)]
+        {
+            if let Some(dec) = com_decoder::OracleComDecoder::new() {
+                return Ok(resolve_form_resources(path, OcxBagPolicy::ComDecode, Some(&dec))?);
+            }
+            eprintln!("--com-decode: COM bridge unavailable; using opaque Tier-3");
+        }
+        #[cfg(not(windows))]
+        eprintln!("--com-decode is Windows-only; using opaque Tier-3");
+    }
+    Ok(resolve_form_resources(path, OcxBagPolicy::Opaque, None)?)
+}
+
 /// Handle CLI commands for resource file operations
 fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
     match args[0].as_str() {
@@ -132,19 +155,20 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
         }
 
         "extract-form" => {
-            if args.len() < 3 {
-                eprintln!("Usage: vb6-lsp extract-form <file.frm|.ctl> <output-dir>");
+            let positional: Vec<&String> =
+                args[1..].iter().filter(|a| !a.starts_with("--")).collect();
+            if positional.len() < 2 {
+                eprintln!(
+                    "Usage: vb6-lsp extract-form <file.frm|.ctl> <output-dir> [--com-decode]"
+                );
                 std::process::exit(1);
             }
-            let path = std::path::Path::new(&args[1]);
-            let outdir = std::path::Path::new(&args[2]);
+            let path = std::path::Path::new(positional[0].as_str());
+            let outdir = std::path::Path::new(positional[1].as_str());
+            let com_decode = args.iter().any(|a| a == "--com-decode");
             std::fs::create_dir_all(outdir)?;
 
-            let resolved = controls::resources::resolve_form_resources(
-                path,
-                controls::resources::OcxBagPolicy::Opaque,
-                None,
-            )?;
+            let resolved = resolve_form_cli(path, com_decode)?;
 
             let mut extracted: Vec<serde_json::Value> = Vec::new();
             for r in &resolved {
@@ -173,6 +197,22 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
                             "file": fname, "bytes": data.len()
                         }));
                     }
+                    Ok(controls::frx::FrxValue::DecodedBag { clsid, properties }) => {
+                        let fname = format!("{}.properties.json", base);
+                        let doc = serde_json::json!({
+                            "clsid": (*clsid).map(controls::export::format_guid),
+                            "properties": properties
+                                .iter()
+                                .map(|(k, v)| serde_json::json!([k, v]))
+                                .collect::<Vec<_>>(),
+                        });
+                        std::fs::write(outdir.join(&fname), serde_json::to_string_pretty(&doc)?)?;
+                        extracted.push(serde_json::json!({
+                            "property": r.reference.property, "kind": "decoded_bag",
+                            "clsid": (*clsid).map(controls::export::format_guid),
+                            "file": fname, "properties": properties.len()
+                        }));
+                    }
                     Ok(controls::frx::FrxValue::Text(s)) => {
                         let fname = format!("{}.txt", base);
                         std::fs::write(outdir.join(&fname), s)?;
@@ -180,12 +220,18 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
                             "property": r.reference.property, "kind": "text", "file": fname
                         }));
                     }
+                    Err(e) => {
+                        extracted.push(serde_json::json!({
+                            "property": r.reference.property, "kind": "error",
+                            "message": e.to_string()
+                        }));
+                    }
                     _ => {}
                 }
             }
 
             println!("{}", serde_json::json!({
-                "form": args[1], "outdir": args[2], "extracted": extracted
+                "form": positional[0], "outdir": positional[1], "extracted": extracted
             }));
             Ok(())
         }
