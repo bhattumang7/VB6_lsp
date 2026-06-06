@@ -394,3 +394,56 @@ End Sub
         (literal
           (file_number))
         (identifier)))))
+
+; ------------------------------------------------------------
+; A line label may be a word that is also a keyword — commonly
+; an error-handler label "Error:". "Error" followed by ":" is a
+; label, not the Error statement (which requires an operand).
+; ------------------------------------------------------------
+
+==================
+Round7-G1 keyword Error used as a line label
+==================
+
+Sub S()
+    Exit Sub
+Error:
+    MsgBox Err.Description
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (exit_statement)
+      (label
+        (identifier))
+      (call_statement
+        (implicit_call_stmt
+          (identifier)
+          (argument_list_no_parens
+            (member_expression
+              object: (identifier)
+              member: (identifier))))))))
+
+==================
+Round7-G2 Error statement still parses (control)
+==================
+
+Sub S()
+    Error 5
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (error_statement
+        (literal
+          (integer_literal))))))

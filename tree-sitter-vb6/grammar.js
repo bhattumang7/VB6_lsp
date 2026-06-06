@@ -677,6 +677,10 @@ module.exports = grammar({
     label: $ => choice(
       seq(alias($.label_identifier, $.identifier), ':'),
       seq($.integer_literal, optional(':')),
+      // A line label may be a word that is also a keyword (commonly an
+      // error-handler label "Error:"). "Error" followed by ":" cannot be the
+      // Error statement (which requires an operand), so it is a label here.
+      seq(alias(ci('error'), $.identifier), ':'),
     ),
 
     // Assignment statement with dynamic precedence to win over call_statement

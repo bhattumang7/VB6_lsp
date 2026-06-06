@@ -3774,6 +3774,30 @@
               ]
             }
           ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "ALIAS",
+                "content": {
+                  "type": "PATTERN",
+                  "value": "error",
+                  "flags": "i"
+                },
+                "named": false,
+                "value": "error"
+              },
+              "named": true,
+              "value": "identifier"
+            },
+            {
+              "type": "STRING",
+              "value": ":"
+            }
+          ]
         }
       ]
     },
