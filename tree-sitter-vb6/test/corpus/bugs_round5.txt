@@ -1,0 +1,233 @@
+; ============================================================
+; Round 5 — blank line / comment between Select Case selector
+; and the first Case, and array return types (As <Type>()).
+; ============================================================
+
+; ------------------------------------------------------------
+; A — a blank line or comment is commonly placed between the
+;     selector expression and the first Case label. Those
+;     terminators must be consumed before the first case clause.
+; ------------------------------------------------------------
+
+==================
+Round5-A1 blank line before first Case
+==================
+
+Sub S()
+Select Case x
+
+Case 1
+y = 1
+End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (case_clause
+          (case_values
+            (literal (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal (integer_literal)))))))))
+
+==================
+Round5-A2 comment before first Case
+==================
+
+Sub S()
+Select Case x
+'a comment
+Case 1
+y = 1
+End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (comment)
+        (case_clause
+          (case_values
+            (literal (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal (integer_literal)))))))))
+
+==================
+Round5-A3 commented-out Case before first Case
+==================
+
+Sub S()
+Select Case x
+'Case 99
+Case 1
+y = 1
+End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (comment)
+        (case_clause
+          (case_values
+            (literal (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal (integer_literal)))))))))
+
+==================
+Round5-A4 immediate Case with Case Else (control)
+==================
+
+Sub S()
+Select Case x
+Case 1
+y = 1
+Case Else
+y = 2
+End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (case_clause
+          (case_values
+            (literal (integer_literal)))
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal (integer_literal)))))
+        (case_else_clause
+          (block
+            (assignment_statement
+              target: (identifier)
+              value: (literal (integer_literal)))))))))
+
+==================
+Round5-A5 comment after a Case label (control)
+==================
+
+Sub S()
+Select Case x
+Case 1
+'mid comment
+y = 1
+End Select
+End Sub
+
+---
+
+(source_file
+  (sub_declaration
+    name: (identifier)
+    (parameter_list)
+    (block
+      (select_statement
+        test: (identifier)
+        (case_clause
+          (case_values
+            (literal (integer_literal)))
+          (block
+            (comment)
+            (assignment_statement
+              target: (identifier)
+              value: (literal (integer_literal)))))))))
+
+; ------------------------------------------------------------
+; B — a function/property whose return type is an array:
+;     the trailing () array marker must be accepted.
+; ------------------------------------------------------------
+
+==================
+Round5-B1 array return type As String()
+==================
+
+Public Function F() As String()
+End Function
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (as_clause
+      type: (builtin_type))))
+
+==================
+Round5-B2 array return type As Long()
+==================
+
+Public Function F() As Long()
+End Function
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (as_clause
+      type: (builtin_type))))
+
+==================
+Round5-B3 array return type on a Property Get
+==================
+
+Public Property Get P() As String()
+End Property
+
+---
+
+(source_file
+  (property_declaration
+    name: (identifier)
+    (parameter_list)
+    (as_clause
+      type: (builtin_type))))
+
+==================
+Round5-B4 non-array return type still parses (control)
+==================
+
+Public Function F() As String
+End Function
+
+---
+
+(source_file
+  (function_declaration
+    name: (identifier)
+    (parameter_list)
+    (as_clause
+      type: (builtin_type))))

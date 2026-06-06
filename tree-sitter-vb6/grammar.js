@@ -405,7 +405,8 @@ module.exports = grammar({
     _type: $ => choice(
       $.builtin_type,
       $.dotted_name,
-      seq($.dotted_name, '(', ')'),  // Array type
+      seq($.builtin_type, '(', ')'),  // Array type, e.g. As String()
+      seq($.dotted_name, '(', ')'),   // Array type, e.g. As Foo.Bar()
     ),
 
     builtin_type: $ => choice(
@@ -843,6 +844,9 @@ module.exports = grammar({
       ci('case'),
       field('test', $._expression),
       $._terminator,
+      // A blank line or comment is commonly placed between the selector and the
+      // first Case; consume any such terminators before the first case clause.
+      repeat(choice($.comment, $._newline)),
       repeat1(choice($.case_clause, $.case_else_clause)),
       ci('end'),
       ci('select'),

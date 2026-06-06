@@ -1843,6 +1843,23 @@
           "members": [
             {
               "type": "SYMBOL",
+              "name": "builtin_type"
+            },
+            {
+              "type": "STRING",
+              "value": "("
+            },
+            {
+              "type": "STRING",
+              "value": ")"
+            }
+          ]
+        },
+        {
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
               "name": "dotted_name"
             },
             {
@@ -5021,6 +5038,22 @@
         {
           "type": "SYMBOL",
           "name": "_terminator"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "comment"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "_newline"
+              }
+            ]
+          }
         },
         {
           "type": "REPEAT1",
