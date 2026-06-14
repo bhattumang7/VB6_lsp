@@ -739,8 +739,9 @@ module.exports = grammar({
           optional($.block),
           repeat($.elseif_clause),
           optional($.else_clause),
-          ci('end'),
-          ci('if'),
+          // VB6 accepts `EndIf` (one word) as a synonym for `End If` — verified against
+          // the compiler; `EndIf` is its own reserved token in VBA6.DLL's keyword table.
+          choice(seq(ci('end'), ci('if')), ci('endif')),
           $._terminator,
         ),
         // Single-line If
