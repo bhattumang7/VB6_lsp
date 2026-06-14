@@ -1,16 +1,12 @@
 //! VB6 Language Server Library
 //!
-//! This library provides VB6 language support including:
-//! - Tree-sitter based parsing
-//! - Semantic analysis and symbol tables
-//! - Project file (.vbp) parsing
-//! - Workspace management
-//! - LSP protocol implementation
+//! Provides VB6 language support including:
+//! - Project file (.vbp) parsing and workspace management
+//! - VB6 form / FRX / RES binary companion file parsing
+//! - LSP protocol implementation backed by vb6-engine
 
-pub mod analysis;
-pub mod claude;
 pub mod controls;
+pub mod engine_glue;
 pub mod lsp;
-pub mod parser;
 pub mod utils;
 pub mod workspace;

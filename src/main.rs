@@ -4,16 +4,15 @@
 //! with Claude AI integration for intelligent code assistance.
 
 use std::env;
+use base64::Engine as _;
 use tower_lsp::{LspService, Server};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod analysis;
-mod claude;
 #[cfg(windows)]
 mod com_decoder;
 mod controls;
+mod engine_glue;
 mod lsp;
-mod parser;
 mod utils;
 mod workspace;
 
@@ -63,7 +62,7 @@ fn build_form_export_cli(
     if com_decode {
         #[cfg(windows)]
         {
-            if let Some(dec) = com_decoder::OracleComDecoder::new() {
+            if let Some(dec) = com_decoder::ScriptedComDecoder::new() {
                 return Ok(controls::export::build_form_export_with(
                     path,
                     controls::resources::OcxBagPolicy::ComDecode,
@@ -90,7 +89,7 @@ fn resolve_form_cli(
     if com_decode {
         #[cfg(windows)]
         {
-            if let Some(dec) = com_decoder::OracleComDecoder::new() {
+            if let Some(dec) = com_decoder::ScriptedComDecoder::new() {
                 return Ok(resolve_form_resources(path, OcxBagPolicy::ComDecode, Some(&dec))?);
             }
             eprintln!("--com-decode: COM bridge unavailable; using opaque Tier-3");
@@ -104,229 +103,11 @@ fn resolve_form_cli(
 /// Handle CLI commands for resource file operations
 fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
     match args[0].as_str() {
-        "read-res" => {
-            if args.len() < 2 {
-                eprintln!("Usage: vb6-lsp read-res <file.res>");
-                std::process::exit(1);
-            }
-
-            let file_path = &args[1];
-            let resources = read_res_file(file_path)?;
-
-            // Convert to JSON-friendly format
-            let json_resources: Vec<serde_json::Value> = resources.iter().map(|r| {
-                serde_json::json!({
-                    "resource_type": format!("{:?}", r.resource_type),
-                    "name": match &r.name {
-                        ResourceId::Id(id) => serde_json::json!({
-                            "type": "Id",
-                            "value": id
-                        }),
-                        ResourceId::Name(name) => serde_json::json!({
-                            "type": "Name",
-                            "value": name
-                        })
-                    },
-                    "language_id": r.language_id,
-                    "data_size": r.data.len(),
-                    "data_base64": base64::encode(&r.data)
-                })
-            }).collect();
-
-            println!("{}", serde_json::json!({
-                "resources": json_resources
-            }));
-
-            Ok(())
-        }
-
-        "read-form" => {
-            let positional: Vec<&String> =
-                args[1..].iter().filter(|a| !a.starts_with("--")).collect();
-            if positional.is_empty() {
-                eprintln!("Usage: vb6-lsp read-form <file.frm|.ctl|.pag|.dob> [--com-decode]");
-                std::process::exit(1);
-            }
-            let path = std::path::Path::new(positional[0].as_str());
-            let com_decode = args.iter().any(|a| a == "--com-decode");
-            let export = build_form_export_cli(path, com_decode)?;
-            println!("{}", serde_json::to_string_pretty(&export)?);
-            Ok(())
-        }
-
-        "extract-form" => {
-            let positional: Vec<&String> =
-                args[1..].iter().filter(|a| !a.starts_with("--")).collect();
-            if positional.len() < 2 {
-                eprintln!(
-                    "Usage: vb6-lsp extract-form <file.frm|.ctl> <output-dir> [--com-decode]"
-                );
-                std::process::exit(1);
-            }
-            let path = std::path::Path::new(positional[0].as_str());
-            let outdir = std::path::Path::new(positional[1].as_str());
-            let com_decode = args.iter().any(|a| a == "--com-decode");
-            std::fs::create_dir_all(outdir)?;
-
-            let resolved = resolve_form_cli(path, com_decode)?;
-
-            let mut extracted: Vec<serde_json::Value> = Vec::new();
-            for r in &resolved {
-                let base = format!("{}.{}", r.reference.control_path, r.reference.property);
-                match &r.value {
-                    Ok(controls::frx::FrxValue::Picture { format, data, .. }) => {
-                        let fname = format!("{}.{}", base, format.ext());
-                        std::fs::write(outdir.join(&fname), data)?;
-                        extracted.push(serde_json::json!({
-                            "property": r.reference.property, "kind": "picture",
-                            "format": format!("{:?}", format), "file": fname, "bytes": data.len()
-                        }));
-                    }
-                    Ok(controls::frx::FrxValue::OcxBag { clsid, data }) => {
-                        let fname = format!("{}.bin", base);
-                        std::fs::write(outdir.join(&fname), data)?;
-                        if let Some(g) = clsid {
-                            std::fs::write(
-                                outdir.join(format!("{}.clsid.txt", base)),
-                                controls::export::format_guid(*g),
-                            )?;
-                        }
-                        extracted.push(serde_json::json!({
-                            "property": r.reference.property, "kind": "ocx_bag",
-                            "clsid": (*clsid).map(controls::export::format_guid),
-                            "file": fname, "bytes": data.len()
-                        }));
-                    }
-                    Ok(controls::frx::FrxValue::DecodedBag { clsid, properties }) => {
-                        let fname = format!("{}.properties.json", base);
-                        let doc = serde_json::json!({
-                            "clsid": (*clsid).map(controls::export::format_guid),
-                            "properties": properties
-                                .iter()
-                                .map(|(k, v)| serde_json::json!([k, v]))
-                                .collect::<Vec<_>>(),
-                        });
-                        std::fs::write(outdir.join(&fname), serde_json::to_string_pretty(&doc)?)?;
-                        extracted.push(serde_json::json!({
-                            "property": r.reference.property, "kind": "decoded_bag",
-                            "clsid": (*clsid).map(controls::export::format_guid),
-                            "file": fname, "properties": properties.len()
-                        }));
-                    }
-                    Ok(controls::frx::FrxValue::Text(s)) => {
-                        let fname = format!("{}.txt", base);
-                        std::fs::write(outdir.join(&fname), s)?;
-                        extracted.push(serde_json::json!({
-                            "property": r.reference.property, "kind": "text", "file": fname
-                        }));
-                    }
-                    Err(e) => {
-                        extracted.push(serde_json::json!({
-                            "property": r.reference.property, "kind": "error",
-                            "message": e.to_string()
-                        }));
-                    }
-                    _ => {}
-                }
-            }
-
-            println!("{}", serde_json::json!({
-                "form": positional[0], "outdir": positional[1], "extracted": extracted
-            }));
-            Ok(())
-        }
-
-        "write-res" => {
-            if args.len() < 3 {
-                eprintln!("Usage: vb6-lsp write-res <input.json> <output.res>");
-                std::process::exit(1);
-            }
-
-            let json_file = &args[1];
-            let output_file = &args[2];
-
-            // Read JSON input
-            let json_content = std::fs::read_to_string(json_file)?;
-            let json: serde_json::Value = serde_json::from_str(&json_content)?;
-
-            // Parse resources from JSON
-            let mut resources = Vec::new();
-            if let Some(res_array) = json["resources"].as_array() {
-                for res in res_array {
-                    let resource_type_str = res["resource_type"].as_str()
-                        .ok_or_else(|| anyhow::anyhow!("Missing resource_type"))?;
-
-                    let resource_type = parse_resource_type(resource_type_str)?;
-
-                    let name = if res["name"]["type"].as_str() == Some("Id") {
-                        ResourceId::Id(res["name"]["value"].as_u64()
-                            .ok_or_else(|| anyhow::anyhow!("Invalid ID value"))? as u16)
-                    } else {
-                        ResourceId::Name(res["name"]["value"].as_str()
-                            .ok_or_else(|| anyhow::anyhow!("Invalid Name value"))?.to_string())
-                    };
-
-                    let language_id = res["language_id"].as_u64()
-                        .ok_or_else(|| anyhow::anyhow!("Missing language_id"))? as u16;
-
-                    let data_base64 = res["data_base64"].as_str()
-                        .ok_or_else(|| anyhow::anyhow!("Missing data_base64"))?;
-                    let data = base64::decode(data_base64)?;
-
-                    resources.push(ResourceEntry::new(resource_type, name, language_id, data));
-                }
-            }
-
-            // Write the .res file
-            write_res_file(output_file, &resources)?;
-
-            println!("{}", serde_json::json!({
-                "success": true,
-                "file": output_file,
-                "resourceCount": resources.len()
-            }));
-
-            Ok(())
-        }
-
-        "parse-string-table" => {
-            if args.len() < 3 {
-                eprintln!("Usage: vb6-lsp parse-string-table <file.res> <block_id>");
-                std::process::exit(1);
-            }
-
-            let file_path = &args[1];
-            let block_id: u16 = args[2].parse()
-                .map_err(|_| anyhow::anyhow!("Invalid block_id: must be a number"))?;
-
-            // Read the .res file
-            let resources = read_res_file(file_path)?;
-
-            // Find the string table resource
-            let string_resource = resources.iter()
-                .find(|r| {
-                    r.resource_type == ResourceType::String &&
-                    matches!(r.name, ResourceId::Id(id) if id == block_id)
-                })
-                .ok_or_else(|| anyhow::anyhow!("String table block {} not found", block_id))?;
-
-            // Parse the string table
-            let strings = parse_string_table(&string_resource.data, block_id)?;
-
-            let json_strings: Vec<serde_json::Value> = strings.iter().map(|s| {
-                serde_json::json!({
-                    "id": s.id,
-                    "value": s.value
-                })
-            }).collect();
-
-            println!("{}", serde_json::json!({
-                "strings": json_strings
-            }));
-
-            Ok(())
-        }
-
+        "read-res" => cmd_read_res(args),
+        "read-form" => cmd_read_form(args),
+        "extract-form" => cmd_extract_form(args),
+        "write-res" => cmd_write_res(args),
+        "parse-string-table" => cmd_parse_string_table(args),
         _ => {
             eprintln!("Unknown command: {}", args[0]);
             eprintln!("Available commands:");
@@ -336,6 +117,244 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
             std::process::exit(1);
         }
     }
+}
+
+fn cmd_read_res(args: &[String]) -> anyhow::Result<()> {
+    if args.len() < 2 {
+        eprintln!("Usage: vb6-lsp read-res <file.res>");
+        std::process::exit(1);
+    }
+
+    let file_path = &args[1];
+    let resources = read_res_file(file_path)?;
+
+    // Convert to JSON-friendly format
+    let json_resources: Vec<serde_json::Value> = resources.iter().map(|r| {
+        serde_json::json!({
+            "resource_type": format!("{:?}", r.resource_type),
+            "name": match &r.name {
+                ResourceId::Id(id) => serde_json::json!({
+                    "type": "Id",
+                    "value": id
+                }),
+                ResourceId::Name(name) => serde_json::json!({
+                    "type": "Name",
+                    "value": name
+                })
+            },
+            "language_id": r.language_id,
+            "data_size": r.data.len(),
+            "data_base64": base64::engine::general_purpose::STANDARD.encode(&r.data)
+        })
+    }).collect();
+
+    println!("{}", serde_json::json!({
+        "resources": json_resources
+    }));
+
+    Ok(())
+}
+
+fn cmd_read_form(args: &[String]) -> anyhow::Result<()> {
+    let positional: Vec<&String> =
+        args[1..].iter().filter(|a| !a.starts_with("--")).collect();
+    if positional.is_empty() {
+        eprintln!("Usage: vb6-lsp read-form <file.frm|.ctl|.pag|.dob> [--com-decode]");
+        std::process::exit(1);
+    }
+    let path = std::path::Path::new(positional[0].as_str());
+    let com_decode = args.iter().any(|a| a == "--com-decode");
+    let export = build_form_export_cli(path, com_decode)?;
+    println!("{}", serde_json::to_string_pretty(&export)?);
+    Ok(())
+}
+
+fn cmd_extract_form(args: &[String]) -> anyhow::Result<()> {
+    let positional: Vec<&String> =
+        args[1..].iter().filter(|a| !a.starts_with("--")).collect();
+    if positional.len() < 2 {
+        eprintln!(
+            "Usage: vb6-lsp extract-form <file.frm|.ctl> <output-dir> [--com-decode]"
+        );
+        std::process::exit(1);
+    }
+    let path = std::path::Path::new(positional[0].as_str());
+    let outdir = std::path::Path::new(positional[1].as_str());
+    let com_decode = args.iter().any(|a| a == "--com-decode");
+    std::fs::create_dir_all(outdir)?;
+
+    let resolved = resolve_form_cli(path, com_decode)?;
+
+    let mut extracted: Vec<serde_json::Value> = Vec::new();
+    for r in &resolved {
+        if let Some(entry) = extract_resource(r, outdir)? {
+            extracted.push(entry);
+        }
+    }
+
+    println!("{}", serde_json::json!({
+        "form": positional[0], "outdir": positional[1], "extracted": extracted
+    }));
+    Ok(())
+}
+
+/// Write a single resolved resource to `outdir` and return its JSON manifest
+/// entry (or `None` for resource kinds that are skipped).
+fn extract_resource(
+    r: &controls::resources::ResolvedResource,
+    outdir: &std::path::Path,
+) -> anyhow::Result<Option<serde_json::Value>> {
+    let base = format!("{}.{}", r.reference.control_path, r.reference.property);
+    let entry = match &r.value {
+        Ok(controls::frx::FrxValue::Picture { format, data, .. }) => {
+            let fname = format!("{}.{}", base, format.ext());
+            std::fs::write(outdir.join(&fname), data)?;
+            serde_json::json!({
+                "property": r.reference.property, "kind": "picture",
+                "format": format!("{:?}", format), "file": fname, "bytes": data.len()
+            })
+        }
+        Ok(controls::frx::FrxValue::OcxBag { clsid, data }) => {
+            let fname = format!("{}.bin", base);
+            std::fs::write(outdir.join(&fname), data)?;
+            if let Some(g) = clsid {
+                std::fs::write(
+                    outdir.join(format!("{}.clsid.txt", base)),
+                    controls::export::format_guid(*g),
+                )?;
+            }
+            serde_json::json!({
+                "property": r.reference.property, "kind": "ocx_bag",
+                "clsid": (*clsid).map(controls::export::format_guid),
+                "file": fname, "bytes": data.len()
+            })
+        }
+        Ok(controls::frx::FrxValue::DecodedBag { clsid, properties }) => {
+            let fname = format!("{}.properties.json", base);
+            let doc = serde_json::json!({
+                "clsid": (*clsid).map(controls::export::format_guid),
+                "properties": properties
+                    .iter()
+                    .map(|(k, v)| serde_json::json!([k, v]))
+                    .collect::<Vec<_>>(),
+            });
+            std::fs::write(outdir.join(&fname), serde_json::to_string_pretty(&doc)?)?;
+            serde_json::json!({
+                "property": r.reference.property, "kind": "decoded_bag",
+                "clsid": (*clsid).map(controls::export::format_guid),
+                "file": fname, "properties": properties.len()
+            })
+        }
+        Ok(controls::frx::FrxValue::Text(s)) => {
+            let fname = format!("{}.txt", base);
+            std::fs::write(outdir.join(&fname), s)?;
+            serde_json::json!({
+                "property": r.reference.property, "kind": "text", "file": fname
+            })
+        }
+        Err(e) => serde_json::json!({
+            "property": r.reference.property, "kind": "error",
+            "message": e.to_string()
+        }),
+        _ => return Ok(None),
+    };
+    Ok(Some(entry))
+}
+
+fn cmd_write_res(args: &[String]) -> anyhow::Result<()> {
+    if args.len() < 3 {
+        eprintln!("Usage: vb6-lsp write-res <input.json> <output.res>");
+        std::process::exit(1);
+    }
+
+    let json_file = &args[1];
+    let output_file = &args[2];
+
+    // Read JSON input
+    let json_content = std::fs::read_to_string(json_file)?;
+    let json: serde_json::Value = serde_json::from_str(&json_content)?;
+
+    // Parse resources from JSON
+    let mut resources = Vec::new();
+    if let Some(res_array) = json["resources"].as_array() {
+        for res in res_array {
+            resources.push(parse_resource_entry(res)?);
+        }
+    }
+
+    // Write the .res file
+    write_res_file(output_file, &resources)?;
+
+    println!("{}", serde_json::json!({
+        "success": true,
+        "file": output_file,
+        "resourceCount": resources.len()
+    }));
+
+    Ok(())
+}
+
+/// Build a single [`ResourceEntry`] from its JSON description.
+fn parse_resource_entry(res: &serde_json::Value) -> anyhow::Result<ResourceEntry> {
+    let resource_type_str = res["resource_type"].as_str()
+        .ok_or_else(|| anyhow::anyhow!("Missing resource_type"))?;
+
+    let resource_type = parse_resource_type(resource_type_str)?;
+
+    let name = if res["name"]["type"].as_str() == Some("Id") {
+        ResourceId::Id(res["name"]["value"].as_u64()
+            .ok_or_else(|| anyhow::anyhow!("Invalid ID value"))? as u16)
+    } else {
+        ResourceId::Name(res["name"]["value"].as_str()
+            .ok_or_else(|| anyhow::anyhow!("Invalid Name value"))?.to_string())
+    };
+
+    let language_id = res["language_id"].as_u64()
+        .ok_or_else(|| anyhow::anyhow!("Missing language_id"))? as u16;
+
+    let data_base64 = res["data_base64"].as_str()
+        .ok_or_else(|| anyhow::anyhow!("Missing data_base64"))?;
+    let data = base64::engine::general_purpose::STANDARD.decode(data_base64)?;
+
+    Ok(ResourceEntry::new(resource_type, name, language_id, data))
+}
+
+fn cmd_parse_string_table(args: &[String]) -> anyhow::Result<()> {
+    if args.len() < 3 {
+        eprintln!("Usage: vb6-lsp parse-string-table <file.res> <block_id>");
+        std::process::exit(1);
+    }
+
+    let file_path = &args[1];
+    let block_id: u16 = args[2].parse()
+        .map_err(|_| anyhow::anyhow!("Invalid block_id: must be a number"))?;
+
+    // Read the .res file
+    let resources = read_res_file(file_path)?;
+
+    // Find the string table resource
+    let string_resource = resources.iter()
+        .find(|r| {
+            r.resource_type == ResourceType::String &&
+            matches!(r.name, ResourceId::Id(id) if id == block_id)
+        })
+        .ok_or_else(|| anyhow::anyhow!("String table block {} not found", block_id))?;
+
+    // Parse the string table
+    let strings = parse_string_table(&string_resource.data, block_id)?;
+
+    let json_strings: Vec<serde_json::Value> = strings.iter().map(|s| {
+        serde_json::json!({
+            "id": s.id,
+            "value": s.value
+        })
+    }).collect();
+
+    println!("{}", serde_json::json!({
+        "strings": json_strings
+    }));
+
+    Ok(())
 }
 
 /// Parse a resource type string (e.g., "Bitmap", "Icon", "Named(\"CUSTOM\")")

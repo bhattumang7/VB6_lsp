@@ -1,0 +1,17 @@
+# Cargo aliases for the project's test surfaces.
+#
+# `cargo test` (default) builds and tests the host x86_64 members: the vb6-lsp
+# server and the analysis engine chain (syntax / sema / engine).
+#
+# `cargo test-ast` runs the frontend/sema structural tests (AST nodes, parser,
+# spans, scanner, binding) on the host. They live in the runtime-emulation crate
+# but are pure Rust, so they build and pass on x86_64 — this surfaces them in the
+# fast host loop without the 32-bit cross-build.
+#
+# `cargo test-i686` runs the VB6 runtime-emulation tests (vb6-core). They assume
+# 32-bit VARIANT/pointer layout, so they only run under i686-pc-windows-msvc.
+#
+# `scripts/test.ps1` runs the host + structural + 32-bit suites in sequence.
+[alias]
+test-ast = "test -p vb6-core --test ast_nodes --test parser --test parser_diagnostics --test spans --test sema --test sema_diagnostics --test scanner_tokenize --test scanner_intern --test cond_comp"
+test-i686 = "test --target i686-pc-windows-msvc -p vb6-core"

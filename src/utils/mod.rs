@@ -2,4 +2,4 @@
 
 pub mod encoding;
 
-pub use encoding::{Encoding, VB6FileReader, VB6FileContent};
+pub use encoding::VB6FileReader;

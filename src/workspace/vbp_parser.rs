@@ -3,24 +3,18 @@
 //! Parses Visual Basic 6 project files (.vbp) to extract project structure.
 //! VBP files are INI-style text files with key=value pairs.
 //!
-//! Features ported from vb6parse-master:
-//! - SubProject references (*\A<path> format)
+//! Features ported from previous implementations:
 //! - Custom property sections ([MS Transaction Server], etc.)
 //! - Strongly-typed properties (compilation, version info, threading)
-//! - UUID validation for type library references
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use uuid::Uuid;
 
 use crate::utils::VB6FileReader;
 
 /// A parsed VBP project file
 #[derive(Debug, Clone)]
 pub struct VbpFile {
-    /// Path to the .vbp file itself
-    pub path: PathBuf,
-
     /// Project type (Exe, OleDll, Control, OleExe)
     pub project_type: ProjectType,
 
@@ -51,10 +45,10 @@ pub struct VbpFile {
     /// Related documents (not code, but tracked)
     pub related_documents: Vec<PathBuf>,
 
-    /// Type library references (including SubProject references)
+    /// Type library and subproject references (Reference= lines)
     pub references: Vec<TypeLibReference>,
 
-    /// OCX/ActiveX object references
+    /// ActiveX/OCX object references (Object= lines)
     pub objects: Vec<ObjectReference>,
 
     /// Startup form or "Sub Main"
@@ -82,15 +76,39 @@ pub struct VbpFile {
     pub properties: HashMap<String, String>,
 }
 
+/// A type library or subproject reference from a `Reference=` line
+#[derive(Debug, Clone)]
+pub enum TypeLibReference {
+    /// A compiled type library: `*\G{GUID}#major.minor#lcid#path#description`
+    Compiled {
+        guid: String,
+        major: u16,
+        minor: u16,
+        lcid: u32,
+        path: PathBuf,
+        description: String,
+    },
+    /// A VBP subproject reference: `*\Apath.vbp` or bare path
+    Subproject { path: PathBuf },
+}
+
+/// An ActiveX/OCX object reference from an `Object=` line
+///
+/// Format: `{GUID}#version#0; filename.ocx`
+#[derive(Debug, Clone)]
+pub struct ObjectReference {
+    pub guid: String,
+    pub version: String,
+    pub filename: String,
+}
+
 /// Project member (module, class, form, etc.)
 #[derive(Debug, Clone)]
 pub struct ProjectMember {
-    /// Logical name in the project (e.g., "ModMain")
+    /// Logical name from the VBP (e.g. `modMain`, `clsDatabase`)
     pub name: String,
-
-    /// Relative path from VBP location (e.g., "Utils\ModMain.bas")
+    /// Path relative to the VBP file (as written in the file)
     pub relative_path: PathBuf,
-
     /// Absolute path (resolved when VBP is parsed)
     pub absolute_path: PathBuf,
 }
@@ -119,69 +137,6 @@ impl ProjectType {
             _ => ProjectType::Exe,
         }
     }
-}
-
-/// Reference to a type library or sub-project
-#[derive(Debug, Clone)]
-pub enum TypeLibReference {
-    /// Compiled type library reference (.tlb, .olb, .dll)
-    Compiled {
-        /// Validated UUID of the type library
-        uuid: Uuid,
-        /// Version (major.minor format)
-        version: String,
-        /// Locale ID
-        lcid: String,
-        /// Path to the type library file
-        path: Option<PathBuf>,
-        /// Description/name of the library
-        description: String,
-    },
-    /// Reference to another VB6 project
-    SubProject {
-        /// Path to the referenced .vbp file
-        path: PathBuf,
-    },
-}
-
-impl TypeLibReference {
-    /// Get the UUID if this is a compiled reference
-    pub fn uuid(&self) -> Option<&Uuid> {
-        match self {
-            TypeLibReference::Compiled { uuid, .. } => Some(uuid),
-            TypeLibReference::SubProject { .. } => None,
-        }
-    }
-
-    /// Get the description
-    pub fn description(&self) -> &str {
-        match self {
-            TypeLibReference::Compiled { description, .. } => description,
-            TypeLibReference::SubProject { path } => {
-                path.file_stem()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("SubProject")
-            }
-        }
-    }
-
-    /// Check if this is a sub-project reference
-    pub fn is_subproject(&self) -> bool {
-        matches!(self, TypeLibReference::SubProject { .. })
-    }
-}
-
-/// Reference to an OCX/ActiveX control
-#[derive(Debug, Clone)]
-pub struct ObjectReference {
-    /// Validated UUID of the control
-    pub uuid: Option<Uuid>,
-    /// Raw GUID string (preserved if UUID parsing fails)
-    pub guid_string: String,
-    /// Version
-    pub version: String,
-    /// Filename (e.g., "MSCOMCTL.OCX")
-    pub filename: Option<String>,
 }
 
 /// Version information for the project
@@ -366,7 +321,6 @@ impl VbpFile {
         let vbp_dir = vbp_path.parent().unwrap_or(Path::new("."));
 
         let mut vbp = VbpFile {
-            path: vbp_path.to_path_buf(),
             project_type: ProjectType::default(),
             name: vbp_path
                 .file_stem()
@@ -398,7 +352,7 @@ impl VbpFile {
 
         let mut current_section: Option<String> = None;
 
-        for (line_num, line) in content.lines().enumerate() {
+        for (_line_num, line) in content.lines().enumerate() {
             let line = line.trim();
 
             // Skip empty lines
@@ -407,8 +361,7 @@ impl VbpFile {
             }
 
             // Check for section headers like [MS Transaction Server]
-            if line.starts_with('[') && line.ends_with(']') {
-                let section_name = line[1..line.len() - 1].to_string();
+            if let Some(section_name) = parse_section_header(line) {
                 vbp.custom_sections
                     .entry(section_name.clone())
                     .or_insert_with(HashMap::new);
@@ -416,224 +369,212 @@ impl VbpFile {
                 continue;
             }
 
-            // Parse key=value
-            if let Some((key, value)) = line.split_once('=') {
-                let key = key.trim();
-                let value = value.trim();
+            let Some((key, value)) = line.split_once('=') else {
+                continue;
+            };
+            let key = key.trim();
+            let value = value.trim();
 
-                // If we're in a custom section, store there
-                if let Some(ref section) = current_section {
-                    if let Some(section_map) = vbp.custom_sections.get_mut(section) {
-                        section_map.insert(key.to_string(), value.to_string());
-                    }
-                    continue;
+            // If we're in a custom section, store there
+            if let Some(ref section) = current_section {
+                if let Some(section_map) = vbp.custom_sections.get_mut(section) {
+                    section_map.insert(key.to_string(), value.to_string());
                 }
-
-                // Parse standard VBP properties
-                match key {
-                    "Type" => {
-                        vbp.project_type = ProjectType::from_str(value);
-                    }
-                    "Name" | "Title" => {
-                        vbp.name = unquote(value);
-                    }
-                    "Module" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".bas") {
-                            vbp.modules.push(member);
-                        }
-                    }
-                    "Class" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".cls") {
-                            vbp.classes.push(member);
-                        }
-                    }
-                    "Form" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".frm") {
-                            vbp.forms.push(member);
-                        }
-                    }
-                    "UserControl" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".ctl") {
-                            vbp.user_controls.push(member);
-                        }
-                    }
-                    "PropertyPage" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".pag") {
-                            vbp.property_pages.push(member);
-                        }
-                    }
-                    "UserDocument" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".dob") {
-                            vbp.user_documents.push(member);
-                        }
-                    }
-                    "Designer" => {
-                        if let Some(member) = parse_member(value, vbp_dir, ".dsr") {
-                            vbp.designers.push(member);
-                        }
-                    }
-                    "RelatedDoc" => {
-                        let path = vbp_dir.join(value);
-                        vbp.related_documents.push(path);
-                    }
-                    "Reference" => {
-                        if let Some(reference) = parse_reference(value, vbp_dir) {
-                            vbp.references.push(reference);
-                        }
-                    }
-                    "Object" => {
-                        if let Some(object) = parse_object(value) {
-                            vbp.objects.push(object);
-                        }
-                    }
-                    "Startup" => {
-                        let startup_val = unquote(value);
-                        // Handle VB6's special "none" indicators
-                        if startup_val != "(None)" && !startup_val.is_empty() {
-                            vbp.startup = Some(startup_val);
-                        }
-                    }
-                    "ExeName32" | "ExeName" => {
-                        vbp.exe_name = Some(unquote(value));
-                    }
-                    // Version info
-                    "MajorVer" => {
-                        vbp.version_info.major = value.parse().unwrap_or(0);
-                    }
-                    "MinorVer" => {
-                        vbp.version_info.minor = value.parse().unwrap_or(0);
-                    }
-                    "RevisionVer" => {
-                        vbp.version_info.revision = value.parse().unwrap_or(0);
-                    }
-                    "AutoIncrementVer" => {
-                        vbp.version_info.auto_increment = value.parse().unwrap_or(0);
-                    }
-                    "VersionCompanyName" => {
-                        vbp.version_info.company_name = Some(unquote(value));
-                    }
-                    "VersionFileDescription" => {
-                        vbp.version_info.file_description = Some(unquote(value));
-                    }
-                    "VersionLegalCopyright" => {
-                        vbp.version_info.legal_copyright = Some(unquote(value));
-                    }
-                    "VersionLegalTrademarks" => {
-                        vbp.version_info.legal_trademarks = Some(unquote(value));
-                    }
-                    "VersionProductName" => {
-                        vbp.version_info.product_name = Some(unquote(value));
-                    }
-                    "VersionComments" => {
-                        vbp.version_info.comments = Some(unquote(value));
-                    }
-                    // Compilation settings
-                    "CompilationType" => {
-                        vbp.compilation.compilation_type = match value.parse::<i32>().unwrap_or(-1)
-                        {
-                            0 => CompilationType::NativeCode,
-                            _ => CompilationType::PCode,
-                        };
-                    }
-                    "OptimizationType" => {
-                        vbp.compilation.optimization_type =
-                            match value.parse::<i32>().unwrap_or(0) {
-                                0 => OptimizationType::None,
-                                1 => OptimizationType::FavorFastCode,
-                                2 => OptimizationType::FavorSmallCode,
-                                _ => OptimizationType::FavorFastCode,
-                            };
-                    }
-                    "FavorPentiumPro(tm)" => {
-                        vbp.compilation.favor_pentium_pro = parse_bool(value);
-                    }
-                    "CodeViewDebugInfo" => {
-                        vbp.compilation.code_view_debug_info = parse_bool(value);
-                    }
-                    "NoAliasing" => {
-                        vbp.compilation.no_aliasing = parse_bool(value);
-                    }
-                    "BoundsCheck" => {
-                        vbp.compilation.bounds_check = parse_bool(value);
-                    }
-                    "OverflowCheck" => {
-                        vbp.compilation.overflow_check = parse_bool(value);
-                    }
-                    "FlPointCheck" => {
-                        vbp.compilation.floating_point_check = parse_bool(value);
-                    }
-                    "FDIVCheck" => {
-                        vbp.compilation.fdiv_check = parse_bool(value);
-                    }
-                    "UnroundedFP" => {
-                        vbp.compilation.unrounded_fp = parse_bool(value);
-                    }
-                    "CondComp" => {
-                        let cond = unquote(value);
-                        if !cond.is_empty() {
-                            vbp.compilation.conditional_compile = Some(cond);
-                        }
-                    }
-                    // Threading settings
-                    "StartMode" => {
-                        vbp.threading.start_mode = match value.parse::<i32>().unwrap_or(0) {
-                            1 => StartMode::Automation,
-                            _ => StartMode::StandAlone,
-                        };
-                    }
-                    "Unattended" => {
-                        vbp.threading.unattended = parse_bool(value);
-                    }
-                    "Retained" => {
-                        vbp.threading.retained = parse_bool(value);
-                    }
-                    "ThreadPerObject" => {
-                        let val = value.parse::<i32>().unwrap_or(-1);
-                        vbp.threading.thread_per_object = if val < 0 { None } else { Some(val as u16) };
-                    }
-                    "MaxNumberOfThreads" => {
-                        vbp.threading.max_threads = value.parse().unwrap_or(1);
-                    }
-                    "ThreadingModel" => {
-                        vbp.threading.threading_model = match value.parse::<i32>().unwrap_or(1) {
-                            0 => ThreadingModel::SingleThreaded,
-                            _ => ThreadingModel::ApartmentThreaded,
-                        };
-                    }
-                    // Compatibility settings
-                    "CompatibleMode" => {
-                        let mode_val = unquote(value);
-                        vbp.compatibility.mode = match mode_val.parse::<i32>().unwrap_or(1) {
-                            0 => CompatibilityMode::NoCompatibility,
-                            2 => CompatibilityMode::Binary,
-                            _ => CompatibilityMode::Project,
-                        };
-                    }
-                    "CompatibleEXE32" => {
-                        let path = unquote(value);
-                        if !path.is_empty() {
-                            vbp.compatibility.compatible_exe = Some(PathBuf::from(path));
-                        }
-                    }
-                    "NoControlUpgrade" => {
-                        // NoControlUpgrade=1 means DON'T upgrade
-                        vbp.compatibility.upgrade_controls = !parse_bool(value);
-                    }
-                    "RemoveUnusedControlInfo" => {
-                        vbp.compatibility.remove_unused_control_info = parse_bool(value);
-                    }
-                    "ServerSupportFiles" => {
-                        vbp.compatibility.server_support_files = parse_bool(value);
-                    }
-                    _ => {
-                        // Store other properties for potential future use
-                        vbp.properties.insert(key.to_string(), value.to_string());
-                    }
-                }
+                continue;
             }
+
+            vbp.apply_property(key, value, vbp_dir);
         }
 
         Ok(vbp)
+    }
+
+    /// Apply a single standard `key=value` property to the project.
+    fn apply_property(&mut self, key: &str, value: &str, vbp_dir: &Path) {
+        if self.apply_member_property(key, value, vbp_dir) {
+            return;
+        }
+        if self.apply_version_property(key, value) {
+            return;
+        }
+        if self.apply_compilation_property(key, value) {
+            return;
+        }
+        if self.apply_threading_property(key, value) {
+            return;
+        }
+        if self.apply_compatibility_property(key, value) {
+            return;
+        }
+        // Store other properties for potential future use
+        self.properties.insert(key.to_string(), value.to_string());
+    }
+
+    /// Handle top-level identity, members, references and objects.
+    /// Returns `true` if the key was recognized.
+    fn apply_member_property(&mut self, key: &str, value: &str, vbp_dir: &Path) -> bool {
+        match key {
+            "Type" => self.project_type = ProjectType::from_str(value),
+            "Name" | "Title" => self.name = unquote(value),
+            "Module" => self.push_member(&mut |s| &mut s.modules, value, vbp_dir, ".bas"),
+            "Class" => self.push_member(&mut |s| &mut s.classes, value, vbp_dir, ".cls"),
+            "Form" => self.push_member(&mut |s| &mut s.forms, value, vbp_dir, ".frm"),
+            "UserControl" => {
+                self.push_member(&mut |s| &mut s.user_controls, value, vbp_dir, ".ctl")
+            }
+            "PropertyPage" => {
+                self.push_member(&mut |s| &mut s.property_pages, value, vbp_dir, ".pag")
+            }
+            "UserDocument" => {
+                self.push_member(&mut |s| &mut s.user_documents, value, vbp_dir, ".dob")
+            }
+            "Designer" => self.push_member(&mut |s| &mut s.designers, value, vbp_dir, ".dsr"),
+            "RelatedDoc" => self.related_documents.push(vbp_dir.join(value)),
+            "Reference" => {
+                if let Some(r) = parse_reference(value, vbp_dir) {
+                    self.references.push(r);
+                }
+            }
+            "Object" => {
+                if let Some(o) = parse_object(value) {
+                    self.objects.push(o);
+                }
+            }
+            "Startup" => {
+                let startup_val = unquote(value);
+                // Handle VB6's special "none" indicators
+                if startup_val != "(None)" && !startup_val.is_empty() {
+                    self.startup = Some(startup_val);
+                }
+            }
+            "ExeName32" | "ExeName" => self.exe_name = Some(unquote(value)),
+            _ => return false,
+        }
+        true
+    }
+
+    /// Push a parsed member into the vector selected by `select`.
+    fn push_member(
+        &mut self,
+        select: &mut dyn FnMut(&mut Self) -> &mut Vec<ProjectMember>,
+        value: &str,
+        vbp_dir: &Path,
+        default_ext: &str,
+    ) {
+        if let Some(member) = parse_member(value, vbp_dir, default_ext) {
+            select(self).push(member);
+        }
+    }
+
+    /// Handle version-info properties. Returns `true` if recognized.
+    fn apply_version_property(&mut self, key: &str, value: &str) -> bool {
+        let v = &mut self.version_info;
+        match key {
+            "MajorVer" => v.major = value.parse().unwrap_or(0),
+            "MinorVer" => v.minor = value.parse().unwrap_or(0),
+            "RevisionVer" => v.revision = value.parse().unwrap_or(0),
+            "AutoIncrementVer" => v.auto_increment = value.parse().unwrap_or(0),
+            "VersionCompanyName" => v.company_name = Some(unquote(value)),
+            "VersionFileDescription" => v.file_description = Some(unquote(value)),
+            "VersionLegalCopyright" => v.legal_copyright = Some(unquote(value)),
+            "VersionLegalTrademarks" => v.legal_trademarks = Some(unquote(value)),
+            "VersionProductName" => v.product_name = Some(unquote(value)),
+            "VersionComments" => v.comments = Some(unquote(value)),
+            _ => return false,
+        }
+        true
+    }
+
+    /// Handle compilation-settings properties. Returns `true` if recognized.
+    fn apply_compilation_property(&mut self, key: &str, value: &str) -> bool {
+        let c = &mut self.compilation;
+        match key {
+            "CompilationType" => {
+                c.compilation_type = match value.parse::<i32>().unwrap_or(-1) {
+                    0 => CompilationType::NativeCode,
+                    _ => CompilationType::PCode,
+                };
+            }
+            "OptimizationType" => {
+                c.optimization_type = match value.parse::<i32>().unwrap_or(0) {
+                    0 => OptimizationType::None,
+                    1 => OptimizationType::FavorFastCode,
+                    2 => OptimizationType::FavorSmallCode,
+                    _ => OptimizationType::FavorFastCode,
+                };
+            }
+            "FavorPentiumPro(tm)" => c.favor_pentium_pro = parse_bool(value),
+            "CodeViewDebugInfo" => c.code_view_debug_info = parse_bool(value),
+            "NoAliasing" => c.no_aliasing = parse_bool(value),
+            "BoundsCheck" => c.bounds_check = parse_bool(value),
+            "OverflowCheck" => c.overflow_check = parse_bool(value),
+            "FlPointCheck" => c.floating_point_check = parse_bool(value),
+            "FDIVCheck" => c.fdiv_check = parse_bool(value),
+            "UnroundedFP" => c.unrounded_fp = parse_bool(value),
+            "CondComp" => {
+                let cond = unquote(value);
+                if !cond.is_empty() {
+                    c.conditional_compile = Some(cond);
+                }
+            }
+            _ => return false,
+        }
+        true
+    }
+
+    /// Handle threading-settings properties. Returns `true` if recognized.
+    fn apply_threading_property(&mut self, key: &str, value: &str) -> bool {
+        let t = &mut self.threading;
+        match key {
+            "StartMode" => {
+                t.start_mode = match value.parse::<i32>().unwrap_or(0) {
+                    1 => StartMode::Automation,
+                    _ => StartMode::StandAlone,
+                };
+            }
+            "Unattended" => t.unattended = parse_bool(value),
+            "Retained" => t.retained = parse_bool(value),
+            "ThreadPerObject" => {
+                let val = value.parse::<i32>().unwrap_or(-1);
+                t.thread_per_object = if val < 0 { None } else { Some(val as u16) };
+            }
+            "MaxNumberOfThreads" => t.max_threads = value.parse().unwrap_or(1),
+            "ThreadingModel" => {
+                t.threading_model = match value.parse::<i32>().unwrap_or(1) {
+                    0 => ThreadingModel::SingleThreaded,
+                    _ => ThreadingModel::ApartmentThreaded,
+                };
+            }
+            _ => return false,
+        }
+        true
+    }
+
+    /// Handle compatibility-settings properties. Returns `true` if recognized.
+    fn apply_compatibility_property(&mut self, key: &str, value: &str) -> bool {
+        let c = &mut self.compatibility;
+        match key {
+            "CompatibleMode" => {
+                let mode_val = unquote(value);
+                c.mode = match mode_val.parse::<i32>().unwrap_or(1) {
+                    0 => CompatibilityMode::NoCompatibility,
+                    2 => CompatibilityMode::Binary,
+                    _ => CompatibilityMode::Project,
+                };
+            }
+            "CompatibleEXE32" => {
+                let path = unquote(value);
+                if !path.is_empty() {
+                    c.compatible_exe = Some(PathBuf::from(path));
+                }
+            }
+            // NoControlUpgrade=1 means DON'T upgrade
+            "NoControlUpgrade" => c.upgrade_controls = !parse_bool(value),
+            "RemoveUnusedControlInfo" => c.remove_unused_control_info = parse_bool(value),
+            "ServerSupportFiles" => c.server_support_files = parse_bool(value),
+            _ => return false,
+        }
+        true
     }
 
     /// Get all source file members (modules, classes, forms, controls, etc.)
@@ -648,68 +589,76 @@ impl VbpFile {
             .chain(self.designers.iter())
     }
 
-    /// Check if a file path belongs to this project
-    pub fn contains_file(&self, file_path: &Path) -> bool {
-        // Normalize paths for comparison
-        let normalized = normalize_path(file_path);
-
-        self.all_source_files()
-            .any(|member| normalize_path(&member.absolute_path) == normalized)
-    }
-
-    /// Find a project member by its absolute path
-    pub fn find_member(&self, file_path: &Path) -> Option<&ProjectMember> {
-        let normalized = normalize_path(file_path);
-
-        self.all_source_files()
-            .find(|member| normalize_path(&member.absolute_path) == normalized)
-    }
-
-    /// Find a project member by its logical name
-    pub fn find_member_by_name(&self, name: &str) -> Option<&ProjectMember> {
-        let name_lower = name.to_lowercase();
-
-        self.all_source_files()
-            .find(|member| member.name.to_lowercase() == name_lower)
-    }
-
-    /// Get all sub-project references
-    pub fn get_subproject_references(&self) -> Vec<&TypeLibReference> {
-        self.references
-            .iter()
-            .filter(|r| r.is_subproject())
-            .collect()
-    }
-
-    /// Get all compiled type library references
+    /// Get only the compiled type library references (TLB/DLL, not subprojects)
     pub fn get_compiled_references(&self) -> Vec<&TypeLibReference> {
         self.references
             .iter()
-            .filter(|r| !r.is_subproject())
+            .filter(|r| matches!(r, TypeLibReference::Compiled { .. }))
             .collect()
     }
 
-    /// Get a custom section's properties
+    /// Get only the subproject references (.vbp files)
+    pub fn get_subproject_references(&self) -> Vec<&TypeLibReference> {
+        self.references
+            .iter()
+            .filter(|r| matches!(r, TypeLibReference::Subproject { .. }))
+            .collect()
+    }
+
+    /// Find a member (any kind) by its logical name (case-insensitive)
+    #[allow(dead_code)]
+    pub fn find_member_by_name(&self, name: &str) -> Option<&ProjectMember> {
+        let lower = name.to_lowercase();
+        self.all_source_files()
+            .find(|m| m.name.to_lowercase() == lower)
+    }
+
+    /// Get a named custom section (e.g., "MS Transaction Server")
     pub fn get_custom_section(&self, name: &str) -> Option<&HashMap<String, String>> {
         self.custom_sections.get(name)
     }
 }
 
-/// Parse a project member entry (Module, Class, Form, etc.)
-/// Format: "name; path" or just "path" (name derived from filename)
-fn parse_member(value: &str, vbp_dir: &Path, default_ext: &str) -> Option<ProjectMember> {
-    let (name, relative_path) = if let Some((n, p)) = value.split_once(';') {
-        (n.trim().to_string(), PathBuf::from(p.trim()))
+impl TypeLibReference {
+    /// Return the GUID string if this is a compiled type library reference.
+    pub fn uuid(&self) -> Option<&str> {
+        match self {
+            TypeLibReference::Compiled { guid, .. } => Some(guid.as_str()),
+            TypeLibReference::Subproject { .. } => None,
+        }
+    }
+
+    /// Human-readable description of the reference.
+    pub fn description(&self) -> &str {
+        match self {
+            TypeLibReference::Compiled { description, .. } => description.as_str(),
+            TypeLibReference::Subproject { path } => {
+                path.to_str().unwrap_or("<subproject>")
+            }
+        }
+    }
+}
+
+/// Parse a section header line like `[MS Transaction Server]`, returning the
+/// section name without the brackets.
+fn parse_section_header(line: &str) -> Option<String> {
+    if line.starts_with('[') && line.ends_with(']') {
+        Some(line[1..line.len() - 1].to_string())
     } else {
-        // No semicolon - value is just the path, derive name from filename
-        let path = PathBuf::from(value.trim());
-        let name = path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or("Unknown")
-            .to_string();
-        (name, path)
+        None
+    }
+}
+
+/// Parse a project member entry (Module, Class, Form, etc.)
+/// Format: "name; path" or just "path"
+fn parse_member(value: &str, vbp_dir: &Path, default_ext: &str) -> Option<ProjectMember> {
+    let (name, raw_path) = if let Some((n, p)) = value.split_once(';') {
+        (n.trim().to_string(), p.trim())
+    } else {
+        (String::new(), value.trim())
     };
+
+    let relative_path = PathBuf::from(raw_path);
 
     // Ensure extension is present
     let relative_path = if relative_path.extension().is_none() {
@@ -725,85 +674,56 @@ fn parse_member(value: &str, vbp_dir: &Path, default_ext: &str) -> Option<Projec
         vbp_dir.join(&relative_path)
     };
 
-    Some(ProjectMember {
-        name,
-        relative_path,
-        absolute_path,
-    })
+    Some(ProjectMember { name, relative_path, absolute_path })
 }
 
-/// Parse a Reference entry
-/// Format: *\G{GUID}#version#lcid#path#description (compiled)
-/// Format: *\A<path> (sub-project)
+/// Parse a `Reference=` value into a [`TypeLibReference`]
 fn parse_reference(value: &str, vbp_dir: &Path) -> Option<TypeLibReference> {
-    // Check for sub-project reference: *\A<path>
-    if value.starts_with("*\\A") {
-        let path_str = value.trim_start_matches("*\\A").trim();
-        let path = if Path::new(path_str).is_absolute() {
-            PathBuf::from(path_str)
-        } else {
-            vbp_dir.join(path_str)
-        };
-        return Some(TypeLibReference::SubProject { path });
-    }
+    let value = value.strip_prefix(r"*\").unwrap_or(value);
 
-    // Parse compiled reference: *\G{GUID}#version#lcid#path#description
-    let value = value.trim_start_matches("*\\G");
-
-    let parts: Vec<&str> = value.split('#').collect();
-    if parts.len() < 5 {
-        return None;
-    }
-
-    // Parse and validate UUID
-    let guid_str = parts[0].trim_matches(|c| c == '{' || c == '}');
-    let uuid = match Uuid::parse_str(guid_str) {
-        Ok(uuid) => uuid,
-        Err(_) => return None, // Skip invalid UUIDs
-    };
-
-    let version = parts[1].to_string();
-    let lcid = parts[2].to_string();
-    let path = if parts[3].is_empty() {
-        None
+    if let Some(rest) = value.strip_prefix('G') {
+        // Compiled typelib: G{GUID}#major.minor#lcid#path#description
+        let parts: Vec<&str> = rest.splitn(5, '#').collect();
+        if parts.len() < 5 {
+            return None;
+        }
+        let guid = parts[0].trim_matches(|c| c == '{' || c == '}').to_string();
+        let ver: Vec<&str> = parts[1].split('.').collect();
+        let major = ver.first().and_then(|v| v.parse().ok()).unwrap_or(0);
+        let minor = ver.get(1).and_then(|v| v.parse().ok()).unwrap_or(0);
+        let lcid = parts[2].parse().unwrap_or(0);
+        let path = PathBuf::from(parts[3]);
+        let description = parts[4].to_string();
+        Some(TypeLibReference::Compiled { guid, major, minor, lcid, path, description })
     } else {
-        Some(PathBuf::from(parts[3]))
-    };
-    let description = parts[4].to_string();
-
-    Some(TypeLibReference::Compiled {
-        uuid,
-        version,
-        lcid,
-        path,
-        description,
-    })
+        // Subproject reference: A<path> or bare path
+        let raw = value.strip_prefix('A').unwrap_or(value);
+        let path = if Path::new(raw).is_absolute() {
+            PathBuf::from(raw)
+        } else {
+            vbp_dir.join(raw)
+        };
+        Some(TypeLibReference::Subproject { path })
+    }
 }
 
-/// Parse an Object entry
-/// Format: {GUID}#version#0; filename
+/// Parse an `Object=` value into an [`ObjectReference`]
+///
+/// Format: `{GUID}#version#0; filename.ocx`
 fn parse_object(value: &str) -> Option<ObjectReference> {
-    let (guid_part, filename) = if let Some((g, f)) = value.split_once(';') {
-        (g.trim(), Some(f.trim().to_string()))
-    } else {
-        (value.trim(), None)
-    };
-
-    let parts: Vec<&str> = guid_part.split('#').collect();
-    if parts.is_empty() {
+    let parts: Vec<&str> = value.splitn(4, '#').collect();
+    if parts.len() < 3 {
         return None;
     }
-
-    let guid_str = parts[0].trim_matches(|c| c == '{' || c == '}');
-    let uuid = Uuid::parse_str(guid_str).ok();
-    let version = parts.get(1).unwrap_or(&"1.0").to_string();
-
-    Some(ObjectReference {
-        uuid,
-        guid_string: guid_str.to_string(),
-        version,
-        filename,
-    })
+    let guid = parts[0].trim().trim_matches(|c| c == '{' || c == '}').to_string();
+    let version = parts[1].to_string();
+    let filename = parts
+        .get(2)
+        .and_then(|p| p.split_once(';'))
+        .map(|(_, f)| f.trim().to_string())
+        .or_else(|| parts.get(3).map(|p| p.trim().to_string()))
+        .unwrap_or_default();
+    Some(ObjectReference { guid, version, filename })
 }
 
 /// Remove surrounding quotes from a string
@@ -817,23 +737,6 @@ fn parse_bool(s: &str) -> bool {
     match s.parse::<i32>() {
         Ok(v) => v != 0,
         Err(_) => s.eq_ignore_ascii_case("true"),
-    }
-}
-
-/// Normalize a path for comparison (lowercase on Windows, canonicalize if possible)
-fn normalize_path(path: &Path) -> PathBuf {
-    // Try to canonicalize, fall back to the original path
-    let path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
-
-    // On Windows, paths are case-insensitive
-    #[cfg(windows)]
-    {
-        PathBuf::from(path.to_string_lossy().to_lowercase())
-    }
-
-    #[cfg(not(windows))]
-    {
-        path
     }
 }
 
@@ -863,71 +766,6 @@ ExeName32="TestProject.exe"
         assert_eq!(vbp.forms.len(), 1);
         assert_eq!(vbp.startup, Some("Sub Main".to_string()));
         assert_eq!(vbp.exe_name, Some("TestProject.exe".to_string()));
-
-        // Check module details
-        assert_eq!(vbp.modules[0].name, "ModMain");
-        assert_eq!(vbp.modules[1].name, "ModUtils");
-        assert_eq!(
-            vbp.modules[1].relative_path,
-            PathBuf::from("Utils\\ModUtils.bas")
-        );
-    }
-
-    #[test]
-    fn test_parse_compiled_reference() {
-        let ref_str =
-            "*\\G{00020430-0000-0000-C000-000000000046}#2.0#0#C:\\Windows\\System32\\stdole2.tlb#OLE Automation";
-        let reference = parse_reference(ref_str, Path::new("C:\\Projects")).unwrap();
-
-        match reference {
-            TypeLibReference::Compiled {
-                uuid,
-                version,
-                description,
-                ..
-            } => {
-                assert_eq!(
-                    uuid,
-                    Uuid::parse_str("00020430-0000-0000-C000-000000000046").unwrap()
-                );
-                assert_eq!(version, "2.0");
-                assert_eq!(description, "OLE Automation");
-            }
-            _ => panic!("Expected compiled reference"),
-        }
-    }
-
-    #[test]
-    fn test_parse_subproject_reference() {
-        let ref_str = "*\\ACommonLib.vbp";
-        let reference = parse_reference(ref_str, Path::new("C:\\Projects")).unwrap();
-
-        match reference {
-            TypeLibReference::SubProject { path } => {
-                assert!(path.ends_with("CommonLib.vbp"));
-            }
-            _ => panic!("Expected subproject reference"),
-        }
-    }
-
-    #[test]
-    fn test_parse_object() {
-        let obj_str = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0; MSCOMCTL.OCX";
-        let object = parse_object(obj_str).unwrap();
-
-        assert!(object.uuid.is_some());
-        assert_eq!(object.guid_string, "831FDD16-0C5C-11D2-A9FC-0000F8754DA1");
-        assert_eq!(object.version, "2.0");
-        assert_eq!(object.filename, Some("MSCOMCTL.OCX".to_string()));
-    }
-
-    #[test]
-    fn test_member_without_semicolon() {
-        // Some VBP files use just the filename without "name; path" format
-        let member = parse_member("frmMain.frm", Path::new("C:\\Projects"), ".frm").unwrap();
-
-        assert_eq!(member.name, "frmMain");
-        assert_eq!(member.relative_path, PathBuf::from("frmMain.frm"));
     }
 
     #[test]

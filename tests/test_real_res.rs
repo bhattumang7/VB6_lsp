@@ -10,6 +10,45 @@ fn fixture_path(filename: &str) -> PathBuf {
     path
 }
 
+/// Format a resource id for display.
+fn format_resource_name(name: &ResourceId) -> String {
+    match name {
+        ResourceId::Id(id) => format!("ID {}", id),
+        ResourceId::Name(name) => format!("\"{}\"", name),
+    }
+}
+
+/// Print a string table's entries (used when an entry is a `String` resource).
+fn print_string_table(data: &[u8], block_id: u16) {
+    match parse_string_table(data, block_id) {
+        Ok(strings) => {
+            println!("  String table entries:");
+            for str_entry in strings {
+                println!("    String {}: \"{}\"", str_entry.id, str_entry.value);
+            }
+        }
+        Err(e) => {
+            println!("  Failed to parse string table: {}", e);
+        }
+    }
+}
+
+/// Print one resource entry's detail, including a string table when present.
+fn print_resource_entry(entry: &ResourceEntry) {
+    println!("Resource: {:?}", entry.resource_type);
+    println!("  Name: {}", format_resource_name(&entry.name));
+    println!("  Language: 0x{:04X}", entry.language_id);
+    println!("  Data size: {} bytes", entry.data.len());
+
+    if entry.resource_type == ResourceType::String {
+        if let Some(block_id) = entry.name.as_id() {
+            print_string_table(&entry.data, block_id);
+        }
+    }
+
+    println!();
+}
+
 #[test]
 fn test_parse_game2048_res() {
     // Read the real Game2048.RES file
@@ -32,36 +71,7 @@ fn test_parse_game2048_res() {
     for entry in &resources {
         let type_name = format!("{:?}", entry.resource_type);
         *type_counts.entry(type_name).or_insert(0) += 1;
-
-        // Print detailed info
-        let name = match &entry.name {
-            ResourceId::Id(id) => format!("ID {}", id),
-            ResourceId::Name(name) => format!("\"{}\"", name),
-        };
-
-        println!("Resource: {:?}", entry.resource_type);
-        println!("  Name: {}", name);
-        println!("  Language: 0x{:04X}", entry.language_id);
-        println!("  Data size: {} bytes", entry.data.len());
-
-        // If it's a string table, parse and display it
-        if entry.resource_type == ResourceType::String {
-            if let Some(block_id) = entry.name.as_id() {
-                match parse_string_table(&entry.data, block_id) {
-                    Ok(strings) => {
-                        println!("  String table entries:");
-                        for str_entry in strings {
-                            println!("    String {}: \"{}\"", str_entry.id, str_entry.value);
-                        }
-                    }
-                    Err(e) => {
-                        println!("  Failed to parse string table: {}", e);
-                    }
-                }
-            }
-        }
-
-        println!();
+        print_resource_entry(entry);
     }
 
     println!("\n=== Resource Type Summary ===");

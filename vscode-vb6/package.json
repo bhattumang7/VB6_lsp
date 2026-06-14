@@ -13,7 +13,7 @@
   "activationEvents": [
     "onLanguage:vb6"
   ],
-  "main": "./extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -40,6 +40,14 @@
         }
       }
     }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.js --bundle --outfile=dist/extension.js --external:vscode --platform=node --target=node18 --minify",
+    "package": "npm run build && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.0.0",
+    "esbuild": "^0.25.0"
   },
   "dependencies": {
     "vscode-languageclient": "^9.0.1"

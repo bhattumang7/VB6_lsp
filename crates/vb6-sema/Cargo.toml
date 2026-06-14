@@ -1,0 +1,7 @@
+[package]
+name = "vb6-sema"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vb6-syntax = { path = "../vb6-syntax" }

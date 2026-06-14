@@ -11,6 +11,7 @@
 
 use std::path::Path;
 
+use base64::Engine as _;
 use serde::Serialize;
 
 use super::coverage::{self, CoverageReport};
@@ -189,7 +190,7 @@ fn value_view(v: &FrxValue) -> ResourceValueView {
     match v {
         FrxValue::Picture { format, data, .. } => ResourceValueView::Picture {
             format: format!("{:?}", format),
-            base64: base64::encode(data),
+            base64: base64::engine::general_purpose::STANDARD.encode(data),
         },
         FrxValue::Font(f) => ResourceValueView::Font {
             name: f.name.clone(),
@@ -211,7 +212,7 @@ fn value_view(v: &FrxValue) -> ResourceValueView {
         FrxValue::PropertyPages(p) => ResourceValueView::PropertyPages { pages: p.clone() },
         FrxValue::OcxBag { clsid, data } => ResourceValueView::OcxBag {
             clsid: clsid.as_ref().map(|g| format_guid(*g)),
-            base64: base64::encode(data),
+            base64: base64::engine::general_purpose::STANDARD.encode(data),
         },
         FrxValue::DecodedBag { clsid, properties } => ResourceValueView::DecodedBag {
             clsid: clsid.as_ref().map(|g| format_guid(*g)),

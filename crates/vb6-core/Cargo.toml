@@ -1,0 +1,9 @@
+[package]
+name = "vb6-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vb6-syntax = { path = "../vb6-syntax" }
+vb6-sema = { path = "../vb6-sema" }
+vb6-engine = { path = "../vb6-engine" }

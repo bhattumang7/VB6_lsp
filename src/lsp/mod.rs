@@ -3,7 +3,6 @@
 //! Implements the Language Server Protocol handlers for VB6.
 
 mod capabilities;
-mod document;
 mod handlers;
 
 use std::sync::{Arc, RwLock};
@@ -14,10 +13,6 @@ use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer};
 
-use crate::analysis::{build_symbol_table, Analyzer, SymbolTable};
-use crate::claude::ClaudeClient;
-use crate::parser::Vb6Parser;
-use crate::utils::Encoding;
 use crate::workspace::WorkspaceManager;
 
 /// Document information stored in memory
@@ -26,14 +21,6 @@ pub struct Document {
     pub content: Rope,
     /// The document version
     pub version: i32,
-    /// Detected encoding (UTF-8 or Windows-1252)
-    pub encoding: Encoding,
-    /// Parsed AST (if available)
-    pub ast: Option<crate::parser::Vb6Ast>,
-    /// Tree-sitter tree for incremental parsing
-    pub tree: Option<tree_sitter::Tree>,
-    /// Symbol table (if available)
-    pub symbol_table: Option<SymbolTable>,
 }
 
 impl std::fmt::Debug for Document {
@@ -41,9 +28,6 @@ impl std::fmt::Debug for Document {
         f.debug_struct("Document")
             .field("content", &self.content)
             .field("version", &self.version)
-            .field("ast", &self.ast)
-            .field("tree", &self.tree.as_ref().map(|_| "..."))
-            .field("symbol_table", &self.symbol_table.as_ref().map(|t| format!("{} symbols", t.symbol_count())))
             .finish()
     }
 }
@@ -54,168 +38,44 @@ pub struct Vb6LanguageServer {
     client: Client,
     /// Open documents
     documents: DashMap<Url, Document>,
-    /// VB6 Parser (uses RwLock for incremental parsing support)
-    parser: Arc<RwLock<Vb6Parser>>,
-    /// Code analyzer
-    analyzer: Arc<Analyzer>,
-    /// Claude AI client (optional)
-    claude: Option<Arc<ClaudeClient>>,
-    /// Workspace manager for multi-project support
+    /// Workspace manager for multi-project support (VBP discovery)
     workspace: Arc<RwLock<WorkspaceManager>>,
+    /// VB6 analysis engine. Holds the project's parsed/bound state
+    /// and answers navigation/diagnostics queries.
+    engine: Arc<RwLock<vb6_engine::session::Session>>,
 }
 
 impl Vb6LanguageServer {
     pub fn new(client: Client) -> Self {
-        // Try to create Claude client if API key is available
-        let claude = std::env::var("ANTHROPIC_API_KEY")
-            .ok()
-            .map(|key| Arc::new(ClaudeClient::new(key)));
-
-        if claude.is_some() {
-            tracing::info!("Claude AI integration enabled");
-        } else {
-            tracing::info!("Claude AI integration disabled (no ANTHROPIC_API_KEY)");
-        }
-
         Self {
             client,
             documents: DashMap::new(),
-            parser: Arc::new(RwLock::new(Vb6Parser::new())),
-            analyzer: Arc::new(Analyzer::new()),
-            claude,
             workspace: Arc::new(RwLock::new(WorkspaceManager::new())),
+            engine: Arc::new(RwLock::new(vb6_engine::session::Session::from_sources(Vec::new()))),
         }
     }
 
-    /// Get document content by URI
-    pub fn get_document(&self, uri: &Url) -> Option<dashmap::mapref::one::Ref<'_, Url, Document>> {
-        self.documents.get(uri)
-    }
-
-    /// Parse a document and update diagnostics
+    /// Update the engine with the document's current content and publish diagnostics.
     async fn parse_and_diagnose(&self, uri: &Url) {
-        if let Some(mut doc) = self.documents.get_mut(uri) {
-            let content = doc.content.to_string();
+        let (content, version) = match self.documents.get(uri) {
+            Some(doc) => (doc.content.to_string(), doc.version),
+            None => return,
+        };
+        let key = crate::engine_glue::doc_key(uri);
 
-            // Parse the document using tree-sitter
-            let (parse_result, tree) = {
-                let mut parser = self.parser.write().unwrap();
-                let result = parser.parse(&content);
-                // Get the tree for symbol table building
-                let tree = parser.get_tree().cloned();
-                (result, tree)
-            };
-
-            match parse_result {
-                Ok(ast) => {
-                    // Get any parse errors for diagnostics
-                    let parse_errors = {
-                        let mut parser = self.parser.write().unwrap();
-                        parser.get_errors(&content)
-                    };
-
-                    // Run analysis
-                    let mut diagnostics = self.analyzer.analyze(&ast);
-
-                    // Add parse errors as diagnostics
-                    for error in parse_errors {
-                        diagnostics.push(Diagnostic {
-                            range: error.range,
-                            severity: Some(DiagnosticSeverity::ERROR),
-                            message: error.message,
-                            source: Some("vb6-lsp".to_string()),
-                            ..Default::default()
-                        });
-                    }
-
-                    doc.ast = Some(ast);
-
-                    // Build symbol table from tree-sitter tree
-                    if let Some(ref ts_tree) = tree {
-                        let symbol_table = build_symbol_table(uri.clone(), &content, ts_tree);
-                        tracing::debug!(
-                            "Built symbol table with {} symbols, {} scopes",
-                            symbol_table.symbol_count(),
-                            symbol_table.scope_count()
-                        );
-
-                        // Register with workspace manager for cross-project navigation
-                        if let Ok(file_path) = uri.to_file_path() {
-                            let mut workspace = self.workspace.write().unwrap();
-                            // Clone the symbol table for workspace (document keeps its own copy)
-                            workspace.set_symbol_table(&file_path, symbol_table.clone());
-                        }
-
-                        doc.symbol_table = Some(symbol_table);
-                    }
-
-                    // Publish diagnostics
-                    self.client
-                        .publish_diagnostics(uri.clone(), diagnostics, Some(doc.version))
-                        .await;
-                }
-                Err(errors) => {
-                    // Convert parse errors to diagnostics
-                    let diagnostics: Vec<Diagnostic> = errors
-                        .into_iter()
-                        .map(|e| Diagnostic {
-                            range: e.range,
-                            severity: Some(DiagnosticSeverity::ERROR),
-                            message: e.message,
-                            source: Some("vb6-lsp".to_string()),
-                            ..Default::default()
-                        })
-                        .collect();
-
-                    self.client
-                        .publish_diagnostics(uri.clone(), diagnostics, Some(doc.version))
-                        .await;
-                }
-            }
+        {
+            let mut engine = self.engine.write().unwrap();
+            engine.update_file(&key, crate::engine_glue::to_cp1252(&content));
         }
+        let diagnostics = {
+            let engine = self.engine.read().unwrap();
+            crate::engine_glue::diagnostics_for(&engine, &key)
+        };
+
+        self.client
+            .publish_diagnostics(uri.clone(), diagnostics, Some(version))
+            .await;
     }
-
-    /// Get tree-sitter tree for a document (for external use)
-    #[allow(dead_code)]
-    fn get_tree_for_uri(&self, _uri: &Url) -> Option<tree_sitter::Tree> {
-        let parser = self.parser.read().unwrap();
-        parser.get_tree().cloned()
-    }
-
-    /// Extract word at position from source
-    fn get_word_at_position(&self, source: &str, position: Position) -> Option<String> {
-        let lines: Vec<&str> = source.lines().collect();
-        let line = lines.get(position.line as usize)?;
-        let col = position.character as usize;
-
-        if col > line.len() {
-            return None;
-        }
-
-        let chars: Vec<char> = line.chars().collect();
-
-        // Find word boundaries
-        let mut start = col;
-        while start > 0 && is_identifier_char(chars[start - 1]) {
-            start -= 1;
-        }
-
-        let mut end = col;
-        while end < chars.len() && is_identifier_char(chars[end]) {
-            end += 1;
-        }
-
-        if start == end {
-            None
-        } else {
-            Some(chars[start..end].iter().collect())
-        }
-    }
-}
-
-/// Check if a character is valid in a VB6 identifier
-fn is_identifier_char(c: char) -> bool {
-    c.is_alphanumeric() || c == '_'
 }
 
 /// Hover content for a designer resource reference in a `.frm`/`.ctl`/`.pag`/`.dob`.
@@ -300,8 +160,11 @@ fn format_frx_value(value: &crate::controls::frx::FrxValue) -> String {
             format!("📦 proprietary control bag · {} bytes · CLSID {}", data.len(), id)
         }
         FrxValue::DecodedBag { properties, .. } => {
-            format!("🧩 decoded control bag · {} propert{}", properties.len(),
-                if properties.len() == 1 { "y" } else { "ies" })
+            format!(
+                "🧩 decoded control bag · {} propert{}",
+                properties.len(),
+                if properties.len() == 1 { "y" } else { "ies" }
+            )
         }
         FrxValue::Empty => "∅ empty resource".to_string(),
     }
@@ -323,7 +186,6 @@ impl LanguageServer for Vb6LanguageServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
         tracing::info!("Initializing VB6 Language Server");
 
-        // Scan workspace folders for VBP projects
         if let Some(workspace_folders) = params.workspace_folders {
             let mut workspace = self.workspace.write().unwrap();
             for folder in workspace_folders {
@@ -333,63 +195,70 @@ impl LanguageServer for Vb6LanguageServer {
                 }
             }
         } else if let Some(root_uri) = params.root_uri {
-            // Fallback to root_uri if workspace_folders not provided
             if let Ok(path) = root_uri.to_file_path() {
                 let mut workspace = self.workspace.write().unwrap();
                 let discovered = workspace.add_root(path);
-                tracing::info!("Discovered {} VBP projects in root", discovered.len());
+                let stats = workspace.stats();
+                tracing::info!(
+                    "Workspace: {} roots, {} projects, {} source files ({} VBP files discovered)",
+                    stats.root_count,
+                    stats.project_count,
+                    stats.total_source_files,
+                    discovered.len()
+                );
+                for project in workspace.projects() {
+                    tracing::debug!(
+                        "  Project '{}' at {}",
+                        project.name(),
+                        project.vbp_path().display()
+                    );
+                }
             }
         }
 
         Ok(InitializeResult {
             capabilities: ServerCapabilities {
-                // Text document sync
                 text_document_sync: Some(TextDocumentSyncCapability::Kind(
                     TextDocumentSyncKind::INCREMENTAL,
                 )),
 
-                // Completion
+                hover_provider: Some(HoverProviderCapability::Simple(true)),
+
+                signature_help_provider: Some(SignatureHelpOptions {
+                    trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
+                    retrigger_characters: Some(vec![",".to_string()]),
+                    work_done_progress_options: Default::default(),
+                }),
+
+                definition_provider: Some(OneOf::Left(true)),
+
+                references_provider: Some(OneOf::Left(true)),
+
+                document_highlight_provider: Some(OneOf::Left(true)),
+
+                document_symbol_provider: Some(OneOf::Left(true)),
+
+                workspace_symbol_provider: Some(OneOf::Left(true)),
+
                 completion_provider: Some(CompletionOptions {
-                    trigger_characters: Some(vec![".".to_string(), " ".to_string()]),
-                    resolve_provider: Some(true),
+                    trigger_characters: Some(vec![
+                        ".".to_string(),
+                        " ".to_string(),
+                    ]),
+                    resolve_provider: Some(false),
                     ..Default::default()
                 }),
 
-                // Hover
-                hover_provider: Some(HoverProviderCapability::Simple(true)),
-
-                // Signature help
-                signature_help_provider: Some(SignatureHelpOptions {
-                    trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
-                    retrigger_characters: None,
-                    work_done_progress_options: Default::default(),
-                }),
-
-                // Go to definition
-                definition_provider: Some(OneOf::Left(true)),
-
-                // Find references
-                references_provider: Some(OneOf::Left(true)),
-
-                // Document symbols (outline)
-                document_symbol_provider: Some(OneOf::Left(true)),
-
-                // Workspace symbols
-                workspace_symbol_provider: Some(OneOf::Left(true)),
-
-                // Code actions (quick fixes, refactoring)
                 code_action_provider: Some(CodeActionProviderCapability::Simple(true)),
 
-                // Formatting
                 document_formatting_provider: Some(OneOf::Left(true)),
 
-                // Rename
-                rename_provider: Some(OneOf::Right(RenameOptions {
-                    prepare_provider: Some(true),
-                    work_done_progress_options: Default::default(),
-                })),
+                folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
 
-                // Semantic tokens for syntax highlighting
+                rename_provider: Some(OneOf::Left(true)),
+
+                call_hierarchy_provider: Some(CallHierarchyServerCapability::Simple(true)),
+
                 semantic_tokens_provider: Some(
                     SemanticTokensServerCapabilities::SemanticTokensOptions(
                         SemanticTokensOptions {
@@ -413,7 +282,7 @@ impl LanguageServer for Vb6LanguageServer {
                                 ],
                             },
                             full: Some(SemanticTokensFullOptions::Bool(true)),
-                            range: Some(true),
+                            range: None,
                             ..Default::default()
                         },
                     ),
@@ -440,7 +309,6 @@ impl LanguageServer for Vb6LanguageServer {
         Ok(())
     }
 
-    // Document synchronization
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
         let uri = params.text_document.uri;
         let content = params.text_document.text;
@@ -448,16 +316,11 @@ impl LanguageServer for Vb6LanguageServer {
 
         tracing::debug!("Document opened: {}", uri);
 
-        // Documents opened via LSP are already decoded by the client as UTF-8
         self.documents.insert(
             uri.clone(),
             Document {
                 content: Rope::from_str(&content),
                 version,
-                encoding: Encoding::Utf8, // LSP protocol uses UTF-8
-                ast: None,
-                tree: None,
-                symbol_table: None,
             },
         );
 
@@ -472,7 +335,6 @@ impl LanguageServer for Vb6LanguageServer {
 
             for change in params.content_changes {
                 if let Some(range) = change.range {
-                    // Incremental update
                     let start_line = range.start.line as usize;
                     let start_char = range.start.character as usize;
                     let end_line = range.end.line as usize;
@@ -484,7 +346,6 @@ impl LanguageServer for Vb6LanguageServer {
                     doc.content.remove(start_idx..end_idx);
                     doc.content.insert(start_idx, &change.text);
                 } else {
-                    // Full replacement
                     doc.content = Rope::from_str(&change.text);
                 }
             }
@@ -497,10 +358,9 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = params.text_document.uri;
         tracing::debug!("Document closed: {}", uri);
 
-        // Remove from workspace manager
-        if let Ok(file_path) = uri.to_file_path() {
-            let mut workspace = self.workspace.write().unwrap();
-            workspace.remove_symbol_table(&file_path);
+        {
+            let mut engine = self.engine.write().unwrap();
+            engine.remove_file(&crate::engine_glue::doc_key(&uri));
         }
 
         self.documents.remove(&uri);
@@ -509,33 +369,7 @@ impl LanguageServer for Vb6LanguageServer {
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
         let uri = params.text_document.uri;
         tracing::debug!("Document saved: {}", uri);
-        // Re-analyze on save
         self.parse_and_diagnose(&uri).await;
-    }
-
-    // Completion
-    async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        let uri = &params.text_document_position.text_document.uri;
-        let position = params.text_document_position.position;
-
-        tracing::debug!("Completion requested at {:?}", position);
-
-        // Get completions from analyzer
-        if let Some(doc) = self.documents.get(uri) {
-            let content = doc.content.to_string();
-            // Prefer symbol table for context-aware completions
-            if let Some(ref table) = doc.symbol_table {
-                let items = self.analyzer.get_completions_with_symbols(table, position, &content);
-                return Ok(Some(CompletionResponse::Array(items)));
-            }
-            // Fall back to AST-based completions
-            if let Some(ref ast) = doc.ast {
-                let items = self.analyzer.get_completions(ast, position);
-                return Ok(Some(CompletionResponse::Array(items)));
-            }
-        }
-
-        Ok(Some(CompletionResponse::Array(vec![])))
     }
 
     // Hover
@@ -544,22 +378,17 @@ impl LanguageServer for Vb6LanguageServer {
         let position = params.text_document_position_params.position;
 
         if let Some(doc) = self.documents.get(uri) {
-            // Designer resource references (.frm/.ctl): decode the companion blob.
             let content = doc.content.to_string();
             if let Some(h) = frx_reference_hover(uri, &content, position) {
                 return Ok(Some(h));
             }
-            // Prefer symbol table for precise hover
-            if let Some(ref table) = doc.symbol_table {
-                return Ok(self.analyzer.get_hover_with_symbols(table, position));
-            }
-            // Fall back to AST-based hover
-            if let Some(ref ast) = doc.ast {
-                return Ok(self.analyzer.get_hover(ast, position));
-            }
         }
 
-        Ok(None)
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        Ok(g.hover(m, off).map(|h| crate::engine_glue::hover(&g, m, h)))
     }
 
     // Go to definition
@@ -570,52 +399,31 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        if let Some(doc) = self.documents.get(uri) {
-            let content = doc.content.to_string();
-            // Prefer symbol table for precise definition lookup
-            if let Some(ref table) = doc.symbol_table {
-                // Try local lookup first
-                if let Some(result) = self.analyzer.get_definition_with_symbols(table, &content, position) {
-                    return Ok(Some(result));
-                }
-
-                // If local lookup failed, try workspace-wide lookup
-                let word = self.get_word_at_position(&content, position);
-                if let Some(word) = word {
-                    if let Ok(file_path) = uri.to_file_path() {
-                        let workspace = self.workspace.read().unwrap();
-                        if let Some(location) = workspace.resolve_symbol(&word, &file_path) {
-                            return Ok(Some(GotoDefinitionResponse::Scalar(location)));
-                        }
-                    }
-                }
-            }
-            // Fall back to AST-based definition
-            if let Some(ref ast) = doc.ast {
-                return Ok(self.analyzer.get_definition(ast, position, uri));
-            }
-        }
-
-        Ok(None)
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        Ok(g.definition(m, off)
+            .and_then(|loc| crate::engine_glue::location(&g, loc))
+            .map(GotoDefinitionResponse::Scalar))
     }
 
     // Find references
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
+        let include_decl = params.context.include_declaration;
 
-        if let Some(doc) = self.documents.get(uri) {
-            // Prefer symbol table for precise references
-            if let Some(ref table) = doc.symbol_table {
-                return Ok(Some(self.analyzer.get_references_with_symbols(table, position)));
-            }
-            // Fall back to AST-based references
-            if let Some(ref ast) = doc.ast {
-                return Ok(Some(self.analyzer.get_references(ast, position, uri)));
-            }
-        }
-
-        Ok(None)
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        let locations = g
+            .references(m, off, include_decl)
+            .into_iter()
+            .filter_map(|l| crate::engine_glue::location(&g, l))
+            .collect();
+        Ok(Some(locations))
     }
 
     // Document symbols
@@ -624,55 +432,64 @@ impl LanguageServer for Vb6LanguageServer {
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
         let uri = &params.text_document.uri;
-
-        if let Some(doc) = self.documents.get(uri) {
-            // Prefer symbol table for precise document symbols
-            if let Some(ref table) = doc.symbol_table {
-                let symbols = self.analyzer.get_document_symbols_with_symbols(table);
-                return Ok(Some(DocumentSymbolResponse::Nested(symbols)));
-            }
-            // Fall back to AST-based symbols
-            if let Some(ref ast) = doc.ast {
-                let symbols = self.analyzer.get_document_symbols(ast);
-                return Ok(Some(DocumentSymbolResponse::Nested(symbols)));
-            }
-        }
-
-        Ok(None)
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        Ok(Some(DocumentSymbolResponse::Nested(
+            crate::engine_glue::document_symbols(&g, m),
+        )))
     }
 
-    // Code actions
+    // Workspace symbols
+    async fn symbol(
+        &self,
+        params: WorkspaceSymbolParams,
+    ) -> Result<Option<Vec<SymbolInformation>>> {
+        let g = self.engine.read().unwrap();
+        Ok(Some(crate::engine_glue::workspace_symbols(&g, &params.query)))
+    }
+
+    // Semantic tokens (syntax highlighting)
+    async fn semantic_tokens_full(
+        &self,
+        params: SemanticTokensParams,
+    ) -> Result<Option<SemanticTokensResult>> {
+        let uri = &params.text_document.uri;
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        Ok(Some(SemanticTokensResult::Tokens(
+            crate::engine_glue::semantic_tokens(&g, m),
+        )))
+    }
+
+    // Code actions (quick-fixes and refactors, computed by the engine)
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
         let uri = &params.text_document.uri;
         let range = params.range;
 
-        if let Some(doc) = self.documents.get(uri) {
-            if let Some(ref ast) = doc.ast {
-                let actions = self.analyzer.get_code_actions(ast, range, &params.context);
-
-                // If Claude is available, add AI-powered actions
-                if let Some(ref _claude) = self.claude {
-                    // TODO: Add Claude-powered code actions
-                }
-
-                return Ok(Some(actions));
-            }
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let actions = crate::engine_glue::code_actions(&g, m, range);
+        if actions.is_empty() {
+            return Ok(None);
         }
-
-        Ok(None)
+        Ok(Some(actions))
     }
 
-    // Formatting
+    // Formatting (engine-driven: indentation, trailing-whitespace, keyword case)
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
         let uri = &params.text_document.uri;
 
-        if let Some(doc) = self.documents.get(uri) {
-            let content = doc.content.to_string();
-            let parser = self.parser.read().unwrap();
-            return Ok(parser.format(&content));
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let edits = crate::engine_glue::formatting(&g, m);
+        if edits.is_empty() {
+            return Ok(None);
         }
-
-        Ok(None)
+        Ok(Some(edits))
     }
 
     // Rename
@@ -681,12 +498,115 @@ impl LanguageServer for Vb6LanguageServer {
         let position = params.text_document_position.position;
         let new_name = params.new_name;
 
-        if let Some(doc) = self.documents.get(uri) {
-            if let Some(ref ast) = doc.ast {
-                return Ok(self.analyzer.rename(ast, position, &new_name, uri));
-            }
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        let edits = g.rename(m, off, &new_name);
+        if edits.is_empty() {
+            return Ok(None);
         }
+        Ok(Some(crate::engine_glue::workspace_edit(&g, edits)))
+    }
 
-        Ok(None)
+    // Signature help (shown when typing inside a call's argument list)
+    async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        Ok(crate::engine_glue::sig_help(&g, m, off))
+    }
+
+    // Document highlights (all occurrences of the symbol under the cursor in this file)
+    async fn document_highlight(
+        &self,
+        params: DocumentHighlightParams,
+    ) -> Result<Option<Vec<DocumentHighlight>>> {
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        let spans = g.document_highlights(m, off);
+        if spans.is_empty() {
+            return Ok(None);
+        }
+        Ok(Some(crate::engine_glue::document_highlights(&g, m, spans)))
+    }
+
+    // Folding ranges (Sub/Function/If/For/…/End blocks)
+    async fn folding_range(
+        &self,
+        params: FoldingRangeParams,
+    ) -> Result<Option<Vec<FoldingRange>>> {
+        let uri = &params.text_document.uri;
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let ranges = crate::engine_glue::folding_ranges(&g, m);
+        if ranges.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(ranges))
+        }
+    }
+
+    // Completion (identifier suggestions at the cursor position)
+    async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+        let uri = &params.text_document_position.text_document.uri;
+        let position = params.text_document_position.position;
+
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        let items = crate::engine_glue::completion_items(&g, m, off);
+        Ok(Some(CompletionResponse::Array(items)))
+    }
+
+    // Call hierarchy — resolve the procedure under the cursor
+    async fn prepare_call_hierarchy(
+        &self,
+        params: CallHierarchyPrepareParams,
+    ) -> Result<Option<Vec<CallHierarchyItem>>> {
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+
+        let key = crate::engine_glue::doc_key(uri);
+        let g = self.engine.read().unwrap();
+        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
+        let items = crate::engine_glue::prepare_call_hierarchy(&g, m, off);
+        if items.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(items))
+        }
+    }
+
+    // Call hierarchy — who calls the given procedure?
+    async fn incoming_calls(
+        &self,
+        params: CallHierarchyIncomingCallsParams,
+    ) -> Result<Option<Vec<CallHierarchyIncomingCall>>> {
+        let g = self.engine.read().unwrap();
+        let calls = crate::engine_glue::incoming_calls(&g, &params.item);
+        Ok(Some(calls))
+    }
+
+    // Call hierarchy — what does the given procedure call?
+    async fn outgoing_calls(
+        &self,
+        params: CallHierarchyOutgoingCallsParams,
+    ) -> Result<Option<Vec<CallHierarchyOutgoingCall>>> {
+        let g = self.engine.read().unwrap();
+        let calls = crate::engine_glue::outgoing_calls(&g, &params.item);
+        Ok(Some(calls))
     }
 }

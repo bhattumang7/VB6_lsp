@@ -45,7 +45,7 @@ pub struct CoverageReport {
     pub gaps: Vec<Gap>,
     /// Pairs of (sorted) span indices whose ranges overlap — always a bug.
     pub overlaps: Vec<(usize, usize)>,
-    /// Count of spans whose length is opaque/unproven (Tier-3 bags).
+    /// Count of spans whose length is opaque (e.g. proprietary bags).
     pub opaque_spans: usize,
     /// References that failed to decode: `(property@0xOFFSET, message)`.
     pub errors: Vec<(String, String)>,
@@ -53,7 +53,7 @@ pub struct CoverageReport {
 
 impl CoverageReport {
     /// True when every non-padding byte is attributed, nothing overlaps, and
-    /// nothing failed to decode. Opaque (Tier-3) spans count as covered but are
+    /// nothing failed to decode. Opaque spans count as covered but are
     /// surfaced separately via [`opaque_spans`](Self::opaque_spans).
     pub fn is_complete(&self) -> bool {
         self.overlaps.is_empty()
@@ -146,7 +146,7 @@ fn build_report(file: String, bytes: &[u8], refs: &[ResourceRef]) -> CoverageRep
 
     spans.sort_by_key(|s| s.start);
 
-    // Opaque (Tier-3) bags have an unprovable length. Blobs are packed sequentially,
+    // Opaque bags have an unprovable length. Blobs are packed sequentially,
     // so clamp an opaque span to the next blob's start (or EOF) — it then neither
     // over-claims bytes nor produces a false overlap with the following reference.
     for i in 0..spans.len() {

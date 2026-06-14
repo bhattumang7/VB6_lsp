@@ -1,8 +1,9 @@
 Type=Exe
 Form=Form1.frm
-Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\Windows\SysWOW64\stdole2.tlb#OLE Automation
+Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\..\..\Windows\SysWOW64\stdole2.tlb#OLE Automation
 Object={0ECD9B60-23AA-11D0-B351-00A0C9055D8E}#6.0#0; MShflxgd.ocx
 Object={65E121D4-0C60-11D2-A9FC-0000F8754DA1}#2.0#0; MSChrt20.ocx
+IconForm="Form1"
 Startup="Form1"
 Command32=""
 Name="Project1"

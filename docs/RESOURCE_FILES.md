@@ -245,4 +245,4 @@ Tests include:
 
 ## Reference
 
-Based on the RisohEditor resource editor implementation, ensuring compatibility with all edge cases handled by production VB6 resource tools.
+Ensures compatibility with all edge cases handled by production VB6 resource tools.

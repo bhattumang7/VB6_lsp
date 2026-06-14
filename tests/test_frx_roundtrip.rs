@@ -77,7 +77,7 @@ fn corpus_roundtrip_byte_exact() {
             let off = r.frx.offset as usize;
             let (val, span) = match frx::decode_span(bytes, off, kind) {
                 Ok(x) => x,
-                Err(_) => continue, // decode failures are a D1/D3 concern, not round-trip
+                Err(_) => continue, // Skip decode failures
             };
             let end = (off + span).min(bytes.len());
             let original = &bytes[off..end];

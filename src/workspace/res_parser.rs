@@ -166,30 +166,14 @@ pub enum ResourceId {
     Name(String),
 }
 
+
 impl ResourceId {
-    /// Check if this is a numeric ID
-    pub fn is_id(&self) -> bool {
-        matches!(self, ResourceId::Id(_))
-    }
-
-    /// Check if this is a string name
-    pub fn is_name(&self) -> bool {
-        matches!(self, ResourceId::Name(_))
-    }
-
-    /// Get the numeric ID if available
+    /// Return the numeric ID if this is an `Id` variant, otherwise `None`.
+    #[allow(dead_code)]
     pub fn as_id(&self) -> Option<u16> {
         match self {
             ResourceId::Id(id) => Some(*id),
-            _ => None,
-        }
-    }
-
-    /// Get the string name if available
-    pub fn as_name(&self) -> Option<&str> {
-        match self {
-            ResourceId::Name(name) => Some(name),
-            _ => None,
+            ResourceId::Name(_) => None,
         }
     }
 }
@@ -201,7 +185,6 @@ pub struct MemoryFlags(pub u16);
 impl MemoryFlags {
     pub const MOVEABLE: u16 = 0x0010;
     pub const PURE: u16 = 0x0020;
-    pub const PRELOAD: u16 = 0x0040;
     pub const DISCARDABLE: u16 = 0x1000;
 
     /// Default flags for most resources
@@ -337,7 +320,7 @@ impl ResHeader {
     }
 
     /// Write this resource header to a byte stream
-    pub fn write_to<W: Write>(&self, writer: &mut PositionWriter<W>) -> io::Result<()> {
+    pub(crate) fn write_to<W: Write>(&self, writer: &mut PositionWriter<W>) -> io::Result<()> {
         // Write DataSize and HeaderSize
         writer.write_u32::<LittleEndian>(self.data_size)?;
         writer.write_u32::<LittleEndian>(self.header_size)?;
@@ -537,41 +520,6 @@ fn align_to_dword(value: usize) -> usize {
     (value + 3) & !3
 }
 
-/// Position-tracking reader wrapper for proper DWORD alignment
-struct PositionTracker<R> {
-    inner: R,
-    position: usize,
-}
-
-impl<R: Read> PositionTracker<R> {
-    fn new(inner: R) -> Self {
-        PositionTracker { inner, position: 0 }
-    }
-
-    fn position(&self) -> usize {
-        self.position
-    }
-
-    fn align_to_dword(&mut self) -> io::Result<()> {
-        let remainder = self.position % 4;
-        if remainder != 0 {
-            let padding = 4 - remainder;
-            let mut buf = vec![0u8; padding];
-            self.inner.read_exact(&mut buf)?;
-            self.position += padding;
-        }
-        Ok(())
-    }
-}
-
-impl<R: Read> Read for PositionTracker<R> {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        let n = self.inner.read(buf)?;
-        self.position += n;
-        Ok(n)
-    }
-}
-
 /// Position-tracking writer wrapper for proper DWORD alignment
 pub(crate) struct PositionWriter<W> {
     inner: W,
@@ -581,10 +529,6 @@ pub(crate) struct PositionWriter<W> {
 impl<W: Write> PositionWriter<W> {
     fn new(inner: W) -> Self {
         PositionWriter { inner, position: 0 }
-    }
-
-    fn position(&self) -> usize {
-        self.position
     }
 
     fn align_to_dword(&mut self) -> io::Result<()> {
@@ -739,44 +683,6 @@ pub fn parse_string_table(data: &[u8], block_id: u16) -> io::Result<Vec<StringTa
     Ok(entries)
 }
 
-/// Create a string table resource data block
-///
-/// # Arguments
-///
-/// * `entries` - String entries (must all be in the same block of 16)
-///
-pub fn create_string_table(entries: &[StringTableEntry]) -> io::Result<Vec<u8>> {
-    let mut buffer = Vec::new();
-
-    if entries.is_empty() {
-        return Ok(buffer);
-    }
-
-    // Determine the block
-    let block_id = (entries[0].id / 16) * 16;
-
-    // Create 16 slots
-    for i in 0..16 {
-        let id = block_id + i;
-
-        // Find entry for this ID
-        if let Some(entry) = entries.iter().find(|e| e.id == id) {
-            // Write length
-            let chars: Vec<u16> = entry.value.encode_utf16().collect();
-            buffer.write_u16::<LittleEndian>(chars.len() as u16)?;
-
-            // Write characters
-            for ch in chars {
-                buffer.write_u16::<LittleEndian>(ch)?;
-            }
-        } else {
-            // Empty slot
-            buffer.write_u16::<LittleEndian>(0)?;
-        }
-    }
-
-    Ok(buffer)
-}
 
 #[cfg(test)]
 mod tests {
@@ -792,17 +698,6 @@ mod tests {
     }
 
     #[test]
-    fn test_resource_id() {
-        let id = ResourceId::Id(100);
-        assert!(id.is_id());
-        assert_eq!(id.as_id(), Some(100));
-
-        let name = ResourceId::Name("TEST".to_string());
-        assert!(name.is_name());
-        assert_eq!(name.as_name(), Some("TEST"));
-    }
-
-    #[test]
     fn test_align_to_dword() {
         assert_eq!(align_to_dword(0), 0);
         assert_eq!(align_to_dword(1), 4);
@@ -810,33 +705,6 @@ mod tests {
         assert_eq!(align_to_dword(3), 4);
         assert_eq!(align_to_dword(4), 4);
         assert_eq!(align_to_dword(5), 8);
-    }
-
-    #[test]
-    fn test_string_table_creation() {
-        let entries = vec![
-            StringTableEntry {
-                id: 100,
-                value: "Hello".to_string(),
-            },
-            StringTableEntry {
-                id: 101,
-                value: "World".to_string(),
-            },
-        ];
-
-        let data = create_string_table(&entries).unwrap();
-        assert!(!data.is_empty());
-
-        // Parse it back
-        let block_id = (100 / 16) + 1;
-        let parsed = parse_string_table(&data, block_id).unwrap();
-
-        assert_eq!(parsed.len(), 2);
-        assert_eq!(parsed[0].id, 100);
-        assert_eq!(parsed[0].value, "Hello");
-        assert_eq!(parsed[1].id, 101);
-        assert_eq!(parsed[1].value, "World");
     }
 
     #[test]

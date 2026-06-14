@@ -9,7 +9,7 @@
 //! 2. Read files with proper encoding handling
 //! 3. Preserve the original encoding for future writes
 
-use encoding_rs::{Encoding as EncodingRs, UTF_8, WINDOWS_1252};
+use encoding_rs::WINDOWS_1252;
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -22,26 +22,14 @@ pub enum Encoding {
     Utf8,
     /// Windows-1252 / CP1252 (VB6 IDE default)
     Windows1252,
-    /// Unknown or mixed encoding
-    Unknown,
 }
 
 impl Encoding {
-    /// Get the encoding_rs::Encoding for this type
-    pub fn as_encoding_rs(&self) -> &'static EncodingRs {
-        match self {
-            Encoding::Utf8 => UTF_8,
-            Encoding::Windows1252 => WINDOWS_1252,
-            Encoding::Unknown => WINDOWS_1252, // Default fallback
-        }
-    }
-
     /// Get a human-readable name for this encoding
     pub fn name(&self) -> &'static str {
         match self {
             Encoding::Utf8 => "UTF-8",
             Encoding::Windows1252 => "Windows-1252",
-            Encoding::Unknown => "Unknown (fallback to Windows-1252)",
         }
     }
 }
@@ -96,14 +84,6 @@ impl VB6FileReader {
         );
 
         Ok(content)
-    }
-
-    /// Read a VB6 file and return just the text content
-    ///
-    /// This is a convenience method that discards encoding information.
-    /// Use `read_file()` if you need to know or preserve the encoding.
-    pub fn read_to_string(path: &Path) -> io::Result<String> {
-        Ok(Self::read_file(path)?.text)
     }
 
     /// Detect encoding and decode bytes to a string
@@ -173,72 +153,6 @@ impl VB6FileReader {
             had_errors,
         }
     }
-
-    /// Encode a string back to bytes using the specified encoding
-    ///
-    /// Use this when writing VB6 files to preserve their original encoding.
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// use vb6_lsp::utils::{VB6FileReader, Encoding};
-    ///
-    /// let text = "Option Explicit\r\n";
-    /// let bytes = VB6FileReader::encode_string(text, Encoding::Windows1252);
-    /// // Write bytes to file...
-    /// ```
-    pub fn encode_string(text: &str, encoding: Encoding) -> Vec<u8> {
-        match encoding {
-            Encoding::Utf8 => text.as_bytes().to_vec(),
-            Encoding::Windows1252 | Encoding::Unknown => {
-                let (encoded, _, _) = WINDOWS_1252.encode(text);
-                encoded.into_owned()
-            }
-        }
-    }
-
-    /// Check if bytes are likely to be Windows-1252 encoded
-    ///
-    /// This is a heuristic check that looks for:
-    /// - Bytes in the 0x80-0x9F range (Windows-1252 specific)
-    /// - Invalid UTF-8 sequences
-    ///
-    /// Returns `true` if the bytes are likely Windows-1252.
-    pub fn is_likely_windows1252(bytes: &[u8]) -> bool {
-        // If it's valid UTF-8, it's probably UTF-8
-        if String::from_utf8(bytes.to_vec()).is_ok() {
-            return false;
-        }
-
-        // Look for Windows-1252 specific characters (0x80-0x9F)
-        // These are control characters in ISO-8859-1 but printable in Windows-1252
-        let has_win1252_chars = bytes.iter().any(|&b| matches!(b, 0x80..=0x9F));
-
-        has_win1252_chars
-    }
-
-    /// Detect encoding without decoding the entire file
-    ///
-    /// This is useful for large files where you only need to know
-    /// the encoding without actually reading the content.
-    pub fn detect_encoding(bytes: &[u8]) -> Encoding {
-        // Check for UTF-8 BOM
-        if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
-            return Encoding::Utf8;
-        }
-
-        // Try UTF-8 validation
-        if String::from_utf8(bytes.to_vec()).is_ok() {
-            return Encoding::Utf8;
-        }
-
-        // Check for Windows-1252 indicators
-        if Self::is_likely_windows1252(bytes) {
-            return Encoding::Windows1252;
-        }
-
-        Encoding::Unknown
-    }
 }
 
 #[cfg(test)]
@@ -285,35 +199,5 @@ mod tests {
 
         assert_eq!(content.encoding, Encoding::Windows1252);
         assert!(!content.text.is_empty());
-    }
-
-    #[test]
-    fn test_encode_utf8() {
-        let text = "Option Explicit";
-        let bytes = VB6FileReader::encode_string(text, Encoding::Utf8);
-
-        assert_eq!(bytes, text.as_bytes());
-    }
-
-    #[test]
-    fn test_encode_windows1252() {
-        let text = "Option Explicit";
-        let bytes = VB6FileReader::encode_string(text, Encoding::Windows1252);
-
-        // Should be able to decode it back
-        let (decoded, _, had_errors) = WINDOWS_1252.decode(&bytes);
-        assert_eq!(decoded, text);
-        assert!(!had_errors);
-    }
-
-    #[test]
-    fn test_is_likely_windows1252() {
-        // UTF-8 text
-        let utf8_bytes = "Option Explicit".as_bytes();
-        assert!(!VB6FileReader::is_likely_windows1252(utf8_bytes));
-
-        // Windows-1252 with special char
-        let win1252_bytes = vec![0x4F, 0x70, 0x74, 0x93, 0x45];
-        assert!(VB6FileReader::is_likely_windows1252(&win1252_bytes));
     }
 }

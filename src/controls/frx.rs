@@ -8,9 +8,9 @@
 //! Caption         =   $"frmMain.frx":0BCA      ' $ => length-prefixed string
 //! ```
 //!
-//! The blob formats decoded here were reverse-engineered and verified two
-//! independent ways: against Microsoft's own COM serialization (`StdPicture` /
-//! `StdFont` via `IPersistStream::Save`) and against real-world corpus bytes.
+//! The blob formats decoded here were verified two independent ways: against
+//! Microsoft's own COM serialization (`StdPicture` / `StdFont` via
+//! `IPersistStream::Save`) and against real-world corpus bytes.
 //! Driving the decode by the *known property kind* (rather than sniffing a
 //! signature byte) avoids the mis-reads that signature-guessing produces.
 
@@ -275,6 +275,7 @@ pub fn decode_span(
 }
 
 /// `StdPicture`: `[u32 outerLen]["lt\0\0"][u32 dataLen][image bytes]`, outerLen = 8 + dataLen.
+#[cfg(test)]
 pub fn decode_picture(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
     picture_span(buf, offset).map(|(v, _)| v)
 }
@@ -325,6 +326,7 @@ fn picture_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError
 }
 
 /// `StdFont`: `[u8 ver][u16 charset][u8 flags][u16 weight][u32 size=pt*10000][u8 nameLen][name]`.
+#[cfg(test)]
 pub fn decode_font(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
     font_span(buf, offset).map(|(v, _)| v)
 }
@@ -361,6 +363,7 @@ fn font_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
 
 /// Length-prefixed string. `prefix` is 1 (short form) or 4 (`$` long form).
 /// Text may be ANSI or UTF-16LE; we detect the latter heuristically.
+#[cfg(test)]
 pub fn decode_string(buf: &[u8], offset: usize, prefix: usize) -> Result<FrxValue, FrxError> {
     string_span(buf, offset, prefix).map(|(v, _)| v)
 }
@@ -382,6 +385,7 @@ fn string_span(buf: &[u8], offset: usize, prefix: usize) -> Result<(FrxValue, us
 
 /// `List`: `[u16 count][u16 sig][ {[u16 len][ansi text]} x count ]`.
 /// Driven by the known property kind, so the signature value is not gated on.
+#[cfg(test)]
 pub fn decode_list(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
     list_span(buf, offset).map(|(v, _)| v)
 }
@@ -420,11 +424,6 @@ fn list_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
     Ok((FrxValue::List { items: strings, sig }, span))
 }
 
-/// `ItemData`: `[u16 count][u16 sig][ i32 x count ]`. Best-effort (length-validated).
-pub fn decode_itemdata(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
-    itemdata_span(buf, offset).map(|(v, _)| v)
-}
-
 fn itemdata_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError> {
     let (sig, items, span) = count_sig_items(buf, offset)?;
     let raw = items.iter().map(|b| b.to_vec()).collect();
@@ -441,6 +440,7 @@ pub fn itemdata_value(raw: &[u8]) -> i32 {
 }
 
 /// `PropertyPages`: `[u32 count][ {[u16 len-incl-null][name bytes][00]} x count ]`.
+#[cfg(test)]
 pub fn decode_property_pages(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
     property_pages_span(buf, offset).map(|(v, _)| v)
 }
@@ -505,75 +505,17 @@ fn ocx_bag_span(buf: &[u8], offset: usize) -> (FrxValue, usize) {
 /// Byte-exact inverse of [`decode_span`] for `Picture`, `Empty`, `Font`,
 /// `List`, `ItemData`, `PropertyPages`, and length-framed `OcxBag`. `Text` is
 /// best-effort only (its decode applies a lossy charset heuristic).
+#[allow(dead_code)]
 pub fn encode(value: &FrxValue, kind: PropKind) -> Vec<u8> {
     let mut out = Vec::new();
     match value {
-        FrxValue::Empty => {
-            out.extend_from_slice(&8u32.to_le_bytes());
-            out.extend_from_slice(b"lt\0\0");
-            out.extend_from_slice(&0u32.to_le_bytes());
-        }
-        FrxValue::Picture { data, clsid, .. } => {
-            let data_len = data.len() as u32;
-            if let Some(c) = clsid {
-                out.extend_from_slice(&(data_len + 24).to_le_bytes());
-                out.extend_from_slice(c);
-            } else {
-                out.extend_from_slice(&(data_len + 8).to_le_bytes());
-            }
-            out.extend_from_slice(b"lt\0\0");
-            out.extend_from_slice(&data_len.to_le_bytes());
-            out.extend_from_slice(data);
-        }
-        FrxValue::Font(f) => {
-            out.push(0x01);
-            out.extend_from_slice(&f.charset.to_le_bytes());
-            out.push(f.raw_flags);
-            out.extend_from_slice(&f.weight.to_le_bytes());
-            let size = (f.size_pt * 10000.0).round() as u32;
-            out.extend_from_slice(&size.to_le_bytes());
-            let name = encode_ansi(&f.name);
-            out.push(name.len() as u8);
-            out.extend_from_slice(&name);
-        }
-        FrxValue::Text(s) => {
-            let bytes = encode_ansi(s);
-            match kind {
-                PropKind::StringShort => out.push(bytes.len() as u8),
-                _ => out.extend_from_slice(&(bytes.len() as u32).to_le_bytes()),
-            }
-            out.extend_from_slice(&bytes);
-        }
-        FrxValue::List { items, sig } => {
-            out.extend_from_slice(&(items.len() as u16).to_le_bytes());
-            if !items.is_empty() {
-                out.extend_from_slice(&sig.to_le_bytes());
-                for it in items {
-                    let b = encode_ansi(it);
-                    out.extend_from_slice(&(b.len() as u16).to_le_bytes());
-                    out.extend_from_slice(&b);
-                }
-            }
-        }
-        FrxValue::ItemData { items, sig } => {
-            out.extend_from_slice(&(items.len() as u16).to_le_bytes());
-            if !items.is_empty() {
-                out.extend_from_slice(&sig.to_le_bytes());
-                for it in items {
-                    out.extend_from_slice(&(it.len() as u16).to_le_bytes());
-                    out.extend_from_slice(it);
-                }
-            }
-        }
-        FrxValue::PropertyPages(pages) => {
-            out.extend_from_slice(&(pages.len() as u32).to_le_bytes());
-            for p in pages {
-                let b = encode_ansi(p);
-                out.extend_from_slice(&((b.len() + 1) as u16).to_le_bytes()); // length includes the NUL
-                out.extend_from_slice(&b);
-                out.push(0);
-            }
-        }
+        FrxValue::Empty => encode_empty(&mut out),
+        FrxValue::Picture { data, clsid, .. } => encode_picture(&mut out, data, clsid),
+        FrxValue::Font(f) => encode_font(&mut out, f),
+        FrxValue::Text(s) => encode_text(&mut out, s, kind),
+        FrxValue::List { items, sig } => encode_list(&mut out, items, *sig),
+        FrxValue::ItemData { items, sig } => encode_item_data(&mut out, items, *sig),
+        FrxValue::PropertyPages(pages) => encode_property_pages(&mut out, pages),
         FrxValue::OcxBag { data, .. } => {
             // Length-framed bags re-emit the [u32 len] prefix + the body we kept.
             out.extend_from_slice(&(data.len() as u32).to_le_bytes());
@@ -586,7 +528,90 @@ pub fn encode(value: &FrxValue, kind: PropKind) -> Vec<u8> {
     out
 }
 
+#[allow(dead_code)]
+fn encode_empty(out: &mut Vec<u8>) {
+    out.extend_from_slice(&8u32.to_le_bytes());
+    out.extend_from_slice(b"lt\0\0");
+    out.extend_from_slice(&0u32.to_le_bytes());
+}
+
+#[allow(dead_code)]
+fn encode_picture(out: &mut Vec<u8>, data: &[u8], clsid: &Option<[u8; 16]>) {
+    let data_len = data.len() as u32;
+    if let Some(c) = clsid {
+        out.extend_from_slice(&(data_len + 24).to_le_bytes());
+        out.extend_from_slice(c);
+    } else {
+        out.extend_from_slice(&(data_len + 8).to_le_bytes());
+    }
+    out.extend_from_slice(b"lt\0\0");
+    out.extend_from_slice(&data_len.to_le_bytes());
+    out.extend_from_slice(data);
+}
+
+#[allow(dead_code)]
+fn encode_font(out: &mut Vec<u8>, f: &FontInfo) {
+    out.push(0x01);
+    out.extend_from_slice(&f.charset.to_le_bytes());
+    out.push(f.raw_flags);
+    out.extend_from_slice(&f.weight.to_le_bytes());
+    let size = (f.size_pt * 10000.0).round() as u32;
+    out.extend_from_slice(&size.to_le_bytes());
+    let name = encode_ansi(&f.name);
+    out.push(name.len() as u8);
+    out.extend_from_slice(&name);
+}
+
+#[allow(dead_code)]
+fn encode_text(out: &mut Vec<u8>, s: &str, kind: PropKind) {
+    let bytes = encode_ansi(s);
+    match kind {
+        PropKind::StringShort => out.push(bytes.len() as u8),
+        _ => out.extend_from_slice(&(bytes.len() as u32).to_le_bytes()),
+    }
+    out.extend_from_slice(&bytes);
+}
+
+#[allow(dead_code)]
+fn encode_list(out: &mut Vec<u8>, items: &[String], sig: u16) {
+    out.extend_from_slice(&(items.len() as u16).to_le_bytes());
+    if items.is_empty() {
+        return;
+    }
+    out.extend_from_slice(&sig.to_le_bytes());
+    for it in items {
+        let b = encode_ansi(it);
+        out.extend_from_slice(&(b.len() as u16).to_le_bytes());
+        out.extend_from_slice(&b);
+    }
+}
+
+#[allow(dead_code)]
+fn encode_item_data(out: &mut Vec<u8>, items: &[Vec<u8>], sig: u16) {
+    out.extend_from_slice(&(items.len() as u16).to_le_bytes());
+    if items.is_empty() {
+        return;
+    }
+    out.extend_from_slice(&sig.to_le_bytes());
+    for it in items {
+        out.extend_from_slice(&(it.len() as u16).to_le_bytes());
+        out.extend_from_slice(it);
+    }
+}
+
+#[allow(dead_code)]
+fn encode_property_pages(out: &mut Vec<u8>, pages: &[String]) {
+    out.extend_from_slice(&(pages.len() as u32).to_le_bytes());
+    for p in pages {
+        let b = encode_ansi(p);
+        out.extend_from_slice(&((b.len() + 1) as u16).to_le_bytes()); // length includes the NUL
+        out.extend_from_slice(&b);
+        out.push(0);
+    }
+}
+
 /// Inverse of [`decode_ansi`]: map a `char` back to a single byte (Latin-1).
+#[allow(dead_code)]
 fn encode_ansi(s: &str) -> Vec<u8> {
     s.chars()
         .map(|c| if (c as u32) <= 0xFF { c as u8 } else { b'?' })
@@ -620,21 +645,6 @@ pub fn detect_image_format(data: &[u8]) -> ImageFormat {
         ImageFormat::Emf
     } else {
         ImageFormat::Unknown
-    }
-}
-
-/// Back-compat alias returning a `&'static str` like the previous implementation.
-pub fn detect_image_type(data: &[u8]) -> Option<&'static str> {
-    match detect_image_format(data) {
-        ImageFormat::Unknown => None,
-        ImageFormat::Bmp => Some("BMP"),
-        ImageFormat::Ico => Some("ICO"),
-        ImageFormat::Cur => Some("CUR"),
-        ImageFormat::Gif => Some("GIF"),
-        ImageFormat::Jpeg => Some("JPEG"),
-        ImageFormat::Png => Some("PNG"),
-        ImageFormat::Wmf => Some("WMF"),
-        ImageFormat::Emf => Some("EMF"),
     }
 }
 
@@ -735,7 +745,7 @@ mod tests {
 
     #[test]
     fn font_verified_layout() {
-        // 'MS Sans Serif' 8.25pt normal, exactly the bytes the StdFont oracle produced.
+        // 'MS Sans Serif' 8.25pt normal.
         let b: Vec<u8> = vec![
             0x01, 0x00, 0x00, 0x00, 0x90, 0x01, 0x44, 0x42, 0x01, 0x00, 0x0D, b'M', b'S', b' ',
             b'S', b'a', b'n', b's', b' ', b'S', b'e', b'r', b'i', b'f',
@@ -815,7 +825,7 @@ mod tests {
 
     #[test]
     fn font_roundtrips_byte_exact() {
-        // The exact bytes the StdFont oracle produced for 'MS Sans Serif' 8.25pt.
+        // The exact bytes for 'MS Sans Serif' 8.25pt.
         let original: Vec<u8> = vec![
             0x01, 0x00, 0x00, 0x00, 0x90, 0x01, 0x44, 0x42, 0x01, 0x00, 0x0D, b'M', b'S', b' ',
             b'S', b'a', b'n', b's', b' ', b'S', b'e', b'r', b'i', b'f',

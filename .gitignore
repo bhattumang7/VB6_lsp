@@ -2,7 +2,6 @@
 /target/
 **/*.rs.bk
 *.pdb
-Cargo.lock
 
 # IDE
 .vscode/
@@ -27,6 +26,11 @@ Desktop.ini
 .env
 .env.local
 
+# SonarQube (reuses the shared container managed from the vba6_rs project)
+.sonar-token
+.scannerwork/
+sonarqube-data/
+
 # Local tool configs
 .serena/
 .claude/
@@ -42,7 +46,7 @@ vb6-mcp-server/node_modules/*
 # node_modules anywhere (e.g. tree-sitter-vb6/build/node_modules)
 **/node_modules/
 
-# Reverse-engineering rig (oracle, corpus, downloaded tools) — not part of the build
+# Test data and internal tools
 re_lab/
 
 # tree-sitter-vb6 compiled grammar/parser build artifacts

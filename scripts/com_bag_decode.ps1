@@ -1,4 +1,4 @@
-# Tier-3 COM bridge runner. Run in 32-bit STA PowerShell (VB6 OCXs are x86):
+# COM bridge runner. Run in 32-bit STA PowerShell (VB6 OCXs are x86):
 #   powershell.exe (SysWOW64) -STA -File com_bag_decode.ps1 `
 #       -OcxPaths <a;b> -ClassName <Class> -LibName <Lib> -TypelibClsids <{..};{..}> `
 #       -Versions <2.0;6.0> -EmbeddedClsid <{..}> -BagFile <bag>

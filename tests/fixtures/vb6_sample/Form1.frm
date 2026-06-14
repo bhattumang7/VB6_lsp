@@ -11,6 +11,14 @@ Begin VB.Form Form1
    ScaleHeight     =   7020
    ScaleWidth      =   5685
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton Command1 
+      Caption         =   "Command1"
+      Height          =   375
+      Left            =   4680
+      TabIndex        =   2
+      Top             =   1920
+      Width           =   615
+   End
    Begin MSChart20Lib.MSChart MSChart1 
       Height          =   2655
       Left            =   600
@@ -44,3 +52,17 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Private Sub Command1_Click()
+    Dim a As String
+    
+    MsgBox "hello"
+    a = "asdf"
+    MsgBox a
+    domy1()
+End Sub
+
+Private Sub domy1()
+   MsgBox "asdf"
+   msgbox MSHFlexGrid1.height
+   
+End Sub

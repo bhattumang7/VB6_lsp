@@ -98,12 +98,12 @@ fn corpus_byte_accounting_report() {
     );
     eprintln!("overlaps (bugs)     : {}", overlaps);
     eprintln!("decode errors       : {}", errors);
-    eprintln!("opaque Tier-3 spans : {}", opaque);
+    eprintln!("opaque spans        : {}", opaque);
     eprintln!("--- top files by unexplained bytes ---");
     for (f, b) in worst.iter().take(15) {
         eprintln!("  {:>8} B  {}", b, f);
     }
 
-    // First-pass goal is measurement, not a hard 100%: just assert the harness ran.
+    // Goal is measurement: just assert the report ran.
     assert!(companions > 0, "expected to analyse some companions");
 }

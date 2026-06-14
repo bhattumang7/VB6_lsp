@@ -1,4 +1,4 @@
-// Tier-3 COM bridge: decode a proprietary VB6 OCX property bag by hosting the
+// COM bridge: decode a proprietary VB6 OCX property bag by hosting the
 // control via COM.
 //
 // The .frm `Object=` GUID is the control's *type library* id, NOT the coclass

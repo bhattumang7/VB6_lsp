@@ -1,0 +1,13 @@
+[package]
+name = "vb6-ast-derive"
+version = "0.1.0"
+edition = "2021"
+description = "Derive macro generating child-node traversal for the VB6 AST"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "2"
+quote = "1"
+proc-macro2 = "1"

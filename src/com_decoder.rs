@@ -1,4 +1,4 @@
-//! Tier-3 live COM decoder (Windows only).
+//! Live COM decoder (Windows only).
 //!
 //! Implements [`crate::controls::resources::ComDecoder`] by hosting the control
 //! out-of-process in 32-bit PowerShell + COM (`scripts/com_bag_decode.ps1` +
@@ -18,12 +18,12 @@ use crate::controls::frx::FrxValue;
 use crate::controls::resources::{BagControl, ComDecoder, ResolveError};
 
 /// Decodes OCX bags by driving the control via 32-bit PowerShell + COM.
-pub struct OracleComDecoder {
+pub struct ScriptedComDecoder {
     ps32: PathBuf,
     script: PathBuf,
 }
 
-impl OracleComDecoder {
+impl ScriptedComDecoder {
     /// Locate 32-bit PowerShell and the bundled bridge script. Returns `None`
     /// when either is unavailable (caller then keeps the opaque policy).
     pub fn new() -> Option<Self> {
@@ -36,7 +36,7 @@ impl OracleComDecoder {
             return None;
         }
         let script = locate_script()?;
-        Some(OracleComDecoder { ps32, script })
+        Some(ScriptedComDecoder { ps32, script })
     }
 }
 
@@ -66,7 +66,7 @@ fn locate_script() -> Option<PathBuf> {
     None
 }
 
-impl ComDecoder for OracleComDecoder {
+impl ComDecoder for ScriptedComDecoder {
     fn decode_bag(
         &self,
         control: &BagControl,

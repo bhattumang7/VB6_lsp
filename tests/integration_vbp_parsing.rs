@@ -5,7 +5,7 @@ use vb6_lsp::workspace::{VbpFile, ProjectType};
 
 #[test]
 fn test_parse_real_vbp_file() {
-    let vbp_path = Path::new("c:\\projects\\VB6_lsp\\vb6parse-master\\tests\\data\\ppdm\\ppdm.vbp");
+    let vbp_path = Path::new("tests/fixtures/vb6_sample/Project1.vbp");
 
     if !vbp_path.exists() {
         println!("VBP file not found, skipping test");
@@ -117,7 +117,7 @@ fn test_parse_real_vbp_file() {
 fn test_vbp_workspace_integration() {
     use vb6_lsp::workspace::Vb6Project;
 
-    let vbp_path = Path::new("c:\\projects\\VB6_lsp\\vb6parse-master\\tests\\data\\ppdm\\ppdm.vbp");
+    let vbp_path = Path::new("tests/fixtures/vb6_sample/Project1.vbp");
 
     if !vbp_path.exists() {
         println!("VBP file not found, skipping test");
@@ -171,8 +171,8 @@ fn test_workspace_manager() {
 
     let mut manager = WorkspaceManager::new();
 
-    // Test with the vb6parse-master directory
-    let root = PathBuf::from("c:\\projects\\VB6_lsp\\vb6parse-master\\tests\\data");
+    // Test with the fixtures directory
+    let root = PathBuf::from("tests/fixtures");
 
     if !root.exists() {
         println!("Test data directory not found, skipping test");
