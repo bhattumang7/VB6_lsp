@@ -4,6 +4,7 @@ members = [
     "crates/vb6-sema",
     "crates/vb6-engine",
     "crates/vb6-core",
+    "crates/vb6-codegen",
 ]
 # Default set = the LSP plus its analysis-engine dependency chain, all of which
 # build and test cleanly on a 64-bit host. vb6-core (the VB6 runtime emulation)
@@ -16,6 +17,7 @@ default-members = [
     "crates/vb6-syntax",
     "crates/vb6-sema",
     "crates/vb6-engine",
+    "crates/vb6-codegen",
 ]
 resolver = "2"
 

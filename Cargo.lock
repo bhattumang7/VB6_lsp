@@ -1896,6 +1896,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "vb6-codegen"
+version = "0.1.0"
+dependencies = [
+ "vb6-syntax",
+]
+
+[[package]]
 name = "vb6-core"
 version = "0.1.0"
 dependencies = [

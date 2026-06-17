@@ -1,0 +1,9 @@
+[package]
+name = "vb6-codegen"
+version = "0.1.0"
+edition = "2021"
+description = "VB6 P-code back-end: emits byte-exact VB6 P-code from the parser AST"
+authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
+
+[dependencies]
+vb6-syntax = { path = "../vb6-syntax" }
