@@ -32,6 +32,23 @@ use crate::buffer::PcodeStream;
 use crate::node::{NodeArena, NodeRef, RawNode};
 use crate::tables::{RT_BINOP_BASE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX, RT_TYPE_OFFSET};
 
+/// A resolved-reference descriptor — the input to [`Emitter::emit_reference`],
+/// mirroring the 16-byte record `EbResolveIdentRef` builds and `EbEmitExpression2`
+/// consumes. The resolver (or the vb6-sema bridge) populates it; the emitter only
+/// reads it.
+///
+/// * `kind` — `*pExprDesc`: the storage class (1 = local, 2 = argument, 7 = …);
+///   selects the opcode base.
+/// * `operand` — the 2-byte operand emitted after the opcode (descriptor `+10`),
+///   e.g. a local's signed frame offset.
+/// * `word6` — descriptor `+6`; for argument kinds, bit 0 marks a by-ref slot.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct RefDescriptor {
+    pub kind: i32,
+    pub operand: u16,
+    pub word6: u16,
+}
+
 /// Drives [`Emitter::emit_expr`] over a [`NodeArena`], writing the runtime
 /// P-code byte stream.
 pub struct Emitter<'a> {
@@ -440,6 +457,211 @@ impl<'a> Emitter<'a> {
             "EbGetTypeSize3 @ 0fab2f55: needs the type-descriptor model \
              (reached only on UDT/type_tag==0xf paths); Phase 4"
         )
+    }
+
+    // ── EbEmitExpression2 @ 0fab397a ─────────────────────────────────────────
+
+    /// Emit a resolved reference (typed local/arg load or store) from a
+    /// [`RefDescriptor`]. Direct port of `EbEmitExpression2(pExprDesc, nOp,
+    /// fFlags, pContext, nType)` — the function that turns a resolved reference
+    /// into the typed load/store opcode.
+    ///
+    /// This is a **pure** function of the descriptor and the emit parameters; it
+    /// needs no symbol table. The descriptor kind, `value_class`, and `flags`
+    /// are produced upstream by the reference resolver (`EbResolveIdentRef`,
+    /// fed here by the vb6-sema bridge). `n_op` selects the operation: 1 = value
+    /// load, 4 = store; others per the C.
+    ///
+    /// Only the descriptor kinds and sub-paths that do not recurse into
+    /// not-yet-ported helpers are implemented; the rest are `unimplemented!()`
+    /// with their C reference. The opcode base by kind: local = `0x1e0`,
+    /// argument = `0x210`, kind-7 = `0x240`.
+    pub fn emit_reference(&mut self, desc: &RefDescriptor, n_op_in: i32, f_flags: u32, n_type_in: i32) {
+        let mut n_op = n_op_in;
+        let n_type = n_type_in;
+        let s_var8: i16 = 1;
+        let u_var5: u16 = desc.operand; // descriptor+10 operand (frame offset)
+        let u_var7: i32; // base opcode by descriptor kind
+
+        match desc.kind {
+            1 => u_var7 = 0x1e0,
+            2 => {
+                u_var7 = 0x210;
+                if desc.word6 & 1 != 0 {
+                    unimplemented!(
+                        "EbEmitExpression2 kind 2 (byref arg): EbEmitExpressionOp mode 2 \
+                         @ 0fab39b8; Phase 3"
+                    );
+                }
+            }
+            7 => {
+                u_var7 = 0x240;
+                if desc.word6 & 1 != 0 {
+                    unimplemented!(
+                        "EbEmitExpression2 kind 7 (byref): EbEmitExpressionOp mode 2 \
+                         @ 0fab39b8; Phase 3"
+                    );
+                }
+            }
+            3 | 4 | 5 | 6 | 0xa => unimplemented!(
+                "EbEmitExpression2 kind {} : EbEmitExpressionOp @ 0fab39b8; Phase 3",
+                desc.kind
+            ),
+            8 | 9 | 0xb => unimplemented!(
+                "EbEmitExpression2 kind {} (member/typed): EbBuildExprDescriptor; Phase 4",
+                desc.kind
+            ),
+            _ => unimplemented!(
+                "EbEmitExpression2 kind {} (default): EbEmitExpression3; Phase 3",
+                desc.kind
+            ),
+        }
+
+        // nType normalization. The 0x12 sub-path needs EbGetType2Flag(context).
+        if n_type == 0x12 {
+            unimplemented!(
+                "EbEmitExpression2: nType 0x12 path: EbGetType2Flag; Phase 4"
+            );
+        }
+        // EbMapOperatorType(nType, &nOp): 0x12/0x11 + nOp in {1,2,3} → nOp 5.
+        if (n_type == 0x12 || n_type == 0x11) && (n_op == 1 || n_op == 2 || n_op == 3) {
+            n_op = 5;
+        }
+
+        let u_var6: i32 = match n_op {
+            1 => {
+                if f_flags & 0x4000 != 0 {
+                    unimplemented!(
+                        "EbEmitExpression2 nOp1 0x4000: EbEmitTypeExpr / EbGetValueTypeClass2; Phase 4"
+                    );
+                }
+                if f_flags & 0x1000 != 0 {
+                    0x1b2
+                } else {
+                    let off = RT_TYPE_OFFSET[n_type as usize];
+                    if off == 10 {
+                        u_var7 | 4
+                    } else if off == 9 {
+                        u_var7 | 1
+                    } else {
+                        u_var7 | off
+                    }
+                }
+            }
+            2 => {
+                if f_flags & 0x4000 != 0 {
+                    unimplemented!(
+                        "EbEmitExpression2 nOp2 0x4000: EbEmitTypeExpr / EbGetValueTypeClass2; Phase 4"
+                    );
+                }
+                if f_flags & 0x1000 != 0 {
+                    0x1b2
+                } else {
+                    let mut off = RT_TYPE_OFFSET[n_type as usize];
+                    if off == 10 {
+                        off = 4;
+                    } else if off == 9 {
+                        off = 1;
+                    }
+                    let mut v = off | u_var7;
+                    if off == 3 || off == 4 {
+                        v += 6;
+                    }
+                    v
+                }
+            }
+            3 => {
+                if f_flags & 0x1000 != 0 {
+                    (if f_flags & 0x2000 != 0 { 1 } else { 0 }) + 0x1b3
+                } else if n_type == 0xf {
+                    u_var7 + 0xd
+                } else {
+                    let off = RT_TYPE_OFFSET[n_type as usize];
+                    if off == 10 {
+                        u_var7 | 4
+                    } else if off == 9 {
+                        u_var7 | 1
+                    } else {
+                        u_var7 | off
+                    }
+                }
+            }
+            4 => {
+                let off3 = RT_TYPE_OFFSET[n_type as usize];
+                let base_off = if off3 == 10 {
+                    4
+                } else if off3 == 9 {
+                    1
+                } else {
+                    off3
+                };
+                let mut v = (u_var7 + 0x10) | base_off;
+                if f_flags & 0x8000 == 0 {
+                    if f_flags & 0x20 != 0 {
+                        v = (if f_flags & 0x1000 != 0 { 1 } else { 0 }) + 0x1b5;
+                    } else if f_flags & 0x80 != 0 {
+                        v += 6;
+                    } else if f_flags & 0x200 != 0 {
+                        v = (if v != 0x1f6 { 0x11 } else { 0 }) + 0x3f8;
+                    } else if f_flags & 0x400 != 0 {
+                        v = 0x3f7;
+                    } else if f_flags & 0x1000 != 0 {
+                        if n_type == 0x10 || n_type == 0xf {
+                            v += 10;
+                        }
+                    } else if f_flags & 0x800 != 0 {
+                        v = 0x439;
+                    }
+                } else if f_flags & 0x20 == 0 {
+                    unimplemented!(
+                        "EbEmitExpression2 nOp4 0x8000 path: DAT_0fab6a38 conversion table; Phase 4"
+                    );
+                } else {
+                    v = (if f_flags & 0x800 != 0 { 2 } else { 0 }) + 0x1b7;
+                }
+                // (fFlags & 0x40) && descriptor kind 1: opcode remap with operand emit.
+                if f_flags & 0x40 != 0 && desc.kind == 1 {
+                    v = match v {
+                        0x1f2 => {
+                            self.emit_opcode2(v as usize, u_var5);
+                            0x1e2
+                        }
+                        0x1f6 => 0x263,
+                        0x1f7 => 0x264,
+                        0x1f8 => 0x29c,
+                        0x1ff => 0x29d,
+                        0x200 => {
+                            self.emit_opcode2(v as usize, u_var5);
+                            0x1ec
+                        }
+                        0x201 => {
+                            self.emit_opcode2(v as usize, u_var5);
+                            0x1e7
+                        }
+                        other => other,
+                    };
+                }
+                v
+            }
+            5 => {
+                if f_flags & 0x1000 == 0 {
+                    u_var7 + 0xc
+                } else {
+                    0x1b2
+                }
+            }
+            6 => u_var7 + 0xb,
+            _ => unimplemented!("EbEmitExpression2: nOp {} not handled", n_op),
+        };
+
+        if s_var8 == 0 {
+            self.emit_value2(u_var6 as usize);
+        } else {
+            self.emit_opcode2(u_var6 as usize, u_var5);
+        }
+        // The trailing EbBuildExprDescriptor call fires only for descriptor kinds
+        // 5/7/10 with nOp 6 — none of the kinds emitted above — so it is omitted
+        // here and will be added when those kinds are ported.
     }
 
     // ── Emitter primitives (EbEmitValue2 / EbEmitOpcode2 / EbEmitDword) ───────

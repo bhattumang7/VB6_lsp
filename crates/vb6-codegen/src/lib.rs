@@ -33,6 +33,6 @@ pub mod tables;
 
 pub use bind::{DeclError, LocalVar, ProcFrame};
 pub use buffer::PcodeStream;
-pub use emit::Emitter;
+pub use emit::{Emitter, RefDescriptor};
 pub use node::{NodeArena, NodeRef, RawNode};
 pub use proc_binder::ProcBinder;

@@ -10,7 +10,7 @@
 //! (`Emitter::emit_var_store`). Frame offsets match the oracle's layout for the
 //! corresponding `Dim` order.
 
-use vb6_codegen::{Emitter, NodeArena, NodeRef};
+use vb6_codegen::{Emitter, NodeArena, NodeRef, RefDescriptor};
 
 /// VB6 internal type tags used in `word[0]` high half.
 const T_INTEGER: u16 = 6;
@@ -181,6 +181,74 @@ fn double_add() {
     // r = a + b   (op 0x16, Double result)
     assert_eq!(double_arith(0x16), &[0x6f, 0x74, 0xff, 0x6f, 0x6c, 0xff, 0xab, 0x74, 0x64, 0xff]);
 }
+
+// ── EbEmitExpression2 port: resolved-reference load/store ────────────────────
+//
+// emit_reference is the verbatim port of EbEmitExpression2 — the function that
+// turns a resolved reference into a typed load/store opcode. It is a pure
+// function of (descriptor kind, value class, operand, flags, nOp): local kind
+// uses opcode base 0x1e0 (load) / 0x1f0 (store), with the offset from
+// RT_TYPE_OFFSET[value_class] (10→4 / 9→1 remap). nOp 1 = value load, 4 = store.
+//
+// The *value class* is what the resolver assigns to a variable's type (NOT the
+// node type tag): Integer=6, Long=8, Currency=12 (0xc), Single=0x11. These are
+// supplied directly here (the vb6-sema bridge will derive them). Emitted bytes
+// match the oracle's plain `r = a` load/store sequences.
+
+/// Local-variable descriptor (kind 1) at the given frame offset.
+fn local(offset: i16) -> RefDescriptor {
+    RefDescriptor { kind: 1, operand: offset as u16, word6: 0 }
+}
+
+fn ref_bytes(desc: &RefDescriptor, n_op: i32, value_class: i32) -> Vec<u8> {
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.emit_reference(desc, n_op, 0, value_class);
+    e.into_bytes()
+}
+
+#[test]
+fn ref_load_integer() {
+    // Integer local (value class 6) load → 0x6b + operand.
+    assert_eq!(ref_bytes(&local(-4), 1, 6), &[0x6b, 0xfc, 0xff]);
+}
+
+#[test]
+fn ref_store_integer() {
+    // Integer store (nOp 4) → 0x70 + operand.
+    assert_eq!(ref_bytes(&local(-4), 4, 6), &[0x70, 0xfc, 0xff]);
+}
+
+#[test]
+fn ref_load_long() {
+    // Long local (value class 8) load → 0x6c + operand.
+    assert_eq!(ref_bytes(&local(0xff78u16 as i16), 1, 8), &[0x6c, 0x78, 0xff]);
+}
+
+#[test]
+fn ref_store_long() {
+    // Long store → 0x71 + operand.
+    assert_eq!(ref_bytes(&local(0xff70u16 as i16), 4, 8), &[0x71, 0x70, 0xff]);
+}
+
+#[test]
+fn ref_load_currency() {
+    // Currency local (value class 0xc) load → 0x6d (RT_TYPE_OFFSET[0xc]=10 → base|4).
+    assert_eq!(ref_bytes(&local(-8), 1, 0xc), &[0x6d, 0xf8, 0xff]);
+}
+
+#[test]
+fn ref_store_currency() {
+    // Currency store → 0x72 (base 0x1f0 | 4).
+    assert_eq!(ref_bytes(&local(-8), 4, 0xc), &[0x72, 0xf8, 0xff]);
+}
+
+// NOTE: Single (0x6e @ 0x1e9) and Double (0x6f @ 0x1ea) loads sit at offsets
+// (9, 10) that EbEmitExpression2's simple nOp-1 path remaps away (off 9→1,
+// off 10→4); they are reached only through the fFlags & 0x4000 branch
+// (EbEmitTypeExpr / EbGetValueTypeClass2), which is unimplemented!() pending
+// the resolver. So no Single/Double emit_reference test yet — the resolver will
+// supply the flags/class that drive that branch.
 
 #[test]
 fn double_div() {
