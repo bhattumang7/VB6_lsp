@@ -29,7 +29,7 @@
 //! | 9 | Resolved expression (EbResolveAndAdjustExpr) |
 //! | 10 | Object/member reference |
 
-use crate::bind::{DeclError, LocalVar, ProcFrame};
+use crate::bind::{DeclError, LocalVar, ParamFrame, ParamVar, ProcFrame};
 use crate::node::{NodeArena, NodeRef};
 
 /// The binding kind stored in `word[7]` of a name node after EbBindName runs.
@@ -52,23 +52,26 @@ pub struct NameBinding {
     pub var: LocalVar,
 }
 
-/// Procedure-level binder.  Owns the frame allocator for one procedure and
-/// exposes declaration and resolution APIs.
+/// Procedure-level binder.  Owns the frame allocators for one procedure and
+/// exposes declaration and resolution APIs for locals and parameters.
 ///
 /// To compile a statement like `r = a + b`:
-/// 1. Declare the locals: `declare_local("a", 2)`, etc.
-/// 2. Build load nodes: `bind_local_load(&mut arena, "a")`.
-/// 3. Build expression nodes with `NodeArena::node`.
-/// 4. Call `Emitter::emit_expr` on the root.
-/// 5. Call `emit_var_store` for the assignment target.
+/// 1. Declare params: `declare_param("p", 2, false)`, etc.
+/// 2. Declare locals: `declare_local("a", 2)`, etc.
+/// 3. Build load nodes: `bind_local_load(&mut arena, "a")`.
+/// 4. Build expression nodes with `NodeArena::node`.
+/// 5. Call `Emitter::emit_expr` on the root.
+/// 6. Call `emit_var_store` or `emit_byval_param_store` for the assignment
+///    target.
 #[derive(Debug)]
 pub struct ProcBinder {
     frame: ProcFrame,
+    params: ParamFrame,
 }
 
 impl ProcBinder {
     pub fn new() -> Self {
-        Self { frame: ProcFrame::new() }
+        Self { frame: ProcFrame::new(), params: ParamFrame::new() }
     }
 
     /// Declare a local variable, allocating its frame slot.
@@ -82,6 +85,19 @@ impl ProcBinder {
         type_ctx: usize,
     ) -> Result<LocalVar, DeclError> {
         self.frame.declare_local(name, type_ctx)
+    }
+
+    /// Declare a parameter, allocating its frame slot (positive offset).
+    ///
+    /// Parameters must be declared in left-to-right order (i.e., the order they
+    /// appear in the `Sub`/`Function` signature), before any locals.
+    pub fn declare_param(
+        &mut self,
+        name: &str,
+        type_ctx: usize,
+        byref: bool,
+    ) -> Result<ParamVar, DeclError> {
+        self.params.declare_param(name, type_ctx, byref)
     }
 
     /// Resolve a declared local and create a bound load node in `arena`.
@@ -107,22 +123,27 @@ impl ProcBinder {
         self.frame.resolve(name)
     }
 
+    /// Resolve a declared parameter and return its `ParamVar`.
+    pub fn resolve_param(&self, name: &str) -> Option<ParamVar> {
+        self.params.resolve(name)
+    }
+
     /// Total bytes the frame cursor has moved for locals.  This is the value
     /// that goes into the proc-level frame-size descriptor at `proc+0x74/0x76`.
     pub fn locals_frame_bytes(&self) -> u16 {
         self.frame.locals_frame_bytes()
     }
 
-    /// Bind a name reference: tries locals first; panics with `unimplemented!`
-    /// for anything outside the current local scope (globals, proc calls, etc.)
-    /// until EbBindName is ported.
+    /// Bind a name reference: tries locals first, then parameters; panics with
+    /// `unimplemented!` for anything outside the current proc scope (globals,
+    /// proc calls, etc.) until EbBindName is ported.
     pub fn bind_name(&self, arena: &mut NodeArena, name: &str) -> NodeRef {
         if let Some(load) = self.frame.make_load_node(arena, name) {
             return load;
         }
         unimplemented!(
             "ProcBinder::bind_name: '{}' is not a declared local; \
-             global/proc resolution requires EbBindName @ 0fab7ad0",
+             parameter/global/proc resolution requires EbBindName @ 0fab7ad0",
             name
         );
     }
