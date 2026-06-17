@@ -391,3 +391,140 @@ fn param_frame_resolve() {
     assert_eq!(v.frame_offset, 12);
     assert!(f.resolve("q").is_none());
 }
+
+// ── ParamFrame::make_load_node ────────────────────────────────────────────────
+
+#[test]
+fn param_make_load_node_byval_long_emits_load_opcode() {
+    // ByVal Long at +12 → opcode 0x74 node → emit_typed_load → [0x6c, 0x0c, 0x00].
+    // Oracle: `Sub Foo(ByVal p As Long) ... r = p`. ✓
+    use crate::emit::Emitter;
+    let mut f = ParamFrame::new();
+    f.declare_param("p", 2, false).unwrap(); // ByVal Long at +12
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, "p").expect("p declared");
+    let mut e = Emitter::new(&arena);
+    e.emit_expr(load, 0);
+    assert_eq!(e.into_bytes(), &[0x6c, 0x0c, 0x00]);
+}
+
+#[test]
+fn param_make_load_node_byref_long_emits_byref_opcode() {
+    // ByRef Long at +12 → opcode 0x75 node → emit_byref_load → [0x80, 0x0c, 0x00].
+    // 0x80 = RT_LOAD_BY_CTX[2] (0x6c) + 0x14. Oracle: `Sub Foo(ByRef p As Long)`. ✓
+    use crate::emit::Emitter;
+    let mut f = ParamFrame::new();
+    f.declare_param("p", 2, true).unwrap(); // ByRef Long at +12
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, "p").expect("p declared");
+    let mut e = Emitter::new(&arena);
+    e.emit_expr(load, 0);
+    assert_eq!(e.into_bytes(), &[0x80, 0x0c, 0x00]);
+}
+
+#[test]
+fn param_make_load_node_returns_none_for_undeclared() {
+    let f = ParamFrame::new();
+    let mut arena = NodeArena::new();
+    assert!(f.make_load_node(&mut arena, "x").is_none());
+}
+
+// ── GlobalFrame ───────────────────────────────────────────────────────────────
+
+#[test]
+fn global_frame_first_long_at_offset_zero() {
+    // `Public a As Long` → a at field_offset 0.
+    let mut f = GlobalFrame::new(0x0008);
+    let a = f.declare_global("a", 2).unwrap();
+    assert_eq!(a.type_ctx, 2);
+    assert_eq!(a.module_desc, 0x0008);
+    assert_eq!(a.field_offset, 0);
+}
+
+#[test]
+fn global_frame_two_longs_at_0_and_4() {
+    // `Public a As Long : Public b As Long` → a at 0, b at 4.
+    // Oracle: second Long variable at field_offset 4 (probe-confirmed). ✓
+    let mut f = GlobalFrame::new(0x0008);
+    let a = f.declare_global("a", 2).unwrap();
+    let b = f.declare_global("b", 2).unwrap();
+    assert_eq!(a.field_offset, 0);
+    assert_eq!(b.field_offset, 4);
+}
+
+#[test]
+fn global_frame_long_then_double() {
+    // `Public a As Long : Public b As Double` → a at 0 (4 bytes), b at 4 (8 bytes).
+    let mut f = GlobalFrame::new(0x0008);
+    let a = f.declare_global("a", 2).unwrap(); // Long: 4 bytes
+    let b = f.declare_global("b", 4).unwrap(); // Double: 8 bytes
+    assert_eq!(a.field_offset, 0);
+    assert_eq!(b.field_offset, 4);
+}
+
+#[test]
+fn global_frame_redeclare_returns_error() {
+    let mut f = GlobalFrame::new(0x0008);
+    f.declare_global("g", 2).unwrap();
+    assert_eq!(f.declare_global("g", 2), Err(DeclError::AlreadyDeclared));
+}
+
+#[test]
+fn global_frame_resolve() {
+    let mut f = GlobalFrame::new(0x0008);
+    f.declare_global("g", 4).unwrap(); // Double at 0
+    let v = f.resolve("g").expect("g declared");
+    assert_eq!(v.type_ctx, 4);
+    assert_eq!(v.field_offset, 0);
+    assert!(f.resolve("x").is_none());
+}
+
+#[test]
+fn global_make_load_node_long_emits_global_opcode() {
+    // `Public g As Long` → make_load_node → emit_global_load → [0x94, 0x08, 0x00, 0x00, 0x00].
+    // 0x94 = RT_LOAD_BY_CTX[Long=2] (0x6c) + 0x28. Oracle-confirmed. ✓
+    use crate::emit::Emitter;
+    let mut f = GlobalFrame::new(0x0008);
+    f.declare_global("g", 2).unwrap(); // Long at field_offset 0
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, "g").expect("g declared");
+    let mut e = Emitter::new(&arena);
+    e.emit_expr(load, 0);
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn global_make_load_node_second_long_at_field_4() {
+    // `Public a As Long : Public b As Long` → b at field_offset 4.
+    // Load b → [0x94, 0x08, 0x00, 0x04, 0x00]. Oracle-confirmed. ✓
+    use crate::emit::Emitter;
+    let mut f = GlobalFrame::new(0x0008);
+    f.declare_global("a", 2).unwrap();
+    f.declare_global("b", 2).unwrap();
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, "b").expect("b declared");
+    let mut e = Emitter::new(&arena);
+    e.emit_expr(load, 0);
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x04, 0x00]);
+}
+
+#[test]
+fn global_make_load_node_returns_none_for_undeclared() {
+    let f = GlobalFrame::new(0x0008);
+    let mut arena = NodeArena::new();
+    assert!(f.make_load_node(&mut arena, "x").is_none());
+}
+
+#[test]
+fn global_make_load_node_double_emits_global_opcode() {
+    // `Public g As Double` → [0x97, 0x08, 0x00, 0x00, 0x00].
+    // 0x97 = RT_LOAD_BY_CTX[Double=4] (0x6f) + 0x28. Oracle-confirmed. ✓
+    use crate::emit::Emitter;
+    let mut f = GlobalFrame::new(0x0008);
+    f.declare_global("g", 4).unwrap();
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, "g").expect("g declared");
+    let mut e = Emitter::new(&arena);
+    e.emit_expr(load, 0);
+    assert_eq!(e.into_bytes(), &[0x97, 0x08, 0x00, 0x00, 0x00]);
+}

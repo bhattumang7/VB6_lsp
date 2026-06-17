@@ -67,3 +67,108 @@ fn locals_frame_bytes_grows_with_declarations() {
     binder.declare_local("b", 2).unwrap(); // Long: 4 bytes
     assert_eq!(binder.locals_frame_bytes(), 12);
 }
+
+// ── Parameter resolution and binding ─────────────────────────────────────────
+
+#[test]
+fn declare_param_and_resolve() {
+    let mut binder = ProcBinder::new();
+    let p = binder.declare_param("p", 2, false).unwrap(); // ByVal Long at +12
+    assert_eq!(p.frame_offset, 12);
+    assert_eq!(p.type_ctx, 2);
+    assert!(!p.byref);
+    let v = binder.resolve_param("p").expect("p declared");
+    assert_eq!(v.frame_offset, 12);
+}
+
+#[test]
+fn bind_name_finds_byval_param_emits_load() {
+    // bind_name for a ByVal Long param → load opcode 0x6c.
+    // Oracle: ByVal Long at +12 → [0x6c, 0x0c, 0x00]. ✓
+    let mut binder = ProcBinder::new();
+    binder.declare_param("p", 2, false).unwrap();
+    let mut arena = NodeArena::new();
+    let load = binder.bind_name(&mut arena, "p");
+    assert_eq!(emit_expr(&arena, load), &[0x6c, 0x0c, 0x00]);
+}
+
+#[test]
+fn bind_name_finds_byref_param_emits_byref_load() {
+    // bind_name for a ByRef Long param → load opcode 0x80.
+    // 0x80 = RT_LOAD_BY_CTX[Long=2] (0x6c) + 0x14. Oracle-confirmed. ✓
+    let mut binder = ProcBinder::new();
+    binder.declare_param("p", 2, true).unwrap();
+    let mut arena = NodeArena::new();
+    let load = binder.bind_name(&mut arena, "p");
+    assert_eq!(emit_expr(&arena, load), &[0x80, 0x0c, 0x00]);
+}
+
+#[test]
+fn bind_name_prefers_local_over_param() {
+    // When a local and a param share the same name, the local takes priority
+    // (locals shadow params in the resolution order: locals → params → globals).
+    // Local Long at -136 → [0x6c, 0x78, 0xff].
+    let mut binder = ProcBinder::new();
+    binder.declare_param("x", 2, false).unwrap(); // ByVal Long param at +12
+    binder.declare_local("x", 2).unwrap();        // Long local at -136
+    let mut arena = NodeArena::new();
+    let load = binder.bind_name(&mut arena, "x");
+    assert_eq!(emit_expr(&arena, load), &[0x6c, 0x78, 0xff]);
+}
+
+// ── Global resolution and binding ─────────────────────────────────────────────
+
+#[test]
+fn declare_global_and_resolve() {
+    let mut binder = ProcBinder::new();
+    let g = binder.declare_global("g", 2).unwrap(); // Long
+    assert_eq!(g.type_ctx, 2);
+    assert_eq!(g.field_offset, 0);
+    assert_eq!(g.module_desc, 0x0008);
+    let v = binder.resolve_global("g").expect("g declared");
+    assert_eq!(v.field_offset, 0);
+}
+
+#[test]
+fn bind_name_finds_global_long_emits_global_load() {
+    // bind_name for a module-level Long global → [0x94, 0x08, 0x00, 0x00, 0x00].
+    // 0x94 = RT_LOAD_BY_CTX[Long=2] (0x6c) + 0x28. Oracle-confirmed. ✓
+    let mut binder = ProcBinder::new();
+    binder.declare_global("g", 2).unwrap();
+    let mut arena = NodeArena::new();
+    let load = binder.bind_name(&mut arena, "g");
+    assert_eq!(emit_expr(&arena, load), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn bind_name_local_shadows_global() {
+    // A local variable shadows a global of the same name.
+    // Long local at -136 → [0x6c, 0x78, 0xff], not the global load sequence.
+    let mut binder = ProcBinder::new();
+    binder.declare_global("g", 2).unwrap();
+    binder.declare_local("g", 2).unwrap();
+    let mut arena = NodeArena::new();
+    let load = binder.bind_name(&mut arena, "g");
+    assert_eq!(emit_expr(&arena, load), &[0x6c, 0x78, 0xff]);
+}
+
+#[test]
+fn bind_name_param_shadows_global() {
+    // A ByVal param shadows a global of the same name.
+    // ByVal Long at +12 → [0x6c, 0x0c, 0x00].
+    let mut binder = ProcBinder::new();
+    binder.declare_global("g", 2).unwrap();
+    binder.declare_param("g", 2, false).unwrap();
+    let mut arena = NodeArena::new();
+    let load = binder.bind_name(&mut arena, "g");
+    assert_eq!(emit_expr(&arena, load), &[0x6c, 0x0c, 0x00]);
+}
+
+#[test]
+fn with_module_desc_uses_given_desc_word() {
+    // ProcBinder::with_module_desc sets the module descriptor for globals.
+    let mut binder = ProcBinder::with_module_desc(0x0010);
+    binder.declare_global("g", 2).unwrap();
+    let v = binder.resolve_global("g").expect("g declared");
+    assert_eq!(v.module_desc, 0x0010);
+}

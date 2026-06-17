@@ -406,11 +406,147 @@ impl ParamFrame {
     pub fn resolve(&self, name: &str) -> Option<ParamVar> {
         self.vars.get(name).copied()
     }
+
+    /// Allocate a bound symbol node + a typed load node in `arena`.
+    ///
+    /// ByVal parameters use synthetic opcode `0x74` (same as locals — the frame
+    /// offset is positive, but the opcode is identical). ByRef parameters use
+    /// synthetic opcode `0x75`; `emit_expr` routes them to `emit_byref_load`.
+    ///
+    /// Returns `None` when `name` was not declared.
+    pub fn make_load_node(&self, arena: &mut NodeArena, name: &str) -> Option<NodeRef> {
+        let var = self.resolve(name)?;
+        let sym = arena.alloc(NodeArena::node(
+            0,
+            0,
+            (var.frame_offset as u16 as u32) << 16,
+            0,
+            0,
+            0,
+        ));
+        // 0x74 = ByVal (local-load opcode), 0x75 = ByRef param load
+        let opcode = if var.byref { 0x75 } else { 0x74 };
+        let load = arena.alloc(NodeArena::node(
+            opcode,
+            0,
+            sym.0,
+            var.type_ctx as u32,
+            0,
+            0,
+        ));
+        Some(load)
+    }
 }
 
 impl Default for ParamFrame {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+// ── GlobalFrame ───────────────────────────────────────────────────────────────
+
+/// One module-level global variable's binding: its type context, the module
+/// descriptor word, and the byte offset within the module's global data block.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct GlobalVar {
+    /// Internal type context (same indices as [`LocalVar::type_ctx`]).
+    pub type_ctx: usize,
+    /// Module-object descriptor word assigned by the compiled form.  The real
+    /// VB6 compiler uses `0x0008` for the first (and typically only) module in
+    /// a single-module project; confirmed by oracle probes.
+    pub module_desc: u16,
+    /// Byte offset of this variable within the module's global data block.
+    /// The first declared global starts at 0; each subsequent global advances
+    /// by the variable's frame size (4 bytes for Integer/Long/Single/Object,
+    /// 8 bytes for Double/Currency).
+    pub field_offset: u16,
+}
+
+/// Module-level global variable frame allocator.
+///
+/// Assigns each declared global variable a `field_offset` within the module's
+/// data block, starting at 0 and incrementing by the type's frame size.
+///
+/// # Example
+/// ```
+/// use vb6_codegen::bind::GlobalFrame;
+/// let mut f = GlobalFrame::new(0x0008);
+/// let a = f.declare_global("a", 2 /* Long */).unwrap();  // field_offset = 0
+/// let b = f.declare_global("b", 2).unwrap();             // field_offset = 4
+/// assert_eq!(a.field_offset, 0);
+/// assert_eq!(b.field_offset, 4);
+/// ```
+#[derive(Debug)]
+pub struct GlobalFrame {
+    module_desc: u16,
+    cursor: u16,
+    vars: HashMap<String, GlobalVar>,
+}
+
+impl GlobalFrame {
+    /// Create a new global frame for the module with the given descriptor word.
+    pub fn new(module_desc: u16) -> Self {
+        Self { module_desc, cursor: 0, vars: HashMap::new() }
+    }
+
+    /// Declare a named module-level global.  Returns `Err(DeclError::AlreadyDeclared)`
+    /// if the name is already in scope.
+    pub fn declare_global(
+        &mut self,
+        name: &str,
+        type_ctx: usize,
+    ) -> Result<GlobalVar, DeclError> {
+        if self.vars.contains_key(name) {
+            return Err(DeclError::AlreadyDeclared);
+        }
+        let var = self.alloc(type_ctx);
+        self.vars.insert(name.to_string(), var);
+        Ok(var)
+    }
+
+    /// Allocate a global slot by declaration index (anonymous).  Used when
+    /// globals are identified by index rather than by name.
+    pub fn declare_anon_global(&mut self, type_ctx: usize) -> GlobalVar {
+        self.alloc(type_ctx)
+    }
+
+    fn alloc(&mut self, type_ctx: usize) -> GlobalVar {
+        let offset = self.cursor;
+        self.cursor += frame_size_of_ctx(type_ctx) as u16;
+        GlobalVar { type_ctx, module_desc: self.module_desc, field_offset: offset }
+    }
+
+    /// Resolve a declared global name to its `GlobalVar`.
+    pub fn resolve(&self, name: &str) -> Option<GlobalVar> {
+        self.vars.get(name).copied()
+    }
+
+    /// Allocate a bound global-load node in `arena` for the named variable.
+    ///
+    /// Uses synthetic opcode `0x77`; `emit_expr` routes it to `emit_global_load`.
+    /// The node carries `module_desc` in the low 16 bits of `word[4]` and
+    /// `field_offset` in the high 16 bits; `word[5]` holds the type context.
+    ///
+    /// Returns `None` when `name` was not declared.
+    pub fn make_load_node(&self, arena: &mut NodeArena, name: &str) -> Option<NodeRef> {
+        let var = self.resolve(name)?;
+        let packed = (var.module_desc as u32) | ((var.field_offset as u32) << 16);
+        let load = arena.alloc(NodeArena::node(
+            0x77,
+            0,
+            packed,
+            var.type_ctx as u32,
+            0,
+            0,
+        ));
+        Some(load)
+    }
+}
+
+impl Default for GlobalFrame {
+    fn default() -> Self {
+        Self::new(0x0008)
     }
 }
 

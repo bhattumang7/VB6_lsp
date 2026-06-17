@@ -32,7 +32,7 @@ pub mod node;
 pub mod proc_binder;
 pub mod tables;
 
-pub use bind::{DeclError, LocalVar, ParamFrame, ParamVar, ProcFrame, PROC_PARAM_BASE};
+pub use bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame, PROC_PARAM_BASE};
 pub use buffer::PcodeStream;
 pub use emit::{Emitter, RefDescriptor};
 pub use node::{NodeArena, NodeRef, RawNode};

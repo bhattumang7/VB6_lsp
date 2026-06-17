@@ -1,20 +1,11 @@
 //! Procedure-level binding driver: declaration, name resolution, and expression
 //! tree construction for one procedure under compilation.
 //!
-//! ## What is ported
-//!
-//! The local-variable path — `Dim x As T` declaration, frame-offset allocation,
-//! and building bound load/store nodes — is complete and tested.
-//!
-//! ## What requires the symbol table (not yet ported)
-//!
-//! Global name resolution (`EbBindName` @ 0fab7ad0, 1923 lines), member access
-//! (`EbAdjustBoundExpr` @ 0fab8795, `EbResolveMemberAccess3`), object refs
+//! Covers locals, parameters, and module-level globals.  Member-access
+//! (`EbAdjustBoundExpr`, `EbResolveMemberAccess3`), object refs
 //! (`EbResolveObjectRef`), and proc-level symbols (`EbGetProcEntry`) all require
 //! the VBA6 module symbol table and compilation context structures (ECX+0xd8
-//! proc entry, ECX+0x2c module table, etc.) to be ported before they can be
-//! implemented.  Until that work is done, any attempt to resolve a name that
-//! isn't a declared local will panic with `unimplemented!`.
+//! proc entry, ECX+0x2c module table, etc.) and remain unimplemented.
 //!
 //! ## Name-binding kinds (word\[7\] of a bound name node)
 //!
@@ -29,7 +20,7 @@
 //! | 9 | Resolved expression (EbResolveAndAdjustExpr) |
 //! | 10 | Object/member reference |
 
-use crate::bind::{DeclError, LocalVar, ParamFrame, ParamVar, ProcFrame};
+use crate::bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame};
 use crate::node::{NodeArena, NodeRef};
 
 /// The binding kind stored in `word[7]` of a name node after EbBindName runs.
@@ -67,11 +58,23 @@ pub struct NameBinding {
 pub struct ProcBinder {
     frame: ProcFrame,
     params: ParamFrame,
+    globals: GlobalFrame,
 }
 
 impl ProcBinder {
     pub fn new() -> Self {
-        Self { frame: ProcFrame::new(), params: ParamFrame::new() }
+        Self { frame: ProcFrame::new(), params: ParamFrame::new(), globals: GlobalFrame::default() }
+    }
+
+    /// Create a binder with a specific module descriptor for global allocation.
+    /// `module_desc` must be the compiled module-object descriptor offset
+    /// (oracle-confirmed 0x0008 for single-module programs).
+    pub fn with_module_desc(module_desc: u16) -> Self {
+        Self {
+            frame: ProcFrame::new(),
+            params: ParamFrame::new(),
+            globals: GlobalFrame::new(module_desc),
+        }
     }
 
     /// Declare a local variable, allocating its frame slot.
@@ -128,22 +131,45 @@ impl ProcBinder {
         self.params.resolve(name)
     }
 
+    /// Declare a module-level global variable, allocating its field slot in the
+    /// global data block.
+    pub fn declare_global(
+        &mut self,
+        name: &str,
+        type_ctx: usize,
+    ) -> Result<GlobalVar, DeclError> {
+        self.globals.declare_global(name, type_ctx)
+    }
+
+    /// Resolve a declared global and return its `GlobalVar`.
+    pub fn resolve_global(&self, name: &str) -> Option<GlobalVar> {
+        self.globals.resolve(name)
+    }
+
     /// Total bytes the frame cursor has moved for locals.  This is the value
     /// that goes into the proc-level frame-size descriptor at `proc+0x74/0x76`.
     pub fn locals_frame_bytes(&self) -> u16 {
         self.frame.locals_frame_bytes()
     }
 
-    /// Bind a name reference: tries locals first, then parameters; panics with
-    /// `unimplemented!` for anything outside the current proc scope (globals,
-    /// proc calls, etc.) until EbBindName is ported.
+    /// Bind a name reference: tries locals, then parameters, then module globals.
+    /// Panics with `unimplemented!` for member refs, object refs, proc-level
+    /// symbols, and built-ins — those require EbBindName @ 0fab7ad0 and the full
+    /// VBA6 module symbol table.
     pub fn bind_name(&self, arena: &mut NodeArena, name: &str) -> NodeRef {
         if let Some(load) = self.frame.make_load_node(arena, name) {
             return load;
         }
+        if let Some(load) = self.params.make_load_node(arena, name) {
+            return load;
+        }
+        if let Some(load) = self.globals.make_load_node(arena, name) {
+            return load;
+        }
         unimplemented!(
-            "ProcBinder::bind_name: '{}' is not a declared local; \
-             parameter/global/proc resolution requires EbBindName @ 0fab7ad0",
+            "ProcBinder::bind_name: '{}' is not a declared local, parameter, or module global; \
+             member refs, object refs, proc calls, and built-ins require EbBindName @ 0fab7ad0 \
+             and the full VBA6 module symbol table",
             name
         );
     }

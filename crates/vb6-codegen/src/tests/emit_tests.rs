@@ -600,3 +600,112 @@ fn rt_opcode_byte_is_like_table_entries() {
     assert_eq!(RT_OPCODE_BYTE[0x189], 0x37, "Is Single (0x189) → 0x37");
     assert_eq!(RT_OPCODE_BYTE[0x18a], 0x39, "Is Double/Currency (0x18a) → 0x39");
 }
+
+// ── emit_reference 0x4000 branch (EbEmitExpression2 LAB_0fab3b03) ─────────
+
+fn ref_bytes(desc: &crate::emit::RefDescriptor, n_op: i32, f_flags: u32, n_type: i32) -> Vec<u8> {
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.emit_reference(desc, n_op, f_flags, n_type);
+    e.into_bytes()
+}
+
+fn local_desc(offset: i16) -> crate::emit::RefDescriptor {
+    crate::emit::RefDescriptor { kind: 1, operand: offset as u16, word6: 0, word8: 0 }
+}
+
+#[test]
+fn emit_reference_4000_object_ntype_emits_0x3e() {
+    // EbEmitExpression2 LAB_0fab3b03: f_flags & 0x4000, nType == 0x10 (Object/Dispatch).
+    // u_var6 = 0x23f; RT_OPCODE_BYTE[0x23f] = 0x3e (< 0xfb).
+    // emit_opcode2(0x23f, 0): emit_value2 → [0x3e], emit_word(0) → [0x00, 0x00].
+    use crate::tables::RT_OPCODE_BYTE;
+    assert_eq!(RT_OPCODE_BYTE[0x23f], 0x3e);
+    let desc = local_desc(0);
+    let bytes = ref_bytes(&desc, 1, 0x4000, 0x10);
+    assert_eq!(bytes, &[0x3e, 0x00, 0x00]);
+}
+
+#[test]
+fn emit_reference_4000_other_ntype_emits_0x262_opcode() {
+    // EbEmitExpression2 LAB_0fab3b03: f_flags & 0x4000, nType == 5 (Single).
+    // u_var6 = 0x262; emit_opcode2(0x262, 0).
+    // RT_OPCODE_BYTE[0x262] = the value at that index (table-confirmed).
+    use crate::tables::RT_OPCODE_BYTE;
+    let expected_opcode = RT_OPCODE_BYTE[0x262];
+    let desc = local_desc(0);
+    let bytes = ref_bytes(&desc, 1, 0x4000, 5);
+    // emit_value2(0x262): if < 0xfb → [byte], else → [byte, low8].
+    // Then emit_word(0) → [0x00, 0x00].
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x00, 0x00]);
+    } else {
+        assert_eq!(bytes, &[expected_opcode, (0x262u16 & 0xff) as u8, 0x00, 0x00]);
+    }
+}
+
+#[test]
+fn emit_reference_4000_nop2_object_also_emits_0x3e() {
+    // nOp==2 falls through to the same 0x4000 block as nOp==1 (verified in C).
+    let desc = local_desc(0);
+    let bytes = ref_bytes(&desc, 2, 0x4000, 0x10);
+    assert_eq!(bytes, &[0x3e, 0x00, 0x00]);
+}
+
+#[test]
+fn emit_reference_kind1_nop1_long_normal_load() {
+    // Baseline (no 0x4000): kind==1, nOp==1, nType==8 (Long vb-type).
+    // nType 8 → RT_TYPE_OFFSET[8] = ? Long is the standard Integer load path.
+    // Actually nType in EbEmitExpression2 is the *internal* VB6 type, not vb-type.
+    // For a simple local-load (no 0x4000 flag), kind==1 → u_var7=0x1e0.
+    // nType=8 → RT_TYPE_OFFSET[8]; load result: u_var7 | off.
+    // We test the real oracle path: Long local at -136 → [0x6c, 0x78, 0xff].
+    // That goes through emit_var_load (0x74 node), not emit_reference.
+    // Here we test emit_reference kind==1, nOp==1, nType==2 (integer vb-type → offset 1).
+    use crate::tables::RT_TYPE_OFFSET;
+    let off = RT_TYPE_OFFSET[2] as i32;   // Integer offset
+    use crate::tables::RT_OPCODE_BYTE;
+    let u_var7 = 0x1e0i32;
+    let expected_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    let desc = crate::emit::RefDescriptor { kind: 1, operand: 0xff7au16, word6: 0, word8: 0 };
+    let bytes = ref_bytes(&desc, 1, 0, 2);
+    // emit_opcode2(expected_idx, 0xff7a):
+    // emit_value2(expected_idx) → [expected_opcode] (if < 0xfb)
+    // emit_word(0xff7a) → [0x7a, 0xff]
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x7a, 0xff]);
+    } else {
+        assert_eq!(
+            bytes,
+            &[expected_opcode, (expected_idx & 0xff) as u8, 0x7a, 0xff]
+        );
+    }
+}
+
+#[test]
+fn emit_reference_kind2_byref_promotes_to_nop2() {
+    // kind==2 (argument) with word6 bit 0 set (ByRef) → n_op promoted to 2.
+    // With nOp==2 and no flags, the opcode index is from the nOp==2 arm.
+    // We verify the output differs from the nOp==1 arm (the ByRef adjustment).
+    // kind==2 u_var7=0x210; nOp==1 (no byref): u_var7|off; nOp==2 (byref): different index.
+    use crate::tables::RT_TYPE_OFFSET;
+    use crate::tables::RT_OPCODE_BYTE;
+    let u_var7 = 0x210i32;
+    let off = RT_TYPE_OFFSET[2] as i32;
+    let nop1_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
+    // nOp2 path: off stays, then +6 if off==3||off==4; otherwise same|u_var7.
+    let mut nop2_idx = if off == 10 { 4 } else if off == 9 { 1 } else { off };
+    let nop2_base = nop2_idx | u_var7;
+    if nop2_idx == 3 || nop2_idx == 4 { nop2_idx = nop2_base + 6; } else { nop2_idx = nop2_base; }
+    // byref (word6 bit 0 = 1) → n_op becomes 2.
+    let desc_byref = crate::emit::RefDescriptor { kind: 2, operand: 0x000c, word6: 1, word8: 0 };
+    let desc_byval = crate::emit::RefDescriptor { kind: 2, operand: 0x000c, word6: 0, word8: 0 };
+    let b_byref = ref_bytes(&desc_byref, 1, 0, 2);
+    let b_byval = ref_bytes(&desc_byval, 1, 0, 2);
+    // The byref descriptor produces nOp==2 output, byval produces nOp==1.
+    let op_byref = RT_OPCODE_BYTE[nop2_idx as usize];
+    let op_byval = RT_OPCODE_BYTE[nop1_idx as usize];
+    assert_eq!(b_byval[0], op_byval);
+    assert_eq!(b_byref[0], op_byref);
+}

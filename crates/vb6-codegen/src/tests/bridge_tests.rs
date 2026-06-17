@@ -1,5 +1,5 @@
 use super::*;
-use crate::bind::{ParamFrame, ProcFrame};
+use crate::bind::ProcFrame;
 use crate::emit::Emitter;
 use crate::node::NodeArena;
 use vb6_sema::sema::VbaType;

@@ -40,13 +40,18 @@ use crate::tables::{RT_BINOP_BASE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_B
 /// * `kind` — `*pExprDesc`: the storage class (1 = local, 2 = argument, 7 = …);
 ///   selects the opcode base.
 /// * `operand` — the 2-byte operand emitted after the opcode (descriptor `+10`),
-///   e.g. a local's signed frame offset.
-/// * `word6` — descriptor `+6`; for argument kinds, bit 0 marks a by-ref slot.
+///   e.g. a local's signed frame offset, or type size.
+/// * `word6` — descriptor `+6`; for argument/global kinds, bit 0 marks a by-ref
+///   slot (`word6 & 1 != 0` → ByRef, forces nOp=2).
+/// * `word8` — low 16 bits of descriptor `+8`; emitted as the trailing word in
+///   the `sVar8==2` path (opcode 0x438, reached only for the nType==0x17 Variant
+///   nested-type-expression chain).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct RefDescriptor {
     pub kind: i32,
     pub operand: u16,
     pub word6: u16,
+    pub word8: u16,
 }
 
 /// Drives [`Emitter::emit_expr`] over a [`NodeArena`], writing the runtime
@@ -86,9 +91,21 @@ impl<'a> Emitter<'a> {
 
         // Synthetic typed-load IR nodes (not `EbEmitStatement` opcodes — they are
         // `>= 0x74`, which the guard below rejects). Real VB6 emits these bytes
-        // from the assignment / name path; we stand in until that is ported.
+        // from the assignment / name path.
         if op == 0x74 || op == 0x76 {
             self.emit_var_load(&n, context);
+            return 0;
+        }
+        // Synthetic ByRef parameter load (opcode 0x75): same layout as a local load
+        // node but routed through emit_byref_load (base+0x14 opcode).
+        if op == 0x75 {
+            self.emit_byref_param_node(&n);
+            return 0;
+        }
+        // Synthetic module-global load (opcode 0x77): module_desc in low u16 of
+        // word[4], field_offset in high u16 of word[4], type_ctx in word[5].
+        if op == 0x77 {
+            self.emit_global_node_load(&n);
             return 0;
         }
 
@@ -479,51 +496,70 @@ impl<'a> Emitter<'a> {
     pub fn emit_reference(&mut self, desc: &RefDescriptor, n_op_in: i32, f_flags: u32, n_type_in: i32) {
         let mut n_op = n_op_in;
         let n_type = n_type_in;
+        // sVar8 controls final emit: 1 = emit_opcode2 (opcode + 2-byte operand),
+        // 2 = emit_opcode2 + emit_word (opcode + 2-byte operand + 2-byte extra word),
+        // 0 = emit_value2 only. Starts at 1 (the VB6 C default). The sVar8==2 path
+        // is reached only via nType==0x17 which hits unimplemented! above, so the
+        // value is always 1 in currently-reachable code.
         let s_var8: i16 = 1;
-        let u_var5: u16 = desc.operand; // descriptor+10 operand (frame offset)
-        let u_var7: i32; // base opcode by descriptor kind
+        let u_var5: u16 = desc.operand; // descriptor+10 (frame offset / type size)
+        let u_var7: i32; // opcode base by descriptor kind
 
         match desc.kind {
+            // kind 1: local variable — opcode base 0x1e0 (RT_OPCODE_BYTE[0x1e2] = 0x6c for Long).
             1 => u_var7 = 0x1e0,
+            // kind 2: argument/parameter — opcode base 0x210 (RT_OPCODE_BYTE[0x212] = 0x80 for Long ByRef).
+            // When word6 bit 0 is set (ByRef slot), EbEmitExpression2 calls EbEmitExpressionOp
+            // with nOp=2 and returns; we model this by forcing n_op=2 before the nOp switch.
             2 => {
                 u_var7 = 0x210;
                 if desc.word6 & 1 != 0 {
-                    unimplemented!(
-                        "EbEmitExpression2 kind 2 (byref arg): EbEmitExpressionOp mode 2 \
-                         @ 0fab39b8; Phase 3"
-                    );
+                    n_op = 2;
                 }
             }
+            // kind 7: indirect module-level variable — opcode base 0x240.
+            // Same ByRef promotion as kind 2.
             7 => {
                 u_var7 = 0x240;
                 if desc.word6 & 1 != 0 {
-                    unimplemented!(
-                        "EbEmitExpression2 kind 7 (byref): EbEmitExpressionOp mode 2 \
-                         @ 0fab39b8; Phase 3"
-                    );
+                    n_op = 2;
                 }
             }
+            // kinds 3/4/5/6/0xa: EbEmitExpressionOp is called with u_var7 from the
+            // caller's ESI register (not set by EbEmitExpression2 itself). Without the
+            // full call chain, u_var7 is not available at this level.
             3 | 4 | 5 | 6 | 0xa => unimplemented!(
-                "EbEmitExpression2 kind {} : EbEmitExpressionOp @ 0fab39b8; Phase 3",
+                "EbEmitExpression2 kind {}: requires caller-supplied opcode base (ESI) \
+                 from EbResolveIdentRef call chain — not available without the full \
+                 module compilation context",
                 desc.kind
             ),
+            // kinds 8/9/0xb: emit fixed opcodes then call EbBuildExprDescriptor @ 0fab3d1c,
+            // which requires the module symbol table and compiled type descriptors.
             8 | 9 | 0xb => unimplemented!(
-                "EbEmitExpression2 kind {} (member/typed): EbBuildExprDescriptor; Phase 4",
+                "EbEmitExpression2 kind {} (member/typed ref): EbBuildExprDescriptor \
+                 @ 0fab3d1c requires the module symbol table and compiled type descriptors",
                 desc.kind
             ),
+            // default: EbEmitExpression3 (wraps EbEmitExpressionOp) — same ESI issue as 3/4/5/6.
             _ => unimplemented!(
-                "EbEmitExpression2 kind {} (default): EbEmitExpression3; Phase 3",
+                "EbEmitExpression2 kind {} (default): EbEmitExpression3 @ 0fab3cda \
+                 requires caller-supplied opcode base from the module compilation context",
                 desc.kind
             ),
         }
 
-        // nType normalization. The 0x12 sub-path needs EbGetType2Flag(context).
+        // EbGetType2Flag(pContext) check: when nType==0x12 and the context flag is set,
+        // nType is promoted to 0x17. Without pContext (not accepted by emit_reference),
+        // we cannot make this determination.
         if n_type == 0x12 {
             unimplemented!(
-                "EbEmitExpression2: nType 0x12 path: EbGetType2Flag; Phase 4"
+                "EbEmitExpression2 nType 0x12: EbGetType2Flag(pContext) @ 0fab34d0 \
+                 determines whether nType is promoted to 0x17; pContext is not \
+                 threaded through emit_reference"
             );
         }
-        // EbMapOperatorType(nType, &nOp): 0x12/0x11 + nOp in {1,2,3} → nOp 5.
+        // EbMapOperatorType: maps nType 0x11/0x12 + nOp in {1,2,3} → nOp 5.
         if (n_type == 0x12 || n_type == 0x11) && (n_op == 1 || n_op == 2 || n_op == 3) {
             n_op = 5;
         }
@@ -531,11 +567,22 @@ impl<'a> Emitter<'a> {
         let u_var6: i32 = match n_op {
             1 => {
                 if f_flags & 0x4000 != 0 {
-                    unimplemented!(
-                        "EbEmitExpression2 nOp1 0x4000: EbEmitTypeExpr / EbGetValueTypeClass2; Phase 4"
-                    );
-                }
-                if f_flags & 0x1000 != 0 {
+                    // LAB_0fab3b03: object/type-expression path.
+                    // nType 0x10 (Object/Dispatch) → opcode 0x23f (RT_OPCODE_BYTE[0x23f] = 0x3e).
+                    // nType 0x17 (Variant-with-type) → EbEmitTypeExpr @ 0fac2f00 needed.
+                    // All other nType values → opcode 0x262 (RT_OPCODE_BYTE[0x262] = 0x8a).
+                    if n_type == 0x10 {
+                        0x23f
+                    } else if n_type == 0x17 {
+                        unimplemented!(
+                            "EbEmitExpression2 nOp1 f_flags 0x4000 nType 0x17: \
+                             EbEmitTypeExpr @ 0fac2f00 (calls EbEmitTypedExpression — \
+                             type-pool machinery not yet ported)"
+                        );
+                    } else {
+                        0x262
+                    }
+                } else if f_flags & 0x1000 != 0 {
                     0x1b2
                 } else {
                     let off = RT_TYPE_OFFSET[n_type as usize];
@@ -548,13 +595,21 @@ impl<'a> Emitter<'a> {
                     }
                 }
             }
+            // nOp 2 falls through to the same 0x4000 label as nOp 1 in the C.
             2 => {
                 if f_flags & 0x4000 != 0 {
-                    unimplemented!(
-                        "EbEmitExpression2 nOp2 0x4000: EbEmitTypeExpr / EbGetValueTypeClass2; Phase 4"
-                    );
-                }
-                if f_flags & 0x1000 != 0 {
+                    if n_type == 0x10 {
+                        0x23f
+                    } else if n_type == 0x17 {
+                        unimplemented!(
+                            "EbEmitExpression2 nOp2 f_flags 0x4000 nType 0x17: \
+                             EbEmitTypeExpr @ 0fac2f00 (calls EbEmitTypedExpression — \
+                             type-pool machinery not yet ported)"
+                        );
+                    } else {
+                        0x262
+                    }
+                } else if f_flags & 0x1000 != 0 {
                     0x1b2
                 } else {
                     let mut off = RT_TYPE_OFFSET[n_type as usize];
@@ -613,8 +668,12 @@ impl<'a> Emitter<'a> {
                         v = 0x439;
                     }
                 } else if f_flags & 0x20 == 0 {
+                    // DAT_0fab6a38: a small 2-D conversion table indexed by
+                    // (~fFlags >> 12 & 1), (~fFlags >> 11 & 1), and the type offset.
+                    // The table bytes are not yet extracted into tables.rs.
                     unimplemented!(
-                        "EbEmitExpression2 nOp4 0x8000 path: DAT_0fab6a38 conversion table; Phase 4"
+                        "EbEmitExpression2 nOp4 f_flags 0x8000 path: \
+                         DAT_0fab6a38 @ 0fab6a38 conversion table not yet extracted"
                     );
                 } else {
                     v = (if f_flags & 0x800 != 0 { 2 } else { 0 }) + 0x1b7;
@@ -654,14 +713,21 @@ impl<'a> Emitter<'a> {
             _ => unimplemented!("EbEmitExpression2: nOp {} not handled", n_op),
         };
 
+        // The nType==0x17 → sVar8==2 path (opcode 0x438 + trailing word) remains
+        // unimplemented! above; s_var8 stays 1 for all currently reachable paths.
         if s_var8 == 0 {
             self.emit_value2(u_var6 as usize);
         } else {
             self.emit_opcode2(u_var6 as usize, u_var5);
+            if s_var8 == 2 {
+                // Extra word from descriptor+8 (desc.word8), emitted only on the
+                // 0x438 path (nType 0x17 double-unwrap returning class 0x12).
+                self.stream.emit_word(desc.word8);
+            }
         }
-        // The trailing EbBuildExprDescriptor call fires only for descriptor kinds
-        // 5/7/10 with nOp 6 — none of the kinds emitted above — so it is omitted
-        // here and will be added when those kinds are ported.
+        // EbBuildExprDescriptor is called when kind∈{5,7,10} AND nOp==6 AND
+        // the "optional" bit in desc+4 is set — none of the kinds currently
+        // emitted above, so it is correctly omitted here.
     }
 
     // ── Emitter primitives (EbEmitValue2 / EbEmitOpcode2 / EbEmitDword) ───────
@@ -753,6 +819,27 @@ impl<'a> Emitter<'a> {
     /// `context` is accepted (the real name path varies its surrounding emission
     /// by context) but does not change the load opcode for a plain numeric local.
     /// Node types `0x74` and `0x76` both route here.
+    /// Dispatch a synthetic opcode-0x75 ByRef parameter load node.
+    /// Node layout: lhs = sym node whose type_info() holds the frame offset,
+    /// word[5] = type_ctx.  Calls emit_byref_load.
+    fn emit_byref_param_node(&mut self, n: &RawNode) {
+        let type_ctx = n.word(5) as usize;
+        let sym = self.arena.get(n.lhs());
+        let frame_offset = sym.type_info() as i16;
+        self.emit_byref_load(type_ctx, frame_offset);
+    }
+
+    /// Dispatch a synthetic opcode-0x77 module-global load node.
+    /// Node layout: word[4] low u16 = module_desc, word[4] high u16 = field_offset,
+    /// word[5] = type_ctx.  Calls emit_global_load.
+    fn emit_global_node_load(&mut self, n: &RawNode) {
+        let type_ctx = n.word(5) as usize;
+        let packed = n.word(4);
+        let module_desc = (packed & 0xffff) as u16;
+        let field_offset = (packed >> 16) as u16;
+        self.emit_global_load(type_ctx, module_desc, field_offset);
+    }
+
     fn emit_var_load(&mut self, n: &RawNode, _context: u32) {
         let type_ctx = n.word(5) as usize;
         let sym = self.arena.get(n.lhs());
