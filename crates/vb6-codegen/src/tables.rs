@@ -73,3 +73,36 @@ pub const VARLOAD_OP_BY_CALLCTX: [u16; 8] = [
 pub const TYPE_CTX_BITS: [u8; 8] = [
     0x00, 0x02, 0x03, 0x04, 0x05, 0x08, 0x06, 0x00,
 ];
+
+/// Runtime local-variable load opcode indexed by type context (typeCtx 0–7).
+/// Encoding: 1-byte opcode + 2-byte signed frame offset (i16 LE). A zero
+/// entry means the type has no direct plain-load opcode at this context —
+/// String uses a runtime-helper sequence; Date/Variant not yet confirmed.
+/// TYPE_CTX_BITS[ctx] gives the corresponding VT code (VT_I2=2, VT_I4=3,
+/// VT_R4=4, VT_R8=5, VT_BSTR=8, VT_CY=6). Load-opcode order in the runtime
+/// stream is: Integer(0x6b), Long(0x6c), Currency(0x6d), Single(0x6e),
+/// Double(0x6f) — not VT order.
+pub const RT_LOAD_BY_CTX: [u8; 8] = [
+    0x00, // 0: untyped/object — no plain load
+    0x6b, // 1: Integer  (TYPE_CTX_BITS → VT_I2)
+    0x6c, // 2: Long     (TYPE_CTX_BITS → VT_I4)
+    0x6e, // 3: Single   (TYPE_CTX_BITS → VT_R4)
+    0x6f, // 4: Double   (TYPE_CTX_BITS → VT_R8)
+    0x00, // 5: String   — runtime-helper sequence, not a plain load
+    0x6d, // 6: Currency (TYPE_CTX_BITS → VT_CY)
+    0x00, // 7: Date/Variant — not yet confirmed
+];
+
+/// Runtime local-variable store opcode indexed by type context.
+/// Encoding: 1-byte opcode + 2-byte signed frame offset (i16 LE). Zero means
+/// no direct plain-store opcode for that context.
+pub const RT_STORE_BY_CTX: [u8; 8] = [
+    0x00, // 0
+    0x70, // 1: Integer
+    0x71, // 2: Long
+    0x73, // 3: Single
+    0x74, // 4: Double
+    0x00, // 5: String
+    0x72, // 6: Currency
+    0x00, // 7: Date/Variant
+];

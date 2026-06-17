@@ -18,10 +18,11 @@
 //! ```
 //!
 //! ## Buffer model
-//! The main P-code output stream is a word cursor over a byte buffer: opcodes and
-//! operands are little-endian 16-bit words, with literals and data blobs written
-//! as raw bytes onto the same byte-addressed, 2-byte-aligned stream. That is
-//! [`buffer::PcodeStream`].
+//! The main P-code output stream is a dense byte buffer: each instruction is a
+//! 1-byte opcode followed by type-specific operands at their natural width —
+//! 2-byte signed frame offsets (i16 LE) for loads/stores, 4-byte or 8-byte
+//! payloads for numeric literals.  No word-boundary alignment is enforced.
+//! See [`buffer::PcodeStream`].
 
 pub mod bind;
 pub mod buffer;
