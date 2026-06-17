@@ -34,6 +34,8 @@
 
 use std::collections::HashMap;
 
+use crate::node::{NodeArena, NodeRef};
+
 /// A 10-byte per-slot descriptor. Only the fields the codegen path reads are
 /// named; the remainder is preserved as raw bytes so the record keeps its exact
 /// 10-byte footprint.
@@ -263,6 +265,35 @@ impl ProcFrame {
     pub fn locals_frame_bytes(&self) -> u16 {
         (PROC_FRAME_BASE - self.cursor) as u16
     }
+
+    /// Allocate a bound symbol node followed by a typed variable-load node in
+    /// `arena`, returning the load node's reference.
+    ///
+    /// The symbol node (opcode 0) stores the frame offset in `type_info()` =
+    /// high 16 bits of `word[4]`.  The load node (opcode 0x74) stores the
+    /// type context in `word[5]` and points to the symbol via `word[4]`.
+    ///
+    /// If `name` was not declared, returns `None`.
+    pub fn make_load_node(&self, arena: &mut NodeArena, name: &str) -> Option<NodeRef> {
+        let var = self.resolve(name)?;
+        let sym = arena.alloc(NodeArena::node(
+            0,
+            0,
+            (var.frame_offset as u16 as u32) << 16,
+            0,
+            0,
+            0,
+        ));
+        let load = arena.alloc(NodeArena::node(
+            0x74,
+            0,
+            sym.0,
+            var.type_ctx as u32,
+            0,
+            0,
+        ));
+        Some(load)
+    }
 }
 
 impl Default for ProcFrame {
@@ -465,5 +496,109 @@ mod tests {
         assert_eq!(f.locals_frame_bytes(), 8);
         f.declare_local("b", 1).unwrap(); // Integer: 2 bytes (no align from -140)
         assert_eq!(f.locals_frame_bytes(), 10);
+    }
+
+    // ── make_load_node / bind→emit integration ───────────────────────────────
+
+    #[test]
+    fn make_load_node_produces_double_load_at_correct_offset() {
+        // Probe: `Dim a As Double` → a at frame offset -140 (0xff74).
+        // make_load_node should produce a node that the emitter turns into
+        // [0x6f, 0x74, 0xff].
+        use crate::emit::Emitter;
+        let mut f = ProcFrame::new();
+        f.declare_local("a", 4).unwrap(); // Double at -140
+        let mut arena = NodeArena::new();
+        let load = f.make_load_node(&mut arena, "a").expect("a declared");
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(load, 0);
+        assert_eq!(emitter.into_bytes(), &[0x6f, 0x74, 0xff]);
+    }
+
+    #[test]
+    fn make_load_node_unknown_name_returns_none() {
+        let f = ProcFrame::new();
+        let mut arena = NodeArena::new();
+        assert!(f.make_load_node(&mut arena, "x").is_none());
+    }
+
+    #[test]
+    fn make_load_node_long_at_correct_offset() {
+        // `Dim n As Long` → Long at -136 (0xff78). Emitter: [0x6c, 0x78, 0xff].
+        use crate::emit::Emitter;
+        let mut f = ProcFrame::new();
+        f.declare_local("n", 2).unwrap(); // Long at -136
+        let mut arena = NodeArena::new();
+        let load = f.make_load_node(&mut arena, "n").expect("n declared");
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(load, 0);
+        assert_eq!(emitter.into_bytes(), &[0x6c, 0x78, 0xff]);
+    }
+
+    #[test]
+    fn make_load_node_integer_at_correct_offset() {
+        // `Dim a As Integer, b As Integer` → a at -134, b at -136.
+        use crate::emit::Emitter;
+        let mut f = ProcFrame::new();
+        f.declare_local("a", 1).unwrap(); // Integer at -134
+        f.declare_local("b", 1).unwrap(); // Integer at -136
+        let mut arena = NodeArena::new();
+        let la = f.make_load_node(&mut arena, "a").unwrap();
+        let lb = f.make_load_node(&mut arena, "b").unwrap();
+        // a: [0x6b, 0x7a, 0xff]; b: [0x6b, 0x78, 0xff]
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(la, 0);
+        emitter.emit_expr(lb, 0);
+        assert_eq!(emitter.into_bytes(), &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff]);
+    }
+
+    #[test]
+    fn full_pipeline_add_two_longs() {
+        // Full bind→emit pipeline for `a + b` where both are Long.
+        // Dim a As Long: frame -136 (0xff78); Dim b As Long: frame -140 (0xff74).
+        // ADD Long (op 0x16, type_tag 8) → n_opc=144, RT_OPCODE_BYTE[144]=0xaa.
+        // Expected bytes:
+        //   load a:  [0x6c, 0x78, 0xff]
+        //   load b:  [0x6c, 0x74, 0xff]
+        //   ADD Long: [0xaa]
+        // Total: [0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa]
+        use crate::emit::Emitter;
+        let mut f = ProcFrame::new();
+        f.declare_local("a", 2).unwrap(); // Long at -136
+        f.declare_local("b", 2).unwrap(); // Long at -140
+        let mut arena = NodeArena::new();
+        let la = f.make_load_node(&mut arena, "a").unwrap();
+        let lb = f.make_load_node(&mut arena, "b").unwrap();
+        // Binary ADD node: op=0x16 (22), type_tag=8 (Long result)
+        let add_node = arena.alloc(NodeArena::node(0x16, 8, la.0, lb.0, 0, 0));
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(add_node, 0);
+        assert_eq!(
+            emitter.into_bytes(),
+            &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa]
+        );
+    }
+
+    #[test]
+    fn full_pipeline_and_two_integers() {
+        // `a And b` where a, b are Integer.
+        // Dim a As Integer: -134 (0xff7a); Dim b As Integer: -136 (0xff78).
+        // AND Integer (op 0x23=35, type_tag=6): base=0x0021=33, offset=1, n_opc=34,
+        // RT_OPCODE_BYTE[34]=0xc4.
+        // load a: [0x6b, 0x7a, 0xff]; load b: [0x6b, 0x78, 0xff]; AND: [0xc4]
+        use crate::emit::Emitter;
+        let mut f = ProcFrame::new();
+        f.declare_local("a", 1).unwrap(); // Integer at -134
+        f.declare_local("b", 1).unwrap(); // Integer at -136
+        let mut arena = NodeArena::new();
+        let la = f.make_load_node(&mut arena, "a").unwrap();
+        let lb = f.make_load_node(&mut arena, "b").unwrap();
+        let and_node = arena.alloc(NodeArena::node(0x23, 6, la.0, lb.0, 0, 0)); // AND, Integer
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(and_node, 0);
+        assert_eq!(
+            emitter.into_bytes(),
+            &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xc4]
+        );
     }
 }
