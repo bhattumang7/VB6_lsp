@@ -788,6 +788,79 @@ impl<'a> Emitter<'a> {
         self.stream.emit_byte(opcode);
         self.stream.emit_i16(frame_offset);
     }
+
+    /// Emit a ByRef parameter load at `frame_offset`.  The ByRef load opcode is
+    /// `RT_LOAD_BY_CTX[type_ctx] + 0x14` (oracle-confirmed for Long: 0x6c→0x80).
+    /// The frame offset is positive (parameters sit above the frame pointer).
+    pub fn emit_byref_load(&mut self, type_ctx: usize, frame_offset: i16) {
+        let base = RT_LOAD_BY_CTX.get(type_ctx).copied().unwrap_or(0);
+        if base == 0 {
+            unimplemented!(
+                "emit_byref_load: no confirmed local-load opcode for typeCtx {}",
+                type_ctx
+            );
+        }
+        self.stream.emit_byte(base + 0x14);
+        self.stream.emit_i16(frame_offset);
+    }
+
+    /// Emit a ByRef parameter store at `frame_offset`.  The ByRef store opcode is
+    /// `RT_STORE_BY_CTX[type_ctx] + 0x14` (oracle-confirmed for Long: 0x71→0x85).
+    pub fn emit_byref_store(&mut self, type_ctx: usize, frame_offset: i16) {
+        let base = RT_STORE_BY_CTX.get(type_ctx).copied().unwrap_or(0);
+        if base == 0 {
+            unimplemented!(
+                "emit_byref_store: no confirmed local-store opcode for typeCtx {}",
+                type_ctx
+            );
+        }
+        self.stream.emit_byte(base + 0x14);
+        self.stream.emit_i16(frame_offset);
+    }
+
+    /// Emit a module-level global variable load.  The opcode is
+    /// `RT_LOAD_BY_CTX[type_ctx] + 0x28` (oracle-confirmed: Integer=0x93,
+    /// Long=0x94, Double=0x97).  The 4-byte operand encodes `module_desc` (the
+    /// compiled module-object descriptor) in bytes 0–1 and `field_offset` (the
+    /// byte offset within the module's global data block) in bytes 2–3.
+    pub fn emit_global_load(
+        &mut self,
+        type_ctx: usize,
+        module_desc: u16,
+        field_offset: u16,
+    ) {
+        let base = RT_LOAD_BY_CTX.get(type_ctx).copied().unwrap_or(0);
+        if base == 0 {
+            unimplemented!(
+                "emit_global_load: no confirmed local-load opcode for typeCtx {}",
+                type_ctx
+            );
+        }
+        self.stream.emit_byte(base + 0x28);
+        self.stream.emit_word(module_desc);
+        self.stream.emit_word(field_offset);
+    }
+
+    /// Emit a module-level global variable store.  The opcode is
+    /// `RT_STORE_BY_CTX[type_ctx] + 0x28` (oracle-confirmed: Integer=0x98,
+    /// Long=0x99, Double=0x9c).
+    pub fn emit_global_store(
+        &mut self,
+        type_ctx: usize,
+        module_desc: u16,
+        field_offset: u16,
+    ) {
+        let base = RT_STORE_BY_CTX.get(type_ctx).copied().unwrap_or(0);
+        if base == 0 {
+            unimplemented!(
+                "emit_global_store: no confirmed local-store opcode for typeCtx {}",
+                type_ctx
+            );
+        }
+        self.stream.emit_byte(base + 0x28);
+        self.stream.emit_word(module_desc);
+        self.stream.emit_word(field_offset);
+    }
 }
 
 #[cfg(test)]

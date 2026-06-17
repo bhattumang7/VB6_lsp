@@ -315,6 +315,105 @@ impl Default for ProcFrame {
     }
 }
 
+// ── ParamFrame ────────────────────────────────────────────────────────────────
+
+/// Frame offset of the first parameter slot, relative to the proc virtual
+/// frame pointer. Confirmed by oracle: `ByVal p As Long` → opcode loads at
+/// frame offset +12.
+pub const PROC_PARAM_BASE: i16 = 12;
+
+/// Stack step in bytes for a parameter of a given type context.  Parameters
+/// occupy at least one DWORD (4 bytes) of stack space; 8-byte types (Double,
+/// Currency) occupy two DWORDs.  This mirrors the standard x86 calling
+/// convention: the caller always pushes a whole DWORD per slot, rounded up to
+/// the type's natural size if larger.
+fn param_step(type_ctx: usize) -> i16 {
+    let sz = frame_size_of_ctx(type_ctx);
+    // DWORD-align upward: sizes ≤ 4 become 4, sizes > 4 are already multiples of 4.
+    ((sz as i16 + 3) & !3).max(4)
+}
+
+/// One parameter's binding: its type context, frame offset, and whether it is
+/// passed by reference.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ParamVar {
+    pub type_ctx: usize,
+    /// Signed frame offset from the proc virtual frame pointer.  Positive for
+    /// parameters (pushed by the caller above the frame pointer).
+    pub frame_offset: i16,
+    /// `true` if the parameter is ByRef (the slot contains a pointer to the
+    /// actual value); `false` for ByVal (the slot contains the value directly).
+    pub byref: bool,
+}
+
+/// Runtime frame allocator for one procedure's parameter list.
+///
+/// Assigns each declared parameter a signed positive frame offset, starting at
+/// [`PROC_PARAM_BASE`] and incrementing by one or two DWORDs per slot.
+///
+/// # Example
+/// ```
+/// use vb6_codegen::bind::{ParamFrame, PROC_PARAM_BASE};
+/// let mut f = ParamFrame::new();
+/// let p = f.declare_param("p", 2 /* Long */, false).unwrap();  // +12
+/// let q = f.declare_param("q", 2,            false).unwrap();  // +16
+/// assert_eq!(p.frame_offset, 12);
+/// assert_eq!(q.frame_offset, 16);
+/// ```
+#[derive(Debug)]
+pub struct ParamFrame {
+    cursor: i16,
+    vars: HashMap<String, ParamVar>,
+}
+
+impl ParamFrame {
+    pub fn new() -> Self {
+        Self {
+            cursor: PROC_PARAM_BASE,
+            vars: HashMap::new(),
+        }
+    }
+
+    /// Declare a named parameter.  Returns `Err(DeclError::AlreadyDeclared)` if a
+    /// parameter with that name has already been declared.
+    pub fn declare_param(
+        &mut self,
+        name: &str,
+        type_ctx: usize,
+        byref: bool,
+    ) -> Result<ParamVar, DeclError> {
+        if self.vars.contains_key(name) {
+            return Err(DeclError::AlreadyDeclared);
+        }
+        let var = self.alloc_param(type_ctx, byref);
+        self.vars.insert(name.to_string(), var);
+        Ok(var)
+    }
+
+    /// Allocate a parameter slot by index (declaration order).  Used when
+    /// parameters are identified by `param_idx` from `vb6_sema::NameResolution`.
+    pub fn declare_anon_param(&mut self, type_ctx: usize, byref: bool) -> ParamVar {
+        self.alloc_param(type_ctx, byref)
+    }
+
+    fn alloc_param(&mut self, type_ctx: usize, byref: bool) -> ParamVar {
+        let offset = self.cursor;
+        self.cursor += param_step(type_ctx);
+        ParamVar { type_ctx, frame_offset: offset, byref }
+    }
+
+    /// Resolve a declared parameter name to its `ParamVar`.
+    pub fn resolve(&self, name: &str) -> Option<ParamVar> {
+        self.vars.get(name).copied()
+    }
+}
+
+impl Default for ParamFrame {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 #[cfg(test)]

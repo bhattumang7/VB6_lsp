@@ -322,3 +322,72 @@ fn full_pipeline_and_two_integers() {
         &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xc4]
     );
 }
+
+// ── ParamFrame tests (oracle-verified) ───────────────────────────────────
+
+#[test]
+fn param_frame_first_long_at_plus_12() {
+    // Oracle: `Sub Foo(ByVal p As Long)` → load p at frame offset +12 (0x000c). ✓
+    let mut f = ParamFrame::new();
+    let p = f.declare_param("p", 2, false).unwrap();
+    assert_eq!(p.frame_offset, 12);
+    assert_eq!(p.type_ctx, 2);
+    assert!(!p.byref);
+}
+
+#[test]
+fn param_frame_two_longs_at_12_and_16() {
+    // Oracle: `(ByVal p As Long, ByVal q As Long)` → p at +12, q at +16. ✓
+    let mut f = ParamFrame::new();
+    let p = f.declare_param("p", 2, false).unwrap();
+    let q = f.declare_param("q", 2, false).unwrap();
+    assert_eq!(p.frame_offset, 12);
+    assert_eq!(q.frame_offset, 16);
+}
+
+#[test]
+fn param_frame_integer_padded_to_dword() {
+    // Integer (2 bytes) occupies a full DWORD slot (step=4) in the param area.
+    // Oracle: `(ByVal p As Integer, ByVal q As Long)` → q at +16 (+4 from +12). ✓
+    let mut f = ParamFrame::new();
+    let p = f.declare_param("p", 1, false).unwrap(); // Integer
+    let q = f.declare_param("q", 2, false).unwrap(); // Long
+    assert_eq!(p.frame_offset, 12);
+    assert_eq!(q.frame_offset, 16);
+}
+
+#[test]
+fn param_frame_double_step_is_eight() {
+    // Double (8 bytes) occupies two DWORDs; next param is at +12+8=+20.
+    let mut f = ParamFrame::new();
+    let p = f.declare_param("p", 4, false).unwrap(); // Double
+    let q = f.declare_param("q", 2, false).unwrap(); // Long
+    assert_eq!(p.frame_offset, 12);
+    assert_eq!(q.frame_offset, 20);
+}
+
+#[test]
+fn param_frame_byref_flag_stored() {
+    // ByRef params have the same frame offsets as ByVal — the byref flag
+    // only selects a different opcode at emit time.
+    let mut f = ParamFrame::new();
+    let p = f.declare_param("p", 2, true).unwrap(); // ByRef Long
+    assert_eq!(p.frame_offset, 12);
+    assert!(p.byref);
+}
+
+#[test]
+fn param_frame_redeclare_returns_error() {
+    let mut f = ParamFrame::new();
+    f.declare_param("p", 2, false).unwrap();
+    assert_eq!(f.declare_param("p", 2, false), Err(DeclError::AlreadyDeclared));
+}
+
+#[test]
+fn param_frame_resolve() {
+    let mut f = ParamFrame::new();
+    f.declare_param("p", 2, false).unwrap();
+    let v = f.resolve("p").expect("p declared");
+    assert_eq!(v.frame_offset, 12);
+    assert!(f.resolve("q").is_none());
+}

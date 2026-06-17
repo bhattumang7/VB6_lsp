@@ -1,5 +1,5 @@
 use super::*;
-use crate::bind::ProcFrame;
+use crate::bind::{ParamFrame, ProcFrame};
 use crate::emit::Emitter;
 use crate::node::NodeArena;
 use vb6_sema::sema::VbaType;
@@ -197,4 +197,182 @@ fn resolved_local_mixed_type_frame() {
     emit_resolved_local_load(&mut e, 0, &types, &slots).unwrap();
     emit_resolved_local_load(&mut e, 1, &types, &slots).unwrap();
     assert_eq!(e.into_bytes(), &[0x6b, 0x7a, 0xff, 0x6f, 0x70, 0xff]);
+}
+
+// ── ByVal parameter bridge (oracle-verified) ──────────────────────────────────
+
+#[test]
+fn byval_param_long_load() {
+    // Oracle: `Sub Foo(ByVal p As Long)` → r = p → `6c 0c 00` (p at +12). ✓
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byval_param_load(&mut e, &VbaType::Long, 12).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6c, 0x0c, 0x00]);
+}
+
+#[test]
+fn byval_param_long_store() {
+    // Oracle: `p = r` (ByVal Long p at +12) → `71 0c 00`. ✓
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byval_param_store(&mut e, &VbaType::Long, 12).unwrap();
+    assert_eq!(e.into_bytes(), &[0x71, 0x0c, 0x00]);
+}
+
+#[test]
+fn byval_param_single_load() {
+    // Oracle: `Sub Foo(ByVal p As Single)` → `6e 0c 00` (p at +12). ✓
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byval_param_load(&mut e, &VbaType::Single, 12).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6e, 0x0c, 0x00]);
+}
+
+#[test]
+fn byval_param_double_load() {
+    // Oracle: `Sub Foo(ByVal p As Double)` → `6f 0c 00` (p at +12). ✓
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byval_param_load(&mut e, &VbaType::Double, 12).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6f, 0x0c, 0x00]);
+}
+
+#[test]
+fn byval_param_second_long_at_16() {
+    // Oracle: `(ByVal p As Long, ByVal q As Long)` → q at +16.
+    // Load q: `6c 10 00`. ✓
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byval_param_load(&mut e, &VbaType::Long, 16).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6c, 0x10, 0x00]);
+}
+
+// ── ByRef parameter bridge (oracle-verified) ──────────────────────────────────
+
+#[test]
+fn byref_param_long_load() {
+    // Oracle: `Sub Foo(ByRef p As Long)` → r = p → `80 0c 00`. ✓
+    // 0x80 = RT_LOAD_BY_CTX[Long=2] (0x6c) + 0x14.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byref_param_load(&mut e, &VbaType::Long, 12).unwrap();
+    assert_eq!(e.into_bytes(), &[0x80, 0x0c, 0x00]);
+}
+
+#[test]
+fn byref_param_long_store() {
+    // Oracle: `p = r` (ByRef Long p at +12) → `85 0c 00`. ✓
+    // 0x85 = RT_STORE_BY_CTX[Long=2] (0x71) + 0x14.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_byref_param_store(&mut e, &VbaType::Long, 12).unwrap();
+    assert_eq!(e.into_bytes(), &[0x85, 0x0c, 0x00]);
+}
+
+// ── Resolved-param path: param_frame_from_types → emit_resolved_param_* ───────
+
+#[test]
+fn param_frame_from_types_two_longs() {
+    // `Sub Foo(ByVal p As Long, ByVal q As Long)` → p at +12, q at +16.
+    let types = [VbaType::Long, VbaType::Long];
+    let byref = [false, false];
+    let slots = param_frame_from_types(&types, &byref).unwrap();
+    assert_eq!(slots[0].frame_offset, 12);
+    assert_eq!(slots[1].frame_offset, 16);
+}
+
+#[test]
+fn emit_resolved_byval_param_load_by_index() {
+    // Load the second ByVal Long param (index 1) → `6c 10 00`. ✓
+    let types = [VbaType::Long, VbaType::Long];
+    let byref = [false, false];
+    let slots = param_frame_from_types(&types, &byref).unwrap();
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_resolved_param_load(&mut e, 1, &types, &slots).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6c, 0x10, 0x00]);
+}
+
+#[test]
+fn emit_resolved_byref_param_load_by_index() {
+    // Load a ByRef Long param at index 0 → `80 0c 00`. ✓
+    let types = [VbaType::Long];
+    let byref = [true];
+    let slots = param_frame_from_types(&types, &byref).unwrap();
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_resolved_param_load(&mut e, 0, &types, &slots).unwrap();
+    assert_eq!(e.into_bytes(), &[0x80, 0x0c, 0x00]);
+}
+
+// ── Module global bridge (oracle-verified) ────────────────────────────────────
+
+#[test]
+fn global_long_load() {
+    // Oracle: `Public g As Long; r = g` → `94 08 00 00 00`. ✓
+    // Opcode 0x94 = RT_LOAD_BY_CTX[Long=2] (0x6c) + 0x28.
+    // module_desc=0x0008, field_offset=0x0000.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_load(&mut e, &VbaType::Long, 0x0008, 0x0000).unwrap();
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn global_long_store() {
+    // Oracle: `g = r` → `99 08 00 00 00`. ✓
+    // Opcode 0x99 = RT_STORE_BY_CTX[Long=2] (0x71) + 0x28.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_store(&mut e, &VbaType::Long, 0x0008, 0x0000).unwrap();
+    assert_eq!(e.into_bytes(), &[0x99, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn global_second_long_field_offset_4() {
+    // Oracle: second `Public b As Long` (after a) → `94 08 00 04 00`. ✓
+    // field_offset=0x0004 because a occupies the first 4 bytes.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_load(&mut e, &VbaType::Long, 0x0008, 0x0004).unwrap();
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x04, 0x00]);
+}
+
+#[test]
+fn global_integer_load() {
+    // Oracle: `Public g As Integer; r = g` → `93 08 00 00 00`. ✓
+    // Opcode 0x93 = RT_LOAD_BY_CTX[Integer=1] (0x6b) + 0x28.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_load(&mut e, &VbaType::Integer, 0x0008, 0x0000).unwrap();
+    assert_eq!(e.into_bytes(), &[0x93, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn global_integer_store() {
+    // Oracle: `g = r` (Integer) → `98 08 00 00 00`. ✓
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_store(&mut e, &VbaType::Integer, 0x0008, 0x0000).unwrap();
+    assert_eq!(e.into_bytes(), &[0x98, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn global_double_load() {
+    // Oracle: `Public g As Double; r = g` → `97 08 00 00 00`. ✓
+    // Opcode 0x97 = RT_LOAD_BY_CTX[Double=4] (0x6f) + 0x28.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_load(&mut e, &VbaType::Double, 0x0008, 0x0000).unwrap();
+    assert_eq!(e.into_bytes(), &[0x97, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn global_double_store() {
+    // Oracle: `g = r` (Double) → `9c 08 00 00 00`. ✓
+    // Opcode 0x9c = RT_STORE_BY_CTX[Double=4] (0x74) + 0x28.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_global_var_store(&mut e, &VbaType::Double, 0x0008, 0x0000).unwrap();
+    assert_eq!(e.into_bytes(), &[0x9c, 0x08, 0x00, 0x00, 0x00]);
 }

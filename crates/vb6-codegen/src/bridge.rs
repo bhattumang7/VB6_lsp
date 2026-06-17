@@ -2,27 +2,29 @@
 //! emitter.
 //!
 //! vb6-sema resolves a name to a [`vb6_sema::VbaType`] and a storage kind
-//! ([`vb6_sema::NameResolution`]); it does **not** compute frame offsets (those
-//! come from [`crate::bind::ProcFrame`], which reproduces VB6's exact frame
-//! layout). This module maps a `VbaType` onto the two codegen quantities the
-//! reference path needs:
+//! (`NameResolution`); it does **not** compute frame offsets (those come from
+//! [`crate::bind::ProcFrame`] / [`crate::bind::ParamFrame`], which reproduce
+//! VB6's exact frame layout). This module maps a `VbaType` onto the two codegen
+//! quantities the reference path needs:
 //!
 //! * the **frame type-context** ([`type_ctx`]) — drives `ProcFrame`'s slot
 //!   sizing/alignment;
-//! * the **value class** ([`value_class`]) — the `nType` index
-//!   [`crate::Emitter::emit_reference`] feeds to the load/store opcode formula.
+//! * the **load/store context** ([`load_store_ctx`]) — selects the oracle-
+//!   confirmed load/store opcode from the `RT_LOAD_BY_CTX` / `RT_STORE_BY_CTX`
+//!   tables in [`crate::emit`].
 //!
-//! The value class is one of the quantities the reference resolver
-//! (`EbResolveIdentRef`) produces inside the real compiler; here we supply it
-//! directly from the declared type. Only the types whose load/store flow
-//! through `EbEmitExpression2`'s simple offset path are mapped — Single, Double,
-//! String, Date, Object, Variant, and UDTs resolve through the value-class
-//! expression branch that is not yet ported, so [`value_class`] returns `None`
-//! for them rather than guessing.
+//! Three storage classes are bridged:
+//!
+//! * **Locals** (`NameResolution::Local`): negative frame offsets, same opcodes
+//!   for ByVal and ByRef.
+//! * **Parameters** (`NameResolution::Param`): positive frame offsets starting
+//!   at +12; ByVal uses the same opcodes as locals; ByRef uses opcode+0x14.
+//! * **Module globals** (`NameResolution::ModuleVar`): 4-byte operand
+//!   `[module_desc][field_offset]`, opcodes = local_opcode+0x28.
 
 use vb6_sema::sema::VbaType;
 
-use crate::bind::{LocalVar, ProcFrame};
+use crate::bind::{LocalVar, ParamFrame, ParamVar, ProcFrame};
 use crate::emit::Emitter;
 
 /// A declared type whose local load/store the bridge cannot yet emit (no
@@ -135,6 +137,139 @@ pub fn emit_resolved_local_store(
     slots: &[LocalVar],
 ) -> Result<(), UnsupportedType> {
     emit_local_store(emitter, &types[local_idx], slots[local_idx].frame_offset)
+}
+
+// ── Parameter bridge ──────────────────────────────────────────────────────────
+
+/// Emit a ByVal parameter load.  ByVal parameters use the same opcodes as
+/// locals but have positive frame offsets (first param at +12).
+pub fn emit_byval_param_load(
+    emitter: &mut Emitter,
+    ty: &VbaType,
+    frame_offset: i16,
+) -> Result<(), UnsupportedType> {
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_typed_load(ctx, frame_offset);
+    Ok(())
+}
+
+/// Emit a ByVal parameter store.
+pub fn emit_byval_param_store(
+    emitter: &mut Emitter,
+    ty: &VbaType,
+    frame_offset: i16,
+) -> Result<(), UnsupportedType> {
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_var_store(ctx, frame_offset);
+    Ok(())
+}
+
+/// Emit a ByRef parameter load.  ByRef parameter opcodes are
+/// `RT_LOAD_BY_CTX[ctx] + 0x14` (oracle-confirmed for Long: 0x6c→0x80).
+pub fn emit_byref_param_load(
+    emitter: &mut Emitter,
+    ty: &VbaType,
+    frame_offset: i16,
+) -> Result<(), UnsupportedType> {
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_byref_load(ctx, frame_offset);
+    Ok(())
+}
+
+/// Emit a ByRef parameter store.  ByRef parameter store opcodes are
+/// `RT_STORE_BY_CTX[ctx] + 0x14` (oracle-confirmed for Long: 0x71→0x85).
+pub fn emit_byref_param_store(
+    emitter: &mut Emitter,
+    ty: &VbaType,
+    frame_offset: i16,
+) -> Result<(), UnsupportedType> {
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_byref_store(ctx, frame_offset);
+    Ok(())
+}
+
+/// Allocate a procedure's parameter frame from the binder's parameter list,
+/// taken in declaration order (left-to-right).  The returned `Vec<ParamVar>`
+/// is indexed by the binder's `param_idx`.
+///
+/// Returns `Err(UnsupportedType)` if any parameter has a type whose frame size
+/// is not yet confirmed.
+pub fn param_frame_from_types(
+    types: &[VbaType],
+    byref_flags: &[bool],
+) -> Result<Vec<ParamVar>, UnsupportedType> {
+    debug_assert_eq!(types.len(), byref_flags.len());
+    let mut frame = ParamFrame::new();
+    let mut out = Vec::with_capacity(types.len());
+    for (ty, &byref) in types.iter().zip(byref_flags.iter()) {
+        let ctx = type_ctx(ty).ok_or(UnsupportedType)?;
+        out.push(frame.declare_anon_param(ctx, byref));
+    }
+    Ok(out)
+}
+
+/// Emit a load of the parameter resolved to `param_idx`.
+pub fn emit_resolved_param_load(
+    emitter: &mut Emitter,
+    param_idx: usize,
+    types: &[VbaType],
+    slots: &[ParamVar],
+) -> Result<(), UnsupportedType> {
+    let ty = &types[param_idx];
+    let slot = &slots[param_idx];
+    if slot.byref {
+        emit_byref_param_load(emitter, ty, slot.frame_offset)
+    } else {
+        emit_byval_param_load(emitter, ty, slot.frame_offset)
+    }
+}
+
+/// Emit a store to the parameter resolved to `param_idx`.
+pub fn emit_resolved_param_store(
+    emitter: &mut Emitter,
+    param_idx: usize,
+    types: &[VbaType],
+    slots: &[ParamVar],
+) -> Result<(), UnsupportedType> {
+    let ty = &types[param_idx];
+    let slot = &slots[param_idx];
+    if slot.byref {
+        emit_byref_param_store(emitter, ty, slot.frame_offset)
+    } else {
+        emit_byval_param_store(emitter, ty, slot.frame_offset)
+    }
+}
+
+// ── Module global bridge ──────────────────────────────────────────────────────
+
+/// Emit a module-level global variable load.  Opcodes are
+/// `RT_LOAD_BY_CTX[ctx] + 0x28` (oracle-confirmed: Integer=0x93, Long=0x94,
+/// Double=0x97).  `module_desc` is the compiled module-object descriptor (the
+/// 2-byte value the compiled form assigns to this module); `field_offset` is
+/// the byte offset of this variable within the module's global data block.
+pub fn emit_global_var_load(
+    emitter: &mut Emitter,
+    ty: &VbaType,
+    module_desc: u16,
+    field_offset: u16,
+) -> Result<(), UnsupportedType> {
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_global_load(ctx, module_desc, field_offset);
+    Ok(())
+}
+
+/// Emit a module-level global variable store (mirror of
+/// [`emit_global_var_load`]).  Opcodes are `RT_STORE_BY_CTX[ctx] + 0x28`
+/// (oracle-confirmed: Integer=0x98, Long=0x99, Double=0x9c).
+pub fn emit_global_var_store(
+    emitter: &mut Emitter,
+    ty: &VbaType,
+    module_desc: u16,
+    field_offset: u16,
+) -> Result<(), UnsupportedType> {
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_global_store(ctx, module_desc, field_offset);
+    Ok(())
 }
 
 #[cfg(test)]
