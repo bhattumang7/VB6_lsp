@@ -30,6 +30,7 @@ pub mod emit;
 pub mod node;
 pub mod tables;
 
+pub use bind::{DeclError, LocalVar, ProcFrame};
 pub use buffer::PcodeStream;
 pub use emit::Emitter;
 pub use node::{NodeArena, NodeRef, RawNode};

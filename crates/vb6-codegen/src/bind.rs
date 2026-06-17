@@ -1,15 +1,38 @@
-//! Name binding & the proc-compilation context.
+//! Name binding and the proc-compilation context.
 //!
-//! The binder is not a pure function: it reads and mutates a per-procedure
-//! *compilation context* that the front-end builds up — an interned-identifier
-//! table, a scope tree, declared-symbol records, the variable frame, and per-slot
-//! descriptors. This module implements that context and the binding routines that
-//! operate on it.
+//! Two subsystems live here:
 //!
-//! Fidelity: every value that can affect the emitted P-code (slot-ID sequence,
-//! descriptor flag bits, binding kinds) follows the VB6 rules exactly. The backing
-//! storage is modelled with Rust collections. Final byte-exactness is confirmed
-//! against real VB6 output; here the logic is checked behaviorally.
+//! **`SlotTable`** — the compile-time slot allocator.  Allocates and frees
+//! typed descriptor records that the binder uses as scratch space before frame
+//! offsets are computed.  Slot IDs are `descriptorIndex << 2`.
+//!
+//! **`ProcFrame`** — the runtime frame allocator.  Given a sequence of local
+//! variable declarations (name + type context), it assigns each variable a
+//! signed 16-bit frame offset (relative to the proc's virtual frame pointer)
+//! using the alignment and sizing rules confirmed by empirical probes against
+//! the real VB6 compiler.
+//!
+//! ## Frame layout (confirmed by probe)
+//! Frame cursor starts at `PROC_FRAME_BASE = -132`.  For each local, if the
+//! type's frame size is ≥ 4 the cursor is first rounded down to the nearest
+//! multiple of 4, then decremented by the frame size; the result is the
+//! variable's frame offset.
+//!
+//! | typeCtx | Type(s)              | Frame bytes |
+//! |---------|----------------------|-------------|
+//! | 0       | Object / untyped ptr | 4           |
+//! | 1       | Integer, Boolean, Byte | 2         |
+//! | 2       | Long                 | 4           |
+//! | 3       | Single               | 4           |
+//! | 4       | Double               | 8           |
+//! | 5       | String (BSTR ptr)    | 4           |
+//! | 6       | Currency             | 8           |
+//!
+//! Variant (16 bytes) and Date (8 bytes) share their type contexts with the
+//! indirect-type path (typeCtx 0 / unconfirmed); they are handled via
+//! `unimplemented!()` until the mapping is confirmed.
+
+use std::collections::HashMap;
 
 /// A 10-byte per-slot descriptor. Only the fields the codegen path reads are
 /// named; the remainder is preserved as raw bytes so the record keeps its exact
@@ -129,6 +152,127 @@ impl SlotTable {
     }
 }
 
+// ── ProcFrame ────────────────────────────────────────────────────────────────
+
+/// Frame size in bytes for a given type context. The size determines how much
+/// the frame cursor decrements per allocation (after 4-byte alignment for
+/// sizes ≥ 4).
+fn frame_size_of_ctx(type_ctx: usize) -> i16 {
+    match type_ctx {
+        0 => 4, // Object / untyped pointer
+        1 => 2, // Integer, Boolean, Byte
+        2 => 4, // Long
+        3 => 4, // Single
+        4 => 8, // Double
+        5 => 4, // String (BSTR pointer)
+        6 => 8, // Currency
+        _ => unimplemented!(
+            "frame_size_of_ctx: typeCtx {} not yet confirmed (Date/Variant \
+             use the indirect-type path)",
+            type_ctx
+        ),
+    }
+}
+
+/// Frame cursor before the first local is allocated, relative to the proc
+/// virtual frame pointer. Confirmed by probing for all numeric types.
+pub const PROC_FRAME_BASE: i16 = -132;
+
+/// One local variable's binding: its type context and signed frame offset.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct LocalVar {
+    /// Internal type context (0=Object, 1=Integer/Bool/Byte, 2=Long, 3=Single,
+    /// 4=Double, 5=String, 6=Currency).
+    pub type_ctx: usize,
+    /// Signed frame offset from the proc virtual frame pointer.  Negative for
+    /// stack locals.
+    pub frame_offset: i16,
+}
+
+/// Reason a local declaration fails.
+#[derive(Debug, PartialEq, Eq)]
+pub enum DeclError {
+    AlreadyDeclared,
+}
+
+/// Runtime frame allocator for one procedure under compilation.
+///
+/// Tracks the frame cursor and assigns frame offsets to declared locals.
+/// The cursor starts at [`PROC_FRAME_BASE`] and decrements on each allocation.
+/// Before allocating any type of frame size ≥ 4, the cursor is rounded down
+/// (made more negative) to the nearest multiple of 4.
+///
+/// # Example
+/// ```
+/// use vb6_codegen::bind::{ProcFrame, PROC_FRAME_BASE};
+/// let mut f = ProcFrame::new();
+/// let a = f.declare_local("a", 4 /* Double */).unwrap(); // -140
+/// let b = f.declare_local("b", 4).unwrap();              // -148
+/// assert_eq!(a.frame_offset, -140);
+/// assert_eq!(b.frame_offset, -148);
+/// ```
+#[derive(Debug)]
+pub struct ProcFrame {
+    cursor: i16,
+    vars: HashMap<String, LocalVar>,
+}
+
+impl ProcFrame {
+    pub fn new() -> Self {
+        Self {
+            cursor: PROC_FRAME_BASE,
+            vars: HashMap::new(),
+        }
+    }
+
+    /// Declare a local variable.  Allocates frame space and returns its
+    /// `LocalVar`, or `Err(DeclError::AlreadyDeclared)` if the name is already
+    /// in scope.
+    pub fn declare_local(
+        &mut self,
+        name: &str,
+        type_ctx: usize,
+    ) -> Result<LocalVar, DeclError> {
+        if self.vars.contains_key(name) {
+            return Err(DeclError::AlreadyDeclared);
+        }
+        let size = frame_size_of_ctx(type_ctx);
+        if size >= 4 {
+            // Align cursor down to the nearest multiple of 4.
+            // rem_euclid gives a non-negative remainder in [0, 4).
+            let rem = self.cursor.rem_euclid(4) as i16;
+            if rem != 0 {
+                self.cursor -= rem;
+            }
+        }
+        self.cursor -= size;
+        let var = LocalVar {
+            type_ctx,
+            frame_offset: self.cursor,
+        };
+        self.vars.insert(name.to_string(), var);
+        Ok(var)
+    }
+
+    /// Resolve a declared local name to its `LocalVar`.
+    pub fn resolve(&self, name: &str) -> Option<LocalVar> {
+        self.vars.get(name).copied()
+    }
+
+    /// Total bytes used by locals so far (unsigned frame growth).
+    pub fn locals_frame_bytes(&self) -> u16 {
+        (PROC_FRAME_BASE - self.cursor) as u16
+    }
+}
+
+impl Default for ProcFrame {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -174,5 +318,152 @@ mod tests {
         t.assign_var_slot(s, 0, 0);
         let expected = (((0xffffu16 & 0x3d8f) | 0x40) & 0xc3ff) | 0;
         assert_eq!(t.desc(s).type_flags(), expected);
+    }
+
+    // ── ProcFrame tests (probe-verified) ─────────────────────────────────────
+
+    #[test]
+    fn proc_frame_first_integer_at_minus_134() {
+        // typeCtx 1 (Integer, 2 bytes, no alignment). P0 - 2 = -132 - 2 = -134.
+        // Probe: `Dim a As Integer` → a at 0xff7a = -134. ✓
+        let mut f = ProcFrame::new();
+        let v = f.declare_local("a", 1).unwrap();
+        assert_eq!(v.type_ctx, 1);
+        assert_eq!(v.frame_offset, -134);
+    }
+
+    #[test]
+    fn proc_frame_first_long_at_minus_136() {
+        // typeCtx 2 (Long, 4 bytes). P0=-132 is 4-aligned; cursor -132-4 = -136.
+        // Probe: `Dim a As Long` → a at 0xff78 = -136. ✓
+        let mut f = ProcFrame::new();
+        let v = f.declare_local("a", 2).unwrap();
+        assert_eq!(v.frame_offset, -136);
+    }
+
+    #[test]
+    fn proc_frame_first_single_at_minus_136() {
+        // typeCtx 3 (Single, 4 bytes). Same alignment as Long.
+        // Probe: `Dim a As Single` → a at 0xff78 = -136. ✓
+        let mut f = ProcFrame::new();
+        let v = f.declare_local("a", 3).unwrap();
+        assert_eq!(v.frame_offset, -136);
+    }
+
+    #[test]
+    fn proc_frame_first_double_at_minus_140() {
+        // typeCtx 4 (Double, 8 bytes). P0=-132 is 4-aligned; cursor -132-8=-140.
+        // Probe: `Dim a As Double` → a at 0xff74 = -140. ✓
+        let mut f = ProcFrame::new();
+        let v = f.declare_local("a", 4).unwrap();
+        assert_eq!(v.frame_offset, -140);
+    }
+
+    #[test]
+    fn proc_frame_first_currency_at_minus_140() {
+        // typeCtx 6 (Currency, 8 bytes). Same as Double.
+        // Probe: `Dim a As Currency` → a at 0xff74 = -140. ✓
+        let mut f = ProcFrame::new();
+        let v = f.declare_local("a", 6).unwrap();
+        assert_eq!(v.frame_offset, -140);
+    }
+
+    #[test]
+    fn proc_frame_four_doubles_match_probe() {
+        // Probe: `Dim a, b, c, r As Double` (all Doubles) in the 4-Double Sub:
+        // a=-140, b=-148, c=-156, r=-164.
+        let mut f = ProcFrame::new();
+        let a = f.declare_local("a", 4).unwrap();
+        let b = f.declare_local("b", 4).unwrap();
+        let c = f.declare_local("c", 4).unwrap();
+        let r = f.declare_local("r", 4).unwrap();
+        assert_eq!(a.frame_offset, -140, "a");
+        assert_eq!(b.frame_offset, -148, "b");
+        assert_eq!(c.frame_offset, -156, "c");
+        assert_eq!(r.frame_offset, -164, "r");
+    }
+
+    #[test]
+    fn proc_frame_integer_then_double_matches_probe() {
+        // Probe: `Dim a As Integer, b As Double`:
+        // a Integer at -134; cursor=-134, align to -136, b Double: -136-8=-144.
+        // Probe confirmed: Double b at 0xff70 = -144. ✓
+        let mut f = ProcFrame::new();
+        let a = f.declare_local("a", 1).unwrap(); // Integer
+        let b = f.declare_local("b", 4).unwrap(); // Double
+        assert_eq!(a.frame_offset, -134);
+        assert_eq!(b.frame_offset, -144);
+    }
+
+    #[test]
+    fn proc_frame_long_then_double_matches_probe() {
+        // `Dim a As Long, b As Double`: a Long at -136; cursor already 4-aligned;
+        // b Double: -136-8=-144. Probe: 0xff70 = -144. ✓
+        let mut f = ProcFrame::new();
+        let a = f.declare_local("a", 2).unwrap(); // Long
+        let b = f.declare_local("b", 4).unwrap(); // Double
+        assert_eq!(a.frame_offset, -136);
+        assert_eq!(b.frame_offset, -144);
+    }
+
+    #[test]
+    fn proc_frame_string_then_integer_matches_probe() {
+        // `Dim a As String, b As Integer`: String (4 bytes) at -136; Integer b -138.
+        // Probe confirmed: Integer b at 0xff76 = -138. ✓
+        let mut f = ProcFrame::new();
+        let a = f.declare_local("a", 5).unwrap(); // String
+        let b = f.declare_local("b", 1).unwrap(); // Integer
+        assert_eq!(a.frame_offset, -136);
+        assert_eq!(b.frame_offset, -138);
+    }
+
+    #[test]
+    fn proc_frame_string_then_long_matches_probe() {
+        // `Dim a As String, b As Long`: String at -136; Long b: cursor=-136
+        // (already 4-aligned), b = -136-4 = -140. Probe: 0xff74 = -140. ✓
+        let mut f = ProcFrame::new();
+        let a = f.declare_local("a", 5).unwrap(); // String
+        let b = f.declare_local("b", 2).unwrap(); // Long
+        assert_eq!(a.frame_offset, -136);
+        assert_eq!(b.frame_offset, -140);
+    }
+
+    #[test]
+    fn proc_frame_byte_same_size_as_integer() {
+        // Byte uses typeCtx 1 (same as Integer, 2-byte frame slot).
+        // Probe: `Dim a As Byte, b As Integer` → Integer b at 0xff78 = -136
+        // (a Byte at -134, b Integer at -134-2=-136). ✓
+        let mut f = ProcFrame::new();
+        let a = f.declare_local("a", 1).unwrap(); // Byte → typeCtx 1
+        let b = f.declare_local("b", 1).unwrap(); // Integer → typeCtx 1
+        assert_eq!(a.frame_offset, -134);
+        assert_eq!(b.frame_offset, -136);
+    }
+
+    #[test]
+    fn proc_frame_resolve_returns_declared_var() {
+        let mut f = ProcFrame::new();
+        f.declare_local("x", 4).unwrap();
+        let v = f.resolve("x").expect("x should resolve");
+        assert_eq!(v.type_ctx, 4);
+        assert_eq!(v.frame_offset, -140);
+        assert!(f.resolve("y").is_none());
+    }
+
+    #[test]
+    fn proc_frame_redeclare_returns_error() {
+        let mut f = ProcFrame::new();
+        f.declare_local("x", 4).unwrap();
+        assert_eq!(f.declare_local("x", 2), Err(DeclError::AlreadyDeclared));
+    }
+
+    #[test]
+    fn proc_frame_locals_frame_bytes_grows_with_allocations() {
+        let mut f = ProcFrame::new();
+        assert_eq!(f.locals_frame_bytes(), 0);
+        f.declare_local("a", 4).unwrap(); // Double: 8 bytes + 0 align bytes
+        assert_eq!(f.locals_frame_bytes(), 8);
+        f.declare_local("b", 1).unwrap(); // Integer: 2 bytes (no align from -140)
+        assert_eq!(f.locals_frame_bytes(), 10);
     }
 }
