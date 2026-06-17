@@ -7,3 +7,4 @@ authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
 
 [dependencies]
 vb6-syntax = { path = "../vb6-syntax" }
+vb6-sema = { path = "../vb6-sema" }
