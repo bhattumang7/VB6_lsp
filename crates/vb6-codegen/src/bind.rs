@@ -238,6 +238,21 @@ impl ProcFrame {
         if self.vars.contains_key(name) {
             return Err(DeclError::AlreadyDeclared);
         }
+        let var = self.alloc(type_ctx);
+        self.vars.insert(name.to_string(), var);
+        Ok(var)
+    }
+
+    /// Allocate a frame slot for an unnamed local, returning its `LocalVar`.
+    /// Used when locals are identified by declaration index (the binder's
+    /// `local_idx`) rather than by name.
+    pub fn declare_anon(&mut self, type_ctx: usize) -> LocalVar {
+        self.alloc(type_ctx)
+    }
+
+    /// Move the frame cursor for one local of `type_ctx` (4-byte alignment for
+    /// sizes ≥ 4, then decrement by the size) and return its `LocalVar`.
+    fn alloc(&mut self, type_ctx: usize) -> LocalVar {
         let size = frame_size_of_ctx(type_ctx);
         if size >= 4 {
             // Align cursor down to the nearest multiple of 4.
@@ -248,12 +263,10 @@ impl ProcFrame {
             }
         }
         self.cursor -= size;
-        let var = LocalVar {
+        LocalVar {
             type_ctx,
             frame_offset: self.cursor,
-        };
-        self.vars.insert(name.to_string(), var);
-        Ok(var)
+        }
     }
 
     /// Resolve a declared local name to its `LocalVar`.

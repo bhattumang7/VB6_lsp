@@ -138,3 +138,63 @@ fn procframe_offsets_drive_bridge_store() {
     assert_eq!(r.frame_offset, -144);
     assert_eq!(store_bytes(&VbaType::Long, r.frame_offset), &[0x71, 0x70, 0xff]);
 }
+
+// ── Resolution → emit path (binder local_idx → frame slot → opcode) ──────────
+//
+// Mirrors how a NameResolution::Local{local_idx} from vb6-sema is lowered:
+// allocate the proc frame from the declared local types (declaration order),
+// then emit by index.
+
+#[test]
+fn frame_from_local_types_matches_probe_offsets() {
+    // Dim a As Long, b As Long, r As Long
+    let types = [VbaType::Long, VbaType::Long, VbaType::Long];
+    let slots = frame_from_local_types(&types).unwrap();
+    assert_eq!(slots[0].frame_offset, -136); // a
+    assert_eq!(slots[1].frame_offset, -140); // b
+    assert_eq!(slots[2].frame_offset, -144); // r
+}
+
+#[test]
+fn frame_from_local_types_unsupported_errors() {
+    // A Variant local has no confirmed frame size → refuse the whole layout.
+    let types = [VbaType::Long, VbaType::Variant];
+    assert_eq!(frame_from_local_types(&types), Err(UnsupportedType));
+}
+
+#[test]
+fn resolved_local_load_by_index() {
+    // Dim a As Long, b As Long, r As Long → load local 1 (b) → 0x6c at -140.
+    let types = [VbaType::Long, VbaType::Long, VbaType::Long];
+    let slots = frame_from_local_types(&types).unwrap();
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_resolved_local_load(&mut e, 1, &types, &slots).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6c, 0x74, 0xff]); // -140 = 0xff74
+}
+
+#[test]
+fn resolved_local_store_by_index() {
+    // Store into local 2 (r) → 0x71 at -144.
+    let types = [VbaType::Long, VbaType::Long, VbaType::Long];
+    let slots = frame_from_local_types(&types).unwrap();
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_resolved_local_store(&mut e, 2, &types, &slots).unwrap();
+    assert_eq!(e.into_bytes(), &[0x71, 0x70, 0xff]); // -144 = 0xff70
+}
+
+#[test]
+fn resolved_local_mixed_type_frame() {
+    // Dim n As Integer, x As Double → Integer at -134 (0xff7a), Double aligned
+    // to -144 (0xff70). Load both by index; opcodes 0x6b (Integer), 0x6f (Double).
+    let types = [VbaType::Integer, VbaType::Double];
+    let slots = frame_from_local_types(&types).unwrap();
+    assert_eq!(slots[0].frame_offset, -134);
+    assert_eq!(slots[1].frame_offset, -144);
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    emit_resolved_local_load(&mut e, 0, &types, &slots).unwrap();
+    emit_resolved_local_load(&mut e, 1, &types, &slots).unwrap();
+    assert_eq!(e.into_bytes(), &[0x6b, 0x7a, 0xff, 0x6f, 0x70, 0xff]);
+}

@@ -22,6 +22,7 @@
 
 use vb6_sema::sema::VbaType;
 
+use crate::bind::{LocalVar, ProcFrame};
 use crate::emit::Emitter;
 
 /// A declared type whose local load/store the bridge cannot yet emit (no
@@ -92,6 +93,48 @@ pub fn emit_local_store(
     let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
     emitter.emit_var_store(ctx, frame_offset);
     Ok(())
+}
+
+/// Allocate a procedure's local frame from the binder's locals, taken in
+/// declaration order. The returned `Vec<LocalVar>` is indexed by the binder's
+/// `local_idx` (as in [`vb6_sema::sema::NameResolution::Local`]), so a resolved
+/// local maps directly to its frame slot.
+///
+/// Returns `Err(UnsupportedType)` if any local has a type whose frame size is
+/// not yet confirmed ([`type_ctx`] is `None`) — the whole frame layout would be
+/// wrong past that point, so we refuse rather than guess.
+pub fn frame_from_local_types(types: &[VbaType]) -> Result<Vec<LocalVar>, UnsupportedType> {
+    let mut frame = ProcFrame::new();
+    let mut out = Vec::with_capacity(types.len());
+    for ty in types {
+        let ctx = type_ctx(ty).ok_or(UnsupportedType)?;
+        out.push(frame.declare_anon(ctx));
+    }
+    Ok(out)
+}
+
+/// Emit a load of the local variable resolved to `local_idx`, given the proc's
+/// declared local types (declaration order) and its allocated frame slots (from
+/// [`frame_from_local_types`]). This is the resolution→emit path for a
+/// [`vb6_sema::sema::NameResolution::Local`].
+pub fn emit_resolved_local_load(
+    emitter: &mut Emitter,
+    local_idx: usize,
+    types: &[VbaType],
+    slots: &[LocalVar],
+) -> Result<(), UnsupportedType> {
+    emit_local_load(emitter, &types[local_idx], slots[local_idx].frame_offset)
+}
+
+/// Emit a store of the local resolved to `local_idx` (mirror of
+/// [`emit_resolved_local_load`]).
+pub fn emit_resolved_local_store(
+    emitter: &mut Emitter,
+    local_idx: usize,
+    types: &[VbaType],
+    slots: &[LocalVar],
+) -> Result<(), UnsupportedType> {
+    emit_local_store(emitter, &types[local_idx], slots[local_idx].frame_offset)
 }
 
 #[cfg(test)]
