@@ -1,36 +1,36 @@
-//! Expression code generation — runtime P-code byte-stream form.
+//! Expression / statement code generation — runtime P-code byte-stream form.
 //!
-//! The emitter walks bound expression nodes and writes the **runtime** P-code
-//! byte stream: the same type-specific, byte-packed encoding stored in the VB6
-//! `.exe`.  Contrast this with the intermediate compile-time word stream (which
-//! uses generic 16-bit opcodes); the runtime form uses 1-byte type-specific
-//! opcodes and 2-byte signed frame offsets for every load and store.
+//! This is a direct, case-for-case port of the VB6 back-end's node emitter
+//! (`EbEmitStatement` @ `0fab161c`): a single `switch` over the bound node's
+//! opcode (`(short)*pNode`, our [`RawNode::opcode`]). Each `case` is translated
+//! verbatim — the same table indexing, the same helper calls, the same operand
+//! widths. The data tables it indexes live in [`crate::tables`] and were
+//! extracted from the binary; no opcode value is guessed here.
 //!
-//! ## Emit format for loads and stores
-//! Each typed local-variable load or store is 3 bytes:
-//! ```text
-//! [opcode:u8] [frame_offset_lo:u8] [frame_offset_hi:u8]
-//! ```
-//! where `opcode` comes from [`RT_LOAD_BY_CTX`] or [`RT_STORE_BY_CTX`]
-//! indexed by the expression's type context, and the 2-byte field is a
-//! little-endian signed i16 (locals have negative offsets from the proc frame
-//! pointer, e.g. the first `Double` local in a standard Sub is at −140 =
-//! `0xff74`).
+//! ## Dispatch shape
+//! The C function guards `if (0x72 < (short)*pNode - 1) return 0;` (opcodes
+//! outside `1..=0x73` emit nothing), switches on the opcode, and for the cases
+//! that `break` falls through to a common tail `EbEmitValue2(iVar13)`. We mirror
+//! that exactly: portable arms either `return` directly or evaluate to the
+//! `iVar13` value consumed by the tail.
 //!
-//! ## Branches not yet implemented
-//! Branches that depend on the binder, slot allocator, or opcode-survey data
-//! not yet gathered are `todo!()` or `unimplemented!()` — never a guessed
-//! constant.  A `todo!()` marks a path we know the exact behaviour of but
-//! haven't yet ported (usually a later phase); `unimplemented!()` marks a path
-//! that requires additional empirical opcode-survey work before the values can
-//! be filled in.
+//! ## Loads and stores
+//! Opcodes `>= 0x74` are rejected by `EbEmitStatement`'s guard — in real VB6 the
+//! typed local load/store byte sequences are emitted by the assignment / name
+//! paths (`EbEmitAssignOp` and friends), not by a top-level switch case. Until
+//! those are ported, [`Emitter::emit_var_load`] / [`Emitter::emit_var_store`]
+//! stand in for that byte form (their opcodes are oracle-confirmed), driven by
+//! synthetic `0x74` / `0x76` load nodes the binder builds. They are intercepted
+//! before the `EbEmitStatement` guard.
+//!
+//! ## Not yet ported
+//! Cases that need the module symbol table, the type/string pool, statement
+//! context, or list traversal are `unimplemented!()` with the exact C function
+//! and address — never a guessed constant, never silently skipped.
 
 use crate::buffer::PcodeStream;
 use crate::node::{NodeArena, NodeRef, RawNode};
-use crate::tables::{
-    RT_BINOP_BASE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX,
-    RT_TYPE_OFFSET,
-};
+use crate::tables::{RT_BINOP_BASE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX, RT_TYPE_OFFSET};
 
 /// Drives [`Emitter::emit_expr`] over a [`NodeArena`], writing the runtime
 /// P-code byte stream.
@@ -57,162 +57,395 @@ impl<'a> Emitter<'a> {
         self.stream.into_bytes()
     }
 
-    /// Emit the runtime P-code for one expression node.
-    ///
-    /// `call_ctx` is the calling-convention context (0 for a normal value
-    /// read).  Non-zero call contexts change the load encoding and are not
-    /// yet fully mapped.
-    pub fn emit_expr(&mut self, node: NodeRef, call_ctx: u32) {
+    // ── EbEmitStatement @ 0fab161c ───────────────────────────────────────────
+
+    /// Emit the runtime P-code for one bound node. `context` is the C `context`
+    /// argument (calling/usage context: 0 = normal value, 1/2/3 = special). The
+    /// return value mirrors the C `local_38` (0 in the common case; some cases
+    /// propagate a sub-call result).
+    pub fn emit_expr(&mut self, node: NodeRef, context: u32) -> u32 {
         let n = *self.arena.get(node);
         let op = n.opcode();
 
-        // ── Short-opcode family (op < 0x6) ───────────────────────────────────
-        if op < 0x6 {
-            match op {
-                1 => self.emit_int_literal(&n),
-                2 => self.emit_currency_literal(&n),
-                3 => self.emit_float_literal(&n, call_ctx),
-                4 => self.emit_string_literal(&n),
-                5 => unimplemented!(
-                    "emit_expr: type-reference node (op 5)"
-                ),
-                _ => {} // op 0: no-op
-            }
-            return;
+        // Synthetic typed-load IR nodes (not `EbEmitStatement` opcodes — they are
+        // `>= 0x74`, which the guard below rejects). Real VB6 emits these bytes
+        // from the assignment / name path; we stand in until that is ported.
+        if op == 0x74 || op == 0x76 {
+            self.emit_var_load(&n, context);
+            return 0;
         }
 
-        // ── Comparison binary operators (op 0x6–0xd) ─────────────────────────
-        // EQ/NE/LT/GT/LE/GE/Like/Is comparisons.  The binder sets the node's
-        // type_tag to the operand comparison type (not the Boolean result), so
-        // the standard arithmetic dispatch path in emit_binop_value is correct.
-        if op <= 0xd {
-            self.emit_expr(n.lhs(), 0);
-            self.emit_expr(n.rhs(), 0);
-            self.emit_binop_value(&n);
-            return;
+        // Guard: `uVar15 = (short)opcode - 1; if (0x72 < uVar15) return 0;`
+        // (opcode 0 wraps to 0xffffffff and is also rejected.)
+        if (op - 1) as u32 > 0x72 {
+            return 0;
         }
 
-        // ── Short-opcode family (op 0xe–0x15) ────────────────────────────────
-        // op is >= 0xe here; 0x0..=0xd are already handled above.
-        if op == 0xe {
-            todo!(
-                "emit_expr: typed-load 0x0e path — runtime opcode from \
-                 TYPE_SHIFT table; Phase 3/4"
-            );
-        }
-        // op 0xf..=0x15: no-op pass-through nodes.
-        if op < 0x16 {
-            return;
-        }
+        let type_tag = n.type_tag();
 
-        // ── Arithmetic / logical binary operators (op 0x16–0x2b) ─────────────
-        // All ops with a non-sentinel RT_BINOP_BASE entry use the EbEmitBinaryOperation2
-        // arithmetic dispatch path; RT_DISPATCH_FLAG & 0x10 is 0 for every op in
-        // this range.  Ops 0x1b and 0x1c have sentinel base (0x0446) and are no-ops.
-        // Op 0x24 (Is) has its own explicit case in EbEmitStatement — it does NOT
-        // route through EbEmitBinaryOperation2.
-        if op < 0x2c {
-            match op {
-                0x16..=0x1a | 0x1d..=0x23 | 0x25..=0x2b => {
-                    self.emit_expr(n.lhs(), 0);
-                    self.emit_expr(n.rhs(), 0);
-                    self.emit_binop_value(&n);
+        // The opcode emitted by the common tail for cases that `break`. Arms that
+        // finish on their own `return` directly; arms that fall through to the
+        // tail evaluate to their `iVar13`.
+        let i_var13: i32 = match op {
+            // case 1: integer literal
+            1 => match type_tag {
+                3 | 5 | 6 => {
+                    let v = n.w[4] as i32;
+                    if -0x81 < v && v < 0x80 {
+                        self.emit_value2(0x41a);
+                        self.stream.emit_byte(v as u8);
+                    } else {
+                        self.emit_opcode2(0x3b5, n.w[4] as u16);
+                    }
+                    return 0;
                 }
-                0x24 => self.emit_is_op(&n, call_ctx),
-                _ => {} // 0x1b, 0x1c have sentinel base — no runtime mapping
+                8 | 0x10 => {
+                    self.emit_value2(0x3b8);
+                    self.emit_dword(n.w[4]);
+                    return 0;
+                }
+                0x16 => 0x163,
+                _ => return 0, // LAB_0fab2106
+            },
+            // case 2: Currency literal
+            2 => {
+                self.emit_value2(0x3bb);
+                self.stream.emit_bytes(&n.literal8());
+                return 0;
             }
-            return;
-        }
-
-        // ── Name / call / typed family (op 0x2c–0x60) ────────────────────────
-        if op < 0x62 {
-            if op == 0x61 {
-                todo!(
-                    "emit_expr: name/call node 0x61 (argument list + dispatch); \
-                     Phase 3"
-                );
+            // case 3: floating-point literal
+            3 => return self.emit_float_literal(&n, context),
+            // case 4: string literal
+            4 => {
+                self.emit_string_literal(&n);
+                return 0;
             }
-            if op == 0x36 {
-                // EbEmitStatement case 0x36: emit LHS(ctx=1), RHS(ctx=1), then
-                // n_opc=0xd2.  RT_OPCODE_BYTE[0xd2]=0xfb → extended form [0xfb, 0xd2].
+            // case 5: typed literal / typed store — needs the type/string pool.
+            5 => unimplemented!(
+                "EbEmitStatement case 5 (typed literal): EbExtractTypeValue2 / \
+                 EbParseWithPool + type-descriptor model; Phase 4"
+            ),
+            // case 0xb: unary minus / negate (type-class-dependent opcode).
+            0xb => {
+                self.emit_expr(n.lhs(), 2);
+                let lhs = *self.arena.get(n.lhs());
+                let lhs_tag = (lhs.w[0] as i32) >> 16;
+                let mut iv = RT_TYPE_OFFSET[lhs_tag as usize];
+                if iv == 10 {
+                    iv = 0xf6;
+                } else {
+                    if iv == 9 {
+                        iv = 1;
+                    }
+                    iv += 0xf2;
+                }
+                iv
+            }
+            // cases 0xc / 0xd: expression-code sub-emitter.
+            0xc | 0xd => unimplemented!(
+                "EbEmitStatement cases 0xc/0xd: EbEmitExpressionCode2; Phase 5"
+            ),
+            // case 0xe: load / assign / object-ref path.
+            0xe => unimplemented!(
+                "EbEmitStatement case 0xe (load/assign): EbEmitAssignOp @ 0fab3117 + \
+                 EbMapTypeCodeValue3; Phase 3/4"
+            ),
+            // case 0xf: name / coerce path.
+            0xf => unimplemented!(
+                "EbEmitStatement case 0xf (name/coerce): EbGetVarType / \
+                 EbResolveAndSimplify / EbResolveExprTypeImpl; Phase 3/4"
+            ),
+            // case 0x10: emit child, then opcode 0x135.
+            0x10 => {
+                self.emit_expr(n.lhs(), 1);
+                0x135
+            }
+            // case 0x11: type-code emit.
+            0x11 => unimplemented!(
+                "EbEmitStatement case 0x11: EbEmitTypeCode2; Phase 4"
+            ),
+            // case 0x12: deref / member adjust.
+            0x12 => unimplemented!(
+                "EbEmitStatement case 0x12 (deref): EbExtractTypeValue2; Phase 4"
+            ),
+            // case 0x13: emit rhs child, then opcode 0x397.
+            0x13 => {
+                self.emit_expr(n.rhs(), 1);
+                0x397
+            }
+            // case 0x14: type-library item.
+            0x14 => unimplemented!(
+                "EbEmitStatement case 0x14: LoadTypeLibraryItem; Phase 6"
+            ),
+            // case 0x15: select opcode by the child's type tag.
+            0x15 => {
+                let lhs = *self.arena.get(n.lhs());
+                if (lhs.w[0] & 0xffff_0000) == 0x000f_0000 {
+                    0x42e
+                } else {
+                    0x42d
+                }
+            }
+            // case 0x18: concatenation-style binary op (only the 0xd-type form).
+            0x18 => {
+                if (n.w[0] & 0xffff_0000) != 0x000d_0000 {
+                    return self.emit_binary_operation(&n, context); // LAB_0fab1d8e
+                }
+                self.emit_expr(n.lhs(), 2);
+                self.emit_expr(n.rhs(), 2);
+                let rhs = *self.arena.get(n.rhs());
+                if (rhs.w[0] & 0xffff_0000) == 0x0006_0000 {
+                    0xd1
+                } else {
+                    0xb3
+                }
+            }
+            // case 0x1a: power operator.
+            0x1a => {
+                self.emit_expr(n.lhs(), 2);
+                self.emit_expr(n.rhs(), 2);
+                if (n.w[0] & 0xffff_0000) == 0x000f_0000 {
+                    let size = self.emit_get_type_size3(n.w[6]);
+                    self.emit_opcode2(0xce, size as u16);
+                } else {
+                    self.emit_value2(0xcf);
+                }
+                return self.emit_validate_type_operation(type_tag, 0, context);
+            }
+            // no-op group → LAB_0fab2106 (emit nothing).
+            0x1b | 0x1c | 0x2e | 0x35 | 0x3c | 0x3d | 0x40 | 0x5b | 0x62 | 0x64 | 0x6f
+            | 0x70 | 0x71 => return 0,
+            // case 0x24: `Is` operator.
+            0x24 => {
                 self.emit_expr(n.lhs(), 1);
                 self.emit_expr(n.rhs(), 1);
-                self.emit_value2(0xd2);
-                return;
+                if type_tag == 0xf {
+                    let size = self.emit_get_type_size3(n.w[6]);
+                    self.emit_opcode2(0xef, size as u16);
+                    self.emit_validate_type_operation(0xf, 0x17, context);
+                    return 0;
+                }
+                if type_tag == 0x10 {
+                    self.emit_value2(0xf0);
+                }
+                // LAB_0fab1d07
+                self.emit_validate_type_operation(type_tag, 0x17, context);
+                return 0;
             }
-            // Other [0x2c, 0x62): no-op.
-            return;
-        }
-
-        // ── Argument / call / variable-load family (op 0x62–0x74) ────────────
-        if op < 0x75 {
-            match op {
-                0x74 => self.emit_var_load(&n, call_ctx),
-                0x62 => todo!(
-                    "emit_expr: argument node 0x62 (arg emission); Phase 3"
-                ),
-                0x63 => todo!(
-                    "emit_expr: overload node 0x63 (resolve + 0x9d); Phase 3"
-                ),
-                0x66 => todo!(
-                    "emit_expr: overload node 0x66 (resolve + 0xc6); Phase 3"
-                ),
-                _ => {}
+            // case 0x2c: assignment statement.
+            0x2c => unimplemented!(
+                "EbEmitStatement case 0x2c (assignment): EbEmitAssignmentStmt; Phase 5"
+            ),
+            // case 0x2d: typed assignment / error recovery.
+            0x2d => unimplemented!(
+                "EbEmitStatement case 0x2d: EbReportTypeError / EbCreateErrorNode; Phase 5"
+            ),
+            // cases 0x2f / 0x30 / 0x31: sequence — emit both children.
+            0x2f | 0x30 | 0x31 => {
+                let mut local_38 = 0;
+                if n.w[4] != 0 {
+                    local_38 = self.emit_expr(n.lhs(), context);
+                }
+                if n.w[5] == 0 {
+                    return local_38;
+                }
+                return self.emit_expr(n.rhs(), context);
             }
-            return;
-        }
-
-        // ── Name / property / typed-load switch (op 0x75–0x91) ───────────────
-        if op > 0x87 {
-            if op == 0x91 {
+            // cases 0x32 / 0x33 / 0x34: type coercion / tree traversal.
+            0x32 | 0x34 => unimplemented!(
+                "EbEmitStatement cases 0x32/0x34: EbEmitTypeCoercion4; Phase 4"
+            ),
+            0x33 => unimplemented!(
+                "EbEmitStatement case 0x33: EbTraverseNodeTree; Phase 5"
+            ),
+            // case 0x36: `Like` operator.
+            0x36 => {
+                self.emit_expr(n.lhs(), 1);
+                self.emit_expr(n.rhs(), 1);
+                0xd2
+            }
+            // cases 0x37..=0x73: argument lists, calls, members, coercions,
+            // instruction helpers — all require later-phase machinery.
+            0x37 => unimplemented!("EbEmitStatement case 0x37: EbProcessLinkedList; Phase 5"),
+            0x38 | 0x39 | 0x3a | 0x3b | 0x3e | 0x3f | 0x6a => unimplemented!(
+                "EbEmitStatement cases 0x38/0x39/0x3a/0x3b/0x3e/0x3f/0x6a: \
+                 EbProcessLinkedList / EbTraverseNodeTree + EbGetTypeSize3; Phase 5"
+            ),
+            0x41 => unimplemented!("EbEmitStatement case 0x41 (arg list): list walk; Phase 5"),
+            0x42 | 0x43 => unimplemented!(
+                "EbEmitStatement cases 0x42/0x43: EbResolveDispatchType; Phase 5"
+            ),
+            0x44 | 0x45 | 0x46 | 0x47 | 0x4c | 0x55 | 0x56 => unimplemented!(
+                "EbEmitStatement cases 0x44..0x47/0x4c/0x55/0x56: EbEmitTypeConversion2 / \
+                 EbDispatchOpcodeToEmitter; Phase 4/5"
+            ),
+            0x48 | 0x49 | 0x4a | 0x4b | 0x4d | 0x4e | 0x4f | 0x50 | 0x53 | 0x57 | 0x58 | 0x59 => {
                 unimplemented!(
-                    "emit_expr: node 0x91 — runtime form of typed 0x104 \
-                     emit not yet mapped"
-                );
+                    "EbEmitStatement cases 0x48..0x59: EbTraverseNodeTree + EbGetTypeSize3; Phase 5"
+                )
             }
-            return;
-        }
-        if op == 0x87 {
-            unimplemented!(
-                "emit_expr: node 0x87 — runtime opcode not yet confirmed"
-            );
-        }
-        match op {
-            // 0x76 routes to the same variable-load body as 0x74.
-            0x76 => self.emit_var_load(&n, call_ctx),
-            0x75 => todo!(
-                "emit_expr: node 0x75 (typed emit variant); Phase 3/4"
+            0x51 | 0x52 => unimplemented!(
+                "EbEmitStatement cases 0x51/0x52: EbClassifyOperatorType; Phase 5"
             ),
-            0x77 => unimplemented!(
-                "emit_expr: node 0x77 — runtime opcode not yet mapped"
+            0x54 => unimplemented!("EbEmitStatement case 0x54: EbEmitTypeCoercion4; Phase 4"),
+            0x5a => unimplemented!("EbEmitStatement case 0x5a: EbEmitComplexBinaryOp; Phase 5"),
+            0x5c | 0x5d | 0x5e | 0x5f => unimplemented!(
+                "EbEmitStatement cases 0x5c..0x5f: EbEmitStatement + LoadTypeLibraryItem; Phase 6"
             ),
-            0x78 => unimplemented!(
-                "emit_expr: node 0x78 — runtime opcode not yet mapped"
+            0x60 => unimplemented!("EbEmitStatement case 0x60: EbCoerceMemberRef; Phase 4"),
+            0x61 => unimplemented!(
+                "EbEmitStatement case 0x61 (call/arg): EbGetTypeKind2 / EbGetTypeCode3 / \
+                 EbEmitExpr2 + arg machinery; Phase 5"
             ),
-            0x79 => unimplemented!(
-                "emit_expr: node 0x79 — runtime opcode not yet mapped"
+            0x63 | 0x66 | 0x67 | 0x68 => unimplemented!(
+                "EbEmitStatement cases 0x63/0x66/0x67/0x68: EbExtractTypeValue2; Phase 4"
             ),
-            0x7a => todo!(
-                "emit_expr: node 0x7a (name/call path); Phase 3"
+            // case 0x65: forward to child.
+            0x65 => return self.emit_expr(n.lhs(), context),
+            0x69 => unimplemented!(
+                "EbEmitStatement case 0x69: EbSetupBinaryOperation / EbEmitExpression2; Phase 5"
             ),
-            0x7d => todo!(
-                "emit_expr: node 0x7d (property/array typed emit); Phase 3/4"
+            0x6b | 0x6c | 0x6d | 0x6e => unimplemented!(
+                "EbEmitStatement cases 0x6b..0x6e: EbEmitInstruction2 @ 0fabf5bc; Phase 3/5"
             ),
-            0x7e => todo!(
-                "emit_expr: node 0x7e (property typed emit); Phase 3/4"
+            0x72 => unimplemented!(
+                "EbEmitStatement case 0x72: EbCreateTypeNode3 / EbCoerceMemberRef; Phase 4"
             ),
-            0x7f => todo!(
-                "emit_expr: node 0x7f (chained comparison); Phase 3"
+            0x73 => unimplemented!(
+                "EbEmitStatement case 0x73: EbEmitOpcode2(0x266, ...) over a type descriptor; Phase 4"
             ),
-            _ => {}
-        }
+            // default: every other binary op (arithmetic, logical, comparison).
+            _ => return self.emit_binary_operation(&n, context),
+        };
+
+        // Common tail (`EbEmitValue2(iVar13); return local_38;`).
+        self.emit_value2(i_var13 as usize);
+        0
     }
 
-    /// Emit the runtime byte(s) for `n_opc`, mirroring EbEmitValue2.
+    // ── EbEmitBinaryOperation2 @ 0fab2e1e ────────────────────────────────────
+
+    /// Emit a binary operation: both operands (each in context 2) then the
+    /// type-class-selected opcode. Direct port of `EbEmitBinaryOperation2`.
     ///
-    /// Looks up `RT_OPCODE_BYTE[n_opc]`; if the byte is < 0xfb, emits it as a
-    /// single-byte instruction; otherwise emits that byte followed by `n_opc as u8`
-    /// (extended form, used when the opcode space overflows one byte).
+    /// The opcode index is `EbLookupOpcodeTable(opcode)` plus a type offset. Two
+    /// dispatch modes, selected by `RT_DISPATCH_FLAG[opcode] & 0x10`:
+    /// * clear → arithmetic: offset from the **node's own** type tag.
+    /// * set → comparison/string: offset from the **LHS operand's** type tag,
+    ///   with special cases for the `0x72` / type-3 / UDT(`0xf`) / `0xd` forms.
+    fn emit_binary_operation(&mut self, n: &RawNode, context: u32) -> u32 {
+        self.emit_expr(n.lhs(), 2);
+        if n.w[5] != 0 {
+            self.emit_expr(n.rhs(), 2);
+        }
+        let op = n.opcode() as usize;
+        let mut i_var2 = RT_BINOP_BASE[op] as i32; // EbLookupOpcodeTable
+        let type_tag = n.type_tag();
+
+        if RT_DISPATCH_FLAG[op] & 0x10 == 0 {
+            // Arithmetic: use the node's own type tag.
+            let mut iv4 = RT_TYPE_OFFSET[type_tag as usize];
+            if iv4 == 10 {
+                iv4 = 4;
+            } else if iv4 == 9 {
+                iv4 = 1;
+            }
+            i_var2 += iv4;
+        } else {
+            // Comparison / string: use the LHS operand's type tag.
+            let lhs = *self.arena.get(n.lhs());
+            let lhs_w0 = lhs.w[0];
+            if (n.w[0] & 0xffff) == 0x72
+                || (n.w[0] & 0xffff_0000) != 0x0003_0000
+                || (lhs_w0 & 0xffff_0000) != 0x000f_0000
+            {
+                let rhs = *self.arena.get(n.rhs());
+                let rhs_tag = (rhs.w[0] as i32) >> 16;
+                if (lhs_w0 & 0xffff_0000) == 0x000d_0000
+                    && (rhs_tag == 10 || rhs_tag == 0xb || rhs_tag == 0xc)
+                {
+                    i_var2 += 0xc;
+                } else {
+                    let lhs_tag = (lhs_w0 as i32) >> 16;
+                    let mut iv4 = RT_TYPE_OFFSET[lhs_tag as usize];
+                    if iv4 == 10 {
+                        iv4 = 4;
+                    } else if iv4 == 9 {
+                        iv4 = 1;
+                    }
+                    i_var2 += iv4;
+                    if (n.w[1] >> 8) & 0x80 != 0 {
+                        i_var2 += 2;
+                    }
+                }
+            } else if (n.w[1] >> 8) & 0x80 == 0 {
+                i_var2 += 10;
+            } else {
+                i_var2 += 0xb;
+            }
+        }
+
+        if (n.w[0] & 0xffff_0000) == 0x000f_0000 {
+            let size = self.emit_get_type_size3(n.w[6]);
+            self.emit_opcode2(i_var2 as usize, size as u16);
+        } else {
+            self.emit_value2(i_var2 as usize);
+        }
+        self.emit_validate_type_operation(type_tag, 0, context)
+    }
+
+    // ── EbValidateTypeOperation @ 0fab300a ───────────────────────────────────
+
+    /// Emit the per-type validation/conversion opcode after an operation.
+    /// Direct port of `EbValidateTypeOperation(nOpType, param2, nTypeFlags)`.
+    fn emit_validate_type_operation(&mut self, n_op_type: i32, param2: i32, n_type_flags: u32) -> u32 {
+        match n_op_type {
+            2 => {
+                if param2 == 0x17 {
+                    self.emit_value2(0x18b);
+                }
+            }
+            10 | 0xb | 0xc => {
+                if n_type_flags != 3 && n_type_flags != 1 {
+                    return 1;
+                }
+                if n_op_type == 10 {
+                    self.emit_value2(0x189);
+                    return 0;
+                }
+                if n_op_type > 10 && n_op_type < 0xd {
+                    self.emit_value2(0x18a);
+                    return 0;
+                }
+                self.emit_value2(n_type_flags as usize);
+                return 0;
+            }
+            0xf => {
+                if n_type_flags == 3 {
+                    self.emit_value2(0x18c);
+                    return 0;
+                }
+            }
+            _ => {}
+        }
+        0
+    }
+
+    // ── EbGetTypeSize3 @ 0fab2f55 ────────────────────────────────────────────
+
+    /// Type-size lookup for UDT-typed operations. Requires the type-descriptor
+    /// model (the descriptor's nested pointers), which is later-phase work.
+    fn emit_get_type_size3(&mut self, _type_desc: u32) -> u32 {
+        unimplemented!(
+            "EbGetTypeSize3 @ 0fab2f55: needs the type-descriptor model \
+             (reached only on UDT/type_tag==0xf paths); Phase 4"
+        )
+    }
+
+    // ── Emitter primitives (EbEmitValue2 / EbEmitOpcode2 / EbEmitDword) ───────
+
+    /// `EbEmitValue2` @ `0fab30bb`: look up `RT_OPCODE_BYTE[n_opc]`; emit it as a
+    /// single byte when `< 0xfb`, otherwise emit that byte then `n_opc as u8`.
     fn emit_value2(&mut self, n_opc: usize) {
         let rt_byte = RT_OPCODE_BYTE[n_opc];
         if rt_byte < 0xfb {
@@ -223,28 +456,84 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    /// Emit a typed local-variable load instruction.
-    ///
-    /// The type context (typeCtx) lives in `word[5]` of the variable-load node
-    /// and selects both the 1-byte runtime opcode from [`RT_LOAD_BY_CTX`] and
-    /// the operand interpretation.  The bound symbol child carries the signed
-    /// frame offset in its `type_info()` field (high 16 bits of its `word[4]`);
-    /// that offset is emitted as a 2-byte little-endian i16.
-    ///
-    /// Node types 0x74 and 0x76 both route here.  `call_ctx != 0` is not yet
-    /// mapped to a confirmed runtime encoding.
-    fn emit_var_load(&mut self, n: &RawNode, call_ctx: u32) {
-        if call_ctx != 0 {
+    /// `EbEmitOpcode2` @ `0fab2f77`: emit the opcode byte(s) for `n_opc`, then a
+    /// 2-byte little-endian operand.
+    fn emit_opcode2(&mut self, n_opc: usize, operand: u16) {
+        self.emit_value2(n_opc);
+        self.stream.emit_word(operand);
+    }
+
+    /// `EbEmitDword` @ `0fabf585`: emit a 4-byte little-endian value.
+    fn emit_dword(&mut self, value: u32) {
+        self.stream.emit_bytes(&value.to_le_bytes());
+    }
+
+    // ── Literal emitters (EbEmitStatement cases 3 / 4) ───────────────────────
+
+    /// Case 3: floating-point literal. `context == 2` selects the assign-context
+    /// opcode variants. Single (type_tag 10) is converted to f32 and emitted as
+    /// 4 bytes; Double/Date (11/12) emit the raw 8-byte f64. Returns the C
+    /// `uVar14` (1 in assign context for the typed variants, else 0).
+    fn emit_float_literal(&mut self, n: &RawNode, context: u32) -> u32 {
+        let type_tag = n.type_tag();
+        let mut u_var14 = 0u32;
+        let mut emit_eight = true;
+        let n_opc: usize;
+        if type_tag == 10 {
+            emit_eight = false;
+            if context == 2 {
+                u_var14 = 1;
+                n_opc = 0x3ba;
+            } else {
+                n_opc = 0x3b9;
+            }
+        } else if type_tag > 10 && type_tag < 0xd {
+            if context == 2 {
+                u_var14 = 1;
+                n_opc = 0x3bd;
+            } else {
+                n_opc = 0x3bc;
+            }
+        } else {
+            n_opc = context as usize;
+        }
+        self.emit_value2(n_opc);
+        if emit_eight {
+            self.stream.emit_bytes(&n.literal8());
+        } else {
+            let f = n.literal_f64() as f32;
+            self.stream.emit_bytes(&f.to_bits().to_le_bytes());
+        }
+        u_var14
+    }
+
+    /// Case 4: string literal. Bit 15 of `word[1]` (`node+5 & 0x80`) set → null
+    /// string, emitted as a Long-zero (`0x3b8` + 4 zero bytes). Clear → a pooled
+    /// string literal needing `EbExtractTypeValue2` (later phase).
+    fn emit_string_literal(&mut self, n: &RawNode) {
+        if (n.w[1] >> 8) & 0x80 == 0 {
             unimplemented!(
-                "emit_var_load: call_ctx {} — runtime encoding not yet confirmed",
-                call_ctx
+                "EbEmitStatement case 4 (pooled string literal): EbExtractTypeValue2 + \
+                 type pool; Phase 4"
             );
         }
+        self.emit_value2(0x3b8);
+        self.emit_dword(0);
+    }
+
+    // ── Typed local load / store (runtime byte form; oracle-confirmed) ───────
+
+    /// Emit a typed local-variable load. The type context (`typeCtx`) in
+    /// `word[5]` selects the 1-byte opcode from [`RT_LOAD_BY_CTX`]; the bound
+    /// symbol child carries the signed frame offset in its `type_info()` field,
+    /// emitted as a 2-byte little-endian i16.
+    ///
+    /// `context` is accepted (the real name path varies its surrounding emission
+    /// by context) but does not change the load opcode for a plain numeric local.
+    /// Node types `0x74` and `0x76` both route here.
+    fn emit_var_load(&mut self, n: &RawNode, _context: u32) {
         let type_ctx = n.word(5) as usize;
-        let opcode = RT_LOAD_BY_CTX
-            .get(type_ctx)
-            .copied()
-            .unwrap_or(0);
+        let opcode = RT_LOAD_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!(
                 "emit_var_load: no confirmed runtime opcode for typeCtx {}",
@@ -257,193 +546,10 @@ impl<'a> Emitter<'a> {
         self.stream.emit_i16(frame_offset);
     }
 
-    /// Emit the Is-operator node (op 0x24).
-    ///
-    /// EbEmitStatement case 0x24 is an explicit case — it does NOT route through
-    /// EbEmitBinaryOperation2.  Both operands are emitted with call_ctx=1, then
-    /// the opcode depends on the node's type_tag:
-    ///
-    /// - 0xf (UDT/object with explicit size): EbEmitOpcode2(0xef, type_size) then
-    ///   EbValidateTypeOperation(0xf, 0x17, ctx).  Requires EbGetTypeSize3; Phase 4.
-    /// - 0x10: EbEmitValue2(0xf0) → RT_OPCODE_BYTE[0xf0]=0x2a; no further emission
-    ///   (type_tag 0x10 has no matching case in EbValidateTypeOperation).
-    /// - 2 (String): EbValidateTypeOperation(2, 0x17, _) → always n_opc=0x18b →
-    ///   RT_OPCODE_BYTE[0x18b]=0xfc → [0xfc, 0x8b].
-    /// - 10 (Single): n_opc=0x189 → RT_OPCODE_BYTE[0x189]=0x37 (single byte),
-    ///   emitted only when call_ctx is 1 or 3.
-    /// - 0xb/0xc (Double/Currency): n_opc=0x18a → RT_OPCODE_BYTE[0x18a]=0x39
-    ///   (single byte), emitted only when call_ctx is 1 or 3.
-    /// - other type_tag: no opcode emitted (EbValidateTypeOperation returns 0).
-    fn emit_is_op(&mut self, n: &RawNode, call_ctx: u32) {
-        self.emit_expr(n.lhs(), 1);
-        self.emit_expr(n.rhs(), 1);
-        match n.type_tag() {
-            0xf => todo!(
-                "emit_is_op: type_tag 0xf (UDT/object) requires EbGetTypeSize3(node.word(6)) \
-                 for EbEmitOpcode2(0xef, size); Phase 4"
-            ),
-            0x10 => {
-                self.emit_value2(0xf0);
-            }
-            2 => {
-                self.emit_value2(0x18b);
-            }
-            10 => {
-                if call_ctx == 1 || call_ctx == 3 {
-                    self.emit_value2(0x189);
-                }
-            }
-            0xb | 0xc => {
-                if call_ctx == 1 || call_ctx == 3 {
-                    self.emit_value2(0x18a);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    /// Emit a runtime integer literal (op 1).
-    ///
-    /// type_tag 3/5/6 (Integer): if the value fits in a signed byte use
-    /// n_opc=0x41a (rt_byte=0xf4) + 1 byte; otherwise n_opc=0x3b5
-    /// (rt_byte=0xf3) + 2-byte LE i16.  type_tag 8/0x10 (Long/Byte):
-    /// n_opc=0x3b8 (rt_byte=0xf5) + 4-byte LE i32.
-    fn emit_int_literal(&mut self, n: &RawNode) {
-        let tag = n.type_tag();
-        match tag {
-            3 | 5 | 6 => {
-                let val = n.word(4) as i16;
-                if val >= -128 && val < 128 {
-                    self.stream.emit_byte(RT_OPCODE_BYTE[0x41a]);
-                    self.stream.emit_byte(val as u8);
-                } else {
-                    self.emit_value2(0x3b5);
-                    self.stream.emit_i16(val);
-                }
-            }
-            8 | 0x10 => {
-                self.stream.emit_byte(RT_OPCODE_BYTE[0x3b8]);
-                self.stream.emit_bytes(&n.word(4).to_le_bytes());
-            }
-            _ => unimplemented!(
-                "emit_int_literal: integer literal type_tag {tag} — \
-                 not yet mapped to a literal opcode"
-            ),
-        }
-    }
-
-    /// Emit a runtime Currency literal (op 2).
-    ///
-    /// Emits n_opc=0x3bb (rt_byte=0xf6) followed by the 8-byte LE
-    /// i64×10000 payload from `word[4]`/`word[5]`.
-    fn emit_currency_literal(&mut self, n: &RawNode) {
-        self.stream.emit_byte(RT_OPCODE_BYTE[0x3bb]);
-        self.stream.emit_bytes(&n.literal8());
-    }
-
-    /// Emit a runtime floating-point literal (op 3).
-    ///
-    /// `call_ctx == 2` selects the "assign context" n_opc variants (0x3ba for
-    /// Single, 0x3bd for Double/Date); all other call contexts use the
-    /// non-assign variants.  Single literals (type_tag 10) are converted from
-    /// the f64 stored in the node to f32 before emission; Double and Date
-    /// (type_tag 11/12) emit the raw 8-byte f64.
-    fn emit_float_literal(&mut self, n: &RawNode, call_ctx: u32) {
-        let tag = n.type_tag();
-        if tag == 10 {
-            let n_opc = if call_ctx == 2 { 0x3ba } else { 0x3b9 };
-            self.stream.emit_byte(RT_OPCODE_BYTE[n_opc]);
-            let f32_bits = (n.literal_f64() as f32).to_bits();
-            self.stream.emit_bytes(&f32_bits.to_le_bytes());
-        } else if tag > 10 && tag < 13 {
-            let n_opc = if call_ctx == 2 { 0x3bd } else { 0x3bc };
-            self.stream.emit_byte(RT_OPCODE_BYTE[n_opc]);
-            self.stream.emit_bytes(&n.literal8());
-        } else {
-            unimplemented!(
-                "emit_float_literal: op 3 type_tag {tag} not in Single/Double/Date range"
-            );
-        }
-    }
-
-    /// Emit a runtime String literal (op 4).
-    ///
-    /// Two sub-cases driven by bit 15 of `word[1]` (`node+5` byte 0x80):
-    /// * **Null/zero string** (bit set): emit n_opc=0x3b8 (rt_byte=0xf5) + 4
-    ///   zero bytes — equivalent to emitting `Long 0` as a null BSTR pointer.
-    /// * **Non-empty string** (bit clear): requires resolving a type descriptor
-    ///   from `word[4]` via the pool type system (EbExtractTypeValue2 /
-    ///   EbParseExpression2 / EbRegisterTypeInfo2), which is Phase 4 work.
-    fn emit_string_literal(&mut self, n: &RawNode) {
-        if (n.w[1] >> 15) & 1 != 0 {
-            // Null/zero string: emit as Long-zero literal.
-            self.stream.emit_byte(RT_OPCODE_BYTE[0x3b8]);
-            self.stream.emit_bytes(&[0u8; 4]);
-        } else {
-            todo!(
-                "emit_string_literal: non-null string requires pool type resolution \
-                 (EbExtractTypeValue2 / EbParseExpression2); Phase 4"
-            );
-        }
-    }
-
-    /// Emit the runtime binary-operation byte(s) for `n`, using the three-level
-    /// table dispatch from `EbEmitBinaryOperation2`.
-    ///
-    /// Precondition: the LHS and RHS of `n` have already been emitted onto the
-    /// virtual stack by the caller.
-    fn emit_binop_value(&mut self, n: &RawNode) {
-        let op = n.opcode() as usize;
-        let base = RT_BINOP_BASE[op] as i32;
-        debug_assert!(
-            base != 0x0446,
-            "emit_binop_value: op {op:#x} has no runtime mapping (base=0x0446)"
-        );
-
-        // All known ops have RT_DISPATCH_FLAG[op] & 0x10 == 0 → arithmetic path:
-        // use the node's own type_tag (set by the binder to the operation type).
-        // The comparison path (flag & 0x10 != 0) is kept as a guard in case an
-        // op outside the known table ever arrives.
-        let flag = RT_DISPATCH_FLAG[op];
-        if flag & 0x10 != 0 {
-            todo!(
-                "emit_binop_value: comparison-path dispatch (flag {flag:#x}) \
-                 for op {op:#x} — requires LHS type_tag lookup; Phase 3/4"
-            );
-        }
-
-        let type_tag = n.type_tag();
-        let raw_offset = RT_TYPE_OFFSET[type_tag as usize];
-        let offset = match raw_offset {
-            10 => 4,
-            9 => 1,
-            x => x,
-        };
-        let n_opc = (base + offset) as usize;
-
-        // When the node's type_tag is 0xf (UDT/object with explicit size), the
-        // instruction takes a 2-byte type-size operand; all primitive types take
-        // a plain value byte via EbEmitValue2.
-        if type_tag == 0xf {
-            todo!(
-                "emit_binop_value: UDT type_tag=0xf path — \
-                 requires EbGetTypeSize3(node.word(6)) operand; Phase 4"
-            );
-        }
-
-        self.emit_value2(n_opc);
-    }
-
-    /// Emit a typed local-variable store instruction.
-    ///
-    /// Mirror of [`Self::emit_var_load`] using [`RT_STORE_BY_CTX`].  Call site
-    /// is responsible for having already emitted the value to store onto the
-    /// virtual stack before calling this.
+    /// Emit a typed local-variable store. Mirror of [`Self::emit_var_load`] using
+    /// [`RT_STORE_BY_CTX`]. The caller must have emitted the value to store first.
     pub fn emit_var_store(&mut self, type_ctx: usize, frame_offset: i16) {
-        let opcode = RT_STORE_BY_CTX
-            .get(type_ctx)
-            .copied()
-            .unwrap_or(0);
+        let opcode = RT_STORE_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!(
                 "emit_var_store: no confirmed runtime opcode for typeCtx {}",

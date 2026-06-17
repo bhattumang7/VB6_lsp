@@ -15,6 +15,15 @@ fn var_load(arena: &mut NodeArena, type_ctx: u16, offset: i16) -> NodeRef {
     arena.alloc(NodeArena::node(0x74, 0, s.0, type_ctx as u32, 0, 0))
 }
 
+/// Build a variable-load node carrying a VB6 type tag in `word[0]` high half.
+/// Comparison emission selects its opcode from the *LHS operand's* type tag
+/// (`EbEmitBinaryOperation2` comparison branch), so operands of a comparison
+/// must carry their type tag, not just the load-time type context.
+fn var_load_typed(arena: &mut NodeArena, vb_type: u16, type_ctx: u16, offset: i16) -> NodeRef {
+    let s = sym(arena, offset);
+    arena.alloc(NodeArena::node(0x74, vb_type, s.0, type_ctx as u32, 0, 0))
+}
+
 fn emit(arena: &NodeArena, root: NodeRef) -> Vec<u8> {
     let mut e = Emitter::new(arena);
     e.emit_expr(root, 0);
@@ -240,18 +249,99 @@ fn add_integer_emits_a9() {
     );
 }
 
+// ── Comparison operators (bound opcodes 0x26–0x2b) ─────────────────────────
+//
+// These route through EbEmitBinaryOperation2's comparison branch
+// (RT_DISPATCH_FLAG[op] & 0x10 != 0), which selects the typed opcode from the
+// *LHS operand's* type tag — not the comparison node's own type tag. Bound
+// opcodes: eq=0x26, ne=0x27, le=0x28, ge=0x29, lt=0x2a, gt=0x2b.
+//
+// Oracle ground truth (re_lab/pcode_lab/cmp_survey.py), Long operands at
+// frame offsets a=-136 (0xff78), b=-140 (0xff74):
+//   eq=0xc7, ne=0xcc, le=0xd6, ge=0xe0, lt=0xd1, gt=0xdb
+
+/// Long-typed comparison operand: VB6 type tag 8, load context 2.
+fn long_cmp_operand(a: &mut NodeArena, offset: i16) -> NodeRef {
+    var_load_typed(a, 8, 2, offset)
+}
+
+/// Build a comparison node (own type_tag 0 — irrelevant for non-UDT operands).
+fn cmp(a: &mut NodeArena, op: u16, lhs: NodeRef, rhs: NodeRef) -> NodeRef {
+    a.alloc(NodeArena::node(op, 0, lhs.0, rhs.0, 0, 0))
+}
+
 #[test]
-fn eq_long_emits_c3() {
+fn eq_long_emits_c7() {
     let mut a = NodeArena::new();
-    let lhs = long_load(&mut a, -8);
-    let rhs = long_load(&mut a, -12);
-    // Comparison node: op=6 (EQ), type_tag=8 (Long comparison type,
-    // set by binder to operand type, not Boolean result).
-    let n = binop(&mut a, 0x6, 8, lhs, rhs);
-    assert_eq!(
-        emit(&a, n),
-        &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc3]
-    );
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, 0x26, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc7]);
+}
+
+#[test]
+fn ne_long_emits_cc() {
+    let mut a = NodeArena::new();
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, 0x27, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xcc]);
+}
+
+#[test]
+fn le_long_emits_d6() {
+    let mut a = NodeArena::new();
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, 0x28, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd6]);
+}
+
+#[test]
+fn ge_long_emits_e0() {
+    let mut a = NodeArena::new();
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, 0x29, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xe0]);
+}
+
+#[test]
+fn lt_long_emits_d1() {
+    let mut a = NodeArena::new();
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, 0x2a, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd1]);
+}
+
+#[test]
+fn gt_long_emits_db() {
+    let mut a = NodeArena::new();
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, 0x2b, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xdb]);
+}
+
+#[test]
+fn eq_integer_emits_c6() {
+    // Integer operands (VB6 type tag 6, load context 1) → eq opcode 0xc6.
+    let mut a = NodeArena::new();
+    let lhs = var_load_typed(&mut a, 6, 1, -4);
+    let rhs = var_load_typed(&mut a, 6, 1, -6);
+    let n = cmp(&mut a, 0x26, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6b, 0xfc, 0xff, 0x6b, 0xfa, 0xff, 0xc6]);
+}
+
+#[test]
+fn eq_double_emits_c8() {
+    // Double operands (VB6 type tag 11, load context 4) → eq opcode 0xc8.
+    let mut a = NodeArena::new();
+    let lhs = var_load_typed(&mut a, 11, 4, 0xff74u16 as i16);
+    let rhs = var_load_typed(&mut a, 11, 4, 0xff6cu16 as i16);
+    let n = cmp(&mut a, 0x26, lhs, rhs);
+    assert_eq!(emit(&a, n), &[0x6f, 0x74, 0xff, 0x6f, 0x6c, 0xff, 0xc8]);
 }
 
 // ── Literal emission ──────────────────────────────────────────────────────
