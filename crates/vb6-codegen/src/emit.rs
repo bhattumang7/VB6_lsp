@@ -27,7 +27,10 @@
 
 use crate::buffer::PcodeStream;
 use crate::node::{NodeArena, NodeRef, RawNode};
-use crate::tables::{RT_LOAD_BY_CTX, RT_STORE_BY_CTX};
+use crate::tables::{
+    RT_BINOP_BASE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX,
+    RT_TYPE_OFFSET,
+};
 
 /// Drives [`Emitter::emit_expr`] over a [`NodeArena`], writing the runtime
 /// P-code byte stream.
@@ -63,81 +66,101 @@ impl<'a> Emitter<'a> {
         let n = *self.arena.get(node);
         let op = n.opcode();
 
-        // ── Short-opcode family (op < 0xf) ───────────────────────────────────
-        if op < 0xf {
-            if op == 0xe {
-                // Typed-load / unary path: emit the operand, then a typed
-                // opcode derived from the node's type tag.  The runtime
-                // encoding of this path is not yet confirmed by empirical
-                // probes.
-                todo!(
-                    "emit_expr: typed-load 0x0e path — runtime opcode from \
-                     TYPE_SHIFT table; Phase 3/4"
-                );
-            }
-
-            if op != 1 {
-                match op {
-                    // Numeric/date/variant literal nodes (ops 2, 3, 4).  The
-                    // compile-time word stream used opcodes 0xa9/0xb3/0xb4/
-                    // 0xaa/0xb6 for these; the runtime equivalents are not
-                    // yet mapped by the opcode survey.
-                    2 => unimplemented!(
-                        "emit_expr: Currency literal (op 2) — \
-                         runtime literal opcode not yet mapped"
-                    ),
-                    3 => {
-                        let tag = n.type_tag();
-                        unimplemented!(
-                            "emit_expr: numeric literal (op 3, type_tag {tag}) — \
-                             runtime literal opcode not yet mapped"
-                        );
-                    }
-                    4 => unimplemented!(
-                        "emit_expr: String literal (op 4) — \
-                         uses a runtime-helper call sequence, not yet mapped"
-                    ),
-                    // Unary operators (ops 6, 7): emit the single operand
-                    // then a type-specific opcode.  Runtime opcodes not yet
-                    // confirmed.
-                    6 | 7 => unimplemented!(
-                        "emit_expr: unary op 0x{op:x} — \
-                         runtime dispatch by type not yet mapped"
-                    ),
-                    // Types 0, 5, 8–13, 14: emit nothing.
-                    _ => {}
+        // ── Short-opcode family (op < 0x6) ───────────────────────────────────
+        if op < 0x6 {
+            match op {
+                1 => todo!(
+                    "emit_expr: type-1 Dim/type-spec path — \
+                     opcodes selected by type tag; Phase 4/6"
+                ),
+                2 => unimplemented!(
+                    "emit_expr: Currency literal (op 2) — runtime literal opcode"
+                ),
+                3 => {
+                    let tag = n.type_tag();
+                    unimplemented!(
+                        "emit_expr: numeric literal (op 3, type_tag {tag}) — \
+                         runtime literal opcode"
+                    );
                 }
-                return;
+                4 => unimplemented!(
+                    "emit_expr: String literal (op 4) — runtime-helper call sequence"
+                ),
+                5 => unimplemented!(
+                    "emit_expr: type-reference node (op 5)"
+                ),
+                _ => {} // op 0: no-op
             }
-
-            // op == 1: type-spec / Dim node.
-            todo!(
-                "emit_expr: type-1 Dim/type-spec path — \
-                 opcodes selected by type tag; Phase 4/6"
-            );
+            return;
         }
 
-        // ── Binary operators (op 0x16–0x2b) ──────────────────────────────────
-        if op < 0x2c {
-            // Node types outside the binary-op ranges are no-ops.
-            if op < 0x1d {
-                if op < 0x16 || op > 0x1a {
-                    return;
-                }
-            }
-            // Postfix: emit left operand, then right, then the operator opcode.
-            // The runtime opcode is 1 byte selected by (node_type, result_type).
-            // The node-type → VB6-operator correspondence is not yet fully
-            // confirmed by the empirical survey, so all binary-op paths are
-            // unimplemented.
+        // ── Comparison binary operators (op 0x6–0xd) ─────────────────────────
+        // EQ/NE/LT/GT/LE/GE/Like/Is comparisons.  The binder sets the node's
+        // type_tag to the operand comparison type (not the Boolean result), so
+        // the standard arithmetic dispatch path in emit_binop_value is correct.
+        if op <= 0xd {
             self.emit_expr(n.lhs(), 0);
             self.emit_expr(n.rhs(), 0);
-            let type_ctx = n.type_tag() as usize;
-            unimplemented!(
-                "emit_expr: binary op 0x{op:x} (type_ctx {type_ctx}) — \
-                 node-type→operator mapping not yet confirmed by empirical survey; \
-                 once confirmed, look up in per-operation RT_*_BY_CTX table"
+            self.emit_binop_value(&n);
+            return;
+        }
+
+        // ── Short-opcode family (op 0xe–0x15) ────────────────────────────────
+        // op is >= 0xe here; 0x0..=0xd are already handled above.
+        if op == 0xe {
+            todo!(
+                "emit_expr: typed-load 0x0e path — runtime opcode from \
+                 TYPE_SHIFT table; Phase 3/4"
             );
+        }
+        // op 0xf..=0x15: no-op pass-through nodes.
+        if op < 0x16 {
+            return;
+        }
+
+        // ── Arithmetic / logical binary operators (op 0x16–0x2b) ─────────────
+        if op < 0x2c {
+            match op {
+                // String concatenation (&): EbEmitStatement case 0x1a emits
+                // 0xce (with size operand) or 0xcf directly.
+                0x1a => {
+                    self.emit_expr(n.lhs(), 0);
+                    self.emit_expr(n.rhs(), 0);
+                    todo!(
+                        "emit_expr: string concat 0x1a — \
+                         needs result type_tag to choose 0xce (sized) vs 0xcf"
+                    );
+                }
+                // MUL Currency: EbEmitStatement case 0x18 handles this specially,
+                // emitting 0xd1 (Integer RHS) or 0xb3 (other RHS) via EbEmitValue2.
+                0x18 if n.type_tag() == 13 => {
+                    self.emit_expr(n.lhs(), 0);
+                    self.emit_expr(n.rhs(), 0);
+                    todo!(
+                        "emit_expr: MUL Currency — \
+                         needs RHS type_tag to choose EbEmitValue2(0xb3) vs (0xd1)"
+                    );
+                }
+                // Is / TypeOf operator: EbEmitStatement case 0x24 emits
+                // 0xef (with size) for object type or 0xf0 for string type.
+                0x24 => {
+                    self.emit_expr(n.lhs(), 0);
+                    self.emit_expr(n.rhs(), 0);
+                    todo!(
+                        "emit_expr: Is operator 0x24 — \
+                         needs result type_tag to choose 0xef (sized) vs 0xf0"
+                    );
+                }
+                // All other binary ops: standard EbEmitBinaryOperation2 path.
+                0x16 | 0x17 | 0x18 | 0x19
+                | 0x1d ..= 0x23 | 0x25 ..= 0x2b => {
+                    self.emit_expr(n.lhs(), 0);
+                    self.emit_expr(n.rhs(), 0);
+                    self.emit_binop_value(&n);
+                }
+                _ => {} // other ops in this range are no-ops
+            }
+            return;
         }
 
         // ── Name / call / typed family (op 0x2c–0x60) ────────────────────────
@@ -256,6 +279,59 @@ impl<'a> Emitter<'a> {
         let frame_offset = sym.type_info() as i16;
         self.stream.emit_byte(opcode);
         self.stream.emit_i16(frame_offset);
+    }
+
+    /// Emit the runtime binary-operation byte(s) for `n`, using the three-level
+    /// table dispatch from `EbEmitBinaryOperation2`.
+    ///
+    /// Precondition: the LHS and RHS of `n` have already been emitted onto the
+    /// virtual stack by the caller.
+    fn emit_binop_value(&mut self, n: &RawNode) {
+        let op = n.opcode() as usize;
+        let base = RT_BINOP_BASE[op] as i32;
+        debug_assert!(
+            base != 0x0446,
+            "emit_binop_value: op {op:#x} has no runtime mapping (base=0x0446)"
+        );
+
+        // All known ops have RT_DISPATCH_FLAG[op] & 0x10 == 0 → arithmetic path:
+        // use the node's own type_tag (set by the binder to the operation type).
+        // The comparison path (flag & 0x10 != 0) is kept as a guard in case an
+        // op outside the known table ever arrives.
+        let flag = RT_DISPATCH_FLAG[op];
+        if flag & 0x10 != 0 {
+            todo!(
+                "emit_binop_value: comparison-path dispatch (flag {flag:#x}) \
+                 for op {op:#x} — requires LHS type_tag lookup; Phase 3/4"
+            );
+        }
+
+        let type_tag = n.type_tag();
+        let raw_offset = RT_TYPE_OFFSET[type_tag as usize];
+        let offset = match raw_offset {
+            10 => 4,
+            9 => 1,
+            x => x,
+        };
+        let n_opc = (base + offset) as usize;
+
+        // When the node's type_tag is 0xf (UDT/object with explicit size), the
+        // instruction takes a 2-byte type-size operand; all primitive types take
+        // a plain value byte via EbEmitValue2.
+        if type_tag == 0xf {
+            todo!(
+                "emit_binop_value: UDT type_tag=0xf path — \
+                 requires EbGetTypeSize3(node.word(6)) operand; Phase 4"
+            );
+        }
+
+        let rt_byte = RT_OPCODE_BYTE[n_opc];
+        if rt_byte < 0xfb {
+            self.stream.emit_byte(rt_byte);
+        } else {
+            self.stream.emit_byte(0xfb);
+            self.stream.emit_byte(n_opc as u8);
+        }
     }
 
     /// Emit a typed local-variable store instruction.
@@ -411,9 +487,7 @@ mod tests {
     // ── No-op branches ────────────────────────────────────────────────────────
 
     #[test]
-    fn op_less_than_0x16_emits_nothing() {
-        // Opcodes below the binary-op range (excluding 0xe, 0x1, literals)
-        // that don't match a handled pattern are silent.
+    fn op_zero_emits_nothing() {
         let mut a = NodeArena::new();
         let n = a.alloc(NodeArena::node(0x0, 0, 0, 0, 0, 0));
         assert_eq!(emit(&a, n), &[]);
@@ -424,5 +498,118 @@ mod tests {
         let mut a = NodeArena::new();
         let n = a.alloc(NodeArena::node(0x30, 0, 0, 0, 0, 0));
         assert_eq!(emit(&a, n), &[]);
+    }
+
+    // ── Binary-op opcode dispatch ─────────────────────────────────────────────
+    //
+    // Each test builds two Long-typed variable-load nodes (as stand-ins for the
+    // two operands), wraps them in a binary-op node, and verifies the exact
+    // byte sequence: [lhs-load:3 bytes] [rhs-load:3 bytes] [op-byte(s)].
+    //
+    // Opcode derivation (verified against RT_BINOP_BASE / RT_TYPE_OFFSET /
+    // RT_OPCODE_BYTE tables extracted from the DLL binary):
+    //
+    //   AND (op 0x23=35): base=RT_BINOP_BASE[35]=0x0021=33, Long offset=2,
+    //     n_opc=35, RT_OPCODE_BYTE[35]=0xc4  → 1 byte 0xc4
+    //
+    //   OR  (op 0x21=33): base=RT_BINOP_BASE[33]=0x0019=25, Long offset=2,
+    //     n_opc=27, RT_OPCODE_BYTE[27]=0xc5  → 1 byte 0xc5
+    //
+    //   XOR (op 0x22=34): base=RT_BINOP_BASE[34]=0x0011=17, Long offset=2,
+    //     n_opc=19, RT_OPCODE_BYTE[19]=0xfb  → 2 bytes [0xfb, 0x13]
+    //
+    //   ADD (op 0x16=22): base=RT_BINOP_BASE[22]=0x008e=142, Long offset=2,
+    //     n_opc=144, RT_OPCODE_BYTE[144]=0xaa  → 1 byte 0xaa
+    //
+    //   ADD (op 0x16=22): Integer offset=1,
+    //     n_opc=143, RT_OPCODE_BYTE[143]=0xa9  → 1 byte 0xa9
+    //
+    //   EQ  (op 0x6):  base=RT_BINOP_BASE[6]=0x00be=190, Long offset=2,
+    //     n_opc=192, RT_OPCODE_BYTE[192]=0xc3  → 1 byte 0xc3
+
+    /// Helper: allocate a minimal Long-load node at the given frame offset.
+    fn long_load(a: &mut NodeArena, offset: i16) -> NodeRef {
+        var_load(a, 2, offset) // typeCtx 2 = Long
+    }
+
+    /// Helper: allocate a binary-op node with opcode `op`, result type_tag
+    /// `type_tag`, and the given LHS / RHS children.
+    fn binop(a: &mut NodeArena, op: u16, type_tag: u16, lhs: NodeRef, rhs: NodeRef) -> NodeRef {
+        a.alloc(NodeArena::node(op, type_tag, lhs.0, rhs.0, 0, 0))
+    }
+
+    #[test]
+    fn and_long_emits_c4() {
+        let mut a = NodeArena::new();
+        let lhs = long_load(&mut a, -8);
+        let rhs = long_load(&mut a, -12);
+        let n = binop(&mut a, 0x23, 8, lhs, rhs); // AND, Long result
+        assert_eq!(
+            emit(&a, n),
+            &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc4]
+        );
+    }
+
+    #[test]
+    fn or_long_emits_c5() {
+        let mut a = NodeArena::new();
+        let lhs = long_load(&mut a, -8);
+        let rhs = long_load(&mut a, -12);
+        let n = binop(&mut a, 0x21, 8, lhs, rhs); // OR, Long result
+        assert_eq!(
+            emit(&a, n),
+            &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc5]
+        );
+    }
+
+    #[test]
+    fn xor_long_emits_fb_13() {
+        let mut a = NodeArena::new();
+        let lhs = long_load(&mut a, -8);
+        let rhs = long_load(&mut a, -12);
+        let n = binop(&mut a, 0x22, 8, lhs, rhs); // XOR, Long result
+        // n_opc=19=0x13 → rt_byte=0xfb → extended form [0xfb, 0x13]
+        assert_eq!(
+            emit(&a, n),
+            &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xfb, 0x13]
+        );
+    }
+
+    #[test]
+    fn add_long_emits_aa() {
+        let mut a = NodeArena::new();
+        let lhs = long_load(&mut a, -8);
+        let rhs = long_load(&mut a, -12);
+        let n = binop(&mut a, 0x16, 8, lhs, rhs); // ADD, Long result
+        assert_eq!(
+            emit(&a, n),
+            &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xaa]
+        );
+    }
+
+    #[test]
+    fn add_integer_emits_a9() {
+        let mut a = NodeArena::new();
+        let lhs = var_load(&mut a, 1, -4); // Integer
+        let rhs = var_load(&mut a, 1, -6);
+        let n = binop(&mut a, 0x16, 6, lhs, rhs); // ADD, Integer result
+        assert_eq!(
+            emit(&a, n),
+            &[0x6b, 0xfc, 0xff, 0x6b, 0xfa, 0xff, 0xa9]
+        );
+    }
+
+    #[test]
+    fn eq_long_emits_c3() {
+        let mut a = NodeArena::new();
+        let lhs = long_load(&mut a, -8);
+        let rhs = long_load(&mut a, -12);
+        // Comparison node: op=6 (EQ), type_tag=8 (Long comparison type,
+        // set by binder to operand type, not Boolean result).
+        let n = binop(&mut a, 0x6, 8, lhs, rhs);
+        assert_eq!(
+            emit(&a, n),
+            &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc3]
+        );
     }
 }
