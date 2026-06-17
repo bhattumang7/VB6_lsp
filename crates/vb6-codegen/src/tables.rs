@@ -288,3 +288,27 @@ pub const RT_OPCODE_BYTE: [u8; 1056] = [
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
     0xff, 0xff, 0xf4, 0xff, 0x02, 0x03, 0xff, 0xff,
 ];
+
+/// Maps VB6 internal type-kind code (hi16 of node word\[0\] as i32) to a
+/// type-class index used by EbEmitAssignOp to compute the store-opcode index.
+/// 28 entries (indices 0–27).  Class 9 = String-like (remapped to 1 before
+/// opcode addition), class 10 = Object-like (remapped to 4 on the Currency
+/// sub-path), class 19 = no-emit sentinel.
+pub const RT_TYPE_KIND_CLASS: [i32; 28] = [
+    19, 19, 19,  9, 19,
+     0,  1, 19,  2, 19,
+     3,  4, 10,  5, 19,
+     6,  7, 14, 19, 19,
+    12, 19,  8,  2, 19,
+    19,  2,  0,
+];
+
+/// Maps type-class index (output of [`RT_TYPE_KIND_CLASS`]) to the base opcode
+/// index passed to `EbEmitValue2` for a store.  14 entries (indices 0–13).
+/// Final index = `RT_ASSIGN_BASE_OPCODE[lhs_class] + rhs_class` (rhs class 9
+/// is remapped to 1 and class 10 is remapped to 4 before addition).
+pub const RT_ASSIGN_BASE_OPCODE: [i32; 14] = [
+    0x10c, 0x114, 0x11c, 0x124, 0x12c,
+    0x104, 0x267, 0x0fc, 0x446, 0x150,
+    0x12c, 0x293, 0x000, 0x000,
+];

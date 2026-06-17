@@ -180,10 +180,71 @@ impl<'a> Emitter<'a> {
                 "EbEmitStatement cases 0xc/0xd: EbEmitExpressionCode2; Phase 5"
             ),
             // case 0xe: load / assign / object-ref path.
-            0xe => unimplemented!(
-                "EbEmitStatement case 0xe (load/assign): EbEmitAssignOp @ 0fab3117 + \
-                 EbMapTypeCodeValue3; Phase 3/4"
-            ),
+            // Outer condition: enter normal emit path when LHS is not Object, or when
+            // various flag/dispatch conditions hold.  For numeric LHS the condition is
+            // always true.  After the inner switch the trailing EbValidateTypeOperation
+            // call is always reached (mirrors the C `break` → tail pattern).
+            0xe => {
+                let lhs_hi = n.w[0] & 0xffff0000;
+                let lhs_kind = (n.w[0] as i32) >> 16;
+                // Outer condition false path (Object LHS with specific flags):
+                // needs EmitPcodeTypeDiagnostic + EbEmitObjectType — unimplemented.
+                if lhs_hi == 0xf0000 {
+                    unimplemented!(
+                        "EbEmitStatement case 0xe: object-assign LHS (hi16=0xf) requires \
+                         EmitPcodeTypeDiagnostic @ 0fab196a and EbEmitObjectType @ 0fab1a0a"
+                    );
+                }
+                // Emit RHS expression with context 2.
+                let rhs = NodeRef(n.w[4]);
+                self.emit_expr(rhs, 2);
+                // 0x4000 flag: Set / object-reference assign.
+                if n.w[1] & 0x4000 != 0 {
+                    unimplemented!(
+                        "EbEmitStatement case 0xe: 0x4000 (object Set assign) requires \
+                         EbMapTypeCodeValue3 @ 0fab3168 and EbEmitObjectType @ 0fab1a0a"
+                    );
+                }
+                let op_kind = (n.w[1] >> 8) & 7;
+                match op_kind {
+                    0 => self.emit_assign_op(&n),
+                    1 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 1 (UDT copy): \
+                         EbGetTypeSize3 @ 0fab2f55 + EbEmitObjectType @ 0fab1a0a"
+                    ),
+                    2 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 2 (Set IDispatch): \
+                         EbEmitObjectType @ 0fab1a0a"
+                    ),
+                    3 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 3 (Set addref): \
+                         EbGetTypeSize3 + EbEmitObjectType"
+                    ),
+                    4 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 4 (Set release): \
+                         EbGetTypeSize3 + EbEmitObjectType"
+                    ),
+                    5 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 5 (UDT move): \
+                         EbGetTypeSize3 + EbEmitObjectType"
+                    ),
+                    6 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 6 (array Set/copy): \
+                         EbGetTypeSize3 + EbCreateTypeNode3"
+                    ),
+                    7 => unimplemented!(
+                        "EbEmitStatement case 0xe op-kind 7 (Me assign): \
+                         EbEmitObjectType @ 0fab1a0a"
+                    ),
+                    _ => unreachable!(),
+                }
+                // Trailing tail (after outer if + inner switch):
+                // emit 0x202 only if Object LHS with byte5 bit 0x80 set.
+                if (n.w[1] >> 8) & 0x80 != 0 && lhs_hi == 0xf0000 {
+                    self.emit_value2(0x202);
+                }
+                return self.emit_validate_type_operation(lhs_kind, 0, context);
+            }
             // case 0xf: name / coerce path.
             0xf => unimplemented!(
                 "EbEmitStatement case 0xf (name/coerce): EbGetVarType / \
@@ -926,6 +987,135 @@ impl<'a> Emitter<'a> {
         self.stream.emit_byte(base + 0x28);
         self.stream.emit_word(module_desc);
         self.stream.emit_word(field_offset);
+    }
+
+    // ── EbTraverseNodeTree @ (vba6_part0002.c) ──────────────────────────────
+    //
+    // Walk a singly-linked list of statement nodes (opcodes 0x37 / 0x33) and
+    // emit each one.  List structure: word[4] = child statement, word[5] = next
+    // list node (sibling).  The C function recurses on the sibling first, then
+    // emits the child — producing right-to-left emission order for a forward list.
+    pub fn traverse_node_tree(&mut self, node: NodeRef, n_mode: u32) {
+        if node.0 == 0 {
+            return;
+        }
+        let n = *self.arena.get(node);
+        let mut active = node;
+        if (n.w[0] & 0xffff) == 0x37 || (n.w[0] & 0xffff) == 0x33 {
+            if n.w[5] != 0 {
+                self.traverse_node_tree(NodeRef(n.w[5]), n_mode);
+            }
+            active = NodeRef(n.w[4]);
+        }
+        if active.0 != 0 {
+            self.emit_expr(active, n_mode);
+        }
+    }
+
+    // ── EbEmitAssignOp @ 0fab3117 ────────────────────────────────────────────
+    //
+    // Emit the store opcode for a simple `=` assignment after the RHS has already
+    // been pushed.  `n` is the assignment node (pNode in C); RHS is `pNode[4]`.
+    // Dispatch tree mirrors the C verbatim.
+    fn emit_assign_op(&mut self, n: &RawNode) {
+        use crate::tables::{RT_ASSIGN_BASE_OPCODE, RT_TYPE_KIND_CLASS};
+
+        let lhs_hi = n.w[0] & 0xffff0000;
+        if lhs_hi == 0xf0000 {
+            // Object LHS — needs EbGetTypeSize3 + EbEmitOpcode2 + type-pool.
+            unimplemented!(
+                "EbEmitAssignOp: Object LHS (hi16=0xf) requires EbGetTypeSize3 @ 0fab2f55"
+            );
+        }
+
+        let rhs_node = *self.arena.get(NodeRef(n.w[4]));
+
+        if lhs_hi == 0xc0000 {
+            // Currency LHS: special RHS-kind dispatch.
+            let rhs_kind = (rhs_node.w[0] as i32) >> 16;
+            match rhs_kind {
+                0xb => { self.emit_value2(0x147); return; }
+                0xf => { self.emit_value2(0x14f); return; }
+                0x10 => { self.emit_value2(0x3c9); return; }
+                _ => {} // fall through to generic numeric path below
+            }
+        }
+
+        let lhs_kind = (n.w[0] as i32) >> 16;
+        let rhs_kind = (rhs_node.w[0] as i32) >> 16;
+
+        // Variant / ByRef / Currency triple-type group (LHS and RHS both in {10,0xb,0xc}).
+        if matches!(lhs_kind, 10 | 0xb | 0xc) && matches!(rhs_kind, 10 | 0xb | 0xc) {
+            // If byte@node+5 bit 0x80 is clear → no-op (assign is handled elsewhere).
+            if (n.w[1] >> 8) & 0x80 == 0 {
+                return;
+            }
+            let rhs_class = RT_TYPE_KIND_CLASS[rhs_kind as usize];
+            let lhs_class = RT_TYPE_KIND_CLASS[lhs_kind as usize];
+            let i_var6 = RT_ASSIGN_BASE_OPCODE[lhs_class as usize];
+            if rhs_class == 10 {
+                self.emit_value2((i_var6 + 4) as usize);
+                return;
+            }
+            // fall through to shared tail (iVar4 == 9 → 1 remap + emit)
+            let mut i_var4 = rhs_class;
+            if i_var4 == 9 { i_var4 = 1; }
+            self.emit_value2((i_var4 + i_var6) as usize);
+            return;
+        }
+
+        // General case: inspect RHS hi16 for special source types.
+        let rhs_hi = rhs_node.w[0] & 0xffff0000;
+        if rhs_hi == 0xc0000 {
+            // Currency RHS into non-Currency LHS.
+            match lhs_kind {
+                0xf => { self.emit_value2(0x2fb); return; }
+                0x10 => { self.emit_value2(0x3c8); return; }
+                _ => {} // fall through to numeric tail
+            }
+        }
+        if rhs_hi == 0x30000 {
+            // Boolean RHS.
+            match lhs_kind {
+                5 => { self.emit_value2(0x138); return; }
+                6 => { return; } // no-op
+                0x10 => { self.emit_value2(0x3c7); return; }
+                _ => {} // fall through
+            }
+        }
+        if rhs_hi == 0x110000 {
+            // Fixed-length string RHS → EbGetTypeLength + EbEmitOpcode2.
+            unimplemented!(
+                "EbEmitAssignOp: fixed-length string RHS (hi16=0x11) requires \
+                 EbGetTypeLength @ 0fab2f9e and EbEmitOpcode2 0x361"
+            );
+        }
+        if rhs_hi == 0xf0000 {
+            // Object RHS → EbResolveAndSimplify / EbEmitTypeOfExprPcode3.
+            if lhs_hi == 0x140000 {
+                unimplemented!(
+                    "EbEmitAssignOp: Object RHS with Variant LHS (0x14) requires \
+                     EbResolveAndSimplify @ 0fab2fcb and EbEmitOpcode2 0x435"
+                );
+            }
+            if lhs_hi == 0x120000 {
+                unimplemented!(
+                    "EbEmitAssignOp: Object RHS with TypeOf LHS (0x12) requires \
+                     EbEmitTypeOfExprPcode3 @ 0fab33af"
+                );
+            }
+        }
+
+        // Default numeric path: base = RT_ASSIGN_BASE_OPCODE[RT_TYPE_KIND_CLASS[lhs_kind]]
+        //                        rhs_class = RT_TYPE_KIND_CLASS[rhs_kind]
+        let i_var6 = RT_ASSIGN_BASE_OPCODE[RT_TYPE_KIND_CLASS[lhs_kind as usize] as usize];
+        let mut i_var4 = RT_TYPE_KIND_CLASS[rhs_kind as usize];
+        if i_var4 == 10 {
+            self.emit_value2((i_var6 + 4) as usize);
+            return;
+        }
+        if i_var4 == 9 { i_var4 = 1; }
+        self.emit_value2((i_var4 + i_var6) as usize);
     }
 
     /// Emit a module-level global variable store.  The opcode is

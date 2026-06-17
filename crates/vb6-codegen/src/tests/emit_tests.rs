@@ -709,3 +709,149 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
     assert_eq!(b_byval[0], op_byval);
     assert_eq!(b_byref[0], op_byref);
 }
+
+// ── emit_assign_op (case 0xe, op-kind 0) ─────────────────────────────────────
+//
+// These tests exercise case 0xe of emit_expr (the assignment dispatch) by
+// building synthetic assignment nodes and verifying the output byte sequence.
+//
+// Node layout for case 0xe:
+//   word[0] = (lhs_kind << 16) | 0xe
+//   word[1] = flags (0 = op-kind 0, no 0x4000 Set flag, no byte-5 0x80 flag)
+//   word[4] = NodeRef of the RHS child
+//
+// A "null-emit RHS" node has opcode=0 (hits the EbEmitStatement guard → return 0
+// immediately) but carries the desired type_tag in its high word so that
+// emit_assign_op reads the correct rhs_kind.
+//
+// Convention: index 0 in NodeArena is reserved as the null-pointer sentinel.
+// All real nodes are allocated from index 1 onward.
+
+/// Allocate a null-sentinel dummy at index 0, then the RHS and assignment nodes.
+/// Returns (arena, assign_node_ref).
+fn assign_node(lhs_kind: u16, rhs_kind: u16) -> (NodeArena, NodeRef) {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // idx 0 = null sentinel
+    let rhs = a.alloc(NodeArena::node(0, rhs_kind, 0, 0, 0, 0)); // idx 1: null-emit RHS
+    let assign = a.alloc(NodeArena::node(0xe, lhs_kind, rhs.0, 0, 0, 0)); // idx 2
+    (a, assign)
+}
+
+#[test]
+fn assign_currency_lhs_rhs_kind_0xb_emits_0xf2() {
+    // Currency LHS (kind=0xc) + RHS kind 0xb (Boolean/Variant):
+    // EbEmitAssignOp special-cases Currency LHS: rhs_kind 0xb → emit_value2(0x147).
+    // RT_OPCODE_BYTE[0x147=327]: row 40 (line 198 of tables), col 7 = 0xf2 < 0xfb → [0xf2].
+    let (a, n) = assign_node(0xc, 0xb);
+    assert_eq!(emit(&a, n), &[0xf2]);
+}
+
+#[test]
+fn assign_currency_lhs_rhs_kind_0xf_emits_fc4f() {
+    // Currency LHS (kind=0xc) + RHS kind 0xf (Object/Variant): emit_value2(0x14f).
+    // RT_OPCODE_BYTE[0x14f=335]: row 41 (line 199), col 7 = 0xfc → [0xfc, 0x4f].
+    let (a, n) = assign_node(0xc, 0xf);
+    assert_eq!(emit(&a, n), &[0xfc, 0x4f]);
+}
+
+#[test]
+fn assign_variant_group_no_flag_emits_nothing() {
+    // LHS kind 0xb and RHS kind 0xb: both in {10,0xb,0xc} (Variant/Boolean group).
+    // Byte-5 flag 0x80 is clear (word[1]=0) → EbEmitAssignOp returns immediately.
+    // Trailing EbValidateTypeOperation(0xb, 0, context=0): context=0 ≠ 3 and ≠ 1
+    // → returns 1, no bytes emitted.
+    let (a, n) = assign_node(0xb, 0xb);
+    assert_eq!(emit(&a, n), &[]);
+}
+
+#[test]
+fn assign_default_numeric_kind5_emits_fc0c() {
+    // LHS kind=5 and RHS kind=5: falls to the default numeric path.
+    // RT_TYPE_KIND_CLASS[5]=0 → RT_ASSIGN_BASE_OPCODE[0]=0x10c.
+    // rhs_class = RT_TYPE_KIND_CLASS[5] = 0 → emit_value2(0 + 0x10c = 0x10c = 268).
+    // RT_OPCODE_BYTE[268]: row 33 (line 191 of tables), col 4 = 0xfc → [0xfc, 0x0c].
+    let (a, n) = assign_node(5, 5);
+    assert_eq!(emit(&a, n), &[0xfc, 0x0c]);
+}
+
+#[test]
+fn assign_default_numeric_kind6_same_emits_fc15() {
+    // LHS kind=6, RHS kind=6: RT_TYPE_KIND_CLASS[6]=1 → RT_ASSIGN_BASE_OPCODE[1]=0x114.
+    // rhs_class=1 → emit_value2(1 + 0x114 = 0x115 = 277).
+    // RT_OPCODE_BYTE[277]: row 34 (line 192 of tables), col 5 = 0xfc → [0xfc, 0x15].
+    // (kind 6 is not in the Variant group {10,0xb,0xc} so the default numeric path runs.)
+    let (a, n) = assign_node(6, 6);
+    assert_eq!(emit(&a, n), &[0xfc, 0x15]);
+}
+
+// ── traverse_node_tree ────────────────────────────────────────────────────────
+//
+// EbTraverseNodeTree walks a singly-linked list (opcodes 0x37/0x33) and emits
+// each child statement.  Emission order is LAST-TO-FIRST: the function recurses
+// on the sibling (word[5]) before emitting the current child (word[4]), so for a
+// list [A, B] the byte order is: B's bytes, then A's bytes.
+
+fn global_long_load(a: &mut NodeArena, field_offset: u16) -> NodeRef {
+    // Opcode 0x77: emit_global_node_load → [0x94, module_desc_lo, module_desc_hi, field_lo, field_hi]
+    // module_desc=8 (default), field_offset as given.
+    let packed = 0x0008u32 | ((field_offset as u32) << 16);
+    a.alloc(NodeArena::node(0x77, 0, packed, 2, 0, 0)) // type_ctx=Long=2
+}
+
+#[test]
+fn traverse_single_list_node_emits_child() {
+    // List node (0x37) with one child (global Long at field=0), no sibling.
+    // Expected: child bytes [0x94, 0x08, 0x00, 0x00, 0x00].
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // null sentinel at idx 0
+    let child = global_long_load(&mut a, 0);
+    let list = a.alloc(NodeArena::node(0x37, 0, child.0, 0, 0, 0)); // word[5]=0 = no sibling
+    let mut e = Emitter::new(&a);
+    e.traverse_node_tree(list, 0);
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn traverse_two_element_list_emits_last_to_first() {
+    // List [A=field0, B=field4]:
+    //   list_A → word[4]=child_A(field=0), word[5]=list_B
+    //   list_B → word[4]=child_B(field=4), word[5]=0
+    // EbTraverseNodeTree recurses on sibling first → emits B then A.
+    // Expected: [0x94,0x08,0x00,0x04,0x00, 0x94,0x08,0x00,0x00,0x00]
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // null sentinel
+    let child_a = global_long_load(&mut a, 0);  // field=0
+    let child_b = global_long_load(&mut a, 4);  // field=4
+    let list_b = a.alloc(NodeArena::node(0x37, 0, child_b.0, 0, 0, 0));
+    let list_a = a.alloc(NodeArena::node(0x37, 0, child_a.0, list_b.0, 0, 0));
+    let mut e = Emitter::new(&a);
+    e.traverse_node_tree(list_a, 0);
+    assert_eq!(
+        e.into_bytes(),
+        &[0x94, 0x08, 0x00, 0x04, 0x00, 0x94, 0x08, 0x00, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn traverse_opcode_0x33_list_also_works() {
+    // Opcode 0x33 is the other list opcode; behavior is identical to 0x37.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let list = a.alloc(NodeArena::node(0x33, 0, child.0, 0, 0, 0));
+    let mut e = Emitter::new(&a);
+    e.traverse_node_tree(list, 0);
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
+
+#[test]
+fn traverse_non_list_node_emits_it_directly() {
+    // A non-list node passed to traverse_node_tree is emitted directly
+    // (it is NOT a list node — the opcode check doesn't match 0x37/0x33).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let g = global_long_load(&mut a, 0);
+    let mut e = Emitter::new(&a);
+    e.traverse_node_tree(g, 0);
+    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
