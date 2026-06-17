@@ -1,8 +1,11 @@
-# ANTLR VB6 Grammar — Bug Report
+# ANTLR VB6 Grammar — Bugs
 
-Grounded in the VB6 keyword table (271 entries) in
+All entries in this file are bugs in the ANTLR grammar
+(`VisualBasic6Lexer.g4` / `VisualBasic6Parser.g4`). They are grounded in the
+VB6 keyword table (271 entries) in
 `crates/vb6-syntax/src/frontend/keyword_table.rs`, the Rust
-recursive-descent parser, and the ANTLR acceptance-test corpus in
+recursive-descent parser (used as a reference for correct VB6 behaviour), and
+the ANTLR acceptance-test corpus in
 `crates/vb6-core/tests/antlr_coverage.rs`.
 
 ---
@@ -38,7 +41,6 @@ recursive-descent parser, and the ANTLR acceptance-test corpus in
 | L10 | Lexer | Medium | `Go To` (space-separated) not tokenised — only contiguous `GoTo` |
 | P16 | Parser | High | One-word `EndIf` rejected — valid VB6 (oracle-confirmed) |
 | P17 | Parser | High | `If <cond> GoTo <label>` without `Then` rejected — valid VB6 (oracle-confirmed) |
-| R1 | Rust | **High** | `parse_resume_stmt` silently drops the `Resume <label>` / `Resume <line#>` operand — **FIXED** |
 
 ---
 
@@ -763,70 +765,6 @@ in the parser's block-If terminator alongside `END_IF`).
 **L10 fix:** Add a `GOTO: 'GO' WS? 'TO';`-style rule (or a separate `GO`
 token plus a parser rule accepting `GO WS TO`). The same applies to other
 split forms VB6 tolerates.
-
----
-
-## Rust Implementation Bugs
-
-The grammar audit surfaced one genuine defect on the Rust side as well.
-
-### R1 — `Resume <label>` / `Resume <line-number>` operand is silently dropped — **FIXED**
-
-**Status:** Fixed. `parse_resume_stmt` now consumes and records the operand on
-the `Resume` node as a `ResumeTarget` (`Retry` / `Next` / `At(LabelRef)`), where
-`LabelRef` carries either a named-label symbol or a numeric line value. All four
-forms are covered, and the operand can no longer leak into the following
-statement. Two related jump-target gaps were closed at the same time:
-`On Error GoTo <nonzero line>` now installs a handler at that numeric line
-(only `GoTo 0` disables), and numeric line labels (`100:`) are preserved as
-`Label`/`GoTo`/`GoSub` targets instead of being collapsed to a sentinel.
-Verified by `crates/vb6-core/tests/oracle_examples_ast.rs` (including a
-negative-control run confirming the tests fail against the old behavior).
-
-**File:** `crates/vb6-syntax/src/frontend/parser.rs`, `parse_resume_stmt`
-
-Original defect (for the record):
-
-```rust
-fn parse_resume_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-    self.advance();                              // consume Resume
-    let next = self.eat(TokenKind::Kw(Kw::Next)); // Resume / Resume Next only
-    self.eat_eol();
-    arena.alloc(ExprNode::Resume { next })
-}
-```
-
-VB6 has four `Resume` forms:
-
-```vb
-Resume              ' retry the faulting statement
-Resume Next         ' continue at the statement after the fault
-Resume 0            ' same as bare Resume (explicit line 0)
-Resume MyLabel      ' jump to a label / line number
-```
-
-`parse_resume_stmt` handles only the first two. For `Resume MyLabel` or
-`Resume 0`, `eat` does not match `Next`, and `eat_eol` only advances when the
-current token *is* a statement end (`eat_eol` → `if is_stmt_end()`):
-
-```rust
-fn eat_eol(&mut self) {
-    if self.peek().is_stmt_end() { self.advance(); }
-}
-```
-
-so the label/line-number token is left in the stream. The loop in
-`parse_block` then re-enters and parses `MyLabel` (or `0`) as a **separate
-statement** — the target of the `Resume` is lost from the AST, and a numeric
-target (`Resume 0`) is mis-parsed as a stray line-number/expression.
-
-Note: the ANTLR grammar handles `Resume <label>` correctly
-(`RESUME (WS (NEXT | ambiguousIdentifier))?`) but not `Resume 0` (numeric) —
-the inverse gap. Neither implementation covers all four forms.
-
-**Fix:** After the `Next` check, parse an optional label (`ambiguousIdentifier`)
-or line number (`IntLit`/`LongLit`) operand and record it on the `Resume`
-node.
 
 ---
 
