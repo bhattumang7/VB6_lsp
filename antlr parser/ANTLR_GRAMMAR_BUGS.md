@@ -41,6 +41,12 @@ the ANTLR acceptance-test corpus in
 | L10 | Lexer | Medium | `Go To` (space-separated) not tokenised — only contiguous `GoTo` |
 | P16 | Parser | High | One-word `EndIf` rejected — valid VB6 (oracle-confirmed) |
 | P17 | Parser | High | `If <cond> GoTo <label>` without `Then` rejected — valid VB6 (oracle-confirmed) |
+| L11 | Lexer | **Critical** | `DATELITERAL` greedily spans two `#` on a line — breaks `Close #1, #2` (oracle-confirmed) |
+| L12 | Lexer | High | File channel `#<var>`/`#<expr>` collapses into one `FILENUMBER` literal — loses the variable (oracle-confirmed) |
+| L13 | Lexer | Medium | `Debug` keyword absent — `Debug.Print` only parses by accident, mismodelling the print output list |
+| P18 | Parser | Medium | `Resume <line#>` / `Resume 0` rejected — numeric target valid VB6 (oracle-confirmed) |
+| C1 | Correction | — | P9 is wrong: bare `Print "x"` is **rejected** in a standard module (oracle-confirmed) |
+| C2 | Correction | — | L8 over-claims: `As Decimal` and `As Any` are **rejected** by VB6 (oracle-confirmed) |
 
 ---
 
@@ -781,3 +787,129 @@ confirmed defect in L6 is only on the **label-definition** side:
 
 L6's severity and label-definition analysis stand; only the `GoTo 100`
 illustration should be struck.
+
+---
+
+## Third Pass — Oracle-Verified Findings (VB6.EXE /make)
+
+All entries below were verified directly against the VB6 SP6 compiler running
+headless (`VB6.EXE /make <proj.vbp> /out <log>`; exit 0 + "Build … succeeded" =
+accept; "Compile Error …" = reject). Each case was a self-contained single
+module so missing-reference/semantic errors could not be confused with syntax
+errors.
+
+### L11 — `DATELITERAL` greedily spans two `#` on a line
+
+**File:** `VisualBasic6Lexer.g4`, line 434
+
+```antlr
+DATELITERAL: HASH (~ [#\r\n])* HASH;
+```
+
+`DATELITERAL` is defined **before** `FILENUMBER`. By maximal munch, any line
+that carries two `#` tokens which are *not* an intended date pair is fused into
+one bogus date literal — the rule body `(~ [#\r\n])*` happily eats commas,
+spaces, and even string contents until the next `#`.
+
+Oracle-verified valid VB6 that this breaks:
+
+```vb
+Close #1, #2, #3      ' lexes "#1, #" as a DATELITERAL, then "2, #3…" → parse error
+Print #1, "a#b"       ' the '#' inside the string is grabbed: "#1, ""a#" → date literal
+```
+
+Both compile cleanly in VB6. This corrupts every multi-channel file statement
+and any channel line containing a later `#` (including inside a string literal).
+
+**Fix:** a `#…#` run is a date literal only when its body is actually a
+date/time. Validate the content (numeric `m/d/y`, a `H:MM[:SS]` time, or a
+month-name form such as `#December, 24, 2000#`) before committing; otherwise
+the leading `#` is the file-number / operator token. Disambiguate against
+`FILENUMBER` and the `#` operator rather than "anything between two hashes".
+
+### L12 — File channel `#<var>` / `#<expr>` collapses into one `FILENUMBER` literal
+
+**File:** `VisualBasic6Lexer.g4`, line 444
+
+```antlr
+FILENUMBER: HASH LETTERORDIGIT+;
+```
+
+`#f`, `#fnum`, `#FreeFile` all match as a single opaque literal token. The
+channel in real code is almost always a **variable**:
+
+```vb
+f = FreeFile : Open "a" For Output As #f : Print #f, x : Close #f   ' all VB6-accepted
+```
+
+The grammar captures `f` as literal *text* inside a `FILENUMBER`, so the
+variable reference is lost from the parse tree. Affects
+`Print/Write/Input/Line Input/Get/Put/Seek/Width/Open/Close #var`. As a
+corollary, a parenthesised channel `#(expr)` cannot lex at all (`(` is not a
+`LETTERORDIGIT`).
+
+**Fix:** drop `FILENUMBER`; lex `#` as its operator token and parse the channel
+as a `valueStmt`.
+
+### L13 — `Debug` keyword absent
+
+**Files:** `VisualBasic6Lexer.g4` + `VisualBasic6Parser.g4`
+
+`Debug` is not a lexer token and has no statement rule. `Debug.Print …` (valid
+and ubiquitous) only parses by accident through the generic member-call path
+(`iCS_B_MemberProcedureCall`), which models the arguments as a plain `argsCall`
+and therefore does **not** model `Print`'s output-list grammar (`;` separators,
+trailing `;`, `Spc(n)`, `Tab(n)`):
+
+```vb
+Debug.Print "hi"; 1; Tab(5); "x"   ' oracle-accepted; member-call path mismodels it
+```
+
+**Fix:** add a `Debug` object/statement and route `Debug.Print` through the same
+`outputList` grammar used by `printStmt`.
+
+### P18 — `Resume <line#>` / `Resume 0` rejected
+
+**File:** `VisualBasic6Parser.g4`, line 516
+
+```antlr
+resumeStmt: RESUME (WS (NEXT | ambiguousIdentifier))?;
+```
+
+There is no numeric alternative, yet both numeric forms are valid VB6
+(oracle-accepted):
+
+```vb
+Resume 0       ' retry the faulting statement
+Resume 100     ' jump to numeric line label 100
+```
+
+This is the `Resume` facet of the numeric-line-label gap (see L6). The Rust
+parser already handles all four `Resume` forms.
+
+**Fix:** add an integer-literal alternative:
+`RESUME (WS (NEXT | integerLiteral | ambiguousIdentifier))?`.
+
+### C1 — Correction to P9: bare `Print` is rejected in a standard module
+
+P9 claims `Print "Hello"` is "valid VB6". Oracle-verified: in a standard
+(`.bas`) module VB6 **rejects** bare `Print "x"` (Compile error). Bare `Print`
+is valid only where an implicit `Print` method exists — a `Form`, `Printer`, or
+via `Debug.Print`. So the fix for P9 is **not** "always accept bare `Print`";
+it is context-dependent, and the grammar should not unconditionally admit a
+channel-less `Print` at statement level.
+
+### C2 — Correction to L8: `Decimal` and `Any` are not general declared types
+
+L8 proposes adding `Currency`, `Decimal`, and `Any` to `baseType`. Oracle-verified:
+
+| Declaration | VB6 |
+|-------------|-----|
+| `Dim c As Currency` | **accept** |
+| `Dim d As Decimal`  | **reject** |
+| `Dim a As Any`      | **reject** |
+
+So: add `Currency` to `baseType` (correct), but **`Decimal` is not a declarable
+type** (it exists only as a `Variant` subtype) and **`As Any` is valid only
+inside a `Declare`** parameter/return clause. Adding either to `baseType` would
+itself be an over-acceptance bug.
