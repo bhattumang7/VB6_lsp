@@ -22,10 +22,11 @@
 
 use vb6_sema::sema::VbaType;
 
-use crate::emit::{Emitter, RefDescriptor};
+use crate::emit::Emitter;
 
-/// A declared type that the reference emitter cannot yet lower (its load/store
-/// goes through a not-yet-ported branch of `EbEmitExpression2`).
+/// A declared type whose local load/store the bridge cannot yet emit (no
+/// confirmed simple load/store opcode — e.g. String/Byte use runtime-helper
+/// call sequences, and Date/Variant/Object/UDT are not yet mapped).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct UnsupportedType;
 
@@ -48,54 +49,48 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
     })
 }
 
-/// Map a `VbaType` to the VB6 value class used as `emit_reference`'s `nType`.
+/// The load/store type-context for a type that has a confirmed simple
+/// (single-opcode) typed load and store. This is the same indexing as
+/// [`type_ctx`] but restricted to the numeric primitives whose load/store
+/// opcodes are oracle-confirmed (`RT_LOAD_BY_CTX` / `RT_STORE_BY_CTX`):
+/// Integer→1, Long→2, Single→3, Double→4, Currency→6.
 ///
-/// Returns `None` for types whose resolved reference does not flow through
-/// `EbEmitExpression2`'s simple offset path (Single/Double/String/Date/Object/
-/// Variant/UDT/array) — those need the value-class expression branch, not yet
-/// ported. The mapped classes (Integer 6, Long 8, Currency 12) are
-/// oracle-confirmed via the load/store byte vectors.
-pub fn value_class(t: &VbaType) -> Option<i32> {
+/// Returns `None` for String/Byte (which assign via runtime-helper sequences,
+/// not a single load/store opcode) and for Boolean/Date/Object/Variant/UDT
+/// (not yet confirmed) — the bridge reports those as [`UnsupportedType`] rather
+/// than emit an unverified opcode.
+pub fn load_store_ctx(t: &VbaType) -> Option<usize> {
     Some(match t {
-        VbaType::Integer => 6,
-        VbaType::Long => 8,
-        VbaType::Currency => 0xc,
+        VbaType::Integer => 1,
+        VbaType::Long => 2,
+        VbaType::Single => 3,
+        VbaType::Double => 4,
+        VbaType::Currency => 6,
         _ => return None,
     })
 }
 
-/// Emit a typed load of a local variable: a kind-1 reference at `frame_offset`,
-/// with the value class derived from `ty`. Errors with [`UnsupportedType`] for
-/// a type whose load is not yet lowerable.
+/// Emit a typed load of a local variable at `frame_offset`, opcode chosen from
+/// `ty`. Errors with [`UnsupportedType`] for a type without a confirmed simple
+/// load opcode.
 pub fn emit_local_load(
     emitter: &mut Emitter,
     ty: &VbaType,
     frame_offset: i16,
 ) -> Result<(), UnsupportedType> {
-    let class = value_class(ty).ok_or(UnsupportedType)?;
-    let desc = RefDescriptor {
-        kind: 1,
-        operand: frame_offset as u16,
-        word6: 0,
-    };
-    emitter.emit_reference(&desc, 1, 0, class); // nOp 1 = value load
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_typed_load(ctx, frame_offset);
     Ok(())
 }
 
-/// Emit a typed store of a local variable (mirror of [`emit_local_load`],
-/// nOp 4 = store).
+/// Emit a typed store of a local variable (mirror of [`emit_local_load`]).
 pub fn emit_local_store(
     emitter: &mut Emitter,
     ty: &VbaType,
     frame_offset: i16,
 ) -> Result<(), UnsupportedType> {
-    let class = value_class(ty).ok_or(UnsupportedType)?;
-    let desc = RefDescriptor {
-        kind: 1,
-        operand: frame_offset as u16,
-        word6: 0,
-    };
-    emitter.emit_reference(&desc, 4, 0, class); // nOp 4 = store
+    let ctx = load_store_ctx(ty).ok_or(UnsupportedType)?;
+    emitter.emit_var_store(ctx, frame_offset);
     Ok(())
 }
 

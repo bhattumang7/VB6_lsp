@@ -755,15 +755,22 @@ impl<'a> Emitter<'a> {
     /// Node types `0x74` and `0x76` both route here.
     fn emit_var_load(&mut self, n: &RawNode, _context: u32) {
         let type_ctx = n.word(5) as usize;
+        let sym = self.arena.get(n.lhs());
+        let frame_offset = sym.type_info() as i16;
+        self.emit_typed_load(type_ctx, frame_offset);
+    }
+
+    /// Emit a typed local-variable load given its type context and frame offset
+    /// directly (the opcode comes from [`RT_LOAD_BY_CTX`]). Mirror of
+    /// [`Self::emit_var_store`]; used by the binder bridge.
+    pub fn emit_typed_load(&mut self, type_ctx: usize, frame_offset: i16) {
         let opcode = RT_LOAD_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!(
-                "emit_var_load: no confirmed runtime opcode for typeCtx {}",
+                "emit_typed_load: no confirmed runtime opcode for typeCtx {}",
                 type_ctx
             );
         }
-        let sym = self.arena.get(n.lhs());
-        let frame_offset = sym.type_info() as i16;
         self.stream.emit_byte(opcode);
         self.stream.emit_i16(frame_offset);
     }

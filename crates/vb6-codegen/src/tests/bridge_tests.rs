@@ -28,19 +28,22 @@ fn type_ctx_none_for_unconfirmed() {
 }
 
 #[test]
-fn value_class_maps_simple_path_types() {
-    assert_eq!(value_class(&VbaType::Integer), Some(6));
-    assert_eq!(value_class(&VbaType::Long), Some(8));
-    assert_eq!(value_class(&VbaType::Currency), Some(0xc));
+fn load_store_ctx_maps_numeric_primitives() {
+    assert_eq!(load_store_ctx(&VbaType::Integer), Some(1));
+    assert_eq!(load_store_ctx(&VbaType::Long), Some(2));
+    assert_eq!(load_store_ctx(&VbaType::Single), Some(3));
+    assert_eq!(load_store_ctx(&VbaType::Double), Some(4));
+    assert_eq!(load_store_ctx(&VbaType::Currency), Some(6));
 }
 
 #[test]
-fn value_class_none_for_complex_path_types() {
-    // Single/Double/String resolve through the not-yet-ported value-class
-    // expression branch, so no class is fabricated here.
-    assert_eq!(value_class(&VbaType::Single), None);
-    assert_eq!(value_class(&VbaType::Double), None);
-    assert_eq!(value_class(&VbaType::String), None);
+fn load_store_ctx_none_for_non_simple_types() {
+    // String/Byte assign via runtime-helper sequences; the rest are unconfirmed.
+    assert_eq!(load_store_ctx(&VbaType::String), None);
+    assert_eq!(load_store_ctx(&VbaType::Byte), None);
+    assert_eq!(load_store_ctx(&VbaType::Date), None);
+    assert_eq!(load_store_ctx(&VbaType::Object), None);
+    assert_eq!(load_store_ctx(&VbaType::Variant), None);
 }
 
 // ── Bridge emit (type → emit_reference) ──────────────────────────────────────
@@ -80,10 +83,35 @@ fn bridge_store_currency() {
 }
 
 #[test]
+fn bridge_load_single() {
+    // Single local load → 0x6e (RT_LOAD_BY_CTX[3]).
+    assert_eq!(load_bytes(&VbaType::Single, 0xff78u16 as i16), &[0x6e, 0x78, 0xff]);
+}
+
+#[test]
+fn bridge_store_single() {
+    // Single store → 0x73 (RT_STORE_BY_CTX[3]).
+    assert_eq!(store_bytes(&VbaType::Single, 0xff74u16 as i16), &[0x73, 0x74, 0xff]);
+}
+
+#[test]
+fn bridge_load_double() {
+    // Double local load → 0x6f (RT_LOAD_BY_CTX[4]).
+    assert_eq!(load_bytes(&VbaType::Double, 0xff74u16 as i16), &[0x6f, 0x74, 0xff]);
+}
+
+#[test]
+fn bridge_store_double() {
+    // Double store → 0x74 (RT_STORE_BY_CTX[4]).
+    assert_eq!(store_bytes(&VbaType::Double, 0xff6cu16 as i16), &[0x74, 0x6c, 0xff]);
+}
+
+#[test]
 fn bridge_load_unsupported_type_errors() {
+    // String assigns via a runtime-helper sequence, not a single load opcode.
     let arena = NodeArena::new();
     let mut e = Emitter::new(&arena);
-    assert_eq!(emit_local_load(&mut e, &VbaType::Single, -4), Err(UnsupportedType));
+    assert_eq!(emit_local_load(&mut e, &VbaType::String, -4), Err(UnsupportedType));
 }
 
 // ── End-to-end: ProcFrame (VB6-exact offsets) + bridge ──────────────────────
