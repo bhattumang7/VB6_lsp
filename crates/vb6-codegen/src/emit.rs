@@ -69,23 +69,10 @@ impl<'a> Emitter<'a> {
         // ── Short-opcode family (op < 0x6) ───────────────────────────────────
         if op < 0x6 {
             match op {
-                1 => todo!(
-                    "emit_expr: type-1 Dim/type-spec path — \
-                     opcodes selected by type tag; Phase 4/6"
-                ),
-                2 => unimplemented!(
-                    "emit_expr: Currency literal (op 2) — runtime literal opcode"
-                ),
-                3 => {
-                    let tag = n.type_tag();
-                    unimplemented!(
-                        "emit_expr: numeric literal (op 3, type_tag {tag}) — \
-                         runtime literal opcode"
-                    );
-                }
-                4 => unimplemented!(
-                    "emit_expr: String literal (op 4) — runtime-helper call sequence"
-                ),
+                1 => self.emit_int_literal(&n),
+                2 => self.emit_currency_literal(&n),
+                3 => self.emit_float_literal(&n, call_ctx),
+                4 => self.emit_string_literal(&n),
                 5 => unimplemented!(
                     "emit_expr: type-reference node (op 5)"
                 ),
@@ -119,46 +106,17 @@ impl<'a> Emitter<'a> {
         }
 
         // ── Arithmetic / logical binary operators (op 0x16–0x2b) ─────────────
+        // All ops with a non-sentinel RT_BINOP_BASE entry use the EbEmitBinaryOperation2
+        // arithmetic dispatch path; RT_DISPATCH_FLAG & 0x10 is 0 for every op in
+        // this range.  Ops 0x1b and 0x1c have sentinel base (0x0446) and are no-ops.
         if op < 0x2c {
             match op {
-                // String concatenation (&): EbEmitStatement case 0x1a emits
-                // 0xce (with size operand) or 0xcf directly.
-                0x1a => {
-                    self.emit_expr(n.lhs(), 0);
-                    self.emit_expr(n.rhs(), 0);
-                    todo!(
-                        "emit_expr: string concat 0x1a — \
-                         needs result type_tag to choose 0xce (sized) vs 0xcf"
-                    );
-                }
-                // MUL Currency: EbEmitStatement case 0x18 handles this specially,
-                // emitting 0xd1 (Integer RHS) or 0xb3 (other RHS) via EbEmitValue2.
-                0x18 if n.type_tag() == 13 => {
-                    self.emit_expr(n.lhs(), 0);
-                    self.emit_expr(n.rhs(), 0);
-                    todo!(
-                        "emit_expr: MUL Currency — \
-                         needs RHS type_tag to choose EbEmitValue2(0xb3) vs (0xd1)"
-                    );
-                }
-                // Is / TypeOf operator: EbEmitStatement case 0x24 emits
-                // 0xef (with size) for object type or 0xf0 for string type.
-                0x24 => {
-                    self.emit_expr(n.lhs(), 0);
-                    self.emit_expr(n.rhs(), 0);
-                    todo!(
-                        "emit_expr: Is operator 0x24 — \
-                         needs result type_tag to choose 0xef (sized) vs 0xf0"
-                    );
-                }
-                // All other binary ops: standard EbEmitBinaryOperation2 path.
-                0x16 | 0x17 | 0x18 | 0x19
-                | 0x1d ..= 0x23 | 0x25 ..= 0x2b => {
+                0x16..=0x1a | 0x1d..=0x2b => {
                     self.emit_expr(n.lhs(), 0);
                     self.emit_expr(n.rhs(), 0);
                     self.emit_binop_value(&n);
                 }
-                _ => {} // other ops in this range are no-ops
+                _ => {} // 0x1b, 0x1c have sentinel base — no runtime mapping
             }
             return;
         }
@@ -281,6 +239,97 @@ impl<'a> Emitter<'a> {
         self.stream.emit_i16(frame_offset);
     }
 
+    /// Emit a runtime integer literal (op 1).
+    ///
+    /// type_tag 3/5/6 (Integer): if the value fits in a signed byte use
+    /// n_opc=0x41a (rt_byte=0xf4) + 1 byte; otherwise n_opc=0x3b5
+    /// (rt_byte=0xf3) + 2-byte LE i16.  type_tag 8/0x10 (Long/Byte):
+    /// n_opc=0x3b8 (rt_byte=0xf5) + 4-byte LE i32.
+    fn emit_int_literal(&mut self, n: &RawNode) {
+        let tag = n.type_tag();
+        match tag {
+            3 | 5 | 6 => {
+                let val = n.word(4) as i16;
+                if val >= -128 && val < 128 {
+                    self.stream.emit_byte(RT_OPCODE_BYTE[0x41a]);
+                    self.stream.emit_byte(val as u8);
+                } else {
+                    let rt = RT_OPCODE_BYTE[0x3b5];
+                    if rt < 0xfb {
+                        self.stream.emit_byte(rt);
+                    } else {
+                        self.stream.emit_byte(rt);
+                        self.stream.emit_byte(0x3b5u16 as u8);
+                    }
+                    self.stream.emit_i16(val);
+                }
+            }
+            8 | 0x10 => {
+                self.stream.emit_byte(RT_OPCODE_BYTE[0x3b8]);
+                self.stream.emit_bytes(&n.word(4).to_le_bytes());
+            }
+            _ => unimplemented!(
+                "emit_int_literal: integer literal type_tag {tag} — \
+                 not yet mapped to a literal opcode"
+            ),
+        }
+    }
+
+    /// Emit a runtime Currency literal (op 2).
+    ///
+    /// Emits n_opc=0x3bb (rt_byte=0xf6) followed by the 8-byte LE
+    /// i64×10000 payload from `word[4]`/`word[5]`.
+    fn emit_currency_literal(&mut self, n: &RawNode) {
+        self.stream.emit_byte(RT_OPCODE_BYTE[0x3bb]);
+        self.stream.emit_bytes(&n.literal8());
+    }
+
+    /// Emit a runtime floating-point literal (op 3).
+    ///
+    /// `call_ctx == 2` selects the "assign context" n_opc variants (0x3ba for
+    /// Single, 0x3bd for Double/Date); all other call contexts use the
+    /// non-assign variants.  Single literals (type_tag 10) are converted from
+    /// the f64 stored in the node to f32 before emission; Double and Date
+    /// (type_tag 11/12) emit the raw 8-byte f64.
+    fn emit_float_literal(&mut self, n: &RawNode, call_ctx: u32) {
+        let tag = n.type_tag();
+        if tag == 10 {
+            let n_opc = if call_ctx == 2 { 0x3ba } else { 0x3b9 };
+            self.stream.emit_byte(RT_OPCODE_BYTE[n_opc]);
+            let f32_bits = (n.literal_f64() as f32).to_bits();
+            self.stream.emit_bytes(&f32_bits.to_le_bytes());
+        } else if tag > 10 && tag < 13 {
+            let n_opc = if call_ctx == 2 { 0x3bd } else { 0x3bc };
+            self.stream.emit_byte(RT_OPCODE_BYTE[n_opc]);
+            self.stream.emit_bytes(&n.literal8());
+        } else {
+            unimplemented!(
+                "emit_float_literal: op 3 type_tag {tag} not in Single/Double/Date range"
+            );
+        }
+    }
+
+    /// Emit a runtime String literal (op 4).
+    ///
+    /// Two sub-cases driven by bit 15 of `word[1]` (`node+5` byte 0x80):
+    /// * **Null/zero string** (bit set): emit n_opc=0x3b8 (rt_byte=0xf5) + 4
+    ///   zero bytes — equivalent to emitting `Long 0` as a null BSTR pointer.
+    /// * **Non-empty string** (bit clear): requires resolving a type descriptor
+    ///   from `word[4]` via the pool type system (EbExtractTypeValue2 /
+    ///   EbParseExpression2 / EbRegisterTypeInfo2), which is Phase 4 work.
+    fn emit_string_literal(&mut self, n: &RawNode) {
+        if (n.w[1] >> 15) & 1 != 0 {
+            // Null/zero string: emit as Long-zero literal.
+            self.stream.emit_byte(RT_OPCODE_BYTE[0x3b8]);
+            self.stream.emit_bytes(&[0u8; 4]);
+        } else {
+            todo!(
+                "emit_string_literal: non-null string requires pool type resolution \
+                 (EbExtractTypeValue2 / EbParseExpression2); Phase 4"
+            );
+        }
+    }
+
     /// Emit the runtime binary-operation byte(s) for `n`, using the three-level
     /// table dispatch from `EbEmitBinaryOperation2`.
     ///
@@ -329,7 +378,7 @@ impl<'a> Emitter<'a> {
         if rt_byte < 0xfb {
             self.stream.emit_byte(rt_byte);
         } else {
-            self.stream.emit_byte(0xfb);
+            self.stream.emit_byte(rt_byte);
             self.stream.emit_byte(n_opc as u8);
         }
     }
@@ -611,5 +660,142 @@ mod tests {
             emit(&a, n),
             &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc3]
         );
+    }
+
+    // ── Literal emission ──────────────────────────────────────────────────────
+
+    /// Build an integer-literal node (op=1) with the given type_tag and value.
+    fn int_lit(a: &mut NodeArena, type_tag: u16, val: i32) -> NodeRef {
+        a.alloc(NodeArena::node(1, type_tag, val as u32, 0, 0, 0))
+    }
+
+    /// Build a float-literal node (op=3) with the given type_tag.
+    /// The 8-byte f64 value is stored in word[4]/word[5].
+    fn float_lit(a: &mut NodeArena, type_tag: u16, value: f64) -> NodeRef {
+        let bits = value.to_bits();
+        let lo = bits as u32;
+        let hi = (bits >> 32) as u32;
+        a.alloc(NodeArena::node(3, type_tag, lo, hi, 0, 0))
+    }
+
+    /// Build a Currency-literal node (op=2). The value is the raw i64×10000
+    /// Currency representation, stored in word[4]/word[5].
+    fn currency_lit(a: &mut NodeArena, raw_val: i64) -> NodeRef {
+        let lo = raw_val as u32;
+        let hi = (raw_val >> 32) as u32;
+        a.alloc(NodeArena::node(2, 0, lo, hi, 0, 0))
+    }
+
+    // op=1, type_tag 6 (Integer), small value (-128..127):
+    //   n_opc=0x41a=1050 → rt_byte=0xf4 < 0xfb → emit [0xf4, value_byte]
+    #[test]
+    fn integer_small_lit_emits_f4_and_byte() {
+        let mut a = NodeArena::new();
+        let n = int_lit(&mut a, 6, 5);
+        assert_eq!(emit(&a, n), &[0xf4, 0x05]);
+    }
+
+    #[test]
+    fn integer_small_lit_negative_emits_signed_byte() {
+        let mut a = NodeArena::new();
+        let n = int_lit(&mut a, 6, -3);
+        assert_eq!(emit(&a, n), &[0xf4, 0xfd]); // -3 as u8 = 0xfd
+    }
+
+    // op=1, type_tag 6 (Integer), large value (> 127):
+    //   n_opc=0x3b5=949 → rt_byte=0xf3 < 0xfb → emit [0xf3] + i16 LE
+    #[test]
+    fn integer_large_lit_emits_f3_and_i16() {
+        let mut a = NodeArena::new();
+        let n = int_lit(&mut a, 6, 300);
+        assert_eq!(emit(&a, n), &[0xf3, 0x2c, 0x01]); // 300 = 0x012c
+    }
+
+    // op=1, type_tag 8 (Long):
+    //   n_opc=0x3b8=952 → rt_byte=0xf5 < 0xfb → emit [0xf5] + i32 LE
+    #[test]
+    fn long_lit_emits_f5_and_i32() {
+        let mut a = NodeArena::new();
+        let n = int_lit(&mut a, 8, 0x00012345);
+        assert_eq!(emit(&a, n), &[0xf5, 0x45, 0x23, 0x01, 0x00]);
+    }
+
+    // op=2 (Currency literal):
+    //   n_opc=0x3bb=955 → rt_byte=0xf6 < 0xfb → emit [0xf6] + 8 bytes raw
+    #[test]
+    fn currency_lit_emits_f6_and_8_bytes() {
+        let mut a = NodeArena::new();
+        // Currency 1.0 is stored as 10000 (i64 × 10000 scale)
+        let n = currency_lit(&mut a, 10_000);
+        let mut expected = vec![0xf6];
+        expected.extend_from_slice(&10_000_i64.to_le_bytes());
+        assert_eq!(emit(&a, n), expected.as_slice());
+    }
+
+    // op=3, type_tag=10 (Single), non-assign context (call_ctx=0):
+    //   n_opc=0x3b9=953 → rt_byte=0xf5 → emit [0xf5] + 4-byte f32 LE
+    #[test]
+    fn single_lit_non_assign_emits_f5_and_f32() {
+        let mut a = NodeArena::new();
+        let n = float_lit(&mut a, 10, 1.5_f64);
+        let mut expected = vec![0xf5];
+        expected.extend_from_slice(&(1.5_f32).to_bits().to_le_bytes());
+        assert_eq!(emit(&a, n), expected.as_slice());
+    }
+
+    // op=3, type_tag=10 (Single), assign context (call_ctx=2):
+    //   n_opc=0x3ba=954 → rt_byte=0xf9 → emit [0xf9] + 4-byte f32 LE
+    #[test]
+    fn single_lit_assign_ctx_emits_f9_and_f32() {
+        let mut a = NodeArena::new();
+        let n = float_lit(&mut a, 10, 2.0_f64);
+        let mut e = Emitter::new(&a);
+        e.emit_expr(n, 2); // call_ctx=2 = assign context
+        let mut expected = vec![0xf9];
+        expected.extend_from_slice(&(2.0_f32).to_bits().to_le_bytes());
+        assert_eq!(e.into_bytes(), expected.as_slice());
+    }
+
+    // op=3, type_tag=11 (Double), non-assign (call_ctx=0):
+    //   n_opc=0x3bc=956 → rt_byte=0xf6 → emit [0xf6] + 8-byte f64 LE
+    #[test]
+    fn double_lit_non_assign_emits_f6_and_f64() {
+        let mut a = NodeArena::new();
+        let val = 3.14_f64;
+        let n = float_lit(&mut a, 11, val);
+        let mut expected = vec![0xf6];
+        expected.extend_from_slice(&val.to_bits().to_le_bytes());
+        assert_eq!(emit(&a, n), expected.as_slice());
+    }
+
+    // op=4 (String literal), null string (word[1] bit 15 set):
+    //   EbEmitValue2(0x3b8) + EbEmitDword(0) → [0xf5, 0x00, 0x00, 0x00, 0x00]
+    #[test]
+    fn string_null_lit_emits_f5_and_four_zeros() {
+        let mut a = NodeArena::new();
+        // Set bit 15 of word[1] to indicate null string.
+        let mut n = NodeArena::node(4, 0, 0, 0, 0, 0);
+        n.w[1] = 0x8000_0000; // bit 31 of w[1] = byte 3, bit 7
+        // Wait - let me recalculate: *(byte *)((int)pNode + 5) & 0x80:
+        // byte at offset 5 from pNode = w[1] byte at offset 1 = (w[1] >> 8) & 0xff
+        // bit 0x80 of that byte = bit 15 of w[1]
+        // So check is (w[1] >> 15) & 1 which matches (n.w[1] >> 15) & 1 != 0
+        n.w[1] = 1 << 15; // bit 15 set
+        let r = a.alloc(n);
+        assert_eq!(emit(&a, r), &[0xf5, 0x00, 0x00, 0x00, 0x00]);
+    }
+
+    // op=3, type_tag=12 (Date), assign context (call_ctx=2):
+    //   n_opc=0x3bd=957 → rt_byte=0xfa → emit [0xfa] + 8-byte f64 LE
+    #[test]
+    fn date_lit_assign_ctx_emits_fa_and_f64() {
+        let mut a = NodeArena::new();
+        let val = 44_926.0_f64; // some date serial
+        let n = float_lit(&mut a, 12, val);
+        let mut e = Emitter::new(&a);
+        e.emit_expr(n, 2); // assign context
+        let mut expected = vec![0xfa];
+        expected.extend_from_slice(&val.to_bits().to_le_bytes());
+        assert_eq!(e.into_bytes(), expected.as_slice());
     }
 }

@@ -70,6 +70,11 @@ impl PcodeStream {
         self.bytes[off..off + 2].copy_from_slice(&w.to_le_bytes());
     }
 
+    /// Emit all bytes in `src`.
+    pub fn emit_bytes(&mut self, src: &[u8]) {
+        self.bytes.extend_from_slice(src);
+    }
+
     // ── Compound emit helpers ─────────────────────────────────────────────────
 
     /// Emit a 1-byte opcode followed by a 2-byte signed frame offset.  This is

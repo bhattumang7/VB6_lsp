@@ -28,9 +28,11 @@ pub mod bind;
 pub mod buffer;
 pub mod emit;
 pub mod node;
+pub mod proc_binder;
 pub mod tables;
 
 pub use bind::{DeclError, LocalVar, ProcFrame};
 pub use buffer::PcodeStream;
 pub use emit::Emitter;
 pub use node::{NodeArena, NodeRef, RawNode};
+pub use proc_binder::ProcBinder;
