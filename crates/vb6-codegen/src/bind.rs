@@ -580,6 +580,35 @@ mod tests {
     }
 
     #[test]
+    fn full_pipeline_assign_sum_of_two_longs() {
+        // `r = a + b` where a, b, r are all Long.
+        // Dim a As Long: -136 (0xff78)
+        // Dim b As Long: -140 (0xff74)
+        // Dim r As Long: -144 (0xff70)
+        // Sequence: load a, load b, ADD Long, store r.
+        // ADD Long n_opc=144, RT_OPCODE_BYTE[144]=0xaa → [0xaa]
+        // Long load opcode: 0x6c; Long store opcode: 0x71 (RT_STORE_BY_CTX[2])
+        // Expected: [0x6c,0x78,0xff, 0x6c,0x74,0xff, 0xaa, 0x71,0x70,0xff]
+        use crate::emit::Emitter;
+        let mut f = ProcFrame::new();
+        f.declare_local("a", 2).unwrap(); // Long at -136
+        f.declare_local("b", 2).unwrap(); // Long at -140
+        f.declare_local("r", 2).unwrap(); // Long at -144
+        let rv = f.resolve("r").unwrap();
+        let mut arena = NodeArena::new();
+        let la = f.make_load_node(&mut arena, "a").unwrap();
+        let lb = f.make_load_node(&mut arena, "b").unwrap();
+        let add_node = arena.alloc(NodeArena::node(0x16, 8, la.0, lb.0, 0, 0));
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(add_node, 0);
+        emitter.emit_var_store(rv.type_ctx, rv.frame_offset);
+        assert_eq!(
+            emitter.into_bytes(),
+            &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff]
+        );
+    }
+
+    #[test]
     fn full_pipeline_and_two_integers() {
         // `a And b` where a, b are Integer.
         // Dim a As Integer: -134 (0xff7a); Dim b As Integer: -136 (0xff78).
