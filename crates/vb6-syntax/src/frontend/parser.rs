@@ -1529,6 +1529,10 @@ impl<'src> Parser<'src> {
 
     fn parse_on_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume On
+        // `On Local Error …` is the explicit form of `On Error …`; `Local` is the
+        // default error scope and a reserved word, so eating it here is
+        // unambiguous and leaves the handler form unchanged. (oracle-confirmed)
+        self.eat(TokenKind::Kw(Kw::Local));
         if self.eat(TokenKind::Kw(Kw::Error)) {
             if self.eat(TokenKind::Kw(Kw::Resume)) {
                 self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);

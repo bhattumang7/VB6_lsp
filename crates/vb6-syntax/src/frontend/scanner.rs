@@ -428,7 +428,11 @@ fn expand_two_digit_year(yy: i32) -> i32 {
 }
 
 /// Parse a time string `H:MM[:SS][ AM|PM]` as a day fraction (0.0–1.0).
-fn parse_time_fraction(s: &str) -> f64 {
+///
+/// Returns `None` if the string is not a well-formed time — used so the
+/// `#…#` scanner can tell a real time literal from a `#`-operator run that
+/// merely happens to contain a colon (e.g. a `:` statement separator).
+fn parse_time_fraction_opt(s: &str) -> Option<f64> {
     let s = s.trim();
     let (time_str, ampm) = {
         let upper = s.to_ascii_uppercase();
@@ -445,41 +449,80 @@ fn parse_time_fraction(s: &str) -> f64 {
         }
     };
     let parts: Vec<&str> = time_str.trim().split(':').collect();
-    if parts.is_empty() || parts.len() > 3 {
-        return 0.0;
+    if parts.len() < 2 || parts.len() > 3 {
+        return None;
     }
-    let h = parts[0].trim().parse::<f64>().unwrap_or(0.0);
-    let m = parts.get(1).and_then(|p| p.trim().parse::<f64>().ok()).unwrap_or(0.0);
-    let sec = parts.get(2).and_then(|p| p.trim().parse::<f64>().ok()).unwrap_or(0.0);
+    let h = parts[0].trim().parse::<f64>().ok()?;
+    let m = parts[1].trim().parse::<f64>().ok()?;
+    let sec = match parts.get(2) {
+        Some(p) => p.trim().parse::<f64>().ok()?,
+        None => 0.0,
+    };
     let mut hours = h;
     if ampm == 1 && h < 12.0 { hours += 12.0; }
     if ampm == 0 && h == 12.0 { hours = 0.0; }
-    (hours * 3600.0 + m * 60.0 + sec) / 86400.0
+    Some((hours * 3600.0 + m * 60.0 + sec) / 86400.0)
 }
 
-/// Parse a VBA date literal string and return the date serial.
-fn scan_vba_date_literal(s: &str) -> f64 {
+/// True if `s` contains an English month name or its 3-letter abbreviation —
+/// recognises name-form date literals such as `#December, 24, 2000#` (whose
+/// serial this scanner does not yet compute, but which must still tokenize as a
+/// date literal rather than a `#` operator).
+fn contains_month_name(s: &str) -> bool {
+    const MONTHS: [&str; 12] = [
+        "january", "february", "march", "april", "may", "june",
+        "july", "august", "september", "october", "november", "december",
+    ];
+    s.split(|c: char| !c.is_ascii_alphabetic())
+        .filter(|w| w.len() >= 3)
+        .any(|w| {
+            let wl = w.to_ascii_lowercase();
+            MONTHS.iter().any(|&m| m == wl.as_str() || m[..3] == wl.as_str()[..3.min(wl.len())])
+        })
+}
+
+/// Parse a VBA date/time literal's inner text into a serial, or `None` if the
+/// text is not a date/time literal at all.
+///
+/// The `None` case is essential: a `#…#` run is only a literal when its body is
+/// a real date or time. `Close #1, #2` puts two `#` on one line, and without
+/// this check the scanner would greedily fuse `#1, #` into a bogus date literal.
+fn parse_vba_date_literal(s: &str) -> Option<f64> {
     let s = s.trim();
+    if s.is_empty() {
+        return None;
+    }
 
     let first_part = s.split_whitespace().next().unwrap_or(s);
     let has_date_sep = first_part.contains('/') || first_part.contains('-');
+
+    // Time-only literal: no date separator but a `H:MM[:SS]` body.
     if !has_date_sep && s.contains(':') {
-        return parse_time_fraction(s);
+        return parse_time_fraction_opt(s);
     }
 
-    let (date_part, time_part) = match s.find(' ') {
-        Some(idx) => (&s[..idx], &s[idx + 1..]),
-        None => (s, ""),
-    };
-
-    let time_frac = if time_part.is_empty() { 0.0 } else { parse_time_fraction(time_part) };
-
-    for sep in [b'/', b'-'] {
-        if let Some(serial) = parse_date_with_sep(date_part, sep) {
-            return serial + time_frac;
+    if has_date_sep {
+        let (date_part, time_part) = match s.find(' ') {
+            Some(idx) => (&s[..idx], &s[idx + 1..]),
+            None => (s, ""),
+        };
+        let time_frac = if time_part.trim().is_empty() {
+            0.0
+        } else {
+            parse_time_fraction_opt(time_part)?
+        };
+        for sep in [b'/', b'-'] {
+            if let Some(serial) = parse_date_with_sep(date_part, sep) {
+                return Some(serial + time_frac);
+            }
         }
+        return None;
     }
-    0.0
+
+    // No numeric separator and no time colon: only a month-name date qualifies
+    // (e.g. `#December, 24, 2000#`). Recognise it as a literal; serial valuation
+    // of name-form dates is a separate, pre-existing gap (valued 0.0).
+    if contains_month_name(s) { Some(0.0) } else { None }
 }
 
 /// Parse `date_part` split on `sep` into a date serial, or `None` if it does
@@ -808,7 +851,10 @@ impl<'a> Scanner<'a> {
         let content_bytes = &self.src[date_content_start..self.pos - 1];
         let span = self.span(start);
         let s = std::str::from_utf8(content_bytes).ok()?;
-        let serial = scan_vba_date_literal(s.trim());
+        // Only commit to a date literal when the body is actually a date/time;
+        // otherwise return `None` so the caller falls back to the `#` operator
+        // (e.g. the two channels in `Close #1, #2`).
+        let serial = parse_vba_date_literal(s.trim())?;
         Some(Token::lit(TokenKind::DateLit, Lit::Date(serial), span))
     }
 

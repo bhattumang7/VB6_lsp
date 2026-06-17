@@ -1776,3 +1776,79 @@ End Sub";
     assert_eq!(count_nodes(&arena, |n| matches!(n, ExprNode::Assign { .. })), 1, "one Assign (in cmdClear)");
     assert_eq!(count_nodes(&arena, |n| matches!(n, ExprNode::EndStmt)), 1, "the `End` statement → one EndStmt");
 }
+
+// ── oracle-verified gaps: variable/multi file channels and On Local Error ───────
+
+#[test]
+fn close_multiple_channels() {
+    // VB6 (VB6.EXE /make oracle): a single Close may list several channels.
+    let (_, arena, errors) = parse_stmts(b"Close #1, #2, #3");
+    assert!(!errors, "Close #1, #2, #3 must parse without errors");
+    let args = match find_node(&arena, |n| {
+        matches!(n, ExprNode::FileIoStmt { kind: FileIoKind::Close, .. })
+    })
+    .unwrap()
+    {
+        ExprNode::FileIoStmt { channel, args, .. } => {
+            assert!(channel.is_none(), "Close keeps its channels in args, not the channel slot");
+            args.clone()
+        }
+        _ => unreachable!(),
+    };
+    assert_eq!(args.len(), 3, "three listed channels → 3 args");
+    assert!(matches!(at(&arena, args[0]), ExprNode::Literal { lit: AstLit::Int(1) }), "first channel is #1");
+    assert!(matches!(at(&arena, args[1]), ExprNode::Literal { lit: AstLit::Int(2) }), "second channel is #2");
+    assert!(matches!(at(&arena, args[2]), ExprNode::Literal { lit: AstLit::Int(3) }), "third channel is #3");
+}
+
+#[test]
+fn print_variable_channel() {
+    // VB6 (VB6.EXE /make oracle): the file channel may be a variable, not a literal.
+    // The channel must be captured as the variable's NameRef, never folded into an
+    // opaque literal token.
+    let (_, arena, errors) = parse_stmts(b"Dim f As Integer\nf = 1\nPrint #f, \"x\"");
+    assert!(!errors, "Print #f, ... (variable channel) must parse without errors");
+    let (channel, args) = match find_node(&arena, |n| {
+        matches!(n, ExprNode::FileIoStmt { kind: FileIoKind::Print, .. })
+    })
+    .unwrap()
+    {
+        ExprNode::FileIoStmt { channel, args, .. } => (*channel, args.clone()),
+        _ => unreachable!(),
+    };
+    let ch = channel.expect("Print #f records a channel");
+    assert!(
+        matches!(at(&arena, ch), ExprNode::NameRef { .. }),
+        "the channel is the variable f (NameRef), not a literal",
+    );
+    assert_eq!(args.len(), 1, "one print item");
+    assert!(matches!(at(&arena, args[0]), ExprNode::Literal { lit: AstLit::Str(_) }), "the item is the string \"x\"");
+}
+
+#[test]
+fn on_local_error_goto_label() {
+    // VB6 (VB6.EXE /make oracle): `On Local Error GoTo` is the explicit form of
+    // `On Error GoTo` and must build the same handler node.
+    let (_, arena, errors) = parse_stmts(b"On Local Error GoTo h\nExit Sub\nh:");
+    assert!(!errors, "On Local Error GoTo must parse without errors");
+    assert_eq!(
+        count_nodes(&arena, |n| matches!(
+            n,
+            ExprNode::OnError { kind: OnErrorKind::Goto(LabelRef::Name(_)) }
+        )),
+        1,
+        "On Local Error GoTo <label> → one OnError {{ Goto(Name) }}",
+    );
+}
+
+#[test]
+fn on_local_error_resume_next() {
+    // VB6 (VB6.EXE /make oracle): `On Local Error Resume Next` is accepted.
+    let (_, arena, errors) = parse_stmts(b"On Local Error Resume Next");
+    assert!(!errors, "On Local Error Resume Next must parse without errors");
+    assert_eq!(
+        count_nodes(&arena, |n| matches!(n, ExprNode::OnError { kind: OnErrorKind::ResumeNext })),
+        1,
+        "On Local Error Resume Next → one OnError {{ ResumeNext }}",
+    );
+}
