@@ -783,6 +783,19 @@ fn lower_binop(
     let lhs_ref = lower_expr_coerced(ctx, lhs_id, expr_arena, arena, operand_coerce)?;
     let rhs_ref = lower_expr_coerced(ctx, rhs_id, expr_arena, arena, operand_coerce)?;
 
+    // Power (`^`) is its own bound-node opcode (0x1a) and always yields Double.
+    // It is byte-exact only when both operands are already Double (no operand
+    // coercion to emit); other operand types need the coercion machinery, so
+    // they are left unsupported rather than mis-emitted.
+    if op == BinOpKind::Pow {
+        let both_double = matches!(lhs_ty, Some(VbaType::Double))
+            && matches!(rhs_ty, Some(VbaType::Double));
+        if !both_double {
+            return Err(LowerError::UnsupportedType);
+        }
+        return Ok(arena.alloc(NodeArena::node(0x1a, 11, lhs_ref.0, rhs_ref.0, 0, 0)));
+    }
+
     let opcode = binop_node_opcode(op).ok_or(LowerError::UnsupportedNode)?;
 
     let type_tag = if is_comparison_op(op) {

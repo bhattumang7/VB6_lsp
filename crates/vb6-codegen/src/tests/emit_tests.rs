@@ -1261,6 +1261,22 @@ fn negate_currency_emits_operand_then_0xf6() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+// ── Power operator (case 0x1a) ───────────────────────────────────────────────
+//
+// case 0x1a emits both operands (context 2) then opcode 0xcf for the numeric
+// (non-object) form, with no extra validation for a Double result.
+
+#[test]
+fn pow_double_emits_operands_then_0xcf() {
+    let mut a = NodeArena::new();
+    let lhs = var_load_typed(&mut a, 11, 4, 0xff74u16 as i16); // Double [0x6f,0x74,0xff]
+    let rhs = var_load_typed(&mut a, 11, 4, 0xff6cu16 as i16); // Double [0x6f,0x6c,0xff]
+    let n = a.alloc(NodeArena::node(0x1a, 11, lhs.0, rhs.0, 0, 0));
+    let mut expected = vec![0x6f, 0x74, 0xff, 0x6f, 0x6c, 0xff];
+    expected.extend(v2(0xcf));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── Call-opcode computation kernel (RT_CALL_TYPECODE + inline map) ───────────
 //
 // The call emitter computes its base opcode as map(type_code(kind,ref,mask)).
