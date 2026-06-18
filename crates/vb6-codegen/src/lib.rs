@@ -33,6 +33,7 @@ pub mod node;
 pub mod proc_binder;
 pub mod sym_record;
 pub mod tables;
+pub mod type_pool;
 
 pub use bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame, PROC_PARAM_BASE};
 pub use buffer::PcodeStream;
@@ -41,3 +42,4 @@ pub use lower::{lower_proc, global_frame_from_types, LowerError};
 pub use node::{NodeArena, NodeRef, RawNode};
 pub use proc_binder::ProcBinder;
 pub use sym_record::{CalleeTypeInfo, MemberRecord};
+pub use type_pool::TypePool;
