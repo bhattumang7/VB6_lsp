@@ -1775,22 +1775,25 @@ fn case_0x48_traverse_then_0x158_no_dispatch_in_0x20000_region() {
 #[test]
 fn case_0x6e_emits_target_opcode_and_pooled_word() {
     // flags 0 → opcode 0x398; target child (region 0) → context 6 (GL0); byte5
-    // bit 0x80 clear → pooled type word (index 0); word[8]=0 → no member word.
+    // bit 0x80 clear → pooled type word (index 0). 0x6e always forces the member
+    // word (fHasArg = 1), so word[8] (0) is emitted even though it is zero.
     let mut a = NodeArena::new();
     let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
     let child = global_long_load(&mut a, 0);
     let n = a.alloc(NodeArena::node(0x6e, 0, child.0, 0, 0, 0x99)); // w4=child, w7=type value
     let mut expected = GL0.to_vec();
     expected.extend(v2(0x398));
-    expected.extend_from_slice(&[0x00, 0x00]);
+    expected.extend_from_slice(&[0x00, 0x00]); // pooled type word
+    expected.extend_from_slice(&[0x00, 0x00]); // member word (forced by fHasArg)
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
 #[test]
 fn case_0x6c_walks_arg_then_emits_target_opcode_member_word() {
     // 0x6c walks word[5] (a non-list arg that emits nothing), then the target
-    // (GL0), opcode 0x39b (0x443-0xa8 for a non-object target), pooled word, and
-    // the member word (has_arg forced since flags bit 0x8000 is clear).
+    // (GL0), opcode 0x39b (0x443-0xa8 for a non-object target), and the pooled
+    // word. With flags 0 the member word is NOT forced (fHasArg = (0x2000 set) =
+    // false) and word[8] is zero, so no member word is emitted.
     let mut a = NodeArena::new();
     let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
     let arg = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // opcode 0 → emits nothing
@@ -1798,7 +1801,25 @@ fn case_0x6c_walks_arg_then_emits_target_opcode_member_word() {
     let n = a.alloc(NodeArena::node(0x6c, 0, child.0, arg.0, 0, 0x99)); // w4=child, w5=arg, w7=type
     let mut expected = GL0.to_vec();
     expected.extend(v2(0x39b));
-    expected.extend_from_slice(&[0x00, 0x00, 0x00, 0x00]); // pooled word + member word
+    expected.extend_from_slice(&[0x00, 0x00]); // pooled word only
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x6c_member_word_forced_when_0x2000_set() {
+    // With flags bit 0x2000 set, fHasArg is true, so the (zero) member word is
+    // emitted. Opcode: 0x8000 clear, 0x2000 set, non-object child → 0x39c.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let arg = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0x6c, 0, child.0, arg.0, 0, 0x99);
+    node.w[1] = 0x2000;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x39c));
+    expected.extend_from_slice(&[0x00, 0x00]); // pooled word
+    expected.extend_from_slice(&[0x00, 0x00]); // member word (forced by 0x2000)
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 

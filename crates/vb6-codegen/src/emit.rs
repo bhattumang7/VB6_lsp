@@ -1043,7 +1043,7 @@ impl<'a> Emitter<'a> {
                         0x444
                     }
                 };
-                let has_arg = f & 0x8000 == 0;
+                let has_arg = f & 0x2000 != 0;
                 self.emit_instruction2(node, opcode as usize, has_arg, false);
                 return 0;
             }
@@ -1060,7 +1060,7 @@ impl<'a> Emitter<'a> {
                         0x445
                     }
                 };
-                self.emit_instruction2(node, opcode as usize, false, false);
+                self.emit_instruction2(node, opcode as usize, true, false);
                 return 0;
             }
             // case 0x6e: instruction.
@@ -1073,7 +1073,7 @@ impl<'a> Emitter<'a> {
                 } else {
                     0x3a6 + if f & 0x8000 != 0 { 4 } else { 0 }
                 };
-                self.emit_instruction2(node, opcode as usize, false, false);
+                self.emit_instruction2(node, opcode as usize, true, false);
                 return 0;
             }
             // case 0x72: member type-node coercion, then binary operation.
