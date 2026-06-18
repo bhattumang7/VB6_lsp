@@ -611,7 +611,7 @@ fn ref_bytes(desc: &crate::emit::RefDescriptor, n_op: i32, f_flags: u32, n_type:
 }
 
 fn local_desc(offset: i16) -> crate::emit::RefDescriptor {
-    crate::emit::RefDescriptor { kind: 1, operand: offset as u16, word6: 0, word8: 0 }
+    crate::emit::RefDescriptor { kind: 1, operand: offset as u16, word6: 0, word8: 0, flags1: 0 }
 }
 
 #[test]
@@ -668,7 +668,7 @@ fn emit_reference_kind1_nop1_long_normal_load() {
     let u_var7 = 0x1e0i32;
     let expected_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
     let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
-    let desc = crate::emit::RefDescriptor { kind: 1, operand: 0xff7au16, word6: 0, word8: 0 };
+    let desc = crate::emit::RefDescriptor { kind: 1, operand: 0xff7au16, word6: 0, word8: 0, flags1: 0 };
     let bytes = ref_bytes(&desc, 1, 0, 2);
     // emit_opcode2(expected_idx, 0xff7a):
     // emit_value2(expected_idx) → [expected_opcode] (if < 0xfb)
@@ -699,8 +699,8 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
     let nop2_base = nop2_idx | u_var7;
     if nop2_idx == 3 || nop2_idx == 4 { nop2_idx = nop2_base + 6; } else { nop2_idx = nop2_base; }
     // byref (word6 bit 0 = 1) → n_op becomes 2.
-    let desc_byref = crate::emit::RefDescriptor { kind: 2, operand: 0x000c, word6: 1, word8: 0 };
-    let desc_byval = crate::emit::RefDescriptor { kind: 2, operand: 0x000c, word6: 0, word8: 0 };
+    let desc_byref = crate::emit::RefDescriptor { kind: 2, operand: 0x000c, word6: 1, word8: 0, flags1: 0 };
+    let desc_byval = crate::emit::RefDescriptor { kind: 2, operand: 0x000c, word6: 0, word8: 0, flags1: 0 };
     let b_byref = ref_bytes(&desc_byref, 1, 0, 2);
     let b_byval = ref_bytes(&desc_byval, 1, 0, 2);
     // The byref descriptor produces nOp==2 output, byval produces nOp==1.
@@ -708,6 +708,96 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
     let op_byval = RT_OPCODE_BYTE[nop1_idx as usize];
     assert_eq!(b_byval[0], op_byval);
     assert_eq!(b_byref[0], op_byref);
+}
+
+// ── value-emitter operator-reference kinds (8/9/0xb) ─────────────────────────
+// (uses the `opc2` opcode+operand helper defined later in this module)
+
+#[test]
+fn emit_reference_kind8_nop5_emits_opcode_then_two_words() {
+    // kind 8, nOp 5: opcode 0x3ca (nOp==5 ⇒ +0), operand = word6, then word8
+    // and the +10 operand word; the finalize tail returns cleanly at nOp 5.
+    let desc = crate::emit::RefDescriptor {
+        kind: 8, operand: 0x3333, word6: 0x1111, word8: 0x2222, flags1: 0,
+    };
+    let bytes = ref_bytes(&desc, 5, 0, 0);
+    let mut want = opc2(0x3ca, 0x1111);
+    want.extend_from_slice(&0x2222u16.to_le_bytes());
+    want.extend_from_slice(&0x3333u16.to_le_bytes());
+    assert_eq!(bytes, want);
+}
+
+#[test]
+fn emit_reference_kind8_nop1_uses_0x3cb() {
+    // nOp != 5 ⇒ opcode 0x3cb. nOp 1 also drives the finalize tail into the
+    // gated re-entry, so only the leading opcode is asserted here via nOp 5
+    // vs nOp 6-without-flag is unavailable; assert the opcode index instead.
+    let desc = crate::emit::RefDescriptor {
+        kind: 8, operand: 0, word6: 0x44, word8: 0, flags1: 0,
+    };
+    // nOp 6 with flags1 bit 0x04 clear → tail returns cleanly.
+    let bytes = ref_bytes(&desc, 6, 0, 0);
+    let mut want = opc2(0x3cb, 0x44);
+    want.extend_from_slice(&0u16.to_le_bytes());
+    want.extend_from_slice(&0u16.to_le_bytes());
+    assert_eq!(bytes, want);
+}
+
+#[test]
+fn emit_reference_kind9_nop5_emits_0x18e() {
+    // kind 9, nOp 5: opcode (nOp==5)+0x18d = 0x18e, operand = word6.
+    let desc = crate::emit::RefDescriptor {
+        kind: 9, operand: 0, word6: 0x55, word8: 0, flags1: 0,
+    };
+    let bytes = ref_bytes(&desc, 5, 0, 0);
+    assert_eq!(bytes, opc2(0x18e, 0x55));
+}
+
+#[test]
+fn emit_reference_kind9_variant_normalizes_nop1_to_5() {
+    // n_type 0x12 with nOp 1 normalizes nOp→5, so opcode (nOp==5)+0x18d=0x18e.
+    let desc = crate::emit::RefDescriptor {
+        kind: 9, operand: 0, word6: 0x66, word8: 0, flags1: 0,
+    };
+    let bytes = ref_bytes(&desc, 1, 0, 0x12);
+    assert_eq!(bytes, opc2(0x18e, 0x66));
+}
+
+#[test]
+fn emit_reference_kindb_nop5_emits_0x407_then_word6() {
+    // kind 0xb, nOp 5: opcode (nOp==5)+0x406 = 0x407, operand = word8, then word6.
+    let desc = crate::emit::RefDescriptor {
+        kind: 0xb, operand: 0, word6: 0x77, word8: 0x88, flags1: 0,
+    };
+    let bytes = ref_bytes(&desc, 5, 0, 0);
+    let mut want = opc2(0x407, 0x88);
+    want.extend_from_slice(&0x77u16.to_le_bytes());
+    assert_eq!(bytes, want);
+}
+
+// ── value-emitter typed-store conversion (0x8000 path) ───────────────────────
+
+#[test]
+fn emit_reference_store_conversion_uses_conv_table() {
+    use crate::tables::{EXPR_STORE_CONV, RT_TYPE_OFFSET};
+    // kind 1 (base 0x1e0), nOp 4 (store), flag 0x8000 set, 0x20 / 0x40 clear.
+    // n_type 8 → RT_TYPE_OFFSET[8] = 2 (a valid conversion class).
+    let n_type = 8;
+    assert_eq!(RT_TYPE_OFFSET[n_type as usize], 2);
+    let desc = crate::emit::RefDescriptor {
+        kind: 1, operand: 0x0010, word6: 0, word8: 0, flags1: 0,
+    };
+    // f_flags = 0x8000: inv12 = 1, inv11 = 1 → sub = 3.
+    let conv = EXPR_STORE_CONV[0][3] as i32; // 0x01
+    let expected_idx = (conv + 0x10 + 0x1e0) as usize;
+    let bytes = ref_bytes(&desc, 4, 0x8000, n_type);
+    assert_eq!(bytes, opc2(expected_idx, 0x0010));
+
+    // f_flags = 0x9000 (adds 0x1000): inv12 = 0, inv11 = 1 → sub = 1.
+    let conv1 = EXPR_STORE_CONV[0][1] as i32;
+    let idx1 = (conv1 + 0x10 + 0x1e0) as usize;
+    let bytes1 = ref_bytes(&desc, 4, 0x9000, n_type);
+    assert_eq!(bytes1, opc2(idx1, 0x0010));
 }
 
 // ── emit_assign_op (case 0xe, op-kind 0) ─────────────────────────────────────

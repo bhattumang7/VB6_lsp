@@ -171,6 +171,28 @@ pub const RT_TYPE_OFFSET: [i32; 28] = [
        19, 19, 2, 0, 
 ];
 
+/// Store-conversion offset table for the typed-store path of the value emitter.
+///
+/// When a typed store carries a conversion (the store flags have bit `0x8000`
+/// set and bit `0x20` clear), the store opcode is
+/// `opcode_base + 0x10 + EXPR_STORE_CONV[type_offset][sub]`, where
+/// `type_offset` is the destination's [`RT_TYPE_OFFSET`] class (valid here for
+/// classes 2..=9) and `sub = 2*inv12 + inv11` is built from the inverted store
+/// flag bits `0x1000` (→ `inv12`) and `0x800` (→ `inv11`).
+///
+/// Row `i` is `type_offset == i + 2`; column is `sub` (0..=3). Classes 0/1
+/// never reach this path, so they are not represented.
+pub const EXPR_STORE_CONV: [[u8; 4]; 8] = [
+    [0x00, 0x00, 0x00, 0x01], // type offset 2
+    [0x08, 0x08, 0x02, 0x02], // type offset 3
+    [0x03, 0x08, 0x08, 0x04], // type offset 4
+    [0x05, 0x06, 0x07, 0x00], // type offset 5
+    [0x0d, 0x0b, 0x0e, 0x0c], // type offset 6
+    [0x00, 0x00, 0x00, 0x00], // type offset 7
+    [0x08, 0x08, 0x0f, 0x0f], // type offset 8
+    [0x00, 0x00, 0x00, 0x00], // type offset 9
+];
+
 /// Runtime opcode byte table indexed by opcode N (one 2-byte slot per entry;
 /// only the first byte is used).
 /// If the byte is < 0xfb: emit 1 byte.

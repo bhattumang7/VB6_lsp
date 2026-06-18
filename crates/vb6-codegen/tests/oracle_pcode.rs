@@ -197,7 +197,7 @@ fn double_add() {
 
 /// Local-variable descriptor (kind 1) at the given frame offset.
 fn local(offset: i16) -> RefDescriptor {
-    RefDescriptor { kind: 1, operand: offset as u16, word6: 0, word8: 0 }
+    RefDescriptor { kind: 1, operand: offset as u16, word6: 0, word8: 0, flags1: 0 }
 }
 
 fn ref_bytes(desc: &RefDescriptor, n_op: i32, value_class: i32) -> Vec<u8> {

@@ -66,15 +66,20 @@ pub fn map_call_type_code(code: u16) -> u16 {
 /// * `operand` — the 2-byte operand emitted after the opcode (a local's signed
 ///   frame offset, or a type size).
 /// * `word6` — for argument / global kinds, bit 0 marks a ByRef slot (forces the
-///   ByRef operation path).
-/// * `word8` — extra trailing word, emitted only on the nested-type-expression
+///   ByRef operation path). For the operator-reference kinds (8/9/0xb) it is the
+///   opcode operand word (descriptor `+6`).
+/// * `word8` — the descriptor's `+8` low word: the trailing word for kind 8, the
+///   opcode operand for kind 0xb, and the extra word on the nested-type-expression
 ///   path (reached via the Variant-with-type chain).
+/// * `flags1` — the descriptor's `+4` flag byte; bit `0x04` gates the finalize
+///   tail for the operator-reference kinds.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct RefDescriptor {
     pub kind: i32,
     pub operand: u16,
     pub word6: u16,
     pub word8: u16,
+    pub flags1: u8,
 }
 
 /// A resolved call site — the input to [`Emitter::emit_call`]. The binder
@@ -1460,6 +1465,42 @@ impl<'a> Emitter<'a> {
         // reached via the deferred nType==0x17 chain, so it is always 1 here.
         let emit_mode: i16 = 1;
         let operand_word: u16 = desc.operand;
+
+        // Operator-reference descriptor kinds (8/9/0xb) emit their opcode
+        // directly from the descriptor (no resolver-supplied base) and finish
+        // through the shared finalize tail.
+        match desc.kind {
+            // kind 8: typed coercion reference. Opcode `0x3ca`/`0x3cb` by nOp,
+            // operand = descriptor `+6`; then the `+8` low word and the `+10`
+            // operand word.
+            8 => {
+                self.emit_opcode2(((n_op != 5) as i32 + 0x3ca) as usize, desc.word6);
+                self.emit_word2(desc.word8);
+                self.emit_word2(desc.operand);
+                self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
+                return;
+            }
+            // kind 9: operator reference. nOp is normalized first; opcode
+            // `0x18d`/`0x18e` by nOp, operand = descriptor `+6`.
+            9 => {
+                Self::map_operator_type(n_type, &mut n_op);
+                self.emit_opcode2(((n_op == 5) as i32 + 0x18d) as usize, desc.word6);
+                self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
+                return;
+            }
+            // kind 0xb: typed operator reference. nOp normalized; opcode
+            // `0x406`/`0x407` by nOp, operand = descriptor `+8` low word; then
+            // the `+6` word.
+            0xb => {
+                Self::map_operator_type(n_type, &mut n_op);
+                self.emit_opcode2(((n_op == 5) as i32 + 0x406) as usize, desc.word8);
+                self.emit_word2(desc.word6);
+                self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
+                return;
+            }
+            _ => {}
+        }
+
         let opcode_base: i32;
 
         match desc.kind {
@@ -1487,13 +1528,8 @@ impl<'a> Emitter<'a> {
                  the full module compilation context",
                 desc.kind
             ),
-            // kinds 8/9/0xb: member / typed reference — needs the module symbol
-            // table and compiled type descriptors.
-            8 | 9 | 0xb => unimplemented!(
-                "reference kind {} (member/typed): needs the module symbol table \
-                 and compiled type descriptors",
-                desc.kind
-            ),
+            // kinds 8/9/0xb handled above (operator-reference direct emission).
+            8 | 9 | 0xb => unreachable!(),
             // default: needs the resolver-supplied opcode base.
             _ => unimplemented!(
                 "reference kind {} (default): needs the resolver-supplied opcode \
@@ -1614,12 +1650,22 @@ impl<'a> Emitter<'a> {
                         v = 0x439;
                     }
                 } else if f_flags & 0x20 == 0 {
-                    // A small conversion table indexed by two inverted flag bits
-                    // and the type offset; that table is not yet available.
-                    unimplemented!(
-                        "store conversion (0x8000 path): conversion table not yet \
-                         available; Phase 4"
-                    );
+                    // Store with conversion: opcode = base + 0x10 +
+                    // EXPR_STORE_CONV[type offset][sub], where sub combines the
+                    // inverted flag bits 0x1000 and 0x800. Reached only for type
+                    // offsets 2..=9 (the table's valid domain).
+                    use crate::tables::EXPR_STORE_CONV;
+                    if !(2..=9).contains(&off3) {
+                        unimplemented!(
+                            "store conversion (0x8000 path) for type offset {off3}: \
+                             outside the conversion table domain"
+                        );
+                    }
+                    let inv12 = 1 - ((f_flags >> 0xc) & 1) as i32;
+                    let inv11 = 1 - ((f_flags >> 0xb) & 1) as i32;
+                    let sub = (2 * inv12 + inv11) as usize;
+                    let conv = EXPR_STORE_CONV[(off3 - 2) as usize][sub] as i32;
+                    v = conv + 0x10 + opcode_base;
                 } else {
                     v = (if f_flags & 0x800 != 0 { 2 } else { 0 }) + 0x1b7;
                 }
@@ -1669,6 +1715,38 @@ impl<'a> Emitter<'a> {
                 self.stream.emit_word(desc.word8);
             }
         }
+    }
+
+    /// Normalize an operator nOp: for a Variant / fixed-string operand type
+    /// (`0x12` / `0x11`) the load/store/coerce operations (1/2/3) collapse to the
+    /// Variant operation (5).
+    fn map_operator_type(n_type: i32, n_op: &mut i32) {
+        if (n_type == 0x12 || n_type == 0x11) && (*n_op == 1 || *n_op == 2 || *n_op == 3) {
+            *n_op = 5;
+        }
+    }
+
+    /// The shared finalize tail of the operator-reference value-emitter kinds
+    /// (8/9/0xb). For a value/store operation (nOp not 5/6, or nOp 6 with the
+    /// descriptor's `+4` bit `0x04` set) it re-enters the value emitter with a
+    /// freshly-built coercion descriptor — that recursion's opcode base is
+    /// supplied by the resolver's register state and is not reproducible without
+    /// the full module context, so it stays gated. nOp 5 (and nOp 6 without the
+    /// flag) finishes cleanly here.
+    fn expr2_finalize_tail(&mut self, n_op: i32, _f_flags: u32, _n_type: i32, flags1: u8) {
+        if n_op == 5 || n_op == 6 {
+            if n_op != 6 {
+                return;
+            }
+            if flags1 & 4 == 0 {
+                return;
+            }
+        }
+        unimplemented!(
+            "value-emitter finalize tail (EbBuildExprDescriptor): the re-entry \
+             coercion descriptor's opcode base is resolver-supplied; reached for \
+             nOp {n_op}"
+        );
     }
 
     // ── Output primitives ────────────────────────────────────────────────────
