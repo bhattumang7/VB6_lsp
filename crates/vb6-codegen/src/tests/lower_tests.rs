@@ -4,7 +4,6 @@ use vb6_sema::sema::{
     BoundModule, BoundParam, BoundProc, BoundVar, NameResolution, ParamFlags, VbaType,
 };
 use vb6_syntax::frontend::ast::{BinOpKind, ExprArena, ExprNode, ProcKind};
-use vb6_syntax::frontend::diagnostics::Diagnostics;
 use vb6_syntax::frontend::token::{Span, TypeSuffix};
 use vb6_syntax::support::arena::NodeId;
 

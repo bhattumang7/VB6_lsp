@@ -273,30 +273,15 @@ pub const RT_OPCODE_BYTE: [u8; 1096] = [
 ];
 
 
-/// Maps VB6 internal type-kind code (hi16 of node word\[0\] as i32) to a
-/// type-class index used to compute the `=` store-opcode index.
-/// 28 entries (indices 0–27).  Class 9 = String-like (remapped to 1 before
-/// opcode addition), class 10 = Object-like (remapped to 4 on the Currency
-/// sub-path), class 19 = no-emit sentinel.
+/// Store-opcode base table for `=` assignment, indexed by the destination's
+/// type-offset class (`RT_TYPE_OFFSET[dest_type_tag]`).  14 entries (class 0–13).
 ///
-/// NOTE: provisional. This recodes the store-opcode selection in terms of a
-/// class index; it reproduces the confirmed numeric-scalar store bytes but the
-/// variant / currency / object combinations are not yet independently verified.
-pub const RT_TYPE_KIND_CLASS: [i32; 28] = [
-    19, 19, 19,  9, 19,
-     0,  1, 19,  2, 19,
-     3,  4, 10,  5, 19,
-     6,  7, 14, 19, 19,
-    12, 19,  8,  2, 19,
-    19,  2,  0,
-];
-
-/// Maps type-class index (output of [`RT_TYPE_KIND_CLASS`]) to the base store
-/// opcode index.  14 entries (indices 0–13).
-/// Final index = `RT_ASSIGN_BASE_OPCODE[lhs_class] + rhs_class` (rhs class 9
-/// is remapped to 1 and class 10 is remapped to 4 before addition).
-/// Provisional alongside [`RT_TYPE_KIND_CLASS`] — see its note.
-pub const RT_ASSIGN_BASE_OPCODE: [i32; 14] = [
+/// The store opcode is `RT_ASSIGN_STORE_OPCODE[RT_TYPE_OFFSET[dest_tag]] + adj`,
+/// where `adj` is the source's type-offset class (with 10 -> 4 and 9 -> 1
+/// applied).  Class 8 (0x446) is the invalid/default slot; classes 12–13 are
+/// unused (0).  (The class index comes from [`RT_TYPE_OFFSET`] directly — there
+/// is no separate kind-class table.)
+pub const RT_ASSIGN_STORE_OPCODE: [i32; 14] = [
     0x10c, 0x114, 0x11c, 0x124, 0x12c,
     0x104, 0x267, 0x0fc, 0x446, 0x150,
     0x12c, 0x293, 0x000, 0x000,

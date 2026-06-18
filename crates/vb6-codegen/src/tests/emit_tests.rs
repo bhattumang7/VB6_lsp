@@ -766,23 +766,52 @@ fn assign_variant_group_no_flag_emits_nothing() {
 
 #[test]
 fn assign_default_numeric_kind5_emits_fc0c() {
-    // LHS kind=5 and RHS kind=5: falls to the default numeric path.
-    // RT_TYPE_KIND_CLASS[5]=0 → RT_ASSIGN_BASE_OPCODE[0]=0x10c.
-    // rhs_class = RT_TYPE_KIND_CLASS[5] = 0 → emit_value2(0 + 0x10c = 0x10c = 268).
-    // RT_OPCODE_BYTE[268]: row 33 (line 191 of tables), col 4 = 0xfc → [0xfc, 0x0c].
+    // dest kind=5, src kind=5: generic store path.
+    // base = RT_ASSIGN_STORE_OPCODE[RT_TYPE_OFFSET[5]=0] = 0x10c;
+    // adjust(src=5) = RT_TYPE_OFFSET[5] = 0 → emit 0x10c.
+    // RT_OPCODE_BYTE[0x10c] = 0xfc → [0xfc, 0x0c].
     let (a, n) = assign_node(5, 5);
     assert_eq!(emit(&a, n), &[0xfc, 0x0c]);
 }
 
 #[test]
 fn assign_default_numeric_kind6_same_emits_fc15() {
-    // LHS kind=6, RHS kind=6: RT_TYPE_KIND_CLASS[6]=1 → RT_ASSIGN_BASE_OPCODE[1]=0x114.
-    // rhs_class=1 → emit_value2(1 + 0x114 = 0x115 = 277).
-    // RT_OPCODE_BYTE[277]: row 34 (line 192 of tables), col 5 = 0xfc → [0xfc, 0x15].
-    // (kind 6 is not in the Variant group {10,0xb,0xc} so the default numeric path runs.)
+    // dest kind=6, src kind=6: base = RT_ASSIGN_STORE_OPCODE[RT_TYPE_OFFSET[6]=1] = 0x114;
+    // adjust(src=6) = 1 → emit 0x115. RT_OPCODE_BYTE[0x115] = 0xfc → [0xfc, 0x15].
+    // (kind 6 is not in the Variant group {10,0xb,0xc} so the generic path runs.)
     let (a, n) = assign_node(6, 6);
     assert_eq!(emit(&a, n), &[0xfc, 0x15]);
 }
+
+#[test]
+fn assign_currency_src_into_long_emits_0x3c8() {
+    // src kind 0xc (Currency, src_hi 0xc0000), dest kind 0x10 (not in {10,b,c},
+    // not object/currency dest) → direct opcode 0x3c8.
+    let (a, n) = assign_node(0x10, 0xc);
+    assert_eq!(emit(&a, n), v2(0x3c8).as_slice());
+}
+
+#[test]
+fn assign_single_src_into_kind5_emits_0x138() {
+    // src kind 3 (src_hi 0x30000), dest kind 5 → direct opcode 0x138.
+    let (a, n) = assign_node(5, 3);
+    assert_eq!(emit(&a, n), v2(0x138).as_slice());
+}
+
+#[test]
+fn assign_single_src_into_kind10_emits_0x3c7() {
+    // src kind 3 (src_hi 0x30000), dest kind 0x10 → direct opcode 0x3c7.
+    let (a, n) = assign_node(0x10, 3);
+    assert_eq!(emit(&a, n), v2(0x3c7).as_slice());
+}
+
+#[test]
+fn assign_single_src_into_kind6_emits_nothing() {
+    // src kind 3 (src_hi 0x30000), dest kind 6 → no store opcode.
+    let (a, n) = assign_node(6, 3);
+    assert_eq!(emit(&a, n), &[]);
+}
+
 
 // ── traverse_node_tree ────────────────────────────────────────────────────────
 //

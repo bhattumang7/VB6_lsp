@@ -1256,26 +1256,64 @@ impl<'a> Emitter<'a> {
 
     // ── Store-opcode selection for `=` assignment ────────────────────────────
 
-    /// Emit the store opcode for a simple `=` assignment after the value has
-    /// already been pushed. `n` is the assignment node; the source is `word[4]`.
-    fn emit_assign_op(&mut self, n: &RawNode) {
-        use crate::tables::{RT_ASSIGN_BASE_OPCODE, RT_TYPE_KIND_CLASS};
-
-        let lhs_hi = n.w[0] & 0xffff0000;
-        if lhs_hi == 0xf0000 {
-            // Object target: needs the type-descriptor model.
+    /// Store-opcode base for a destination type tag: the entry of
+    /// [`RT_ASSIGN_STORE_OPCODE`] at the destination's type-offset class.
+    /// Type tags whose class falls outside the store-opcode table are not valid
+    /// assignment destinations on this path.
+    fn assign_store_base(dest_tag: i32) -> i32 {
+        use crate::tables::RT_ASSIGN_STORE_OPCODE;
+        let class = RT_TYPE_OFFSET[dest_tag as usize] as usize;
+        if class >= RT_ASSIGN_STORE_OPCODE.len() {
             unimplemented!(
-                "assignment to an object-typed target: needs the type-descriptor \
-                 model; Phase 4"
+                "assignment store for type-offset class {class}: outside the \
+                 store-opcode table; Phase 4"
             );
         }
+        RT_ASSIGN_STORE_OPCODE[class]
+    }
 
-        let rhs_node = *self.arena.get(NodeRef(n.w[4]));
+    /// Source-class adjustment added to the store base: the source's type-offset
+    /// class, with `10 -> 4` and `9 -> 1` applied.
+    fn assign_source_adjust(src_tag: i32) -> i32 {
+        match RT_TYPE_OFFSET[src_tag as usize] {
+            10 => 4,
+            9 => 1,
+            c => c,
+        }
+    }
 
-        if lhs_hi == 0xc0000 {
-            // Currency target: special source-kind dispatch.
-            let rhs_kind = (rhs_node.w[0] as i32) >> 16;
-            match rhs_kind {
+    /// Emit the store opcode for a simple `=` assignment after the value has
+    /// already been pushed. `n` is the assignment node; the source is `word[4]`.
+    ///
+    /// The general store opcode is `assign_store_base(dest) + assign_source_adjust(src)`,
+    /// with direct opcodes for specific Variant / Currency / Boolean / object
+    /// type pairs.
+    fn emit_assign_op(&mut self, n: &RawNode) {
+        let source = *self.arena.get(NodeRef(n.w[4]));
+        let dest_hi = n.w[0] & 0xffff_0000;
+        let dest_tag = (n.w[0] as i32) >> 16;
+        let src_tag = (source.w[0] as i32) >> 16;
+
+        // Object destination: a sized store. Sources whose type tag is in
+        // [3, 0x17] go through a per-source-type sub-dispatch that emits size
+        // operand words (needs the type-descriptor model); any other source
+        // uses the store table with a trailing size operand.
+        if dest_hi == 0xf0000 {
+            let size = self.emit_get_type_size3(n.w[6]);
+            if ((src_tag - 3) as u32) < 0x15 {
+                unimplemented!(
+                    "sized object/UDT store (per-source-type sub-dispatch emitting \
+                     size operand words); needs the type-descriptor model; Phase 4"
+                );
+            }
+            let opcode = Self::assign_source_adjust(src_tag) + Self::assign_store_base(dest_tag);
+            self.emit_opcode2(opcode as usize, size as u16);
+            return;
+        }
+
+        // Currency destination: direct opcodes for specific source kinds.
+        if dest_hi == 0xc0000 {
+            match src_tag {
                 0xb => { self.emit_value2(0x147); return; }
                 0xf => { self.emit_value2(0x14f); return; }
                 0x10 => { self.emit_value2(0x3c9); return; }
@@ -1283,78 +1321,68 @@ impl<'a> Emitter<'a> {
             }
         }
 
-        let lhs_kind = (n.w[0] as i32) >> 16;
-        let rhs_kind = (rhs_node.w[0] as i32) >> 16;
-
-        // Variant / ByRef / Currency triple-type group (both sides in {10,0xb,0xc}).
-        if matches!(lhs_kind, 10 | 0xb | 0xc) && matches!(rhs_kind, 10 | 0xb | 0xc) {
+        // Both sides Variant / ByRef-Variant / Currency: guarded table store.
+        if matches!(dest_tag, 10 | 0xb | 0xc) && matches!(src_tag, 10 | 0xb | 0xc) {
             // Flag-byte bit 0x80 clear → handled elsewhere (no-op here).
             if (n.w[1] >> 8) & 0x80 == 0 {
                 return;
             }
-            let rhs_class = RT_TYPE_KIND_CLASS[rhs_kind as usize];
-            let lhs_class = RT_TYPE_KIND_CLASS[lhs_kind as usize];
-            let lhs_base = RT_ASSIGN_BASE_OPCODE[lhs_class as usize];
-            if rhs_class == 10 {
-                self.emit_value2((lhs_base + 4) as usize);
+            let base = Self::assign_store_base(dest_tag);
+            if RT_TYPE_OFFSET[src_tag as usize] == 10 {
+                self.emit_value2((base + 4) as usize);
                 return;
             }
-            let mut rhs_offset = rhs_class;
-            if rhs_offset == 9 { rhs_offset = 1; }
-            self.emit_value2((rhs_offset + lhs_base) as usize);
+            self.emit_value2((Self::assign_source_adjust(src_tag) + base) as usize);
             return;
         }
 
-        // General case: inspect the source's high half for special source types.
-        let rhs_hi = rhs_node.w[0] & 0xffff0000;
-        if rhs_hi == 0xc0000 {
-            // Currency source into a non-Currency target.
-            match lhs_kind {
+        // Otherwise inspect the source's type region for special stores.
+        let src_hi = source.w[0] & 0xffff_0000;
+        if src_hi == 0xc0000 {
+            // Currency source into a non-Currency destination.
+            match dest_tag {
                 0xf => { self.emit_value2(0x2fb); return; }
                 0x10 => { self.emit_value2(0x3c8); return; }
                 _ => {}
             }
         }
-        if rhs_hi == 0x30000 {
-            // Boolean source.
-            match lhs_kind {
+        if src_hi == 0x30000 {
+            match dest_tag {
                 5 => { self.emit_value2(0x138); return; }
                 6 => { return; }
                 0x10 => { self.emit_value2(0x3c7); return; }
                 _ => {}
             }
         }
-        if rhs_hi == 0x110000 {
+        if src_hi == 0x110000 {
             // Fixed-length string source: needs the type-length lookup.
             unimplemented!(
-                "fixed-length string source: needs the type-length lookup; Phase 4"
+                "fixed-length string source store: needs the type-length lookup; Phase 4"
             );
         }
-        if rhs_hi == 0xf0000 {
-            // Object source: needs the object-reference resolution path.
-            if lhs_hi == 0x140000 {
+        if src_hi == 0xf0000 {
+            // Object source into a Variant / TypeOf destination.
+            if dest_hi == 0x140000 {
                 unimplemented!(
-                    "object source into Variant target: needs the object-reference \
+                    "object source into a Variant target: needs the object-reference \
                      resolution path; Phase 4"
                 );
             }
-            if lhs_hi == 0x120000 {
+            if dest_hi == 0x120000 {
                 unimplemented!(
-                    "object source into TypeOf target: needs the object-reference \
+                    "object source into a TypeOf target: needs the object-reference \
                      resolution path; Phase 4"
                 );
             }
         }
 
-        // Default numeric path.
-        let lhs_base = RT_ASSIGN_BASE_OPCODE[RT_TYPE_KIND_CLASS[lhs_kind as usize] as usize];
-        let mut rhs_offset = RT_TYPE_KIND_CLASS[rhs_kind as usize];
-        if rhs_offset == 10 {
-            self.emit_value2((lhs_base + 4) as usize);
+        // Generic store: base from destination, adjustment from source.
+        let base = Self::assign_store_base(dest_tag);
+        if RT_TYPE_OFFSET[src_tag as usize] == 10 {
+            self.emit_value2((base + 4) as usize);
             return;
         }
-        if rhs_offset == 9 { rhs_offset = 1; }
-        self.emit_value2((rhs_offset + lhs_base) as usize);
+        self.emit_value2((Self::assign_source_adjust(src_tag) + base) as usize);
     }
 
     /// Emit a module-level global variable store. The opcode is
