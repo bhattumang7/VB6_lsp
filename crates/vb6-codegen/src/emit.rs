@@ -792,14 +792,21 @@ impl<'a> Emitter<'a> {
                 }
                 0x29f
             }
-            // case 0x69: binary-operation setup + reference emission.
+            // case 0x69: binary-operation setup + reference emission — needs the
+            // reference-resolution helpers (FUN_0fae5b47 / FUN_0fab397a).
             0x69 => unimplemented!(
-                "binary-operation setup + reference emission; Phase 5"
+                "binary-operation setup + reference emission (FUN_0fae5b47/FUN_0fab397a); Phase 5"
             ),
-            // case 0x6a: member-call instruction: needs the type-descriptor model.
-            0x6a => unimplemented!(
-                "member-call instruction: needs the type-descriptor model; Phase 5"
-            ),
+            // case 0x6a: member-call instruction. Process the argument list, emit
+            // the callee reference, and propagate the op-class (word[1] bits 8..9)
+            // as the sub-result.
+            0x6a => {
+                if n.w[5] != 0 {
+                    self.process_linked_list(NodeRef(n.w[5]), 3);
+                }
+                self.emit_expr(NodeRef(n.w[4]), 1);
+                return (n.w[1] & 0x300) >> 8;
+            }
             // case 0x6b: store/let instruction. Opcode selected by flags and the
             // target's type region, then per-type validation.
             0x6b => {

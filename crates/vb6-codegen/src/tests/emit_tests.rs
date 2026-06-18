@@ -1572,6 +1572,16 @@ fn case_0x6c_walks_arg_then_emits_target_opcode_member_word() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x6a_emits_callee_reference() {
+    // No argument list; emit the callee (GL0) with context 1; op-class 0.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x6a, 0, child.0, 0, 0, 0)); // w4=child, w5=0
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]
