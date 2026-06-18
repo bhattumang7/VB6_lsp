@@ -577,10 +577,48 @@ impl<'a> Emitter<'a> {
                 self.emit_opcode2(0x20f, size as u16);
                 return 0;
             }
-            // case 0x41: argument-list emission with per-argument type sizes.
-            0x41 => unimplemented!(
-                "argument-list emission: needs per-argument type sizes; Phase 4"
-            ),
+            // case 0x41: argument-list emission. Emit the list opcode (selected by
+            // op-class and flag 0x8000), with the argument count when > 1, then each
+            // argument's resolved type size as a trailing word.
+            0x41 => {
+                let flags = n.w[1] & 0xffff;
+                let adj = if flags & 0x8000 != 0 { 0x119 } else { 0 };
+                let opcode = match (flags & 0x300) >> 8 {
+                    0 => 0x3b2 - adj,
+                    1 => 0x3b3 - adj,
+                    2 => 0x3b4 - adj,
+                    _ => unimplemented!(
+                        "argument-list op-class 3: opcode undefined in the decompile"
+                    ),
+                };
+                let mut count: u16 = 1;
+                let mut cur = NodeRef(n.w[5]);
+                if flags & 0x8000 == 0 {
+                    let n5 = *self.arena.get(cur);
+                    count = self.arena.get(NodeRef(n5.w[4])).w[4] as u16;
+                    cur = NodeRef(n5.w[5]);
+                }
+                if count < 2 {
+                    self.emit_value2(opcode as usize);
+                } else {
+                    self.emit_opcode2(opcode as usize, count * 2);
+                }
+                while cur.0 != 0 {
+                    let c = *self.arena.get(cur);
+                    let (mut elem, next) = if c.w[0] & 0xffff == 0x37 {
+                        (NodeRef(c.w[4]), NodeRef(c.w[5]))
+                    } else {
+                        (cur, NodeRef(0))
+                    };
+                    while self.arena.get(elem).w[0] & 0xffff == 0x11 {
+                        elem = NodeRef(self.arena.get(elem).w[4]);
+                    }
+                    let sz = self.emit_get_type_size3(self.arena.get(elem).w[5]);
+                    self.emit_word2(sz as u16);
+                    cur = next;
+                }
+                return 0;
+            }
             // cases 0x42 / 0x43: dispatch-type resolution (FUN_0faf2756).
             0x42 => unimplemented!("dispatch-type resolution (form 0); Phase 5"),
             0x43 => unimplemented!("dispatch-type resolution (form 1); Phase 5"),

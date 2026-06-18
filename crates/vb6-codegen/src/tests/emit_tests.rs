@@ -1694,6 +1694,22 @@ fn case_0x6e_with_member_emits_arglist_first() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x41_arglist_single_arg_emits_size_word() {
+    // flag 0x8000 set, op-class 0 → opcode 0x3b2-0x119=0x299; count stays 1 →
+    // bare opcode; one argument with a size-4 descriptor → trailing word 0x0004.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let type_desc = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0)); // kind 4, size 4
+    let arg = a.alloc(NodeArena::node(0, 0, 0, type_desc.0, 0, 0)); // word[5]=desc
+    let mut raw = NodeArena::node(0x41, 0, 0, arg.0, 0, 0); // word[5]=arg
+    raw.w[1] = 0x8000;
+    let n = a.alloc(raw);
+    let mut expected = v2(0x299);
+    expected.extend_from_slice(&[0x04, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]
