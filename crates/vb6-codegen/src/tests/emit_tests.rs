@@ -1702,6 +1702,19 @@ fn case_0x67_emits_child_then_pooled_0x2f5() {
 }
 
 #[test]
+fn case_0x68_member_ref_160000_child_emits_0x2f2_then_pooled_word() {
+    // node region 0x160000, child region 0x160000, context != 6 → opcode 0x2f2
+    // then the pooled type value from word[5].
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = a.alloc(NodeArena::node(0x1b, 0x16, 0, 0, 0, 0)); // region 0x160000, emits nothing
+    let n = a.alloc(NodeArena::node(0x68, 0x16, child.0, 0x99, 0, 0)); // region 0x160000, word[5]=type
+    let mut expected = v2(0x2f2);
+    expected.extend_from_slice(&[0x00, 0x00]); // pool index 0
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
 fn case_0x63_emits_child_then_0x38d_for_non_object() {
     let mut a = NodeArena::new();
     let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));

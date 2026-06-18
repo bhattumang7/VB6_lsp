@@ -922,33 +922,38 @@ impl<'a> Emitter<'a> {
                 return 0;
             }
             // case 0x68: emit child, then (context 6) opcode 0x29f, else a
-            // type-class-selected opcode.
+            // type-class-selected opcode. For a `0x160000`-region node with a
+            // `0x160000`-region child the opcode is `0x2f2` followed by the
+            // pooled type value (`word[5]`). An object-typed child selects its
+            // opcode from the type descriptor's attribute / optional flags, which
+            // need the type-descriptor attribute model and stay gated.
             0x68 => {
                 let child = n.lhs();
                 self.emit_expr(child, 1);
                 if context != 6 {
                     let cn = *self.arena.get(child);
+                    let child_hi = cn.w[0] & 0xffff_0000;
                     let mut needs_word = false;
                     let mut value = context;
                     if node_hi == 0x160000 {
-                        if (cn.w[0] & 0xffff_0000) == 0xf0000 {
+                        if child_hi == 0xf0000 {
                             unimplemented!(
-                                "member reference (object child): needs the symbol \
-                                 table; Phase 5"
+                                "member reference (object child): opcode from the \
+                                 type-descriptor attribute / optional flags \
+                                 (EbGetAttributeFlags); needs the type-descriptor \
+                                 model; Phase 5"
                             );
-                        } else if (cn.w[0] & 0xffff_0000) == 0x160000 {
+                        } else if child_hi == 0x160000 {
                             needs_word = true;
                             value = 0x2f2;
                         }
                     }
                     self.emit_value2(value as usize);
-                    if !needs_word {
-                        return 0;
+                    if needs_word {
+                        let w = self.type_pool.extract_type_value2(n.w[5]);
+                        self.emit_word2(w);
                     }
-                    unimplemented!(
-                        "member reference (trailing word): needs the type/string \
-                         pool; Phase 4"
-                    );
+                    return 0;
                 }
                 0x29f
             }
