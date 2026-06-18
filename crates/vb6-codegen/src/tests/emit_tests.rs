@@ -1653,6 +1653,29 @@ fn case_0xc_expression_code_0xf_child_sized_opcode() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x5a_complex_binop_branch2() {
+    // flags 0x4000 set, 0x2000/0x8000 clear → traverse (nothing), emit operand
+    // (GL0), opcode 0x390, then the two type words 0x22 and 0x11.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let dummy = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // traverse target → nothing
+    let gl = global_long_load(&mut a, 0); // emit operand → GL0
+    let n5w4 = a.alloc(NodeArena::node(0, 0, 0x11, 0, 0, 0)); // uvar2 source
+    let b1w4 = a.alloc(NodeArena::node(0, 0, 0x22, 0, 0, 0)); // uvar3 source
+    let b1 = a.alloc(NodeArena::node(0, 0, b1w4.0, dummy.0, 0, 0));
+    let b0 = a.alloc(NodeArena::node(0, 0, gl.0, b1.0, 0, 0));
+    let n5 = a.alloc(NodeArena::node(0, 0, n5w4.0, b0.0, 0, 0));
+    let mut raw = NodeArena::node(0x5a, 0, 0, n5.0, 0, 0);
+    raw.w[1] = 0x4000;
+    let n = a.alloc(raw);
+
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x390));
+    expected.extend_from_slice(&[0x22, 0x00, 0x11, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

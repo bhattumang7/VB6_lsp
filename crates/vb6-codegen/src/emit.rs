@@ -722,7 +722,10 @@ impl<'a> Emitter<'a> {
                 0x1c1
             }
             // case 0x5a: complex binary operation.
-            0x5a => unimplemented!("complex binary operation; Phase 5"),
+            0x5a => {
+                self.emit_complex_binary_op(node);
+                return 0;
+            }
             // case 0x5c: opcode 0x162.
             0x5c => 0x162,
             // case 0x5d: type-library-driven cast.
@@ -1206,6 +1209,73 @@ impl<'a> Emitter<'a> {
             }
             self.emit_validate_type_operation(0xf, 0, mode);
         }
+    }
+
+    /// Read the type-word operand a complex-binop sub-node contributes: the
+    /// source type node (`p`) gives a literal type code (`0x01`), a pooled value
+    /// (`0x11` indirect / `0x6f`), or the fallback value.
+    fn complex_binop_type_word(&mut self, p: NodeRef, fallback: u32) -> u16 {
+        let pn = *self.arena.get(p);
+        let s9 = (pn.w[0] as u16 as i16) as i32;
+        if s9 == 1 {
+            pn.w[4] as u16
+        } else if s9 == 0x11 {
+            self.type_pool.extract_type_value2(self.arena.get(NodeRef(pn.w[4])).w[4])
+        } else if s9 == 0x6f {
+            self.type_pool.extract_type_value2(pn.w[4])
+        } else {
+            fallback as u16
+        }
+    }
+
+    /// Emit a complex binary operation (`EbEmitComplexBinaryOp`): three flag-driven
+    /// shapes (`0x4000`/`0x2000`/`0x8000`) over a nested operand tree, each
+    /// emitting the operand, an opcode, and the type/operand words.
+    fn emit_complex_binary_op(&mut self, node: NodeRef) {
+        let n = *self.arena.get(node);
+        let flags = n.w[1] & 0xffff;
+        if flags & 0x4000 == 0 {
+            let n5 = *self.arena.get(NodeRef(n.w[5]));
+            let uvar2 = self.arena.get(NodeRef(n5.w[4])).w[4] as u16;
+            let an = *self.arena.get(NodeRef(n5.w[5]));
+            let uvar3 = self.arena.get(NodeRef(an.w[4])).w[4] as u16;
+            let i10n = *self.arena.get(NodeRef(an.w[5]));
+            let uvar6 = i10n.w[4];
+            let bn = *self.arena.get(NodeRef(i10n.w[5]));
+            let uvar11 = self.complex_binop_type_word(NodeRef(bn.w[4]), uvar6);
+            let bw5 = *self.arena.get(NodeRef(bn.w[5]));
+            let uvar4 = self.arena.get(NodeRef(bw5.w[4])).w[4] as u16;
+            self.traverse_node_tree(NodeRef(bw5.w[5]), 1);
+            self.emit_expr(NodeRef(uvar6), 1);
+            let opcode = ((flags & 0x8000) | 0x1c7_0000) >> 0xf;
+            self.emit_opcode2(opcode as usize, uvar4);
+            self.emit_word2(uvar11);
+            self.emit_word2(uvar3);
+            self.emit_word2(uvar2);
+            return;
+        }
+        let n5 = *self.arena.get(NodeRef(n.w[5]));
+        let b0 = *self.arena.get(NodeRef(n5.w[5]));
+        let uvar8 = b0.w[4];
+        let uvar2 = self.arena.get(NodeRef(n5.w[4])).w[4] as u16;
+        let b1 = *self.arena.get(NodeRef(b0.w[5]));
+        let uvar3 = self.arena.get(NodeRef(b1.w[4])).w[4] as u16;
+        if flags & 0x2000 == 0 {
+            self.traverse_node_tree(NodeRef(b1.w[5]), 1);
+            self.emit_expr(NodeRef(uvar8), 1);
+            let opcode = ((flags & 0x8000) | 0x1c8_0000) >> 0xf;
+            self.emit_opcode2(opcode as usize, uvar3);
+            self.emit_word2(uvar2);
+            return;
+        }
+        let b2 = *self.arena.get(NodeRef(b1.w[5]));
+        let word = self.complex_binop_type_word(NodeRef(b2.w[4]), b1.w[5]);
+        self.traverse_node_tree(NodeRef(b2.w[5]), 1);
+        self.emit_expr(NodeRef(uvar8), 1);
+        let opcode = if flags & 0x8000 != 0 { 0x43c } else { 0x43b };
+        self.emit_opcode2(opcode, uvar3);
+        self.emit_word2(uvar2);
+        self.emit_word2(word);
     }
 
     /// Post-operation operand dispatch (`EbDispatchOpcodeToEmitter`): walk `depth`
