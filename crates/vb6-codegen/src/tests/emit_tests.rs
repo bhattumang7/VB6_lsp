@@ -1624,6 +1624,21 @@ fn case_0x38_emits_member_size_0x20d() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x12_member_deref_0x160000_0x67_emits_pooled_2f6() {
+    // node region 0x160000 with a 0x67 child: emit the grandchild (context 5),
+    // then the pooled member opcode 0x2f6.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let grandchild = global_long_load(&mut a, 0);
+    let child = a.alloc(NodeArena::node(0x67, 0, grandchild.0, 0x99, 0, 0)); // w4=gc, w5=type
+    let n = a.alloc(NodeArena::node(0x12, 0x16, child.0, 0, 0, 0)); // region 0x160000, w4=child
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x2f6));
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

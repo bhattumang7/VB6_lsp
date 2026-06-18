@@ -381,9 +381,11 @@ impl<'a> Emitter<'a> {
                 let child = n.lhs();
                 let cn = *self.arena.get(child);
                 if node_hi == 0x160000 && (cn.w[0] & 0xffff) == 0x67 {
-                    unimplemented!(
-                        "typed member dereference: needs the type/string pool; Phase 4"
-                    );
+                    self.emit_expr(NodeRef(cn.w[4]), 5);
+                    let opcode = if context == 6 { 0x2f7 } else { 0x2f6 };
+                    let v = self.type_pool.extract_type_value2(cn.w[5]);
+                    self.emit_opcode2(opcode, v);
+                    return 0;
                 }
                 if node_hi == 0xf0000 && (cn.w[0] & 0xffff_0000) == 0x170000 {
                     self.emit_expr(child, 2);
