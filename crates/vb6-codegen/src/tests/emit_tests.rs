@@ -1323,6 +1323,61 @@ fn map_call_type_code_covers_every_entry() {
     assert_eq!(map_call_type_code(0x000), 0x446);
 }
 
+// ── Call site: common (emit_mode 0) by-reference path + finalize ─────────────
+//
+// A by-reference method/Sub call (convention kind 4, ByRef) whose callee node
+// carries the 0x20000 type region: emit the callee with context 6, the call
+// opcode (base 0x320 from RT_CALL_TYPECODE[5], + 0xc for the 0x20000 region =
+// 0x32c), then the finalize step's trailing member-id word. The selected
+// dispatch record's 0x08 bit drives a per-type validation that emits nothing
+// for a type-tag-2 operation, so the call site ends at the member word.
+
+#[test]
+fn emit_call_byref_common_path_emits_callee_opcode_then_member_word() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // null sentinel at idx 0
+    let callee = global_long_load(&mut a, 0); // emits GL0 (context-independent)
+    let desc = CallDescriptor {
+        kind: 4,
+        byref: 1,
+        flags: 0,
+        node_word0: 0x0002_0000, // region 0x20000, type tag 2
+        callee,
+        arg_list: _null, // index 0 → no argument list
+        member_id: 0x0007,
+        size: 0,
+    };
+    let mut e = Emitter::new(&a);
+    e.emit_call(&desc, 0);
+
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x32c)); // call opcode 0x320 + 0xc
+    expected.extend_from_slice(&[0x07, 0x00]); // finalize trailing member-id word
+    assert_eq!(e.into_bytes(), expected);
+}
+
+// The finalize step's type-node path (call node type region 0x140000) builds a
+// synthetic dispatch-type node and re-enters the emitter — it needs the type-
+// pool allocator, so it must remain explicitly gated, never silently skipped.
+#[test]
+#[should_panic(expected = "region 0x140000")]
+fn emit_call_finalize_type_node_region_is_gated() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let callee = global_long_load(&mut a, 0);
+    let desc = CallDescriptor {
+        kind: 4,
+        byref: 1,
+        flags: 0,
+        node_word0: 0x0014_0000, // region 0x140000 → gated type-node path
+        callee,
+        arg_list: _null,
+        member_id: 1,
+        size: 0,
+    };
+    Emitter::new(&a).emit_call(&desc, 0);
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

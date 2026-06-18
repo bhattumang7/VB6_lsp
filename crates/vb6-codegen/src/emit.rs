@@ -1499,7 +1499,7 @@ impl<'a> Emitter<'a> {
     /// early-bound dispatch lookup, the type-expression argument path, the
     /// value-returning (ByVal) result-type path, and the coercion sequence — are
     /// `unimplemented!()` with what they require.
-    pub fn emit_call(&mut self, desc: &CallDescriptor, _context: u32) -> u32 {
+    pub fn emit_call(&mut self, desc: &CallDescriptor, context: u32) -> u32 {
         let kind = desc.kind;
         let byref = desc.byref;
         let flags = desc.flags;
@@ -1590,23 +1590,47 @@ impl<'a> Emitter<'a> {
             self.emit_word2(desc.size);
         }
         match emit_mode {
-            0 => {}
-            1 => self.emit_word2(desc.member_id),
+            // Common path: the finalize step emits the member-id word, then the
+            // per-type tail.
+            0 => self.finalize_call(desc, rec_1d, desc.member_id, context),
+            // Dispatch path: the member-id word is emitted here; the finalize
+            // step's trailing word is a type-pool lookup of node[9], which the
+            // pool subsystem (not yet built) must supply.
+            1 => {
+                self.emit_word2(desc.member_id);
+                unimplemented!(
+                    "call dispatch finalize word (emit mode 1): the trailing word \
+                     is a type-pool lookup of node[9]; needs the type pool; Phase 5"
+                );
+            }
             _ => unimplemented!(
                 "call result-descriptor path (emit mode 2): needs the struct-size / \
                  member-type model; Phase 5"
             ),
         }
-        // The call site does not end here: a finalize step emits one more
-        // trailing word (whose value is a register-passed parameter not
-        // recoverable from the current decompile) followed by conditional
-        // per-type validation. Until that word is pinned, the call site cannot
-        // be byte-exact — so emit_call stops short rather than emit a partial
-        // (and therefore wrong) sequence.
-        unimplemented!(
-            "call finalize: emits a trailing word of undetermined value then \
-             conditional validation; needs the finalize routine's parameters"
-        )
+        0
+    }
+
+    /// The call-site finalize step: emit the caller-supplied `trailing` word,
+    /// then — driven by the call node's type region — either re-enter the
+    /// emitter on a synthetic dispatch-type node (gated; needs the type-pool
+    /// allocator) or emit the per-type validation opcode. The `0xf0000` /
+    /// dispatch-record `0x08` cases validate; everything else terminates the
+    /// call site after the trailing word.
+    fn finalize_call(&mut self, desc: &CallDescriptor, rec_1d: u8, trailing: u16, context: u32) {
+        self.emit_word2(trailing);
+        let region = desc.node_word0 & 0xffff_0000;
+        if region == 0x140000 {
+            unimplemented!(
+                "call finalize type-node path (region 0x140000): builds a 0x60 \
+                 dispatch-type node and re-enters the emitter; needs the type-pool \
+                 allocator; Phase 5"
+            );
+        }
+        if rec_1d & 8 != 0 || region == 0xf_0000 {
+            let type_tag = (desc.node_word0 as i32) >> 16;
+            self.emit_validate_type_operation(type_tag, 0, context);
+        }
     }
 }
 
