@@ -1540,6 +1540,38 @@ fn case_0x48_traverse_then_0x158_no_dispatch_in_0x20000_region() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+// ── Instruction-emitter cases (EbEmitInstruction2) ───────────────────────────
+
+#[test]
+fn case_0x6e_emits_target_opcode_and_pooled_word() {
+    // flags 0 → opcode 0x398; target child (region 0) → context 6 (GL0); byte5
+    // bit 0x80 clear → pooled type word (index 0); word[8]=0 → no member word.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x6e, 0, child.0, 0, 0, 0x99)); // w4=child, w7=type value
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x398));
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x6c_walks_arg_then_emits_target_opcode_member_word() {
+    // 0x6c walks word[5] (a non-list arg that emits nothing), then the target
+    // (GL0), opcode 0x39b (0x443-0xa8 for a non-object target), pooled word, and
+    // the member word (has_arg forced since flags bit 0x8000 is clear).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let arg = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // opcode 0 → emits nothing
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x6c, 0, child.0, arg.0, 0, 0x99)); // w4=child, w5=arg, w7=type
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x39b));
+    expected.extend_from_slice(&[0x00, 0x00, 0x00, 0x00]); // pooled word + member word
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

@@ -800,8 +800,84 @@ impl<'a> Emitter<'a> {
             0x6a => unimplemented!(
                 "member-call instruction: needs the type-descriptor model; Phase 5"
             ),
-            // cases 0x6b..=0x6e: instruction emitter.
-            0x6b | 0x6c | 0x6d | 0x6e => unimplemented!("instruction emitter; Phase 5"),
+            // case 0x6b: store/let instruction. Opcode selected by flags and the
+            // target's type region, then per-type validation.
+            0x6b => {
+                let f = n.w[1] & 0xffff;
+                let sub4 = if f & 0x800 != 0 { 4 } else { 0 };
+                let w8 = (n.w[8] as i16) != 0;
+                let opcode: i32 = if f & 0x8000 == 0 {
+                    if f & 0x4000 == 0 {
+                        let child_region = self.arena.get(NodeRef(n.w[4])).w[0] & 0xffff_0000;
+                        if child_region == 0xf_0000 {
+                            (if w8 { 0x442 } else { 0x441 }) - sub4
+                        } else {
+                            0x399 + w8 as i32
+                        }
+                    } else {
+                        0x3a7
+                    }
+                } else if f & 0x4000 == 0 {
+                    0x3a1 + w8 as i32
+                } else {
+                    0x3ab
+                };
+                self.emit_instruction2(node, opcode as usize, false, true);
+                return self.emit_validate_type_operation(type_tag, 0x17, context);
+            }
+            // case 0x6c: assignment/copy instruction.
+            0x6c => {
+                let f = n.w[1] & 0xffff;
+                let opcode: i32 = if f & 0x8000 != 0 {
+                    if f & 0x2000 == 0 {
+                        0x3a3
+                    } else {
+                        ((f & 0x4000) >> 0xb) as i32 | 0x3a4
+                    }
+                } else if f & 0x2000 == 0 {
+                    let child_region = self.arena.get(NodeRef(n.w[4])).w[0] & 0xffff_0000;
+                    0x443 - if child_region != 0xf_0000 { 0xa8 } else { 0 }
+                } else {
+                    let child_region = self.arena.get(NodeRef(n.w[4])).w[0] & 0xffff_0000;
+                    if child_region != 0xf_0000 {
+                        0x39c + if f & 0x4000 != 0 { 0xc } else { 0 }
+                    } else {
+                        0x444
+                    }
+                };
+                let has_arg = f & 0x8000 == 0;
+                self.emit_instruction2(node, opcode as usize, has_arg, false);
+                return 0;
+            }
+            // case 0x6d: instruction.
+            0x6d => {
+                let f = n.w[1] & 0xffff;
+                let opcode: i32 = if f & 0x4000 != 0 {
+                    ((f & 0x8000) >> 0xd) as i32 | 0x3a9
+                } else {
+                    let child_region = self.arena.get(NodeRef(n.w[4])).w[0] & 0xffff_0000;
+                    if child_region != 0xf_0000 {
+                        0x39d + if f & 0x8000 != 0 { 8 } else { 0 }
+                    } else {
+                        0x445
+                    }
+                };
+                self.emit_instruction2(node, opcode as usize, false, false);
+                return 0;
+            }
+            // case 0x6e: instruction.
+            0x6e => {
+                let f = n.w[1] & 0xffff;
+                let opcode: i32 = if f & 0x1000 != 0 {
+                    0x40c
+                } else if f & 0x4000 == 0 {
+                    0x398 + if f & 0x8000 != 0 { 8 } else { 0 }
+                } else {
+                    0x3a6 + if f & 0x8000 != 0 { 4 } else { 0 }
+                };
+                self.emit_instruction2(node, opcode as usize, false, false);
+                return 0;
+            }
             // case 0x72: member type-node coercion, then binary operation.
             0x72 => unimplemented!(
                 "member type-node coercion: needs type-node construction; Phase 4"
@@ -1063,6 +1139,60 @@ impl<'a> Emitter<'a> {
             node = NodeRef(self.arena.get(node).w[4]);
         }
         self.emit_expr(node, if type_tag != 0x17 { 2 } else { 5 });
+    }
+
+    /// Emit a method/instruction site (`EbEmitInstruction2`): for `0x6c`/`0x6d`
+    /// nodes first emit the resolved argument operand, then the target reference
+    /// (context 5 for an object, else 6), the instruction opcode, an optional
+    /// argument-size word (flag `0x4000`), the call result-size word (`is_call`),
+    /// the type-pool index or 4-byte payload, and the trailing member word.
+    fn emit_instruction2(&mut self, node: NodeRef, opcode: usize, has_arg: bool, is_call: bool) {
+        let n = *self.arena.get(node);
+        let op = n.w[0] & 0xffff;
+        if op == 0x6c || op == 0x6d {
+            let mut cur = NodeRef(n.w[5]);
+            loop {
+                let c = *self.arena.get(cur);
+                if c.w[0] & 0xffff != 0x37 {
+                    break;
+                }
+                cur = NodeRef(if c.w[5] != 0 { c.w[5] } else { c.w[4] });
+            }
+            self.emit_expr(cur, 3);
+        }
+        let child_region = self.arena.get(NodeRef(n.w[4])).w[0] & 0xffff_0000;
+        let ctx = if child_region == 0xf_0000 { 5 } else { 6 };
+        self.emit_expr(NodeRef(n.w[4]), ctx);
+        self.emit_value2(opcode);
+        if n.w[1] & 0x4000 != 0 {
+            // word[8] high half (`node + 0x22`) is an argument count.
+            let cnt = (n.w[8] >> 16) as i16 as i32;
+            let mut v = if n.w[1] & 0x8000 == 0 { (cnt + 2) << 1 } else { (cnt << 2) + 6 };
+            if is_call {
+                v += 2;
+            }
+            self.emit_word2(v as u16);
+        }
+        if is_call {
+            let sz = self.emit_get_type_size3(n.w[6]);
+            self.emit_word2(sz as u16);
+        }
+        let byte5 = (n.w[1] >> 8) & 0xff;
+        if byte5 & 0x80 == 0 {
+            let v = self.type_pool.extract_type_value2(n.w[7]);
+            self.emit_word2(v);
+        } else {
+            self.emit_dword(n.w[7]);
+        }
+        if (n.w[8] as i16) != 0 || has_arg {
+            self.emit_word2(n.w[8] as u16);
+        }
+        if byte5 & 0x40 != 0 {
+            unimplemented!(
+                "instruction trailing expr-tree (byte5 0x40): needs EbFindActualNode / \
+                 EbTraverseExprTree3; Phase 5"
+            );
+        }
     }
 
     // ── Resolved-reference emission ──────────────────────────────────────────
