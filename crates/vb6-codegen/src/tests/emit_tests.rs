@@ -1460,6 +1460,86 @@ fn case_0x52_operator_class0_traverse_then_0x177() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+// ── Operand-dispatch + pooled member-reference cases ─────────────────────────
+
+#[test]
+fn case_0x66_emits_pooled_member_opcode_0x2f4() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let n = a.alloc(NodeArena::node(0x66, 0, 0, 0x99, 0, 0)); // word[5]=0x99 type value
+    let mut expected = v2(0x2f4);
+    expected.extend_from_slice(&[0x00, 0x00]); // pool index 0
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x67_emits_child_then_pooled_0x2f5() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x67, 0, child.0, 0x99, 0, 0)); // word[4]=child, word[5]=type
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x2f5));
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x63_emits_child_then_0x38d_for_non_object() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0); // region 0 (not 0xf0000) → 0x38d
+    let n = a.alloc(NodeArena::node(0x63, 0, child.0, 0x99, 0, 0));
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x38d));
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x3f_emits_member_size_opcode_0x20f() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let type_desc = a.alloc(NodeArena::node(4, 0, 0x10, 0, 0, 0)); // kind 4, size 0x10
+    let child = a.alloc(NodeArena::node(0, 0, 0, type_desc.0, 0, 0)); // word[5]=type_desc
+    let n = a.alloc(NodeArena::node(0x3f, 0, child.0, 0, 0, 0)); // word[4]=child, word[5]=0
+    let mut expected = v2(0x20f);
+    expected.extend_from_slice(&[0x10, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x3e_no_member_emits_0x1c3() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let inner = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // word[4]=0 (no member), word[5]=0
+    let n = a.alloc(NodeArena::node(0x3e, 0, 0, inner.0, 0, 0));
+    assert_eq!(emit(&a, n), v2(0x1c3).as_slice());
+}
+
+#[test]
+fn case_0x44_conversion_0x3f5_no_dispatch_in_0x20000_region() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let p = a.alloc(NodeArena::node(1, 0, 0x07, 0, 0, 0)); // opcode 1, word[4]=7
+    let inner = a.alloc(NodeArena::node(0, 0, p.0, 0, 0, 0)); // word[4]=p, word[5]=0
+    let n = a.alloc(NodeArena::node(0x44, 2, 0, inner.0, 0, 0)); // type tag 2 → region 0x20000
+    let mut expected = v2(0x3f5);
+    expected.extend_from_slice(&[0x07, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x48_traverse_then_0x158_no_dispatch_in_0x20000_region() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x48, 2, 0, child.0, 0, 0)); // region 0x20000
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x158));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

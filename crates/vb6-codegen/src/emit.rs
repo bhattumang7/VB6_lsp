@@ -525,28 +525,62 @@ impl<'a> Emitter<'a> {
                 self.traverse_node_tree(NodeRef(n.w[5]), 1);
                 0x1cb
             }
-            // case 0x3e: argument list + member value: needs the type/string pool.
-            0x3e => unimplemented!(
-                "argument list + member value: needs the type/string pool; Phase 4"
-            ),
-            // case 0x3f: argument list + member size: needs the type-descriptor
-            // model.
-            0x3f => unimplemented!(
-                "argument list + member size: needs the type-descriptor model; Phase 4"
-            ),
+            // case 0x3e: process the inner list, then a fixed "no member" opcode
+            // or a pooled member-value opcode.
+            0x3e => {
+                let inner = *self.arena.get(NodeRef(n.w[5]));
+                self.process_linked_list(NodeRef(inner.w[5]), 1);
+                if inner.w[4] == 0 {
+                    self.emit_value2(0x1c3);
+                    return 0;
+                }
+                let mut p = *self.arena.get(NodeRef(inner.w[4]));
+                if p.w[0] & 0xffff == 0x11 {
+                    p = *self.arena.get(NodeRef(p.w[4]));
+                }
+                let opcode = if n.w[1] & 0x8000 != 0 { 0x360 + 0xd1 } else { 0x360 };
+                let v = self.type_pool.extract_type_value2(p.w[4]);
+                self.emit_opcode2(opcode, v);
+                return 0;
+            }
+            // case 0x3f: process the list, then the member size opcode 0x20f.
+            0x3f => {
+                self.process_linked_list(NodeRef(n.w[5]), 1);
+                let child = *self.arena.get(NodeRef(n.w[4]));
+                let size = self.emit_get_type_size3(child.w[5]);
+                self.emit_opcode2(0x20f, size as u16);
+                return 0;
+            }
             // case 0x41: argument-list emission with per-argument type sizes.
             0x41 => unimplemented!(
                 "argument-list emission: needs per-argument type sizes; Phase 4"
             ),
-            // cases 0x42 / 0x43: dispatch-type resolution.
+            // cases 0x42 / 0x43: dispatch-type resolution (FUN_0faf2756).
             0x42 => unimplemented!("dispatch-type resolution (form 0); Phase 5"),
             0x43 => unimplemented!("dispatch-type resolution (form 1); Phase 5"),
-            // cases 0x44..=0x47: type conversion + operand dispatch.
-            0x44 | 0x45 | 0x46 | 0x47 => unimplemented!(
-                "type conversion + operand dispatch; Phase 5"
-            ),
+            // cases 0x44..=0x47: type conversion, then operand dispatch (depth 2)
+            // for results that are not the 0x20000 form.
+            0x44 | 0x45 | 0x46 | 0x47 => {
+                let target = match op {
+                    0x44 => 0x3f5,
+                    0x45 => {
+                        if n.w[1] & 0x8000 != 0 {
+                            0x437
+                        } else {
+                            0x2ca
+                        }
+                    }
+                    0x46 => 0x15d,
+                    _ => 0x15e,
+                };
+                self.emit_type_conversion2(target, node, true);
+                if node_hi != 0x20000 {
+                    self.emit_dispatch_opcode(NodeRef(n.w[5]), 2, type_tag);
+                }
+                return 0;
+            }
             // cases 0x48..=0x4b: traverse list, emit a fixed opcode; results that
-            // are not the 0x20000 form additionally dispatch the operand.
+            // are not the 0x20000 form additionally dispatch the operand (depth 1).
             0x48 | 0x49 | 0x4a | 0x4b => {
                 self.traverse_node_tree(NodeRef(n.w[5]), 1);
                 let value = match op {
@@ -556,10 +590,10 @@ impl<'a> Emitter<'a> {
                     _ => 0x15b,
                 };
                 self.emit_value2(value);
-                if node_hi == 0x20000 {
-                    return 0;
+                if node_hi != 0x20000 {
+                    self.emit_dispatch_opcode(NodeRef(n.w[5]), 1, type_tag);
                 }
-                unimplemented!("operand dispatch (non-0x20000 result); Phase 5");
+                return 0;
             }
             // case 0x4c: type conversion (0x35d).
             0x4c => {
@@ -702,20 +736,31 @@ impl<'a> Emitter<'a> {
                 };
                 return self.emit_call(&desc, context);
             }
-            // case 0x63: member-reference value: needs the type/string pool.
-            0x63 => unimplemented!(
-                "member-reference value: needs the type/string pool; Phase 4"
-            ),
+            // case 0x63: emit the child reference, then a pooled member opcode
+            // (0x38d for a non-object child, 0x16f for an object one).
+            0x63 => {
+                self.emit_expr(NodeRef(n.w[4]), 1);
+                let child = *self.arena.get(NodeRef(n.w[4]));
+                let opcode = if child.w[0] & 0xffff_0000 != 0xf_0000 { 0x38d } else { 0x16f };
+                let v = self.type_pool.extract_type_value2(n.w[5]);
+                self.emit_opcode2(opcode, v);
+                return 0;
+            }
             // case 0x65: forward to child.
             0x65 => return self.emit_expr(n.lhs(), context),
-            // case 0x66: member-reference value: needs the type/string pool.
-            0x66 => unimplemented!(
-                "member-reference value (0x2f4): needs the type/string pool; Phase 4"
-            ),
-            // case 0x67: member-reference value: needs the type/string pool.
-            0x67 => unimplemented!(
-                "member-reference value (0x2f5): needs the type/string pool; Phase 4"
-            ),
+            // case 0x66: pooled member-value opcode 0x2f4.
+            0x66 => {
+                let v = self.type_pool.extract_type_value2(n.w[5]);
+                self.emit_opcode2(0x2f4, v);
+                return 0;
+            }
+            // case 0x67: emit child (context 5), then pooled member opcode 0x2f5.
+            0x67 => {
+                self.emit_expr(NodeRef(n.w[4]), 5);
+                let v = self.type_pool.extract_type_value2(n.w[5]);
+                self.emit_opcode2(0x2f5, v);
+                return 0;
+            }
             // case 0x68: emit child, then (context 6) opcode 0x29f, else a
             // type-class-selected opcode.
             0x68 => {
@@ -997,6 +1042,27 @@ impl<'a> Emitter<'a> {
             let v = self.type_pool.extract_type_value2(p.w[4]);
             self.emit_opcode2(target as usize, v);
         }
+    }
+
+    /// Post-operation operand dispatch (`EbDispatchOpcodeToEmitter`): walk `depth`
+    /// `word[5]` links, unwrap a `0x37` list node (at depth 1) and a `0x11`/`0x2d`
+    /// wrapper, then emit the operand with context 2 (or 5 when `type_tag` is
+    /// `0x17`).
+    fn emit_dispatch_opcode(&mut self, start: NodeRef, depth: i32, type_tag: i32) {
+        let mut node = start;
+        let mut d = depth;
+        while d > 1 {
+            node = NodeRef(self.arena.get(node).w[5]);
+            d -= 1;
+        }
+        if d == 1 && (self.arena.get(node).w[0] & 0xffff) == 0x37 {
+            node = NodeRef(self.arena.get(node).w[4]);
+        }
+        let op0 = self.arena.get(node).w[0] & 0xffff;
+        if op0 == 0x11 || op0 == 0x2d {
+            node = NodeRef(self.arena.get(node).w[4]);
+        }
+        self.emit_expr(node, if type_tag != 0x17 { 2 } else { 5 });
     }
 
     // ── Resolved-reference emission ──────────────────────────────────────────
