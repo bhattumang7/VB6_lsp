@@ -11,10 +11,8 @@
 //! implemented.  Unhandled constructs return [`LowerError::UnsupportedNode`]
 //! or [`LowerError::UnsupportedType`] — never a silently wrong byte.
 
-use std::collections::HashMap;
-
 use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
-use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind};
+use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind};
 use vb6_syntax::support::arena::NodeId;
 
 use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar};
@@ -200,7 +198,204 @@ fn lower_stmt(
             }
             Ok(())
         }
+        ExprNode::If { cond, then_body, else_body } => {
+            let (cond_id, then_id, else_id) = (*cond, *then_body, *else_body);
+            lower_if(ctx, cond_id, then_id, else_id, expr_arena, out)
+        }
+        ExprNode::While { cond, body } => {
+            let (cond_id, body_id) = (*cond, *body);
+            lower_while(ctx, cond_id, body_id, expr_arena, out)
+        }
+        ExprNode::Do { kind, cond, body } => {
+            let (kind, cond_id, body_id) = (*kind, *cond, *body);
+            lower_do(ctx, kind, cond_id, body_id, expr_arena, out)
+        }
         _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+// ── Control-flow helpers ──────────────────────────────────────────────────────
+
+/// Emit the expression for `node_id` to a scratch byte vector and return it.
+fn lower_expr_to_bytes(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+) -> Result<Vec<u8>, LowerError> {
+    let mut arena = NodeArena::new();
+    let root = lower_expr(ctx, node_id, expr_arena, &mut arena)?;
+    let mut emitter = Emitter::new(&arena);
+    emitter.emit_expr(root, 0);
+    Ok(emitter.into_bytes())
+}
+
+/// Emit a 2-byte LE placeholder at the current position; return the patch offset.
+fn emit_branch_placeholder(out: &mut Vec<u8>, opcode: u8) -> usize {
+    out.push(opcode);
+    let patch = out.len();
+    out.push(0x00);
+    out.push(0x00);
+    patch
+}
+
+/// Backpatch a 2-byte LE u16 at the given byte offset with the given value.
+fn patch_u16(out: &mut Vec<u8>, patch: usize, value: u16) {
+    out[patch..patch + 2].copy_from_slice(&value.to_le_bytes());
+}
+
+/// `If cond Then then_body [Else else_body] End If`
+///
+/// Opcode layout (oracle-confirmed):
+///   <cond bytes>
+///   0x1c [2-byte LE absolute offset to else_body or end]   ; BranchFalse
+///   <then_body bytes>
+///   [0x1e [2-byte LE absolute offset to end]               ; Jump (only when else present)
+///   <else_body bytes>]
+fn lower_if(
+    ctx: &LowerCtx,
+    cond_id: NodeId,
+    then_id: NodeId,
+    else_id: Option<NodeId>,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let cond_bytes = lower_expr_to_bytes(ctx, cond_id, expr_arena)?;
+    out.extend_from_slice(&cond_bytes);
+
+    // BranchFalse — opcode 0x1c + 2-byte absolute target (patched below)
+    let branch_false_patch = emit_branch_placeholder(out, 0x1c);
+
+    lower_block(ctx, then_id, expr_arena, out)?;
+
+    if let Some(e_id) = else_id {
+        // Jump over else — opcode 0x1e + 2-byte absolute target
+        let jump_patch = emit_branch_placeholder(out, 0x1e);
+
+        // BranchFalse target = start of else body
+        patch_u16(out, branch_false_patch, out.len() as u16);
+
+        lower_block(ctx, e_id, expr_arena, out)?;
+
+        // Jump target = end
+        patch_u16(out, jump_patch, out.len() as u16);
+    } else {
+        // BranchFalse target = end of If block
+        patch_u16(out, branch_false_patch, out.len() as u16);
+    }
+
+    Ok(())
+}
+
+/// `While cond ... Wend`  and  `Do While cond ... Loop`
+///
+/// Opcode layout (oracle-confirmed):
+///   [loop_start:]
+///   <cond bytes>
+///   0x1c [2-byte LE absolute offset to past loop]   ; BranchFalse
+///   <body bytes>
+///   0x1e [2-byte LE loop_start]                     ; Jump back
+fn lower_while(
+    ctx: &LowerCtx,
+    cond_id: NodeId,
+    body_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let loop_start = out.len() as u16;
+
+    let cond_bytes = lower_expr_to_bytes(ctx, cond_id, expr_arena)?;
+    out.extend_from_slice(&cond_bytes);
+
+    let branch_false_patch = emit_branch_placeholder(out, 0x1c);
+
+    lower_block(ctx, body_id, expr_arena, out)?;
+
+    // Unconditional jump back to loop start
+    out.push(0x1e);
+    out.extend_from_slice(&loop_start.to_le_bytes());
+
+    // BranchFalse target = past end of jump instruction (current position)
+    patch_u16(out, branch_false_patch, out.len() as u16);
+
+    Ok(())
+}
+
+/// `Do [While/Until cond] ... Loop [While/Until cond]`
+///
+/// Opcode layout variants (oracle-confirmed):
+///
+///   PreWhile:  [start:] cond BranchFalse[end] body Jump[start]
+///   PreUntil:  [start:] cond BranchTrue[end]  body Jump[start]
+///   PostWhile: [start:] body cond BranchTrue[start]
+///   PostUntil: [start:] body cond BranchFalse[start]
+///   Inf:       [start:] body Jump[start]
+fn lower_do(
+    ctx: &LowerCtx,
+    kind: DoKind,
+    cond_id: Option<NodeId>,
+    body_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    match kind {
+        DoKind::PreWhile => {
+            // Same structure as While/Wend
+            let cond = cond_id.ok_or(LowerError::UnsupportedNode)?;
+            lower_while(ctx, cond, body_id, expr_arena, out)
+        }
+        DoKind::PreUntil => {
+            let cond = cond_id.ok_or(LowerError::UnsupportedNode)?;
+            let loop_start = out.len() as u16;
+
+            let cond_bytes = lower_expr_to_bytes(ctx, cond, expr_arena)?;
+            out.extend_from_slice(&cond_bytes);
+
+            // BranchTrue to exit — Until means "exit when condition IS true"
+            let branch_true_patch = emit_branch_placeholder(out, 0x1d);
+
+            lower_block(ctx, body_id, expr_arena, out)?;
+
+            out.push(0x1e);
+            out.extend_from_slice(&loop_start.to_le_bytes());
+
+            patch_u16(out, branch_true_patch, out.len() as u16);
+            Ok(())
+        }
+        DoKind::PostWhile => {
+            let cond = cond_id.ok_or(LowerError::UnsupportedNode)?;
+            let loop_start = out.len() as u16;
+
+            lower_block(ctx, body_id, expr_arena, out)?;
+
+            let cond_bytes = lower_expr_to_bytes(ctx, cond, expr_arena)?;
+            out.extend_from_slice(&cond_bytes);
+
+            // BranchTrue back to start — "Loop While" continues when true
+            out.push(0x1d);
+            out.extend_from_slice(&loop_start.to_le_bytes());
+            Ok(())
+        }
+        DoKind::PostUntil => {
+            let cond = cond_id.ok_or(LowerError::UnsupportedNode)?;
+            let loop_start = out.len() as u16;
+
+            lower_block(ctx, body_id, expr_arena, out)?;
+
+            let cond_bytes = lower_expr_to_bytes(ctx, cond, expr_arena)?;
+            out.extend_from_slice(&cond_bytes);
+
+            // BranchFalse back to start — "Loop Until" continues when still false
+            out.push(0x1c);
+            out.extend_from_slice(&loop_start.to_le_bytes());
+            Ok(())
+        }
+        DoKind::Inf => {
+            let loop_start = out.len() as u16;
+            lower_block(ctx, body_id, expr_arena, out)?;
+            out.push(0x1e);
+            out.extend_from_slice(&loop_start.to_le_bytes());
+            Ok(())
+        }
     }
 }
 
@@ -211,14 +406,23 @@ fn lower_assign(
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<(), LowerError> {
-    let mut arena = NodeArena::new();
-    let value_root = lower_expr(ctx, value_id, expr_arena, &mut arena)?;
-
+    // Resolve the target first so its type can be used to coerce integer literals
+    // in the value expression (e.g. `r = 1` where r is Long → Long literal).
     let resolution = ctx
         .module
         .resolutions
         .get(&target_id.0)
         .ok_or(LowerError::Unresolved)?;
+
+    let coerce_tag = match resolution {
+        NameResolution::Local { local_idx, .. } => vba_type_to_node_tag(ctx.local_type(*local_idx)),
+        NameResolution::Param { param_idx, .. } => vba_type_to_node_tag(ctx.param_type(*param_idx)),
+        NameResolution::ModuleVar(idx) => vba_type_to_node_tag(ctx.global_type(*idx)),
+        _ => None,
+    };
+
+    let mut arena = NodeArena::new();
+    let value_root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, coerce_tag)?;
 
     let mut emitter = Emitter::new(&arena);
     emitter.emit_expr(value_root, 0);
@@ -255,14 +459,45 @@ fn lower_assign(
 
 // ── Expression lowering ───────────────────────────────────────────────────────
 
+/// Returns the "wider" of two VBA types for numeric literal promotion.
+/// VB6 widens integer literals to match the type of the wider operand.
+fn wider_numeric_tag(a: Option<&VbaType>, b: Option<&VbaType>) -> Option<u16> {
+    fn rank(t: &VbaType) -> u8 {
+        match t {
+            VbaType::Integer | VbaType::Boolean => 1,
+            VbaType::Long   => 2,
+            VbaType::Single => 3,
+            VbaType::Double => 4,
+            _ => 0,
+        }
+    }
+    let ta = a.map(rank).unwrap_or(0);
+    let tb = b.map(rank).unwrap_or(0);
+    let wider = if ta >= tb { a } else { b };
+    wider.and_then(|t| vba_type_to_node_tag(t))
+}
+
 fn lower_expr(
     ctx: &LowerCtx,
     node_id: NodeId,
     expr_arena: &ExprArena,
     arena: &mut NodeArena,
 ) -> Result<NodeRef, LowerError> {
+    lower_expr_coerced(ctx, node_id, expr_arena, arena, None)
+}
+
+/// Like `lower_expr` but when `coerce_tag` is `Some(tag)`, integer literals are
+/// emitted with that type tag instead of their natural type.  This implements
+/// VB6's implicit widening of integer literals to match their context type.
+fn lower_expr_coerced(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+    coerce_tag: Option<u16>,
+) -> Result<NodeRef, LowerError> {
     match expr_arena.get(node_id) {
-        ExprNode::Literal { lit } => lower_lit(lit, arena),
+        ExprNode::Literal { lit } => lower_lit_coerced(lit, coerce_tag, arena),
         ExprNode::NameRef { .. } => lower_name_ref(ctx, node_id, arena),
         ExprNode::BinOp { op, lhs, rhs } => {
             let (op, lhs_id, rhs_id) = (*op, *lhs, *rhs);
@@ -274,7 +509,7 @@ fn lower_expr(
         }
         ExprNode::Paren { inner } => {
             let inner_id = *inner;
-            lower_expr(ctx, inner_id, expr_arena, arena)
+            lower_expr_coerced(ctx, inner_id, expr_arena, arena, coerce_tag)
         }
         _ => Err(LowerError::UnsupportedNode),
     }
@@ -298,6 +533,22 @@ fn lower_lit(lit: &AstLit, arena: &mut NodeArena) -> Result<NodeRef, LowerError>
             Ok(arena.alloc(NodeArena::node(2, 0, bits as u32, (bits >> 32) as u32, 0, 0)))
         }
         _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// Like `lower_lit` but promotes an integer literal to `coerce_tag` when the
+/// context type is wider (e.g. integer literal in a Long expression).
+fn lower_lit_coerced(
+    lit: &AstLit,
+    coerce_tag: Option<u16>,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    match coerce_tag {
+        Some(tag) => match lit {
+            AstLit::Int(v) => Ok(arena.alloc(NodeArena::node(1, tag, *v as u32, 0, 0, 0))),
+            _ => lower_lit(lit, arena),
+        },
+        None => lower_lit(lit, arena),
     }
 }
 
@@ -372,8 +623,14 @@ fn lower_binop(
     expr_arena: &ExprArena,
     arena: &mut NodeArena,
 ) -> Result<NodeRef, LowerError> {
-    let lhs_ref = lower_expr(ctx, lhs_id, expr_arena, arena)?;
-    let rhs_ref = lower_expr(ctx, rhs_id, expr_arena, arena)?;
+    // VB6 widens both operands to the wider of their types before emitting;
+    // integer literals in Long expressions are promoted to Long.
+    let lhs_ty = ctx.module.types.get(&lhs_id.0);
+    let rhs_ty = ctx.module.types.get(&rhs_id.0);
+    let operand_coerce = wider_numeric_tag(lhs_ty, rhs_ty);
+
+    let lhs_ref = lower_expr_coerced(ctx, lhs_id, expr_arena, arena, operand_coerce)?;
+    let rhs_ref = lower_expr_coerced(ctx, rhs_id, expr_arena, arena, operand_coerce)?;
 
     let opcode = binop_node_opcode(op).ok_or(LowerError::UnsupportedNode)?;
 
