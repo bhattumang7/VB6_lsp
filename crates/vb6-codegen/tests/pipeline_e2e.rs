@@ -1,0 +1,429 @@
+//! End-to-end pipeline tests: VB6 source text → parse → sema → lower → P-code bytes.
+//!
+//! Every expected byte vector here was captured from a real VB6-compiled p-code
+//! exe by `re_lab/pcode_lab/e2e_survey.py`.  These tests assert that the full
+//! Rust pipeline (ScannerContext → Parser → bind → lower_proc) reproduces the
+//! exact byte stream the VB6 compiler emits.
+//!
+//! The oracle bytes for the first group duplicate the vectors already in
+//! `oracle_pcode.rs` (which verify the emitter in isolation); here the same
+//! bytes verify the **complete pipeline** from source text.
+
+use vb6_codegen::lower_proc;
+use vb6_sema::frontend::ast::ExprArena;
+use vb6_sema::frontend::parser::Parser;
+use vb6_sema::frontend::scanner::ScannerContext;
+use vb6_sema::sema::bind;
+
+// ── Pipeline helper ───────────────────────────────────────────────────────────
+
+/// Parse, bind, and lower `src` (a complete VB6 module source), returning the
+/// P-code bytes for the first proc (proc index 0).
+///
+/// `module_desc` is the compiled module-object descriptor word (`0x0008` for
+/// the primary module in a single-module project — oracle-confirmed).
+fn compile(src: &str, module_desc: u16) -> Vec<u8> {
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    let top = parser.parse_module(&mut arena);
+    let spans = std::mem::take(&mut parser.node_spans);
+    let vis = std::mem::take(&mut parser.decl_public);
+    drop(parser);
+    let module = bind(&ctx, &arena, &top, &spans, &vis);
+    lower_proc(&module, 0, &arena, module_desc)
+        .unwrap_or_else(|e| panic!("lower_proc failed: {e:?}"))
+}
+
+// ── Long arithmetic (Dim a As Long, b As Long, r As Long) ────────────────────
+//
+// Oracle: compile with real VB6 in p-code mode, extract Sub Main body bytes
+// (stripping the trailing 0x14 End-Sub marker).  These vectors match the ones
+// in oracle_pcode.rs, confirming the pipeline and the emitter agree.
+
+#[test]
+fn e2e_long_add() {
+    // r = a + b  →  load a, load b, Long-Add, store r
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_sub() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a - b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xae, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_mul() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a * b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xb2, 0x71, 0x70, 0xff]
+    );
+}
+
+// ── Long comparisons (r As Integer) ──────────────────────────────────────────
+//
+// Frame: a=-136 (0xff78), b=-140 (0xff74), r=-142 (0xff72).
+// Integer is 2 bytes, so r immediately follows b's 4-byte slot.
+
+#[test]
+fn e2e_long_eq_into_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Integer\r\n\
+             r = (a = b)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc7, 0x70, 0x72, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_ne_into_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Integer\r\n\
+             r = (a <> b)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xcc, 0x70, 0x72, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_lt_into_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Integer\r\n\
+             r = (a < b)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd1, 0x70, 0x72, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_le_into_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Integer\r\n\
+             r = (a <= b)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd6, 0x70, 0x72, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_gt_into_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Integer\r\n\
+             r = (a > b)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xdb, 0x70, 0x72, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_ge_into_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Integer\r\n\
+             r = (a >= b)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xe0, 0x70, 0x72, 0xff]
+    );
+}
+
+// ── Integer arithmetic ────────────────────────────────────────────────────────
+//
+// Frame: a=-134 (0xff7a), b=-136 (0xff78), r=-138 (0xff76).
+// All Integer (2 bytes each); no 4-byte alignment applied.
+
+#[test]
+fn e2e_integer_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Integer, b As Integer, r As Integer\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xa9, 0x70, 0x76, 0xff]
+    );
+}
+
+// ── Double arithmetic ─────────────────────────────────────────────────────────
+//
+// Frame: a=-140 (0xff74), b=-148 (0xff6c), r=-156 (0xff64).
+// Double = 8 bytes each.
+
+#[test]
+fn e2e_double_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Double, b As Double, r As Double\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0x6f, 0x6c, 0xff, 0xab, 0x74, 0x64, 0xff]
+    );
+}
+
+// ── Control flow — If/While/Do (Long locals a=-136/0xff78, r=-140/0xff74) ────
+//
+// Oracle bytes captured from real VB6 p-code exe via cf_survey.py.
+// Condition `a > 0`: load a (0x6c 0x78 0xff), push Long 0 (0xf5 0x00..0x00),
+// Long-Gt (0xdb).
+// Store r=1: push Long 1 (0xf5 0x01 0x00 0x00 0x00), store Long r (0x71 0x74 0xff).
+
+#[test]
+fn e2e_if_no_else() {
+    // If a > 0 Then r = 1 End If  — Long locals a=-136, r=-140
+    // BranchFalse (0x1c) to absolute offset 20 (end of if block)
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, r As Long\r\n\
+             If a > 0 Then\r\n\
+             r = 1\r\n\
+             End If\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff,                   // load Long a
+            0xf5, 0x00, 0x00, 0x00, 0x00,       // push Long 0
+            0xdb,                                // Long >
+            0x1c, 0x14, 0x00,                   // BranchFalse → offset 20
+            0xf5, 0x01, 0x00, 0x00, 0x00,       // push Long 1
+            0x71, 0x74, 0xff,                    // store Long r
+        ]
+    );
+}
+
+#[test]
+fn e2e_if_else() {
+    // If a > 0 Then r = 1 Else r = 2 End If
+    // BranchFalse to else start (offset 23), Jump to end (offset 31)
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, r As Long\r\n\
+             If a > 0 Then\r\n\
+             r = 1\r\n\
+             Else\r\n\
+             r = 2\r\n\
+             End If\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff,                   // load Long a
+            0xf5, 0x00, 0x00, 0x00, 0x00,       // push Long 0
+            0xdb,                                // Long >
+            0x1c, 0x17, 0x00,                   // BranchFalse → offset 23 (else start)
+            0xf5, 0x01, 0x00, 0x00, 0x00,       // push Long 1
+            0x71, 0x74, 0xff,                    // store Long r
+            0x1e, 0x1f, 0x00,                   // Jump → offset 31 (end)
+            0xf5, 0x02, 0x00, 0x00, 0x00,       // push Long 2
+            0x71, 0x74, 0xff,                    // store Long r
+        ]
+    );
+}
+
+#[test]
+fn e2e_while_loop() {
+    // While a > 0: a = a - 1: Wend  — one Long local a=-136
+    // BranchFalse to offset 27 (past end), Jump to offset 0 (loop start)
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long\r\n\
+             While a > 0\r\n\
+             a = a - 1\r\n\
+             Wend\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff,                   // load Long a
+            0xf5, 0x00, 0x00, 0x00, 0x00,       // push Long 0
+            0xdb,                                // Long >
+            0x1c, 0x1b, 0x00,                   // BranchFalse → offset 27
+            0x6c, 0x78, 0xff,                    // load Long a
+            0xf5, 0x01, 0x00, 0x00, 0x00,       // push Long 1
+            0xae,                                // Long sub
+            0x71, 0x78, 0xff,                    // store Long a
+            0x1e, 0x00, 0x00,                    // Jump → offset 0 (loop start)
+        ]
+    );
+}
+
+#[test]
+fn e2e_do_while_loop() {
+    // Do While a > 0: a = a - 1: Loop  — identical byte layout to While/Wend
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long\r\n\
+             Do While a > 0\r\n\
+             a = a - 1\r\n\
+             Loop\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff,
+            0xf5, 0x00, 0x00, 0x00, 0x00,
+            0xdb,
+            0x1c, 0x1b, 0x00,
+            0x6c, 0x78, 0xff,
+            0xf5, 0x01, 0x00, 0x00, 0x00,
+            0xae,
+            0x71, 0x78, 0xff,
+            0x1e, 0x00, 0x00,
+        ]
+    );
+}
+
+#[test]
+fn e2e_do_loop_while() {
+    // Do: a = a - 1: Loop While a > 0  — body first, BranchTrue back
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long\r\n\
+             Do\r\n\
+             a = a - 1\r\n\
+             Loop While a > 0\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff,                   // load Long a
+            0xf5, 0x01, 0x00, 0x00, 0x00,       // push Long 1
+            0xae,                                // Long sub
+            0x71, 0x78, 0xff,                    // store Long a
+            0x6c, 0x78, 0xff,                    // load Long a
+            0xf5, 0x00, 0x00, 0x00, 0x00,       // push Long 0
+            0xdb,                                // Long >
+            0x1d, 0x00, 0x00,                    // BranchTrue → offset 0 (loop start)
+        ]
+    );
+}
+
+#[test]
+fn e2e_nested_if() {
+    // If a > 0 Then: If b > 0 Then r = 1 End If: End If
+    // Nested BranchFalse — oracle: inner If jumps to 0x20 (32), outer also jumps to 0x20
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             If a > 0 Then\r\n\
+             If b > 0 Then\r\n\
+             r = 1\r\n\
+             End If\r\n\
+             End If\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff,                   // load Long a   (a=-136)
+            0xf5, 0x00, 0x00, 0x00, 0x00,       // push Long 0
+            0xdb,                                // Long >
+            0x1c, 0x20, 0x00,                   // BranchFalse → 32 (end)
+            0x6c, 0x74, 0xff,                    // load Long b   (b=-140)
+            0xf5, 0x00, 0x00, 0x00, 0x00,       // push Long 0
+            0xdb,                                // Long >
+            0x1c, 0x20, 0x00,                   // BranchFalse → 32 (end)
+            0xf5, 0x01, 0x00, 0x00, 0x00,       // push Long 1
+            0x71, 0x70, 0xff,                    // store Long r  (r=-144)
+        ]
+    );
+}
+
+// ── Two sequential assignments ────────────────────────────────────────────────
+//
+// `b = a` then `a = b` with two Long locals:
+// frame a=-136 (0xff78), b=-140 (0xff74).
+// Bytes: load a, store b, load b, store a.
+
+#[test]
+fn e2e_two_sequential_long_assigns() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long\r\n\
+             b = a\r\n\
+             a = b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0x6c, 0x78, 0xff, 0x71, 0x74, 0xff,
+            0x6c, 0x74, 0xff, 0x71, 0x78, 0xff,
+        ]
+    );
+}
