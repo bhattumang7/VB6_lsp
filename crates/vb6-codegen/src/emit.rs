@@ -1590,16 +1590,23 @@ impl<'a> Emitter<'a> {
             self.emit_word2(desc.size);
         }
         match emit_mode {
-            0 => 0,
-            1 => {
-                self.emit_word2(desc.member_id);
-                0
-            }
+            0 => {}
+            1 => self.emit_word2(desc.member_id),
             _ => unimplemented!(
                 "call result-descriptor path (emit mode 2): needs the struct-size / \
                  member-type model; Phase 5"
             ),
         }
+        // The call site does not end here: a finalize step emits one more
+        // trailing word (whose value is a register-passed parameter not
+        // recoverable from the current decompile) followed by conditional
+        // per-type validation. Until that word is pinned, the call site cannot
+        // be byte-exact — so emit_call stops short rather than emit a partial
+        // (and therefore wrong) sequence.
+        unimplemented!(
+            "call finalize: emits a trailing word of undetermined value then \
+             conditional validation; needs the finalize routine's parameters"
+        )
     }
 }
 
