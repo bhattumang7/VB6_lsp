@@ -1194,6 +1194,38 @@ fn case_0x57_clear_selects_0x3fd_or_0x3fb() {
     assert_eq!(emit(&b, set), gl0_then(0x3fb).as_slice());
 }
 
+// ── Call-opcode computation kernel (RT_CALL_TYPECODE + inline map) ───────────
+//
+// The call emitter computes its base opcode as map(type_code(kind,ref,mask)).
+// These pin the kernel against the extracted table; the full call emitter (case
+// 0x61) builds on this once the symbol/type-pool model supplies the inputs.
+
+#[test]
+fn call_type_code_value_and_reference_paths() {
+    use crate::emit::call_type_code;
+    // value path: index (callee_type != 1) + mask*2.
+    assert_eq!(call_type_code(1, false, false), 0x340); // idx 0
+    assert_eq!(call_type_code(2, false, false), 0x310); // idx 1
+    assert_eq!(call_type_code(1, false, true), 0x350); // idx 2
+    assert_eq!(call_type_code(2, false, true), 0x300); // idx 3
+    // reference path: index (callee_type != 1) + 4.
+    assert_eq!(call_type_code(1, true, false), 0x330); // idx 4
+    assert_eq!(call_type_code(2, true, true), 0x320); // idx 5
+}
+
+#[test]
+fn map_call_type_code_covers_every_entry() {
+    use crate::emit::map_call_type_code;
+    assert_eq!(map_call_type_code(0x300), 0x16a);
+    assert_eq!(map_call_type_code(0x310), 0x169);
+    assert_eq!(map_call_type_code(0x320), 0x34f);
+    assert_eq!(map_call_type_code(0x340), 0x16b);
+    assert_eq!(map_call_type_code(0x350), 0x16c);
+    // 0x330 (and anything unmapped) → the default/invalid slot.
+    assert_eq!(map_call_type_code(0x330), 0x446);
+    assert_eq!(map_call_type_code(0x000), 0x446);
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

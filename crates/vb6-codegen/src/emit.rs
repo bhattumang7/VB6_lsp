@@ -24,7 +24,37 @@
 
 use crate::buffer::PcodeStream;
 use crate::node::{NodeArena, NodeRef, RawNode};
-use crate::tables::{RT_BINOP_BASE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX, RT_TYPE_OFFSET};
+use crate::tables::{RT_BINOP_BASE, RT_CALL_TYPECODE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX, RT_TYPE_OFFSET};
+
+/// Compute the call type-code for a call site: index [`RT_CALL_TYPECODE`] by the
+/// reference-vs-value path.
+///
+/// * value path (`is_ref` false): index `(callee_type != 1) + (mask) * 2` → 0..3.
+/// * reference path (`is_ref` true): index `(callee_type != 1) + 4` → 4..5.
+///
+/// `callee_type` and `mask` come from the callee's resolved descriptor (the
+/// symbol-table model supplies them); this kernel is a pure function of its
+/// inputs and the extracted table.
+pub fn call_type_code(callee_type: i32, is_ref: bool, mask: bool) -> u16 {
+    let idx = if is_ref {
+        (callee_type != 1) as usize + 4
+    } else {
+        (callee_type != 1) as usize + (mask as usize) * 2
+    };
+    RT_CALL_TYPECODE[idx]
+}
+
+/// Map a call type-code to its runtime call opcode.
+pub fn map_call_type_code(code: u16) -> u16 {
+    match code {
+        0x300 => 0x16a,
+        0x310 => 0x169,
+        0x320 => 0x34f,
+        0x340 => 0x16b,
+        0x350 => 0x16c,
+        _ => 0x446,
+    }
+}
 
 /// A resolved-reference descriptor — the input to [`Emitter::emit_reference`].
 /// A reference resolver (the vb6-sema bridge) populates it; the emitter only
