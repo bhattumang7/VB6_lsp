@@ -624,9 +624,41 @@ impl<'a> Emitter<'a> {
                 }
                 return 0;
             }
-            // cases 0x42 / 0x43: dispatch-type resolution (FUN_0faf2756).
-            0x42 => unimplemented!("dispatch-type resolution (form 0); Phase 5"),
-            0x43 => unimplemented!("dispatch-type resolution (form 1); Phase 5"),
+            // cases 0x42 / 0x43: dispatch-type resolution. The type value comes
+            // from the first child (`word[5].word[4]`, unwrapping an `0x11`
+            // wrapper); the emitted reference is the second child
+            // (`word[5].word[5]`, taken as `.word[4]`). An object member (`0x60` child after
+            // unwrapping `0x11`/`0x12`, with node type tag 2) takes a
+            // dispatch-binding path that reads a compiled binding record and
+            // stays gated; every other shape uses the common typed path.
+            0x42 | 0x43 => {
+                let w5 = *self.arena.get(NodeRef(n.w[5]));
+                let mut a = *self.arena.get(NodeRef(w5.w[4]));
+                if a.w[0] & 0xffff == 0x11 {
+                    a = *self.arena.get(NodeRef(a.w[4]));
+                }
+                let type_value = self.type_pool.extract_type_value2(a.w[4]);
+                // Walk 0x11/0x12 wrappers on the second child for the dispatch test.
+                let mut p6 = NodeRef(w5.w[5]);
+                loop {
+                    let k = self.arena.get(p6).w[0] & 0xffff;
+                    if k == 0x11 || k == 0x12 {
+                        p6 = NodeRef(self.arena.get(p6).w[4]);
+                    } else {
+                        break;
+                    }
+                }
+                if (self.arena.get(p6).w[0] & 0xffff) == 0x60 && ((n.w[0] as i32) >> 16) == 2 {
+                    unimplemented!(
+                        "dispatch-type resolution dispatch-binding path: reads a \
+                         compiled binding record from the module symbol heap; Phase 5"
+                    );
+                }
+                let second = *self.arena.get(NodeRef(w5.w[5]));
+                self.emit_typed_node(NodeRef(second.w[4]), 5);
+                self.emit_opcode2(0x42a, type_value);
+                return self.emit_validate_type_operation((n.w[0] as i32) >> 16, 0x17, 1);
+            }
             // cases 0x44..=0x47: type conversion, then operand dispatch (depth 2)
             // for results that are not the 0x20000 form.
             0x44 | 0x45 | 0x46 | 0x47 => {

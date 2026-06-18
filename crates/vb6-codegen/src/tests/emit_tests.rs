@@ -1627,6 +1627,41 @@ fn case_0x51_operator_class3_typed_emits_0x417() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x42_nondispatch_emits_0x42a_with_pooled_type() {
+    // Non-dispatch path: type tag != 2, second child not 0x60.
+    // word[5]=w5; w5.word[4]=a (a.word[4]=type value); w5.word[5]=second;
+    // second.word[4]=typed child (a no-op). Emits emit_typed_node(child) [none]
+    // then opcode 0x42a + pooled type value (index 0), then validate (type 8 →
+    // no extra byte).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let typed_child = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0)); // no-op
+    let second = a.alloc(NodeArena::node(0, 0, typed_child.0, 0, 0, 0)); // word[4]=child
+    let avalue = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0)); // word[4]=type value 0x55
+    let w5 = a.alloc(NodeArena::node(0, 0, avalue.0, second.0, 0, 0)); // w4=a, w5=second
+    let n = a.alloc(NodeArena::node(0x42, 8, 0, w5.0, 0, 0)); // type tag 8, word[5]=w5
+    let mut expected = v2(0x42a);
+    expected.extend_from_slice(&[0x00, 0x00]); // pool index 0
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x43_nondispatch_same_as_0x42_common_path() {
+    // 0x43 shares the common non-dispatch path with 0x42 (the form bit only
+    // matters on the gated dispatch-binding path).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let typed_child = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0));
+    let second = a.alloc(NodeArena::node(0, 0, typed_child.0, 0, 0, 0));
+    let avalue = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0));
+    let w5 = a.alloc(NodeArena::node(0, 0, avalue.0, second.0, 0, 0));
+    let n = a.alloc(NodeArena::node(0x43, 8, 0, w5.0, 0, 0));
+    let mut expected = v2(0x42a);
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── Operand-dispatch + pooled member-reference cases ─────────────────────────
 
 #[test]
