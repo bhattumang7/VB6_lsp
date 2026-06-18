@@ -369,11 +369,21 @@ impl<'a> Emitter<'a> {
                     self.emit_expr(n.lhs(), 3);
                     return 0;
                 }
-                3 => unimplemented!(
-                    "sized name reference: needs the type-descriptor model; Phase 4"
-                ),
+                // sized name reference: emit the child (context 3), then the
+                // sized coercion opcode 0x2c6 with the node's resolved type size.
+                3 => {
+                    self.emit_expr(n.lhs(), 3);
+                    let size = self.emit_get_type_size3(n.w[6]);
+                    self.emit_opcode2(0x2c6, size as u16);
+                    return 0;
+                }
+                // in-place name reference: sets the child's flag bit 0x1000 before
+                // emitting it (context 3). The emit-time arena is immutable, so the
+                // in-place flag mutation is not yet supported (infra, not a
+                // symbol-heap dependency).
                 4 => unimplemented!(
-                    "in-place name reference: needs node-flag mutation; Phase 3"
+                    "in-place name reference: needs in-place child-node flag \
+                     mutation, unsupported by the immutable emit arena"
                 ),
                 _ => return 0,
             },

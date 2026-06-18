@@ -1168,6 +1168,21 @@ fn case_0xf_class2_emits_child_ctx3() {
 }
 
 #[test]
+fn case_0xf_class3_sized_name_ref_emits_child_then_0x2c6() {
+    // op-class 3 → emit child (context 3), then sized opcode 0x2c6 + type size.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let type_desc = a.alloc(NodeArena::node(4, 0, 0x18, 0, 0, 0)); // kind 4, size 0x18
+    let mut node = NodeArena::node(0xf, 0, child.0, 0, type_desc.0, 0); // word[6]=desc
+    node.w[1] = 3 << 8; // op-class 3
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x2c6));
+    expected.extend_from_slice(&[0x18, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
 fn case_0xf_class0_flag_set_plain_child_emits_ctx3() {
     // op-class 0, flag 0x8000 set, child opcode not in {0x60,0x69,0x5e} →
     // emit child with context 3, return (no tail opcode).
