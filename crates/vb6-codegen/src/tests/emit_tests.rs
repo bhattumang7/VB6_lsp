@@ -1194,6 +1194,73 @@ fn case_0x57_clear_selects_0x3fd_or_0x3fb() {
     assert_eq!(emit(&b, set), gl0_then(0x3fb).as_slice());
 }
 
+// ── Unary negate (case 0xb) ──────────────────────────────────────────────────
+//
+// case 0xb emits the operand (context 2) then a type-selected opcode:
+//   off = RT_TYPE_OFFSET[operand_tag];
+//   if off==10 -> 0xf6 ; else { if off==9 -> 1 ; opcode = off + 0xf2 }
+// The opcode is selected from the OPERAND's type tag, not the node's.
+
+/// Build a negate node (op 0xb) over a typed operand load.
+fn negate(a: &mut NodeArena, operand: NodeRef) -> NodeRef {
+    a.alloc(NodeArena::node(0xb, 0, operand.0, 0, 0, 0))
+}
+
+#[test]
+fn negate_long_emits_operand_then_0xf4() {
+    // Long operand (tag 8): RT_TYPE_OFFSET[8]=2 -> 2+0xf2 = 0xf4.
+    let mut a = NodeArena::new();
+    let v = var_load_typed(&mut a, 8, 2, -8); // [0x6c,0xf8,0xff]
+    let n = negate(&mut a, v);
+    let mut expected = vec![0x6c, 0xf8, 0xff];
+    expected.extend(v2(0xf4));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn negate_integer_emits_operand_then_0xf3() {
+    // Integer operand (tag 6): RT_TYPE_OFFSET[6]=1 -> 1+0xf2 = 0xf3.
+    let mut a = NodeArena::new();
+    let v = var_load_typed(&mut a, 6, 1, -4); // [0x6b,0xfc,0xff]
+    let n = negate(&mut a, v);
+    let mut expected = vec![0x6b, 0xfc, 0xff];
+    expected.extend(v2(0xf3));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn negate_single_emits_operand_then_0xf5() {
+    // Single operand (tag 10): RT_TYPE_OFFSET[10]=3 -> 3+0xf2 = 0xf5.
+    let mut a = NodeArena::new();
+    let v = var_load_typed(&mut a, 10, 3, -4); // [0x6e,0xfc,0xff]
+    let n = negate(&mut a, v);
+    let mut expected = vec![0x6e, 0xfc, 0xff];
+    expected.extend(v2(0xf5));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn negate_double_emits_operand_then_0xf6() {
+    // Double operand (tag 11): RT_TYPE_OFFSET[11]=4 -> 4+0xf2 = 0xf6.
+    let mut a = NodeArena::new();
+    let v = var_load_typed(&mut a, 11, 4, 0xff74u16 as i16); // [0x6f,0x74,0xff]
+    let n = negate(&mut a, v);
+    let mut expected = vec![0x6f, 0x74, 0xff];
+    expected.extend(v2(0xf6));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn negate_currency_emits_operand_then_0xf6() {
+    // Currency operand (tag 12): RT_TYPE_OFFSET[12]=10 -> special 0xf6.
+    let mut a = NodeArena::new();
+    let v = var_load_typed(&mut a, 12, 6, -8); // [0x6d,0xf8,0xff]
+    let n = negate(&mut a, v);
+    let mut expected = vec![0x6d, 0xf8, 0xff];
+    expected.extend(v2(0xf6));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── Call-opcode computation kernel (RT_CALL_TYPECODE + inline map) ───────────
 //
 // The call emitter computes its base opcode as map(type_code(kind,ref,mask)).
