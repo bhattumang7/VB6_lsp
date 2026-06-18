@@ -31,6 +31,7 @@ pub mod emit;
 pub mod lower;
 pub mod node;
 pub mod proc_binder;
+pub mod sym_record;
 pub mod tables;
 
 pub use bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame, PROC_PARAM_BASE};
@@ -39,3 +40,4 @@ pub use emit::{Emitter, RefDescriptor};
 pub use lower::{lower_proc, global_frame_from_types, LowerError};
 pub use node::{NodeArena, NodeRef, RawNode};
 pub use proc_binder::ProcBinder;
+pub use sym_record::{CalleeTypeInfo, MemberRecord};
