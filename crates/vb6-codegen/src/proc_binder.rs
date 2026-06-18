@@ -1,29 +1,26 @@
 //! Procedure-level binding driver: declaration, name resolution, and expression
 //! tree construction for one procedure under compilation.
 //!
-//! Covers locals, parameters, and module-level globals.  Member-access
-//! (`EbAdjustBoundExpr`, `EbResolveMemberAccess3`), object refs
-//! (`EbResolveObjectRef`), and proc-level symbols (`EbGetProcEntry`) all require
-//! the VBA6 module symbol table and compilation context structures (ECX+0xd8
-//! proc entry, ECX+0x2c module table, etc.) and remain unimplemented.
+//! Covers locals, parameters, and module-level globals.  Member access, object
+//! references, and proc-level symbols all require the module symbol table and
+//! compilation-context structures and remain unimplemented.
 //!
 //! ## Name-binding kinds (word\[7\] of a bound name node)
 //!
-//! After EbBindName resolves a name, `word[7]` of the name node encodes what
-//! was found:
+//! After a name is resolved, `word[7]` of the name node encodes what was found:
 //!
 //! | word\[7\] | Kind |
 //! |----------|------|
 //! | 2 | Local variable (frame offset in word\[4\] high 16) |
 //! | 3 | Sub/Function call |
 //! | 5 | Array element |
-//! | 9 | Resolved expression (EbResolveAndAdjustExpr) |
+//! | 9 | Resolved expression |
 //! | 10 | Object/member reference |
 
 use crate::bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame};
 use crate::node::{NodeArena, NodeRef};
 
-/// The binding kind stored in `word[7]` of a name node after EbBindName runs.
+/// The binding kind stored in `word[7]` of a name node after name resolution.
 /// Only `Local` (2) is directly emittable via `make_load_node`; the others
 /// require additional rewriting that depends on the symbol table.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -110,7 +107,7 @@ impl ProcBinder {
     /// Pass it directly to `Emitter::emit_expr` to produce the load bytes.
     ///
     /// Returns `None` when the name is not a declared local.  Full module-scope
-    /// resolution (globals, proc calls) requires porting EbBindName.
+    /// resolution (globals, proc calls) requires the module symbol table.
     pub fn bind_local_load(
         &self,
         arena: &mut NodeArena,
@@ -154,8 +151,7 @@ impl ProcBinder {
 
     /// Bind a name reference: tries locals, then parameters, then module globals.
     /// Panics with `unimplemented!` for member refs, object refs, proc-level
-    /// symbols, and built-ins — those require EbBindName @ 0fab7ad0 and the full
-    /// VBA6 module symbol table.
+    /// symbols, and built-ins — those require the full module symbol table.
     pub fn bind_name(&self, arena: &mut NodeArena, name: &str) -> NodeRef {
         if let Some(load) = self.frame.make_load_node(arena, name) {
             return load;
@@ -168,8 +164,8 @@ impl ProcBinder {
         }
         unimplemented!(
             "ProcBinder::bind_name: '{}' is not a declared local, parameter, or module global; \
-             member refs, object refs, proc calls, and built-ins require EbBindName @ 0fab7ad0 \
-             and the full VBA6 module symbol table",
+             member refs, object refs, proc calls, and built-ins require the full module \
+             symbol table",
             name
         );
     }

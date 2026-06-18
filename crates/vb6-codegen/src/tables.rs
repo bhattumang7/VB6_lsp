@@ -109,8 +109,8 @@ pub const RT_STORE_BY_CTX: [u8; 8] = [
 
 /// Binary-op lookup base indexed by compile-time opcode (low 16 bits of
 /// node word[0]).  0x0446 marks an opcode slot not used for binary ops.
-/// Feeds step 1 of EbEmitBinaryOperation2: base = RT_BINOP_BASE[op].
-/// 226 entries (binop id 0..0xe1), 2-byte slots (DAT_0fab67d0, exact length).
+/// Feeds the binary-operation opcode calculation: base = RT_BINOP_BASE[op].
+/// 226 entries (binop id 0..0xe1), one 2-byte slot per entry.
 pub const RT_BINOP_BASE: [u16; 226] = [
     0x0446, 0x0446, 0x0446, 0x0446, 0x0446, 0x0446, 0x00be, 0x00c6, 0x00d3, 0x00e3, 0x00db, 0x00f2, 
        0x00eb, 0x00ed, 0x0446, 0x0446, 0x0446, 0x0446, 0x0446, 0x0446, 0x0446, 0x0446, 0x008e, 0x0096, 
@@ -136,7 +136,7 @@ pub const RT_BINOP_BASE: [u16; 226] = [
 /// Per-opcode dispatch flag indexed by compile-time opcode.
 /// Bit 0x10 set -> comparison path (use LHS type tag); clear -> arithmetic
 /// path (use result type tag).
-/// 232 entries (token id 0..0xe7), 1-byte slots (DAT_0faaca30, exact length).
+/// 232 entries (token id 0..0xe7), one byte per entry.
 pub const RT_DISPATCH_FLAG: [u8; 232] = [
     0x00, 0x43, 0x43, 0x43, 0x43, 0x43, 0x44, 0x44, 0x44, 0x44, 0x44, 0x44, 
        0x44, 0x44, 0x44, 0x44, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x48, 0x48, 
@@ -160,9 +160,9 @@ pub const RT_DISPATCH_FLAG: [u8; 232] = [
        0x00, 0x00, 0x00, 0x00, 
 ];
 
-/// Type-tag -> raw offset used in nOpcode calculation.
-/// iVar4 = RT_TYPE_OFFSET[type_tag]; then 10->4 and 9->1 are applied.
-/// 28 entries (type tag 0..0x1b), 4-byte i32 slots (DAT_0fab4c98, exact length).
+/// Type-tag -> raw offset used in the opcode calculation.
+/// offset = RT_TYPE_OFFSET[type_tag]; then 10->4 and 9->1 are applied.
+/// 28 entries (type tag 0..0x1b), one i32 per entry.
 /// Sentinel value 19 marks type tags unused in binary-op dispatch.
 pub const RT_TYPE_OFFSET: [i32; 28] = [
     19, 19, 19, 9, 19, 0, 1, 19, 
@@ -171,13 +171,12 @@ pub const RT_TYPE_OFFSET: [i32; 28] = [
        19, 19, 2, 0, 
 ];
 
-/// Runtime opcode byte table indexed by nOpcode.  Read as
-/// DAT_0fab5f20[nOpcode * 2] (2 bytes per slot; only the first byte is used).
+/// Runtime opcode byte table indexed by opcode N (one 2-byte slot per entry;
+/// only the first byte is used).
 /// If the byte is < 0xfb: emit 1 byte.
-/// If the byte is >= 0xfb: emit that byte as an escape prefix then nOpcode as
+/// If the byte is >= 0xfb: emit that byte as an escape prefix then N as
 /// u8 (N & 0xff) -- the compile side of the runtime 6-page encoding.
-/// 1096 entries (opcode N 0..0x447), first byte of each 2-byte slot
-/// (DAT_0fab5f20, exact length: ends where the pointer table at 0fab67b0 begins).
+/// 1096 entries (opcode N 0..0x447).
 pub const RT_OPCODE_BYTE: [u8; 1096] = [
     0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 
        0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 0xfb, 
@@ -275,10 +274,14 @@ pub const RT_OPCODE_BYTE: [u8; 1096] = [
 
 
 /// Maps VB6 internal type-kind code (hi16 of node word\[0\] as i32) to a
-/// type-class index used by EbEmitAssignOp to compute the store-opcode index.
+/// type-class index used to compute the `=` store-opcode index.
 /// 28 entries (indices 0–27).  Class 9 = String-like (remapped to 1 before
 /// opcode addition), class 10 = Object-like (remapped to 4 on the Currency
 /// sub-path), class 19 = no-emit sentinel.
+///
+/// NOTE: provisional. This recodes the store-opcode selection in terms of a
+/// class index; it reproduces the confirmed numeric-scalar store bytes but the
+/// variant / currency / object combinations are not yet independently verified.
 pub const RT_TYPE_KIND_CLASS: [i32; 28] = [
     19, 19, 19,  9, 19,
      0,  1, 19,  2, 19,
@@ -288,10 +291,11 @@ pub const RT_TYPE_KIND_CLASS: [i32; 28] = [
     19,  2,  0,
 ];
 
-/// Maps type-class index (output of [`RT_TYPE_KIND_CLASS`]) to the base opcode
-/// index passed to `EbEmitValue2` for a store.  14 entries (indices 0–13).
+/// Maps type-class index (output of [`RT_TYPE_KIND_CLASS`]) to the base store
+/// opcode index.  14 entries (indices 0–13).
 /// Final index = `RT_ASSIGN_BASE_OPCODE[lhs_class] + rhs_class` (rhs class 9
 /// is remapped to 1 and class 10 is remapped to 4 before addition).
+/// Provisional alongside [`RT_TYPE_KIND_CLASS`] — see its note.
 pub const RT_ASSIGN_BASE_OPCODE: [i32; 14] = [
     0x10c, 0x114, 0x11c, 0x124, 0x12c,
     0x104, 0x267, 0x0fc, 0x446, 0x150,

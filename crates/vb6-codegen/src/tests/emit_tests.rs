@@ -17,7 +17,7 @@ fn var_load(arena: &mut NodeArena, type_ctx: u16, offset: i16) -> NodeRef {
 
 /// Build a variable-load node carrying a VB6 type tag in `word[0]` high half.
 /// Comparison emission selects its opcode from the *LHS operand's* type tag
-/// (`EbEmitBinaryOperation2` comparison branch), so operands of a comparison
+/// (the binary-operation comparison branch), so operands of a comparison
 /// must carry their type tag, not just the load-time type context.
 fn var_load_typed(arena: &mut NodeArena, vb_type: u16, type_ctx: u16, offset: i16) -> NodeRef {
     let s = sym(arena, offset);
@@ -157,7 +157,7 @@ fn op_in_0x2c_to_0x35_emits_nothing() {
 // byte sequence: [lhs-load:3 bytes] [rhs-load:3 bytes] [op-byte(s)].
 //
 // Opcode derivation (verified against RT_BINOP_BASE / RT_TYPE_OFFSET /
-// RT_OPCODE_BYTE tables extracted from the DLL binary):
+// RT_OPCODE_BYTE tables):
 //
 //   AND (op 0x23=35): base=RT_BINOP_BASE[35]=0x0021=33, Long offset=2,
 //     n_opc=35, RT_OPCODE_BYTE[35]=0xc4  → 1 byte 0xc4
@@ -251,7 +251,7 @@ fn add_integer_emits_a9() {
 
 // ── Comparison operators (bound opcodes 0x26–0x2b) ─────────────────────────
 //
-// These route through EbEmitBinaryOperation2's comparison branch
+// These route through the binary-operation comparison branch
 // (RT_DISPATCH_FLAG[op] & 0x10 != 0), which selects the typed opcode from the
 // *LHS operand's* type tag — not the comparison node's own type tag. Bound
 // opcodes: eq=0x26, ne=0x27, le=0x28, ge=0x29, lt=0x2a, gt=0x2b.
@@ -451,7 +451,7 @@ fn double_lit_non_assign_emits_f6_and_f64() {
 }
 
 // op=4 (String literal), null string (word[1] bit 15 set):
-//   EbEmitValue2(0x3b8) + EbEmitDword(0) → [0xf5, 0x00, 0x00, 0x00, 0x00]
+//   emit 0x3b8 then a zero dword → [0xf5, 0x00, 0x00, 0x00, 0x00]
 #[test]
 fn string_null_lit_emits_f5_and_four_zeros() {
     let mut a = NodeArena::new();
@@ -480,7 +480,7 @@ fn date_lit_assign_ctx_emits_fa_and_f64() {
 
 // ── Op 0x36 (Like operator) ───────────────────────────────────────────────
 //
-// EbEmitStatement case 0x36: emit LHS(call_ctx=1), RHS(call_ctx=1), then
+// case 0x36: emit LHS(call_ctx=1), RHS(call_ctx=1), then
 // emit_value2(0xd2).  RT_OPCODE_BYTE[0xd2=210]=0xfb ≥ 0xfb → extended form
 // [0xfb, 0xd2].
 //
@@ -502,8 +502,8 @@ fn op_0x36_like_emits_operands_then_fb_d2() {
 
 // ── Op 0x24 (Is operator) ─────────────────────────────────────────────────
 //
-// EbEmitStatement case 0x24: explicit Is path — NOT routed through
-// EbEmitBinaryOperation2.  Both operands use call_ctx=1; the comparison
+// case 0x24: explicit Is path — NOT routed through the general
+// binary-operation path.  Both operands use call_ctx=1; the comparison
 // opcode depends on the node's type_tag:
 //
 //   type_tag=0x10 → emit_value2(0xf0):   RT_OPCODE_BYTE[0xf0]=0x2a  → [0x2a]
@@ -511,7 +511,7 @@ fn op_0x36_like_emits_operands_then_fb_d2() {
 //   type_tag=10   → emit_value2(0x189) only when outer call_ctx is 1 or 3:
 //                   RT_OPCODE_BYTE[0x189]=0x37 → [0x37]
 //   type_tag=0xb/0xc → emit_value2(0x18a): RT_OPCODE_BYTE[0x18a]=0x39 → [0x39]
-//   other type_tag → no opcode (EbValidateTypeOperation returns 0)
+//   other type_tag → no opcode (per-type validation emits nothing)
 //
 // Operands are integer literals (call_ctx is ignored by emit_int_literal).
 
@@ -557,7 +557,7 @@ fn is_op_type_tag_single_outer_call_ctx_1_emits_operands_then_37() {
 #[test]
 fn is_op_type_tag_single_outer_call_ctx_0_emits_operands_only() {
     // Is with type_tag=10 (Single) and outer call_ctx=0 → no extra opcode
-    // (EbValidateTypeOperation requires nTypeFlags 1 or 3)
+    // (per-type validation requires type-flags 1 or 3)
     let mut a = NodeArena::new();
     let lhs = int_lit(&mut a, 6, 4); // [0xf4, 0x04]
     let rhs = int_lit(&mut a, 6, 7); // [0xf4, 0x07]
@@ -580,7 +580,7 @@ fn is_op_type_tag_double_outer_call_ctx_1_emits_operands_then_39() {
 
 #[test]
 fn is_op_unrecognised_type_tag_emits_operands_only() {
-    // type_tag=7 (not in the switch) → EbValidateTypeOperation returns 0,
+    // type_tag=7 (not in the switch) → per-type validation emits nothing,
     // no comparison opcode is emitted after the operands.
     let mut a = NodeArena::new();
     let lhs = int_lit(&mut a, 6, 9); // [0xf4, 0x09]
@@ -601,7 +601,7 @@ fn rt_opcode_byte_is_like_table_entries() {
     assert_eq!(RT_OPCODE_BYTE[0x18a], 0x39, "Is Double/Currency (0x18a) → 0x39");
 }
 
-// ── emit_reference 0x4000 branch (EbEmitExpression2 LAB_0fab3b03) ─────────
+// ── emit_reference 0x4000 branch ─────────────────────────────────────────
 
 fn ref_bytes(desc: &crate::emit::RefDescriptor, n_op: i32, f_flags: u32, n_type: i32) -> Vec<u8> {
     let arena = NodeArena::new();
@@ -616,7 +616,7 @@ fn local_desc(offset: i16) -> crate::emit::RefDescriptor {
 
 #[test]
 fn emit_reference_4000_object_ntype_emits_0x3e() {
-    // EbEmitExpression2 LAB_0fab3b03: f_flags & 0x4000, nType == 0x10 (Object/Dispatch).
+    // 0x4000 path: f_flags & 0x4000, nType == 0x10 (Object/Dispatch).
     // u_var6 = 0x23f; RT_OPCODE_BYTE[0x23f] = 0x3e (< 0xfb).
     // emit_opcode2(0x23f, 0): emit_value2 → [0x3e], emit_word(0) → [0x00, 0x00].
     use crate::tables::RT_OPCODE_BYTE;
@@ -628,7 +628,7 @@ fn emit_reference_4000_object_ntype_emits_0x3e() {
 
 #[test]
 fn emit_reference_4000_other_ntype_emits_0x262_opcode() {
-    // EbEmitExpression2 LAB_0fab3b03: f_flags & 0x4000, nType == 5 (Single).
+    // 0x4000 path: f_flags & 0x4000, nType == 5 (Single).
     // u_var6 = 0x262; emit_opcode2(0x262, 0).
     // RT_OPCODE_BYTE[0x262] = the value at that index (table-confirmed).
     use crate::tables::RT_OPCODE_BYTE;
@@ -656,7 +656,7 @@ fn emit_reference_4000_nop2_object_also_emits_0x3e() {
 fn emit_reference_kind1_nop1_long_normal_load() {
     // Baseline (no 0x4000): kind==1, nOp==1, nType==8 (Long vb-type).
     // nType 8 → RT_TYPE_OFFSET[8] = ? Long is the standard Integer load path.
-    // Actually nType in EbEmitExpression2 is the *internal* VB6 type, not vb-type.
+    // Actually nType in emit_reference is the *internal* VB6 type, not vb-type.
     // For a simple local-load (no 0x4000 flag), kind==1 → u_var7=0x1e0.
     // nType=8 → RT_TYPE_OFFSET[8]; load result: u_var7 | off.
     // We test the real oracle path: Long local at -136 → [0x6c, 0x78, 0xff].
@@ -720,7 +720,7 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
 //   word[1] = flags (0 = op-kind 0, no 0x4000 Set flag, no byte-5 0x80 flag)
 //   word[4] = NodeRef of the RHS child
 //
-// A "null-emit RHS" node has opcode=0 (hits the EbEmitStatement guard → return 0
+// A "null-emit RHS" node has opcode=0 (hits the emitter dispatch guard → return 0
 // immediately) but carries the desired type_tag in its high word so that
 // emit_assign_op reads the correct rhs_kind.
 //
@@ -740,7 +740,7 @@ fn assign_node(lhs_kind: u16, rhs_kind: u16) -> (NodeArena, NodeRef) {
 #[test]
 fn assign_currency_lhs_rhs_kind_0xb_emits_0xf2() {
     // Currency LHS (kind=0xc) + RHS kind 0xb (Boolean/Variant):
-    // EbEmitAssignOp special-cases Currency LHS: rhs_kind 0xb → emit_value2(0x147).
+    // The assignment store path special-cases Currency LHS: rhs_kind 0xb → emit 0x147.
     // RT_OPCODE_BYTE[0x147=327]: row 40 (line 198 of tables), col 7 = 0xf2 < 0xfb → [0xf2].
     let (a, n) = assign_node(0xc, 0xb);
     assert_eq!(emit(&a, n), &[0xf2]);
@@ -757,8 +757,8 @@ fn assign_currency_lhs_rhs_kind_0xf_emits_fc4f() {
 #[test]
 fn assign_variant_group_no_flag_emits_nothing() {
     // LHS kind 0xb and RHS kind 0xb: both in {10,0xb,0xc} (Variant/Boolean group).
-    // Byte-5 flag 0x80 is clear (word[1]=0) → EbEmitAssignOp returns immediately.
-    // Trailing EbValidateTypeOperation(0xb, 0, context=0): context=0 ≠ 3 and ≠ 1
+    // Flag byte bit 0x80 clear (word[1]=0) → store path returns immediately.
+    // Trailing per-type validation(0xb, 0, context=0): context=0 ≠ 3 and ≠ 1
     // → returns 1, no bytes emitted.
     let (a, n) = assign_node(0xb, 0xb);
     assert_eq!(emit(&a, n), &[]);
@@ -786,7 +786,7 @@ fn assign_default_numeric_kind6_same_emits_fc15() {
 
 // ── traverse_node_tree ────────────────────────────────────────────────────────
 //
-// EbTraverseNodeTree walks a singly-linked list (opcodes 0x37/0x33) and emits
+// traverse_node_tree walks a singly-linked list (opcodes 0x37/0x33) and emits
 // each child statement.  Emission order is LAST-TO-FIRST: the function recurses
 // on the sibling (word[5]) before emitting the current child (word[4]), so for a
 // list [A, B] the byte order is: B's bytes, then A's bytes.
@@ -816,7 +816,7 @@ fn traverse_two_element_list_emits_last_to_first() {
     // List [A=field0, B=field4]:
     //   list_A → word[4]=child_A(field=0), word[5]=list_B
     //   list_B → word[4]=child_B(field=4), word[5]=0
-    // EbTraverseNodeTree recurses on sibling first → emits B then A.
+    // traverse_node_tree recurses on sibling first → emits B then A.
     // Expected: [0x94,0x08,0x00,0x04,0x00, 0x94,0x08,0x00,0x00,0x00]
     let mut a = NodeArena::new();
     let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // null sentinel
@@ -854,4 +854,501 @@ fn traverse_non_list_node_emits_it_directly() {
     let mut e = Emitter::new(&a);
     e.traverse_node_tree(g, 0);
     assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+}
+
+// ── Newly-covered node-emitter cases ───────────────────────────────────────
+//
+// Each of these cases is fully self-contained — it only emits children and a
+// fixed opcode selected by the case. The expected bytes are [child bytes…]
+// followed by the case's tail opcode encoded exactly as emit_value2 would
+// (`v2` below mirrors that 1-or-2-byte encoding from the extracted table).
+// `emit_value2`'s own byte encoding is verified exactly elsewhere; these tests
+// pin which opcode index each case selects and the child-emission order.
+
+/// Predict the bytes emit_value2(n) emits: 1 byte if `< 0xfb`, else the
+/// escape byte followed by `n as u8`.
+fn v2(n: usize) -> Vec<u8> {
+    use crate::tables::RT_OPCODE_BYTE;
+    let b = RT_OPCODE_BYTE[n];
+    if b < 0xfb {
+        vec![b]
+    } else {
+        vec![b, n as u8]
+    }
+}
+
+/// Bytes a `global_long_load` child emits at field offset 0 / 4.
+const GL0: [u8; 5] = [0x94, 0x08, 0x00, 0x00, 0x00];
+const GL4: [u8; 5] = [0x94, 0x08, 0x00, 0x04, 0x00];
+
+/// A node whose `word[5]` points at `child` (the list/traversal operand used by
+/// the `0x3a/0x3b/0x4d/0x4f/0x50/0x53/0x56..0x59` cases).
+fn w5_node(a: &mut NodeArena, op: u16, child: NodeRef) -> NodeRef {
+    a.alloc(NodeArena::node(op, 0, 0, child.0, 0, 0))
+}
+
+/// Build expected bytes: `GL0` followed by the tail opcode `n`.
+fn gl0_then(n: usize) -> Vec<u8> {
+    let mut v = GL0.to_vec();
+    v.extend(v2(n));
+    v
+}
+
+#[test]
+fn case_0x33_traverses_node_list() {
+    // word[4] = child, word[5] = 0 (no sibling). traverse_node_tree emits child.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x33, 0, child.0, 0, 0, 0));
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
+#[test]
+fn case_0x37_process_linked_list_forward_order() {
+    // Two-element forward list [A=field0, B=field4]:
+    //   list_a → word[4]=child_a, word[5]=list_b
+    //   list_b → word[4]=child_b, word[5]=0
+    // process_linked_list emits in FORWARD order: A then B (unlike traverse).
+    let mut a = NodeArena::new();
+    let child_a = global_long_load(&mut a, 0);
+    let child_b = global_long_load(&mut a, 4);
+    let list_b = a.alloc(NodeArena::node(0x37, 0, child_b.0, 0, 0, 0));
+    let list_a = a.alloc(NodeArena::node(0x37, 0, child_a.0, list_b.0, 0, 0));
+    let mut expected = GL0.to_vec();
+    expected.extend_from_slice(&GL4);
+    assert_eq!(emit(&a, list_a), expected.as_slice());
+}
+
+#[test]
+fn case_0x3a_traverse_then_0x1ca() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x3a, child);
+    assert_eq!(emit(&a, n), gl0_then(0x1ca).as_slice());
+}
+
+#[test]
+fn case_0x3b_traverse_then_0x1cb() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x3b, child);
+    assert_eq!(emit(&a, n), gl0_then(0x1cb).as_slice());
+}
+
+#[test]
+fn case_0x4d_emit_child_then_0x23d() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x4d, child);
+    assert_eq!(emit(&a, n), gl0_then(0x23d).as_slice());
+}
+
+#[test]
+fn case_0x4e_emits_only_0x23e() {
+    // No child emit — just the tail opcode 0x23e.
+    let mut a = NodeArena::new();
+    let n = a.alloc(NodeArena::node(0x4e, 0, 0, 0, 0, 0));
+    assert_eq!(emit(&a, n), v2(0x23e).as_slice());
+}
+
+#[test]
+fn case_0x4f_traverse_then_0xfb() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x4f, child);
+    assert_eq!(emit(&a, n), gl0_then(0xfb).as_slice());
+}
+
+#[test]
+fn case_0x50_traverse_then_0xfa() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x50, child);
+    assert_eq!(emit(&a, n), gl0_then(0xfa).as_slice());
+}
+
+#[test]
+fn case_0x53_byte5_selects_0x1c0_or_0x1bf() {
+    // byte5 bit 0x40 clear → 0x1c0; set → 0x1bf. byte5 = (word[1] >> 8) & 0xff.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let clear = w5_node(&mut a, 0x53, child);
+    assert_eq!(emit(&a, clear), gl0_then(0x1c0).as_slice());
+
+    let mut b = NodeArena::new();
+    let child_b = global_long_load(&mut b, 0);
+    let mut node = NodeArena::node(0x53, 0, 0, child_b.0, 0, 0);
+    node.w[1] = 0x4000; // byte5 = 0x40 set
+    let set = b.alloc(node);
+    assert_eq!(emit(&b, set), gl0_then(0x1bf).as_slice());
+}
+
+#[test]
+fn case_0x59_traverse_then_0x1c1() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x59, child);
+    assert_eq!(emit(&a, n), gl0_then(0x1c1).as_slice());
+}
+
+#[test]
+fn case_0x5c_emits_only_0x162() {
+    let mut a = NodeArena::new();
+    let n = a.alloc(NodeArena::node(0x5c, 0, 0, 0, 0, 0));
+    assert_eq!(emit(&a, n), v2(0x162).as_slice());
+}
+
+#[test]
+fn case_0x5e_emit_child_then_0x40a() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x5e, child);
+    assert_eq!(emit(&a, n), gl0_then(0x40a).as_slice());
+}
+
+#[test]
+fn case_0x5f_emit_child_then_0x40b() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x5f, child);
+    assert_eq!(emit(&a, n), gl0_then(0x40b).as_slice());
+}
+
+#[test]
+fn case_0x73_emits_0x266_with_child_word4_low() {
+    // case 0x73: emit opcode 0x266 with low16 of child's word[4].
+    // The child is never emitted — only its word[4] is read.
+    let mut a = NodeArena::new();
+    let child = a.alloc(NodeArena::node(0, 0, 0x9999_1234, 0, 0, 0)); // word[4] low = 0x1234
+    let n = a.alloc(NodeArena::node(0x73, 0, child.0, 0, 0, 0));
+    let mut expected = v2(0x266);
+    expected.extend_from_slice(&[0x34, 0x12]); // operand 0x1234 LE
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+// ── case 0xf sub-dispatch (op-class in word[1] bits 8..10) ───────────────────
+
+#[test]
+fn case_0xf_class0_flag_clear_emits_child_ctx1() {
+    // op-class 0, flag 0x8000 clear → emit child (word[4]) with context 1.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0xf, 0, child.0, 0, 0, 0)); // word[1]=0
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
+#[test]
+fn case_0xf_class2_emits_child_ctx3() {
+    // op-class 2 → emit child (word[4]) with context 3, return.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0xf, 0, child.0, 0, 0, 0);
+    node.w[1] = 2 << 8; // op-class 2
+    let n = a.alloc(node);
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
+#[test]
+fn case_0xf_class0_flag_set_plain_child_emits_ctx3() {
+    // op-class 0, flag 0x8000 set, child opcode not in {0x60,0x69,0x5e} →
+    // emit child with context 3, return (no tail opcode).
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0); // opcode 0x77
+    let mut node = NodeArena::node(0xf, 0, child.0, 0, 0, 0);
+    node.w[1] = 0x8000;
+    let n = a.alloc(node);
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
+#[test]
+fn case_0xf_class0_flag_set_special_child_emits_ctx1_then_0x18c() {
+    // op-class 0, flag 0x8000 set, child opcode == 0x5e → take the
+    // emit-child(ctx1) + tail-0x18c branch. The 0x5e child itself emits its
+    // own word[5] grandchild then opcode 0x40a (case 0x5e).
+    let mut a = NodeArena::new();
+    let grandchild = global_long_load(&mut a, 0);
+    let child = w5_node(&mut a, 0x5e, grandchild); // opcode 0x5e
+    let mut node = NodeArena::node(0xf, 0, child.0, 0, 0, 0);
+    node.w[1] = 0x8000;
+    let n = a.alloc(node);
+    // child(0x5e) → GL0 ++ v2(0x40a); then outer tail v2(0x18c).
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x40a));
+    expected.extend(v2(0x18c));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+// ── case 0x12 (member deref) portable paths ──────────────────────────────────
+
+#[test]
+fn case_0x12_object_typeexpr_emits_child_ctx2() {
+    // node hi == 0xf, child hi == 0x17 → emit child with context 2, return.
+    let mut a = NodeArena::new();
+    // child: global-load node carrying type tag 0x17 in word[0] high half.
+    let child = a.alloc(NodeArena::node(0x77, 0x17, 0x0008, 2, 0, 0));
+    let n = a.alloc(NodeArena::node(0x12, 0xf, child.0, 0, 0, 0));
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
+#[test]
+fn case_0x12_non_0x3f_child_emits_nothing() {
+    // node hi != 0xf/0x17, child low16 != 0x3f → return with no bytes.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0); // opcode 0x77 != 0x3f
+    let n = a.alloc(NodeArena::node(0x12, 2, child.0, 0, 0, 0)); // node hi = 2
+    assert_eq!(emit(&a, n), &[]);
+}
+
+// ── case 0x14 (object cast) portable path ────────────────────────────────────
+
+#[test]
+fn case_0x14_object_emits_child_ctx3_then_0x3f9() {
+    // node hi == 0xf → emit child (word[4]) with context 3, tail 0x3f9.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x14, 0xf, child.0, 0, 0, 0));
+    assert_eq!(emit(&a, n), gl0_then(0x3f9).as_slice());
+}
+
+// ── cases 0x48..0x4b (traverse + opcode, 0x20000 result is self-contained) ───
+
+#[test]
+fn cases_0x48_to_0x4b_traverse_then_fixed_opcode() {
+    // For a node whose result type is 0x20000, the case is fully self-contained:
+    // traverse(word[5]) then emit the opcode, return. Opcode map:
+    //   0x48→0x158, 0x49→0x15a, 0x4a→0x159, 0x4b→0x15b.
+    for (op, value) in [(0x48u16, 0x158usize), (0x49, 0x15a), (0x4a, 0x159), (0x4b, 0x15b)] {
+        let mut a = NodeArena::new();
+        let child = global_long_load(&mut a, 0);
+        // type_tag 2 → word[0] high = 2 → node hi = 0x20000.
+        let n = a.alloc(NodeArena::node(op, 2, 0, child.0, 0, 0));
+        assert_eq!(emit(&a, n), gl0_then(value).as_slice(), "op {op:#x}");
+    }
+}
+
+// ── case 0x56 (0x4000 set: traverse + flag-selected opcode) ──────────────────
+
+#[test]
+fn case_0x56_set_selects_0x1bb_or_0x1bd() {
+    // flag 0x4000 set: value = (flag 0x8000 ? 2 : 0) + 0x1bb, then traverse.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0x56, 0, 0, child.0, 0, 0);
+    node.w[1] = 0x4000;
+    let n = a.alloc(node);
+    assert_eq!(emit(&a, n), gl0_then(0x1bb).as_slice());
+
+    let mut b = NodeArena::new();
+    let child_b = global_long_load(&mut b, 0);
+    let mut node_b = NodeArena::node(0x56, 0, 0, child_b.0, 0, 0);
+    node_b.w[1] = 0xc000; // 0x4000 | 0x8000
+    let set = b.alloc(node_b);
+    assert_eq!(emit(&b, set), gl0_then(0x1bd).as_slice());
+}
+
+// ── case 0x57 (non-0x4000: traverse + opcode + validate) ─────────────────────
+
+#[test]
+fn case_0x57_clear_selects_0x3fd_or_0x3fb() {
+    // flag 0x4000 clear: value = (flag 0x8000 ? 0x3fb : 0x3fd). type_tag 0 makes
+    // the trailing per-type validation a no-op.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x57, child); // word[1]=0
+    assert_eq!(emit(&a, n), gl0_then(0x3fd).as_slice());
+
+    let mut b = NodeArena::new();
+    let child_b = global_long_load(&mut b, 0);
+    let mut node_b = NodeArena::node(0x57, 0, 0, child_b.0, 0, 0);
+    node_b.w[1] = 0x8000;
+    let set = b.alloc(node_b);
+    assert_eq!(emit(&b, set), gl0_then(0x3fb).as_slice());
+}
+
+// ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
+
+#[test]
+fn case_0x58_byte5_clear_traverse_then_0x3ff() {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node(&mut a, 0x58, child); // byte5 = 0
+    assert_eq!(emit(&a, n), gl0_then(0x3ff).as_slice());
+}
+
+// ── Type-descriptor size model (sized UDT / object cases) ────────────────────
+//
+// A type descriptor is an arena record whose word[0] is the descriptor kind
+// (4 = fixed-size) and whose word[4] low half carries the resolved byte size.
+// `emit_get_type_size3` reads that size back (or the 0xffff_ffff sentinel for a
+// null / non-fixed descriptor). The sized cases emit `opcode + size` (LE u16).
+
+/// Allocate a fixed-size type descriptor carrying `size` bytes.
+fn type_desc(a: &mut NodeArena, size: u16) -> NodeRef {
+    a.alloc(NodeArena::node(4, 0, size as u32, 0, 0, 0))
+}
+
+/// Expected: opcode `n` (as emit_value2 would encode it) followed by `operand`
+/// as a little-endian u16.
+fn opc2(n: usize, operand: u16) -> Vec<u8> {
+    let mut v = v2(n);
+    v.extend_from_slice(&operand.to_le_bytes());
+    v
+}
+
+#[test]
+fn case_0x39_emits_0x20e_with_resolved_size() {
+    // inner = word[5]; descriptor = inner.word[5]; size 0x10 → opcode 0x20e + 0x0010.
+    let mut a = NodeArena::new();
+    let desc = type_desc(&mut a, 0x10);
+    let inner = a.alloc(NodeArena::node(0, 0, 0, desc.0, 0, 0)); // word[5] = desc
+    let n = a.alloc(NodeArena::node(0x39, 0, 0, inner.0, 0, 0)); // word[5] = inner
+    assert_eq!(emit(&a, n), opc2(0x20e, 0x10).as_slice());
+}
+
+#[test]
+fn case_0x39_null_descriptor_emits_0xffff_sentinel() {
+    // inner.word[5] == 0 → no descriptor → size sentinel 0xffff_ffff → operand 0xffff.
+    let mut a = NodeArena::new();
+    let inner = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let n = a.alloc(NodeArena::node(0x39, 0, 0, inner.0, 0, 0));
+    assert_eq!(emit(&a, n), opc2(0x20e, 0xffff).as_slice());
+}
+
+#[test]
+fn case_0x39_non_fixed_descriptor_emits_sentinel() {
+    // descriptor kind != 4 → sentinel.
+    let mut a = NodeArena::new();
+    let desc = a.alloc(NodeArena::node(7, 0, 0x10, 0, 0, 0)); // kind 7, not fixed-size
+    let inner = a.alloc(NodeArena::node(0, 0, 0, desc.0, 0, 0));
+    let n = a.alloc(NodeArena::node(0x39, 0, 0, inner.0, 0, 0));
+    assert_eq!(emit(&a, n), opc2(0x20e, 0xffff).as_slice());
+}
+
+#[test]
+fn case_0x24_udt_emits_0xef_with_size() {
+    // type_tag 0xf (UDT): emit both operands (ctx 1) then opcode 0xef + size.
+    // word[6] = descriptor (size 8). validate(0xf, 0x17, ctx=0) emits nothing.
+    let mut a = NodeArena::new();
+    let lhs = int_lit(&mut a, 6, 5); // [0xf4, 0x05]
+    let rhs = int_lit(&mut a, 6, 3); // [0xf4, 0x03]
+    let desc = type_desc(&mut a, 8);
+    let n = a.alloc(NodeArena::node(0x24, 0xf, lhs.0, rhs.0, desc.0, 0));
+    let mut expected = vec![0xf4, 0x05, 0xf4, 0x03];
+    expected.extend(opc2(0xef, 8));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x1a_object_pow_emits_0xce_with_size() {
+    // type_tag 0xf → node hi 0xf0000: emit operands (ctx 2) then opcode 0xce + size.
+    let mut a = NodeArena::new();
+    let lhs = int_lit(&mut a, 6, 5);
+    let rhs = int_lit(&mut a, 6, 3);
+    let desc = type_desc(&mut a, 0x20);
+    let n = a.alloc(NodeArena::node(0x1a, 0xf, lhs.0, rhs.0, desc.0, 0));
+    let mut expected = vec![0xf4, 0x05, 0xf4, 0x03];
+    expected.extend(opc2(0xce, 0x20));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+// ── case 0xe op-kinds 1..7 (object/UDT assignment forms) ─────────────────────
+//
+// Built with a non-object LHS (so the object-LHS bail is not taken), a
+// no-emit RHS (opcode 0, emits nothing), op-class in word[1] bits 8..10, and a
+// size descriptor in word[6]. type_tag 8 (Long) makes the trailing validation a
+// no-op, so output is exactly the case's own opcode (+ size where sized).
+
+/// Build a case-0xe assignment node: op-class `class`, size descriptor `size`.
+fn assign_op_node(a: &mut NodeArena, class: u32, size: u16) -> NodeRef {
+    let rhs = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // no-emit RHS
+    let desc = type_desc(a, size);
+    let mut node = NodeArena::node(0xe, 8, rhs.0, 0, desc.0, 0); // LHS kind 8 (Long)
+    node.w[1] = class << 8; // op-class
+    a.alloc(node)
+}
+
+#[test]
+fn case_0xe_opclass1_udt_copy_emits_0x2fe_with_size() {
+    let mut a = NodeArena::new();
+    let n = assign_op_node(&mut a, 1, 0x10);
+    assert_eq!(emit(&a, n), opc2(0x2fe, 0x10).as_slice());
+}
+
+#[test]
+fn case_0xe_opclass2_set_emits_0x2fd() {
+    let mut a = NodeArena::new();
+    let n = assign_op_node(&mut a, 2, 0);
+    assert_eq!(emit(&a, n), v2(0x2fd).as_slice());
+}
+
+#[test]
+fn case_0xe_opclass3_emits_0x2f9_with_size() {
+    let mut a = NodeArena::new();
+    let n = assign_op_node(&mut a, 3, 0x18);
+    assert_eq!(emit(&a, n), opc2(0x2f9, 0x18).as_slice());
+}
+
+#[test]
+fn case_0xe_opclass4_emits_0x2fa_with_size() {
+    let mut a = NodeArena::new();
+    let n = assign_op_node(&mut a, 4, 0x18);
+    assert_eq!(emit(&a, n), opc2(0x2fa, 0x18).as_slice());
+}
+
+#[test]
+fn case_0xe_opclass5_emits_0x2fc_with_size() {
+    let mut a = NodeArena::new();
+    let n = assign_op_node(&mut a, 5, 0x18);
+    assert_eq!(emit(&a, n), opc2(0x2fc, 0x18).as_slice());
+}
+
+#[test]
+fn case_0xe_opclass7_me_assign_emits_0x41b() {
+    let mut a = NodeArena::new();
+    let n = assign_op_node(&mut a, 7, 0);
+    assert_eq!(emit(&a, n), v2(0x41b).as_slice());
+}
+
+// ── case 0x57 / 0x58 sized (0x4000 set / byte5 0x40 set) ──────────────────────
+
+#[test]
+fn case_0x57_set_emits_flag_selected_sized_opcode() {
+    // flag 0x4000 set, 0x8000 clear: opcode = ((!flags & 0x8000)|0xff0000)>>0xe = 0x3fe.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let desc = type_desc(&mut a, 0x10);
+    let mut node = NodeArena::node(0x57, 8, 0, child.0, desc.0, 0); // type_tag 8 → validate no-op
+    node.w[1] = 0x4000;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(opc2(0x3fe, 0x10));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x57_set_8000_emits_0x3fc_sized() {
+    // flag 0x4000 and 0x8000 set: opcode = ((0) | 0xff0000) >> 0xe = 0x3fc.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let desc = type_desc(&mut a, 0x10);
+    let mut node = NodeArena::node(0x57, 8, 0, child.0, desc.0, 0);
+    node.w[1] = 0xc000;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(opc2(0x3fc, 0x10));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x58_set_emits_0x400_sized() {
+    // byte5 bit 0x40 set (word[1] = 0x4000): opcode 0x400 + size.
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let desc = type_desc(&mut a, 0x10);
+    let mut node = NodeArena::node(0x58, 8, 0, child.0, desc.0, 0);
+    node.w[1] = 0x4000;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(opc2(0x400, 0x10));
+    assert_eq!(emit(&a, n), expected.as_slice());
 }
