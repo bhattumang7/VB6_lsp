@@ -251,8 +251,14 @@ impl<'a> Emitter<'a> {
                 iv
             }
             // cases 0xc / 0xd: expression-code sub-emission.
-            0xc => unimplemented!("expression-code emission (form 0); Phase 5"),
-            0xd => unimplemented!("expression-code emission (form 1); Phase 5"),
+            0xc => {
+                self.emit_expression_code2(false, node, context);
+                return 0;
+            }
+            0xd => {
+                self.emit_expression_code2(true, node, context);
+                return 0;
+            }
             // case 0xe: load / assign / object-reference path.
             // For a non-object target the body always runs; an object target with
             // certain flags needs the object-reference emit path (deferred). After
@@ -1145,6 +1151,27 @@ impl<'a> Emitter<'a> {
             let v = self.type_pool.extract_type_value2(p.w[4]);
             self.emit_opcode2(target as usize, v);
         }
+    }
+
+    /// Emit expression code (`EbEmitExpressionCode2`): emit the child (context 1),
+    /// then for an `0xf`-type child a sized opcode (`0xeb`/`0xed`), and always the
+    /// per-type validation. `store` selects the store variant (+2). The
+    /// `0x10`-type child branch is gated (its decompiled opcode is unverified).
+    fn emit_expression_code2(&mut self, store: bool, node: NodeRef, type_info: u32) {
+        let n = *self.arena.get(node);
+        self.emit_expr(NodeRef(n.w[4]), 1);
+        let child_tag = (self.arena.get(NodeRef(n.w[4])).w[0] as i32) >> 16;
+        let mut variant = 0;
+        if child_tag == 0xf {
+            let sz = self.emit_get_type_size3(n.w[6]);
+            self.emit_opcode2(0xeb + if store { 2 } else { 0 }, sz as u16);
+            variant = 0x17;
+        } else if child_tag == 0x10 {
+            unimplemented!(
+                "expression-code 0x10-type branch: decompiled opcode unverified; needs RE"
+            );
+        }
+        self.emit_validate_type_operation((n.w[0] as i32) >> 16, variant, type_info);
     }
 
     /// Emit a typed node (`FUN_0fabd27e`): dispatch on the node's opcode.

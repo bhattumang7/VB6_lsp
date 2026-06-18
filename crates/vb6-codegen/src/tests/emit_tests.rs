@@ -1639,6 +1639,20 @@ fn case_0x12_member_deref_0x160000_0x67_emits_pooled_2f6() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0xc_expression_code_0xf_child_sized_opcode() {
+    // 0xf-type child (emits nothing) → sized opcode 0xeb + size 8; node tag 0 so
+    // the validation emits nothing.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = a.alloc(NodeArena::node(0, 0xf, 0, 0, 0, 0)); // opcode 0, tag 0xf
+    let type_desc = a.alloc(NodeArena::node(4, 0, 8, 0, 0, 0)); // kind 4, size 8
+    let n = a.alloc(NodeArena::node(0xc, 0, child.0, 0, type_desc.0, 0)); // w4=child, w6=desc
+    let mut expected = v2(0xeb);
+    expected.extend_from_slice(&[0x08, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]
