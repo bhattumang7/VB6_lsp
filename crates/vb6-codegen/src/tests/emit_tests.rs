@@ -1378,6 +1378,27 @@ fn emit_call_finalize_type_node_region_is_gated() {
     Emitter::new(&a).emit_call(&desc, 0);
 }
 
+// A 0x61 call node routed through emit_expr assembles the CallDescriptor from
+// its words (word[2]=kind, word[3]=byref, word[5]=arg list, word[6]=callee,
+// word[7]=member id) and must produce the same bytes as the equivalent direct
+// emit_call (kind 4, ByRef, region 0x20000, member 7).
+#[test]
+fn case_0x61_call_node_assembles_descriptor_and_dispatches() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let callee = global_long_load(&mut a, 0); // emits GL0
+    // node(opcode, type_tag, w4, w5=arglist, w6=callee, w7=member)
+    let mut raw = NodeArena::node(0x61, 2, 0, 0, callee.0, 7); // type tag 2 → region 0x20000
+    raw.w[2] = 4; // convention kind
+    raw.w[3] = 1; // by-reference
+    let n = a.alloc(raw);
+
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x32c)); // call opcode 0x320 + 0xc
+    expected.extend_from_slice(&[0x07, 0x00]); // finalize trailing member-id word
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

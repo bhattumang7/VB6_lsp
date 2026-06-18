@@ -642,12 +642,29 @@ impl<'a> Emitter<'a> {
             }
             // case 0x60: member-reference coercion.
             0x60 => unimplemented!("member-reference coercion; Phase 4"),
-            // case 0x61: call / argument machinery — needs the symbol table and
-            // dispatch tables.
-            0x61 => unimplemented!(
-                "call / argument emission: needs the symbol table and dispatch \
-                 tables; Phase 5"
-            ),
+            // case 0x61: call site. Assemble a `CallDescriptor` from the bound
+            // call node and dispatch to `emit_call`. The convention kind and
+            // by-reference mode are resolved by the binder (the values the
+            // runtime derives from the callee's compiled type record) and carried
+            // on the node: `word[2]` = kind, `word[3]` = byref. The remaining
+            // fields mirror the runtime call node — `word[0]` type/region,
+            // `word[1]` flags, `word[5]` arg list, `word[6]` callee, `word[7]`
+            // low half the member-dispatch id, `word[8]` the callee's type
+            // descriptor (resolved to a size only when the dispatch record asks
+            // for one).
+            0x61 => {
+                let desc = CallDescriptor {
+                    kind: n.w[2] as i32,
+                    byref: n.w[3] as i32,
+                    flags: n.w[1],
+                    node_word0: n.w[0],
+                    callee: NodeRef(n.w[6]),
+                    arg_list: NodeRef(n.w[5]),
+                    member_id: n.w[7] as u16,
+                    size: self.emit_get_type_size3(n.w[8]) as u16,
+                };
+                return self.emit_call(&desc, context);
+            }
             // case 0x63: member-reference value: needs the type/string pool.
             0x63 => unimplemented!(
                 "member-reference value: needs the type/string pool; Phase 4"
