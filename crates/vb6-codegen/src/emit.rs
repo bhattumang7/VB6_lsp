@@ -219,13 +219,21 @@ impl<'a> Emitter<'a> {
                 self.emit_string_literal(&n);
                 return 0;
             }
-            // case 5: typed literal / typed store. Every branch first resolves a
-            // type size, which needs the type-descriptor model and type/string
-            // pool.
-            5 => unimplemented!(
-                "typed literal / store: needs the type-descriptor model and the \
-                 type/string pool; Phase 4"
-            ),
+            // case 5: typed node. Below the 0x12 opcode boundary the child opcode
+            // is propagated as the sub-result; otherwise emit the object guard
+            // (flag byte 0x40) and the per-type validation. (The `EbGetTypeSize3`
+            // call the runtime makes here is a pure read with a discarded result.)
+            5 => {
+                let child = *self.arena.get(NodeRef(n.w[4]));
+                let child_op = child.w[0] & 0xffff;
+                if child_op < 0x12 {
+                    return child_op;
+                }
+                if (n.w[1] >> 8) & 0x40 != 0 {
+                    self.emit_value2(0x202);
+                }
+                return self.emit_validate_type_operation(0xf, 0, context);
+            }
             // case 0xb: unary minus / negate (type-class-dependent opcode).
             0xb => {
                 self.emit_expr(n.lhs(), 2);
@@ -363,8 +371,11 @@ impl<'a> Emitter<'a> {
                 self.emit_expr(n.lhs(), 1);
                 0x135
             }
-            // case 0x11: type-code emission.
-            0x11 => unimplemented!("type-code emission; Phase 4"),
+            // case 0x11: emit the wrapped typed node with context 5.
+            0x11 => {
+                self.emit_typed_node(NodeRef(n.w[4]), 5);
+                return 0;
+            }
             // case 0x12: member dereference.
             0x12 => {
                 let child = n.lhs();
@@ -503,11 +514,18 @@ impl<'a> Emitter<'a> {
                 self.process_linked_list(node, context);
                 return 0;
             }
-            // case 0x38: nested member access size: needs the type-descriptor
-            // model.
-            0x38 => unimplemented!(
-                "nested member-access size: needs the type-descriptor model; Phase 4"
-            ),
+            // case 0x38: nested member-access size. Emit the inner list element,
+            // then the member size opcode 0x20d and per-type validation, both
+            // taken from the doubly-nested type node.
+            0x38 => {
+                let inner = *self.arena.get(NodeRef(n.w[5]));
+                self.emit_expr(NodeRef(inner.w[5]), 1);
+                let mid = *self.arena.get(NodeRef(inner.w[4]));
+                let piv = *self.arena.get(NodeRef(mid.w[4]));
+                let sz = self.emit_get_type_size3(piv.w[5]);
+                self.emit_opcode2(0x20d, sz as u16);
+                return self.emit_validate_type_operation((piv.w[0] as i32) >> 16, 0x17, 0);
+            }
             // case 0x39: emit the sized end-with opcode 0x20e.
             0x39 => {
                 let inner = *self.arena.get(NodeRef(n.w[5]));
@@ -1124,6 +1142,40 @@ impl<'a> Emitter<'a> {
         } else if opc == 0x6f {
             let v = self.type_pool.extract_type_value2(p.w[4]);
             self.emit_opcode2(target as usize, v);
+        }
+    }
+
+    /// Emit a typed node (`FUN_0fabd27e`): dispatch on the node's opcode.
+    /// `0x12` re-emits its child (context 5 promoted to 6); a plain node emits
+    /// with context 1 (object region) or the given mode; an opcode-`5` wrapper
+    /// emits the object guard + per-type validation when its child is at/above
+    /// the `0x12` boundary. The `0x60`/`0x69` resolved-reference forms need the
+    /// reference resolver and remain gated.
+    fn emit_typed_node(&mut self, node: NodeRef, mode: u32) {
+        let n = *self.arena.get(node);
+        let kind = n.w[0] & 0xffff;
+        if kind == 0x12 {
+            let m = if mode == 5 { 6 } else { mode };
+            self.emit_expr(NodeRef(n.w[4]), m);
+            return;
+        }
+        if kind == 0x60 || kind == 0x69 {
+            unimplemented!(
+                "typed node 0x60/0x69 reference resolution (FUN_0fab33e9/FUN_0fab397a); Phase 5"
+            );
+        }
+        if kind != 5 {
+            let m = if n.w[0] & 0xffff_0000 == 0xf_0000 { 1 } else { mode };
+            self.emit_expr(node, m);
+            return;
+        }
+        // opcode 5 wrapper (the EbGetTypeSize3 read here is discarded).
+        let child = *self.arena.get(NodeRef(n.w[4]));
+        if child.w[0] & 0xffff >= 0x12 {
+            if (n.w[1] >> 8) & 0x40 != 0 {
+                self.emit_value2(0x202);
+            }
+            self.emit_validate_type_operation(0xf, 0, mode);
         }
     }
 

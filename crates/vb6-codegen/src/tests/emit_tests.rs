@@ -1582,6 +1582,48 @@ fn case_0x6a_emits_callee_reference() {
     assert_eq!(emit(&a, n), GL0.as_slice());
 }
 
+// ── Type-descriptor cases (0x05, 0x11, 0x38) ─────────────────────────────────
+
+#[test]
+fn case_0x05_object_child_emits_guard() {
+    // Child opcode >= 0x12 with flag byte 0x40 set → object guard 0x202; the
+    // 0xf-type validation emits nothing at context 0.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = a.alloc(NodeArena::node(0x20, 0, 0, 0, 0, 0)); // opcode 0x20 >= 0x12
+    let mut raw = NodeArena::node(5, 0, child.0, 0, 0, 0);
+    raw.w[1] = 0x4000; // byte5 bit 0x40
+    let n = a.alloc(raw);
+    assert_eq!(emit(&a, n), v2(0x202).as_slice());
+}
+
+#[test]
+fn case_0x11_emits_wrapped_typed_node() {
+    // word[4] is a plain (non-object) node → emitted with context 5 (GL0).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x11, 0, child.0, 0, 0, 0));
+    assert_eq!(emit(&a, n), GL0.as_slice());
+}
+
+#[test]
+fn case_0x38_emits_member_size_0x20d() {
+    // inner.word[5] = dummy (emits nothing); inner.word[4] -> mid -> piv; piv's
+    // type descriptor has size 0x10 → opcode 0x20d + 0x0010; tag 0 → no validation.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let dummy = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // opcode 0 → emits nothing
+    let type_desc = a.alloc(NodeArena::node(4, 0, 0x10, 0, 0, 0)); // kind 4, size 0x10
+    let piv = a.alloc(NodeArena::node(0, 0, 0, type_desc.0, 0, 0)); // word[5]=type_desc, tag 0
+    let mid = a.alloc(NodeArena::node(0, 0, piv.0, 0, 0, 0)); // word[4]=piv
+    let inner = a.alloc(NodeArena::node(0, 0, mid.0, dummy.0, 0, 0)); // word[4]=mid, word[5]=dummy
+    let n = a.alloc(NodeArena::node(0x38, 0, 0, inner.0, 0, 0)); // word[5]=inner
+    let mut expected = v2(0x20d);
+    expected.extend_from_slice(&[0x10, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]
