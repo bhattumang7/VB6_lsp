@@ -1803,13 +1803,58 @@ fn case_0x6c_walks_arg_then_emits_target_opcode_member_word() {
 }
 
 #[test]
-fn case_0x6a_emits_callee_reference() {
-    // No argument list; emit the callee (GL0) with context 1; op-class 0.
+fn case_0x6a_class0_emits_callee_then_0x3ae() {
+    // No argument list; emit the callee (GL0, context 1); op-class 0 → opcode
+    // 0x3ae with the word[6] type size (0 here, word[6]=0), then the word[8]
+    // trailing word (0). Validation for node type 0 emits nothing.
     let mut a = NodeArena::new();
     let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
     let child = global_long_load(&mut a, 0);
-    let n = a.alloc(NodeArena::node(0x6a, 0, child.0, 0, 0, 0)); // w4=child, w5=0
-    assert_eq!(emit(&a, n), GL0.as_slice());
+    let n = a.alloc(NodeArena::node(0x6a, 0, child.0, 0, 0, 0)); // w4=child, w5=0, w6=0
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x3ae));
+    expected.extend_from_slice(&[0x00, 0x00]); // size 0 (word[6]==0)
+    expected.extend_from_slice(&[0x00, 0x00]); // word[8] trailing word
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x6a_class1_emits_0x3b0_with_word8() {
+    // op-class 1 → emit callee then sized opcode 0x3b0 with the word[8] operand
+    // and finish (no trailing validation).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0x6a, 0, child.0, 0, 0, 0);
+    node.w[1] = 1 << 8; // op-class 1
+    node.w[8] = 0x0044; // word[8] operand
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x3b0));
+    expected.extend_from_slice(&[0x44, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x6a_class0_flag80_emits_0x3f2_and_two_sizes() {
+    // op-class 0 with flag byte bit 0x80 set → opcode 0x3f2 with the word[6]
+    // size, then the word[7] size, then the word[8] trailing word.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let d6 = a.alloc(NodeArena::node(4, 0, 0x12, 0, 0, 0)); // size 0x12
+    let d7 = a.alloc(NodeArena::node(4, 0, 0x34, 0, 0, 0)); // size 0x34
+    let mut node = NodeArena::node(0x6a, 0, child.0, 0, d6.0, 0); // word[6]=d6
+    node.w[1] = 0x8000; // byte5 bit 0x80
+    node.w[7] = d7.0;
+    node.w[8] = 0x0055;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x3f2));
+    expected.extend_from_slice(&[0x12, 0x00]); // word[6] size
+    expected.extend_from_slice(&[0x34, 0x00]); // word[7] size
+    expected.extend_from_slice(&[0x55, 0x00]); // word[8] trailing word
+    assert_eq!(emit(&a, n), expected.as_slice());
 }
 
 // ── Type-descriptor cases (0x05, 0x11, 0x38) ─────────────────────────────────

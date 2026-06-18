@@ -963,14 +963,40 @@ impl<'a> Emitter<'a> {
                 "binary-operation setup + reference emission (FUN_0fae5b47/FUN_0fab397a); Phase 5"
             ),
             // case 0x6a: member-call instruction. Process the argument list, emit
-            // the callee reference, and propagate the op-class (word[1] bits 8..9)
-            // as the sub-result.
+            // the callee reference (context 1), then an op-class-selected
+            // instruction opcode (word[1] bits 8..9): classes 1/2 emit a sized
+            // opcode (0x3b0/0x3b1) with the word[8] operand and finish; classes
+            // 0/3 emit 0x3ae/0x3af with the word[6] type size (or 0x3f2 + the
+            // word[7] size when the flag byte bit 0x80 is set), the word[8]
+            // trailing word, and the per-type validation.
             0x6a => {
                 if n.w[5] != 0 {
                     self.process_linked_list(NodeRef(n.w[5]), 3);
                 }
                 self.emit_expr(NodeRef(n.w[4]), 1);
-                return (n.w[1] & 0x300) >> 8;
+                let opcode = match (n.w[1] & 0x300) >> 8 {
+                    0 => 0x3ae,
+                    1 => {
+                        self.emit_opcode2(0x3b0, n.w[8] as u16);
+                        return 0;
+                    }
+                    2 => {
+                        self.emit_opcode2(0x3b1, n.w[8] as u16);
+                        return 0;
+                    }
+                    3 => 0x3af,
+                    _ => return 0,
+                };
+                let size = if n.w[6] != 0 { self.emit_get_type_size3(n.w[6]) } else { 0 };
+                if (n.w[1] >> 8) & 0x80 == 0 {
+                    self.emit_opcode2(opcode, size as u16);
+                } else {
+                    self.emit_opcode2(0x3f2, size as u16);
+                    let s7 = self.emit_get_type_size3(n.w[7]);
+                    self.emit_word2(s7 as u16);
+                }
+                self.emit_word2(n.w[8] as u16);
+                return self.emit_validate_type_operation((n.w[0] as i32) >> 16, 0x17, context);
             }
             // case 0x6b: store/let instruction. Opcode selected by flags and the
             // target's type region, then per-type validation.
