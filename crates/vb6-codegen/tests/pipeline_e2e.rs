@@ -403,6 +403,99 @@ fn e2e_nested_if() {
     );
 }
 
+// ── For loop (Long, no Step) ──────────────────────────────────────────────────
+//
+// For i = 1 To 10: r = r + i: Next i
+// Two Long locals: i=-136 (0xff78), r=-140 (0xff74)
+// Two hidden Long slots: hidden_0=-144 (0xff70), hidden_1=-148 (0xff6c)
+//
+// Byte layout:
+//   push Long 1              [f5 01 00 00 00]
+//   LdAddr i                 [04 78 ff]
+//   push Long 10             [f5 0a 00 00 00]
+//   ForInit no-step          [fe 64 6c ff 25 00]   frame_hidden=0xff6c, exit=37
+//   load r                   [6c 74 ff]
+//   load i                   [6c 78 ff]
+//   Long add                 [aa]
+//   store r                  [71 74 ff]
+//   LdAddr i                 [04 78 ff]
+//   ForNext no-step          [66 6c ff 13 00]      frame_hidden=0xff6c, back=19
+
+#[test]
+fn e2e_for_loop_long_no_step() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim i As Long, r As Long\r\n\
+             For i = 1 To 10\r\n\
+             r = r + i\r\n\
+             Next i\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0xf5, 0x01, 0x00, 0x00, 0x00,           // push Long 1 (start)
+            0x04, 0x78, 0xff,                         // LdAddr i
+            0xf5, 0x0a, 0x00, 0x00, 0x00,             // push Long 10 (end)
+            0xfe, 0x64, 0x6c, 0xff, 0x25, 0x00,       // ForInit no-step: hidden=0xff6c, exit=37
+            0x6c, 0x74, 0xff,                         // load Long r
+            0x6c, 0x78, 0xff,                         // load Long i
+            0xaa,                                     // Long add
+            0x71, 0x74, 0xff,                         // store Long r
+            0x04, 0x78, 0xff,                         // LdAddr i
+            0x66, 0x6c, 0xff, 0x13, 0x00,             // ForNext no-step: hidden=0xff6c, back=19
+        ]
+    );
+}
+
+// ── For loop (Long, with Step) ────────────────────────────────────────────────
+//
+// For i = 1 To 10 Step 2: r = r + i: Next i
+// Same frame layout as above.
+//
+// Byte layout:
+//   push Long 1              [f5 01 00 00 00]
+//   LdAddr i                 [04 78 ff]
+//   push Long 10             [f5 0a 00 00 00]
+//   push Long 2              [f5 02 00 00 00]
+//   ForInit with-step        [fe 6c 6c ff 2a 00]   frame_hidden=0xff6c, exit=42
+//   load r                   [6c 74 ff]
+//   load i                   [6c 78 ff]
+//   Long add                 [aa]
+//   store r                  [71 74 ff]
+//   LdAddr i                 [04 78 ff]
+//   ForNext with-step        [67 6c ff 18 00]      frame_hidden=0xff6c, back=24
+
+#[test]
+fn e2e_for_loop_long_with_step() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim i As Long, r As Long\r\n\
+             For i = 1 To 10 Step 2\r\n\
+             r = r + i\r\n\
+             Next i\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[
+            0xf5, 0x01, 0x00, 0x00, 0x00,           // push Long 1 (start)
+            0x04, 0x78, 0xff,                         // LdAddr i
+            0xf5, 0x0a, 0x00, 0x00, 0x00,             // push Long 10 (end)
+            0xf5, 0x02, 0x00, 0x00, 0x00,             // push Long 2 (step)
+            0xfe, 0x6c, 0x6c, 0xff, 0x2a, 0x00,       // ForInit with-step: hidden=0xff6c, exit=42
+            0x6c, 0x74, 0xff,                         // load Long r
+            0x6c, 0x78, 0xff,                         // load Long i
+            0xaa,                                     // Long add
+            0x71, 0x74, 0xff,                         // store Long r
+            0x04, 0x78, 0xff,                         // LdAddr i
+            0x67, 0x6c, 0xff, 0x18, 0x00,             // ForNext with-step: hidden=0xff6c, back=24
+        ]
+    );
+}
+
 // ── Two sequential assignments ────────────────────────────────────────────────
 //
 // `b = a` then `a = b` with two Long locals:

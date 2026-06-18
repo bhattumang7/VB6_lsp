@@ -11,6 +11,8 @@
 //! implemented.  Unhandled constructs return [`LowerError::UnsupportedNode`]
 //! or [`LowerError::UnsupportedType`] — never a silently wrong byte.
 
+use std::cell::Cell;
+
 use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind};
 use vb6_syntax::support::arena::NodeId;
@@ -98,11 +100,32 @@ pub fn global_frame_from_types(
     Ok(out)
 }
 
+/// Count the number of For loops directly or indirectly in an AST subtree.
+/// Each For loop needs 2 hidden Long slots in the frame.
+fn count_for_loops(node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    match expr_arena.get(node_id) {
+        ExprNode::For { body, .. } => 1 + count_for_loops(*body, expr_arena),
+        ExprNode::Block { stmts } => {
+            stmts.iter().map(|&id| count_for_loops(id, expr_arena)).sum()
+        }
+        ExprNode::If { then_body, else_body, .. } => {
+            count_for_loops(*then_body, expr_arena)
+                + else_body.map(|id| count_for_loops(id, expr_arena)).unwrap_or(0)
+        }
+        ExprNode::While { body, .. } => count_for_loops(*body, expr_arena),
+        ExprNode::Do { body, .. } => count_for_loops(*body, expr_arena),
+        _ => 0,
+    }
+}
+
 /// Lower a single `BoundProc` to its P-code byte vector.
 ///
 /// Frame layout follows VB6's exact convention: locals at negative offsets
 /// from -136 downward (4 bytes per Integer/Long/Single/Object, 8 bytes per
 /// Double/Currency), params at positive offsets from +12 upward.
+///
+/// For loops each need 2 hidden Long slots allocated below all user locals.
+/// These are pre-allocated here by scanning the body first.
 ///
 /// `module_desc` is the compiled module-object descriptor word — `0x0008` for
 /// the primary module in a single-module project (oracle-confirmed).
@@ -114,7 +137,15 @@ pub fn lower_proc(
 ) -> Result<Vec<u8>, LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
-    let local_types: Vec<VbaType> = proc.locals.iter().map(|v| v.vba_type.clone()).collect();
+    let mut local_types: Vec<VbaType> = proc.locals.iter().map(|v| v.vba_type.clone()).collect();
+    let user_local_count = local_types.len();
+
+    // Pre-allocate 2 Long hidden slots per For loop.
+    let for_count = count_for_loops(NodeId(proc.body), expr_arena);
+    for _ in 0..(for_count * 2) {
+        local_types.push(VbaType::Long);
+    }
+
     let param_types: Vec<VbaType> = proc.params.iter().map(|p| p.vba_type.clone()).collect();
     let param_byref: Vec<bool> = proc.params.iter().map(|p| !p.flags.by_val).collect();
     let global_types: Vec<VbaType> =
@@ -130,6 +161,8 @@ pub fn lower_proc(
         local_slots,
         param_slots,
         global_slots,
+        user_local_count,
+        for_next_pair: Cell::new(0),
     };
 
     let mut out = Vec::new();
@@ -145,6 +178,10 @@ struct LowerCtx<'m> {
     local_slots: Vec<LocalVar>,
     param_slots: Vec<ParamVar>,
     global_slots: Vec<GlobalVar>,
+    /// Number of user-declared locals (hidden For-loop slots come after).
+    user_local_count: usize,
+    /// Which hidden-slot pair the next For loop should use.
+    for_next_pair: Cell<usize>,
 }
 
 impl<'m> LowerCtx<'m> {
@@ -209,6 +246,11 @@ fn lower_stmt(
         ExprNode::Do { kind, cond, body } => {
             let (kind, cond_id, body_id) = (*kind, *cond, *body);
             lower_do(ctx, kind, cond_id, body_id, expr_arena, out)
+        }
+        ExprNode::For { var, start, end, step, body } => {
+            let (var_id, start_id, end_id, step_id, body_id) =
+                (*var, *start, *end, *step, *body);
+            lower_for(ctx, var_id, start_id, end_id, step_id, body_id, expr_arena, out)
         }
         _ => Err(LowerError::UnsupportedNode),
     }
@@ -397,6 +439,115 @@ fn lower_do(
             Ok(())
         }
     }
+}
+
+/// Emit expression bytes with optional integer-literal coercion.
+fn lower_expr_to_bytes_coerced(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+    coerce_tag: Option<u16>,
+) -> Result<Vec<u8>, LowerError> {
+    let mut arena = NodeArena::new();
+    let root = lower_expr_coerced(ctx, node_id, expr_arena, &mut arena, coerce_tag)?;
+    let mut emitter = Emitter::new(&arena);
+    emitter.emit_expr(root, 0);
+    Ok(emitter.into_bytes())
+}
+
+/// `For var = start To end [Step step] ... Next`
+///
+/// Opcode layout (oracle-confirmed for Long counter, no-step):
+///   <start bytes>
+///   0x04 [2-byte frame_var]              ; LdAddr: push address of counter var
+///   <end bytes>
+///   0xfe 0x64 [frame_hidden] [exit_off]  ; ForInit no-step
+///   <body bytes>
+///   0x04 [2-byte frame_var]              ; LdAddr again for ForNext
+///   0x66 [frame_hidden] [body_start]     ; ForNext no-step; back_offset = body start
+///
+/// With-step replaces 0xfe 0x64 with 0xfe 0x6c and 0x66 with 0x67, and pushes
+/// the step value between end and ForInit.
+///
+/// frame_hidden: the second of two Long hidden frame slots pre-allocated for
+/// this For loop (user_local_count + 2*pair + 1).
+fn lower_for(
+    ctx: &LowerCtx,
+    var_id: NodeId,
+    start_id: NodeId,
+    end_id: NodeId,
+    step_id: Option<NodeId>,
+    body_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    // Resolve counter variable to its frame offset and type.
+    let resolution = ctx
+        .module
+        .resolutions
+        .get(&var_id.0)
+        .ok_or(LowerError::Unresolved)?;
+    let (frame_var, coerce_tag) = match resolution {
+        NameResolution::Local { local_idx, .. } => {
+            let slot = &ctx.local_slots[*local_idx];
+            let tag = vba_type_to_node_tag(ctx.local_type(*local_idx));
+            (slot.frame_offset, tag)
+        }
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+
+    // Claim the hidden-slot pair for this For loop.
+    let pair = ctx.for_next_pair.get();
+    ctx.for_next_pair.set(pair + 1);
+    let hidden_idx = ctx.user_local_count + 2 * pair + 1;
+    let frame_hidden = ctx.local_slots[hidden_idx].frame_offset;
+
+    let has_step = step_id.is_some();
+
+    // Emit start value (coerced to counter type).
+    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, start_id, expr_arena, coerce_tag)?);
+
+    // LdAddr: push address of counter variable (opcode 0x04 + 2-byte frame offset).
+    out.push(0x04);
+    out.extend_from_slice(&frame_var.to_le_bytes());
+
+    // Emit limit value (coerced to counter type).
+    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, end_id, expr_arena, coerce_tag)?);
+
+    // If with-step: emit step value.
+    if let Some(s_id) = step_id {
+        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, s_id, expr_arena, coerce_tag)?);
+    }
+
+    // ForInit: 2-byte opcode + 2-byte frame_hidden + 2-byte exit_offset placeholder.
+    let forinit_byte2: u8 = if has_step { 0x6c } else { 0x64 };
+    out.push(0xfe);
+    out.push(forinit_byte2);
+    out.extend_from_slice(&frame_hidden.to_le_bytes());
+    let exit_patch = out.len();
+    out.push(0x00);
+    out.push(0x00);
+
+    // Body starts immediately after ForInit.
+    let body_start = out.len() as u16;
+
+    lower_block(ctx, body_id, expr_arena, out)?;
+
+    // LdAddr counter again before ForNext.
+    out.push(0x04);
+    out.extend_from_slice(&frame_var.to_le_bytes());
+
+    // ForNext: 1-byte opcode + 2-byte frame_hidden + 2-byte back_offset.
+    let fornext_opcode: u8 = if has_step { 0x67 } else { 0x66 };
+    out.push(fornext_opcode);
+    out.extend_from_slice(&frame_hidden.to_le_bytes());
+    out.extend_from_slice(&body_start.to_le_bytes());
+
+    // Backpatch ForInit exit_offset to current position.
+    let exit_offset = out.len() as u16;
+    out[exit_patch..exit_patch + 2].copy_from_slice(&exit_offset.to_le_bytes());
+
+    Ok(())
 }
 
 fn lower_assign(
