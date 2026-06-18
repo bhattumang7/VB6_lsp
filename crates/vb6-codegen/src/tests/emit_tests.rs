@@ -1676,6 +1676,24 @@ fn case_0x5a_complex_binop_branch2() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x6e_with_member_emits_arglist_first() {
+    // member id 1 → EbFindActualNode emits the arg (GL0, context 3) first, then
+    // the target (GL4, context 6), opcode 0x398, pooled word, and member word 1.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let target = global_long_load(&mut a, 4); // GL4
+    let arg = global_long_load(&mut a, 0); // GL0
+    let mut raw = NodeArena::node(0x6e, 0, target.0, arg.0, 0, 0x99); // w4=target, w5=arg, w7=type
+    raw.w[8] = 1; // member id 1 (find-actual depth + trailing member word)
+    let n = a.alloc(raw);
+    let mut expected = GL0.to_vec(); // arg emitted first
+    expected.extend_from_slice(&GL4);
+    expected.extend(v2(0x398));
+    expected.extend_from_slice(&[0x00, 0x00, 0x01, 0x00]); // pooled word + member word
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]

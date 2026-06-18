@@ -1304,9 +1304,58 @@ impl<'a> Emitter<'a> {
     /// (context 5 for an object, else 6), the instruction opcode, an optional
     /// argument-size word (flag `0x4000`), the call result-size word (`is_call`),
     /// the type-pool index or 4-byte payload, and the trailing member word.
+    /// Walk a `0x37` wrapper chain emitting each child (and the final node) with
+    /// `flags`, up to `depth` links; return the unconsumed tail. (`EbFindActualNode`.)
+    fn emit_find_actual_node(&mut self, mut node: NodeRef, flags: u32, mut depth: i32) -> NodeRef {
+        while node.0 != 0 && (self.arena.get(node).w[0] & 0xffff) == 0x37 && depth != 0 {
+            let nn = *self.arena.get(node);
+            self.emit_expr(NodeRef(nn.w[4]), flags);
+            node = NodeRef(nn.w[5]);
+            depth -= 1;
+        }
+        if node.0 != 0 && depth != 0 {
+            self.emit_expr(node, flags);
+            node = NodeRef(0);
+        }
+        node
+    }
+
+    /// Walk a `0x37` chain emitting each element's trailing payload — a 4-byte
+    /// value (`0x01` node) or a pooled type word (`0x6f`). (`EbTraverseExprTree3`.)
+    fn emit_traverse_expr_tree3(&mut self, mut node: NodeRef, mut depth: i32) {
+        while node.0 != 0 && depth != 0 {
+            let n = *self.arena.get(node);
+            let (mut elem, next) = if n.w[0] & 0xffff == 0x37 {
+                (NodeRef(n.w[4]), NodeRef(n.w[5]))
+            } else {
+                (node, NodeRef(0))
+            };
+            if self.arena.get(elem).w[0] & 0xffff == 0x11 {
+                elem = NodeRef(self.arena.get(elem).w[4]);
+            }
+            let en = *self.arena.get(elem);
+            let s = en.w[0] as u16 as i16;
+            if s == 1 {
+                self.emit_dword(en.w[4]);
+            } else if s == 0x6f {
+                let v = self.type_pool.extract_type_value2(en.w[4]);
+                self.emit_word2(v);
+            }
+            node = next;
+            depth -= 1;
+        }
+    }
+
     fn emit_instruction2(&mut self, node: NodeRef, opcode: usize, has_arg: bool, is_call: bool) {
         let n = *self.arena.get(node);
         let op = n.w[0] & 0xffff;
+        // Top-level argument emission (returns the unconsumed tail for the
+        // trailing expr-tree pass).
+        let uvar6 = if n.w[5] != 0 {
+            self.emit_find_actual_node(NodeRef(n.w[5]), 3, (n.w[8] as i16) as i32)
+        } else {
+            NodeRef(0)
+        };
         if op == 0x6c || op == 0x6d {
             let mut cur = NodeRef(n.w[5]);
             loop {
@@ -1346,10 +1395,7 @@ impl<'a> Emitter<'a> {
             self.emit_word2(n.w[8] as u16);
         }
         if byte5 & 0x40 != 0 {
-            unimplemented!(
-                "instruction trailing expr-tree (byte5 0x40): needs EbFindActualNode / \
-                 EbTraverseExprTree3; Phase 5"
-            );
+            self.emit_traverse_expr_tree3(uvar6, (n.w[8] >> 16) as i16 as i32);
         }
     }
 
