@@ -486,9 +486,34 @@ impl<'a> Emitter<'a> {
             }
             // case 0x2c: assignment statement.
             0x2c => unimplemented!("assignment statement; Phase 5"),
-            // case 0x2d: typed assignment / error recovery (type error report +
-            // node mutation + assignment statement).
-            0x2d => unimplemented!("typed assignment / error recovery; Phase 5"),
+            // case 0x2d: typed assignment / error recovery. When the flag byte is
+            // clear and the assigned child is not object-typed, a child of type
+            // `0x10` emits its source (context 2) then the sized coercion opcode
+            // `0x2c7`; every other child type is a source-level type mismatch
+            // that the compiler reports as a diagnostic (no p-code). The
+            // remaining shapes re-emit through the assignment statement and need
+            // the resolver.
+            0x2d => {
+                let child = *self.arena.get(NodeRef(n.w[4]));
+                let byte5 = (n.w[1] >> 8) & 0xff;
+                if byte5 == 0 && (child.w[0] & 0xffff_0000) != 0xf0000 {
+                    let child_tag = (child.w[0] as i32) >> 16;
+                    if child_tag == 0x10 {
+                        self.emit_expr(NodeRef(n.w[5]), 2);
+                        let size = self.emit_get_type_size3(child.w[5]);
+                        self.emit_opcode2(0x2c7, size as u16);
+                        return 0;
+                    }
+                    unimplemented!(
+                        "typed-assignment type mismatch (child type {child_tag}): a \
+                         source-level type error, not valid bound input"
+                    );
+                }
+                unimplemented!(
+                    "typed-assignment fallthrough (object child / flag set): re-emits \
+                     through the assignment statement (resolver); Phase 5"
+                );
+            }
             // cases 0x2f / 0x30 / 0x31: sequence — emit both children.
             0x2f | 0x30 | 0x31 => {
                 let mut result = 0;
@@ -1266,9 +1291,8 @@ impl<'a> Emitter<'a> {
             self.emit_opcode2(0xeb + if store { 2 } else { 0 }, sz as u16);
             variant = 0x17;
         } else if child_tag == 0x10 {
-            unimplemented!(
-                "expression-code 0x10-type branch: decompiled opcode unverified; needs RE"
-            );
+            // Opcode 0xec (load) / 0xee (store); the variant stays 0 here.
+            self.emit_value2(0xec + if store { 2 } else { 0 });
         }
         self.emit_validate_type_operation((n.w[0] as i32) >> 16, variant, type_info);
     }

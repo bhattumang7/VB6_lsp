@@ -1856,6 +1856,42 @@ fn case_0xc_expression_code_0xf_child_sized_opcode() {
 }
 
 #[test]
+fn case_0xc_expression_code_0x10_child_emits_0xec() {
+    // 0x10-type child (emits nothing) → value opcode 0xec (load); node tag 0 so
+    // the validation emits nothing.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = a.alloc(NodeArena::node(0, 0x10, 0, 0, 0, 0)); // opcode 0, tag 0x10
+    let n = a.alloc(NodeArena::node(0xc, 0, child.0, 0, 0, 0)); // w4=child
+    assert_eq!(emit(&a, n), v2(0xec).as_slice());
+}
+
+#[test]
+fn case_0xd_expression_code_0x10_child_emits_0xee() {
+    // store variant (0xd) → opcode 0xee.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = a.alloc(NodeArena::node(0, 0x10, 0, 0, 0, 0));
+    let n = a.alloc(NodeArena::node(0xd, 0, child.0, 0, 0, 0));
+    assert_eq!(emit(&a, n), v2(0xee).as_slice());
+}
+
+#[test]
+fn case_0x2d_typed_assign_0x10_child_emits_0x2c7() {
+    // byte5 clear, non-object child of type 0x10: emit word[5] (here nothing)
+    // then sized opcode 0x2c7 with the child's type size.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let type_desc = a.alloc(NodeArena::node(4, 0, 0x10, 0, 0, 0)); // kind 4, size 0x10
+    let child = a.alloc(NodeArena::node(0, 0x10, 0, type_desc.0, 0, 0)); // tag 0x10, w5=desc
+    let nothing = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0)); // word[5] emits nothing
+    let n = a.alloc(NodeArena::node(0x2d, 0, child.0, nothing.0, 0, 0));
+    let mut expected = v2(0x2c7);
+    expected.extend_from_slice(&[0x10, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
 fn case_0x5a_complex_binop_branch2() {
     // flags 0x4000 set, 0x2000/0x8000 clear → traverse (nothing), emit operand
     // (GL0), opcode 0x390, then the two type words 0x22 and 0x11.
