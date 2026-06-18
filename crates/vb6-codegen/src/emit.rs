@@ -24,7 +24,8 @@
 
 use crate::buffer::PcodeStream;
 use crate::node::{NodeArena, NodeRef, RawNode};
-use crate::tables::{RT_BINOP_BASE, RT_CALL_TYPECODE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_STORE_BY_CTX, RT_TYPE_OFFSET};
+use crate::tables::{RT_BINOP_BASE, RT_CALL_TYPECODE, RT_DISPATCH_FLAG, RT_LOAD_BY_CTX, RT_OPCODE_BYTE, RT_RESULT_TYPE, RT_STORE_BY_CTX, RT_TYPE_OFFSET};
+use crate::type_pool::TypePool;
 
 /// Compute the call type-code for a call site: index [`RT_CALL_TYPECODE`] by the
 /// reference-vs-value path.
@@ -111,6 +112,7 @@ pub struct CallDescriptor {
 pub struct Emitter<'a> {
     arena: &'a NodeArena,
     stream: PcodeStream,
+    type_pool: TypePool,
 }
 
 impl<'a> Emitter<'a> {
@@ -118,7 +120,13 @@ impl<'a> Emitter<'a> {
         Self {
             arena,
             stream: PcodeStream::new(),
+            type_pool: TypePool::new(),
         }
+    }
+
+    /// The type-intern pool accumulated during emission (for inspection/tests).
+    pub fn type_pool(&self) -> &TypePool {
+        &self.type_pool
     }
 
     /// The runtime P-code bytes emitted so far.
@@ -469,14 +477,21 @@ impl<'a> Emitter<'a> {
                 return self.emit_expr(n.rhs(), context);
             }
             // case 0x32: type coercion (opcode by flag byte bit 0x80).
-            0x32 => unimplemented!("type coercion (0x40d/0x40e); Phase 4"),
+            0x32 => {
+                let target = if (n.w[1] >> 8) & 0x80 == 0 { 0x40d } else { 0x40e };
+                self.emit_type_coercion4(target, node);
+                return 0;
+            }
             // case 0x33: traverse the child list, emitting each element.
             0x33 => {
                 self.traverse_node_tree(node, 1);
                 return 0;
             }
             // case 0x34: type coercion (0x40f).
-            0x34 => unimplemented!("type coercion (0x40f); Phase 4"),
+            0x34 => {
+                self.emit_type_coercion4(0x40f, node);
+                return 0;
+            }
             // case 0x36: `Like` operator.
             0x36 => {
                 self.emit_expr(n.lhs(), 1);
@@ -547,7 +562,10 @@ impl<'a> Emitter<'a> {
                 unimplemented!("operand dispatch (non-0x20000 result); Phase 5");
             }
             // case 0x4c: type conversion (0x35d).
-            0x4c => unimplemented!("type conversion (0x35d); Phase 5"),
+            0x4c => {
+                self.emit_type_conversion2(0x35d, node, true);
+                return 0;
+            }
             // case 0x4d: emit child, then opcode 0x23d.
             0x4d => {
                 self.emit_expr(NodeRef(n.w[5]), 1);
@@ -566,7 +584,18 @@ impl<'a> Emitter<'a> {
                 0xfa
             }
             // cases 0x51 / 0x52: operator classification.
-            0x51 | 0x52 => unimplemented!("operator classification; Phase 5"),
+            0x51 | 0x52 => {
+                // Operator classification by op-class (word[1] bits 8..10).
+                if (n.w[1] >> 8) & 7 == 0 {
+                    self.traverse_node_tree(NodeRef(n.w[5]), 1);
+                    self.emit_value2(if op == 0x51 { 0x175 } else { 0x177 });
+                    return 0;
+                }
+                unimplemented!(
+                    "operator classification op-class {} (FUN_0faca4ae); Phase 5",
+                    (n.w[1] >> 8) & 7
+                );
+            }
             // case 0x53: traverse list, then opcode 0x1c0 / 0x1bf by flag bit 0x40.
             0x53 => {
                 self.traverse_node_tree(NodeRef(n.w[5]), 1);
@@ -577,14 +606,22 @@ impl<'a> Emitter<'a> {
                 }
             }
             // case 0x54: type coercion (0x410).
-            0x54 => unimplemented!("type coercion (0x410); Phase 4"),
+            0x54 => {
+                self.emit_type_coercion4(0x410, node);
+                return 0;
+            }
             // case 0x55: type conversion (0x35e).
-            0x55 => unimplemented!("type conversion (0x35e); Phase 5"),
+            0x55 => {
+                self.emit_type_conversion2(0x35e, node, true);
+                return 0;
+            }
             // case 0x56: type conversion (flag 0x4000 clear) or traverse +
             // flag-selected opcode (set).
             0x56 => {
                 if n.w[1] & 0x4000 == 0 {
-                    unimplemented!("type conversion; Phase 5");
+                    let target = ((n.w[1] & 0x8000) | 0x6f_0000) >> 0xe;
+                    self.emit_type_conversion2(target as i32, node, true);
+                    return 0;
                 }
                 let value = (if n.w[1] & 0x8000 != 0 { 2 } else { 0 }) + 0x1bb;
                 self.traverse_node_tree(NodeRef(n.w[5]), 1);
@@ -879,6 +916,87 @@ impl<'a> Emitter<'a> {
             self.emit_value2(0x202);
         }
         self.emit_validate_type_operation(n.type_tag(), 0, context)
+    }
+
+    // ── Type coercion / conversion ───────────────────────────────────────────
+
+    /// Sum the byte sizes contributed by an argument list, walking the `0x37` /
+    /// `0x33` list nodes (child = `word[4]`, next = `word[5]`). Each element's
+    /// size is `RT_RESULT_TYPE[element type tag]`, except an `0xf0000`-region
+    /// element contributes 4 when `flag` is set. (Port of `EbCalculateStructSize`.)
+    fn emit_calculate_struct_size(&self, list: NodeRef, flag: bool) -> i32 {
+        let mut total = 0i32;
+        let mut cur = list;
+        while cur.0 != 0 {
+            let n = *self.arena.get(cur);
+            let opc = (n.w[0] & 0xffff) as u16;
+            let elem = if opc == 0x37 || opc == 0x33 {
+                let e = NodeRef(n.w[4]);
+                cur = NodeRef(n.w[5]);
+                e
+            } else {
+                let e = cur;
+                cur = NodeRef(0);
+                e
+            };
+            if elem.0 != 0 {
+                let e = *self.arena.get(elem);
+                if e.w[0] & 0xffff_0000 == 0xf_0000 && flag {
+                    total += 4;
+                } else {
+                    let tag = (e.w[0] as i32) >> 16;
+                    total += RT_RESULT_TYPE[tag as usize] as i32;
+                }
+            }
+        }
+        total
+    }
+
+    /// Emit a structured type coercion (`EbEmitTypeCoercion4`): traverse the
+    /// source list, optionally emit the `0x411` prefix, then the coercion opcode
+    /// (operand = the interned type value of the source descriptor) followed by
+    /// the accumulated struct size.
+    fn emit_type_coercion4(&mut self, target: i32, src: NodeRef) {
+        let n = *self.arena.get(src);
+        let child = NodeRef(n.w[5]);
+        let mut size = self.emit_calculate_struct_size(child, true) + 4;
+        if child.0 != 0 {
+            self.traverse_node_tree(child, 1);
+        }
+        if target == 0x40d && (n.w[1] >> 8) & 0x40 != 0 {
+            self.emit_value2(0x411);
+            size += 4;
+        }
+        let descriptor = *self.arena.get(NodeRef(n.w[4]));
+        let v = self.type_pool.extract_type_value2(descriptor.w[4]);
+        self.emit_opcode2(target as usize, v);
+        self.emit_word2(size as u16);
+    }
+
+    /// Emit a type conversion (`EbEmitTypeConversion2`): emit the operand list
+    /// (linked-list walk when implicit, tree traversal when explicit), then the
+    /// conversion opcode with an operand taken from the source type node — either
+    /// the literal type code (`0x01`) or the interned type value (`0x6f`).
+    fn emit_type_conversion2(&mut self, target: i32, src: NodeRef, explicit: bool) {
+        let n = *self.arena.get(src);
+        let inner = *self.arena.get(NodeRef(n.w[5]));
+        let list = NodeRef(inner.w[5]);
+        if explicit {
+            self.traverse_node_tree(list, 1);
+        } else {
+            self.process_linked_list(list, 1);
+        }
+        let mut p = *self.arena.get(NodeRef(inner.w[4]));
+        if p.w[0] & 0xffff == 0x11 {
+            p = *self.arena.get(NodeRef(p.w[4]));
+        }
+        let opc = (p.w[0] as u16 as i16) as i32;
+        if opc == 1 {
+            self.emit_opcode2(target as usize, p.w[4] as u16);
+        } else if opc == 0x6f {
+            let v = self.type_pool.extract_type_value2(p.w[4]);
+            self.emit_opcode2(target as usize, v);
+        }
     }
 
     // ── Resolved-reference emission ──────────────────────────────────────────

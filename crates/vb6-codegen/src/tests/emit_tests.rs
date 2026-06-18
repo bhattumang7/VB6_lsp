@@ -1399,6 +1399,67 @@ fn case_0x61_call_node_assembles_descriptor_and_dispatches() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+// ── Type coercion / conversion cases ─────────────────────────────────────────
+
+#[test]
+fn case_0x32_coercion_emits_opcode_pool_index_and_size() {
+    // No child list (size 0 + 4 = 4); flag byte clear → target 0x40d; descriptor
+    // word[4] interns to pool index 0; emit 0x40d + 0x0000 + size 0x0004.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let desc = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0)); // descriptor word[4]=0x55
+    let n = a.alloc(NodeArena::node(0x32, 0, desc.0, 0, 0, 0)); // word[4]=desc, word[5]=0
+    let mut expected = v2(0x40d);
+    expected.extend_from_slice(&[0x00, 0x00, 0x04, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x34_coercion_target_0x40f() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let desc = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0));
+    let n = a.alloc(NodeArena::node(0x34, 0, desc.0, 0, 0, 0));
+    let mut expected = v2(0x40f);
+    expected.extend_from_slice(&[0x00, 0x00, 0x04, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x4c_conversion_literal_type_node() {
+    // inner.word[5]=0 (no list); inner.word[4]=p; p opcode 1 → emit 0x35d + p.word[4].
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let p = a.alloc(NodeArena::node(1, 0, 0x42, 0, 0, 0)); // opcode 1, word[4]=0x42
+    let inner = a.alloc(NodeArena::node(0, 0, p.0, 0, 0, 0)); // word[4]=p, word[5]=0
+    let n = a.alloc(NodeArena::node(0x4c, 0, 0, inner.0, 0, 0)); // word[5]=inner
+    let mut expected = v2(0x35d);
+    expected.extend_from_slice(&[0x42, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x51_operator_class0_traverse_then_0x175() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x51, 0, 0, child.0, 0, 0)); // op-class 0 (word[1]=0)
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x175));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x52_operator_class0_traverse_then_0x177() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let n = a.alloc(NodeArena::node(0x52, 0, 0, child.0, 0, 0));
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x177));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── case 0x58 (byte5 0x40 clear: traverse + 0x3ff) ───────────────────────────
 
 #[test]
