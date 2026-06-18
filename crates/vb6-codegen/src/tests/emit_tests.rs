@@ -1550,6 +1550,83 @@ fn case_0x52_operator_class0_traverse_then_0x177() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+#[test]
+fn case_0x51_operator_class1_value_emits_0x176() {
+    // op-class 1 (word[1] bits 8..10 = 1): value emit, 0x51 → 0x176.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0x51, 0, 0, child.0, 0, 0);
+    node.w[1] = 1 << 8;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x176));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x52_operator_class4_value_emits_0x414() {
+    // op-class 4: value emit, 0x52 → 0x414.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0x52, 0, 0, child.0, 0, 0);
+    node.w[1] = 4 << 8;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x414));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x51_operator_class5_value_emits_0x413() {
+    // op-class 5: value emit, 0x51 → 0x413.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let mut node = NodeArena::node(0x51, 0, 0, child.0, 0, 0);
+    node.w[1] = 5 << 8;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x413));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x52_operator_class2_typed_emits_0x418_with_pooled_type() {
+    // op-class 2: typed emit. word[5]=inner; traverse inner.word[5]; type
+    // value pooled from inner.word[4].word[4]. 0x52 → 0x418.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let p = a.alloc(NodeArena::node(0, 0, 0x99, 0, 0, 0)); // word[4]=type value 0x99
+    let inner = a.alloc(NodeArena::node(0, 0, p.0, child.0, 0, 0)); // w4=p, w5=child
+    let mut node = NodeArena::node(0x52, 0, 0, inner.0, 0, 0); // word[5]=inner
+    node.w[1] = 2 << 8;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x418));
+    expected.extend_from_slice(&[0x00, 0x00]); // pool index 0
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+#[test]
+fn case_0x51_operator_class3_typed_emits_0x417() {
+    // op-class 3: typed emit. 0x51 → 0x417.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let child = global_long_load(&mut a, 0);
+    let p = a.alloc(NodeArena::node(0, 0, 0x99, 0, 0, 0));
+    let inner = a.alloc(NodeArena::node(0, 0, p.0, child.0, 0, 0));
+    let mut node = NodeArena::node(0x51, 0, 0, inner.0, 0, 0);
+    node.w[1] = 3 << 8;
+    let n = a.alloc(node);
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x417));
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── Operand-dispatch + pooled member-reference cases ─────────────────────────
 
 #[test]

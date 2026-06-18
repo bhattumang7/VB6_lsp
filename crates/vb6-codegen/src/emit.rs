@@ -686,18 +686,39 @@ impl<'a> Emitter<'a> {
                 self.traverse_node_tree(NodeRef(n.w[5]), 1);
                 0xfa
             }
-            // cases 0x51 / 0x52: operator classification.
+            // cases 0x51 / 0x52: operator classification. The op-class (word[1]
+            // bits 8..10) selects the opcode `K` and the emission mode: a plain
+            // value emit (`typed` false) or a typed emit with a pooled type-value
+            // operand drawn from the nested operand. For `0x51` the opcode is
+            // `K - 2`, for `0x52` it is `K`.
             0x51 | 0x52 => {
-                // Operator classification by op-class (word[1] bits 8..10).
-                if (n.w[1] >> 8) & 7 == 0 {
+                let op_class = (n.w[1] >> 8) & 7;
+                let (k, typed): (i32, bool) = match op_class {
+                    0 => (0x177, false),
+                    1 => (0x178, false),
+                    2 => (0x418, true),
+                    3 => (0x419, true),
+                    4 => (0x414, false),
+                    5 => (0x415, false),
+                    // op-class 6/7 take their opcode from a caller-passed value
+                    // that is the node pointer itself — never a real operator.
+                    _ => unimplemented!(
+                        "operator classification op-class {op_class}: degenerate \
+                         caller-supplied opcode path, not reached for real operators"
+                    ),
+                };
+                let opcode = if op == 0x51 { k - 2 } else { k };
+                if !typed {
                     self.traverse_node_tree(NodeRef(n.w[5]), 1);
-                    self.emit_value2(if op == 0x51 { 0x175 } else { 0x177 });
-                    return 0;
+                    self.emit_value2(opcode as usize);
+                } else {
+                    let inner = *self.arena.get(NodeRef(n.w[5]));
+                    self.traverse_node_tree(NodeRef(inner.w[5]), 1);
+                    let p = *self.arena.get(NodeRef(inner.w[4]));
+                    let typeval = self.type_pool.extract_type_value2(p.w[4]);
+                    self.emit_opcode2(opcode as usize, typeval);
                 }
-                unimplemented!(
-                    "operator classification op-class {} (FUN_0faca4ae); Phase 5",
-                    (n.w[1] >> 8) & 7
-                );
+                return 0;
             }
             // case 0x53: traverse list, then opcode 0x1c0 / 0x1bf by flag bit 0x40.
             0x53 => {
