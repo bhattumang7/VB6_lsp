@@ -1261,6 +1261,20 @@ fn negate_currency_emits_operand_then_0xf6() {
     assert_eq!(emit(&a, n), expected.as_slice());
 }
 
+// ── Unary Not (case 0x10) ────────────────────────────────────────────────────
+//
+// case 0x10 emits the operand (context 1) then opcode 0x135.
+
+#[test]
+fn not_long_emits_operand_then_0x135() {
+    let mut a = NodeArena::new();
+    let v = var_load_typed(&mut a, 8, 2, -8); // Long [0x6c,0xf8,0xff]
+    let n = a.alloc(NodeArena::node(0x10, 0, v.0, 0, 0, 0));
+    let mut expected = vec![0x6c, 0xf8, 0xff];
+    expected.extend(v2(0x135));
+    assert_eq!(emit(&a, n), expected.as_slice());
+}
+
 // ── Power operator (case 0x1a) ───────────────────────────────────────────────
 //
 // case 0x1a emits both operands (context 2) then opcode 0xcf for the numeric
