@@ -516,7 +516,93 @@ impl<'a> Emitter<'a> {
                 return 0;
             }
             // case 0x2c: assignment statement.
-            0x2c => unimplemented!("assignment statement; Phase 5"),
+            0x2c => {
+                // EbEmitAssignmentStmt common scalar path: emit the RHS value,
+                // resolve the LHS reference, then emit its store (nOp 4).
+                let lhs = NodeRef(n.w[4]);
+                let rhs = NodeRef(n.w[5]);
+                let flags = n.w[1] & 0xffff;
+                let ln = *self.arena.get(lhs);
+                let rn = *self.arena.get(rhs);
+                let lhs_op = ln.w[0] & 0xffff;
+                let lhs_region = ln.w[0] & 0xffff_0000;
+                let rhs_region = rn.w[0] & 0xffff_0000;
+
+                // Dispatch-binding LHS (node+5 bit 1 with a 0x60 LHS).
+                if flags & 0x200 != 0 && lhs_op == 0x60 {
+                    unimplemented!(
+                        "EbEmitAssignmentStmt dispatch-binding LHS \
+                         (EbIsDispatchBinding/EbCheckDispatchProperty); Phase 6"
+                    );
+                }
+
+                let uvar5 = self.emit_expr(rhs, 2);
+
+                // 0x400 flag with a 0x69 LHS (compound-op store).
+                if flags & 0x400 != 0 && lhs_op == 0x69 {
+                    unimplemented!(
+                        "EbEmitAssignmentStmt compound-op store (flag 0x400 + 0x69 \
+                         LHS); Phase 6"
+                    );
+                }
+                // Array / special LHS class.
+                if flags & 0x6000 != 0 {
+                    unimplemented!(
+                        "EbEmitAssignmentStmt array/special LHS (flags & 0x6000); \
+                         Phase 6"
+                    );
+                }
+                // Stack-arg pass-through.
+                if flags & 0x8000 != 0 && lhs_region == 0xf_0000 && rhs_region == 0xf_0000 {
+                    unimplemented!("EbEmitAssignmentStmt stack-arg pass-through; Phase 6");
+                }
+                // Object-assignment region.
+                if lhs_region == 0x12_0000 {
+                    unimplemented!(
+                        "EbEmitAssignmentStmt object-assignment (LHS region \
+                         0x120000); Phase 6"
+                    );
+                }
+                // ByRef-init store.
+                if lhs_op == 0x69 && ln.w[1] & 0x8000 != 0 {
+                    unimplemented!("EbEmitAssignmentStmt ByRef-init store; Phase 6");
+                }
+
+                let sym = self.sym.as_ref().expect(
+                    "0x2c assignment needs the LHS symbol context \
+                     (Emitter::with_symbol_context)",
+                );
+                if ln.w[4] != 0 {
+                    unimplemented!("EbEmitAssignmentStmt LHS member sub-expression; Phase 6");
+                }
+                let desc = crate::resolver::resolve_reference2(
+                    self.arena,
+                    lhs,
+                    &sym.heap,
+                    sym.member_off,
+                    sym.ctx_flag_c,
+                    sym.binding,
+                );
+
+                let mut f_flags = flags & 0xff00;
+                if uvar5 & 1 != 0 {
+                    f_flags |= 0x80;
+                }
+                let mut also_emit_lhs = false;
+                if (n.w[0] & 0xffff_0000) != 0x2_0000 {
+                    if context == 6 {
+                        also_emit_lhs = true;
+                    } else {
+                        f_flags |= 0x40;
+                    }
+                }
+                let n_type = (lhs_region >> 16) as i32;
+                self.emit_reference(&desc, 4, f_flags, n_type);
+                if also_emit_lhs {
+                    self.emit_expr(lhs, context);
+                }
+                return 0;
+            }
             // case 0x2d: typed assignment / error recovery. When the flag byte is
             // clear and the assigned child is not object-typed, a child of type
             // `0x10` emits its source (context 2) then the sized coercion opcode

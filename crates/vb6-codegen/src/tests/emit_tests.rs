@@ -2284,3 +2284,45 @@ fn member_reference_0x60_without_context_is_gated() {
     }));
     assert!(r.is_err());
 }
+
+// ── Assignment statement (0x2c) common scalar path ──────────────────────────
+
+#[test]
+fn assignment_0x2c_emits_rhs_then_resolved_store() {
+    use crate::emit::SymbolContext;
+
+    let mut a = NodeArena::new();
+    // RHS: a Long local load at frame offset -8.
+    let s = a.alloc(NodeArena::node(0, 0, (0xfff8u32) << 16, 0, 0, 0));
+    let rhs = a.alloc(NodeArena::node(0x74, 8, s.0, 2 /* CTX_LONG */, 0, 0));
+    // LHS: a 0x60 member reference (type tag 8), size descriptor in w5.
+    let d = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0));
+    let mut lhs_n = NodeArena::node(0x60, 8, 0, 0, 0, 0);
+    lhs_n.w[5] = d.0;
+    let lhs = a.alloc(lhs_n);
+    // 0x2c assignment node: w4 = LHS, w5 = RHS, region 0 (not 0x20000).
+    let mut asn = NodeArena::node(0x2c, 0, 0, 0, 0, 0);
+    asn.w[4] = lhs.0;
+    asn.w[5] = rhs.0;
+    let node = a.alloc(asn);
+
+    let mut heap = vec![0u8; 0x40];
+    heap[0x10] = 0x40;
+    heap[0x11] = 0x03;
+    heap[0x10 + 0xc] = 8;
+    let sym = SymbolContext {
+        heap,
+        member_off: 0x10,
+        ctx_flag_c: 0,
+        binding: Some((4, 0)),
+    };
+
+    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    e.emit_expr(node, 0);
+    let bytes = e.into_bytes();
+    assert_eq!(bytes, ASSIGN_0X2C_BYTES);
+}
+
+// RHS Long load (6c f8 ff) then the resolved store of the LHS member, through
+// the ported EbEmitAssignmentStmt → resolve_reference2 → value-emitter chain.
+const ASSIGN_0X2C_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x71, 0x04, 0x00, 0x6c, 0x04, 0x00];

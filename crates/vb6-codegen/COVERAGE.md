@@ -22,7 +22,7 @@ The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
 | 0x0f | name-ref classify | emit (class 0/2/3); **GAP** class 1 (symbol var-type), class 4 (in-place node mutation) |
 | 0x10–0x15, 0x18, 0x1a | typed leaves/coercions | emit |
 | 0x24 | (group) | emit |
-| 0x2c | assignment statement | **GAP** (needs LHS resolver) |
+| 0x2c | assignment statement | emit (common scalar: RHS + resolved store); **GAP** dispatch/compound-op/array/object/ByRef-init sub-paths |
 | 0x2d | assignment (0x10-child) | emit |
 | 0x2f–0x3b | arithmetic/logical group | emit |
 | 0x3e, 0x3f | compare group | emit |
