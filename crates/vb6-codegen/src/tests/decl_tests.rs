@@ -1,0 +1,156 @@
+//! Tests for the declaration compiler ([`crate::decl`]).
+//!
+//! Expected record bytes are derived directly from `EbBuildDeclaration`'s
+//! scalar-member write sequence, not from any emitted-p-code sample.
+
+use crate::decl::{build_declaration_scalar, DeclContext};
+use crate::heap::HeapContext;
+
+/// A heap seeded with one big free block at offset 0 (in-place mode, 2-byte
+/// align) so allocations run without the gated grow path.
+fn seeded_heap(len: usize) -> HeapContext {
+    let mut h = HeapContext {
+        mem: vec![0u8; len],
+        free_head: 0,
+        flags: 1,
+        buffer_flag: 0,
+    };
+    h.mem[4..6].copy_from_slice(&((len - 8) as u16).to_le_bytes());
+    h
+}
+
+#[test]
+fn scalar_method_member_record_bytes() {
+    let mut h = seeded_heap(0x200);
+    let ctx = DeclContext {
+        sig: 0,
+        kind_disc: 0, // method bag
+        type_flags: 4, // size class 4
+        field5: 0,
+        slot_count: 0,
+        member_id: 0x1234,
+        flag9: 0,
+        flags_c: 0,
+        field_1a: -1,
+        return_type_word: 8, // e.g. Long
+    };
+
+    let rec = build_declaration_scalar(&mut h, &ctx).unwrap();
+    let r = rec as usize;
+    let b = &h.mem[r..r + 0x40];
+
+    // Expected, computed from the write sequence:
+    let mut want = [0u8; 0x40];
+    want[0x00] = 0x24; // method tag 4, then +0 |= 0x20
+    want[0x01] = 0x41; // low3 = 1; high nibble = size-class 4
+    want[0x02] = 0xfe; // +2 |= 0xfffe
+    want[0x03] = 0xff;
+    want[0x18] = 0x00; // +0x18 bit 0x2000 set (sig < 1)
+    want[0x19] = 0x20;
+    want[0x2c] = 0x08; // inline type node opcode = Long (8)
+    want[0x30] = 0x34; // member id 0x1234
+    want[0x31] = 0x12;
+    want[0x3a] = 0x08; // bit3 = inline flag
+    want[0x3c] = 0x3f; // field_1a == -1 → low6 = 0x3f
+
+    assert_eq!(b, &want, "scalar method record mismatch");
+}
+
+#[test]
+fn scalar_interface_member_kind3_low3_is_2() {
+    let mut h = seeded_heap(0x200);
+    let ctx = DeclContext {
+        sig: 1, // sig >= 1 → +0x18 bit 0x2000 clear
+        kind_disc: 3, // interface bag, low3 = 2
+        type_flags: 2, // size class 2
+        field5: 0,
+        slot_count: 0,
+        member_id: 0, // interface bag has no +0x30 write
+        flag9: 0,
+        flags_c: 0,
+        field_1a: 0, // low6 = 0
+        return_type_word: 6, // e.g. Integer
+    };
+
+    let rec = build_declaration_scalar(&mut h, &ctx).unwrap();
+    let r = rec as usize;
+
+    assert_eq!(h.mem[r], 0x20); // +0 |= 0x20 (no method tag on interface bag)
+    assert_eq!(h.mem[r + 1], 0x22); // low3 = 2, size-class nibble 2
+    assert_eq!(h.mem[r + 8], 1); // sig
+    assert_eq!(h.mem[r + 0x18], 0x00); // sig >= 1 → bit 0x2000 clear
+    assert_eq!(h.mem[r + 0x19], 0x00);
+    assert_eq!(h.mem[r + 0x2c], 6); // Integer type node
+    assert_eq!(h.mem[r + 0x3a], 0x08); // inline flag
+    assert_eq!(h.mem[r + 0x3c], 0x00); // field_1a == 0
+}
+
+#[test]
+fn negative_kind_disc_is_bad_decl() {
+    let mut h = seeded_heap(0x80);
+    let ctx = DeclContext {
+        kind_disc: -1,
+        ..DeclContext::default()
+    };
+    assert_eq!(build_declaration_scalar(&mut h, &ctx), Err(0x80028ca1u32 as i32));
+}
+
+#[test]
+fn out_of_range_slot_count_is_bad_decl() {
+    let mut h = seeded_heap(0x200);
+    let ctx = DeclContext {
+        kind_disc: 0,
+        slot_count: 0x40, // > 0x3c
+        field_1a: -1,
+        ..DeclContext::default()
+    };
+    assert_eq!(build_declaration_scalar(&mut h, &ctx), Err(0x80028ca1u32 as i32));
+}
+
+#[test]
+fn has_parameters_form_is_gated() {
+    let mut h = seeded_heap(0x200);
+    let ctx = DeclContext {
+        kind_disc: 0,
+        flag9: 0x19,
+        field_1a: -1,
+        ..DeclContext::default()
+    };
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let _ = build_declaration_scalar(&mut h, &ctx);
+    }));
+    assert!(r.is_err());
+}
+
+/// The record `build_declaration_scalar` produces must resolve through the
+/// ported resolver: a scalar member's inline type node sits at `+0x2c`, but the
+/// resolver reads the operand pointer at `+0xc`; confirm the record is at least
+/// internally consistent for the fields the resolver inspects (`+0`, `+1`).
+#[test]
+fn produced_record_kind_and_byref_readable() {
+    use crate::sym_record::MemberRecord;
+    let mut h = seeded_heap(0x200);
+    let ctx = DeclContext {
+        sig: 0,
+        kind_disc: 0,
+        type_flags: 4,
+        field5: 0,
+        slot_count: 0,
+        member_id: 0x55,
+        flag9: 0,
+        flags_c: 0,
+        field_1a: -1,
+        return_type_word: 8,
+    };
+    let rec = build_declaration_scalar(&mut h, &ctx).unwrap();
+    let r = rec as usize;
+
+    // Copy the produced bytes into a MemberRecord and read the call-path fields.
+    let mut mr = MemberRecord::new();
+    for (i, &byte) in h.mem[r..r + 0x40].iter().enumerate() {
+        mr.set_byte(i, byte);
+    }
+    assert_eq!(mr.member_id(), 0x55);
+    // +0x3a low3 == 0 ⇒ convention kind 0 (no 0x10 bit set here).
+    assert_eq!(mr.kind(), 0);
+}

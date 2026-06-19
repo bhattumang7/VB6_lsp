@@ -27,6 +27,7 @@
 pub mod bind;
 pub mod bridge;
 pub mod buffer;
+pub mod decl;
 pub mod emit;
 pub mod heap;
 pub mod lower;
