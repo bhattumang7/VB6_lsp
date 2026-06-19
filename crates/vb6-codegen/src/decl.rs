@@ -207,6 +207,61 @@ pub fn build_declaration_scalar(heap: &mut HeapContext, ctx: &DeclContext) -> Re
     Ok(rec)
 }
 
+/// Port of `EbBuildDeclaration`'s slot-loop body for a simple scalar field/param
+/// (the `local_30 == 0` case): allocate the property bag, link it under the
+/// parent's child list, and store the inline type node at `+0xc` — the operand
+/// the resolver reads.
+///
+/// `parent_rec` is the owning member record's offset (its child-list head sits at
+/// `parent_rec + 0x28`); `tail` is the caller's running child-list tail
+/// ([`NIL`](crate::heap::NIL) initially). `slot_flags` is the slot's descriptor
+/// flag word (`local_30`); only the all-clear scalar case is handled — the
+/// string (`& 0x20`), array (`& 8`), by-reference (`& 4`) and optional
+/// (`& 0x30`) sub-paths are gated.
+pub fn build_property_slot_scalar(
+    heap: &mut HeapContext,
+    slot_type_word: u16,
+    slot_flags: u16,
+    parent_rec: u32,
+    tail: &mut u32,
+) -> Result<u32, i32> {
+    if slot_flags & 0x3e != 0 {
+        unimplemented!(
+            "EbBuildDeclaration slot loop: string/array/by-ref/optional slot \
+             (flags & 0x3e != 0); Phase 6"
+        );
+    }
+
+    let rec = heap.allocate_property_bag()?;
+    heap.link_list_node3(rec, parent_rec + 0x28, tail);
+
+    // +1 low 3 bits = 3
+    let o1 = (rec + 1) as usize;
+    heap.mem[o1] = (heap.mem[o1] & 0xf8) ^ 3;
+
+    // Inline type node (the base-type path reports inline ⇒ local_20 = 1).
+    let node = build_inline_type_node(slot_type_word);
+
+    // +0 bit 6 = inline flag
+    let o0 = rec as usize;
+    heap.mem[o0] = (1u8 << 6) | (heap.mem[o0] & 0xbf);
+    // +0xc = the inline type node
+    let oc = (rec + 0xc) as usize;
+    heap.mem[oc..oc + 4].copy_from_slice(&node.to_le_bytes());
+    // +2 |= 0xfffe
+    put_u16(heap, rec + 2, get_u16(heap, rec + 2) | 0xfffe);
+    // +0 |= 0x20 (clearing 0x10)
+    heap.mem[o0] = (heap.mem[o0] & 0xef) | 0x20;
+    // +0x18 bit 2 when the type node's +1 low 3 bits are 0.
+    if heap.mem[(rec + 0xc) as usize + 1] & 7 == 0 {
+        let o18 = (rec + 0x18) as usize;
+        heap.mem[o18] |= 4;
+    }
+    // slot_flags low bits 0/1 (by-value markers) — all clear in this scalar case.
+
+    Ok(rec)
+}
+
 #[cfg(test)]
 #[path = "tests/decl_tests.rs"]
 mod tests;

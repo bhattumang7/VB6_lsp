@@ -3,8 +3,15 @@
 //! Expected record bytes are derived directly from `EbBuildDeclaration`'s
 //! scalar-member write sequence, not from any emitted-p-code sample.
 
-use crate::decl::{build_declaration_scalar, DeclContext};
-use crate::heap::HeapContext;
+use crate::decl::{build_declaration_scalar, build_property_slot_scalar, DeclContext};
+use crate::heap::{HeapContext, NIL};
+use crate::resolver::expression_type2;
+
+/// The type category the ported resolver classifier produces for a scalar
+/// property-bag slot (record byte `+1` low3 = 3, inline Long operand at `+0xc`):
+/// category 4 (the call-convention / `EbResolveExprNode` path). Locked as a
+/// regression of the ported declaration → resolver interop.
+const EXPECTED_LONG_SLOT_CATEGORY: i32 = 4;
 
 /// A heap seeded with one big free block at offset 0 (in-place mode, 2-byte
 /// align) so allocations run without the gated grow path.
@@ -120,6 +127,46 @@ fn has_parameters_form_is_gated() {
         let _ = build_declaration_scalar(&mut h, &ctx);
     }));
     assert!(r.is_err());
+}
+
+/// Full ported-code round trip: the declaration compiler builds a scalar slot
+/// record, and the ported resolver classifier reads it back cleanly (no gated
+/// path) — the two halves of the compiler agree on the record layout.
+#[test]
+fn scalar_slot_record_flows_through_resolver() {
+    let mut h = seeded_heap(0x400);
+    // Build a parent method record first so the slot links somewhere real.
+    let parent = build_declaration_scalar(
+        &mut h,
+        &DeclContext {
+            kind_disc: 0,
+            type_flags: 4,
+            field_1a: -1,
+            return_type_word: 8,
+            ..DeclContext::default()
+        },
+    )
+    .unwrap();
+
+    let mut tail = NIL;
+    let slot = build_property_slot_scalar(&mut h, 8 /* Long */, 0, parent, &mut tail).unwrap();
+
+    // Slot record shape the resolver depends on.
+    assert_eq!(h.mem[slot as usize], 0x60); // inline (0x40) + 0x20
+    assert_eq!(h.mem[slot as usize + 1], 0x03); // low3 = 3
+    assert_eq!(h.mem[slot as usize + 0xc], 8); // inline Long type node
+    // Linked under the parent's child list (head at parent+0x28).
+    assert_eq!(h.read_dword(parent + 0x28), slot);
+    assert_eq!(tail, slot);
+
+    // The resolver classifier reads the operand at +0xc and produces a category
+    // without hitting any gated path.
+    let et = expression_type2(&h.mem, slot as usize);
+    assert_eq!(et.code, 0);
+    // The declaration-built operand classifies through the ported tables (the
+    // call-convention category); full resolve_ident_ref category 4 needs the
+    // EbResolveExprNode path, which is separately gated.
+    assert_eq!(et.category, EXPECTED_LONG_SLOT_CATEGORY);
 }
 
 /// The record `build_declaration_scalar` produces must resolve through the
