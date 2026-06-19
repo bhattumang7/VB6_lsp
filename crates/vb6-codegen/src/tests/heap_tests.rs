@@ -283,6 +283,28 @@ fn link_list_node3_appends_after_existing_tail() {
 }
 
 #[test]
+fn allocate_structure2_zeroes_whole_record_for_nonzero_n() {
+    let mut h = seeded(0x200);
+    h.mem[0..0x20].fill(0xcc);
+    // Re-seed header overwritten by the fill.
+    put_block(&mut h, 0, NIL, (0x200 - 8) as u16);
+    let off = h.allocate_structure2(2).unwrap(); // size 0x20, zero 0x20
+    assert_eq!(off, 0);
+    assert!(h.mem[0..0x20].iter().all(|&b| b == 0));
+}
+
+#[test]
+fn allocate_structure2_leaves_trailing_8_for_zero_n() {
+    let mut h = seeded(0x200);
+    h.mem[0x10..0x18].fill(0xcc); // trailing 8 bytes of a 0x18 alloc
+    put_block(&mut h, 0, NIL, (0x200 - 8) as u16);
+    let off = h.allocate_structure2(0).unwrap(); // size 0x18, zero only 0x10
+    assert_eq!(off, 0);
+    assert!(h.mem[0..0x10].iter().all(|&b| b == 0));
+    assert_eq!(&h.mem[0x10..0x18], &[0xcc; 8]);
+}
+
+#[test]
 fn coalesce_deferred_free_mode_is_gated() {
     let mut h = heap(0x100);
     h.flags = 0; // bit 0 clear → deferred-free path

@@ -36,6 +36,7 @@ pub mod resolver;
 pub mod sym_record;
 pub mod tables;
 pub mod type_pool;
+pub mod typenode;
 
 pub use bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame, PROC_PARAM_BASE};
 pub use buffer::PcodeStream;

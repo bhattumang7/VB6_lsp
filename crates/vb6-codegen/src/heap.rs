@@ -298,6 +298,24 @@ impl HeapContext {
         self.mem[o..o + len].fill(0);
     }
 
+    /// Port of `EbAllocateStructure2` (+ its `EbZeroMemory2` init): allocate a
+    /// type-structure record sized for `n_elements` slots and zero its live
+    /// bytes.
+    ///
+    /// The allocation is `n*8 + 0x10` bytes for `n != 0`, else `0x18`. The zero
+    /// fill covers the leading 0x10 bytes plus 8 per element (`0x10 + 8*n`); for
+    /// `n == 0` the trailing 8 bytes are left as the carved block's contents.
+    pub fn allocate_structure2(&mut self, n_elements: u32) -> Result<u32, i32> {
+        let size = if n_elements != 0 {
+            n_elements * 8 + 0x10
+        } else {
+            0x18
+        };
+        let off = self.allocate_heap_space(size)?;
+        self.zero_record(off, (0x10 + 8 * n_elements) as usize);
+        Ok(off)
+    }
+
     /// Port of `EbAllocateMethodBag`: a 0x40-byte member record with the low 3
     /// bits of byte `+0` set to the method tag (4).
     pub fn allocate_method_bag(&mut self) -> Result<u32, i32> {
