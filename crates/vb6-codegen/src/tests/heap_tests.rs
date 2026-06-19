@@ -262,6 +262,27 @@ fn type_descriptor_zeroes_first_0x20_only() {
 }
 
 #[test]
+fn link_list_node3_first_node_sets_head_and_tail() {
+    let mut h = heap(0x100);
+    let mut tail = NIL;
+    h.link_list_node3(0x40, 0x10, &mut tail);
+    assert_eq!(tail, 0x40);
+    assert_eq!(h.read_dword(0x10), 0x40); // head pointer written
+}
+
+#[test]
+fn link_list_node3_appends_after_existing_tail() {
+    let mut h = heap(0x100);
+    let mut tail = NIL;
+    h.link_list_node3(0x40, 0x10, &mut tail); // first
+    h.link_list_node3(0x80, 0x10, &mut tail); // second
+    assert_eq!(tail, 0x80);
+    // Head still points at the first node; first node's +0x14 links to second.
+    assert_eq!(h.read_dword(0x10), 0x40);
+    assert_eq!(h.read_dword(0x40 + 0x14), 0x80);
+}
+
+#[test]
 fn coalesce_deferred_free_mode_is_gated() {
     let mut h = heap(0x100);
     h.flags = 0; // bit 0 clear → deferred-free path

@@ -234,6 +234,34 @@ impl HeapContext {
         }
     }
 
+    /// Read a little-endian dword at an arbitrary heap offset.
+    pub fn read_dword(&self, off: u32) -> u32 {
+        let o = off as usize;
+        u32::from_le_bytes([self.mem[o], self.mem[o + 1], self.mem[o + 2], self.mem[o + 3]])
+    }
+
+    /// Write a little-endian dword at an arbitrary heap offset.
+    pub fn write_dword(&mut self, off: u32, v: u32) {
+        let o = off as usize;
+        self.mem[o..o + 4].copy_from_slice(&v.to_le_bytes());
+    }
+
+    /// Port of `EbLinkListNode3`: append the record at offset `node_value` to a
+    /// singly-linked child list. The list's head pointer lives in the heap at
+    /// `head_off` (e.g. a parent record's `+0x28` slot); each node's next pointer
+    /// is at the node's `+0x14`; `tail` is the caller's running tail offset
+    /// ([`NIL`] when the list is empty).
+    pub fn link_list_node3(&mut self, node_value: u32, head_off: u32, tail: &mut u32) {
+        if *tail == NIL {
+            *tail = node_value;
+            self.write_dword(head_off, node_value);
+        } else {
+            let old_tail = *tail;
+            *tail = node_value;
+            self.write_dword(old_tail + 0x14, node_value);
+        }
+    }
+
     /// Port of `EbAllocateHeapSpace`: allocate `size` aligned bytes, returning the
     /// record's offset into the heap, or [`EB_ALLOC_FAILED`].
     ///
