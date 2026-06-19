@@ -92,6 +92,29 @@ pub fn process_type3_simple(type_node: &mut [u8], n_type_op: i32) -> Result<(), 
     Ok(())
 }
 
+/// The inline type-node `EbBuildTypeNode2` produces for a scalar (base-type)
+/// declaration with no out-of-line data (`pbData == 0`): a 4-byte node written
+/// directly into the caller's output word, whose opcode (low 6 bits of byte 0)
+/// is the type code. The variant-like codes `0x0a`/`0x16`/`0x19` remap to the
+/// object form `3`. The caller's inline flag (`*piOutput`) is set to `1`.
+///
+/// Returns the inline node as a dword. The recursion (`0x1a`), struct/array
+/// (`0x1b`/`0x1c`) and slot (`0x1d`) type forms take separate, COM-bearing
+/// paths and are handled elsewhere; this is the scalar leaf only.
+pub fn build_inline_type_node(type_word: u16) -> u32 {
+    let code: u8 = if type_word == 0x16 || type_word == 0x19 || type_word == 0x0a {
+        3
+    } else {
+        type_word as u8
+    };
+    // The node lives in a 4-byte output word; use a 6-byte scratch so the
+    // (base-type-unreachable) 0x1d follow-on stamp can't index out of bounds,
+    // then return the live 4 bytes.
+    let mut node = [0u8; 6];
+    toggle_bitfield(&mut node, code);
+    u32::from_le_bytes([node[0], node[1], node[2], node[3]])
+}
+
 fn read_word2(node: &[u8]) -> u16 {
     u16::from_le_bytes([node[2], node[3]])
 }

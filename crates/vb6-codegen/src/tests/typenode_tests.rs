@@ -1,6 +1,8 @@
 //! Tests for the type-node flag mutators ([`crate::typenode`]).
 
-use crate::typenode::{process_type3_simple, set_type_flag4, toggle_bitfield, toggle_type_flag};
+use crate::typenode::{
+    build_inline_type_node, process_type3_simple, set_type_flag4, toggle_bitfield, toggle_type_flag,
+};
 
 #[test]
 fn toggle_bitfield_to_0x1d_stamps_follow_on_opcode() {
@@ -53,6 +55,21 @@ fn toggle_type_flag_sets_low3_kind_preserving_high_bits() {
     // A different value replaces the low 3 bits.
     toggle_type_flag(&mut node, 0);
     assert_eq!(node[1], 0xf0);
+}
+
+#[test]
+fn build_inline_type_node_encodes_base_type_code() {
+    // A base type code becomes the node opcode (low 6 bits of byte 0).
+    assert_eq!(build_inline_type_node(0x08), 0x08); // e.g. Long
+    assert_eq!(build_inline_type_node(0x06), 0x06); // e.g. Integer
+    assert_eq!(build_inline_type_node(0x0b), 0x0b); // e.g. Double
+}
+
+#[test]
+fn build_inline_type_node_remaps_variant_like_codes_to_object_form() {
+    assert_eq!(build_inline_type_node(0x0a), 3);
+    assert_eq!(build_inline_type_node(0x16), 3);
+    assert_eq!(build_inline_type_node(0x19), 3);
 }
 
 #[test]
