@@ -147,6 +147,18 @@ fn map_slot_type_value_mapping() {
 }
 
 #[test]
+fn current_expression_offset_skips_typed_0x1d() {
+    // 0x1d-class opcode with following opcode != 0x25 → skip 4.
+    assert_eq!(current_expression_offset(&[0x1d, 0, 0, 0, 0x10, 0, 0, 0]), 4);
+    // 0x1d-class but the following opcode is a 0x25-class marker → no skip.
+    assert_eq!(current_expression_offset(&[0x1d, 0, 0, 0, 0x25, 0, 0, 0]), 0);
+    // high bits of either opcode are masked off before the comparison.
+    assert_eq!(current_expression_offset(&[0xc0 | 0x1d, 0, 0, 0, 0x40 | 0x25, 0, 0, 0]), 0);
+    // not a 0x1d-class opcode → no skip.
+    assert_eq!(current_expression_offset(&[0x0d, 0, 0, 0, 0x10, 0, 0, 0]), 0);
+}
+
+#[test]
 fn resolver_class_flag_table_exact() {
     // Spot the logical class-flag entries (low 0x28) and the call-conv aliasing
     // beyond it that the `& 0x3f` accessor still reaches.

@@ -108,6 +108,21 @@ pub fn get_expr_context(ctx: &CompileContext) -> i32 {
     }
 }
 
+/// Port of `EbGetCurrentExpression`: given the operand's p-code bytes, return the
+/// byte offset of the "current expression" start the classifier inspects.
+///
+/// A `0x1d`-class opcode (low 6 bits `0x1d`) that carries an inline type word
+/// whose following opcode (4 bytes on) is not a `0x25`-class marker is skipped
+/// past — the expression start is 4 bytes in. Every other operand starts where it
+/// is (offset 0).
+pub fn current_expression_offset(pcode: &[u8]) -> usize {
+    if pcode[0] & 0x3f == 0x1d && pcode[4] & 0x3f != 0x25 {
+        4
+    } else {
+        0
+    }
+}
+
 /// Port of `EbIsPcodeTerminator`: a p-code opcode whose low 6 bits are `0x1b` or
 /// `0x1c` terminates an operand run.
 pub fn is_pcode_terminator(opcode: u8) -> bool {
