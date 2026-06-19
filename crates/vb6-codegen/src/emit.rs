@@ -979,38 +979,38 @@ impl<'a> Emitter<'a> {
                 0x40b
             }
             // case 0x60: member-reference coercion.
-            0x60 => {
-                // EbCoerceMemberRef common path: resolve the reference to its
-                // descriptor, then emit it via the value-emitter. nOp is the
-                // emission context (pTypeInfo), fFlags = (u16)node[1], pContext =
-                // node[2] (unused by the value emit), nType = node[0] >> 16.
-                if n.w[1] & 0x4 != 0 {
-                    unimplemented!(
-                        "EbCoerceMemberRef dispatch/late-bound path (node+5 bit 2): \
-                         EbProcessMemberDeclaration / EbResolveMemberType2; Phase 6"
-                    );
-                }
-                let sym = self.sym.as_ref().expect(
-                    "0x60 member reference needs the module symbol context \
-                     (Emitter::with_symbol_context)",
-                );
-                if n.w[4] != 0 {
-                    unimplemented!(
-                        "EbCoerceMemberRef member sub-expression (node[4] != 0): \
-                         EbSimplifyMemberExpr; Phase 6"
-                    );
-                }
-                let desc = crate::resolver::resolve_reference2(
-                    self.arena,
-                    node,
-                    &sym.heap,
-                    sym.member_off,
-                    sym.ctx_flag_c,
-                    sym.binding,
-                );
-                let f_flags = n.w[1] & 0xffff;
+            0x60 | 0x69 => {
+                // EbEmitStatement's 0x60/0x69 case (stmt_case_0fab1ddf): resolve
+                // the reference, then emit it via the value-emitter with nOp =
+                // context, fFlags = 0, nType = node[0] >> 16. For 0x69 the resolver
+                // setup (EbSetupBinaryOperation) first traverses + emits the two
+                // operands; for 0x60 resolve_reference2 reads the symbol heap.
+                // resolve_reference2 itself gates the member-sub-expression and
+                // method-binding sub-paths.
                 let n_type = (n.w[0] >> 16) as i32;
-                self.emit_reference(&desc, context as i32, f_flags, n_type);
+                let desc = if op == 0x69 {
+                    if n.w[1] & 0x8000 != 0 {
+                        unimplemented!(
+                            "EbSetupBinaryOperation ByRef stack-init (0x69, node+5 \
+                             bit 0x80); Phase 6"
+                        );
+                    }
+                    self.emit_setup_binary_operation(node)
+                } else {
+                    let sym = self.sym.as_ref().expect(
+                        "0x60 member reference needs the module symbol context \
+                         (Emitter::with_symbol_context)",
+                    );
+                    crate::resolver::resolve_reference2(
+                        self.arena,
+                        node,
+                        &sym.heap,
+                        sym.member_off,
+                        sym.ctx_flag_c,
+                        sym.binding,
+                    )
+                };
+                self.emit_reference(&desc, context as i32, 0, n_type);
                 return 0;
             }
             // case 0x61: call site. Assemble a `CallDescriptor` from the bound
@@ -1097,11 +1097,6 @@ impl<'a> Emitter<'a> {
                 }
                 0x29f
             }
-            // case 0x69: binary-operation setup + reference emission — needs the
-            // reference-resolution helpers (FUN_0fae5b47 / FUN_0fab397a).
-            0x69 => unimplemented!(
-                "binary-operation setup + reference emission (FUN_0fae5b47/FUN_0fab397a); Phase 5"
-            ),
             // case 0x6a: member-call instruction. Process the argument list, emit
             // the callee reference (context 1), then an op-class-selected
             // instruction opcode (word[1] bits 8..9): classes 1/2 emit a sized
@@ -1701,6 +1696,46 @@ impl<'a> Emitter<'a> {
     }
 
     // ── Resolved-reference emission ──────────────────────────────────────────
+
+    /// Port of `EbSetupBinaryOperation` (`EbResolveReference2`'s 0x69 path):
+    /// traverse + emit the two operands, then build the operator descriptor
+    /// (kind 9/0xa/0xb) the value-emitter consumes.
+    ///
+    /// * flag `0x2000` set → kind `0xb` (typed operator): `word6` = `node[8]`,
+    ///   `word8` = the interned type value of `node[6]`.
+    /// * else `node[8]` low word == 1 → kind `0xa` (with flag `0x8000` and a
+    ///   `node[6]` type: `word6` bit 0 set, `word8` = its size).
+    /// * else → kind `9` (operator): `word6` = `node[8]`.
+    /// A `0x160000`-region node additionally sets `flags1` bits `0x05`.
+    fn emit_setup_binary_operation(&mut self, node: NodeRef) -> RefDescriptor {
+        let n = *self.arena.get(node);
+        self.traverse_node_tree(NodeRef(n.w[5]), 1);
+        self.emit_expr(NodeRef(n.w[4]), 1);
+
+        let flags = n.w[1];
+        let w8 = (n.w[8] & 0xffff) as u16;
+        let mut desc = RefDescriptor::default();
+        if flags & 0x2000 == 0 {
+            if w8 as i16 == 1 {
+                desc.kind = 0xa;
+                if flags & 0x8000 != 0 && n.w[6] != 0 {
+                    desc.word6 |= 1;
+                    desc.word8 = crate::resolver::get_type_size3(self.arena, n.w[6]) as u16;
+                }
+            } else {
+                desc.kind = 9;
+                desc.word6 = w8;
+            }
+        } else {
+            desc.kind = 0xb;
+            desc.word6 = w8;
+            desc.word8 = self.type_pool.extract_type_value2(n.w[6]) as u16;
+        }
+        if n.w[0] & 0xffff_0000 == 0x16_0000 {
+            desc.flags1 |= 5;
+        }
+        desc
+    }
 
     /// Emit a resolved reference (typed local / argument load or store) from a
     /// [`RefDescriptor`] — the routine that turns a resolved reference into the

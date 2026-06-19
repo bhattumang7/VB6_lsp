@@ -2326,3 +2326,32 @@ fn assignment_0x2c_emits_rhs_then_resolved_store() {
 // RHS Long load (6c f8 ff) then the resolved store of the LHS member, through
 // the ported EbEmitAssignmentStmt → resolve_reference2 → value-emitter chain.
 const ASSIGN_0X2C_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x71, 0x04, 0x00, 0x6c, 0x04, 0x00];
+
+// ── Binary-operation setup (0x69) → operator descriptor + value emit ────────
+
+#[test]
+fn binary_op_setup_0x69_kind9_emits() {
+    let mut a = NodeArena::new();
+    // Two operands: Long loads at -8 and -12.
+    let s1 = a.alloc(NodeArena::node(0, 0, (0xfff8u32) << 16, 0, 0, 0));
+    let op1 = a.alloc(NodeArena::node(0x74, 8, s1.0, 2, 0, 0));
+    let s2 = a.alloc(NodeArena::node(0, 0, (0xfff4u32) << 16, 0, 0, 0));
+    let op2 = a.alloc(NodeArena::node(0x74, 8, s2.0, 2, 0, 0));
+    // 0x69 node: w5 = op1 (traversed), w4 = op2 (emitted), w8 = 7 (!= 1 → kind 9).
+    let mut bn = NodeArena::node(0x69, 8, 0, 0, 0, 0);
+    bn.w[4] = op2.0;
+    bn.w[5] = op1.0;
+    bn.w[8] = 7;
+    let node = a.alloc(bn);
+
+    let mut e = Emitter::new(&a);
+    e.emit_expr(node, 5);
+    let bytes = e.into_bytes();
+    assert_eq!(bytes, BINOP_0X69_BYTES);
+}
+
+// Operand1 (6c f8 ff) + operand2 (6c f4 ff) + the operator opcode (runtime a8 =
+// compile 0x18d) with node[8]=7, via the ported EbSetupBinaryOperation +
+// value-emitter kind-9 path. (nOp 5 takes the early finalize; nOp 1-4 finalize
+// via EbEmitExpressionOp is a separate gated piece.)
+const BINOP_0X69_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xa8, 0x07, 0x00];

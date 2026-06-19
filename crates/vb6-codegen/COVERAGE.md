@@ -39,7 +39,7 @@ The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
 | 0x61 | call | emit (by-ref common); **GAP** ByVal / dispatch / member numbering |
 | 0x63, 0x65–0x67 | group | emit |
 | 0x68 | object child | emit (trailing word); **GAP** object-child attr path |
-| 0x69 | binary-operation setup | **GAP** (resolver, EbSetupBinaryOperation) |
+| 0x69 | binary-operation setup | emit (operands + operator descriptor kinds 9/0xb, nOp 5/6); **GAP** kind-0xa + nOp 1-4 finalize (EbEmitExpressionOp opcode base, asm-needed) |
 | 0x6a–0x6e | instruction group | emit |
 | 0x72 | type-node builder | **GAP** (resolver / EbCreateTypeNode3) |
 | 0x73 | group | emit |
