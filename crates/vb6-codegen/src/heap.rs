@@ -1,0 +1,184 @@
+//! The module symbol heap — the free-list allocator VB6's declaration compiler
+//! uses to lay out the compiled member records (the "bags") the resolver reads.
+//!
+//! Records are addressed by byte offset into a single heap buffer (the "base").
+//! Free space is tracked as an offset-ordered singly linked list of blocks; each
+//! block carries an 8-byte header at its start:
+//!
+//! ```text
+//!   +0  u32   next-free offset   (0xffff_ffff = end of list)
+//!   +4  u16   size               (usable bytes = total block size - 8)
+//!   +6  u16   pad                (always 0)
+//! ```
+//!
+//! The allocator must reproduce VB6's placement byte-for-byte so record offsets
+//! match: the resolver dereferences record `+0xc` as an offset into this same
+//! heap. This module ports the offset arithmetic exactly; the grow path (which
+//! bottoms out in a COM buffer-manager call) and the deferred-free path are gated
+//! until their reverse-engineered call-site objects are modelled.
+
+/// End-of-list / null sentinel for a free-list offset.
+pub const NIL: u32 = 0xffff_ffff;
+
+/// The module heap context — the object VB6 threads as `this` (`in_ECX`) through
+/// the allocator family. Only the fields the ported routines touch are modelled.
+///
+/// * `mem` — the heap buffer; offset `0` is the "base" all block offsets are
+///   relative to.
+/// * `free_head` — context `+0xc`: the offset of the first free block.
+/// * `flags` — context byte `+0x18`: bit `0` selects the in-place coalescing
+///   mode (clear ⇒ the gated deferred-free path); bit `1` selects 8-byte
+///   alignment (clear ⇒ 2-byte alignment).
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct HeapContext {
+    pub mem: Vec<u8>,
+    pub free_head: u32,
+    pub flags: u8,
+}
+
+impl HeapContext {
+    /// Read the next-free offset stored in the block header at `off`.
+    pub fn block_next(&self, off: u32) -> u32 {
+        let o = off as usize;
+        u32::from_le_bytes([self.mem[o], self.mem[o + 1], self.mem[o + 2], self.mem[o + 3]])
+    }
+
+    fn set_block_next(&mut self, off: u32, v: u32) {
+        let o = off as usize;
+        self.mem[o..o + 4].copy_from_slice(&v.to_le_bytes());
+    }
+
+    /// Read the usable-size field stored in the block header at `off`.
+    pub fn block_size(&self, off: u32) -> u16 {
+        let o = off as usize;
+        u16::from_le_bytes([self.mem[o + 4], self.mem[o + 5]])
+    }
+
+    fn set_block_size(&mut self, off: u32, v: u16) {
+        let o = off as usize;
+        self.mem[o + 4..o + 6].copy_from_slice(&v.to_le_bytes());
+    }
+
+    fn set_block_pad(&mut self, off: u32, v: u16) {
+        let o = off as usize;
+        self.mem[o + 6..o + 8].copy_from_slice(&v.to_le_bytes());
+    }
+
+    /// Port of `EbAlignSize8`: round a requested byte size up to the heap's
+    /// alignment, with a minimum of 8. Alignment is 8 bytes when context flag
+    /// bit `1` is set, otherwise 2 bytes.
+    pub fn align_size8(&self, cb: u32) -> u32 {
+        if (self.flags >> 1) & 1 == 0 {
+            if cb < 8 {
+                8
+            } else {
+                (cb + 1) & 0xffff_fffe
+            }
+        } else if cb < 8 {
+            8
+        } else {
+            (cb + 7) & 0xffff_fff8
+        }
+    }
+
+    /// Port of `EbCoalesceMemory` (the in-place mode, context flag bit `0` set):
+    /// return the `size`-byte region at offset `address` to the free list,
+    /// merging it with an adjacent predecessor and/or successor block where the
+    /// two are contiguous and lie in the same 64 KiB segment and the merged
+    /// block would still fit in 64 KiB.
+    ///
+    /// The free list is kept ordered by ascending offset. The deferred-free mode
+    /// (flag bit `0` clear, which hands the region to `EbPushStackEntry`) is
+    /// gated.
+    pub fn coalesce_memory(&mut self, address: u32, size: i32) {
+        if self.flags & 1 == 0 {
+            unimplemented!(
+                "EbCoalesceMemory deferred-free path (context +0x18 bit 0 clear, \
+                 EbPushStackEntry); Phase 6"
+            );
+        }
+
+        let s16 = size as i16;
+        let size_u = size as u32;
+        let mut cur_off = address; // the region being inserted/merged
+        let mut block = address; // the header currently treated as "new"
+        let mut prev = NIL; // predecessor offset in the free list
+        let mut merged = false;
+
+        self.set_block_pad(address, 0);
+        self.set_block_size(block, (s16.wrapping_sub(8)) as u16);
+
+        let mut node = self.free_head;
+        let mut last;
+        'outer: while node != NIL {
+            loop {
+                last = node;
+                if cur_off < last {
+                    if prev == NIL {
+                        self.free_head = cur_off;
+                        self.set_block_next(block, last);
+                    } else {
+                        let prev_size = self.block_size(prev) as u32;
+                        if (cur_off >> 16 == prev >> 16)
+                            && prev.wrapping_add(8).wrapping_add(prev_size) == cur_off
+                            && size_u.wrapping_add(8).wrapping_add(prev_size) < 0x1_0001
+                        {
+                            // Merge the new region onto its predecessor.
+                            let merged_size = s16.wrapping_add(self.block_size(prev) as i16);
+                            self.set_block_size(prev, merged_size as u16);
+                            block = prev;
+                            cur_off = prev;
+                        } else {
+                            self.set_block_next(prev, cur_off);
+                            self.set_block_next(block, last);
+                        }
+                    }
+                    // Merge the successor block onto the (possibly grown) new one.
+                    let new_size = self.block_size(block) as u32;
+                    let last_size = self.block_size(last) as u32;
+                    if (cur_off >> 16 == last >> 16)
+                        && cur_off.wrapping_add(8).wrapping_add(new_size) == last
+                        && new_size.wrapping_add(0x10).wrapping_add(last_size) < 0x1_0001
+                    {
+                        let combined =
+                            (last_size as i16).wrapping_add(8).wrapping_add(self.block_size(block) as i16);
+                        self.set_block_size(block, combined as u16);
+                        self.set_block_next(block, self.block_next(last));
+                    }
+                    merged = true;
+                    break 'outer;
+                }
+                node = self.block_next(last);
+                prev = last;
+                if node == NIL {
+                    break;
+                }
+            }
+            // Walked off the end without finding an insertion point: try to merge
+            // the region onto the final block.
+            let last_size = self.block_size(last) as u32;
+            if (last >> 16 == cur_off >> 16)
+                && last.wrapping_add(8).wrapping_add(last_size) == cur_off
+                && size_u.wrapping_add(8).wrapping_add(last_size) < 0x1_0001
+            {
+                merged = true;
+                let merged_size = s16.wrapping_add(self.block_size(last) as i16);
+                self.set_block_size(last, merged_size as u16);
+            }
+        }
+
+        if !merged {
+            self.set_block_next(block, NIL);
+            self.set_block_size(block, (s16.wrapping_sub(8)) as u16);
+            if prev == NIL {
+                self.free_head = cur_off;
+            } else {
+                self.set_block_next(prev, cur_off);
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "tests/heap_tests.rs"]
+mod tests;
