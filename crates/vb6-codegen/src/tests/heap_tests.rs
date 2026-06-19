@@ -4,7 +4,7 @@
 //! `[next: u32][size: u16][pad: u16]`, where `size` is the usable bytes (total
 //! block size minus the 8-byte header) and `next` is `NIL` at the list tail.
 
-use crate::heap::{HeapContext, NIL};
+use crate::heap::{HeapContext, EB_ALLOC_FAILED, NIL};
 
 /// Build a heap with `len` bytes of zeroed backing and the in-place coalescing
 /// mode enabled (flag bit 0), 2-byte alignment (flag bit 1 clear).
@@ -13,6 +13,7 @@ fn heap(len: usize) -> HeapContext {
         mem: vec![0u8; len],
         free_head: NIL,
         flags: 1,
+        buffer_flag: 0,
     }
 }
 
@@ -162,6 +163,102 @@ fn find_free_block_skips_too_small_then_splits_second() {
     assert_eq!(h.block_next(0x10), 0x50);
     assert_eq!(h.block_size(0x50), 0x30);
     assert_eq!(h.block_next(0x50), NIL);
+}
+
+/// Seed a heap with a single free block at offset 0 spanning the whole buffer,
+/// so the free-list-hit allocation path can run without the gated grow path.
+fn seeded(len: usize) -> HeapContext {
+    let mut h = heap(len);
+    put_block(&mut h, 0, NIL, (len - 8) as u16);
+    h.free_head = 0;
+    h
+}
+
+#[test]
+fn allocate_heap_space_serves_from_free_list() {
+    let mut h = seeded(0x200);
+    let off = h.allocate_heap_space(0x20).unwrap();
+    assert_eq!(off, 0);
+    // Remainder free block carved just past the 0x20 allocation.
+    assert_eq!(h.free_head, 0x20);
+}
+
+#[test]
+fn allocate_heap_space_fails_when_oversized_and_growth_disabled() {
+    let mut h = seeded(0x200);
+    h.buffer_flag = 1; // growth disabled
+    // 0x10000+ aligns past the in-line limit → straight to failure.
+    assert_eq!(h.allocate_heap_space(0x10000), Err(EB_ALLOC_FAILED));
+}
+
+#[test]
+fn allocate_heap_space_fails_when_no_fit_and_growth_disabled() {
+    let mut h = heap(0x40);
+    put_block(&mut h, 0, NIL, 0x04); // tiny block, nothing fits
+    h.free_head = 0;
+    h.buffer_flag = 1; // growth disabled
+    assert_eq!(h.allocate_heap_space(0x20), Err(EB_ALLOC_FAILED));
+}
+
+#[test]
+fn allocate_heap_space_grow_path_is_gated() {
+    let mut h = heap(0x40); // empty free list, growth enabled (buffer_flag 0)
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        h.allocate_heap_space(0x20).ok();
+    }));
+    assert!(r.is_err());
+}
+
+#[test]
+fn method_bag_sets_method_tag() {
+    let mut h = seeded(0x200);
+    let off = h.allocate_method_bag().unwrap();
+    assert_eq!(off, 0);
+    assert_eq!(h.mem[off as usize], 4);
+    // Remaining record bytes zeroed.
+    assert!(h.mem[off as usize + 1..off as usize + 0x40].iter().all(|&b| b == 0));
+}
+
+#[test]
+fn interface_bag_is_all_zero() {
+    let mut h = seeded(0x200);
+    let off = h.allocate_interface_bag().unwrap();
+    assert!(h.mem[off as usize..off as usize + 0x40].iter().all(|&b| b == 0));
+}
+
+#[test]
+fn property_bag_is_all_zero() {
+    let mut h = seeded(0x200);
+    let off = h.allocate_property_bag().unwrap();
+    assert!(h.mem[off as usize..off as usize + 0x1c].iter().all(|&b| b == 0));
+}
+
+#[test]
+fn parameter_bag_sets_tag_and_marker_bytes() {
+    let mut h = seeded(0x200);
+    let off = h.allocate_parameter_bag().unwrap();
+    let o = off as usize;
+    assert_eq!(h.mem[o], 2);
+    assert_eq!(h.mem[o + 0x12], 0xff);
+    assert_eq!(h.mem[o + 0x13], 0xff);
+    // Every other byte of the 0x28 record is zero.
+    for (i, &b) in h.mem[o..o + 0x28].iter().enumerate() {
+        if i == 0 || i == 0x12 || i == 0x13 {
+            continue;
+        }
+        assert_eq!(b, 0, "byte +{i:#x}");
+    }
+}
+
+#[test]
+fn type_descriptor_zeroes_first_0x20_only() {
+    let mut h = seeded(0x200);
+    // Dirty the trailing 4 bytes the allocator must leave untouched.
+    h.mem[0x20..0x24].fill(0xaa);
+    let off = h.allocate_type_descriptor().unwrap();
+    assert_eq!(off, 0);
+    assert!(h.mem[0..0x20].iter().all(|&b| b == 0));
+    assert_eq!(&h.mem[0x20..0x24], &[0xaa; 4]);
 }
 
 #[test]

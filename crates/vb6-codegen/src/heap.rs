@@ -20,6 +20,10 @@
 /// End-of-list / null sentinel for a free-list offset.
 pub const NIL: u32 = 0xffff_ffff;
 
+/// The failure code `EbAllocateHeapSpace` returns when a request cannot be
+/// satisfied (oversized, or growth disabled).
+pub const EB_ALLOC_FAILED: i32 = -0x7ff8_fff2;
+
 /// The module heap context — the object VB6 threads as `this` (`in_ECX`) through
 /// the allocator family. Only the fields the ported routines touch are modelled.
 ///
@@ -34,6 +38,10 @@ pub struct HeapContext {
     pub mem: Vec<u8>,
     pub free_head: u32,
     pub flags: u8,
+    /// Context `+8`: when `0`, an exhausted free list may grow the buffer (the
+    /// gated COM path); when non-zero, growth is disabled and an over-capacity
+    /// request fails.
+    pub buffer_flag: i32,
 }
 
 impl HeapContext {
@@ -224,6 +232,88 @@ impl HeapContext {
                 self.set_block_next(prev, cur_off);
             }
         }
+    }
+
+    /// Port of `EbAllocateHeapSpace`: allocate `size` aligned bytes, returning the
+    /// record's offset into the heap, or [`EB_ALLOC_FAILED`].
+    ///
+    /// A request is served from the free list ([`find_free_block`]) when one
+    /// fits. The grow path (an exhausted free list with growth enabled) is gated:
+    /// it calls a COM buffer-manager (a global singleton's vtable) to realloc the
+    /// backing buffer, then coalesces the new tail in — modelling that, and the
+    /// initial heap state it depends on, is the remaining declaration-compiler
+    /// front-half work.
+    ///
+    /// [`find_free_block`]: HeapContext::find_free_block
+    pub fn allocate_heap_space(&mut self, size: u32) -> Result<u32, i32> {
+        let aligned = self.align_size8(size);
+        if aligned < 0x1_0000 {
+            let off = self.find_free_block(aligned);
+            if off != NIL {
+                return Ok(off);
+            }
+            if self.buffer_flag == 0 {
+                unimplemented!(
+                    "EbAllocateHeapSpace grow path: COM buffer-manager realloc \
+                     (global singleton vtable +0x10) + the heap-init seeding it \
+                     depends on; Phase 6"
+                );
+            }
+        }
+        Err(EB_ALLOC_FAILED)
+    }
+
+    /// Zero a freshly-allocated record's first `len` bytes — the effect of the
+    /// bag allocators' template copies (every bag template is all-zero).
+    fn zero_record(&mut self, off: u32, len: usize) {
+        let o = off as usize;
+        self.mem[o..o + len].fill(0);
+    }
+
+    /// Port of `EbAllocateMethodBag`: a 0x40-byte member record with the low 3
+    /// bits of byte `+0` set to the method tag (4).
+    pub fn allocate_method_bag(&mut self) -> Result<u32, i32> {
+        let off = self.allocate_heap_space(0x40)?;
+        self.zero_record(off, 0x40);
+        let o = off as usize;
+        self.mem[o] = (self.mem[o] & 0xf8) ^ 4;
+        Ok(off)
+    }
+
+    /// Port of `EbAllocateInterfaceBag`: a 0x40-byte all-zero member record.
+    pub fn allocate_interface_bag(&mut self) -> Result<u32, i32> {
+        let off = self.allocate_heap_space(0x40)?;
+        self.zero_record(off, 0x40);
+        Ok(off)
+    }
+
+    /// Port of `EbAllocatePropertyBag`: a 0x1c-byte all-zero member record.
+    pub fn allocate_property_bag(&mut self) -> Result<u32, i32> {
+        let off = self.allocate_heap_space(0x1c)?;
+        self.zero_record(off, 0x1c);
+        Ok(off)
+    }
+
+    /// Port of `EbAllocateParameterBag`: a 0x28-byte member record with the low 3
+    /// bits of byte `+0` set to the parameter tag (2) and bytes `+0x12`/`+0x13`
+    /// set to `0xff`.
+    pub fn allocate_parameter_bag(&mut self) -> Result<u32, i32> {
+        let off = self.allocate_heap_space(0x28)?;
+        self.zero_record(off, 0x28);
+        let o = off as usize;
+        self.mem[o + 0x12] = 0xff;
+        self.mem[o + 0x13] = 0xff;
+        self.mem[o] = (self.mem[o] & 0xf8) ^ 2;
+        Ok(off)
+    }
+
+    /// Port of `EbAllocateTypeDescriptor`: a 0x24-byte descriptor whose first
+    /// 0x20 bytes are zeroed by the template copy; the trailing 4 bytes
+    /// (`+0x20..0x24`) are left as the carved block's existing contents.
+    pub fn allocate_type_descriptor(&mut self) -> Result<u32, i32> {
+        let off = self.allocate_heap_space(0x24)?;
+        self.zero_record(off, 0x20);
+        Ok(off)
     }
 }
 
