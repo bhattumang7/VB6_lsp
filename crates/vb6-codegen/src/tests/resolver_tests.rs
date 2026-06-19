@@ -315,6 +315,146 @@ fn expression_type2_slot_path_is_gated() {
     assert!(r.is_err());
 }
 
+// ── EbResolveIdentRef dispatcher ─────────────────────────────────────────────
+
+/// A records heap with an inline member record at 0x10 (operand at 0x1c). `rec0`
+/// / `rec1` are record bytes `+0` / `+1`; `op` / `op_byte1` are the operand's two
+/// bytes. The record's `+0xc` masked dword coincides with the operand bytes
+/// (inline), which is non-`-1` for the values used here.
+fn ident_heap(rec0: u8, rec1: u8, op: u8, op_byte1: u8) -> Vec<u8> {
+    let mut h = vec![0u8; 0x40];
+    h[0x10] = rec0;
+    h[0x11] = rec1;
+    h[0x1c] = op;
+    h[0x1d] = op_byte1;
+    h
+}
+
+/// A clean 0x60 reference node: type tag in the high half, the given flags, a
+/// fixed-size (4-byte) type descriptor in word[5].
+fn ident_node(a: &mut NodeArena, type_tag: u16, flags: u32) -> NodeRef {
+    let d = size_desc(a, 4);
+    ref_node(a, type_tag, flags, d, NodeRef(0))
+}
+
+#[test]
+fn resolve_ident_ref_category_7_value_load() {
+    // rec1=3, op byte1=1, value_class 0 → category 7. Operand 0x02 (!= 0x1b) →
+    // optional. type tag 5 → type-offset 0 (no tail flag).
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0x40, 3, 0x02, 1);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0);
+    assert_eq!(
+        desc,
+        RefDescriptor { kind: 2, operand: 4, word6: 0, word8: 0, flags1: 0 }
+    );
+}
+
+#[test]
+fn resolve_ident_ref_category_0xc_non_optional() {
+    // rec1=3, op byte1=5 → category 0xc → init(by_ref=false, optional=false) →
+    // flags1 bit 0x04.
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0x40, 3, 0x02, 5);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0);
+    assert_eq!(desc, RefDescriptor { kind: 2, operand: 4, word6: 0, word8: 0, flags1: 4 });
+}
+
+#[test]
+fn resolve_ident_ref_category_9_by_reference() {
+    // rec1=3, op byte1=4 → category 9 → init(by_ref=true, optional=false) → kind 1.
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0x40, 3, 0x02, 4);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0);
+    assert_eq!(desc, RefDescriptor { kind: 1, operand: 4, word6: 0, word8: 0, flags1: 4 });
+}
+
+#[test]
+fn resolve_ident_ref_category_1_sets_attribute_flag() {
+    // rec1=0x24 (low 3 = 4, bit 0x20 set), op byte1=0 → category 1. The 0x20 record
+    // flag with ctx flag bit 2 clear sets descriptor flags1 bit 0x02.
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0x40, 0x24, 0x02, 0);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0);
+    assert_eq!(desc, RefDescriptor { kind: 1, operand: 4, word6: 0, word8: 0, flags1: 2 });
+    // ctx flag bit 2 set suppresses the attribute flag.
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 2);
+    assert_eq!(desc.flags1, 0);
+}
+
+#[test]
+fn resolve_ident_ref_type_offset_0xe_sets_tail_flag() {
+    // type tag 17 → type-offset 0xe → the shared tail sets flags1 bit 0x08.
+    // Category 0xc gives the 0x04 flag; combined → 0x0c.
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 17, 0);
+    let h = ident_heap(0x40, 3, 0x02, 5);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0);
+    assert_eq!(desc.flags1, 0x0c);
+}
+
+#[test]
+fn resolve_ident_ref_method_binding_gated() {
+    // record +0 bit 0x80 with +1 & 7 == 4 → the method/object path (gated).
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0xc0, 4, 0x02, 0);
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        resolve_ident_ref(&a, n, &h, 0x10, 0)
+    }));
+    assert!(r.is_err());
+}
+
+#[test]
+fn resolve_ident_ref_category_4_gated() {
+    // rec1=3, op byte1=0 → category 4 (gated: EbResolveExprNode).
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0x40, 3, 0x02, 0);
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        resolve_ident_ref(&a, n, &h, 0x10, 0)
+    }));
+    assert!(r.is_err());
+}
+
+#[test]
+fn resolve_reference2_dispatches_0x60() {
+    // A 0x60 node with no member sub-expression routes to resolve_ident_ref.
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0); // ref_node builds opcode 0x60
+    let h = ident_heap(0x40, 3, 0x02, 1);
+    let via_ref2 = resolve_reference2(&a, n, &h, 0x10, 0);
+    let direct = resolve_ident_ref(&a, n, &h, 0x10, 0);
+    assert_eq!(via_ref2, direct);
+}
+
+#[test]
+fn resolve_reference2_0x69_and_member_subexpr_gated() {
+    let mut a = NodeArena::new();
+    let h = ident_heap(0x40, 3, 0x02, 1);
+    // 0x69 binary-operation setup is gated.
+    let mut b = NodeArena::node(0x69, 5, 0, 0, 0, 0);
+    b.w[5] = size_desc(&mut a, 4).0;
+    let n69 = a.alloc(b);
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        resolve_reference2(&a, n69, &h, 0x10, 0)
+    }));
+    assert!(r.is_err());
+    // A 0x60 node with a member sub-expression (word[4] != 0) is gated.
+    let d = size_desc(&mut a, 4);
+    let mut m = NodeArena::node(0x60, 5, 0x99, d.0, 0, 0); // word[4] != 0
+    m.w[5] = d.0;
+    let nmem = a.alloc(m);
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        resolve_reference2(&a, nmem, &h, 0x10, 0)
+    }));
+    assert!(r.is_err());
+}
+
 #[test]
 fn type_library_descriptor_is_gated() {
     // flags 0x4000 with a 0x170000-region node hits the gated type-library path.

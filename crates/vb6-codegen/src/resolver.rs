@@ -10,7 +10,7 @@
 
 use crate::emit::RefDescriptor;
 use crate::node::{NodeArena, NodeRef};
-use crate::tables::{RT_RESOLVER_CLASS_FLAG, RT_RESOLVER_TYPE_MAP};
+use crate::tables::{RT_RESOLVER_CLASS_FLAG, RT_RESOLVER_TYPE_MAP, RT_TYPE_OFFSET};
 
 /// Resolve the byte size of a UDT / object type from its type descriptor — the
 /// shared reader used across the emit and resolve paths (port of
@@ -294,6 +294,135 @@ pub fn map_slot_type_value(slot: i32) -> Option<i32> {
         return None; // 6, 7, >=9
     }
     Some(2) // 3, 4, 5, 8
+}
+
+/// Read a little-endian dword from the records heap at `off`.
+fn heap_dword(heap: &[u8], off: usize) -> u32 {
+    u32::from_le_bytes([heap[off], heap[off + 1], heap[off + 2], heap[off + 3]])
+}
+
+/// Port of `EbResolveIdentRef`: resolve a `0x60` name-reference node into its
+/// value-emitter descriptor.
+///
+/// The resolver classifies the binding ([`expression_type2`]), resolves the
+/// member record's operand pointer ([`resolve_attribute_pointer`]), and dispatches
+/// on the resulting type category to build the descriptor (mostly via
+/// [`init_expr_descriptor`]) plus two trailing flag adjustments.
+///
+/// * `node` — the `0x60` reference node; its `word[5]` is the member-access
+///   context node [`init_expr_descriptor`] reads for the type size.
+/// * `heap` — the module records heap (`*symbol_base`).
+/// * `member_off` — the member record's byte offset into `heap` (the
+///   [`get_expr_context`] result).
+/// * `ctx_flag_c` — byte `+0xc` of the compiler context (`in_ECX`); only bit `2`
+///   is read, gating the attribute flag on the value cases.
+///
+/// Gated (each `unimplemented!` rather than a guessed byte): the method/object
+/// binding path (record byte `+0` bit `0x80` with `+1 & 7 == 4`), category 4
+/// (`EbResolveExprNode`), and categories `0xd`/`0xe`/`0xf` (the binding-emit tail
+/// `EbFillBindingDesc` / `EbEmitBinaryOpCode`, which read the COM slot tables and
+/// emit into the stream).
+pub fn resolve_ident_ref(
+    arena: &NodeArena,
+    node: NodeRef,
+    heap: &[u8],
+    member_off: usize,
+    ctx_flag_c: u8,
+) -> RefDescriptor {
+    let n = *arena.get(node);
+    let type_offset = RT_TYPE_OFFSET[n.type_tag() as usize];
+    let rec0 = heap[member_off];
+    let rec1 = heap[member_off + 1];
+
+    // Method / object member binding: needs the COM method-binding subsystem.
+    if rec0 & 0x80 != 0 && rec1 & 7 == 4 {
+        unimplemented!(
+            "EbResolveIdentRef method/object binding (record +0 bit 0x80, +1&7==4): \
+             needs the method-binding / object-reference emit subsystem; Phase 6"
+        );
+    }
+
+    let category = expression_type2(heap, member_off).category;
+    // The operand pointer the value cases inspect (un-skipped, unlike the
+    // classifier's own copy). Null only on a malformed record.
+    let operand_off = resolve_attribute_pointer(heap, member_off);
+
+    let mut desc = match category {
+        1 | 2 | 3 => {
+            let op = heap_dword(heap, operand_off.expect("null operand pointer"));
+            let optional = if category == 3 || (op & 0x3f == 0x1b && op & 0x800 != 0) {
+                false
+            } else if n.w[0] & 0xffff_0000 == 0x0017_0000 {
+                unimplemented!(
+                    "EbResolveIdentRef type-library reference (region 0x170000, \
+                     LoadTypeLibraryItem); Phase 6"
+                );
+            } else {
+                true
+            };
+            let mut d = init_expr_descriptor(arena, node, true, optional);
+            // Attribute flag: set bit 0x02 when the record is flagged and the
+            // compiler context does not suppress it.
+            if rec1 & 0x20 != 0 && ctx_flag_c & 2 == 0 {
+                d.flags1 |= 2;
+            }
+            d
+        }
+        7 | 8 => {
+            let op = heap_dword(heap, operand_off.expect("null operand pointer"));
+            init_expr_descriptor(arena, node, false, op & 0x3f != 0x1b)
+        }
+        9 => init_expr_descriptor(arena, node, true, false),
+        0xc => init_expr_descriptor(arena, node, false, false),
+        4 => unimplemented!(
+            "EbResolveIdentRef category 4 (EbResolveExprNode + call-convention \
+             record selection); Phase 6"
+        ),
+        0xd | 0xe | 0xf => unimplemented!(
+            "EbResolveIdentRef categories 0xd/0xe/0xf (binding-emit tail: \
+             EbFillBindingDesc / EbEmitBinaryOpCode); Phase 6"
+        ),
+        // Default: a zeroed descriptor (categories 5/6/0xa/0xb and out of range).
+        _ => RefDescriptor::default(),
+    };
+
+    // Shared tail (`EbSetTypeFlag2`): a type-offset class of 0xe sets bit 0x08.
+    if type_offset == 0xe {
+        desc.flags1 |= 8;
+    }
+    desc
+}
+
+/// Port of the `EbResolveReference2` dispatcher: route a reference node to its
+/// resolver by opcode. `0x60` name references resolve via [`resolve_ident_ref`];
+/// `0x69` binary-operation setups (`EbSetupBinaryOperation`) are gated.
+///
+/// A `0x60` node carrying a member sub-expression (`word[4] != 0`) needs
+/// `EbSimplifyMemberExpr` to produce the type descriptor first — also gated.
+pub fn resolve_reference2(
+    arena: &NodeArena,
+    node: NodeRef,
+    heap: &[u8],
+    member_off: usize,
+    ctx_flag_c: u8,
+) -> RefDescriptor {
+    let n = *arena.get(node);
+    match n.w[0] & 0xffff {
+        0x60 => {
+            if n.w[4] != 0 {
+                unimplemented!(
+                    "EbResolveReference2: 0x60 node with a member sub-expression \
+                     (word[4] != 0) needs EbSimplifyMemberExpr; Phase 6"
+                );
+            }
+            resolve_ident_ref(arena, node, heap, member_off, ctx_flag_c)
+        }
+        0x69 => unimplemented!(
+            "EbResolveReference2: 0x69 binary-operation setup \
+             (EbSetupBinaryOperation); Phase 6"
+        ),
+        _ => RefDescriptor::default(),
+    }
 }
 
 #[cfg(test)]
