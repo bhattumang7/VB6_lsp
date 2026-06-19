@@ -105,6 +105,66 @@ fn coalesce_merges_following_block_onto_new_region() {
 }
 
 #[test]
+fn find_free_block_splits_large_block() {
+    let mut h = heap(0x200);
+    // One free block at 0x10, usable size 0x40 (total 0x48).
+    put_block(&mut h, 0x10, NIL, 0x40);
+    h.free_head = 0x10;
+
+    let off = h.find_free_block(0x10); // aligns to 0x10
+
+    assert_eq!(off, 0x10);
+    // Remainder block carved at 0x10 + 0x10 = 0x20, size = 0x40 - 0x10 = 0x30.
+    assert_eq!(h.free_head, 0x20);
+    assert_eq!(h.block_next(0x20), NIL);
+    assert_eq!(h.block_size(0x20), 0x30);
+}
+
+#[test]
+fn find_free_block_consumes_block_whole_when_remainder_too_small() {
+    let mut h = heap(0x200);
+    // Usable 0x08 → total 0x10; request 0x10 leaves 0 spare → no split.
+    put_block(&mut h, 0x10, NIL, 0x08);
+    h.free_head = 0x10;
+
+    let off = h.find_free_block(0x10);
+
+    assert_eq!(off, 0x10);
+    assert_eq!(h.free_head, NIL); // list emptied
+}
+
+#[test]
+fn find_free_block_returns_nil_when_nothing_fits() {
+    let mut h = heap(0x200);
+    put_block(&mut h, 0x10, NIL, 0x04); // total 0x0c < requested 0x10
+    h.free_head = 0x10;
+
+    let off = h.find_free_block(0x10);
+
+    assert_eq!(off, NIL);
+    // List untouched.
+    assert_eq!(h.free_head, 0x10);
+    assert_eq!(h.block_next(0x10), NIL);
+    assert_eq!(h.block_size(0x10), 0x04);
+}
+
+#[test]
+fn find_free_block_skips_too_small_then_splits_second() {
+    let mut h = heap(0x200);
+    put_block(&mut h, 0x10, 0x40, 0x04); // too small, links to 0x40
+    put_block(&mut h, 0x40, NIL, 0x40); // fits
+    h.free_head = 0x10;
+
+    let off = h.find_free_block(0x10);
+
+    assert_eq!(off, 0x40);
+    // First block now points at the carved remainder at 0x50.
+    assert_eq!(h.block_next(0x10), 0x50);
+    assert_eq!(h.block_size(0x50), 0x30);
+    assert_eq!(h.block_next(0x50), NIL);
+}
+
+#[test]
 fn coalesce_deferred_free_mode_is_gated() {
     let mut h = heap(0x100);
     h.flags = 0; // bit 0 clear → deferred-free path

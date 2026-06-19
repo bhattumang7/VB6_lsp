@@ -81,6 +81,54 @@ impl HeapContext {
         }
     }
 
+    /// Port of `EbFindFreeBlock`: carve a block of (at least) `nsize` aligned
+    /// bytes out of the free list, returning its offset, or [`NIL`] if no block
+    /// fits.
+    ///
+    /// The list is searched first-fit by usable capacity (`block size + 8`, since
+    /// a satisfied request reuses the block's own 8-byte header). A block with at
+    /// least 8 spare bytes is split: the tail becomes a fresh free block at
+    /// `found + aligned`, and the predecessor (or the list head) is relinked to
+    /// it. A block with less than 8 spare bytes is consumed whole and unlinked.
+    pub fn find_free_block(&mut self, nsize: u32) -> u32 {
+        let aligned = self.align_size8(nsize);
+        let aligned_lo = aligned & 0xffff;
+
+        let mut prev = NIL;
+        let mut cur = self.free_head;
+        while cur != NIL {
+            // Capacity that could satisfy the request: usable size + the header.
+            if self.block_size(cur) as u32 + 8 >= aligned_lo {
+                break;
+            }
+            prev = cur;
+            cur = self.block_next(cur);
+        }
+        if cur == NIL {
+            return NIL;
+        }
+
+        let found = cur;
+        let stored = self.block_size(found) as u32;
+        let leftover = stored.wrapping_sub(aligned).wrapping_add(8);
+        let link_target = if leftover >= 8 {
+            // Split: the remainder becomes a free block just past the allocation.
+            let rem = found + aligned;
+            self.set_block_pad(rem, 0);
+            self.set_block_next(rem, self.block_next(found));
+            self.set_block_size(rem, stored.wrapping_sub(aligned) as u16);
+            rem
+        } else {
+            self.block_next(found)
+        };
+        if prev == NIL {
+            self.free_head = link_target;
+        } else {
+            self.set_block_next(prev, link_target);
+        }
+        found
+    }
+
     /// Port of `EbCoalesceMemory` (the in-place mode, context flag bit `0` set):
     /// return the `size`-byte region at offset `address` to the free list,
     /// merging it with an adjacent predecessor and/or successor block where the
