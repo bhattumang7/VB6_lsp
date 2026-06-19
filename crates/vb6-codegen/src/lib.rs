@@ -42,7 +42,7 @@ pub mod typenode;
 
 pub use bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar, ProcFrame, PROC_PARAM_BASE};
 pub use buffer::PcodeStream;
-pub use emit::{Emitter, RefDescriptor};
+pub use emit::{Emitter, RefDescriptor, SymbolContext};
 pub use heap::{HeapContext, NIL};
 pub use lower::{lower_proc, global_frame_from_types, LowerError};
 pub use node::{NodeArena, NodeRef, RawNode};

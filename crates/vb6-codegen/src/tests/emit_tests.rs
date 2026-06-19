@@ -2229,3 +2229,58 @@ fn case_0x58_set_emits_0x400_sized() {
     expected.extend(opc2(0x400, 0x10));
     assert_eq!(emit(&a, n), expected.as_slice());
 }
+
+// ── Member reference (0x60) end-to-end through the resolver + value emitter ──
+
+#[test]
+fn member_reference_0x60_resolves_and_emits() {
+    use crate::emit::SymbolContext;
+
+    let mut a = NodeArena::new();
+    // Size descriptor (word[0]==4, size in word[4]) for init_expr_descriptor.
+    let d = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0));
+    // 0x60 member-reference node: type tag 8, no member sub-expr (w4=0), size
+    // descriptor in w5.
+    let mut n = NodeArena::node(0x60, 8, 0, 0, 0, 0);
+    n.w[5] = d.0;
+    let node = a.alloc(n);
+
+    // Records heap: a member record at 0x10 classifying to resolver category 4
+    // (inline Long operand at +0xc, record byte+1 low3 = 3).
+    let mut heap = vec![0u8; 0x40];
+    heap[0x10] = 0x40; // +0 bit 6 → inline operand at +0xc
+    heap[0x11] = 0x03; // +1 low3 = 3
+    heap[0x10 + 0xc] = 8; // inline Long operand opcode
+
+    let sym = SymbolContext {
+        heap,
+        member_off: 0x10,
+        ctx_flag_c: 0,
+        binding: Some((4, 0)), // binder-resolved (kind 4, byref 0)
+    };
+
+    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    e.emit_expr(node, 1);
+    let bytes = e.into_bytes();
+
+    // The resolver yields a kind-1 (local, by-ref) descriptor with operand 4;
+    // the value emitter emits its load opcode + operand. Locked from the ported
+    // EbEmitExpression2 path.
+    assert_eq!(bytes, MEMBER_REF_0X60_BYTES);
+}
+
+const MEMBER_REF_0X60_BYTES: &[u8] = &[0x6c, 0x04, 0x00];
+
+#[test]
+fn member_reference_0x60_without_context_is_gated() {
+    let mut a = NodeArena::new();
+    let d = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0));
+    let mut n = NodeArena::node(0x60, 8, 0, 0, 0, 0);
+    n.w[5] = d.0;
+    let node = a.alloc(n);
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        let mut e = Emitter::new(&a);
+        e.emit_expr(node, 1);
+    }));
+    assert!(r.is_err());
+}

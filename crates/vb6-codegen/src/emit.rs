@@ -114,10 +114,23 @@ pub struct CallDescriptor {
 
 /// Drives [`Emitter::emit_expr`] over a [`NodeArena`], writing the runtime
 /// P-code byte stream.
+/// The module symbol context a member-reference (`0x60`) emission needs: the
+/// compiled records heap the resolver reads, the member's byte offset within it
+/// (`EbGetExprContext`), the compiler-context flag byte (`in_ECX + 0xc`), and the
+/// binder-resolved convention `(kind, byref)` for the category-4 path.
+#[derive(Clone, Debug, Default)]
+pub struct SymbolContext {
+    pub heap: Vec<u8>,
+    pub member_off: usize,
+    pub ctx_flag_c: u8,
+    pub binding: Option<(i32, i32)>,
+}
+
 pub struct Emitter<'a> {
     arena: &'a NodeArena,
     stream: PcodeStream,
     type_pool: TypePool,
+    sym: Option<SymbolContext>,
 }
 
 impl<'a> Emitter<'a> {
@@ -126,7 +139,15 @@ impl<'a> Emitter<'a> {
             arena,
             stream: PcodeStream::new(),
             type_pool: TypePool::new(),
+            sym: None,
         }
+    }
+
+    /// Attach the module symbol context used by member-reference (`0x60`)
+    /// emission.
+    pub fn with_symbol_context(mut self, sym: SymbolContext) -> Self {
+        self.sym = Some(sym);
+        self
     }
 
     /// The type-intern pool accumulated during emission (for inspection/tests).
@@ -872,7 +893,40 @@ impl<'a> Emitter<'a> {
                 0x40b
             }
             // case 0x60: member-reference coercion.
-            0x60 => unimplemented!("member-reference coercion; Phase 4"),
+            0x60 => {
+                // EbCoerceMemberRef common path: resolve the reference to its
+                // descriptor, then emit it via the value-emitter. nOp is the
+                // emission context (pTypeInfo), fFlags = (u16)node[1], pContext =
+                // node[2] (unused by the value emit), nType = node[0] >> 16.
+                if n.w[1] & 0x4 != 0 {
+                    unimplemented!(
+                        "EbCoerceMemberRef dispatch/late-bound path (node+5 bit 2): \
+                         EbProcessMemberDeclaration / EbResolveMemberType2; Phase 6"
+                    );
+                }
+                let sym = self.sym.as_ref().expect(
+                    "0x60 member reference needs the module symbol context \
+                     (Emitter::with_symbol_context)",
+                );
+                if n.w[4] != 0 {
+                    unimplemented!(
+                        "EbCoerceMemberRef member sub-expression (node[4] != 0): \
+                         EbSimplifyMemberExpr; Phase 6"
+                    );
+                }
+                let desc = crate::resolver::resolve_reference2(
+                    self.arena,
+                    node,
+                    &sym.heap,
+                    sym.member_off,
+                    sym.ctx_flag_c,
+                    sym.binding,
+                );
+                let f_flags = n.w[1] & 0xffff;
+                let n_type = (n.w[0] >> 16) as i32;
+                self.emit_reference(&desc, context as i32, f_flags, n_type);
+                return 0;
+            }
             // case 0x61: call site. Assemble a `CallDescriptor` from the bound
             // call node and dispatch to `emit_call`. The convention kind and
             // by-reference mode are resolved by the binder (the values the

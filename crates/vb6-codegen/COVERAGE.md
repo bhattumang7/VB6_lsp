@@ -35,7 +35,7 @@ The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
 | 0x5c | group | emit |
 | 0x5d | type-library-driven cast | **ext** |
 | 0x5e, 0x5f | group | emit |
-| 0x60 | member-reference coercion | **GAP** (resolver) |
+| 0x60 | member-reference coercion | emit (common path via resolver+binder+value-emitter); **GAP** dispatch/late-bound sub-path + member sub-expr |
 | 0x61 | call | emit (by-ref common); **GAP** ByVal / dispatch / member numbering |
 | 0x63, 0x65–0x67 | group | emit |
 | 0x68 | object child | emit (trailing word); **GAP** object-child attr path |
