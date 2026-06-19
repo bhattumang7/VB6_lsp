@@ -10,6 +10,7 @@
 
 use crate::emit::RefDescriptor;
 use crate::node::{NodeArena, NodeRef};
+use crate::tables::{RT_RESOLVER_CLASS_FLAG, RT_RESOLVER_TYPE_MAP};
 
 /// Resolve the byte size of a UDT / object type from its type descriptor — the
 /// shared reader used across the emit and resolve paths (port of
@@ -128,6 +129,38 @@ pub fn extract_type_info(pcode: &[u8]) -> u16 {
         return u16::from_le_bytes([pcode[2], pcode[3]]) & 0xfffe;
     }
     unreachable!("EbExtractTypeInfo on an opcode without an inline type word")
+}
+
+/// The class-flag a p-code opcode carries in `EbGetExpressionType2`'s first gate
+/// (`DAT_0fab5b10[opcode & 0x3f]`). The classifier treats the operand as
+/// carrying an inline type only when this flag is `0` and the opcode's low 6 bits
+/// are neither `0x1e` nor `0x1f`; otherwise the value class is forced to `0`.
+pub fn resolver_class_flag(opcode: u8) -> u8 {
+    RT_RESOLVER_CLASS_FLAG[(opcode & 0x3f) as usize]
+}
+
+/// `EbGetExpressionType2`'s first gate: whether the just-emitted operand carries
+/// an inline type the classifier should inspect (class-flag `0` and low 6 bits
+/// not `0x1e`/`0x1f`). When this is false the value class collapses to `0`.
+pub fn resolver_inspects_operand(opcode: u8) -> bool {
+    let lo = opcode & 0x3f;
+    resolver_class_flag(opcode) == 0 && lo != 0x1e && lo != 0x1f
+}
+
+/// The final type-category lookup of `EbGetExpressionType2`:
+/// `(char)DAT_0fc10aa8[(value_class + (member_byte1 & 7) * 3) * 2 + (op_byte1 & 7)]`.
+///
+/// * `value_class` — the operand's value class (`0`/`1`/`2`), as derived from the
+///   emitted operand (the derivation reads the live emit buffer and the slot
+///   table through registers the decompile dropped, so it is supplied here rather
+///   than recomputed).
+/// * `member_byte1` — byte `+1` of the resolved member record.
+/// * `op_byte1` — the second byte of the operand's p-code opcode.
+///
+/// Returned signed (the source casts the table byte through `char`).
+pub fn resolver_type_category(value_class: i32, member_byte1: u8, op_byte1: u8) -> i32 {
+    let idx = (value_class + (member_byte1 & 7) as i32 * 3) * 2 + (op_byte1 & 7) as i32;
+    RT_RESOLVER_TYPE_MAP[idx as usize] as i8 as i32
 }
 
 /// Port of the value-mapping tail of `EbMapSlotType`: collapse a resolved slot

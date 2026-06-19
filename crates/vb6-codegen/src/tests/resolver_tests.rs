@@ -147,6 +147,53 @@ fn map_slot_type_value_mapping() {
 }
 
 #[test]
+fn resolver_class_flag_table_exact() {
+    // Spot the logical class-flag entries (low 0x28) and the call-conv aliasing
+    // beyond it that the `& 0x3f` accessor still reaches.
+    assert_eq!(resolver_class_flag(0x00), 0);
+    assert_eq!(resolver_class_flag(0x02), 1);
+    assert_eq!(resolver_class_flag(0x11), 1);
+    assert_eq!(resolver_class_flag(0x20), 1);
+    assert_eq!(resolver_class_flag(0x21), 1);
+    assert_eq!(resolver_class_flag(0x27), 0);
+    // High bits of the opcode are masked away.
+    assert_eq!(resolver_class_flag(0xc0 | 0x02), 1);
+    // Index 0x28..0x3f aliases the call-convention records (first byte 0x13).
+    assert_eq!(resolver_class_flag(0x28), 0x13);
+    assert_eq!(resolver_class_flag(0x3f), 0x2d);
+}
+
+#[test]
+fn resolver_inspects_operand_gate() {
+    // class-flag 0 and low6 not 0x1e/0x1f → inspect.
+    assert!(resolver_inspects_operand(0x00));
+    assert!(resolver_inspects_operand(0x1d));
+    // class-flag 1 → no inspection.
+    assert!(!resolver_inspects_operand(0x02));
+    // low6 0x1e / 0x1f are explicitly excluded even though their flag is 0.
+    assert!(!resolver_inspects_operand(0x1e));
+    assert!(!resolver_inspects_operand(0x1f));
+}
+
+#[test]
+fn resolver_type_category_index_math() {
+    // value_class 0, member byte1 0, op byte1 0 → index 0 → 0x0d.
+    assert_eq!(resolver_type_category(0, 0, 0), 0x0d);
+    // index 2 → 0x0e (value_class 1).
+    assert_eq!(resolver_type_category(1, 0, 0), 0x0e);
+    // index (0 + 1*3)*2 + 0 = 6 → 0x00.
+    assert_eq!(resolver_type_category(0, 1, 0), 0x00);
+    // index (2 + 1*3)*2 + 1 = 11 → 0x00.
+    assert_eq!(resolver_type_category(2, 1, 1), 0x00);
+    // Only the low 3 bits of each byte index in.
+    assert_eq!(resolver_type_category(0, 0xf8, 0xf8), 0x0d);
+    // Max reachable index 0x35 (value_class 2, both nibbles 7) → 0x00.
+    assert_eq!(resolver_type_category(2, 7, 7), 0x00);
+    // index 0x12 → 0x04 (value_class 0, member byte1 3, op byte1 0).
+    assert_eq!(resolver_type_category(0, 3, 0), 0x04);
+}
+
+#[test]
 fn type_library_descriptor_is_gated() {
     // flags 0x4000 with a 0x170000-region node hits the gated type-library path.
     let mut a = NodeArena::new();
