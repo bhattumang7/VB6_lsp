@@ -456,6 +456,37 @@ fn resolve_reference2_0x69_and_member_subexpr_gated() {
 }
 
 #[test]
+fn call_conv_descriptor_selects_record_and_builds() {
+    // Exercises every record-selection branch (kind 4..8, and ByRef+kind-4 →
+    // special record). All dispatch-record words have bit 0x4000 clear, so the
+    // by-reference flag is always set; for a small (size-4) type that yields
+    // descriptor kind 1.
+    let mut a = NodeArena::new();
+    let d = size_desc(&mut a, 4);
+    let n = ref_node(&mut a, 0, 0, d, NodeRef(0));
+    for &(kind, byref) in &[(4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (4, 1)] {
+        let desc = call_conv_descriptor(&a, n, 6, kind, byref);
+        assert_eq!(desc.kind, 1, "kind={kind} byref={byref}");
+        assert_eq!(desc.operand, 4);
+        // optional = true ⇒ no usage flag set.
+        assert_eq!(desc.flags1, 0);
+    }
+}
+
+#[test]
+fn call_conv_descriptor_uses_special_record_for_byref_kind4() {
+    // The ByRef+kind-4 special record is a distinct table; confirm it is indexed
+    // without panicking across the full type-offset range it supports (0..14).
+    let mut a = NodeArena::new();
+    let d = size_desc(&mut a, 4);
+    let n = ref_node(&mut a, 0, 0, d, NodeRef(0));
+    for off in 0..15 {
+        let desc = call_conv_descriptor(&a, n, off, 4, 1);
+        assert_eq!(desc.kind, 1);
+    }
+}
+
+#[test]
 fn type_library_descriptor_is_gated() {
     // flags 0x4000 with a 0x170000-region node hits the gated type-library path.
     let mut a = NodeArena::new();

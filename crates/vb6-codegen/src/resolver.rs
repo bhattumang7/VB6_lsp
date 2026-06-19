@@ -10,7 +10,10 @@
 
 use crate::emit::RefDescriptor;
 use crate::node::{NodeArena, NodeRef};
-use crate::tables::{RT_RESOLVER_CLASS_FLAG, RT_RESOLVER_TYPE_MAP, RT_TYPE_OFFSET};
+use crate::tables::{
+    RT_CALL_CONV_RECORDS, RT_CALL_KIND_CLASS, RT_CALL_SPECIAL_RECORD, RT_RESOLVER_CLASS_FLAG,
+    RT_RESOLVER_TYPE_MAP, RT_TYPE_OFFSET,
+};
 
 /// Resolve the byte size of a UDT / object type from its type descriptor — the
 /// shared reader used across the emit and resolve paths (port of
@@ -375,8 +378,10 @@ pub fn resolve_ident_ref(
         9 => init_expr_descriptor(arena, node, true, false),
         0xc => init_expr_descriptor(arena, node, false, false),
         4 => unimplemented!(
-            "EbResolveIdentRef category 4 (EbResolveExprNode + call-convention \
-             record selection); Phase 6"
+            "EbResolveIdentRef category 4: the call-convention record selection is \
+             ported ([`call_conv_descriptor`]), but it needs EbResolveExprNode to \
+             resolve pNode[5] to the declaring member's record (the bind-result \
+             layer) for the kind/byref inputs; Phase 6"
         ),
         0xd | 0xe | 0xf => unimplemented!(
             "EbResolveIdentRef categories 0xd/0xe/0xf (binding-emit tail: \
@@ -391,6 +396,38 @@ pub fn resolve_ident_ref(
         desc.flags1 |= 8;
     }
     desc
+}
+
+/// Port of `EbResolveIdentRef`'s category-4 descriptor selection (the
+/// call-convention path).
+///
+/// Given the resolved callee's convention `kind` (`EbGetTypeKind2`) and
+/// by-reference mode `byref` (`EbGetByRefFlag`), select the dispatch record — the
+/// `ByRef`+kind-4 special record, else `RT_CALL_CONV_RECORDS[RT_CALL_KIND_CLASS
+/// [kind] & 3]` — and read its word at the node's type-offset class
+/// (`type_offset = RT_TYPE_OFFSET[type_tag]`). The descriptor's by-reference flag
+/// is the complement of that word's bit `0x4000`; the reference is built optional
+/// (`EbInitExprDescriptor(node, by_ref, 1)`).
+///
+/// The shared `EbSetTypeFlag2` tail (a `type_offset == 0xe` setting bit `0x08`)
+/// is applied by [`resolve_ident_ref`], not here.
+pub fn call_conv_descriptor(
+    arena: &NodeArena,
+    node: NodeRef,
+    type_offset: i32,
+    kind: i32,
+    byref: i32,
+) -> RefDescriptor {
+    let record: &[u8] = if byref == 1 && kind == 4 {
+        &RT_CALL_SPECIAL_RECORD
+    } else {
+        let class = (RT_CALL_KIND_CLASS[kind as usize] & 3) as usize;
+        &RT_CALL_CONV_RECORDS[class * 0x1e..class * 0x1e + 0x1e]
+    };
+    let wi = (type_offset * 2) as usize;
+    let word = u16::from_le_bytes([record[wi], record[wi + 1]]);
+    let by_ref = word & 0x4000 == 0;
+    init_expr_descriptor(arena, node, by_ref, true)
 }
 
 /// Port of the `EbResolveReference2` dispatcher: route a reference node to its
