@@ -331,6 +331,7 @@ pub fn resolve_ident_ref(
     heap: &[u8],
     member_off: usize,
     ctx_flag_c: u8,
+    binding: Option<(i32, i32)>,
 ) -> RefDescriptor {
     let n = *arena.get(node);
     let type_offset = RT_TYPE_OFFSET[n.type_tag() as usize];
@@ -377,12 +378,16 @@ pub fn resolve_ident_ref(
         }
         9 => init_expr_descriptor(arena, node, true, false),
         0xc => init_expr_descriptor(arena, node, false, false),
-        4 => unimplemented!(
-            "EbResolveIdentRef category 4: the call-convention record selection is \
-             ported ([`call_conv_descriptor`]), but it needs EbResolveExprNode to \
-             resolve pNode[5] to the declaring member's record (the bind-result \
-             layer) for the kind/byref inputs; Phase 6"
-        ),
+        4 => match binding {
+            // The binder (EbResolveExprNode → EbGetTypeKind2/EbGetByRefFlag,
+            // ported in `crate::binder`) supplies the resolved convention
+            // kind/byref; the record selection + descriptor follow.
+            Some((kind, byref)) => call_conv_descriptor(arena, node, type_offset, kind, byref),
+            None => unimplemented!(
+                "EbResolveIdentRef category 4: needs the binder-resolved (kind, \
+                 byref) — call resolve_ident_ref with the EbResolveExprNode result"
+            ),
+        },
         0xd | 0xe | 0xf => unimplemented!(
             "EbResolveIdentRef categories 0xd/0xe/0xf (binding-emit tail: \
              EbFillBindingDesc / EbEmitBinaryOpCode); Phase 6"
@@ -442,6 +447,7 @@ pub fn resolve_reference2(
     heap: &[u8],
     member_off: usize,
     ctx_flag_c: u8,
+    binding: Option<(i32, i32)>,
 ) -> RefDescriptor {
     let n = *arena.get(node);
     match n.w[0] & 0xffff {
@@ -452,7 +458,7 @@ pub fn resolve_reference2(
                      (word[4] != 0) needs EbSimplifyMemberExpr; Phase 6"
                 );
             }
-            resolve_ident_ref(arena, node, heap, member_off, ctx_flag_c)
+            resolve_ident_ref(arena, node, heap, member_off, ctx_flag_c, binding)
         }
         0x69 => unimplemented!(
             "EbResolveReference2: 0x69 binary-operation setup \

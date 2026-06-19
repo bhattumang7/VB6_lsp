@@ -56,6 +56,13 @@ The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
 
 ## Front-half wiring (the lever that unblocks most GAPs)
 
+Progress: the binder front-half (`binder.rs`) now resolves the common
+name-reference context (disc 1) → `(kind, byref)`, and resolver **category 4**
+emits its descriptor end-to-end via `call_conv_descriptor` when given that
+binding. Remaining binder work: disc 3/5/6 (document-context allocator), disc 4
+(COM `ITypeInfo` slot), resolver categories 0xd/0xe/0xf (binding-emit tail), and
+wiring `emit.rs` 0x60/0x2c/0x69 → `resolve_reference2` with the binder result.
+
 The GAPs `0x2c / 0x60 / 0x69 / 0x72`, `0x0f` class 1/4, `0x42/0x43` dispatch,
 `0x61` ByVal/dispatch, `0x68` object-child, and reference kinds 3–9 all bottom out
 at the **resolver / declaration front-half**: `lower.rs` must build the symbol
