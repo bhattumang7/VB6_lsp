@@ -110,44 +110,83 @@ pub fn handle_byref(h: &BindHandle, member: Option<&MemberRecord>) -> i32 {
     }
 }
 
-/// Port of `EbResolveExprNode` for the context-node discriminators that do not
-/// need the document-context allocator or the COM slot resolver.
+/// Port of `EbSetupContext`: a disc-3 context handle for `context`. The
+/// convention readers treat disc 3 as the plain-value kind (`4`), so only the
+/// discriminator and the context pointer matter to them; the document-context
+/// slot (`+0xe0 → +8`) the source also stores is a non-emitting heap side-effect
+/// (`EbGetDocumentContext`) left unmodelled here (it never feeds the convention
+/// kind/byref readers).
+pub fn setup_context(context: u32) -> BindHandle {
+    BindHandle {
+        disc: 3,
+        w1: context,
+        ..BindHandle::default()
+    }
+}
+
+/// Port of `EbResolveExprNode`: resolve a context node to its bind handle.
 ///
 /// * disc 1 — a name/type reference: dereference `pNode[3]` to the symbol and
 ///   build a disc-1 handle ([`setup_result`]). The `node_type == 10` sub-case
 ///   (clear + empty result) yields `None`.
 /// * disc 2 — empty result → `None`.
-///
-/// Disc 3/5/6 (`EbSetupContext` / `EbInitExprNode`, which touch the document
-/// context) and disc 4 (`EbEnsureSlotResolved2`, COM `ITypeInfo`) are gated.
+/// * disc 3 — `EbInitializeContext2`: a disc-2 handle carrying
+///   `*(*(pNode[1]+0x24)+0x5c)`.
+/// * disc 4 — `pNode[4] != -1` is the COM `ITypeInfo` slot path
+///   (`EbEnsureSlotResolved2`, gated); `pNode[5] != -1` is the error path
+///   (`EbRaiseException2`, → `None`); otherwise the context path
+///   ([`setup_context`]).
+/// * disc 5/6 — the context path ([`setup_context`]).
 ///
 /// `ctx_off` is the context node's offset in `bmem`; its dwords are `pNode[0..]`.
-/// The `EbIsInternalName` symbol-substitution refinement of the disc-1 path
-/// (choosing `pNode[4]`'s symbol over the dereferenced one) is applied when
-/// `pick_node_data` resolves it; here the common case (the dereferenced symbol)
-/// is taken and the refinement is a separate concern.
+/// The convention readers map every context discriminator (2/3/6) to the
+/// plain-value kind 4, so the document-context allocation those paths perform in
+/// the source — which emits no p-code — is not reproduced here.
 pub fn resolve_expr_node(bmem: &[u8], ctx_off: u32) -> Option<BindHandle> {
-    let disc = u32_at(bmem, ctx_off as usize) as i32;
+    let base = ctx_off as usize;
+    let disc = u32_at(bmem, base) as i32;
     match disc {
         1 => {
-            let p3 = u32_at(bmem, ctx_off as usize + 12);
+            let p3 = u32_at(bmem, base + 12);
             let symbol = u32_at(bmem, p3 as usize); // EbDereference(pNode[3]) = *pNode[3]
             let node_type = bmem[symbol as usize + 8] & 0xf;
             if node_type == 10 {
                 return None; // EbClearErrorContext path → empty result
             }
-            let p4 = u32_at(bmem, ctx_off as usize + 16);
+            let p4 = u32_at(bmem, base + 16);
             get_bind_result(setup_result(bmem, symbol, p4, 0))
         }
         2 => None,
-        3 | 5 | 6 => unimplemented!(
-            "EbResolveExprNode context disc {disc}: EbSetupContext/EbInitExprNode \
-             need the document-context allocator; Phase 6"
-        ),
-        4 => unimplemented!(
-            "EbResolveExprNode context disc 4: EbEnsureSlotResolved2 (COM ITypeInfo \
-             slot resolution); Phase 6"
-        ),
+        3 => {
+            // EbInitializeContext2(*(*(pNode[1]+0x24)+0x5c)) → disc-2 handle.
+            let p1 = u32_at(bmem, base + 4) as usize;
+            let a = u32_at(bmem, p1 + 0x24) as usize;
+            let init = u32_at(bmem, a + 0x5c);
+            get_bind_result(BindHandle {
+                disc: 2,
+                w3: init,
+                ..BindHandle::default()
+            })
+        }
+        4 => {
+            let p5 = u32_at(bmem, base + 20) as i32;
+            if p5 != -1 {
+                return None; // EbRaiseException2 error path
+            }
+            let p4 = u32_at(bmem, base + 16) as i32;
+            if p4 != -1 {
+                unimplemented!(
+                    "EbResolveExprNode disc-4 slot: EbEnsureSlotResolved2 (COM \
+                     ITypeInfo); Phase 6"
+                );
+            }
+            let p1 = u32_at(bmem, base + 4);
+            get_bind_result(setup_context(p1))
+        }
+        5 | 6 => {
+            let p1 = u32_at(bmem, base + 4);
+            get_bind_result(setup_context(p1))
+        }
         _ => None,
     }
 }

@@ -124,13 +124,62 @@ fn resolve_expr_node_disc2_is_empty() {
 }
 
 #[test]
-fn resolve_expr_node_doc_context_and_com_paths_gated() {
+fn resolve_expr_node_disc3_initializes_context() {
+    // disc 3: handle is disc-2 carrying *(*(pNode[1]+0x24)+0x5c).
+    let mut m = vec![0u8; 0x100];
+    put_u32(&mut m, 0x10, 3); // disc
+    put_u32(&mut m, 0x10 + 4, 0x30); // pNode[1]
+    put_u32(&mut m, 0x30 + 0x24, 0x60); // *(pNode[1]+0x24)
+    put_u32(&mut m, 0x60 + 0x5c, 0xdead); // +0x5c init value
+    let h = resolve_expr_node(&m, 0x10).unwrap();
+    assert_eq!(h.disc, 2);
+    assert_eq!(h.w3, 0xdead);
+    // disc 2/3 → plain-value convention kind 4.
+    assert_eq!(handle_kind(&h, &m, None), 4);
+}
+
+#[test]
+fn resolve_expr_node_disc5_and_6_use_context() {
     let mut m = vec![0u8; 0x40];
-    for disc in [3u32, 4, 5, 6] {
+    for disc in [5u32, 6] {
         put_u32(&mut m, 0x10, disc);
-        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            resolve_expr_node(&m, 0x10)
-        }));
-        assert!(r.is_err(), "disc {disc} should be gated");
+        put_u32(&mut m, 0x10 + 4, 0xc0de); // pNode[1] = context
+        let h = resolve_expr_node(&m, 0x10).unwrap();
+        assert_eq!(h.disc, 3, "disc {disc}");
+        assert_eq!(h.w1, 0xc0de);
+        assert_eq!(handle_kind(&h, &m, None), 4);
     }
+}
+
+#[test]
+fn resolve_expr_node_disc4_context_path() {
+    // disc 4 with pNode[4] == -1 and pNode[5] == -1 → context handle.
+    let mut m = vec![0u8; 0x40];
+    put_u32(&mut m, 0x10, 4);
+    put_u32(&mut m, 0x10 + 4, 0xbeef); // pNode[1]
+    put_u32(&mut m, 0x10 + 16, 0xffff_ffff); // pNode[4] = -1
+    put_u32(&mut m, 0x10 + 20, 0xffff_ffff); // pNode[5] = -1
+    let h = resolve_expr_node(&m, 0x10).unwrap();
+    assert_eq!(h.disc, 3);
+    assert_eq!(h.w1, 0xbeef);
+}
+
+#[test]
+fn resolve_expr_node_disc4_exception_path_is_empty() {
+    let mut m = vec![0u8; 0x40];
+    put_u32(&mut m, 0x10, 4);
+    put_u32(&mut m, 0x10 + 20, 0x1234); // pNode[5] != -1 → error path
+    assert_eq!(resolve_expr_node(&m, 0x10), None);
+}
+
+#[test]
+fn resolve_expr_node_disc4_slot_path_is_gated() {
+    let mut m = vec![0u8; 0x40];
+    put_u32(&mut m, 0x10, 4);
+    put_u32(&mut m, 0x10 + 16, 0x40); // pNode[4] != -1 → COM slot
+    put_u32(&mut m, 0x10 + 20, 0xffff_ffff); // pNode[5] == -1
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        resolve_expr_node(&m, 0x10)
+    }));
+    assert!(r.is_err());
 }
