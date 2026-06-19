@@ -205,6 +205,116 @@ fn resolver_type_category_index_math() {
     assert_eq!(resolver_type_category(0, 3, 0), 0x04);
 }
 
+// ── Reader chain (EbGetExpressionType2 and its helpers) ──────────────────────
+
+/// Build a records heap and place a member record at `record_off` with the given
+/// `+0` flag byte, `+1` byte, and `+0xc` masked dword. Operand p-code bytes are
+/// written separately by each test.
+fn heap_with_record(record_off: usize, flag0: u8, byte1: u8, masked: u32) -> Vec<u8> {
+    let mut h = vec![0u8; 0x60];
+    h[record_off] = flag0;
+    h[record_off + 1] = byte1;
+    h[record_off + 0xc..record_off + 0x10].copy_from_slice(&masked.to_le_bytes());
+    h
+}
+
+#[test]
+fn get_masked_value_inline_and_indirect() {
+    // 0x40 set → raw +0xc dword.
+    let mut r = vec![0u8; 0x10];
+    r[0] = 0x40;
+    r[0xc..0x10].copy_from_slice(&0x1234_5679u32.to_le_bytes());
+    assert_eq!(get_masked_value(&r), 0x1234_5679);
+    // 0x40 clear → low bit cleared.
+    r[0] = 0x00;
+    assert_eq!(get_masked_value(&r), 0x1234_5678);
+}
+
+#[test]
+fn resolve_attribute_pointer_inline_vs_indirect() {
+    // Inline (0x40 set): operand at record + 0xc.
+    let h = heap_with_record(0x10, 0x40, 0, 0x0000_0002);
+    assert_eq!(resolve_attribute_pointer(&h, 0x10), Some(0x1c));
+    // Indirect (0x40 clear): operand at the masked heap offset.
+    let h = heap_with_record(0x10, 0x00, 0, 0x0000_0028);
+    assert_eq!(resolve_attribute_pointer(&h, 0x10), Some(0x28));
+    // Null: masked value 0xffffffff (0x40 set).
+    let h = heap_with_record(0x10, 0x40, 0, 0xffff_ffff);
+    assert_eq!(resolve_attribute_pointer(&h, 0x10), None);
+}
+
+#[test]
+fn method_flags_class_bit_pattern() {
+    assert_eq!(method_flags_class(&[0x00, 0x40]), 1); // 0x40 set, 0x20 clear
+    assert_eq!(method_flags_class(&[0x00, 0x60]), 0); // 0x20 also set
+    assert_eq!(method_flags_class(&[0x00, 0x00]), 0); // 0x40 clear
+}
+
+#[test]
+fn expression_type2_uninspected_operand_class_zero() {
+    // Inline operand opcode 0x02 has class-flag 1 → not inspected → value_class 0.
+    // member byte1 = 0, op byte1 = 0 → type-map index 0 → 0x0d.
+    let mut h = heap_with_record(0x10, 0x40, 0, 0x0000_0002);
+    h[0x1c] = 0x02; // operand opcode
+    h[0x1d] = 0x00; // operand byte 1
+    assert_eq!(expression_type2(&h, 0x10), ExpressionType { category: 0x0d, code: 0 });
+}
+
+#[test]
+fn expression_type2_inspected_operand_class_two() {
+    // Inline operand opcode 0x00 has class-flag 0, not 0x1a/0x1d/0x1e/0x1f →
+    // value_class 2. member byte1 = 1, op byte1 = 0 → index (2 + 3)*2 = 10 → 0x12.
+    let mut h = heap_with_record(0x10, 0x40, 1, 0x0000_0000);
+    h[0x1c] = 0x00;
+    h[0x1d] = 0x00;
+    assert_eq!(expression_type2(&h, 0x10).category, 0x12);
+}
+
+#[test]
+fn expression_type2_method_flag_class_one() {
+    // 0x1d operand with byte1 bit 0x40 set (0x20 clear) → method_flags_class = 1.
+    // The +4 byte is a 0x25-class marker so the current-expression skip is
+    // suppressed. member byte1 = 0, op byte1 (0x40) & 7 = 0 → index 2 → 0x0e.
+    let mut h = heap_with_record(0x10, 0x40, 0, 0x0000_401d);
+    h[0x1c] = 0x1d;
+    h[0x1d] = 0x40;
+    h[0x20] = 0x25; // suppress the +4 skip
+    assert_eq!(expression_type2(&h, 0x10).category, 0x0e);
+}
+
+#[test]
+fn expression_type2_applies_current_expression_skip() {
+    // 0x1d operand whose +4 opcode is not 0x25 → skip +4 to a class-flag-1 opcode
+    // (value_class 0). member byte1 = 0, op byte1 at 0x21 = 0 → index 0 → 0x0d.
+    let mut h = heap_with_record(0x10, 0x40, 0, 0x0000_001d);
+    h[0x1c] = 0x1d;
+    h[0x20] = 0x05; // +4 opcode (not 0x25) → skip lands here
+    h[0x21] = 0x00;
+    assert_eq!(expression_type2(&h, 0x10).category, 0x0d);
+}
+
+#[test]
+fn expression_type2_indirect_operand_offset() {
+    // Indirect record (0x40 clear): operand lives at the masked offset 0x28.
+    // opcode 0x05 (class-flag 1) → value_class 0; member byte1 = 3, op byte1 = 2
+    // → index (0 + 9)*2 + 2 = 20 → 0x05.
+    let mut h = heap_with_record(0x10, 0x00, 3, 0x0000_0028);
+    h[0x28] = 0x05;
+    h[0x29] = 0x02;
+    assert_eq!(expression_type2(&h, 0x10).category, 0x05);
+}
+
+#[test]
+fn expression_type2_slot_path_is_gated() {
+    // 0x1d operand with byte1 bit 0x40 clear → the slot-type path (gated).
+    let mut h = heap_with_record(0x10, 0x40, 0, 0x0000_001d);
+    h[0x1c] = 0x1d;
+    h[0x1d] = 0x00; // 0x40 clear
+    h[0x20] = 0x25; // suppress skip so we reach the slot branch
+    let r = std::panic::catch_unwind(|| expression_type2(&h, 0x10));
+    assert!(r.is_err());
+}
+
 #[test]
 fn type_library_descriptor_is_gated() {
     // flags 0x4000 with a 0x170000-region node hits the gated type-library path.

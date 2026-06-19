@@ -165,10 +165,8 @@ pub fn resolver_inspects_operand(opcode: u8) -> bool {
 /// The final type-category lookup of `EbGetExpressionType2`:
 /// `(char)DAT_0fc10aa8[(value_class + (member_byte1 & 7) * 3) * 2 + (op_byte1 & 7)]`.
 ///
-/// * `value_class` — the operand's value class (`0`/`1`/`2`), as derived from the
-///   emitted operand (the derivation reads the live emit buffer and the slot
-///   table through registers the decompile dropped, so it is supplied here rather
-///   than recomputed).
+/// * `value_class` — the operand's value class (`0`/`1`/`2`), derived by
+///   [`expression_type2`] from the operand's p-code.
 /// * `member_byte1` — byte `+1` of the resolved member record.
 /// * `op_byte1` — the second byte of the operand's p-code opcode.
 ///
@@ -176,6 +174,105 @@ pub fn resolver_inspects_operand(opcode: u8) -> bool {
 pub fn resolver_type_category(value_class: i32, member_byte1: u8, op_byte1: u8) -> i32 {
     let idx = (value_class + (member_byte1 & 7) as i32 * 3) * 2 + (op_byte1 & 7) as i32;
     RT_RESOLVER_TYPE_MAP[idx as usize] as i8 as i32
+}
+
+/// Port of `EbGetMaskedValue`: read the member record's masked `+0xc` value, used
+/// to locate where the record's operand p-code lives in the records heap. With
+/// record byte `+0` bit `0x40` set the raw `+0xc` dword is returned; otherwise its
+/// low bit is cleared (an all-but-low-bit value of `0xffff_fffe` is an internal
+/// error in the source).
+pub fn get_masked_value(record: &[u8]) -> u32 {
+    let at_c = u32::from_le_bytes([record[0xc], record[0xd], record[0xe], record[0xf]]);
+    if record[0] & 0x40 != 0 {
+        at_c
+    } else {
+        let m = at_c & 0xffff_fffe;
+        if m == 0xffff_fffe {
+            unimplemented!("EbGetMaskedValue internal-error path (masked value 0xfffffffe)");
+        }
+        m
+    }
+}
+
+/// Port of `EbResolveAttributePointer` (with `nIndex == 0`): resolve the byte
+/// offset, within the records heap, of the operand p-code for the member record
+/// at `record_off`. `None` is the null result (masked value `0xffff_ffff`).
+///
+/// With record byte `+0` bit `0x40` set the operand is inline at `record + 0xc`;
+/// otherwise it lives at the masked `+0xc` offset from the heap base.
+pub fn resolve_attribute_pointer(heap: &[u8], record_off: usize) -> Option<usize> {
+    let masked = get_masked_value(&heap[record_off..]);
+    if masked == 0xffff_ffff {
+        return None;
+    }
+    if heap[record_off] & 0x40 != 0 {
+        Some(record_off + 0xc)
+    } else {
+        Some(masked as usize)
+    }
+}
+
+/// Port of `EbCheckMethodFlags`: a value class of `1` when the operand's byte `+1`
+/// has bit `0x40` set and bit `0x20` clear, else `0`.
+pub fn method_flags_class(pcode: &[u8]) -> i32 {
+    let f = pcode[1];
+    (f & 0x40 != 0 && f & 0x20 == 0) as i32
+}
+
+/// The result of [`expression_type2`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ExpressionType {
+    /// `*pResult` — the type category written back for the caller (`local_30` in
+    /// `EbResolveIdentRef`).
+    pub category: i32,
+    /// The function's own return value (`local_8`): `0` on every path reached
+    /// here; a negative error / slot-resolution code only on the gated paths.
+    pub code: i32,
+}
+
+/// Port of `EbGetExpressionType2`: classify the binding for the member record at
+/// `member_off` in the records `heap`.
+///
+/// The classifier resolves the record's operand p-code
+/// ([`resolve_attribute_pointer`] + [`current_expression_offset`]) and derives a
+/// value class (`0`/`1`/`2`) from that operand's opcode, then indexes
+/// [`resolver_type_category`] with the record's byte `+1` and the operand's second
+/// byte. Two deeper sub-paths are faithfully gated: the `0x1a` operand-skip
+/// reread, and the `0x1d` slot-type path (which reads the `symbol_base[0x6c]` slot
+/// descriptor tables via `EbMapSlotType`).
+pub fn expression_type2(heap: &[u8], member_off: usize) -> ExpressionType {
+    let member_byte1 = heap[member_off + 1];
+    let ptr0 = resolve_attribute_pointer(heap, member_off)
+        .expect("EbGetExpressionType2: null operand pointer for member record");
+    let ptr = ptr0 + current_expression_offset(&heap[ptr0..]);
+    let op = heap[ptr];
+    let op_byte1 = heap[ptr + 1];
+    let value_class = if resolver_inspects_operand(op) {
+        let lo = op & 0x3f;
+        if lo == 0x1a {
+            unimplemented!(
+                "EbGetExpressionType2 0x1a operand-skip path: needs the \
+                 terminator-skip reread; Phase 6"
+            );
+        }
+        if lo == 0x1d {
+            if op_byte1 & 0x40 == 0 {
+                unimplemented!(
+                    "EbGetExpressionType2 0x1d slot-type path: needs the \
+                     symbol_base[0x6c] slot descriptor tables (EbMapSlotType); Phase 6"
+                );
+            }
+            method_flags_class(&heap[ptr..])
+        } else {
+            2
+        }
+    } else {
+        0
+    };
+    ExpressionType {
+        category: resolver_type_category(value_class, member_byte1, op_byte1),
+        code: 0,
+    }
 }
 
 /// Port of the value-mapping tail of `EbMapSlotType`: collapse a resolved slot
