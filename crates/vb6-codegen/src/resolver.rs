@@ -85,6 +85,72 @@ pub fn init_expr_descriptor(
     desc
 }
 
+/// The compiler context object the resolver consults while classifying a
+/// binding. Only the fields the resolver reads are modelled.
+///
+/// * `kind` — the context discriminator (`*ctx`): 4/5/6 mark a member-access
+///   context that carries a member byte offset.
+/// * `member_offset` — `ctx[3]`: the member's byte offset into the symbol base.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct CompileContext {
+    pub kind: i32,
+    pub member_offset: i32,
+}
+
+/// Port of `EbGetExprContext`: the member byte offset for a member-access
+/// context (`kind` 4/5/6), or `-1` for any other context.
+pub fn get_expr_context(ctx: &CompileContext) -> i32 {
+    if ctx.kind == 4 || ctx.kind == 5 || ctx.kind == 6 {
+        ctx.member_offset
+    } else {
+        -1
+    }
+}
+
+/// Port of `EbIsPcodeTerminator`: a p-code opcode whose low 6 bits are `0x1b` or
+/// `0x1c` terminates an operand run.
+pub fn is_pcode_terminator(opcode: u8) -> bool {
+    let lo = opcode & 0x3f;
+    lo == 0x1b || lo == 0x1c
+}
+
+/// Port of `EbExtractTypeInfo`: read the inline type word a p-code operand
+/// carries. A `0x0d`-class opcode has the sentinel `0xfffe`; a `0x1d`-class
+/// opcode carries the type word two bytes in (low bit cleared). Any other
+/// opcode has no inline type word here (the reference emitter dereferences a
+/// null pointer, i.e. this is never reached for those).
+pub fn extract_type_info(pcode: &[u8]) -> u16 {
+    let lo = pcode[0] & 0x3f;
+    if lo == 0x0d {
+        return 0xfffe;
+    }
+    if lo == 0x1d {
+        return u16::from_le_bytes([pcode[2], pcode[3]]) & 0xfffe;
+    }
+    unreachable!("EbExtractTypeInfo on an opcode without an inline type word")
+}
+
+/// Port of the value-mapping tail of `EbMapSlotType`: collapse a resolved slot
+/// type to a value class. `0 → 0`, `1 → 1`, `3/4/5/8 → 2`; `2`, `6`, `7`, and
+/// `>=9` are type mismatches (no value class). (The `EbGetSlotType` lookup that
+/// produces the slot type reads the member descriptor and is supplied by the
+/// caller.)
+pub fn map_slot_type_value(slot: i32) -> Option<i32> {
+    if slot == 0 {
+        return Some(0);
+    }
+    if slot == 1 {
+        return Some(1);
+    }
+    if slot < 3 {
+        return None; // slot == 2
+    }
+    if slot > 5 && slot != 8 {
+        return None; // 6, 7, >=9
+    }
+    Some(2) // 3, 4, 5, 8
+}
+
 #[cfg(test)]
 #[path = "tests/resolver_tests.rs"]
 mod tests;

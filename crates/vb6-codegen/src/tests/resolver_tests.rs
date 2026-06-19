@@ -108,6 +108,45 @@ fn out_of_line_size_path_sets_word6_and_word8() {
 }
 
 #[test]
+fn get_expr_context_returns_offset_for_member_kinds() {
+    for kind in [4, 5, 6] {
+        let ctx = CompileContext { kind, member_offset: 0x18 };
+        assert_eq!(get_expr_context(&ctx), 0x18);
+    }
+    let ctx = CompileContext { kind: 1, member_offset: 0x18 };
+    assert_eq!(get_expr_context(&ctx), -1);
+}
+
+#[test]
+fn pcode_terminator_matches_0x1b_0x1c() {
+    assert!(is_pcode_terminator(0x1b));
+    assert!(is_pcode_terminator(0x1c));
+    assert!(is_pcode_terminator(0x40 | 0x1b)); // high bits ignored
+    assert!(!is_pcode_terminator(0x1a));
+    assert!(!is_pcode_terminator(0x1d));
+}
+
+#[test]
+fn extract_type_info_class_0xd_and_0x1d() {
+    assert_eq!(extract_type_info(&[0x0d, 0, 0, 0]), 0xfffe);
+    // 0x1d class: type word two bytes in, low bit cleared.
+    assert_eq!(extract_type_info(&[0x1d, 0x00, 0x57, 0x12]), 0x1256 & 0xfffe);
+}
+
+#[test]
+fn map_slot_type_value_mapping() {
+    assert_eq!(map_slot_type_value(0), Some(0));
+    assert_eq!(map_slot_type_value(1), Some(1));
+    assert_eq!(map_slot_type_value(2), None);
+    assert_eq!(map_slot_type_value(3), Some(2));
+    assert_eq!(map_slot_type_value(5), Some(2));
+    assert_eq!(map_slot_type_value(8), Some(2));
+    assert_eq!(map_slot_type_value(6), None);
+    assert_eq!(map_slot_type_value(7), None);
+    assert_eq!(map_slot_type_value(9), None);
+}
+
+#[test]
 fn type_library_descriptor_is_gated() {
     // flags 0x4000 with a 0x170000-region node hits the gated type-library path.
     let mut a = NodeArena::new();
