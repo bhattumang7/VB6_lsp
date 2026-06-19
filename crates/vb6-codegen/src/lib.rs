@@ -25,6 +25,7 @@
 //! See [`buffer::PcodeStream`].
 
 pub mod bind;
+pub mod binder;
 pub mod bridge;
 pub mod buffer;
 pub mod decl;
