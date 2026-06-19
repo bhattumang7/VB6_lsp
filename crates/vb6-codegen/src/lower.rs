@@ -65,6 +65,11 @@ fn binop_node_opcode(op: BinOpKind) -> Option<u16> {
         BinOpKind::Add => 0x16,
         BinOpKind::Sub => 0x17,
         BinOpKind::Mul => 0x18,
+        // Div (`/`) is the arithmetic binop occupying 0x19 — the gap in the
+        // contiguous +/-/*//^ block (0x16..0x1a): RT_BINOP_BASE[0x19]=0xb6 is a
+        // valid base and the stmt jump table routes 0x19 to the generic-binop
+        // emitter (stmt_case_0fab1da9), like Add/Sub.
+        BinOpKind::Div => 0x19,
         BinOpKind::Or  => 0x21,
         BinOpKind::Xor => 0x22,
         BinOpKind::And => 0x23,

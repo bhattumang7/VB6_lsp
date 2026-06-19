@@ -520,3 +520,38 @@ fn e2e_two_sequential_long_assigns() {
         ]
     );
 }
+
+// ── Regression: bugs caught by the live oracle comparison (compare_oracle.py) ──
+// Long Xor: bitwise ops carry the operand-promoted type (Long), not Boolean, so
+// the back-end keys the opcode on RT_TYPE_OFFSET[Long] (fb 13, not fb 12).
+#[test]
+fn e2e_long_xor() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a Xor b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, 0x13, 0x71, 0x70, 0xff]
+    );
+}
+
+// Double division: the `/` operator's bound opcode is 0x19 (the arithmetic-block
+// gap), previously unmapped → UnsupportedNode.
+#[test]
+fn e2e_double_div() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Double, b As Double, r As Double\r\n\
+             r = a / b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0x6f, 0x6c, 0xff, 0xb6, 0x74, 0x64, 0xff]
+    );
+}

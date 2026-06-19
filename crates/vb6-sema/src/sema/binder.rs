@@ -892,11 +892,16 @@ fn binop_type(
 ) -> VbaType {
     use crate::frontend::ast::BinOpKind as B;
     match op {
-        // Comparison and logical ops always return Boolean
+        // Comparison ops always return Boolean.
         B::Eq | B::Ne | B::Lt | B::Gt | B::Le | B::Ge
         | B::Like | B::Is | B::IsNot
-        | B::And | B::Or | B::Xor | B::Eqv | B::Imp
             => VbaType::Boolean,
+        // And/Or/Xor/Eqv/Imp are bitwise: the back-end (EbEmitBinaryOperation2
+        // @0fab2e1e) selects their opcode from the bound node's *own* type tag on
+        // the same arithmetic dispatch path as Add/Sub/Mul (RT_DISPATCH_FLAG bit
+        // 0x10 clear → RT_TYPE_OFFSET[node.type_tag]). The node therefore carries
+        // the operand-promoted type, not Boolean (Long Xor Long → Long).
+        B::And | B::Or | B::Xor | B::Eqv | B::Imp => numeric_promote(lhs, rhs),
         // String concatenation always returns String
         B::Cat => VbaType::String,
         // Integer division always returns Long
