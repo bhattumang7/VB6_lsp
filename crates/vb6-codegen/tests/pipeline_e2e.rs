@@ -181,6 +181,52 @@ fn e2e_call_byval_integer_argbytes_padded() {
 }
 
 #[test]
+fn e2e_call_byval_string_arg() {
+    assert_eq!(
+        caller_bytes(
+            "    Dim a As String\r\n    Call Foo(a)\r\n",
+            "Sub Foo(ByVal x As String)\r\n    Dim z As String\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0x6c, 0x78, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_byref_integer_arg() {
+    // ByRef pushes the address (4-byte pointer) regardless of element type.
+    assert_eq!(
+        caller_bytes(
+            "    Dim a As Integer\r\n    Call Foo(a)\r\n",
+            "Sub Foo(x As Integer)\r\n    Dim z As Integer\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0x04, 0x7a, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_byref_double_arg() {
+    assert_eq!(
+        caller_bytes(
+            "    Dim a As Double\r\n    Call Foo(a)\r\n",
+            "Sub Foo(x As Double)\r\n    Dim z As Double\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0x04, 0x74, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_discarded_function_result() {
+    // `Call F(5)` discards the result → statement-form 0x0a (not 0x5e).
+    assert_eq!(
+        caller_bytes(
+            "    Call F(5)\r\n",
+            "Function F(ByVal x As Long) As Long\r\n    F = x\r\nEnd Function\r\n"
+        ),
+        &[0xf5, 0x05, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
 fn e2e_call_string_arg_reference_index() {
     // A string-literal argument consumes a per-proc reference slot, so the call's
     // own reference index is 1 (the string took slot 0): `1b 00` then `0a 01 …`.

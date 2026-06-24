@@ -1731,6 +1731,13 @@ fn lower_call(
         ExprNode::ArgList { args } => args.clone(),
         _ => Vec::new(),
     };
+    // An omitted Optional argument must push the parameter's default value, which
+    // needs the default-value expression carried on the bound parameter (not yet
+    // modelled). Gate any call whose argument count doesn't match the parameter
+    // count rather than emit a short argument list.
+    if args.len() != ctx.module.procs[proc_idx].params.len() {
+        return Err(LowerError::UnsupportedNode);
+    }
     // Build each argument's push bytes (matched to its parameter by position),
     // then emit them right-to-left — VB6 pushes arguments in reverse order.
     let mut arg_bytes: u16 = 0;
