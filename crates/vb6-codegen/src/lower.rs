@@ -14,7 +14,7 @@
 use std::cell::{Cell, RefCell};
 
 use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
-use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind};
+use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
 use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame};
@@ -296,10 +296,34 @@ pub fn lower_proc(
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
         string_pool: RefCell::new(Vec::new()),
+        line_tracking: proc_needs_line_tracking(NodeId(proc.body), expr_arena),
+        line_markers: RefCell::new(Vec::new()),
     };
 
     let mut out = Vec::new();
+    // When the procedure needs line tracking, the table opens with a header marker
+    // (0x00 + delta to the first statement marker).
+    if ctx.line_tracking {
+        ctx.line_markers.borrow_mut().push(out.len());
+        out.extend_from_slice(&[0x00, 0x00]);
+    }
     lower_block(&ctx, NodeId(proc.body), expr_arena, &mut out)?;
+    // …and closes with a trailer marker (delta 0), then the whole marker set is
+    // backpatched into a forward-delta chain: each marker's 2-byte operand is the
+    // byte distance to the next marker.
+    if ctx.line_tracking {
+        ctx.line_markers.borrow_mut().push(out.len());
+        out.extend_from_slice(&[0x00, 0x00]);
+        let markers = ctx.line_markers.borrow();
+        for w in markers.windows(2) {
+            // Marker = 0x00 opcode + 1-byte delta to the next marker.
+            let delta = w[1] - w[0];
+            if delta > 0xff {
+                return Err(LowerError::UnsupportedNode);
+            }
+            out[w[0] + 1] = delta as u8;
+        }
+    }
 
     // Resolve forward/backward `GoTo` jumps now that every label's byte offset
     // is known.
@@ -350,6 +374,13 @@ struct LowerCtx<'m> {
     /// String-constant pool: literal text → pool index (assigned in first-seen
     /// order, deduped by value). A `"..."` literal emits `0x1b <pool index>`.
     string_pool: RefCell<Vec<String>>,
+    /// True when the procedure needs the statement line-number table (it has a
+    /// numeric line label, a `Resume`, or `On Error Resume Next`). When set, a
+    /// `0x00 <delta>` marker is threaded before each code-emitting statement.
+    line_tracking: bool,
+    /// Byte offsets of every emitted line-table marker (header, per-statement, and
+    /// trailer), in emission (byte) order — backpatched into a forward-delta chain.
+    line_markers: RefCell<Vec<usize>>,
 }
 
 impl LowerCtx<'_> {
@@ -388,12 +419,60 @@ fn lower_block(
         ExprNode::Block { stmts } => {
             let ids: Vec<NodeId> = stmts.clone();
             for id in ids {
-                lower_stmt(ctx, id, expr_arena, out)?;
+                lower_tracked_stmt(ctx, id, expr_arena, out)?;
             }
         }
-        _ => lower_stmt(ctx, node_id, expr_arena, out)?,
+        _ => lower_tracked_stmt(ctx, node_id, expr_arena, out)?,
     }
     Ok(())
+}
+
+/// Lower a statement, prefixing it with a line-table marker when the procedure
+/// needs line tracking and the statement emits code. Declarations (`Dim`/`Const`)
+/// and line labels emit no code and carry no marker; a numeric line label records
+/// its byte offset as the position of the *next* statement's marker, which is why
+/// the marker must be threaded here rather than inside the statement.
+fn lower_tracked_stmt(
+    ctx: &LowerCtx,
+    id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let no_code = matches!(
+        expr_arena.get(id),
+        ExprNode::DimItem { .. } | ExprNode::Label { .. } | ExprNode::Block { .. }
+    );
+    if ctx.line_tracking && !no_code {
+        ctx.line_markers.borrow_mut().push(out.len());
+        out.extend_from_slice(&[0x00, 0x00]);
+    }
+    lower_stmt(ctx, id, expr_arena, out)
+}
+
+/// Whether a procedure body needs the statement line-number table: it contains a
+/// numeric line label, a `Resume`, or `On Error Resume Next` — the constructs that
+/// require runtime line tracking (for `Erl` / `Resume`).
+fn proc_needs_line_tracking(body: NodeId, expr_arena: &ExprArena) -> bool {
+    let mut found = false;
+    fn walk(id: NodeId, expr_arena: &ExprArena, found: &mut bool) {
+        if *found {
+            return;
+        }
+        match expr_arena.get(id) {
+            ExprNode::Label { target: LabelRef::Line(_) } => *found = true,
+            ExprNode::Resume { .. } => *found = true,
+            ExprNode::OnError { kind: OnErrorKind::ResumeNext } => *found = true,
+            other => {
+                let mut kids = Vec::new();
+                other.for_each_child(&mut |c| kids.push(c));
+                for c in kids {
+                    walk(c, expr_arena, found);
+                }
+            }
+        }
+    }
+    walk(body, expr_arena, &mut found);
+    found
 }
 
 fn lower_stmt(
@@ -411,7 +490,7 @@ fn lower_stmt(
         ExprNode::Block { stmts } => {
             let ids: Vec<NodeId> = stmts.clone();
             for id in ids {
-                lower_stmt(ctx, id, expr_arena, out)?;
+                lower_tracked_stmt(ctx, id, expr_arena, out)?;
             }
             Ok(())
         }
@@ -595,10 +674,31 @@ fn lower_stmt(
                 out.extend_from_slice(&0xfffe_u16.to_le_bytes());
                 Ok(())
             }
-            // `On Error Resume Next` needs the procedure's line-number / error
-            // prologue, handled separately.
-            OnErrorKind::ResumeNext => Err(LowerError::UnsupportedNode),
+            // `On Error Resume Next` = opcode 0x4b with the sentinel target 0xffff.
+            // (This statement makes the procedure need the line-number table.)
+            OnErrorKind::ResumeNext => {
+                out.push(0x4b);
+                out.extend_from_slice(&0xffff_u16.to_le_bytes());
+                Ok(())
+            }
         },
+        // `Resume` / `Resume Next` / `Resume label`: opcode 0xfd 0x0c + target.
+        // Retry (`Resume`) = sentinel 0xfffe; `Resume Next` = 0xffff; a label/line
+        // target is the (backpatched) byte offset.
+        ExprNode::Resume { target } => {
+            out.extend_from_slice(&[0xfd, 0x0c]);
+            match target {
+                ResumeTarget::Retry => out.extend_from_slice(&0xfffe_u16.to_le_bytes()),
+                ResumeTarget::Next => out.extend_from_slice(&0xffff_u16.to_le_bytes()),
+                ResumeTarget::At(lref) => {
+                    let patch = out.len();
+                    out.push(0x00);
+                    out.push(0x00);
+                    ctx.goto_patches.borrow_mut().push((*lref, patch));
+                }
+            }
+            Ok(())
+        }
         // `Stop` — break to the debugger: escaped opcode 0xfc 0xc2.
         ExprNode::Stop => {
             out.extend_from_slice(&[0xfc, 0xc2]);
