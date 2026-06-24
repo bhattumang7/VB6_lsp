@@ -957,6 +957,9 @@ fn binop_type(
         B::Add | B::Sub | B::Mul | B::Div | B::Pow => {
             match numeric_promote(lhs, rhs) {
                 VbaType::Date => VbaType::Double,
+                // Floating division (`/`) of Currency is performed in Double; the
+                // result is Double (other Currency arithmetic stays Currency).
+                VbaType::Currency if matches!(op, B::Div) => VbaType::Double,
                 other => other,
             }
         }

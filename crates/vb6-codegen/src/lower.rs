@@ -1778,7 +1778,15 @@ fn lower_binop(
     // integer literals in Long expressions are promoted to Long.
     let lhs_ty = ctx.module.types.get(&lhs_id.0);
     let rhs_ty = ctx.module.types.get(&rhs_id.0);
-    let operand_coerce = wider_numeric_tag(lhs_ty, rhs_ty);
+    let mut operand_coerce = wider_numeric_tag(lhs_ty, rhs_ty);
+    // Floating division (`/`) widens its operands to the operation (result) type.
+    // For Currency operands that is Double (Currency is divided in Double), not
+    // the operands' common Currency type.
+    if op == BinOpKind::Div {
+        if let Some(rt) = ctx.module.types.get(&node_id.0).and_then(vba_type_to_node_tag) {
+            operand_coerce = Some(rt);
+        }
+    }
 
     let lhs_ref = lower_expr_coerced(ctx, lhs_id, expr_arena, arena, operand_coerce)?;
     let lhs_ref = coerce_operand(ctx, lhs_id, lhs_ref, operand_coerce, expr_arena, arena);
@@ -1903,7 +1911,7 @@ fn coerce_operand(
     // rule is exact and oracle-confirmed.)
     if !matches!(
         src_ty,
-        VbaType::Integer | VbaType::Long | VbaType::Byte | VbaType::Boolean
+        VbaType::Integer | VbaType::Long | VbaType::Byte | VbaType::Boolean | VbaType::Currency
     ) {
         return operand_ref;
     }
