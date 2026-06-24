@@ -205,10 +205,13 @@ pub fn lower_module(
     module_desc: u16,
 ) -> Result<Vec<Vec<u8>>, LowerError> {
     let mut pool: Vec<String> = Vec::new();
+    let mut static_base: u16 = 0;
     let mut procs = Vec::with_capacity(module.procs.len());
     for idx in 0..module.procs.len() {
-        let (bytes, next_pool) = lower_proc_pooled(module, idx, expr_arena, module_desc, pool)?;
+        let (bytes, next_pool, next_static) =
+            lower_proc_pooled(module, idx, expr_arena, module_desc, pool, static_base)?;
         pool = next_pool;
+        static_base = next_static;
         procs.push(bytes);
     }
     Ok(procs)
@@ -221,7 +224,8 @@ pub fn lower_proc(
     module_desc: u16,
 ) -> Result<Vec<u8>, LowerError> {
     // A standalone single-procedure lowering starts with an empty string pool.
-    let (bytes, _pool) = lower_proc_pooled(module, proc_idx, expr_arena, module_desc, Vec::new())?;
+    let (bytes, _pool, _static) =
+        lower_proc_pooled(module, proc_idx, expr_arena, module_desc, Vec::new(), 0)?;
     Ok(bytes)
 }
 
@@ -234,7 +238,8 @@ fn lower_proc_pooled(
     expr_arena: &ExprArena,
     module_desc: u16,
     pool_in: Vec<String>,
-) -> Result<(Vec<u8>, Vec<String>), LowerError> {
+    static_base: u16,
+) -> Result<(Vec<u8>, Vec<String>, u16), LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
     let user_local_count = proc.locals.len();
@@ -250,7 +255,7 @@ fn lower_proc_pooled(
     // assigned a byte offset within that block, packed by type size in declaration
     // order. `static_offsets[i]` is meaningful only when `locals[i].is_static`.
     let mut static_offsets: Vec<u16> = Vec::with_capacity(proc.locals.len());
-    let mut static_cursor: u16 = 0;
+    let mut static_cursor: u16 = static_base;
     for v in &proc.locals {
         if v.is_static {
             static_offsets.push(static_cursor);
@@ -388,7 +393,7 @@ fn lower_proc_pooled(
     }
     drop(labels);
     let pool_out = ctx.string_pool.into_inner();
-    Ok((out, pool_out))
+    Ok((out, pool_out, static_cursor))
 }
 
 // ── Internal lowering context ─────────────────────────────────────────────────

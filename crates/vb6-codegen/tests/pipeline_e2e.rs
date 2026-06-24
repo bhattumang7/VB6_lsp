@@ -80,6 +80,27 @@ fn e2e_module_global_string_pool() {
 }
 
 #[test]
+fn e2e_module_global_static_block() {
+    // The per-procedure static block is module-global: proc 0's Static `a` (Long)
+    // takes block offset 0, proc 1's Static `b` takes offset 4 (after a's 4 bytes).
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n\
+         Static a As Long\r\n\
+         a = 1\r\n\
+         End Sub\r\n\
+         Sub Foo()\r\n\
+         Static b As Long\r\n\
+         b = 2\r\n\
+         End Sub\r\n",
+        0x0008,
+    );
+    assert_eq!(procs.len(), 2);
+    assert_eq!(procs[0], &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x00, 0x00]);
+    assert_eq!(procs[1], &[0xf5, 0x02, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x04, 0x00]);
+}
+
+#[test]
 fn e2e_module_global_string_pool_dedup() {
     // A repeated string value is interned once across the module: proc 1's "aaa"
     // reuses index 0; its new "ccc" gets index 1.
