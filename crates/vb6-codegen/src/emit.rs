@@ -200,6 +200,12 @@ impl<'a> Emitter<'a> {
             self.emit_coerce_node(&n);
             return 0;
         }
+        // Synthetic string literal (opcode 0x79): push a pooled string constant by
+        // index — `0x1b <pool index>` (value-emitter index 0x3bf). word[4] = index.
+        if op == 0x79 {
+            self.emit_opcode2(0x3bf, n.w[4] as u16);
+            return 0;
+        }
 
         // Guard: opcodes outside `1..=0x73` emit nothing (opcode 0 wraps to
         // 0xffffffff and is also rejected).

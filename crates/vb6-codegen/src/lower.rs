@@ -252,6 +252,7 @@ pub fn lower_proc(
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
+        string_pool: RefCell::new(Vec::new()),
     };
 
     let mut out = Vec::new();
@@ -295,6 +296,21 @@ struct LowerCtx<'m> {
     /// Stack of `Exit For`/`Exit Do` patch lists — one per active loop; each entry
     /// is a byte offset to backpatch with the loop-end offset.
     exit_stack: RefCell<Vec<Vec<usize>>>,
+    /// String-constant pool: literal text → pool index (assigned in first-seen
+    /// order, deduped by value). A `"..."` literal emits `0x1b <pool index>`.
+    string_pool: RefCell<Vec<String>>,
+}
+
+impl LowerCtx<'_> {
+    /// Intern a string literal, returning its pool index (deduped by value).
+    fn intern_string(&self, s: &str) -> u16 {
+        let mut pool = self.string_pool.borrow_mut();
+        if let Some(i) = pool.iter().position(|p| p == s) {
+            return i as u16;
+        }
+        pool.push(s.to_string());
+        (pool.len() - 1) as u16
+    }
 }
 
 impl<'m> LowerCtx<'m> {
@@ -963,7 +979,15 @@ fn lower_expr_coerced(
     coerce_tag: Option<u16>,
 ) -> Result<NodeRef, LowerError> {
     match expr_arena.get(node_id) {
-        ExprNode::Literal { lit } => lower_lit_coerced(lit, coerce_tag, arena),
+        ExprNode::Literal { lit } => {
+            // A string literal interns into the module string pool and emits
+            // `0x1b <pool index>` (synthetic node 0x79); other literals fold in place.
+            if let AstLit::Str(s) = lit {
+                let idx = ctx.intern_string(s);
+                return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
+            }
+            lower_lit_coerced(lit, coerce_tag, arena)
+        }
         ExprNode::NameRef { .. } => lower_name_ref(ctx, node_id, arena),
         ExprNode::BinOp { op, lhs, rhs } => {
             let (op, lhs_id, rhs_id) = (*op, *lhs, *rhs);

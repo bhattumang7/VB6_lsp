@@ -621,6 +621,23 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// String literal: interns into the module string pool (index 0 here) and pushes
+// it via 0x1b + 2-byte pool index, then copy-stores to s (0x43).
+#[test]
+fn e2e_string_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim s As String\r\n\
+             s = \"hi\"\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x1b, 0x00, 0x00, 0x43, 0x78, 0xff]
+    );
+}
+
 // String copy: a String var loads its BSTR pointer (0x6c) and stores via the
 // refcounted assign opcode (0x43).
 #[test]
