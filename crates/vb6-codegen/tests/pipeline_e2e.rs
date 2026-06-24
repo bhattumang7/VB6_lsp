@@ -621,6 +621,28 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Do Until: VB6 compiles `Until cond` as `While Not cond` — the comparison
+// negates (> becomes <=, opcode db->d6) and the exit branch is BranchFalse (1c),
+// identical structure to Do While.
+#[test]
+fn e2e_do_until_negates() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long\r\n\
+             Do Until a > 9\r\n\
+             a = a + 1\r\n\
+             Loop\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xf5, 0x09, 0x00, 0x00, 0x00, 0xd6, 0x1c, 0x1b, 0x00,
+          0x6c, 0x78, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xaa, 0x71, 0x78, 0xff,
+          0x1e, 0x00, 0x00]
+    );
+}
+
 // Currency arithmetic: node tag 0x0d (grounded from the kind->VARTYPE table),
 // add opcode 0xac. Load/store use the Currency frame class (6): 6d/72.
 #[test]

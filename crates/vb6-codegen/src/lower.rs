@@ -389,6 +389,42 @@ fn lower_while(
 ///   PostWhile: [start:] body cond BranchTrue[start]
 ///   PostUntil: [start:] body cond BranchFalse[start]
 ///   Inf:       [start:] body Jump[start]
+/// The negated comparison operator. VB6 compiles `Until cond` as `While Not cond`;
+/// for a comparison condition the negation folds into the compare opcode (e.g.
+/// `Until a > 9` emits the `<=` compare + branch-false, identical to `While a <= 9`).
+fn negate_comparison(op: BinOpKind) -> Option<BinOpKind> {
+    Some(match op {
+        BinOpKind::Eq => BinOpKind::Ne,
+        BinOpKind::Ne => BinOpKind::Eq,
+        BinOpKind::Lt => BinOpKind::Ge,
+        BinOpKind::Ge => BinOpKind::Lt,
+        BinOpKind::Gt => BinOpKind::Le,
+        BinOpKind::Le => BinOpKind::Gt,
+        _ => return None,
+    })
+}
+
+/// Emit the bytes for a loop `Until` condition as its negation (`While Not cond`).
+/// Returns `Some(bytes)` when the condition is a negatable comparison; `None`
+/// otherwise (the caller then uses the non-negated condition + branch-on-true).
+fn lower_negated_condition_bytes(
+    ctx: &LowerCtx,
+    cond_id: NodeId,
+    expr_arena: &ExprArena,
+) -> Result<Option<Vec<u8>>, LowerError> {
+    if let ExprNode::BinOp { op, lhs, rhs } = expr_arena.get(cond_id) {
+        if let Some(neg) = negate_comparison(*op) {
+            let (lhs_id, rhs_id) = (*lhs, *rhs);
+            let mut arena = NodeArena::new();
+            let root = lower_binop(ctx, cond_id, neg, lhs_id, rhs_id, expr_arena, &mut arena)?;
+            let mut emitter = Emitter::new(&arena);
+            emitter.emit_expr(root, 0);
+            return Ok(Some(emitter.into_bytes()));
+        }
+    }
+    Ok(None)
+}
+
 fn lower_do(
     ctx: &LowerCtx,
     kind: DoKind,
@@ -407,17 +443,26 @@ fn lower_do(
             let cond = cond_id.ok_or(LowerError::UnsupportedNode)?;
             let loop_start = out.len() as u16;
 
+            // VB6 compiles `Do Until cond` as `Do While Not cond`: for a
+            // comparison the negation folds into the compare opcode and the exit
+            // branch is BranchFalse (0x1c) — byte-identical to PreWhile.
+            if let Some(neg_bytes) = lower_negated_condition_bytes(ctx, cond, expr_arena)? {
+                out.extend_from_slice(&neg_bytes);
+                let branch_false_patch = emit_branch_placeholder(out, 0x1c);
+                lower_block(ctx, body_id, expr_arena, out)?;
+                out.push(0x1e);
+                out.extend_from_slice(&loop_start.to_le_bytes());
+                patch_u16(out, branch_false_patch, out.len() as u16);
+                return Ok(());
+            }
+
+            // Non-comparison condition: exit when the condition is true.
             let cond_bytes = lower_expr_to_bytes(ctx, cond, expr_arena)?;
             out.extend_from_slice(&cond_bytes);
-
-            // BranchTrue to exit — Until means "exit when condition IS true"
             let branch_true_patch = emit_branch_placeholder(out, 0x1d);
-
             lower_block(ctx, body_id, expr_arena, out)?;
-
             out.push(0x1e);
             out.extend_from_slice(&loop_start.to_le_bytes());
-
             patch_u16(out, branch_true_patch, out.len() as u16);
             Ok(())
         }
@@ -441,9 +486,17 @@ fn lower_do(
 
             lower_block(ctx, body_id, expr_arena, out)?;
 
+            // `Loop Until cond` = `Loop While Not cond`: negated comparison +
+            // BranchTrue back to start (mirrors PostWhile).
+            if let Some(neg_bytes) = lower_negated_condition_bytes(ctx, cond, expr_arena)? {
+                out.extend_from_slice(&neg_bytes);
+                out.push(0x1d);
+                out.extend_from_slice(&loop_start.to_le_bytes());
+                return Ok(());
+            }
+
             let cond_bytes = lower_expr_to_bytes(ctx, cond, expr_arena)?;
             out.extend_from_slice(&cond_bytes);
-
             // BranchFalse back to start — "Loop Until" continues when still false
             out.push(0x1c);
             out.extend_from_slice(&loop_start.to_le_bytes());
