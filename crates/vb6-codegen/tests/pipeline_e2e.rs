@@ -539,6 +539,40 @@ fn e2e_long_xor() {
     );
 }
 
+// Unary minus: emitted through the generic operation emitter as the single-operand
+// op 7 (base 0x00c6); arithmetic dispatch → RT_TYPE_OFFSET[Long] selects 0xb8.
+#[test]
+fn e2e_long_negate() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, r As Long\r\n\
+             r = -a\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xb8, 0x71, 0x74, 0xff]
+    );
+}
+
+// Unary Not: the single-operand op 6 (base 0x00be); arithmetic dispatch →
+// RT_TYPE_OFFSET[Long] selects 0xc3.
+#[test]
+fn e2e_long_not() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, r As Long\r\n\
+             r = Not a\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xc3, 0x71, 0x74, 0xff]
+    );
+}
+
 // Double division: the `/` operator's bound opcode is 0x19 (the arithmetic-block
 // gap), previously unmapped → UnsupportedNode.
 #[test]

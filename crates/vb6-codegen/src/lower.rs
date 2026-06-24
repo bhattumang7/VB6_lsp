@@ -661,7 +661,7 @@ fn lower_expr_coerced(
         }
         ExprNode::UnOp { op, operand } => {
             let (op, operand_id) = (*op, *operand);
-            lower_unop(ctx, op, operand_id, expr_arena, arena)
+            lower_unop(ctx, node_id, op, operand_id, expr_arena, arena)
         }
         ExprNode::Paren { inner } => {
             let inner_id = *inner;
@@ -815,6 +815,7 @@ fn lower_binop(
 
 fn lower_unop(
     ctx: &LowerCtx,
+    node_id: NodeId,
     op: UnOpKind,
     operand_id: NodeId,
     expr_arena: &ExprArena,
@@ -822,9 +823,25 @@ fn lower_unop(
 ) -> Result<NodeRef, LowerError> {
     let operand_ref = lower_expr(ctx, operand_id, expr_arena, arena)?;
     match op {
+        // Unary plus is a no-op: the operand is emitted unchanged.
         UnOpKind::Pos => Ok(operand_ref),
-        UnOpKind::Neg => Ok(arena.alloc(NodeArena::node(0x0b, 0, operand_ref.0, 0, 0, 0))),
-        UnOpKind::Not => Ok(arena.alloc(NodeArena::node(0x10, 0, operand_ref.0, 0, 0, 0))),
+        // Negate and Not are emitted through the generic operation emitter
+        // (the single-operand arithmetic form: only `word[4]` is set, so no
+        // right operand is emitted). The opcode byte is selected by that
+        // emitter as RT_BINOP_BASE[op] + RT_TYPE_OFFSET[result type tag]:
+        //   negate -> op 7 (base 0x00c6),  Not -> op 6 (base 0x00be).
+        // Both use the arithmetic dispatch (RT_DISPATCH_FLAG & 0x10 == 0), so
+        // the offset comes from the node's own (result) type tag.
+        UnOpKind::Neg | UnOpKind::Not => {
+            let result_type = ctx
+                .module
+                .types
+                .get(&node_id.0)
+                .ok_or(LowerError::Unresolved)?;
+            let type_tag = vba_type_to_node_tag(result_type).ok_or(LowerError::UnsupportedType)?;
+            let opcode: u16 = if matches!(op, UnOpKind::Neg) { 7 } else { 6 };
+            Ok(arena.alloc(NodeArena::node(opcode, type_tag, operand_ref.0, 0, 0, 0)))
+        }
     }
 }
 
