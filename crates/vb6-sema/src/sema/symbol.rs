@@ -56,6 +56,11 @@ pub struct BoundVar {
     /// code generator can emit a folded literal at each use site). `None` for
     /// non-const declarations and consts whose value is not an integer constant.
     pub const_value: Option<i64>,
+    /// For a `Const` whose initializer is a non-integer literal (String, Double,
+    /// Single, Currency, Date, Boolean), the literal itself — so the code generator
+    /// can fold it at each use site. Integer-valued consts use `const_value`; this
+    /// is `None` for those and for non-const declarations.
+    pub const_lit: Option<crate::frontend::ast::AstLit>,
     /// For a fixed-length string (`As String * n`), the declared length `n`. The
     /// type stays [`VbaType::String`] (a 4-byte pointer slot) but the assignment
     /// copy is length-aware, so the code generator needs the length.

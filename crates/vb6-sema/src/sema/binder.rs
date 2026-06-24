@@ -442,6 +442,7 @@ impl<'a> Binder<'a> {
             vba_type: self.extract_type(type_node),
             is_const,
             const_value: None,
+            const_lit: None,
             fixed_string_len: None,
             array_dims: None,
             is_static: false,
@@ -567,6 +568,16 @@ impl<'a> Binder<'a> {
         }
     }
 
+    /// Resolve a const initializer that is a (parenthesised) literal to that
+    /// literal, for non-integer constant folding by the code generator.
+    fn eval_const_lit(&self, id: NodeId) -> Option<crate::frontend::ast::AstLit> {
+        match self.arena.get(id) {
+            ExprNode::Literal { lit } => Some(lit.clone()),
+            ExprNode::Paren { inner } => self.eval_const_lit(*inner),
+            _ => None,
+        }
+    }
+
     // ── Procedure body binding ────────────────────────────────────────────────
 
     fn bind_proc_body(&mut self, proc_idx: usize, body_id: NodeId) {
@@ -598,6 +609,14 @@ impl<'a> Binder<'a> {
             } else {
                 None
             };
+            // Non-integer const initializers (String/Double/Single/Currency/Date/
+            // Boolean literals) are carried as the literal itself for the code
+            // generator to fold; integer-valued consts use `const_value`.
+            let const_lit = if *is_const && const_value.is_none() {
+                (*init).and_then(|i| self.eval_const_lit(i))
+            } else {
+                None
+            };
             let fixed_string_len = (*type_node).and_then(|tn| {
                 if let ExprNode::StringType { fixed_len: Some(n) } = self.arena.get(tn) {
                     self.eval_const_i64(*n).map(|v| v as u16)
@@ -611,7 +630,7 @@ impl<'a> Binder<'a> {
             });
             out.push(BoundVar {
                 sym_id: *name, vba_type,
-                is_const: *is_const, const_value, fixed_string_len, array_dims,
+                is_const: *is_const, const_value, const_lit, fixed_string_len, array_dims,
                 is_static: false, is_public: false,
                 name_span: self.spans.get(id),
             });

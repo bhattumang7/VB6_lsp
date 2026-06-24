@@ -1438,6 +1438,15 @@ fn lower_assign(
     let value_root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, coerce_tag)?;
     let value_root = coerce_assign_value(ctx, value_id, value_root, coerce_tag, &mut arena);
 
+    // A String target receives a *move* store (0x31, ctx 9) when the value is a
+    // freshly-produced temp — a `&` concatenation, or a numeric→String conversion
+    // (a 0x78 coerce node) — and a *copy* store (0x43, ctx 8) when it is a plain
+    // string variable. The move avoids an extra BSTR allocation for the temp.
+    let value_is_fresh_string = matches!(
+        expr_arena.get(value_id),
+        ExprNode::BinOp { op: BinOpKind::Cat, .. }
+    ) || arena.get(value_root).opcode() == 0x78;
+
     let mut emitter = Emitter::new(&arena);
     // The assigned value is an rvalue: emit it in value context (2). This is the
     // context that selects the typed floating-point push forms (Double/Date push
@@ -1450,11 +1459,7 @@ fn lower_assign(
             let slot = &ctx.local_slots[*local_idx];
             // A String assigned a freshly-produced temp (a `&` concat result) is
             // moved, not copied: store opcode 0x31 (ctx 9) instead of 0x43 (ctx 8).
-            let sctx = if matches!(ty, VbaType::String)
-                && matches!(
-                    expr_arena.get(value_id),
-                    ExprNode::BinOp { op: BinOpKind::Cat, .. }
-                ) {
+            let sctx = if matches!(ty, VbaType::String) && value_is_fresh_string {
                 9
             } else {
                 load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?
@@ -1622,9 +1627,21 @@ fn lower_name_ref(
             // A `Const` is folded to its literal value at the use site (it has no
             // frame slot). Integer-valued consts emit an integer literal node.
             if local.is_const {
-                let v = local.const_value.ok_or(LowerError::UnsupportedType)?;
-                let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
-                return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+                // Integer-valued consts emit an integer literal node in the
+                // declared type. Non-integer consts (String/Double/etc.) fold the
+                // carried literal directly: a String interns into the pool, every
+                // other literal lowers in its own type.
+                if let Some(v) = local.const_value {
+                    let tag = vba_type_to_node_tag(&local.vba_type)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+                }
+                let lit = local.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
+                if let AstLit::Str(s) = lit {
+                    let idx = ctx.intern_string(s);
+                    return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
+                }
+                return lower_lit(lit, arena);
             }
             // Fixed-length strings (`As String * n`) copy via a length-aware
             // sequence (LdAddr + 0x33<len> + store 0x31), not the plain BSTR load;
