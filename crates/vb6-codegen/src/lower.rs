@@ -62,6 +62,7 @@ fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
         VbaType::Date => Some(0xc),
         VbaType::Byte => Some(5),
         VbaType::String => Some(0x10),
+        VbaType::Variant => Some(0xf),
         _ => None,
     }
 }
@@ -1398,7 +1399,21 @@ fn lower_array_store(
         return Err(LowerError::UnsupportedNode);
     }
     let elem_tag = vba_type_to_node_tag(&elem).ok_or(LowerError::UnsupportedType)?;
-    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, value_id, expr_arena, Some(elem_tag))?);
+    if matches!(elem, VbaType::Variant) {
+        // A Variant element store pushes the source variant's address, not value.
+        let v_off = match (expr_arena.get(value_id), ctx.module.resolutions.get(&value_id.0)) {
+            (ExprNode::NameRef { .. }, Some(NameResolution::Local { local_idx, .. }))
+                if matches!(ctx.module.types.get(&value_id.0), Some(VbaType::Variant)) =>
+            {
+                ctx.local_slots[*local_idx].frame_offset
+            }
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        out.push(0x04);
+        out.extend_from_slice(&v_off.to_le_bytes());
+    } else {
+        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, value_id, expr_arena, Some(elem_tag))?);
+    }
     for &idx in &indices {
         out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, idx, expr_arena, Some(8))?);
     }
@@ -1414,9 +1429,9 @@ fn lower_array_store(
             VbaType::Double | VbaType::Date => out.push(0xa6),
             VbaType::String => out.push(0x3b),
             VbaType::Byte => out.extend_from_slice(&[0xfc, 0xa0]),
-            // A Variant element store pushes the source variant's *address* (not
-            // its value) and moves it (0xfc 0xb0); that needs the address-load
-            // source path, handled separately.
+            // Variant element store: move the source variant (loaded by address
+            // above) into the element.
+            VbaType::Variant => out.extend_from_slice(&[0xfc, 0xb0]),
             _ => return Err(LowerError::UnsupportedNode),
         }
     } else {
@@ -1519,6 +1534,38 @@ fn lower_assign(
         out.push(0xf6);
         out.extend_from_slice(&v_off.to_le_bytes());
         return Ok(());
+    }
+
+    // Variant source into a non-Variant scalar target: a Variant is read by
+    // address (0x04), converted to the target type, then stored.
+    if let ExprNode::NameRef { .. } = expr_arena.get(value_id) {
+        if matches!(ctx.module.types.get(&value_id.0), Some(VbaType::Variant)) {
+            let v_off = match ctx.module.resolutions.get(&value_id.0) {
+                Some(NameResolution::Local { local_idx, .. }) => {
+                    ctx.local_slots[*local_idx].frame_offset
+                }
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let (target_tag, store_ctx, store_off) = match resolution {
+                NameResolution::Local { local_idx, .. } => {
+                    let ty = ctx.local_type(*local_idx);
+                    (
+                        vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?,
+                        load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?,
+                        ctx.local_slots[*local_idx].frame_offset,
+                    )
+                }
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let arena = NodeArena::new();
+            let mut em = Emitter::new(&arena);
+            em.emit_ldaddr(v_off);
+            // Variant (tag 0xf) → target conversion, then the plain target store.
+            em.emit_conversion(target_tag as i32, 0xf);
+            em.emit_var_store(store_ctx, store_off);
+            out.extend(em.into_bytes());
+            return Ok(());
+        }
     }
 
     // Array element load as the RHS: `r = a(i)` — push the Long index, LdAddr the

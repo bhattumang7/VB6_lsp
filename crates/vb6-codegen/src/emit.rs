@@ -2354,10 +2354,15 @@ impl<'a> Emitter<'a> {
         self.emit_expr(NodeRef(n.w[4]), 2);
         let target_tag = n.type_tag();
         let src_tag = self.arena.get(NodeRef(n.w[4])).type_tag();
-        // A Date destination uses dedicated conversion opcodes rather than the
-        // base+adjust store family (a Date carries an OLE serial with its own
-        // range/validity conversion). A Single source has already been widened to
-        // the common float representation by its load, so it converts as Double.
+        self.emit_conversion(target_tag, src_tag);
+    }
+
+    /// Emit the runtime conversion opcode that converts a value of `src_tag` to
+    /// `target_tag`. A Date destination uses dedicated opcodes (a Date carries an
+    /// OLE serial with its own range/validity conversion); a Single source has
+    /// already been widened to the common float representation by its load, so it
+    /// converts as Double. Every other pair uses the base+adjust store family.
+    pub fn emit_conversion(&mut self, target_tag: i32, src_tag: i32) {
         if target_tag == 0xc {
             match src_tag {
                 0xa | 0xb => {
@@ -2377,6 +2382,12 @@ impl<'a> Emitter<'a> {
         }
         let opcode = Self::assign_store_base(target_tag) + Self::assign_source_adjust(src_tag);
         self.emit_value2(opcode as usize);
+    }
+
+    /// Emit a load-address (`0x04`) of a frame slot at `frame_offset`.
+    pub fn emit_ldaddr(&mut self, frame_offset: i16) {
+        self.stream.emit_byte(0x04);
+        self.stream.emit_i16(frame_offset);
     }
 
     fn emit_assign_op(&mut self, n: &RawNode) {
