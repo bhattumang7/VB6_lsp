@@ -525,7 +525,7 @@ fn lower_stmt(
         // `ReDim a(bounds)`: push each dimension's lower and upper bound (Long),
         // LdAddr the array pointer, then the ReDim opcode (0xfe 0x8e) followed by
         // dim-count, element VARTYPE, element size, and flags.
-        ExprNode::ReDimItem { name, bounds, .. } => {
+        ExprNode::ReDimItem { name, bounds, preserve, .. } => {
             let local_idx = ctx
                 .proc
                 .locals
@@ -564,7 +564,9 @@ fn lower_stmt(
             out.push(0x04);
             out.extend_from_slice(&arr_off.to_le_bytes());
             out.push(0xfe);
-            out.push(0x8e);
+            // `ReDim Preserve` reallocates while copying existing elements: opcode
+            // 0x8f; a plain `ReDim` discards them: opcode 0x8e.
+            out.push(if *preserve { 0x8f } else { 0x8e });
             out.extend_from_slice(&(dim_ids.len() as u16).to_le_bytes());
             out.extend_from_slice(&vartype.to_le_bytes());
             out.extend_from_slice(&size.to_le_bytes());

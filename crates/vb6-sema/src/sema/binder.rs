@@ -924,10 +924,14 @@ fn binop_type(
         B::And | B::Or | B::Xor | B::Eqv | B::Imp => numeric_promote(lhs, rhs),
         // String concatenation always returns String
         B::Cat => VbaType::String,
-        // Integer division always returns Long
-        B::IDiv => VbaType::Long,
-        // Modulo: same as lhs
-        B::Mod => lhs.clone(),
+        // Integer division and modulo round each operand to an integer type and
+        // return that promoted integer type: Byte\Byte → Byte, Integer\Integer →
+        // Integer, Long\Long → Long. Floating-point / Currency / Date / Variant
+        // operands are rounded to Long.
+        B::IDiv | B::Mod => match numeric_promote(lhs, rhs) {
+            t @ (VbaType::Byte | VbaType::Integer | VbaType::Long | VbaType::Boolean) => t,
+            _ => VbaType::Long,
+        },
         // Arithmetic: numeric promotion
         B::Add | B::Sub | B::Mul | B::Div | B::Pow => {
             numeric_promote(lhs, rhs)
