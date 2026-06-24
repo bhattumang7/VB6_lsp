@@ -9,7 +9,7 @@
 //! `oracle_pcode.rs` (which verify the emitter in isolation); here the same
 //! bytes verify the **complete pipeline** from source text.
 
-use vb6_codegen::lower_proc;
+use vb6_codegen::{lower_module, lower_proc};
 use vb6_sema::frontend::ast::ExprArena;
 use vb6_sema::frontend::parser::Parser;
 use vb6_sema::frontend::scanner::ScannerContext;
@@ -34,6 +34,72 @@ fn compile(src: &str, module_desc: u16) -> Vec<u8> {
     let module = bind(&ctx, &arena, &top, &spans, &vis);
     lower_proc(&module, 0, &arena, module_desc)
         .unwrap_or_else(|e| panic!("lower_proc failed: {e:?}"))
+}
+
+/// Like `compile`, but lowers every procedure of the module sharing one
+/// module-global string pool, returning each procedure's byte stream.
+fn compile_module(src: &str, module_desc: u16) -> Vec<Vec<u8>> {
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    let top = parser.parse_module(&mut arena);
+    let spans = std::mem::take(&mut parser.node_spans);
+    let vis = std::mem::take(&mut parser.decl_public);
+    drop(parser);
+    let module = bind(&ctx, &arena, &top, &spans, &vis);
+    lower_module(&module, &arena, module_desc)
+        .unwrap_or_else(|e| panic!("lower_module failed: {e:?}"))
+}
+
+// ── Multi-procedure modules: string pool is module-global ───────────────────
+//
+// String-literal indices are assigned across the whole module in procedure
+// declaration order (deduped by value), not reset per procedure. Confirmed
+// byte-for-byte against the VB6-compiled module exe.
+
+#[test]
+fn e2e_module_global_string_pool() {
+    // Two procedures, each with a distinct string literal: proc 0's "aaa" gets
+    // pool index 0 (`1b 00`), proc 1's "bbb" gets index 1 (`1b 01`).
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n\
+         Dim s As String\r\n\
+         s = \"aaa\"\r\n\
+         End Sub\r\n\
+         Sub Two()\r\n\
+         Dim t As String\r\n\
+         t = \"bbb\"\r\n\
+         End Sub\r\n",
+        0x0008,
+    );
+    assert_eq!(procs.len(), 2);
+    assert_eq!(procs[0], &[0x1b, 0x00, 0x00, 0x43, 0x78, 0xff]);
+    assert_eq!(procs[1], &[0x1b, 0x01, 0x00, 0x43, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_module_global_string_pool_dedup() {
+    // A repeated string value is interned once across the module: proc 1's "aaa"
+    // reuses index 0; its new "ccc" gets index 1.
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n\
+         Dim s As String\r\n\
+         s = \"aaa\"\r\n\
+         End Sub\r\n\
+         Sub Two()\r\n\
+         Dim t As String, u As String\r\n\
+         t = \"aaa\"\r\n\
+         u = \"ccc\"\r\n\
+         End Sub\r\n",
+        0x0008,
+    );
+    assert_eq!(procs.len(), 2);
+    // proc 1 first stores "aaa" (reused index 0) then "ccc" (new index 1).
+    assert_eq!(&procs[1][0..3], &[0x1b, 0x00, 0x00]);
+    assert!(procs[1].windows(3).any(|w| w == [0x1b, 0x01, 0x00]));
 }
 
 // ── Long arithmetic (Dim a As Long, b As Long, r As Long) ────────────────────

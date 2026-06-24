@@ -44,7 +44,7 @@ pub use bind::{DeclError, GlobalFrame, GlobalVar, LocalVar, ParamFrame, ParamVar
 pub use buffer::PcodeStream;
 pub use emit::{Emitter, RefDescriptor, SymbolContext};
 pub use heap::{HeapContext, NIL};
-pub use lower::{lower_proc, global_frame_from_types, LowerError};
+pub use lower::{lower_proc, lower_module, global_frame_from_types, LowerError};
 pub use node::{NodeArena, NodeRef, RawNode};
 pub use proc_binder::ProcBinder;
 pub use resolver::init_expr_descriptor;

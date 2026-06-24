@@ -195,12 +195,46 @@ fn collect_select_subjects(node_id: NodeId, expr_arena: &ExprArena, out: &mut Ve
 ///
 /// `module_desc` is the compiled module-object descriptor word — `0x0008` for
 /// the primary module in a single-module project (oracle-confirmed).
+/// Lower every procedure of a module in declaration order, sharing one
+/// module-global string pool so string-literal indices are assigned across the
+/// whole module (proc 0's strings first, then proc 1's, deduped by value).
+/// Returns the per-procedure p-code byte streams.
+pub fn lower_module(
+    module: &BoundModule,
+    expr_arena: &ExprArena,
+    module_desc: u16,
+) -> Result<Vec<Vec<u8>>, LowerError> {
+    let mut pool: Vec<String> = Vec::new();
+    let mut procs = Vec::with_capacity(module.procs.len());
+    for idx in 0..module.procs.len() {
+        let (bytes, next_pool) = lower_proc_pooled(module, idx, expr_arena, module_desc, pool)?;
+        pool = next_pool;
+        procs.push(bytes);
+    }
+    Ok(procs)
+}
+
 pub fn lower_proc(
     module: &BoundModule,
     proc_idx: usize,
     expr_arena: &ExprArena,
     module_desc: u16,
 ) -> Result<Vec<u8>, LowerError> {
+    // A standalone single-procedure lowering starts with an empty string pool.
+    let (bytes, _pool) = lower_proc_pooled(module, proc_idx, expr_arena, module_desc, Vec::new())?;
+    Ok(bytes)
+}
+
+/// Lower one procedure, threading a module-global string pool in and out so that
+/// string-literal indices continue across procedures. `pool_in` carries the
+/// strings interned by earlier procedures; the returned pool adds this one's.
+fn lower_proc_pooled(
+    module: &BoundModule,
+    proc_idx: usize,
+    expr_arena: &ExprArena,
+    module_desc: u16,
+    pool_in: Vec<String>,
+) -> Result<(Vec<u8>, Vec<String>), LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
     let user_local_count = proc.locals.len();
@@ -309,7 +343,7 @@ pub fn lower_proc(
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
-        string_pool: RefCell::new(Vec::new()),
+        string_pool: RefCell::new(pool_in),
         module_desc,
         static_offsets,
         line_tracking: proc_needs_line_tracking(NodeId(proc.body), expr_arena),
@@ -353,7 +387,8 @@ pub fn lower_proc(
         out[*patch..*patch + 2].copy_from_slice(&off.to_le_bytes());
     }
     drop(labels);
-    Ok(out)
+    let pool_out = ctx.string_pool.into_inner();
+    Ok((out, pool_out))
 }
 
 // ── Internal lowering context ─────────────────────────────────────────────────
