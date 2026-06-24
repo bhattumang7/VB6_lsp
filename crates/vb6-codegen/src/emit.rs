@@ -193,6 +193,13 @@ impl<'a> Emitter<'a> {
             self.emit_global_node_load(&n);
             return 0;
         }
+        // Synthetic operand coercion (opcode 0x78): widen a binary-operation
+        // operand to the operation type. Node type tag = target type; word[4] =
+        // the operand. Emits the operand then the widening conversion opcode.
+        if op == 0x78 {
+            self.emit_coerce_node(&n);
+            return 0;
+        }
 
         // Guard: opcodes outside `1..=0x73` emit nothing (opcode 0 wraps to
         // 0xffffffff and is also rejected).
@@ -2292,6 +2299,22 @@ impl<'a> Emitter<'a> {
     /// The general store opcode is `assign_store_base(dest) + assign_source_adjust(src)`,
     /// with direct opcodes for specific Variant / Currency / Boolean / object
     /// type pairs.
+    /// Dispatch a synthetic operand-coercion node (opcode 0x78): emit the child
+    /// operand, then the conversion opcode that widens it to the node's (target)
+    /// type. The conversion opcode index is
+    /// `assign_store_base(target) + assign_source_adjust(src)` — the same
+    /// store/coerce opcode family the `=` store uses (RT_ASSIGN_STORE_OPCODE
+    /// indexed by RT_TYPE_OFFSET[target], plus the source-class adjust). E.g.
+    /// Integer→Long → 0x11c+1 = 0x11d (byte 0xe7); Long→Double → 0x12c+2 = 0x12e
+    /// (byte 0xec).
+    fn emit_coerce_node(&mut self, n: &RawNode) {
+        self.emit_expr(NodeRef(n.w[4]), 2);
+        let target_tag = n.type_tag();
+        let src_tag = self.arena.get(NodeRef(n.w[4])).type_tag();
+        let opcode = Self::assign_store_base(target_tag) + Self::assign_source_adjust(src_tag);
+        self.emit_value2(opcode as usize);
+    }
+
     fn emit_assign_op(&mut self, n: &RawNode) {
         let source = *self.arena.get(NodeRef(n.w[4]));
         let dest_hi = n.w[0] & 0xffff_0000;

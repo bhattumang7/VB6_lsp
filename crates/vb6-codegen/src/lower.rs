@@ -795,7 +795,9 @@ fn lower_binop(
     let operand_coerce = wider_numeric_tag(lhs_ty, rhs_ty);
 
     let lhs_ref = lower_expr_coerced(ctx, lhs_id, expr_arena, arena, operand_coerce)?;
+    let lhs_ref = coerce_operand(ctx, lhs_id, lhs_ref, operand_coerce, expr_arena, arena);
     let rhs_ref = lower_expr_coerced(ctx, rhs_id, expr_arena, arena, operand_coerce)?;
+    let rhs_ref = coerce_operand(ctx, rhs_id, rhs_ref, operand_coerce, expr_arena, arena);
 
     // Power (`^`) is its own bound-node opcode (0x1a) and always yields Double.
     // It is byte-exact only when both operands are already Double (no operand
@@ -820,6 +822,42 @@ fn lower_binop(
     };
 
     Ok(arena.alloc(NodeArena::node(opcode, type_tag, lhs_ref.0, rhs_ref.0, 0, 0)))
+}
+
+/// Widen a binary-operation operand to the operation type when its own type is
+/// narrower. VB6 wraps such an operand in a coercion node whose emission is the
+/// operand load followed by a single type-conversion opcode (e.g. Integer→Long
+/// emits 0xe7, Long→Double emits 0xec). We model that with the synthetic
+/// coercion node (opcode 0x78): target type tag in the node, operand as word[4].
+///
+/// Integer *literals* are already widened in place by `lower_lit_coerced`, so
+/// they need no conversion node (VB6 folds the literal to the wider type).
+fn coerce_operand(
+    ctx: &LowerCtx,
+    operand_id: NodeId,
+    operand_ref: NodeRef,
+    target_tag: Option<u16>,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> NodeRef {
+    let Some(target) = target_tag else {
+        return operand_ref;
+    };
+    if matches!(expr_arena.get(operand_id), ExprNode::Literal { .. }) {
+        return operand_ref;
+    }
+    let Some(src_tag) = ctx
+        .module
+        .types
+        .get(&operand_id.0)
+        .and_then(vba_type_to_node_tag)
+    else {
+        return operand_ref;
+    };
+    if src_tag == target {
+        return operand_ref;
+    }
+    arena.alloc(NodeArena::node(0x78, target, operand_ref.0, 0, 0, 0))
 }
 
 fn lower_unop(

@@ -602,6 +602,41 @@ fn e2e_long_imp() {
     );
 }
 
+// Mixed-type operand coercion: a narrower binary-op operand is widened to the
+// operation type via the conversion opcode
+// assign_store_base(target) + assign_source_adjust(src). Integer→Long emits 0xe7
+// (0x11c+1); the wider operand and the add follow unchanged.
+#[test]
+fn e2e_mixed_int_long_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Integer, b As Long, r As Long\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0xe7, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff]
+    );
+}
+
+// Long→Double widening emits 0xec (0x12c+2).
+#[test]
+fn e2e_mixed_long_double_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Double, r As Double\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xec, 0x6f, 0x70, 0xff, 0xab, 0x74, 0x68, 0xff]
+    );
+}
+
 // Unary minus: emitted through the generic operation emitter as the single-operand
 // op 7 (base 0x00c6); arithmetic dispatch → RT_TYPE_OFFSET[Long] selects 0xb8.
 #[test]
