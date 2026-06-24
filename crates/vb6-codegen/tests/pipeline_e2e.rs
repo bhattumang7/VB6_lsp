@@ -1267,3 +1267,637 @@ fn e2e_double_div() {
         &[0x6f, 0x74, 0xff, 0x6f, 0x6c, 0xff, 0xb6, 0x74, 0x64, 0xff]
     );
 }
+
+// ── Matrix-completion constructs (Phase 3) ───────────────────────────────────
+//
+// Exact-byte vectors for the COM-free single-procedure constructs closed in the
+// comprehensive coverage pass: every literal form, operator/type coercion,
+// statement, and array/string/Variant data access. Each vector is confirmed
+// byte-for-byte against the real VB6 p-code compiler.
+
+#[test]
+fn e2e_a8_single_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim r As Single\r\nr = 1.5\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x3f, 0x73, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a9_double_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim r As Double\r\nr = 1.5\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x3f, 0x74, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a10_double_hash_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim r As Double\r\nr = 1.5#\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x3f, 0x74, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a11_double_scientific_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim r As Double\r\nr = 1.5E10\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0xb0, 0x8e, 0xf0, 0x0b, 0x42, 0x74, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a12_currency_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim r As Currency\r\nr = 1.5@\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf6, 0x98, 0x3a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x72, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a14_empty_string_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim s As String\r\ns = \"\"\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x1b, 0x00, 0x00, 0x43, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a16_date_time_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim d As Date\r\nd = #1/1/2000 3:00:00 PM#\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0x00, 0xd4, 0xd5, 0xe1, 0x40, 0x74, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a18_bool_false_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim b As Boolean\r\nb = False\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf4, 0x00, 0x70, 0x7a, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a19_variant_empty() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim v As Variant\r\nv = Empty\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0x67, 0x5c, 0xff, 0xfc, 0xf6, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_a20_variant_null() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim v As Variant\r\nv = Null\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0x64, 0x5c, 0xff, 0xfc, 0xf6, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b4_single_divide() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Single, b As Single, r As Single\r\nr = a / b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6e, 0x78, 0xff, 0x6e, 0x74, 0xff, 0xb6, 0x73, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b4_currency_divide() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Currency, b As Currency, r As Currency\r\nr = a / b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6d, 0x74, 0xff, 0xee, 0x6d, 0x6c, 0xff, 0xee, 0xb6, 0xf1, 0x72, 0x64, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b5_integer_idiv() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, b As Integer, r As Integer\r\nr = a \\ b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xbf, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b6_integer_mod() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, b As Integer, r As Integer\r\nr = a Mod b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xc1, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b11_integer_eqv() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, b As Integer, r As Integer\r\nr = a Eqv b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xfb, 0x0a, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b12_integer_imp() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, b As Integer, r As Integer\r\nr = a Imp b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xfb, 0x02, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_b1_date_plus_numeric() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim d As Date, r As Date\r\nr = d + 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0xf4, 0x01, 0xeb, 0xab, 0xf2, 0x74, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_c1_negate_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, r As Integer\r\nr = -a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0xb7, 0x70, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_c1_negate_currency() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Currency, r As Currency\r\nr = -a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6d, 0x74, 0xff, 0xba, 0x72, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_c3_not_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, r As Integer\r\nr = Not a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0xc3, 0x70, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_c3_not_boolean() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Boolean, r As Boolean\r\nr = Not a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0xc3, 0x70, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d2_integer_from_long() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Long, r As Integer\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xe4, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d4_double_from_single() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Single, r As Double\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6e, 0x78, 0xff, 0x74, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d5_double_from_currency() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Currency, r As Double\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6d, 0x74, 0xff, 0xee, 0x74, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d6_single_from_double() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Double, r As Single\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0x73, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d7_single_from_currency() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Currency, r As Single\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6d, 0x74, 0xff, 0xee, 0x73, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d8_currency_from_long() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Long, r As Currency\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xf0, 0x72, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d9_date_from_double() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Double, r As Date\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0xf2, 0x74, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d12_string_from_numeric() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim n As Long, s As String\r\ns = n\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xfb, 0xfe, 0x31, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d13_numeric_from_string() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim s As String, r As Long\r\nr = s\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x50, 0x71, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_d14_byte_from_integer() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Integer, r As Byte\r\nr = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0xfc, 0x0d, 0xfc, 0xf0, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_e4_const_string() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nConst K As String = \"x\"\r\nDim s As String\r\ns = K\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x1b, 0x00, 0x00, 0x43, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_e4_const_double() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nConst K As Double = 1.5\r\nDim r As Double\r\nr = K\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xf8, 0x3f, 0x74, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_f1_double_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As Double, b As Double\r\na(0) = b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x58, 0xff, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xa6]
+    );
+}
+
+#[test]
+fn e2e_f1_string_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As String, s As String\r\na(0) = s\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x5c, 0xff, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0x3b]
+    );
+}
+
+#[test]
+fn e2e_f1_single_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As Single, b As Single\r\na(0) = b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6e, 0x5c, 0xff, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xa5]
+    );
+}
+
+#[test]
+fn e2e_f1_currency_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As Currency, b As Currency\r\na(0) = b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6d, 0x58, 0xff, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xa4]
+    );
+}
+
+#[test]
+fn e2e_f1_byte_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As Byte, b As Byte\r\na(0) = b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0xe0, 0x5e, 0xff, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xfc, 0xa0]
+    );
+}
+
+#[test]
+fn e2e_f5_redim_preserve() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a() As Long\r\nReDim a(10)\r\nReDim Preserve a(20)\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x00, 0x00, 0x00, 0x00, 0xf5, 0x0a, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0xfe, 0x8e, 0x01, 0x00, 0x03, 0x00, 0x04, 0x00, 0x80, 0x00, 0xf5, 0x00, 0x00, 0x00, 0x00, 0xf5, 0x14, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0xfe, 0x8f, 0x01, 0x00, 0x03, 0x00, 0x04, 0x00, 0x80, 0x00]
+    );
+}
+
+#[test]
+fn e2e_f6_erase_dynamic() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a() As Long\r\nReDim a(10)\r\nErase a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x00, 0x00, 0x00, 0x00, 0xf5, 0x0a, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0xfe, 0x8e, 0x01, 0x00, 0x03, 0x00, 0x04, 0x00, 0x80, 0x00, 0x04, 0x78, 0xff, 0x5a]
+    );
+}
+
+#[test]
+fn e2e_g6_midb_statement() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim s As String\r\nMidB(s, 1, 2) = \"x\"\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x78, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xf5, 0x02, 0x00, 0x00, 0x00, 0x1b, 0x00, 0x00, 0xfc, 0xbe, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_g6_mid_dollar_statement() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim s As String\r\nMid$(s, 1, 1) = \"x\"\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x78, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x1b, 0x00, 0x00, 0x4f, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_g7_rset() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As String, s As String\r\nRSet s = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfe, 0x1e, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_h3_do_infinite_exit() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Long\r\nDo\r\na = a + 1\r\nExit Do\r\nLoop\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xaa, 0x71, 0x78, 0xff, 0x1e, 0x12, 0x00, 0x1e, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_h7_for_negative_step() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim i As Long\r\nFor i = 10 To 1 Step -1\r\nNext i\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x0a, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xf5, 0xff, 0xff, 0xff, 0xff, 0xfe, 0x6c, 0x70, 0xff, 0x20, 0x00, 0x04, 0x78, 0xff, 0x67, 0x70, 0xff, 0x18, 0x00]
+    );
+}
+
+#[test]
+fn e2e_h8_nested_for() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim i As Long, j As Long\r\nFor i = 1 To 3\r\nFor j = 1 To 3\r\nNext j\r\nNext i\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0xf5, 0x03, 0x00, 0x00, 0x00, 0xfe, 0x64, 0x6c, 0xff, 0x36, 0x00, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x04, 0x74, 0xff, 0xf5, 0x03, 0x00, 0x00, 0x00, 0xfe, 0x64, 0x64, 0xff, 0x2e, 0x00, 0x04, 0x74, 0xff, 0x66, 0x64, 0xff, 0x26, 0x00, 0x04, 0x78, 0xff, 0x66, 0x6c, 0xff, 0x13, 0x00]
+    );
+}
+
+#[test]
+fn e2e_i2_gosub_return() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nGoSub L\r\nExit Sub\r\nL:\r\nReturn\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfd, 0x0a, 0x05, 0x00, 0x14, 0xfc, 0xc9]
+    );
+}
+
+#[test]
+fn e2e_i3_on_expr_goto() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Long\r\nOn a GoTo L1, L2\r\nL1:\r\na = 1\r\nL2:\r\na = 2\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xe4, 0xfe, 0x96, 0x04, 0x00, 0x0c, 0x00, 0x14, 0x00, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0xf5, 0x02, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_i4_on_expr_gosub() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Long\r\nOn a GoSub L1, L2\r\nExit Sub\r\nL1:\r\nReturn\r\nL2:\r\nReturn\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xe4, 0xfe, 0x95, 0x04, 0x00, 0x0d, 0x00, 0x0f, 0x00, 0x14, 0xfc, 0xc9, 0xfc, 0xc9]
+    );
+}
+
+#[test]
+fn e2e_i6_on_error_resume_next() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nOn Error Resume Next\r\nDim a As Long\r\na = 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x00, 0x02, 0x00, 0x05, 0x4b, 0xff, 0xff, 0x00, 0x0a, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_i7_on_error_goto_zero() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nOn Error GoTo 0\r\nDim a As Long\r\na = 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x4b, 0xfe, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_i8_resume_next() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nOn Error GoTo L\r\nDim a As Long\r\na = 1\r\nL:\r\nResume Next\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x00, 0x02, 0x00, 0x05, 0x4b, 0x11, 0x00, 0x00, 0x0a, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x00, 0x06, 0xfd, 0x0c, 0xff, 0xff, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_i8_resume() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nOn Error GoTo L\r\nDim a As Long\r\na = 1\r\nL:\r\nResume\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x00, 0x02, 0x00, 0x05, 0x4b, 0x11, 0x00, 0x00, 0x0a, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x00, 0x06, 0xfd, 0x0c, 0xfe, 0xff, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_i10_stop() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nStop\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0xc2]
+    );
+}
+
+#[test]
+fn e2e_i11_end() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nEnd\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0xc8]
+    );
+}
+
+#[test]
+fn e2e_i12_error_statement() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nError 5\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x05, 0x00, 0x00, 0x00, 0x45]
+    );
+}
+
+#[test]
+fn e2e_i13_numeric_line_label() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As Long\r\nGoTo 100\r\n100 a = 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x00, 0x02, 0x00, 0x05, 0x1e, 0x07, 0x00, 0x00, 0x0a, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x00, 0x00]
+    );
+}
