@@ -52,6 +52,96 @@ fn compile_module(src: &str, module_desc: u16) -> Vec<Vec<u8>> {
         .unwrap_or_else(|e| panic!("lower_module failed: {e:?}"))
 }
 
+// ── Intra-module Sub/Function calls ──────────────────────────────────────────
+//
+// The caller (Sub Main = proc 0) pushes each argument (ByVal value / ByRef
+// address) then the call opcode: Sub call 0x0a, Function call 0x5e, operand =
+// <call-site index><total arg bytes>. Confirmed byte-for-byte against the exe.
+
+/// Build a module whose Sub Main contains `main_body`, plus the given callee
+/// procedures, and return Sub Main's (proc 0) byte stream.
+fn caller_bytes(main_body: &str, callees: &str) -> Vec<u8> {
+    let src = format!(
+        "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n{main_body}End Sub\r\n{callees}"
+    );
+    compile_module(&src, 0x0008).remove(0)
+}
+
+#[test]
+fn e2e_call_sub_no_args() {
+    assert_eq!(
+        caller_bytes("    Call Foo\r\n", "Sub Foo()\r\n    Dim z As Long\r\n    z = 1\r\nEnd Sub\r\n"),
+        &[0x0a, 0x00, 0x00, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_sub_byval_literal() {
+    assert_eq!(
+        caller_bytes(
+            "    Call Foo(5)\r\n",
+            "Sub Foo(ByVal x As Long)\r\n    Dim z As Long\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0xf5, 0x05, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_sub_byref_var() {
+    // `Dim v; v = 3; Call Foo(v)` with Foo(x As Long) ByRef → LdAddr v before call.
+    assert_eq!(
+        caller_bytes(
+            "    Dim v As Long\r\n    v = 3\r\n    Call Foo(v)\r\n",
+            "Sub Foo(x As Long)\r\n    Dim z As Long\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0xf5, 0x03, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x04, 0x78, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_sub_byval_var() {
+    assert_eq!(
+        caller_bytes(
+            "    Dim v As Long\r\n    v = 3\r\n    Call Foo(v)\r\n",
+            "Sub Foo(ByVal x As Long)\r\n    Dim z As Long\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0xf5, 0x03, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x6c, 0x78, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_two_sites_indexed() {
+    // Two call sites get sequential call-site indices 0 then 1.
+    assert_eq!(
+        caller_bytes(
+            "    Call Foo\r\n    Call Bar\r\n",
+            "Sub Foo()\r\n    Dim z As Long\r\n    z = 1\r\nEnd Sub\r\n\
+             Sub Bar()\r\n    Dim z As Long\r\n    z = 2\r\nEnd Sub\r\n"
+        ),
+        &[0x0a, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x01, 0x00, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_function_result_no_args() {
+    // `r = F()` → Function call 0x5e (result on stack) then store to r.
+    assert_eq!(
+        caller_bytes("    Dim r As Long\r\n    r = F()\r\n", "Function F() As Long\r\n    F = 7\r\nEnd Function\r\n"),
+        &[0x5e, 0x00, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_call_function_result_byval_arg() {
+    assert_eq!(
+        caller_bytes(
+            "    Dim r As Long\r\n    r = F(5)\r\n",
+            "Function F(ByVal x As Long) As Long\r\n    F = x\r\nEnd Function\r\n"
+        ),
+        &[0xf5, 0x05, 0x00, 0x00, 0x00, 0x5e, 0x00, 0x00, 0x04, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
 // ── Multi-procedure modules: string pool is module-global ───────────────────
 //
 // String-literal indices are assigned across the whole module in procedure

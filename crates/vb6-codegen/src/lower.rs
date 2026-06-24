@@ -352,6 +352,7 @@ fn lower_proc_pooled(
         variant_next: Cell::new(0),
         concat_base,
         concat_next: Cell::new(0),
+        call_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
@@ -427,6 +428,9 @@ struct LowerCtx<'m> {
     concat_base: usize,
     /// Which concat temp slot the next concat-chain intermediate should use.
     concat_next: Cell<usize>,
+    /// Sequential index of the next call site within this procedure (each call's
+    /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
+    call_next: Cell<usize>,
     /// Label definitions: `(label, byte offset)`, filled as labels are emitted.
     labels: RefCell<Vec<(LabelRef, u16)>>,
     /// Pending `GoTo` jumps: `(target label, patch offset)`, patched at proc end.
@@ -769,6 +773,17 @@ fn lower_stmt(
             Ok(())
         }
         // `Stop` — break to the debugger: escaped opcode 0xfc 0xc2.
+        // `Call Foo(args)` — an intra-module Sub call (or a Function call whose
+        // result is discarded): statement-form call opcode 0x0a. `Call Foo(5)`
+        // parses the arguments into a `Call` expression at `callee`; `Call Foo`
+        // keeps the callee and (statement) arg list separate.
+        ExprNode::CallStmt { callee, args } => {
+            let (callee_ref, args_ref) = match expr_arena.get(*callee) {
+                ExprNode::Call { func, args: inner } => (*func, *inner),
+                _ => (*callee, *args),
+            };
+            lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
+        }
         ExprNode::Stop => {
             out.extend_from_slice(&[0xfc, 0xc2]);
             Ok(())
@@ -1652,6 +1667,62 @@ fn emit_static_access(ctx: &LowerCtx, out: &mut Vec<u8>, op: &[u8], var_off: u16
     out.extend_from_slice(&var_off.to_le_bytes());
 }
 
+/// Frame offset of a local-variable argument (for a ByRef argument's LdAddr).
+fn arg_var_offset(ctx: &LowerCtx, arg_id: NodeId) -> Option<i16> {
+    match ctx.module.resolutions.get(&arg_id.0) {
+        Some(NameResolution::Local { local_idx, .. }) => Some(ctx.local_slots[*local_idx].frame_offset),
+        _ => None,
+    }
+}
+
+/// Lower an intra-module Sub/Function call: push each argument (ByVal value or
+/// ByRef address), then the call opcode and its `<callsite-index><arg-bytes>`
+/// operand. The call site index is the call's emission-order position in this
+/// procedure; arg-bytes is the total pushed-argument byte size (a ByRef argument
+/// pushes a 4-byte pointer). `is_function` selects the result-producing form
+/// (0x5e, result left on the stack) over the statement form (0x0a).
+fn lower_call(
+    ctx: &LowerCtx,
+    callee_id: NodeId,
+    args_id: NodeId,
+    is_function: bool,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let proc_idx = match ctx.module.resolutions.get(&callee_id.0) {
+        Some(NameResolution::Proc(pi)) => *pi,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let args: Vec<NodeId> = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => Vec::new(),
+    };
+    let mut arg_bytes: u16 = 0;
+    for (i, &arg) in args.iter().enumerate() {
+        let param = ctx.module.procs[proc_idx].params.get(i);
+        let by_ref = param.map(|p| !p.flags.by_val).unwrap_or(false);
+        if by_ref {
+            // ByRef: push the argument variable's address.
+            let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+            out.push(0x04);
+            out.extend_from_slice(&off.to_le_bytes());
+            arg_bytes += 4;
+        } else {
+            // ByVal: push the value, coerced to the parameter type.
+            let pty = param.map(|p| p.vba_type.clone());
+            let coerce = pty.as_ref().and_then(vba_type_to_node_tag);
+            out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg, expr_arena, coerce)?);
+            arg_bytes += pty.as_ref().map(static_var_size).unwrap_or(4);
+        }
+    }
+    let idx = ctx.call_next.get();
+    ctx.call_next.set(idx + 1);
+    out.push(if is_function { 0x5e } else { 0x0a });
+    out.extend_from_slice(&(idx as u16).to_le_bytes());
+    out.extend_from_slice(&arg_bytes.to_le_bytes());
+    Ok(())
+}
+
 fn lower_assign(
     ctx: &LowerCtx,
     target_id: NodeId,
@@ -1786,6 +1857,27 @@ fn lower_assign(
             em.emit_conversion(target_tag as i32, 0xf);
             em.emit_var_store(store_ctx, store_off);
             out.extend(em.into_bytes());
+            return Ok(());
+        }
+    }
+
+    // Function call as the RHS: `r = F(args)` — emit the result-producing call
+    // (0x5e, result left on the stack), then store the result into the target.
+    if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
+        if matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_))) {
+            let (func, args) = (*func, *args);
+            lower_call(ctx, func, args, true, expr_arena, out)?;
+            match resolution {
+                NameResolution::Local { local_idx, .. } => {
+                    let ty = ctx.local_type(*local_idx);
+                    let sctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+                    let arena = NodeArena::new();
+                    let mut em = Emitter::new(&arena);
+                    em.emit_var_store(sctx, ctx.local_slots[*local_idx].frame_offset);
+                    out.extend(em.into_bytes());
+                }
+                _ => return Err(LowerError::UnsupportedNode),
+            }
             return Ok(());
         }
     }
