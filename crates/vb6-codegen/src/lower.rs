@@ -212,7 +212,20 @@ pub fn lower_proc(
     // temps are declared on the same frame, after the user locals.
     let mut frame = ProcFrame::new();
     let mut local_slots: Vec<LocalVar> = Vec::with_capacity(proc.locals.len());
+    // Static locals live in a per-procedure static block (not the frame): each is
+    // assigned a byte offset within that block, packed by type size in declaration
+    // order. `static_offsets[i]` is meaningful only when `locals[i].is_static`.
+    let mut static_offsets: Vec<u16> = Vec::with_capacity(proc.locals.len());
+    let mut static_cursor: u16 = 0;
     for v in &proc.locals {
+        if v.is_static {
+            static_offsets.push(static_cursor);
+            static_cursor += static_var_size(&v.vba_type);
+            // No frame slot: a placeholder keeps local_idx aligned.
+            local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
+            continue;
+        }
+        static_offsets.push(0);
         if v.is_const {
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
         } else if let Some(n) = v.fixed_string_len {
@@ -297,6 +310,8 @@ pub fn lower_proc(
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
         string_pool: RefCell::new(Vec::new()),
+        module_desc,
+        static_offsets,
         line_tracking: proc_needs_line_tracking(NodeId(proc.body), expr_arena),
         line_markers: RefCell::new(Vec::new()),
     };
@@ -375,6 +390,12 @@ struct LowerCtx<'m> {
     /// String-constant pool: literal text → pool index (assigned in first-seen
     /// order, deduped by value). A `"..."` literal emits `0x1b <pool index>`.
     string_pool: RefCell<Vec<String>>,
+    /// Compiled module-object descriptor word (used to address module globals and
+    /// per-procedure static storage).
+    module_desc: u16,
+    /// Byte offset of each local within the procedure's static block; meaningful
+    /// only for entries whose `BoundVar.is_static` is set.
+    static_offsets: Vec<u16>,
     /// True when the procedure needs the statement line-number table (it has a
     /// numeric line label, a `Resume`, or `On Error Resume Next`). When set, a
     /// `0x00 <delta>` marker is threaded before each code-emitting statement.
@@ -1533,6 +1554,57 @@ fn lower_array_store(
     Ok(())
 }
 
+/// Byte size of a Static local within its procedure's static block.
+fn static_var_size(ty: &VbaType) -> u16 {
+    match ty {
+        VbaType::Byte => 1,
+        VbaType::Integer | VbaType::Boolean => 2,
+        VbaType::Long | VbaType::Single | VbaType::String => 4,
+        VbaType::Double | VbaType::Currency | VbaType::Date => 8,
+        VbaType::Variant => 16,
+        _ => 4,
+    }
+}
+
+/// Store-access opcode bytes for a Static local of the given type. The numeric/
+/// String classes use a 1- or 2-byte opcode through the per-procedure static block.
+fn static_store_op(ty: &VbaType) -> Option<Vec<u8>> {
+    Some(match ty {
+        VbaType::Integer | VbaType::Boolean => vec![0x8e],
+        VbaType::Long => vec![0x8f],
+        VbaType::Single => vec![0x91],
+        VbaType::Currency => vec![0x90],
+        VbaType::Double | VbaType::Date => vec![0x92],
+        VbaType::Byte => vec![0xfd, 0x80],
+        VbaType::String => vec![0xfd, 0x91],
+        _ => return None,
+    })
+}
+
+/// Load-access opcode bytes for a Static local of the given type.
+fn static_load_op(ty: &VbaType) -> Option<Vec<u8>> {
+    Some(match ty {
+        VbaType::Integer | VbaType::Boolean => vec![0x89],
+        VbaType::Long | VbaType::String => vec![0x8a],
+        VbaType::Currency => vec![0x8b],
+        VbaType::Single => vec![0x8c],
+        VbaType::Double | VbaType::Date => vec![0x8d],
+        VbaType::Byte => vec![0xfd, 0x70],
+        _ => return None,
+    })
+}
+
+/// Emit a per-procedure static-block access: `0x5f <module_desc> 0x0004 <op>
+/// <var_offset>`. The `0x0004` is the module field holding this single
+/// procedure's static-block handle.
+fn emit_static_access(ctx: &LowerCtx, out: &mut Vec<u8>, op: &[u8], var_off: u16) {
+    out.push(0x5f);
+    out.extend_from_slice(&ctx.module_desc.to_le_bytes());
+    out.extend_from_slice(&0x0004u16.to_le_bytes());
+    out.extend_from_slice(op);
+    out.extend_from_slice(&var_off.to_le_bytes());
+}
+
 fn lower_assign(
     ctx: &LowerCtx,
     target_id: NodeId,
@@ -1551,6 +1623,25 @@ fn lower_assign(
         .resolutions
         .get(&target_id.0)
         .ok_or(LowerError::Unresolved)?;
+
+    // Static local target: the value is pushed, then stored into the procedure's
+    // static block (0x5f-addressed) rather than the frame.
+    if let NameResolution::Local { local_idx, .. } = resolution {
+        if ctx.proc.locals[*local_idx].is_static {
+            let ty = ctx.local_type(*local_idx).clone();
+            let store_op = static_store_op(&ty).ok_or(LowerError::UnsupportedType)?;
+            let off = ctx.static_offsets[*local_idx];
+            let coerce_tag = vba_type_to_node_tag(&ty);
+            let mut arena = NodeArena::new();
+            let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, coerce_tag)?;
+            let root = coerce_assign_value(ctx, value_id, root, coerce_tag, &mut arena);
+            let mut emitter = Emitter::new(&arena);
+            emitter.emit_expr(root, 2);
+            out.extend(emitter.into_bytes());
+            emit_static_access(ctx, out, &store_op, off);
+            return Ok(());
+        }
+    }
 
     // Fixed-length-string source: `s = fx` where `fx` is `As String * n` reads the
     // fixed buffer length-aware (LdAddr `fx` + 0x33<len>) and moves the resulting
@@ -1953,6 +2044,18 @@ fn lower_name_ref(
                     return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
                 }
                 return lower_lit(lit, arena);
+            }
+            // A Static local is read from the procedure's static block: synthetic
+            // node 0x7b carries the module descriptor (low 16 of w[4]) and the
+            // static offset (high 16); the load opcode follows from the type tag.
+            if local.is_static {
+                if static_load_op(&local.vba_type).is_none() {
+                    return Err(LowerError::UnsupportedType);
+                }
+                let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
+                let off = ctx.static_offsets[*local_idx] as u32;
+                let packed = (ctx.module_desc as u32) | (off << 16);
+                return Ok(arena.alloc(NodeArena::node(0x7b, tag, packed, 0, 0, 0)));
             }
             // Fixed-length strings (`As String * n`) copy via a length-aware
             // sequence (LdAddr + 0x33<len> + store 0x31), not the plain BSTR load;

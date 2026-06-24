@@ -601,7 +601,7 @@ impl<'a> Binder<'a> {
     /// later) is collected, never silently resolved to the wrong scope. A proc
     /// body contains no nested procedure declarations, so a full descent is safe.
     fn collect_locals(&self, id: NodeId, out: &mut Vec<BoundVar>) {
-        if let ExprNode::DimItem { name, is_const, type_node, bounds, init } = self.arena.get(id) {
+        if let ExprNode::DimItem { name, is_const, is_static, type_node, bounds, init } = self.arena.get(id) {
             let t = self.extract_type(*type_node);
             let vba_type = if bounds.is_some() { VbaType::Array(Box::new(t)) } else { t };
             let const_value = if *is_const {
@@ -631,7 +631,7 @@ impl<'a> Binder<'a> {
             out.push(BoundVar {
                 sym_id: *name, vba_type,
                 is_const: *is_const, const_value, const_lit, fixed_string_len, array_dims,
-                is_static: false, is_public: false,
+                is_static: *is_static, is_public: false,
                 name_span: self.spans.get(id),
             });
         }

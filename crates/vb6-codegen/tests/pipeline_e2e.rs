@@ -1980,3 +1980,82 @@ fn e2e_f6_erase_fixed_2d() {
         &[0x04, 0x5c, 0xff, 0x59, 0x54, 0xff, 0x5a]
     );
 }
+
+// ── Static locals (per-procedure static block, 0x5f-addressed) ───────────────
+
+#[test]
+fn e2e_e3_static_long_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nStatic x As Long\r\nx = 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_static_integer_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nStatic x As Integer\r\nx = 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf4, 0x01, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8e, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_static_double_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim b As Double\r\nStatic x As Double\r\nx = b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x92, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_static_byte_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim b As Byte\r\nStatic x As Byte\r\nx = b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0xe0, 0x7a, 0xff, 0x5f, 0x08, 0x00, 0x04, 0x00, 0xfd, 0x80, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_static_string_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nStatic x As String\r\nx = \"a\"\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x1b, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0xfd, 0x91, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_static_long_load() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nStatic x As Long\r\nDim r As Long\r\nr = x\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x5f, 0x08, 0x00, 0x04, 0x00, 0x8a, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_static_two_longs() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nStatic x As Long\r\nStatic y As Long\r\nx = 1\r\ny = 2\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x00, 0x00, 0xf5, 0x02, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x04, 0x00]
+    );
+}

@@ -17,7 +17,7 @@ The tests must verify the exact ast and the exact parts of AST and not just pres
 Keep the tests in a separate folder, not in the same file as of the System Under Test (SUT).
 
 # test coverage 
-Make sure that the tests cover all the changes we are making. 
+Make sure that the tests cover all the changes we are making. After every change, assess if there are new test cases needed.
 
 # private sources
 Do not mention anything in the comments that could lead to thinking "where did they figure this out from?" - all the references need to remain private. i.e.  Direct port of `EbProcessLinkedList` or similar things are not acceptable. the material referenced (whether the code or docs or experiments) needs to remain private and should not be revealed about in this repo.

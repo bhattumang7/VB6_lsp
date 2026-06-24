@@ -841,8 +841,9 @@ impl<'src> Parser<'src> {
             | TokenKind::Kw(Kw::Public)
             | TokenKind::Kw(Kw::Private)
             | TokenKind::Kw(Kw::Global) => {
+                let is_static = matches!(kind, TokenKind::Kw(Kw::Static));
                 self.advance();
-                self.parse_dim_list(arena, false)
+                self.parse_dim_list_static(arena, false, is_static)
             }
             TokenKind::Kw(Kw::Const) => {
                 self.advance();
@@ -1113,10 +1114,16 @@ impl<'src> Parser<'src> {
 
     /// Parse a Dim/Static/Public/Private variable list.
     fn parse_dim_list(&mut self, arena: &mut ExprArena, is_const: bool) -> NodeId {
+        self.parse_dim_list_static(arena, is_const, false)
+    }
+
+    /// Parse a Dim/Static/Public/Private variable list, marking each item static
+    /// when declared with the `Static` keyword.
+    fn parse_dim_list_static(&mut self, arena: &mut ExprArena, is_const: bool, is_static: bool) -> NodeId {
         let mut stmts = Vec::new();
         loop {
             // Variable declarations accept `As Type()`; `Const` does not.
-            let item = self.parse_dim_item(arena, is_const, !is_const);
+            let item = self.parse_dim_item(arena, is_const, is_static, !is_const);
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
@@ -1131,7 +1138,7 @@ impl<'src> Parser<'src> {
 
     /// Single variable: `name [As type]` or `name(dims) [As type]` or `name = expr`.
     /// `array_suffix_ok` permits a trailing `As Type()` array marker.
-    fn parse_dim_item(&mut self, arena: &mut ExprArena, is_const: bool, array_suffix_ok: bool) -> NodeId {
+    fn parse_dim_item(&mut self, arena: &mut ExprArena, is_const: bool, is_static: bool, array_suffix_ok: bool) -> NodeId {
         let name = self.expect_ident();
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         let bounds = if self.eat(TokenKind::Kw(Kw::LParen)) {
@@ -1150,7 +1157,7 @@ impl<'src> Parser<'src> {
         let init = if is_const || self.peek().kind == TokenKind::Kw(Kw::Eq) {
             if self.eat(TokenKind::Kw(Kw::Eq)) { Some(self.parse_expr(arena, 0)) } else { None }
         } else { None };
-        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, bounds, type_node, init });
+        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, bounds, type_node, init });
         self.set_span(id, name.span);
         id
     }
@@ -2169,10 +2176,11 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Const) => {
                 self.advance(); self.parse_const_list(arena)
             }
-            // Public/Private variable declaration at module level
+            // Public/Private/Static variable declaration
             TokenKind::Ident | TokenKind::Kw(Kw::Dim) => {
                 if self.peek().kind == TokenKind::Kw(Kw::Dim) { self.advance(); }
-                self.parse_dim_list(arena, false)
+                let is_static = matches!(access_tok, TokenKind::Kw(Kw::Static));
+                self.parse_dim_list_static(arena, false, is_static)
             }
             // WithEvents — class-module-only syntax
             TokenKind::Kw(Kw::WithEvents) => {
@@ -2494,7 +2502,7 @@ impl<'src> Parser<'src> {
                 }
                 TokenKind::Eof => break,
                 _ => {
-                    let m = self.parse_dim_item(arena, false, false);
+                    let m = self.parse_dim_item(arena, false, false, false);
                     self.eat_eol();
                     members.push(m);
                 }
@@ -2523,7 +2531,7 @@ impl<'src> Parser<'src> {
                 }
                 TokenKind::Eof => break,
                 TokenKind::Ident => {
-                    let m = self.parse_dim_item(arena, true, false);
+                    let m = self.parse_dim_item(arena, true, false, false);
                     self.eat_eol();
                     members.push(m);
                 }

@@ -206,6 +206,12 @@ impl<'a> Emitter<'a> {
             self.emit_opcode2(0x3bf, n.w[4] as u16);
             return 0;
         }
+        // Synthetic Static-local load (opcode 0x7b): read from the procedure's
+        // static block — `0x5f <module_desc> 0x0004 <load-op> <static offset>`.
+        if op == 0x7b {
+            self.emit_static_load(&n);
+            return 0;
+        }
 
         // Guard: opcodes outside `1..=0x73` emit nothing (opcode 0 wraps to
         // 0xffffffff and is also rejected).
@@ -2388,6 +2394,29 @@ impl<'a> Emitter<'a> {
     pub fn emit_ldaddr(&mut self, frame_offset: i16) {
         self.stream.emit_byte(0x04);
         self.stream.emit_i16(frame_offset);
+    }
+
+    /// Emit a Static-local load (synthetic node 0x7b): `0x5f <module_desc> 0x0004
+    /// <load-op> <static offset>`. The load opcode follows from the type tag.
+    fn emit_static_load(&mut self, n: &RawNode) {
+        let module_desc = (n.w[4] & 0xffff) as u16;
+        let static_off = (n.w[4] >> 16) as u16;
+        self.stream.emit_byte(0x5f);
+        self.stream.emit_word(module_desc);
+        self.stream.emit_word(0x0004);
+        match n.type_tag() {
+            6 => { self.stream.emit_byte(0x89); }       // Integer / Boolean
+            8 | 0x10 => { self.stream.emit_byte(0x8a); } // Long / String pointer
+            0xd => { self.stream.emit_byte(0x8b); }     // Currency
+            10 => { self.stream.emit_byte(0x8c); }      // Single
+            11 | 0xc => { self.stream.emit_byte(0x8d); } // Double / Date
+            5 => {
+                self.stream.emit_byte(0xfd);
+                self.stream.emit_byte(0x70);
+            }
+            _ => {}
+        }
+        self.stream.emit_word(static_off);
     }
 
     fn emit_assign_op(&mut self, n: &RawNode) {
