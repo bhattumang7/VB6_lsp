@@ -21,7 +21,8 @@ fn type_ctx_maps_confirmed_types() {
 
 #[test]
 fn type_ctx_none_for_unconfirmed() {
-    assert_eq!(type_ctx(&VbaType::Date), None);
+    // Date is now confirmed (Double-backed, class 4).
+    assert_eq!(type_ctx(&VbaType::Date), Some(4));
     assert_eq!(type_ctx(&VbaType::Variant), None);
     assert_eq!(type_ctx(&VbaType::Decimal), None);
     assert_eq!(type_ctx(&VbaType::UserDefined(0)), None);
@@ -34,6 +35,9 @@ fn load_store_ctx_maps_numeric_primitives() {
     assert_eq!(load_store_ctx(&VbaType::Single), Some(3));
     assert_eq!(load_store_ctx(&VbaType::Double), Some(4));
     assert_eq!(load_store_ctx(&VbaType::Currency), Some(6));
+    // Boolean is operated on / stored as Integer; Date as Double.
+    assert_eq!(load_store_ctx(&VbaType::Boolean), Some(1));
+    assert_eq!(load_store_ctx(&VbaType::Date), Some(4));
 }
 
 #[test]
@@ -41,7 +45,6 @@ fn load_store_ctx_none_for_non_simple_types() {
     // String/Byte assign via runtime-helper sequences; the rest are unconfirmed.
     assert_eq!(load_store_ctx(&VbaType::String), None);
     assert_eq!(load_store_ctx(&VbaType::Byte), None);
-    assert_eq!(load_store_ctx(&VbaType::Date), None);
     assert_eq!(load_store_ctx(&VbaType::Object), None);
     assert_eq!(load_store_ctx(&VbaType::Variant), None);
 }

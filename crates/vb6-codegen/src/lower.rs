@@ -11,10 +11,10 @@
 //! implemented.  Unhandled constructs return [`LowerError::UnsupportedNode`]
 //! or [`LowerError::UnsupportedType`] — never a silently wrong byte.
 
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 
 use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
-use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind};
+use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef};
 use vb6_syntax::support::arena::NodeId;
 
 use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar};
@@ -58,6 +58,7 @@ fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
         VbaType::Single => Some(10),
         VbaType::Double => Some(11),
         VbaType::Currency => Some(0xd),
+        VbaType::Date => Some(0xc),
         _ => None,
     }
 }
@@ -181,10 +182,26 @@ pub fn lower_proc(
         global_slots,
         user_local_count,
         for_next_pair: Cell::new(0),
+        labels: RefCell::new(Vec::new()),
+        goto_patches: RefCell::new(Vec::new()),
+        exit_stack: RefCell::new(Vec::new()),
     };
 
     let mut out = Vec::new();
     lower_block(&ctx, NodeId(proc.body), expr_arena, &mut out)?;
+
+    // Resolve forward/backward `GoTo` jumps now that every label's byte offset
+    // is known.
+    let labels = ctx.labels.borrow();
+    for (target, patch) in ctx.goto_patches.borrow().iter() {
+        let off = labels
+            .iter()
+            .find(|(l, _)| l == target)
+            .map(|(_, o)| *o)
+            .ok_or(LowerError::Unresolved)?;
+        out[*patch..*patch + 2].copy_from_slice(&off.to_le_bytes());
+    }
+    drop(labels);
     Ok(out)
 }
 
@@ -200,6 +217,13 @@ struct LowerCtx<'m> {
     user_local_count: usize,
     /// Which hidden-slot pair the next For loop should use.
     for_next_pair: Cell<usize>,
+    /// Label definitions: `(label, byte offset)`, filled as labels are emitted.
+    labels: RefCell<Vec<(LabelRef, u16)>>,
+    /// Pending `GoTo` jumps: `(target label, patch offset)`, patched at proc end.
+    goto_patches: RefCell<Vec<(LabelRef, usize)>>,
+    /// Stack of `Exit For`/`Exit Do` patch lists — one per active loop; each entry
+    /// is a byte offset to backpatch with the loop-end offset.
+    exit_stack: RefCell<Vec<Vec<usize>>>,
 }
 
 impl<'m> LowerCtx<'m> {
@@ -270,6 +294,39 @@ fn lower_stmt(
                 (*var, *start, *end, *step, *body);
             lower_for(ctx, var_id, start_id, end_id, step_id, body_id, expr_arena, out)
         }
+        // A line label emits no code; it records the current byte offset as the
+        // jump target for any `GoTo`/`Exit` referencing it.
+        ExprNode::Label { target } => {
+            ctx.labels.borrow_mut().push((*target, out.len() as u16));
+            Ok(())
+        }
+        // `GoTo label` = unconditional jump (0x1e) to the label's byte offset,
+        // backpatched at proc end (the target may be a forward reference).
+        ExprNode::GoTo { target } => {
+            out.push(0x1e);
+            let patch = out.len();
+            out.push(0x00);
+            out.push(0x00);
+            ctx.goto_patches.borrow_mut().push((*target, patch));
+            Ok(())
+        }
+        // `Exit For`/`Exit Do` = unconditional jump (0x1e) to the enclosing
+        // loop's end offset, backpatched when the loop finishes emitting.
+        ExprNode::ExitStmt { kind } => match kind {
+            ExitKind::For | ExitKind::Do => {
+                out.push(0x1e);
+                let patch = out.len();
+                out.push(0x00);
+                out.push(0x00);
+                ctx.exit_stack
+                    .borrow_mut()
+                    .last_mut()
+                    .ok_or(LowerError::UnsupportedNode)?
+                    .push(patch);
+                Ok(())
+            }
+            _ => Err(LowerError::UnsupportedNode),
+        },
         _ => Err(LowerError::UnsupportedNode),
     }
 }
@@ -602,6 +659,8 @@ fn lower_for(
     // Body starts immediately after ForInit.
     let body_start = out.len() as u16;
 
+    // Open an Exit-For patch scope for this loop's body.
+    ctx.exit_stack.borrow_mut().push(Vec::new());
     lower_block(ctx, body_id, expr_arena, out)?;
 
     // LdAddr counter again before ForNext.
@@ -614,9 +673,14 @@ fn lower_for(
     out.extend_from_slice(&frame_hidden.to_le_bytes());
     out.extend_from_slice(&body_start.to_le_bytes());
 
-    // Backpatch ForInit exit_offset to current position.
+    // Backpatch ForInit exit_offset to current position, and every `Exit For`
+    // jump emitted inside the body to the same loop-end offset.
     let exit_offset = out.len() as u16;
     out[exit_patch..exit_patch + 2].copy_from_slice(&exit_offset.to_le_bytes());
+    let exits = ctx.exit_stack.borrow_mut().pop().unwrap_or_default();
+    for patch in exits {
+        out[patch..patch + 2].copy_from_slice(&exit_offset.to_le_bytes());
+    }
 
     Ok(())
 }

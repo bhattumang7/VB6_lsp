@@ -47,7 +47,10 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
         VbaType::Double => 4,
         VbaType::String => 5,
         VbaType::Currency => 6,
-        VbaType::Date | VbaType::Variant | VbaType::Decimal => return None,
+        // Date is stored exactly as Double (8-byte, Double frame class and
+        // load/store opcodes 0x6f/0x74).
+        VbaType::Date => 4,
+        VbaType::Variant | VbaType::Decimal => return None,
         VbaType::UserDefined(_) | VbaType::Array(_) => return None,
     })
 }
@@ -69,7 +72,8 @@ pub fn load_store_ctx(t: &VbaType) -> Option<usize> {
         VbaType::Integer | VbaType::Boolean => 1,
         VbaType::Long => 2,
         VbaType::Single => 3,
-        VbaType::Double => 4,
+        // Date shares Double's load/store opcodes (0x6f/0x74).
+        VbaType::Double | VbaType::Date => 4,
         VbaType::Currency => 6,
         _ => return None,
     })

@@ -621,6 +621,62 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Date is Double-backed: load 0x6f / store 0x74 (Double load/store opcodes).
+#[test]
+fn e2e_date_copy() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Date, r As Date\r\n\
+             r = a\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6f, 0x74, 0xff, 0x74, 0x6c, 0xff]
+    );
+}
+
+// GoTo: unconditional jump (0x1e) to the label's byte offset; the label emits
+// nothing. Here `GoTo L` jumps to offset 3 (past the jump), where `a = 1` sits.
+#[test]
+fn e2e_goto_label() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long\r\n\
+             GoTo L\r\n\
+             L:\r\n\
+             a = 1\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x1e, 0x03, 0x00, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+// Exit For: jump (0x1e) to the loop-end offset (the same target the ForInit exit
+// slot is patched to).
+#[test]
+fn e2e_exit_for() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim i As Long\r\n\
+             For i = 1 To 9\r\n\
+             Exit For\r\n\
+             Next i\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0xf5, 0x09, 0x00, 0x00,
+          0x00, 0xfe, 0x64, 0x70, 0xff, 0x1e, 0x00, 0x1e, 0x1e, 0x00, 0x04, 0x78,
+          0xff, 0x66, 0x70, 0xff, 0x13, 0x00]
+    );
+}
+
 // Do Until: VB6 compiles `Until cond` as `While Not cond` — the comparison
 // negates (> becomes <=, opcode db->d6) and the exit branch is BranchFalse (1c),
 // identical structure to Do While.
