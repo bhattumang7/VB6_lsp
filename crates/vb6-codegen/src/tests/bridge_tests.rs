@@ -21,9 +21,9 @@ fn type_ctx_maps_confirmed_types() {
 
 #[test]
 fn type_ctx_none_for_unconfirmed() {
-    // Date is now confirmed (Double-backed, class 4).
+    // Date is Double-backed (class 4); Variant is a 16-byte structure (class 10).
     assert_eq!(type_ctx(&VbaType::Date), Some(4));
-    assert_eq!(type_ctx(&VbaType::Variant), None);
+    assert_eq!(type_ctx(&VbaType::Variant), Some(10));
     assert_eq!(type_ctx(&VbaType::Decimal), None);
     assert_eq!(type_ctx(&VbaType::UserDefined(0)), None);
 }
@@ -161,8 +161,8 @@ fn frame_from_local_types_matches_probe_offsets() {
 
 #[test]
 fn frame_from_local_types_unsupported_errors() {
-    // A Variant local has no confirmed frame size → refuse the whole layout.
-    let types = [VbaType::Long, VbaType::Variant];
+    // A Decimal local has no confirmed frame size → refuse the whole layout.
+    let types = [VbaType::Long, VbaType::Decimal];
     assert_eq!(frame_from_local_types(&types), Err(UnsupportedType));
 }
 
