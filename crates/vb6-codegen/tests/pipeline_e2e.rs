@@ -655,6 +655,23 @@ fn e2e_string_compare() {
     );
 }
 
+// String concat (`&`): node 0x24 with String tag emits the concat opcode (0x2a);
+// the fresh temp result is moved into s via 0x31 (not the copy store 0x43).
+#[test]
+fn e2e_string_concat() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As String, b As String, s As String\r\n\
+             s = a & b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0x2a, 0x31, 0x70, 0xff]
+    );
+}
+
 // Byte: 2-byte escape-paged load (fc e0) / store (fc f0) via the value-emitter
 // index path; add via the generic emitter (tag 5 -> RT_OPCODE_BYTE[0x8e]=fb escape).
 #[test]

@@ -89,6 +89,9 @@ fn binop_node_opcode(op: BinOpKind) -> Option<u16> {
         BinOpKind::And => 0x23,
         BinOpKind::Eqv => 0x20,
         BinOpKind::Imp => 0x1f,
+        // String concatenation (`&`): node 0x24; the String-tagged emitter case
+        // emits the concat opcode (0x2a). Result is a fresh string temp.
+        BinOpKind::Cat => 0x24,
         BinOpKind::Eq  => 0x26,
         BinOpKind::Ne  => 0x27,
         BinOpKind::Le  => 0x28,
@@ -880,7 +883,17 @@ fn lower_assign(
         NameResolution::Local { local_idx, .. } => {
             let ty = ctx.local_type(*local_idx);
             let slot = &ctx.local_slots[*local_idx];
-            let sctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+            // A String assigned a freshly-produced temp (a `&` concat result) is
+            // moved, not copied: store opcode 0x31 (ctx 9) instead of 0x43 (ctx 8).
+            let sctx = if matches!(ty, VbaType::String)
+                && matches!(
+                    expr_arena.get(value_id),
+                    ExprNode::BinOp { op: BinOpKind::Cat, .. }
+                ) {
+                9
+            } else {
+                load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?
+            };
             emitter.emit_var_store(sctx, slot.frame_offset);
         }
         NameResolution::Param { param_idx, .. } => {

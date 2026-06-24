@@ -2243,6 +2243,13 @@ impl<'a> Emitter<'a> {
             self.stream.emit_i16(frame_offset);
             return;
         }
+        // String move-store (ctx 9): store a freshly-produced string temp (e.g. a
+        // concat result) without addref — opcode 0x31 via index 0x1f7.
+        if type_ctx == 9 {
+            self.emit_value2(0x1f7);
+            self.stream.emit_i16(frame_offset);
+            return;
+        }
         let opcode = RT_STORE_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!("no store opcode for type context {}", type_ctx);
