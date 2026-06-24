@@ -52,6 +52,10 @@ pub struct BoundVar {
     pub vba_type: VbaType,
     /// True for `Const` declarations.
     pub is_const: bool,
+    /// For a `Const` whose initializer folds to an integer, its value (so the
+    /// code generator can emit a folded literal at each use site). `None` for
+    /// non-const declarations and consts whose value is not an integer constant.
+    pub const_value: Option<i64>,
     /// True for `Static` locals.
     pub is_static: bool,
     /// True if declared with `Public` or `Global`.

@@ -621,6 +621,24 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Const folding: a Const local has no frame slot and is folded to its literal at
+// each use site — `r = K` emits the literal 42 (f5 2a..) + store, not a load.
+#[test]
+fn e2e_const_fold() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Const K As Long = 42\r\n\
+             Dim r As Long\r\n\
+             r = K\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x2a, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
 // Select Case: subject evaluated once into a hidden temp (store 0x71 to -0x8c),
 // each Case loads the temp, compares `=` (0xc7), BranchFalse past its body to the
 // next case; the matched body jumps (0x1e) to the end. Case Else falls through.

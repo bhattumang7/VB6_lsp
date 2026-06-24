@@ -17,8 +17,8 @@ use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef};
 use vb6_syntax::support::arena::NodeId;
 
-use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar};
-use crate::bridge::{frame_from_local_types, load_store_ctx, param_frame_from_types, type_ctx, UnsupportedType};
+use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame};
+use crate::bridge::{load_store_ctx, param_frame_from_types, type_ctx, UnsupportedType};
 use crate::emit::Emitter;
 use crate::node::{NodeArena, NodeRef};
 
@@ -192,23 +192,38 @@ pub fn lower_proc(
 ) -> Result<Vec<u8>, LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
-    let mut local_types: Vec<VbaType> = proc.locals.iter().map(|v| v.vba_type.clone()).collect();
-    let user_local_count = local_types.len();
+    let user_local_count = proc.locals.len();
 
-    // Pre-allocate 2 Long hidden slots per For loop.
-    let for_count = count_for_loops(NodeId(proc.body), expr_arena);
-    for _ in 0..(for_count * 2) {
-        local_types.push(VbaType::Long);
+    // Build the local frame directly so `Const` locals can be skipped: a const
+    // occupies NO frame space (VB6 folds it to a literal at each use site), but
+    // keeps an index-aligned placeholder slot so `NameResolution::Local`'s
+    // `local_idx` still maps directly. For-loop hidden slots and Select-subject
+    // temps are declared on the same frame, after the user locals.
+    let mut frame = ProcFrame::new();
+    let mut local_slots: Vec<LocalVar> = Vec::with_capacity(proc.locals.len());
+    for v in &proc.locals {
+        if v.is_const {
+            local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
+        } else {
+            let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
+            local_slots.push(frame.declare_anon(tctx));
+        }
     }
 
-    // Pre-allocate one hidden slot per Select Case (typed as its subject) to hold
-    // the evaluated subject across the per-case comparisons.
-    let select_base = local_types.len();
+    // 2 Long hidden slots per For loop.
+    let for_count = count_for_loops(NodeId(proc.body), expr_arena);
+    for _ in 0..(for_count * 2) {
+        local_slots.push(frame.declare_anon(2));
+    }
+
+    // One hidden slot per Select Case, typed as its subject.
+    let select_base = local_slots.len();
     let mut select_subjects = Vec::new();
     collect_select_subjects(NodeId(proc.body), expr_arena, &mut select_subjects);
     for &subj in &select_subjects {
         let ty = module.types.get(&subj.0).cloned().unwrap_or(VbaType::Long);
-        local_types.push(ty);
+        let tctx = type_ctx(&ty).ok_or(LowerError::UnsupportedType)?;
+        local_slots.push(frame.declare_anon(tctx));
     }
 
     let param_types: Vec<VbaType> = proc.params.iter().map(|p| p.vba_type.clone()).collect();
@@ -216,7 +231,6 @@ pub fn lower_proc(
     let global_types: Vec<VbaType> =
         module.module_vars.iter().map(|v| v.vba_type.clone()).collect();
 
-    let local_slots = frame_from_local_types(&local_types)?;
     let param_slots = param_frame_from_types(&param_types, &param_byref)?;
     let global_slots = global_frame_from_types(&global_types, module_desc)?;
 
@@ -1002,7 +1016,15 @@ fn lower_name_ref(
 
     match resolution {
         NameResolution::Local { local_idx, .. } => {
-            let ty = ctx.local_type(*local_idx);
+            let local = &ctx.proc.locals[*local_idx];
+            // A `Const` is folded to its literal value at the use site (it has no
+            // frame slot). Integer-valued consts emit an integer literal node.
+            if local.is_const {
+                let v = local.const_value.ok_or(LowerError::UnsupportedType)?;
+                let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
+                return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+            }
+            let ty = &local.vba_type;
             let slot = &ctx.local_slots[*local_idx];
             let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
             let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
