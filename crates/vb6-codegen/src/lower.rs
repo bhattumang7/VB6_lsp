@@ -846,15 +846,26 @@ fn coerce_operand(
     if matches!(expr_arena.get(operand_id), ExprNode::Literal { .. }) {
         return operand_ref;
     }
-    let Some(src_tag) = ctx
-        .module
-        .types
-        .get(&operand_id.0)
-        .and_then(vba_type_to_node_tag)
-    else {
+    let Some(src_ty) = ctx.module.types.get(&operand_id.0) else {
+        return operand_ref;
+    };
+    let Some(src_tag) = vba_type_to_node_tag(src_ty) else {
         return operand_ref;
     };
     if src_tag == target {
+        return operand_ref;
+    }
+    // VB6 emits an explicit widening conversion opcode only for an integer-typed
+    // operand (Integer / Long / Byte). A floating-point operand widened to a
+    // wider float (e.g. Single -> Double) carries no conversion opcode — the
+    // operation consumes the value directly. (The complete per-type-pair gate
+    // lives in the value-emitter; for the reachable widening cases — where the
+    // operand type is never wider than the operation type — this integer-source
+    // rule is exact and oracle-confirmed.)
+    if !matches!(
+        src_ty,
+        VbaType::Integer | VbaType::Long | VbaType::Byte | VbaType::Boolean
+    ) {
         return operand_ref;
     }
     arena.alloc(NodeArena::node(0x78, target, operand_ref.0, 0, 0, 0))

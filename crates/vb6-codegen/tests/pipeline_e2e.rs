@@ -621,6 +621,25 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Single→Double widening emits NO conversion opcode: a floating-point operand
+// widened to a wider float is consumed directly by the operation (only
+// integer-typed operands carry an explicit widening conversion). Load Single,
+// load Double, add Double — no 0xed.
+#[test]
+fn e2e_mixed_single_double_no_coerce() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Single, b As Double, r As Double\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6e, 0x78, 0xff, 0x6f, 0x70, 0xff, 0xab, 0x74, 0x68, 0xff]
+    );
+}
+
 // Long→Double widening emits 0xec (0x12c+2).
 #[test]
 fn e2e_mixed_long_double_add() {
