@@ -1697,23 +1697,37 @@ fn lower_call(
         ExprNode::ArgList { args } => args.clone(),
         _ => Vec::new(),
     };
+    // Build each argument's push bytes (matched to its parameter by position),
+    // then emit them right-to-left — VB6 pushes arguments in reverse order.
     let mut arg_bytes: u16 = 0;
+    let mut pushes: Vec<Vec<u8>> = Vec::with_capacity(args.len());
     for (i, &arg) in args.iter().enumerate() {
         let param = ctx.module.procs[proc_idx].params.get(i);
         let by_ref = param.map(|p| !p.flags.by_val).unwrap_or(false);
+        let mut buf = Vec::new();
         if by_ref {
             // ByRef: push the argument variable's address.
             let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
-            out.push(0x04);
-            out.extend_from_slice(&off.to_le_bytes());
+            buf.push(0x04);
+            buf.extend_from_slice(&off.to_le_bytes());
             arg_bytes += 4;
         } else {
-            // ByVal: push the value, coerced to the parameter type.
+            // ByVal: push the value, coerced to the parameter type (an argument is
+            // assigned to the parameter, so it carries the same coercion as a store).
             let pty = param.map(|p| p.vba_type.clone());
             let coerce = pty.as_ref().and_then(vba_type_to_node_tag);
-            out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg, expr_arena, coerce)?);
+            let mut arena = NodeArena::new();
+            let root = lower_expr_coerced(ctx, arg, expr_arena, &mut arena, coerce)?;
+            let root = coerce_assign_value(ctx, arg, root, coerce, &mut arena);
+            let mut emitter = Emitter::new(&arena);
+            emitter.emit_expr(root, 2);
+            buf.extend(emitter.into_bytes());
             arg_bytes += pty.as_ref().map(static_var_size).unwrap_or(4);
         }
+        pushes.push(buf);
+    }
+    for buf in pushes.iter().rev() {
+        out.extend_from_slice(buf);
     }
     let idx = ctx.call_next.get();
     ctx.call_next.set(idx + 1);

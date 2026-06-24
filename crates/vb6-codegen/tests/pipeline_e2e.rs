@@ -123,6 +123,30 @@ fn e2e_call_two_sites_indexed() {
 }
 
 #[test]
+fn e2e_call_two_args_reverse_order() {
+    // Arguments are pushed right-to-left: `Foo(5, 6)` pushes 6 then 5; arg-bytes 8.
+    assert_eq!(
+        caller_bytes(
+            "    Call Foo(5, 6)\r\n",
+            "Sub Foo(ByVal a As Long, ByVal b As Long)\r\n    Dim z As Long\r\n    z = a\r\nEnd Sub\r\n"
+        ),
+        &[0xf5, 0x06, 0x00, 0x00, 0x00, 0xf5, 0x05, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x08, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_arg_coercion() {
+    // An Integer argument to a Long parameter is widened (0xe7) before the call.
+    assert_eq!(
+        caller_bytes(
+            "    Dim i As Integer\r\n    Call Foo(i)\r\n",
+            "Sub Foo(ByVal x As Long)\r\n    Dim z As Long\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0x6b, 0x7a, 0xff, 0xe7, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
 fn e2e_call_function_result_no_args() {
     // `r = F()` → Function call 0x5e (result on stack) then store to r.
     assert_eq!(
