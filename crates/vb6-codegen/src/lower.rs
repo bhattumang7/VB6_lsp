@@ -480,10 +480,7 @@ fn lower_stmt(
         // `Mid(s, start[, len]) = value`: LdAddr the target string, push start and
         // (optional) len as Long, push the replacement string, then the Mid opcode
         // 0x4f. (The byte-oriented `MidB` / `$` spellings are gated.)
-        ExprNode::MidAssign { byte_oriented, dollar, args, value } => {
-            if *byte_oriented || *dollar {
-                return Err(LowerError::UnsupportedNode);
-            }
+        ExprNode::MidAssign { byte_oriented, args, value, .. } => {
             let arg_ids = match expr_arena.get(*args) {
                 ExprNode::ArgList { args } => args.clone(),
                 _ => return Err(LowerError::UnsupportedNode),
@@ -504,20 +501,28 @@ fn lower_stmt(
                 out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[2], expr_arena, Some(8))?);
             }
             out.extend_from_slice(&lower_expr_to_bytes(ctx, *value, expr_arena)?);
-            out.push(0x4f);
+            // Character-oriented Mid/Mid$ use opcode 0x4f; the byte-oriented MidB
+            // family uses the escaped opcode 0xfc 0xbe. The `$` spelling does not
+            // change the opcode.
+            if *byte_oriented {
+                out.extend_from_slice(&[0xfc, 0xbe]);
+            } else {
+                out.push(0x4f);
+            }
             out.push(0x00);
             out.push(0x00);
             Ok(())
         }
-        // `LSet target = value` (range-copy assignment): load the value, load the
-        // target, then the LSet opcode 0x47. (RSet is gated.)
+        // `LSet`/`RSet target = value` (range-copy assignment): load the value, load
+        // the target, then the justify opcode — LSet 0x47, RSet 0xfe 0x1e.
         ExprNode::RangeAssign { right_justify, target, value } => {
-            if *right_justify {
-                return Err(LowerError::UnsupportedNode);
-            }
             out.extend_from_slice(&lower_expr_to_bytes(ctx, *value, expr_arena)?);
             out.extend_from_slice(&lower_expr_to_bytes(ctx, *target, expr_arena)?);
-            out.push(0x47);
+            if *right_justify {
+                out.extend_from_slice(&[0xfe, 0x1e]);
+            } else {
+                out.push(0x47);
+            }
             out.push(0x00);
             out.push(0x00);
             Ok(())
@@ -1251,12 +1256,20 @@ fn lower_array_store(
     out.push(0x04);
     out.extend_from_slice(&arr_off.to_le_bytes());
     if dims == 1 {
-        let store_op: u8 = match elem {
-            VbaType::Long => 0xa3,
-            VbaType::Integer => 0xa2,
+        // 1-D element store, by element type. Byte uses a 2-byte escaped opcode.
+        match elem {
+            VbaType::Integer | VbaType::Boolean => out.push(0xa2),
+            VbaType::Long => out.push(0xa3),
+            VbaType::Currency => out.push(0xa4),
+            VbaType::Single => out.push(0xa5),
+            VbaType::Double | VbaType::Date => out.push(0xa6),
+            VbaType::String => out.push(0x3b),
+            VbaType::Byte => out.extend_from_slice(&[0xfc, 0xa0]),
+            // A Variant element store pushes the source variant's *address* (not
+            // its value) and moves it (0xfc 0xb0); that needs the address-load
+            // source path, handled separately.
             _ => return Err(LowerError::UnsupportedNode),
-        };
-        out.push(store_op);
+        }
     } else {
         // Multi-dimensional indexed store: compute the element address (0xa7 +
         // dimension count), then store through it (0x8f for Long).
