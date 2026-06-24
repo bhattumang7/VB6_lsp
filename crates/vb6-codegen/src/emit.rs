@@ -2212,6 +2212,13 @@ impl<'a> Emitter<'a> {
             self.stream.emit_i16(frame_offset);
             return;
         }
+        // String (ctx 8): the BSTR-pointer load (0x6c) via the value-emitter load
+        // index 0x1e7 (string value-class).
+        if type_ctx == 8 {
+            self.emit_value2(0x1e7);
+            self.stream.emit_i16(frame_offset);
+            return;
+        }
         let opcode = RT_LOAD_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!("no load opcode for type context {}", type_ctx);
@@ -2227,6 +2234,12 @@ impl<'a> Emitter<'a> {
         // store index 0x1f0 (RT_OPCODE_BYTE[0x1f0] = 0xfc → escape).
         if type_ctx == 7 {
             self.emit_value2(0x1f0);
+            self.stream.emit_i16(frame_offset);
+            return;
+        }
+        // String (ctx 8): the refcounted BSTR assign store (0x43) via index 0x201.
+        if type_ctx == 8 {
+            self.emit_value2(0x201);
             self.stream.emit_i16(frame_offset);
             return;
         }

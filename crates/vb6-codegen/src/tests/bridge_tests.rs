@@ -44,8 +44,8 @@ fn load_store_ctx_maps_numeric_primitives() {
 
 #[test]
 fn load_store_ctx_none_for_non_simple_types() {
-    // String assigns via runtime-helper sequences; the rest are unconfirmed.
-    assert_eq!(load_store_ctx(&VbaType::String), None);
+    // String uses ctx 8 (BSTR load/refcounted store); Object/Variant unconfirmed.
+    assert_eq!(load_store_ctx(&VbaType::String), Some(8));
     assert_eq!(load_store_ctx(&VbaType::Object), None);
     assert_eq!(load_store_ctx(&VbaType::Variant), None);
 }
@@ -112,10 +112,10 @@ fn bridge_store_double() {
 
 #[test]
 fn bridge_load_unsupported_type_errors() {
-    // String assigns via a runtime-helper sequence, not a single load opcode.
+    // Object has no confirmed simple load/store opcode yet.
     let arena = NodeArena::new();
     let mut e = Emitter::new(&arena);
-    assert_eq!(emit_local_load(&mut e, &VbaType::String, -4), Err(UnsupportedType));
+    assert_eq!(emit_local_load(&mut e, &VbaType::Object, -4), Err(UnsupportedType));
 }
 
 // ── End-to-end: ProcFrame (VB6-exact offsets) + bridge ──────────────────────

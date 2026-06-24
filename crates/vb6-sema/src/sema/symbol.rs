@@ -56,6 +56,10 @@ pub struct BoundVar {
     /// code generator can emit a folded literal at each use site). `None` for
     /// non-const declarations and consts whose value is not an integer constant.
     pub const_value: Option<i64>,
+    /// For a fixed-length string (`As String * n`), the declared length `n`. The
+    /// type stays [`VbaType::String`] (a 4-byte pointer slot) but the assignment
+    /// copy is length-aware, so the code generator needs the length.
+    pub fixed_string_len: Option<u16>,
     /// True for `Static` locals.
     pub is_static: bool,
     /// True if declared with `Public` or `Global`.

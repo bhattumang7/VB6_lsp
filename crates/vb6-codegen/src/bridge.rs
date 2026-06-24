@@ -78,6 +78,9 @@ pub fn load_store_ctx(t: &VbaType) -> Option<usize> {
         // Date shares Double's load/store opcodes (0x6f/0x74).
         VbaType::Double | VbaType::Date => 4,
         VbaType::Currency => 6,
+        // String (ctx 8): BSTR-pointer load (0x6c) + refcounted assign store (0x43)
+        // — distinct load/store opcodes routed through the value-emitter index path.
+        VbaType::String => 8,
         _ => return None,
     })
 }

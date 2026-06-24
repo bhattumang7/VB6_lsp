@@ -442,6 +442,7 @@ impl<'a> Binder<'a> {
             vba_type: self.extract_type(type_node),
             is_const,
             const_value: None,
+            fixed_string_len: None,
             is_static: false,
             is_public: self.vis(id, false),
             name_span: self.spans.get(id),
@@ -596,9 +597,17 @@ impl<'a> Binder<'a> {
             } else {
                 None
             };
+            let fixed_string_len = (*type_node).and_then(|tn| {
+                if let ExprNode::StringType { fixed_len: Some(n) } = self.arena.get(tn) {
+                    self.eval_const_i64(*n).map(|v| v as u16)
+                } else {
+                    None
+                }
+            });
             out.push(BoundVar {
                 sym_id: *name, vba_type,
-                is_const: *is_const, const_value, is_static: false, is_public: false,
+                is_const: *is_const, const_value, fixed_string_len,
+                is_static: false, is_public: false,
                 name_span: self.spans.get(id),
             });
         }

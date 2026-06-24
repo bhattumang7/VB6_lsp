@@ -60,6 +60,7 @@ fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
         VbaType::Currency => Some(0xd),
         VbaType::Date => Some(0xc),
         VbaType::Byte => Some(5),
+        VbaType::String => Some(0x10),
         _ => None,
     }
 }
@@ -1024,6 +1025,12 @@ fn lower_name_ref(
                 let v = local.const_value.ok_or(LowerError::UnsupportedType)?;
                 let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
                 return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+            }
+            // Fixed-length strings (`As String * n`) copy via a length-aware
+            // sequence (LdAddr + 0x33<len> + store 0x31), not the plain BSTR load;
+            // gated until that path is ported.
+            if local.fixed_string_len.is_some() {
+                return Err(LowerError::UnsupportedType);
             }
             let ty = &local.vba_type;
             let slot = &ctx.local_slots[*local_idx];
