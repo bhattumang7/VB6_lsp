@@ -162,7 +162,12 @@ fn line_label_value(lit: &Option<Lit>) -> i32 {
 fn lit_i32(lit: &Option<Lit>) -> i32 { if let Some(Lit::Int(n)) = lit { *n } else { 0 } }
 fn lit_long(lit: &Option<Lit>) -> i32 { if let Some(Lit::Long(n)) = lit { *n } else { 0 } }
 fn lit_single(lit: &Option<Lit>) -> f32 { if let Some(Lit::Single(f)) = lit { *f } else { 0.0 } }
-fn lit_double(lit: &Option<Lit>) -> f64 { if let Some(Lit::Double(f)) = lit { *f } else { 0.0 } }
+fn lit_double(lit: &Option<Lit>) -> f64 {
+    match lit {
+        Some(Lit::Double(f)) | Some(Lit::Date(f)) => *f,
+        _ => 0.0,
+    }
+}
 fn lit_currency(lit: &Option<Lit>) -> i64 { if let Some(Lit::Currency(c)) = lit { *c } else { 0 } }
 fn lit_str(lit: &Option<Lit>) -> Box<str> {
     if let Some(Lit::Str(b)) = lit { b.clone() } else { Box::from("") }

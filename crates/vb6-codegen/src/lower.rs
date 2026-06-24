@@ -93,6 +93,9 @@ fn binop_node_opcode(op: BinOpKind) -> Option<u16> {
         // String concatenation (`&`): node 0x24; the String-tagged emitter case
         // emits the concat opcode (0x2a). Result is a fresh string temp.
         BinOpKind::Cat => 0x24,
+        // String `Like` pattern match: bound opcode 0x25 (comparison-dispatch);
+        // for a String LHS, base 0x77 + offset 7 -> 0x7e -> fb 7e.
+        BinOpKind::Like => 0x25,
         BinOpKind::Eq  => 0x26,
         BinOpKind::Ne  => 0x27,
         BinOpKind::Le  => 0x28,
@@ -107,6 +110,7 @@ fn is_comparison_op(op: BinOpKind) -> bool {
     matches!(
         op,
         BinOpKind::Eq | BinOpKind::Ne | BinOpKind::Lt | BinOpKind::Le | BinOpKind::Gt | BinOpKind::Ge
+            | BinOpKind::Like
     )
 }
 
@@ -443,6 +447,11 @@ fn lower_stmt(
                     .last_mut()
                     .ok_or(LowerError::UnsupportedNode)?
                     .push(patch);
+                Ok(())
+            }
+            // Exit Sub / Exit Function = the procedure-return opcode 0x14.
+            ExitKind::Sub | ExitKind::Function => {
+                out.push(0x14);
                 Ok(())
             }
             _ => Err(LowerError::UnsupportedNode),
@@ -951,6 +960,7 @@ fn lower_array_store(
     let elem_tag = vba_type_to_node_tag(&elem).ok_or(LowerError::UnsupportedType)?;
     let store_op: u8 = match elem {
         VbaType::Long => 0xa3,
+        VbaType::Integer => 0xa2,
         _ => return Err(LowerError::UnsupportedNode),
     };
     out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, value_id, expr_arena, Some(elem_tag))?);
@@ -1047,6 +1057,7 @@ fn lower_assign(
             let idx = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
             let load_op: u8 = match elem {
                 VbaType::Long => 0x9e,
+                VbaType::Integer => 0x9d,
                 _ => return Err(LowerError::UnsupportedNode),
             };
             out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, idx, expr_arena, Some(8))?);
@@ -1179,6 +1190,14 @@ fn lower_expr_coerced(
         }
         ExprNode::UnOp { op, operand } => {
             let (op, operand_id) = (*op, *operand);
+            // VB6 constant-folds a negated integer literal (`-5`) into a single
+            // push of the negated value (coerced to the context type), rather than
+            // push-then-negate.
+            if matches!(op, UnOpKind::Neg) {
+                if let ExprNode::Literal { lit: AstLit::Int(v) } = expr_arena.get(operand_id) {
+                    return lower_lit_coerced(&AstLit::Int(-*v), coerce_tag, arena);
+                }
+            }
             lower_unop(ctx, node_id, op, operand_id, expr_arena, arena)
         }
         ExprNode::Paren { inner } => {
@@ -1205,6 +1224,12 @@ fn lower_lit(lit: &AstLit, arena: &mut NodeArena) -> Result<NodeRef, LowerError>
         AstLit::Currency(v) => {
             let bits = *v as u64;
             Ok(arena.alloc(NodeArena::node(2, 0, bits as u32, (bits >> 32) as u32, 0, 0)))
+        }
+        // A Date literal carries the OLE date serial as an f64; it pushes as an
+        // 8-byte literal (the case-2 path) tagged Date (0xc) → push opcode 0xfa.
+        AstLit::Date(v) => {
+            let bits = v.to_bits();
+            Ok(arena.alloc(NodeArena::node(2, 0xc, bits as u32, (bits >> 32) as u32, 0, 0)))
         }
         _ => Err(LowerError::UnsupportedNode),
     }

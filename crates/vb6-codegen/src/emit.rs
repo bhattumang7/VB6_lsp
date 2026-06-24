@@ -245,9 +245,11 @@ impl<'a> Emitter<'a> {
                 0x16 => 0x163,
                 _ => return 0,
             },
-            // case 2: Currency literal
+            // case 2: 8-byte literal — Currency (0x3bb → 0xf6) or, when tagged Date
+            // (0xc), an OLE date serial (0x3bd → 0xfa).
             2 => {
-                self.emit_value2(0x3bb);
+                let push = if type_tag == 0xc { 0x3bd } else { 0x3bb };
+                self.emit_value2(push);
                 self.stream.emit_bytes(&n.literal8());
                 return 0;
             }

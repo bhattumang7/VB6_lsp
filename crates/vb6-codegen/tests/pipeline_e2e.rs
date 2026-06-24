@@ -707,6 +707,70 @@ fn e2e_string_concat() {
     );
 }
 
+// Negative integer literal folds to a single push of the negated value.
+#[test]
+fn e2e_negative_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim r As Long\r\n r = -5\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0xfb, 0xff, 0xff, 0xff, 0x71, 0x78, 0xff]
+    );
+}
+
+// Like (string pattern compare): operands load as BSTR, compare fb 7e.
+#[test]
+fn e2e_string_like() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim a As String, b As String, r As Integer\r\n r = (a Like b)\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, 0x7e, 0x70, 0x72, 0xff]
+    );
+}
+
+// Date literal: push 0xfa + 8-byte OLE serial (#1/1/2000# = 36526.0), Double store.
+#[test]
+fn e2e_date_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim d As Date\r\n d = #1/1/2000#\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xfa, 0x00, 0x00, 0x00, 0x00, 0xc0, 0xd5, 0xe1, 0x40, 0x74, 0x74, 0xff]
+    );
+}
+
+// Exit Sub emits the procedure-return opcode 0x14.
+#[test]
+fn e2e_exit_sub() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n Exit Sub\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x14]
+    );
+}
+
+// Integer array element store: value pushed as Integer (f4 05), element-store 0xa2.
+#[test]
+fn e2e_integer_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim a(10) As Integer\r\n a(0) = 5\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf4, 0x05, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xa2]
+    );
+}
+
 // Array element store `a(0) = 5`: push value, push Long index, LdAddr the array
 // descriptor (0x04), element-store (0xa3). a(10) As Long is a 28-byte descriptor.
 #[test]
