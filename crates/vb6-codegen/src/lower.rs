@@ -835,6 +835,50 @@ fn lower_for(
     Ok(())
 }
 
+/// Emit one `Case` clause's comparison against the subject temp, producing a
+/// boolean on the stack: a bare value uses `=`; `lo To hi` uses the range test
+/// (0xfb 0x86); `Is <op> <expr>` uses that operator's comparison.
+fn emit_clause_test(
+    ctx: &LowerCtx,
+    clause_id: NodeId,
+    subj_tag: u16,
+    lctx: usize,
+    temp_offset: i16,
+    expr_arena: &ExprArena,
+) -> Result<Vec<u8>, LowerError> {
+    let mut arena = NodeArena::new();
+    let temp_load = build_frame_load_node(&mut arena, 0x74, subj_tag, lctx, temp_offset);
+    match expr_arena.get(clause_id) {
+        ExprNode::RangeTo { lo, hi } => {
+            let lo_r = lower_expr_coerced(ctx, *lo, expr_arena, &mut arena, Some(subj_tag))?;
+            let hi_r = lower_expr_coerced(ctx, *hi, expr_arena, &mut arena, Some(subj_tag))?;
+            let mut em = Emitter::new(&arena);
+            em.emit_expr(temp_load, 0);
+            em.emit_expr(lo_r, 0);
+            em.emit_expr(hi_r, 0);
+            let mut bytes = em.into_bytes();
+            bytes.push(0xfb); // range-test opcode (value-emitter index 0x86)
+            bytes.push(0x86);
+            Ok(bytes)
+        }
+        ExprNode::CaseIs { op, rhs } => {
+            let rhs_r = lower_expr_coerced(ctx, *rhs, expr_arena, &mut arena, Some(subj_tag))?;
+            let opcode = binop_node_opcode(*op).ok_or(LowerError::UnsupportedNode)?;
+            let cmp = arena.alloc(NodeArena::node(opcode, 0, temp_load.0, rhs_r.0, 0, 0));
+            let mut em = Emitter::new(&arena);
+            em.emit_expr(cmp, 0);
+            Ok(em.into_bytes())
+        }
+        _ => {
+            let v = lower_expr_coerced(ctx, clause_id, expr_arena, &mut arena, Some(subj_tag))?;
+            let eq = arena.alloc(NodeArena::node(0x26, 0, temp_load.0, v.0, 0, 0));
+            let mut em = Emitter::new(&arena);
+            em.emit_expr(eq, 0);
+            Ok(em.into_bytes())
+        }
+    }
+}
+
 /// `Select Case subject ... End Select`. VB6 evaluates the subject once into a
 /// hidden temp slot, then for each `Case` loads the temp, compares it (`=`)
 /// against the case value, and branches past the body (BranchFalse) when not
@@ -869,45 +913,49 @@ fn lower_select(
     }
 
     let mut end_patches = Vec::new();
-    for &case_id in cases {
+    let case_count = cases.len();
+    for (case_idx, &case_id) in cases.iter().enumerate() {
         match expr_arena.get(case_id) {
             ExprNode::CaseBlock { test, body } => {
-                // `test` is an ArgList of case clauses. Handle the single bare-value
-                // form (`Case <expr>`); ranges (`lo To hi`) and `Is <op> <expr>`
-                // and multi-value lists need the OR-of-clauses dispatch — gated.
-                let test_val = match expr_arena.get(*test) {
-                    ExprNode::ArgList { args } if args.len() == 1 => {
-                        let a = args[0];
-                        match expr_arena.get(a) {
-                            ExprNode::RangeTo { .. } | ExprNode::CaseIs { .. } => {
-                                return Err(LowerError::UnsupportedNode);
-                            }
-                            _ => a,
-                        }
-                    }
+                // `test` is an ArgList of clauses (values / ranges / `Is` tests).
+                // A match on ANY clause enters the body: every clause but the last
+                // branches TRUE to the body; the last branches FALSE to the next
+                // case (so the single-clause form is just compare + BranchFalse).
+                let clauses = match expr_arena.get(*test) {
+                    ExprNode::ArgList { args } => args.clone(),
                     _ => return Err(LowerError::UnsupportedNode),
                 };
-                // load temp; push case value (coerced to the subject type); `=`.
-                let mut arena = NodeArena::new();
-                let temp_load =
-                    build_frame_load_node(&mut arena, 0x74, subj_tag, lctx, temp_offset);
-                let test_ref =
-                    lower_expr_coerced(ctx, test_val, expr_arena, &mut arena, Some(subj_tag))?;
-                let eq = arena.alloc(NodeArena::node(0x26, 0, temp_load.0, test_ref.0, 0, 0));
-                let mut emitter = Emitter::new(&arena);
-                emitter.emit_expr(eq, 0);
-                out.extend_from_slice(&emitter.into_bytes());
-
-                // Skip this case's body when the comparison is false.
-                let next_patch = emit_branch_placeholder(out, 0x1c);
+                if clauses.is_empty() {
+                    return Err(LowerError::UnsupportedNode);
+                }
+                let mut body_patches = Vec::new();
+                let mut next_patch = 0usize;
+                let last = clauses.len() - 1;
+                for (i, &clause) in clauses.iter().enumerate() {
+                    out.extend_from_slice(&emit_clause_test(
+                        ctx, clause, subj_tag, lctx, temp_offset, expr_arena,
+                    )?);
+                    if i < last {
+                        body_patches.push(emit_branch_placeholder(out, 0x1d));
+                    } else {
+                        next_patch = emit_branch_placeholder(out, 0x1c);
+                    }
+                }
+                let body_start = out.len() as u16;
+                for p in body_patches {
+                    patch_u16(out, p, body_start);
+                }
                 lower_block(ctx, *body, expr_arena, out)?;
-                // Matched body jumps to the Select end.
-                out.push(0x1e);
-                let end_patch = out.len();
-                out.push(0x00);
-                out.push(0x00);
-                end_patches.push(end_patch);
-                // The BranchFalse lands at the next case.
+                // A matched body jumps to the Select end only when a later case
+                // follows it; the last case-arm falls through to the end.
+                if case_idx + 1 < case_count {
+                    out.push(0x1e);
+                    let end_patch = out.len();
+                    out.push(0x00);
+                    out.push(0x00);
+                    end_patches.push(end_patch);
+                }
+                // The final BranchFalse lands at the next case (or the end).
                 patch_u16(out, next_patch, out.len() as u16);
             }
             ExprNode::CaseElse { body } => {
