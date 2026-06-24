@@ -14,7 +14,7 @@
 use std::cell::{Cell, RefCell};
 
 use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
-use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef};
+use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind};
 use vb6_syntax::support::arena::NodeId;
 
 use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame};
@@ -452,6 +452,63 @@ fn lower_stmt(
             // Exit Sub / Exit Function = the procedure-return opcode 0x14.
             ExitKind::Sub | ExitKind::Function => {
                 out.push(0x14);
+                Ok(())
+            }
+            _ => Err(LowerError::UnsupportedNode),
+        },
+        // `Mid(s, start[, len]) = value`: LdAddr the target string, push start and
+        // (optional) len as Long, push the replacement string, then the Mid opcode
+        // 0x4f. (The byte-oriented `MidB` / `$` spellings are gated.)
+        ExprNode::MidAssign { byte_oriented, dollar, args, value } => {
+            if *byte_oriented || *dollar {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let arg_ids = match expr_arena.get(*args) {
+                ExprNode::ArgList { args } => args.clone(),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            if arg_ids.len() < 2 {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let s_off = match ctx.module.resolutions.get(&arg_ids[0].0) {
+                Some(NameResolution::Local { local_idx, .. }) => {
+                    ctx.local_slots[*local_idx].frame_offset
+                }
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            out.push(0x04);
+            out.extend_from_slice(&s_off.to_le_bytes());
+            out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[1], expr_arena, Some(8))?);
+            if arg_ids.len() >= 3 {
+                out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[2], expr_arena, Some(8))?);
+            }
+            out.extend_from_slice(&lower_expr_to_bytes(ctx, *value, expr_arena)?);
+            out.push(0x4f);
+            out.push(0x00);
+            out.push(0x00);
+            Ok(())
+        }
+        // `LSet target = value` (range-copy assignment): load the value, load the
+        // target, then the LSet opcode 0x47. (RSet is gated.)
+        ExprNode::RangeAssign { right_justify, target, value } => {
+            if *right_justify {
+                return Err(LowerError::UnsupportedNode);
+            }
+            out.extend_from_slice(&lower_expr_to_bytes(ctx, *value, expr_arena)?);
+            out.extend_from_slice(&lower_expr_to_bytes(ctx, *target, expr_arena)?);
+            out.push(0x47);
+            out.push(0x00);
+            out.push(0x00);
+            Ok(())
+        }
+        // `On Error GoTo label` = opcode 0x4b + the (backpatched) label offset.
+        ExprNode::OnError { kind } => match kind {
+            OnErrorKind::Goto(target) => {
+                out.push(0x4b);
+                let patch = out.len();
+                out.push(0x00);
+                out.push(0x00);
+                ctx.goto_patches.borrow_mut().push((*target, patch));
                 Ok(())
             }
             _ => Err(LowerError::UnsupportedNode),

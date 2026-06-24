@@ -755,6 +755,46 @@ fn e2e_select_case_multi() {
     );
 }
 
+// On Error GoTo label: opcode 0x4b + the backpatched label offset.
+#[test]
+fn e2e_on_error_goto() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             On Error GoTo L\r\n Dim a As Long\r\n L:\r\n a = 1\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x4b, 0x03, 0x00, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+// LSet target = value: load value, load target, LSet opcode 0x47.
+#[test]
+fn e2e_lset() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim a As String, s As String\r\n LSet s = a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0x47, 0x00, 0x00]
+    );
+}
+
+// Mid(s, start, len) = value: LdAddr s, push start, push len, push value, Mid 0x4f.
+#[test]
+fn e2e_mid_statement() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim s As String\r\n Mid(s, 1, 1) = \"x\"\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x78, 0xff, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xf5, 0x01, 0x00, 0x00,
+          0x00, 0x1b, 0x00, 0x00, 0x4f, 0x00, 0x00]
+    );
+}
+
 // Negative integer literal folds to a single push of the negated value.
 #[test]
 fn e2e_negative_literal() {
