@@ -60,6 +60,10 @@ pub struct BoundVar {
     /// type stays [`VbaType::String`] (a 4-byte pointer slot) but the assignment
     /// copy is length-aware, so the code generator needs the length.
     pub fixed_string_len: Option<u16>,
+    /// For a fixed-size array, the number of declared dimensions (the SAFEARRAY
+    /// descriptor size and the element-access opcode depend on it). `None` for
+    /// non-arrays and dynamic (`Dim a()`) arrays.
+    pub array_dims: Option<u16>,
     /// True for `Static` locals.
     pub is_static: bool,
     /// True if declared with `Public` or `Global`.

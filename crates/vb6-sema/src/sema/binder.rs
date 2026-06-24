@@ -443,6 +443,7 @@ impl<'a> Binder<'a> {
             is_const,
             const_value: None,
             fixed_string_len: None,
+            array_dims: None,
             is_static: false,
             is_public: self.vis(id, false),
             name_span: self.spans.get(id),
@@ -604,9 +605,13 @@ impl<'a> Binder<'a> {
                     None
                 }
             });
+            let array_dims = (*bounds).and_then(|b| match self.arena.get(b) {
+                ExprNode::ArgList { args } if !args.is_empty() => Some(args.len() as u16),
+                _ => None,
+            });
             out.push(BoundVar {
                 sym_id: *name, vba_type,
-                is_const: *is_const, const_value, fixed_string_len,
+                is_const: *is_const, const_value, fixed_string_len, array_dims,
                 is_static: false, is_public: false,
                 name_span: self.spans.get(id),
             });

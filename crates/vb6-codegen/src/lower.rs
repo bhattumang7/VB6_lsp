@@ -220,10 +220,12 @@ pub fn lower_proc(
             let size = 2 * (n as i16);
             local_slots.push(frame.declare_anon_bytes(size));
         } else if matches!(v.vba_type, VbaType::Array(_)) {
-            // A fixed local array is a 28-byte SAFEARRAY descriptor (size-independent
-            // of the element count — the data is heap-allocated); the LdAddr target
-            // sits 4 bytes above the slot bottom (oracle-confirmed, 1-D arrays).
-            let mut slot = frame.declare_anon_bytes(28);
+            // A fixed local array is a SAFEARRAY descriptor (size-independent of the
+            // element count — data is heap-allocated): 20 bytes + 8 per dimension
+            // (28 for 1-D, 36 for 2-D — oracle-confirmed); the LdAddr target sits 4
+            // bytes above the slot bottom.
+            let dims = v.array_dims.unwrap_or(1) as i16;
+            let mut slot = frame.declare_anon_bytes(20 + 8 * dims);
             slot.frame_offset += 4;
             local_slots.push(slot);
         } else {
@@ -1079,18 +1081,20 @@ fn lower_select(
     Ok(())
 }
 
-/// If `func_id` resolves to a local array, return its LdAddr frame offset and
-/// element type.
-fn array_local_info(ctx: &LowerCtx, func_id: NodeId) -> Option<(i16, VbaType)> {
+/// If `func_id` resolves to a local array, return its LdAddr frame offset, element
+/// type, and declared dimension count.
+fn array_local_info(ctx: &LowerCtx, func_id: NodeId) -> Option<(i16, VbaType, u16)> {
     if let Some(NameResolution::Local { local_idx, .. }) = ctx.module.resolutions.get(&func_id.0) {
-        if let VbaType::Array(elem) = &ctx.proc.locals[*local_idx].vba_type {
-            return Some((ctx.local_slots[*local_idx].frame_offset, (**elem).clone()));
+        let var = &ctx.proc.locals[*local_idx];
+        if let VbaType::Array(elem) = &var.vba_type {
+            let dims = var.array_dims.unwrap_or(1);
+            return Some((ctx.local_slots[*local_idx].frame_offset, (**elem).clone(), dims));
         }
     }
     None
 }
 
-/// The single subscript index of an array `Call`'s argument list.
+/// The single subscript index of a 1-D array `Call`'s argument list.
 fn single_index(args_id: NodeId, expr_arena: &ExprArena) -> Option<NodeId> {
     if let ExprNode::ArgList { args } = expr_arena.get(args_id) {
         if args.len() == 1 {
@@ -1100,9 +1104,10 @@ fn single_index(args_id: NodeId, expr_arena: &ExprArena) -> Option<NodeId> {
     None
 }
 
-/// Array element store `a(i) = v`: push the value (coerced to the element type),
-/// push the Long index, LdAddr the array descriptor (0x04), then the element-store
-/// opcode (0xa3 for Long).
+/// Array element store `a(i…) = v`: push the value (element-typed), push each Long
+/// index, LdAddr the array descriptor (0x04), then the element-store. A 1-D array
+/// uses the direct store opcode (0xa3 Long / 0xa2 Integer); a multi-dimensional
+/// array uses the indexed-store sequence (0xa7 <dims> 0x8f).
 fn lower_array_store(
     ctx: &LowerCtx,
     func_id: NodeId,
@@ -1111,19 +1116,41 @@ fn lower_array_store(
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<(), LowerError> {
-    let (arr_off, elem) = array_local_info(ctx, func_id).ok_or(LowerError::UnsupportedNode)?;
-    let idx = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
-    let elem_tag = vba_type_to_node_tag(&elem).ok_or(LowerError::UnsupportedType)?;
-    let store_op: u8 = match elem {
-        VbaType::Long => 0xa3,
-        VbaType::Integer => 0xa2,
+    let (arr_off, elem, dims) =
+        array_local_info(ctx, func_id).ok_or(LowerError::UnsupportedNode)?;
+    let indices = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.clone(),
         _ => return Err(LowerError::UnsupportedNode),
     };
+    if indices.len() != dims as usize {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let elem_tag = vba_type_to_node_tag(&elem).ok_or(LowerError::UnsupportedType)?;
     out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, value_id, expr_arena, Some(elem_tag))?);
-    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, idx, expr_arena, Some(8))?);
+    for &idx in &indices {
+        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, idx, expr_arena, Some(8))?);
+    }
     out.push(0x04);
     out.extend_from_slice(&arr_off.to_le_bytes());
-    out.push(store_op);
+    if dims == 1 {
+        let store_op: u8 = match elem {
+            VbaType::Long => 0xa3,
+            VbaType::Integer => 0xa2,
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        out.push(store_op);
+    } else {
+        // Multi-dimensional indexed store: compute the element address (0xa7 +
+        // dimension count), then store through it (0x8f for Long).
+        if !matches!(elem, VbaType::Long) {
+            return Err(LowerError::UnsupportedNode);
+        }
+        out.push(0xa7);
+        out.extend_from_slice(&dims.to_le_bytes());
+        out.push(0x8f);
+        out.push(0x00);
+        out.push(0x00);
+    }
     Ok(())
 }
 
@@ -1209,7 +1236,7 @@ fn lower_assign(
     // array descriptor, the element-load opcode (0x9e for Long), then store to the
     // target.
     if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
-        if let Some((arr_off, elem)) = array_local_info(ctx, *func) {
+        if let Some((arr_off, elem, _dims)) = array_local_info(ctx, *func) {
             let idx = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
             let load_op: u8 = match elem {
                 VbaType::Long => 0x9e,
