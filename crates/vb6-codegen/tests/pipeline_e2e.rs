@@ -79,6 +79,67 @@ fn e2e_module_global_string_pool() {
     assert_eq!(procs[1], &[0x1b, 0x01, 0x00, 0x43, 0x78, 0xff]);
 }
 
+// ── Function return values (the proc name is an implicit slot-0 local) ───────
+
+#[test]
+fn e2e_function_return_long() {
+    // `F = 5` stores into the return slot (frame slot 0 = 0xff78), like a normal
+    // Long local store.
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n\
+         Dim a As Long\r\n\
+         a = 1\r\n\
+         End Sub\r\n\
+         Function F() As Long\r\n\
+         F = 5\r\n\
+         End Function\r\n",
+        0x0008,
+    );
+    assert_eq!(procs[1], &[0xf5, 0x05, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_function_return_with_local() {
+    // The return value takes slot 0 (0xff78); the user local `y` takes slot 1
+    // (0xff74). `y = 7; F = y`.
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n\
+         Dim a As Long\r\n\
+         a = 1\r\n\
+         End Sub\r\n\
+         Function F() As Long\r\n\
+         Dim y As Long\r\n\
+         y = 7\r\n\
+         F = y\r\n\
+         End Function\r\n",
+        0x0008,
+    );
+    assert_eq!(
+        procs[1],
+        &[0xf5, 0x07, 0x00, 0x00, 0x00, 0x71, 0x74, 0xff, 0x6c, 0x74, 0xff, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_function_return_from_param() {
+    // `Function F(ByVal x As Long) As Long: F = x` — load the ByVal param, store
+    // into the return slot.
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n\
+         Dim a As Long\r\n\
+         a = 1\r\n\
+         End Sub\r\n\
+         Function F(ByVal x As Long) As Long\r\n\
+         F = x\r\n\
+         End Function\r\n",
+        0x0008,
+    );
+    assert_eq!(procs[1], &[0x6c, 0x0c, 0x00, 0x71, 0x78, 0xff]);
+}
+
 #[test]
 fn e2e_module_global_static_block() {
     // The per-procedure static block is module-global: proc 0's Static `a` (Long)

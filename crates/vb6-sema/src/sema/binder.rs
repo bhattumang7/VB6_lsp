@@ -583,6 +583,29 @@ impl<'a> Binder<'a> {
     fn bind_proc_body(&mut self, proc_idx: usize, body_id: NodeId) {
         // Collect local variables from the body first.
         let mut locals: Vec<BoundVar> = Vec::new();
+        // A Function / Property Get exposes its own name as an implicit
+        // return-value local at frame slot 0, typed as the return type. Injecting
+        // it as local index 0 makes `F = …` / reads of `F` resolve as a normal
+        // local (and the code generator allocates the return slot before the
+        // user locals, matching the compiler's frame layout).
+        let (kind, ret_type, sym_id, name_span) = {
+            let p = &self.procs[proc_idx];
+            (p.kind, p.ret_type.clone(), p.sym_id, p.name_span)
+        };
+        if matches!(kind, ProcKind::Function | ProcKind::PropGet) {
+            locals.push(BoundVar {
+                sym_id,
+                vba_type: ret_type,
+                is_const: false,
+                const_value: None,
+                const_lit: None,
+                fixed_string_len: None,
+                array_dims: None,
+                is_static: false,
+                is_public: false,
+                name_span,
+            });
+        }
         self.collect_locals(body_id, &mut locals);
         self.procs[proc_idx].locals = locals;
 
