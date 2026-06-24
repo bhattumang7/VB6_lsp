@@ -70,6 +70,9 @@ pub fn load_store_ctx(t: &VbaType) -> Option<usize> {
         // Boolean is stored exactly as Integer (2-byte, Integer-class storage and
         // load/store opcodes — same node tag 6).
         VbaType::Integer | VbaType::Boolean => 1,
+        // Byte uses a distinct escape-paged load/store (`fc e0`/`fc f0`); ctx 7 is
+        // the codegen sentinel routed to the value-emitter index path.
+        VbaType::Byte => 7,
         VbaType::Long => 2,
         VbaType::Single => 3,
         // Date shares Double's load/store opcodes (0x6f/0x74).

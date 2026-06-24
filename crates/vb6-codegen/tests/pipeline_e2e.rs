@@ -621,6 +621,40 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Byte: 2-byte escape-paged load (fc e0) / store (fc f0) via the value-emitter
+// index path; add via the generic emitter (tag 5 -> RT_OPCODE_BYTE[0x8e]=fb escape).
+#[test]
+fn e2e_byte_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Byte, b As Byte, r As Byte\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0xe0, 0x7a, 0xff, 0xfc, 0xe0, 0x78, 0xff, 0xfb, 0x8e, 0xfc, 0xf0,
+          0x76, 0xff]
+    );
+}
+
+// Byte widened to Long: the Byte operand loads (fc e0) then coerces to Long (e7).
+#[test]
+fn e2e_mixed_byte_long_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Byte, b As Long, r As Long\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0xfc, 0xe0, 0x7a, 0xff, 0xe7, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff]
+    );
+}
+
 // Const folding: a Const local has no frame slot and is folded to its literal at
 // each use site — `r = K` emits the literal 42 (f5 2a..) + store, not a load.
 #[test]

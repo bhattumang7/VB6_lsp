@@ -59,6 +59,7 @@ fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
         VbaType::Double => Some(11),
         VbaType::Currency => Some(0xd),
         VbaType::Date => Some(0xc),
+        VbaType::Byte => Some(5),
         _ => None,
     }
 }

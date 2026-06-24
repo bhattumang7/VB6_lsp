@@ -2204,6 +2204,14 @@ impl<'a> Emitter<'a> {
     /// The opcode comes from [`RT_LOAD_BY_CTX`]; the frame offset follows as a
     /// 2-byte signed little-endian value. Mirror of [`Self::emit_var_store`].
     pub fn emit_typed_load(&mut self, type_ctx: usize, frame_offset: i16) {
+        // Byte (ctx 7) has a 2-byte escape-paged load opcode (`fc e0`) that the
+        // single-byte RT_LOAD_BY_CTX shortcut cannot hold; emit via the value-
+        // emitter load index 0x1e0 (RT_OPCODE_BYTE[0x1e0] = 0xfc → escape).
+        if type_ctx == 7 {
+            self.emit_value2(0x1e0);
+            self.stream.emit_i16(frame_offset);
+            return;
+        }
         let opcode = RT_LOAD_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!("no load opcode for type context {}", type_ctx);
@@ -2215,6 +2223,13 @@ impl<'a> Emitter<'a> {
     /// Emit a typed local-variable store. Mirror of [`Self::emit_var_load`] using
     /// [`RT_STORE_BY_CTX`]. The caller must have emitted the value to store first.
     pub fn emit_var_store(&mut self, type_ctx: usize, frame_offset: i16) {
+        // Byte (ctx 7): 2-byte escape store opcode (`fc f0`) via value-emitter
+        // store index 0x1f0 (RT_OPCODE_BYTE[0x1f0] = 0xfc → escape).
+        if type_ctx == 7 {
+            self.emit_value2(0x1f0);
+            self.stream.emit_i16(frame_offset);
+            return;
+        }
         let opcode = RT_STORE_BY_CTX.get(type_ctx).copied().unwrap_or(0);
         if opcode == 0 {
             unimplemented!("no store opcode for type context {}", type_ctx);
