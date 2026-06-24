@@ -1355,6 +1355,15 @@ fn lower_assign(
                 out.push(0x69);
                 out.extend_from_slice(&temp_off.to_le_bytes());
             }
+            // `Empty` / `Null` initialize the temp directly: 0xfc 0x67 / 0xfc 0x64.
+            ExprNode::Literal { lit: AstLit::Empty } => {
+                out.extend_from_slice(&[0xfc, 0x67]);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+            }
+            ExprNode::Literal { lit: AstLit::Null } => {
+                out.extend_from_slice(&[0xfc, 0x64]);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+            }
             _ => return Err(LowerError::UnsupportedNode),
         }
         out.push(0xfc);
@@ -1510,7 +1519,11 @@ fn wider_numeric_tag(a: Option<&VbaType>, b: Option<&VbaType>) -> Option<u16> {
     let ta = a.map(rank).unwrap_or(0);
     let tb = b.map(rank).unwrap_or(0);
     let wider = if ta >= tb { a } else { b };
-    wider.and_then(|t| vba_type_to_node_tag(t))
+    // Date operands are computed in Double (the runtime widens the OLE serial to a
+    // Double; the result is converted back to Date on store).
+    wider.and_then(|t| {
+        vba_type_to_node_tag(if matches!(t, VbaType::Date) { &VbaType::Double } else { t })
+    })
 }
 
 fn lower_expr(
@@ -1595,18 +1608,23 @@ fn lower_lit(lit: &AstLit, arena: &mut NodeArena) -> Result<NodeRef, LowerError>
 }
 
 /// Like `lower_lit` but promotes an integer literal to `coerce_tag` when the
-/// context type is wider (e.g. integer literal in a Long expression).
+/// context type is a wider *integer* type (e.g. an integer literal in a Long
+/// expression is pushed directly as Long). Promotion to a floating-point or
+/// Currency context is *not* done in place: VB6 pushes the integer literal in its
+/// natural type and emits a runtime conversion (handled by the operand/assignment
+/// coercion), so for those targets the literal keeps its natural type here.
 fn lower_lit_coerced(
     lit: &AstLit,
     coerce_tag: Option<u16>,
     arena: &mut NodeArena,
 ) -> Result<NodeRef, LowerError> {
     match coerce_tag {
-        Some(tag) => match lit {
+        // Integer tags: Byte=5, Integer=6, Long=8.
+        Some(tag @ (5 | 6 | 8)) => match lit {
             AstLit::Int(v) => Ok(arena.alloc(NodeArena::node(1, tag, *v as u32, 0, 0, 0))),
             _ => lower_lit(lit, arena),
         },
-        None => lower_lit(lit, arena),
+        _ => lower_lit(lit, arena),
     }
 }
 
@@ -1774,12 +1792,15 @@ fn coerce_assign_value(
     let Some(target) = target_tag else {
         return value_root;
     };
-    // A lowered literal push (integer 1, 8-byte 2, float 3, pooled string 0x79) is
-    // already constant-folded into its destination type by `lower_lit_coerced`;
-    // wrapping it would double-convert. This also covers a folded negated literal
-    // (`-5`), whose source node is a UnOp but whose lowered form is a literal push.
-    if matches!(arena.get(value_root).opcode(), 1 | 2 | 3 | 0x79) {
-        return value_root;
+    match arena.get(value_root).opcode() {
+        // 8-byte (Currency/Date), floating-point, and pooled-string literals are
+        // already their final type — wrapping would double-convert.
+        2 | 3 | 0x79 => return value_root,
+        // An integer literal is retyped in place for an integer target (no
+        // conversion); for a float/Currency target it keeps its natural type and
+        // needs an explicit Int→T conversion, emitted below.
+        1 if matches!(target, 5 | 6 | 8) => return value_root,
+        _ => {}
     }
     let Some(src_tag) = ctx.module.types.get(&value_id.0).and_then(vba_type_to_node_tag) else {
         return value_root;
@@ -1805,8 +1826,15 @@ fn coerce_operand(
     let Some(target) = target_tag else {
         return operand_ref;
     };
-    if matches!(expr_arena.get(operand_id), ExprNode::Literal { .. }) {
-        return operand_ref;
+    // An integer literal is retyped in place by `lower_lit_coerced` for an integer
+    // operation type (no conversion); for a float/Currency operation type it keeps
+    // its natural type and needs an explicit conversion, emitted below. Every other
+    // literal is already its final type.
+    if let ExprNode::Literal { lit } = expr_arena.get(operand_id) {
+        let is_int_lit = matches!(lit, AstLit::Int(_) | AstLit::Long(_) | AstLit::Bool(_));
+        if !is_int_lit || matches!(target, 5 | 6 | 8) {
+            return operand_ref;
+        }
     }
     let Some(src_ty) = ctx.module.types.get(&operand_id.0) else {
         return operand_ref;

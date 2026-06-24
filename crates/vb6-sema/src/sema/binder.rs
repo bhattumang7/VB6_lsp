@@ -951,9 +951,14 @@ fn binop_type(
             t @ (VbaType::Byte | VbaType::Integer | VbaType::Long | VbaType::Boolean) => t,
             _ => VbaType::Long,
         },
-        // Arithmetic: numeric promotion
+        // Arithmetic: numeric promotion. Date operands are computed in Double (the
+        // OLE serial is widened; the Date result type is restored on store), so an
+        // arithmetic expression never has type Date.
         B::Add | B::Sub | B::Mul | B::Div | B::Pow => {
-            numeric_promote(lhs, rhs)
+            match numeric_promote(lhs, rhs) {
+                VbaType::Date => VbaType::Double,
+                other => other,
+            }
         }
         // Member access: Variant (resolved at runtime)
         B::Dot | B::Bang => VbaType::Variant,
