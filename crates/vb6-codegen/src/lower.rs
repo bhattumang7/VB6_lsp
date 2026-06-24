@@ -21,6 +21,7 @@ use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame};
 use crate::bridge::{load_store_ctx, param_frame_from_types, type_ctx, UnsupportedType};
 use crate::emit::Emitter;
 use crate::node::{NodeArena, NodeRef};
+use crate::tables::RT_STORE_BY_CTX;
 
 /// Errors that can arise while lowering a proc.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -214,6 +215,13 @@ pub fn lower_proc(
             // buffer of `n` chars = 2*n bytes (oracle-confirmed for n=1,4,8,10,16,20).
             let size = 2 * (n as i16);
             local_slots.push(frame.declare_anon_bytes(size));
+        } else if matches!(v.vba_type, VbaType::Array(_)) {
+            // A fixed local array is a 28-byte SAFEARRAY descriptor (size-independent
+            // of the element count — the data is heap-allocated); the LdAddr target
+            // sits 4 bytes above the slot bottom (oracle-confirmed, 1-D arrays).
+            let mut slot = frame.declare_anon_bytes(28);
+            slot.frame_offset += 4;
+            local_slots.push(slot);
         } else {
             let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
             local_slots.push(frame.declare_anon(tctx));
@@ -906,6 +914,53 @@ fn lower_select(
     Ok(())
 }
 
+/// If `func_id` resolves to a local array, return its LdAddr frame offset and
+/// element type.
+fn array_local_info(ctx: &LowerCtx, func_id: NodeId) -> Option<(i16, VbaType)> {
+    if let Some(NameResolution::Local { local_idx, .. }) = ctx.module.resolutions.get(&func_id.0) {
+        if let VbaType::Array(elem) = &ctx.proc.locals[*local_idx].vba_type {
+            return Some((ctx.local_slots[*local_idx].frame_offset, (**elem).clone()));
+        }
+    }
+    None
+}
+
+/// The single subscript index of an array `Call`'s argument list.
+fn single_index(args_id: NodeId, expr_arena: &ExprArena) -> Option<NodeId> {
+    if let ExprNode::ArgList { args } = expr_arena.get(args_id) {
+        if args.len() == 1 {
+            return Some(args[0]);
+        }
+    }
+    None
+}
+
+/// Array element store `a(i) = v`: push the value (coerced to the element type),
+/// push the Long index, LdAddr the array descriptor (0x04), then the element-store
+/// opcode (0xa3 for Long).
+fn lower_array_store(
+    ctx: &LowerCtx,
+    func_id: NodeId,
+    args_id: NodeId,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let (arr_off, elem) = array_local_info(ctx, func_id).ok_or(LowerError::UnsupportedNode)?;
+    let idx = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+    let elem_tag = vba_type_to_node_tag(&elem).ok_or(LowerError::UnsupportedType)?;
+    let store_op: u8 = match elem {
+        VbaType::Long => 0xa3,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, value_id, expr_arena, Some(elem_tag))?);
+    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, idx, expr_arena, Some(8))?);
+    out.push(0x04);
+    out.extend_from_slice(&arr_off.to_le_bytes());
+    out.push(store_op);
+    Ok(())
+}
+
 fn lower_assign(
     ctx: &LowerCtx,
     target_id: NodeId,
@@ -913,6 +968,10 @@ fn lower_assign(
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<(), LowerError> {
+    // Array element store: `a(i) = v` (target is a subscript `Call`).
+    if let ExprNode::Call { func, args } = expr_arena.get(target_id) {
+        return lower_array_store(ctx, *func, *args, value_id, expr_arena, out);
+    }
     // Resolve the target first so its type can be used to coerce integer literals
     // in the value expression (e.g. `r = 1` where r is Long → Long literal).
     let resolution = ctx
@@ -978,6 +1037,33 @@ fn lower_assign(
         out.push(0xf6);
         out.extend_from_slice(&v_off.to_le_bytes());
         return Ok(());
+    }
+
+    // Array element load as the RHS: `r = a(i)` — push the Long index, LdAddr the
+    // array descriptor, the element-load opcode (0x9e for Long), then store to the
+    // target.
+    if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
+        if let Some((arr_off, elem)) = array_local_info(ctx, *func) {
+            let idx = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+            let load_op: u8 = match elem {
+                VbaType::Long => 0x9e,
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, idx, expr_arena, Some(8))?);
+            out.push(0x04);
+            out.extend_from_slice(&arr_off.to_le_bytes());
+            out.push(load_op);
+            match resolution {
+                NameResolution::Local { local_idx, .. } => {
+                    let ty = ctx.local_type(*local_idx);
+                    let sctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+                    out.push(RT_STORE_BY_CTX[sctx]);
+                    out.extend_from_slice(&ctx.local_slots[*local_idx].frame_offset.to_le_bytes());
+                }
+                _ => return Err(LowerError::UnsupportedNode),
+            }
+            return Ok(());
+        }
     }
 
     let coerce_tag = match resolution {

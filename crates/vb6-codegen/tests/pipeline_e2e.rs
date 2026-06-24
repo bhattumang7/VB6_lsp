@@ -707,6 +707,41 @@ fn e2e_string_concat() {
     );
 }
 
+// Array element store `a(0) = 5`: push value, push Long index, LdAddr the array
+// descriptor (0x04), element-store (0xa3). a(10) As Long is a 28-byte descriptor.
+#[test]
+fn e2e_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a(10) As Long\r\n\
+             a(0) = 5\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x05, 0x00, 0x00, 0x00, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64,
+          0xff, 0xa3]
+    );
+}
+
+// Array element load `r = a(0)`: push Long index, LdAddr, element-load (0x9e),
+// store to r.
+#[test]
+fn e2e_array_load() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a(10) As Long, r As Long\r\n\
+             r = a(0)\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0x9e, 0x71, 0x5c, 0xff]
+    );
+}
+
 // Variant assignment from an integer literal: init the hidden 16-byte Variant
 // temp from the inline literal (0x28), then variant-store (fc f6) into v.
 #[test]
