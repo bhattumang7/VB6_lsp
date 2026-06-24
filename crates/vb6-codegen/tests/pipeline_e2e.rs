@@ -755,6 +755,22 @@ fn e2e_select_case_multi() {
     );
 }
 
+// Concat chain `a & b & c`: the intermediate (a & b) is materialized to a hidden
+// temp (store-keep 0x23), concatenated with c, the result moved into s (0x31), and
+// the temp freed (0x2f).
+#[test]
+fn e2e_string_concat_chain() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim a As String, b As String, c As String, s As String\r\n s = a & b & c\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0x2a, 0x23, 0x68, 0xff, 0x6c, 0x70,
+          0xff, 0x2a, 0x31, 0x6c, 0xff, 0x2f, 0x68, 0xff]
+    );
+}
+
 // On Error GoTo label: opcode 0x4b + the backpatched label offset.
 #[test]
 fn e2e_on_error_goto() {

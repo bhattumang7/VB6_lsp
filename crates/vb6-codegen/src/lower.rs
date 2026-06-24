@@ -255,6 +255,13 @@ pub fn lower_proc(
         local_slots.push(frame.declare_anon(10));
     }
 
+    // One hidden 4-byte string temp per intermediate result in a concat chain.
+    let concat_base = local_slots.len();
+    let concat_temps = count_concat_temps(NodeId(proc.body), expr_arena);
+    for _ in 0..concat_temps {
+        local_slots.push(frame.declare_anon(5));
+    }
+
     let param_types: Vec<VbaType> = proc.params.iter().map(|p| p.vba_type.clone()).collect();
     let param_byref: Vec<bool> = proc.params.iter().map(|p| !p.flags.by_val).collect();
     let global_types: Vec<VbaType> =
@@ -275,6 +282,8 @@ pub fn lower_proc(
         select_next: Cell::new(0),
         variant_base,
         variant_next: Cell::new(0),
+        concat_base,
+        concat_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
@@ -319,6 +328,10 @@ struct LowerCtx<'m> {
     variant_base: usize,
     /// Which Variant temp slot the next Variant assignment should use.
     variant_next: Cell<usize>,
+    /// Frame index of the first concat-chain string temp slot.
+    concat_base: usize,
+    /// Which concat temp slot the next concat-chain intermediate should use.
+    concat_next: Cell<usize>,
     /// Label definitions: `(label, byte offset)`, filled as labels are emitted.
     labels: RefCell<Vec<(LabelRef, u16)>>,
     /// Pending `GoTo` jumps: `(target label, patch offset)`, patched at proc end.
@@ -666,6 +679,44 @@ fn lower_negated_condition_bytes(
         }
     }
     Ok(None)
+}
+
+/// Flatten a left-associative `&` concatenation chain into its operands in order
+/// (`a & b & c` → `[a, b, c]`).
+fn flatten_concat(node_id: NodeId, expr_arena: &ExprArena, out: &mut Vec<NodeId>) {
+    if let ExprNode::BinOp { op: BinOpKind::Cat, lhs, rhs } = expr_arena.get(node_id) {
+        flatten_concat(*lhs, expr_arena, out);
+        out.push(*rhs);
+    } else {
+        out.push(node_id);
+    }
+}
+
+/// Count the hidden string temps needed for concat chains: a chain of N operands
+/// materializes its N-2 intermediate results to temps (for BSTR cleanup).
+fn count_concat_temps(node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_concat_temps(id, expr_arena);
+    match expr_arena.get(node_id) {
+        ExprNode::Assign { value, .. } => {
+            if matches!(expr_arena.get(*value), ExprNode::BinOp { op: BinOpKind::Cat, .. }) {
+                let mut ops = Vec::new();
+                flatten_concat(*value, expr_arena, &mut ops);
+                ops.len().saturating_sub(2)
+            } else {
+                0
+            }
+        }
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
+        ExprNode::If { then_body, else_body, .. } => {
+            c(*then_body) + else_body.map(c).unwrap_or(0)
+        }
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+            c(*body)
+        }
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+        _ => 0,
+    }
 }
 
 /// Count assignments whose target is a `Variant`. Each needs a hidden 16-byte
@@ -1180,6 +1231,42 @@ fn lower_assign(
             }
             return Ok(());
         }
+    }
+
+    // String concatenation chain `s = a & b & c`: emit the first concat, then for
+    // each further operand materialize the running result to a hidden temp
+    // (store-keep 0x23) and concat. The final result is moved into the target
+    // (0x31); the intermediate temps are then freed (0x2f) for BSTR cleanup.
+    if matches!(ctx.module.types.get(&target_id.0), Some(VbaType::String))
+        && matches!(expr_arena.get(value_id), ExprNode::BinOp { op: BinOpKind::Cat, .. })
+    {
+        let s_off = match resolution {
+            NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        let mut ops = Vec::new();
+        flatten_concat(value_id, expr_arena, &mut ops);
+        out.extend_from_slice(&lower_expr_to_bytes(ctx, ops[0], expr_arena)?);
+        out.extend_from_slice(&lower_expr_to_bytes(ctx, ops[1], expr_arena)?);
+        out.push(0x2a);
+        let mut temps = Vec::new();
+        for &op in &ops[2..] {
+            let ti = ctx.concat_next.get();
+            ctx.concat_next.set(ti + 1);
+            let t_off = ctx.local_slots[ctx.concat_base + ti].frame_offset;
+            out.push(0x23);
+            out.extend_from_slice(&t_off.to_le_bytes());
+            temps.push(t_off);
+            out.extend_from_slice(&lower_expr_to_bytes(ctx, op, expr_arena)?);
+            out.push(0x2a);
+        }
+        out.push(0x31);
+        out.extend_from_slice(&s_off.to_le_bytes());
+        for t_off in temps {
+            out.push(0x2f);
+            out.extend_from_slice(&t_off.to_le_bytes());
+        }
+        return Ok(());
     }
 
     let coerce_tag = match resolution {
