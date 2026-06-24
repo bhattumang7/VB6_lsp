@@ -2086,8 +2086,11 @@ fn lower_expr_coerced(
         ExprNode::Literal { lit } => {
             // A string literal interns into the module string pool and emits
             // `0x1b <pool index>` (synthetic node 0x79); other literals fold in place.
+            // Each string-literal reference also consumes one per-procedure
+            // reference slot (the same counter a call's 2-byte operand reports).
             if let AstLit::Str(s) = lit {
                 let idx = ctx.intern_string(s);
+                ctx.call_next.set(ctx.call_next.get() + 1);
                 return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
             }
             lower_lit_coerced(lit, coerce_tag, arena)
@@ -2194,6 +2197,7 @@ fn lower_name_ref(
                 let lit = local.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
                 if let AstLit::Str(s) = lit {
                     let idx = ctx.intern_string(s);
+                    ctx.call_next.set(ctx.call_next.get() + 1);
                     return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
                 }
                 return lower_lit(lit, arena);

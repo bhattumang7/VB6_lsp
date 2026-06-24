@@ -147,6 +147,19 @@ fn e2e_call_arg_coercion() {
 }
 
 #[test]
+fn e2e_call_string_arg_reference_index() {
+    // A string-literal argument consumes a per-proc reference slot, so the call's
+    // own reference index is 1 (the string took slot 0): `1b 00` then `0a 01 …`.
+    assert_eq!(
+        caller_bytes(
+            "    Call Foo(\"x\")\r\n",
+            "Sub Foo(ByVal s As String)\r\n    Dim z As String\r\n    z = s\r\nEnd Sub\r\n"
+        ),
+        &[0x1b, 0x00, 0x00, 0x0a, 0x01, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
 fn e2e_call_function_result_no_args() {
     // `r = F()` → Function call 0x5e (result on stack) then store to r.
     assert_eq!(
