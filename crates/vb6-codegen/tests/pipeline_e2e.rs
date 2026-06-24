@@ -79,6 +79,66 @@ fn e2e_module_global_string_pool() {
     assert_eq!(procs[1], &[0x1b, 0x01, 0x00, 0x43, 0x78, 0xff]);
 }
 
+// ── Multi-procedure: parameter types, Property Let, cross-proc globals ───────
+
+/// Build a two-procedure module (Sub Main + the given second proc lines) and
+/// return the lowered byte stream of the second procedure.
+fn second_proc(second: &str) -> Vec<u8> {
+    let src = format!(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Sub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\n{second}"
+    );
+    compile_module(&src, 0x0008).remove(1)
+}
+
+#[test]
+fn e2e_mp_param_string() {
+    // ByVal String param load + copy-store.
+    assert_eq!(
+        second_proc("Sub Foo(ByVal s As String)\r\n    Dim t As String\r\n    t = s\r\nEnd Sub\r\n"),
+        &[0x6c, 0x0c, 0x00, 0x43, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_mp_param_double() {
+    assert_eq!(
+        second_proc("Sub Foo(ByVal d As Double)\r\n    Dim e As Double\r\n    e = d\r\nEnd Sub\r\n"),
+        &[0x6f, 0x0c, 0x00, 0x74, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_mp_param_byref_integer() {
+    assert_eq!(
+        second_proc("Sub Foo(x As Integer)\r\n    Dim y As Integer\r\n    y = x\r\nEnd Sub\r\n"),
+        &[0x7f, 0x0c, 0x00, 0x70, 0x7a, 0xff]
+    );
+}
+
+#[test]
+fn e2e_mp_property_let() {
+    assert_eq!(
+        second_proc("Property Let P(ByVal v As Long)\r\n    Dim y As Long\r\n    y = v\r\nEnd Property\r\n"),
+        &[0x6c, 0x0c, 0x00, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_mp_global_from_two_procs() {
+    // A module-level global written from two procedures: same global store
+    // (0x99 <module_desc> <field_offset>) in each.
+    let procs = compile_module(
+        "Attribute VB_Name = \"Module1\"\r\n\
+         Dim g As Long\r\n\
+         Sub Main()\r\n    g = 1\r\nEnd Sub\r\n\
+         Sub Foo()\r\n    g = 2\r\nEnd Sub\r\n",
+        0x0008,
+    );
+    assert_eq!(procs[0], &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x99, 0x08, 0x00, 0x00, 0x00]);
+    assert_eq!(procs[1], &[0xf5, 0x02, 0x00, 0x00, 0x00, 0x99, 0x08, 0x00, 0x00, 0x00]);
+}
+
 // ── Function return values (the proc name is an implicit slot-0 local) ───────
 
 #[test]
