@@ -1901,3 +1901,82 @@ fn e2e_i13_numeric_line_label() {
         &[0x00, 0x02, 0x00, 0x05, 0x1e, 0x07, 0x00, 0x00, 0x0a, 0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x00, 0x00]
     );
 }
+
+// ── Variant source paths, concat conversions, and fixed-array Erase ──────────
+
+#[test]
+fn e2e_d11_long_from_variant() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim v As Variant, r As Long\r\nr = v\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x6c, 0xff, 0xfc, 0x22, 0x71, 0x68, 0xff]
+    );
+}
+
+#[test]
+fn e2e_f1_variant_array_store() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As Variant, v As Variant\r\na(0) = v\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x50, 0xff, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xfc, 0xb0]
+    );
+}
+
+#[test]
+fn e2e_b15_numeric_string_concat() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim n As Long, s As String\r\ns = n & \"x\"\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xfb, 0xfe, 0x23, 0x70, 0xff, 0x1b, 0x00, 0x00, 0x2a, 0x31, 0x74, 0xff, 0x2f, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_g8_fixed_string_concat() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As String * 4, b As String * 4, s As String\r\ns = a & b\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x74, 0xff, 0x33, 0x04, 0x00, 0x23, 0x64, 0xff, 0x04, 0x6c, 0xff, 0x33, 0x04, 0x00, 0x23, 0x60, 0xff, 0x2a, 0x31, 0x68, 0xff, 0x32, 0x04, 0x00, 0x64, 0xff, 0x60, 0xff]
+    );
+}
+
+#[test]
+fn e2e_concat_var_then_numeric() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a As String, n As Long, s As String\r\ns = a & n\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, 0xfe, 0x23, 0x6c, 0xff, 0x2a, 0x31, 0x70, 0xff, 0x2f, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_f6_erase_fixed() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(10) As Long\r\nErase a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x64, 0xff, 0x59, 0x5c, 0xff, 0x5a]
+    );
+}
+
+#[test]
+fn e2e_f6_erase_fixed_2d() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\nDim a(3, 3) As Long\r\nErase a\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x5c, 0xff, 0x59, 0x54, 0xff, 0x5a]
+    );
+}
