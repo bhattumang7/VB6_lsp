@@ -621,6 +621,28 @@ fn lower_stmt(
             out.push(0x45);
             Ok(())
         }
+        // `Erase var1[, var2...]`: for each array, LdAddr the array slot then the
+        // erase opcode. A dynamic array is freed (0x5a); a fixed array is
+        // reinitialized in place, which needs its type-descriptor offset — gated.
+        ExprNode::Erase { vars } => {
+            for &v in vars {
+                let (arr_off, _elem, _dims) =
+                    array_local_info(ctx, v).ok_or(LowerError::UnsupportedNode)?;
+                let is_dynamic = match ctx.module.resolutions.get(&v.0) {
+                    Some(NameResolution::Local { local_idx, .. }) => {
+                        ctx.proc.locals[*local_idx].array_dims.is_none()
+                    }
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                if !is_dynamic {
+                    return Err(LowerError::UnsupportedNode);
+                }
+                out.push(0x04);
+                out.extend_from_slice(&arr_off.to_le_bytes());
+                out.push(0x5a);
+            }
+            Ok(())
+        }
         // `GoSub label` — push a return address and jump: opcode 0xfd 0x0a + the
         // (backpatched) label byte offset.
         ExprNode::GoSub { target } => {
