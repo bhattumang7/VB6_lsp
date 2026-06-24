@@ -574,6 +574,8 @@ fn lower_stmt(
             Ok(())
         }
         // `On Error GoTo label` = opcode 0x4b + the (backpatched) label offset.
+        // `On Error GoTo 0` disables the handler: opcode 0x4b with the sentinel
+        // target 0xfffe.
         ExprNode::OnError { kind } => match kind {
             OnErrorKind::Goto(target) => {
                 out.push(0x4b);
@@ -583,8 +585,47 @@ fn lower_stmt(
                 ctx.goto_patches.borrow_mut().push((*target, patch));
                 Ok(())
             }
-            _ => Err(LowerError::UnsupportedNode),
+            OnErrorKind::Disable => {
+                out.push(0x4b);
+                out.extend_from_slice(&0xfffe_u16.to_le_bytes());
+                Ok(())
+            }
+            // `On Error Resume Next` needs the procedure's line-number / error
+            // prologue, handled separately.
+            OnErrorKind::ResumeNext => Err(LowerError::UnsupportedNode),
         },
+        // `Stop` — break to the debugger: escaped opcode 0xfc 0xc2.
+        ExprNode::Stop => {
+            out.extend_from_slice(&[0xfc, 0xc2]);
+            Ok(())
+        }
+        // `End` — terminate the program: escaped opcode 0xfc 0xc8.
+        ExprNode::EndStmt => {
+            out.extend_from_slice(&[0xfc, 0xc8]);
+            Ok(())
+        }
+        // `Return` — return from the most recent GoSub: escaped opcode 0xfc 0xc9.
+        ExprNode::ReturnStmt => {
+            out.extend_from_slice(&[0xfc, 0xc9]);
+            Ok(())
+        }
+        // `Error number` — raise the given error: push the number (Long) then 0x45.
+        ExprNode::ErrorStmt { expr } => {
+            let expr_id = *expr;
+            out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, expr_id, expr_arena, Some(8))?);
+            out.push(0x45);
+            Ok(())
+        }
+        // `GoSub label` — push a return address and jump: opcode 0xfd 0x0a + the
+        // (backpatched) label byte offset.
+        ExprNode::GoSub { target } => {
+            out.extend_from_slice(&[0xfd, 0x0a]);
+            let patch = out.len();
+            out.push(0x00);
+            out.push(0x00);
+            ctx.goto_patches.borrow_mut().push((*target, patch));
+            Ok(())
+        }
         _ => Err(LowerError::UnsupportedNode),
     }
 }
@@ -800,6 +841,26 @@ fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &Exp
 }
 
 fn lower_do(
+    ctx: &LowerCtx,
+    kind: DoKind,
+    cond_id: Option<NodeId>,
+    body_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    // Open an Exit-Do patch scope; every `Exit Do` in the body is backpatched to
+    // the loop-end offset (the byte just past the loop's back-branch).
+    ctx.exit_stack.borrow_mut().push(Vec::new());
+    let result = lower_do_inner(ctx, kind, cond_id, body_id, expr_arena, out);
+    let exits = ctx.exit_stack.borrow_mut().pop().unwrap_or_default();
+    let end = out.len() as u16;
+    for patch in exits {
+        out[patch..patch + 2].copy_from_slice(&end.to_le_bytes());
+    }
+    result
+}
+
+fn lower_do_inner(
     ctx: &LowerCtx,
     kind: DoKind,
     cond_id: Option<NodeId>,
@@ -1362,8 +1423,7 @@ fn lower_assign(
 
     let mut arena = NodeArena::new();
     let value_root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, coerce_tag)?;
-    let value_root =
-        coerce_assign_value(ctx, value_id, value_root, coerce_tag, expr_arena, &mut arena);
+    let value_root = coerce_assign_value(ctx, value_id, value_root, coerce_tag, &mut arena);
 
     let mut emitter = Emitter::new(&arena);
     // The assigned value is an rvalue: emit it in value context (2). This is the
@@ -1679,7 +1739,6 @@ fn coerce_assign_value(
     value_id: NodeId,
     value_root: NodeRef,
     target_tag: Option<u16>,
-    expr_arena: &ExprArena,
     arena: &mut NodeArena,
 ) -> NodeRef {
     let Some(target) = target_tag else {
