@@ -1360,9 +1360,14 @@ fn lower_assign(
 
     let mut arena = NodeArena::new();
     let value_root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, coerce_tag)?;
+    let value_root =
+        coerce_assign_value(ctx, value_id, value_root, coerce_tag, expr_arena, &mut arena);
 
     let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(value_root, 0);
+    // The assigned value is an rvalue: emit it in value context (2). This is the
+    // context that selects the typed floating-point push forms (Double/Date push
+    // 0xfa, Single push 0xf9); context 0 would fall to the untyped push (0xf6/0xf5).
+    emitter.emit_expr(value_root, 2);
 
     match resolution {
         NameResolution::Local { local_idx, .. } => {
@@ -1654,6 +1659,50 @@ fn lower_binop(
 ///
 /// Integer *literals* are already widened in place by `lower_lit_coerced`, so
 /// they need no conversion node (VB6 folds the literal to the wider type).
+/// Insert an assignment-value coercion node when the source type differs from the
+/// assignment target type. VB6 computes the rvalue in its natural type and then
+/// converts it to the destination type before storing.
+///
+/// The conversion is omitted in two cases: when the types already match, and when
+/// both source and destination are floating-point (Single/Double) — there the
+/// typed load pushes the common float representation and the typed store
+/// narrows/widens, so no separate conversion opcode appears. Every other cross-type
+/// pair (integer<->integer, ->/<- Currency, ->/<- Date, ->/<- Byte) carries an
+/// explicit conversion opcode, emitted by the value-emitter for the 0x78 node.
+///
+/// Literals are skipped: integer literals are already lowered in the destination
+/// type by `lower_lit_coerced`, so wrapping them would double-convert.
+fn coerce_assign_value(
+    ctx: &LowerCtx,
+    value_id: NodeId,
+    value_root: NodeRef,
+    target_tag: Option<u16>,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> NodeRef {
+    let Some(target) = target_tag else {
+        return value_root;
+    };
+    // A lowered literal push (integer 1, 8-byte 2, float 3, pooled string 0x79) is
+    // already constant-folded into its destination type by `lower_lit_coerced`;
+    // wrapping it would double-convert. This also covers a folded negated literal
+    // (`-5`), whose source node is a UnOp but whose lowered form is a literal push.
+    if matches!(arena.get(value_root).opcode(), 1 | 2 | 3 | 0x79) {
+        return value_root;
+    }
+    let Some(src_tag) = ctx.module.types.get(&value_id.0).and_then(vba_type_to_node_tag) else {
+        return value_root;
+    };
+    if src_tag == target {
+        return value_root;
+    }
+    let is_float = |t: u16| t == 10 || t == 11;
+    if is_float(src_tag) && is_float(target) {
+        return value_root;
+    }
+    arena.alloc(NodeArena::node(0x78, target, value_root.0, 0, 0, 0))
+}
+
 fn coerce_operand(
     ctx: &LowerCtx,
     operand_id: NodeId,

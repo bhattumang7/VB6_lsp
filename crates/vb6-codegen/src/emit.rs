@@ -2354,6 +2354,27 @@ impl<'a> Emitter<'a> {
         self.emit_expr(NodeRef(n.w[4]), 2);
         let target_tag = n.type_tag();
         let src_tag = self.arena.get(NodeRef(n.w[4])).type_tag();
+        // A Date destination uses dedicated conversion opcodes rather than the
+        // base+adjust store family (a Date carries an OLE serial with its own
+        // range/validity conversion). A Single source has already been widened to
+        // the common float representation by its load, so it converts as Double.
+        if target_tag == 0xc {
+            match src_tag {
+                0xa | 0xb => {
+                    self.emit_value2(0x147);
+                    return;
+                }
+                0xf => {
+                    self.emit_value2(0x14f);
+                    return;
+                }
+                0x10 => {
+                    self.emit_value2(0x3c9);
+                    return;
+                }
+                _ => {}
+            }
+        }
         let opcode = Self::assign_store_base(target_tag) + Self::assign_source_adjust(src_tag);
         self.emit_value2(opcode as usize);
     }
