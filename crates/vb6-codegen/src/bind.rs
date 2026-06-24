@@ -250,6 +250,21 @@ impl ProcFrame {
         self.alloc(type_ctx)
     }
 
+    /// Allocate a frame slot of an explicit byte size (4-byte aligned, like
+    /// [`Self::alloc`]). Used for fixed-length strings, whose inline buffer is
+    /// larger than the 4-byte String pointer slot. The returned `frame_offset`
+    /// is the bottom of the slot (the `LdAddr` target).
+    pub fn declare_anon_bytes(&mut self, size: i16) -> LocalVar {
+        if size >= 4 {
+            let rem = self.cursor.rem_euclid(4) as i16;
+            if rem != 0 {
+                self.cursor -= rem;
+            }
+        }
+        self.cursor -= size;
+        LocalVar { type_ctx: 5, frame_offset: self.cursor }
+    }
+
     /// Move the frame cursor for one local of `type_ctx` (4-byte alignment for
     /// sizes ≥ 4, then decrement by the size) and return its `LocalVar`.
     fn alloc(&mut self, type_ctx: usize) -> LocalVar {

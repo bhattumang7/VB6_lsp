@@ -638,6 +638,24 @@ fn e2e_string_literal() {
     );
 }
 
+// Fixed-length string source copy: `As String * 8` is a 16-byte inline Unicode
+// buffer (2 bytes/char); `s = a` reads it length-aware (LdAddr a + 0x33<8>) and
+// moves the BSTR temp into s (0x31).
+#[test]
+fn e2e_fixed_string_copy() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As String * 8, s As String\r\n\
+             s = a\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x04, 0x6c, 0xff, 0x33, 0x08, 0x00, 0x31, 0x68, 0xff]
+    );
+}
+
 // String copy: a String var loads its BSTR pointer (0x6c) and stores via the
 // refcounted assign opcode (0x43).
 #[test]

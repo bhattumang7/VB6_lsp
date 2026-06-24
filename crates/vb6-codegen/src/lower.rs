@@ -209,6 +209,11 @@ pub fn lower_proc(
     for v in &proc.locals {
         if v.is_const {
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
+        } else if let Some(n) = v.fixed_string_len {
+            // A fixed-length string (`As String * n`) holds an inline Unicode
+            // buffer of `n` chars = 2*n bytes (oracle-confirmed for n=1,4,8,10,16,20).
+            let size = 2 * (n as i16);
+            local_slots.push(frame.declare_anon_bytes(size));
         } else {
             let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
             local_slots.push(frame.declare_anon(tctx));
@@ -881,6 +886,29 @@ fn lower_assign(
         .resolutions
         .get(&target_id.0)
         .ok_or(LowerError::Unresolved)?;
+
+    // Fixed-length-string source: `s = fx` where `fx` is `As String * n` reads the
+    // fixed buffer length-aware (LdAddr `fx` + 0x33<len>) and moves the resulting
+    // BSTR temp into the target (0x31). The source isn't a plain BSTR-pointer load.
+    if let ExprNode::NameRef { .. } = expr_arena.get(value_id) {
+        if let Some(NameResolution::Local { local_idx, .. }) =
+            ctx.module.resolutions.get(&value_id.0)
+        {
+            if let Some(len) = ctx.proc.locals[*local_idx].fixed_string_len {
+                if let NameResolution::Local { local_idx: t_idx, .. } = resolution {
+                    let src_off = ctx.local_slots[*local_idx].frame_offset;
+                    let tgt_off = ctx.local_slots[*t_idx].frame_offset;
+                    out.push(0x04);
+                    out.extend_from_slice(&src_off.to_le_bytes());
+                    out.push(0x33);
+                    out.extend_from_slice(&len.to_le_bytes());
+                    out.push(0x31);
+                    out.extend_from_slice(&tgt_off.to_le_bytes());
+                    return Ok(());
+                }
+            }
+        }
+    }
 
     let coerce_tag = match resolution {
         NameResolution::Local { local_idx, .. } => vba_type_to_node_tag(ctx.local_type(*local_idx)),
