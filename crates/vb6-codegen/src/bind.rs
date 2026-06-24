@@ -168,6 +168,7 @@ fn frame_size_of_ctx(type_ctx: usize) -> i16 {
         4 => 8, // Double
         5 => 4, // String (BSTR pointer)
         6 => 8, // Currency
+        10 => 16, // Variant
         _ => unimplemented!(
             "frame_size_of_ctx: typeCtx {} not yet confirmed (Date/Variant \
              use the indirect-type path)",

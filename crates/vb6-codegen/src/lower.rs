@@ -236,6 +236,13 @@ pub fn lower_proc(
         local_slots.push(frame.declare_anon(tctx));
     }
 
+    // One hidden 16-byte Variant temp per Variant-target assignment.
+    let variant_base = local_slots.len();
+    let variant_temps = count_variant_assigns(module, NodeId(proc.body), expr_arena);
+    for _ in 0..variant_temps {
+        local_slots.push(frame.declare_anon(10));
+    }
+
     let param_types: Vec<VbaType> = proc.params.iter().map(|p| p.vba_type.clone()).collect();
     let param_byref: Vec<bool> = proc.params.iter().map(|p| !p.flags.by_val).collect();
     let global_types: Vec<VbaType> =
@@ -254,6 +261,8 @@ pub fn lower_proc(
         for_next_pair: Cell::new(0),
         select_base,
         select_next: Cell::new(0),
+        variant_base,
+        variant_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
@@ -294,6 +303,10 @@ struct LowerCtx<'m> {
     select_base: usize,
     /// Which Select-subject temp slot the next Select Case should use.
     select_next: Cell<usize>,
+    /// Frame index of the first Variant-assignment temp slot.
+    variant_base: usize,
+    /// Which Variant temp slot the next Variant assignment should use.
+    variant_next: Cell<usize>,
     /// Label definitions: `(label, byte offset)`, filled as labels are emitted.
     labels: RefCell<Vec<(LabelRef, u16)>>,
     /// Pending `GoTo` jumps: `(target label, patch offset)`, patched at proc end.
@@ -579,6 +592,27 @@ fn lower_negated_condition_bytes(
         }
     }
     Ok(None)
+}
+
+/// Count assignments whose target is a `Variant`. Each needs a hidden 16-byte
+/// Variant temp to hold the converted value before the variant store.
+fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_variant_assigns(module, id, expr_arena);
+    match expr_arena.get(node_id) {
+        ExprNode::Assign { target, .. } => {
+            matches!(module.types.get(&target.0), Some(VbaType::Variant)) as usize
+        }
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
+        ExprNode::If { then_body, else_body, .. } => {
+            c(*then_body) + else_body.map(c).unwrap_or(0)
+        }
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+            c(*body)
+        }
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+        _ => 0,
+    }
 }
 
 fn lower_do(
@@ -908,6 +942,42 @@ fn lower_assign(
                 }
             }
         }
+    }
+
+    // Variant target: the RHS is converted into a hidden 16-byte Variant temp,
+    // then variant-stored (0xfc 0xf6 = value-emitter index 0x1f6) into the target.
+    if matches!(ctx.module.types.get(&target_id.0), Some(VbaType::Variant)) {
+        let v_off = match resolution {
+            NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        let vi = ctx.variant_next.get();
+        ctx.variant_next.set(vi + 1);
+        let temp_off = ctx.local_slots[ctx.variant_base + vi].frame_offset;
+        match expr_arena.get(value_id) {
+            // Integer literal: init the temp from the inline literal (0x28 index
+            // 0x3c0): 0x28 <temp> <2-byte int>.
+            ExprNode::Literal { lit: AstLit::Int(n) } => {
+                out.push(0x28);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+                out.extend_from_slice(&(*n as i16).to_le_bytes());
+            }
+            // Long variable: load it, then convert Long->Variant into the temp
+            // (0xfd 0x69 = value-emitter index 0x269).
+            ExprNode::NameRef { .. }
+                if matches!(ctx.module.types.get(&value_id.0), Some(VbaType::Long)) =>
+            {
+                out.extend_from_slice(&lower_expr_to_bytes(ctx, value_id, expr_arena)?);
+                out.push(0xfd);
+                out.push(0x69);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+            }
+            _ => return Err(LowerError::UnsupportedNode),
+        }
+        out.push(0xfc);
+        out.push(0xf6);
+        out.extend_from_slice(&v_off.to_le_bytes());
+        return Ok(());
     }
 
     let coerce_tag = match resolution {

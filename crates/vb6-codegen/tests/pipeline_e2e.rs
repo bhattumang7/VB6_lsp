@@ -707,6 +707,40 @@ fn e2e_string_concat() {
     );
 }
 
+// Variant assignment from an integer literal: init the hidden 16-byte Variant
+// temp from the inline literal (0x28), then variant-store (fc f6) into v.
+#[test]
+fn e2e_variant_from_literal() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim v As Variant\r\n\
+             v = 5\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x28, 0x5c, 0xff, 0x05, 0x00, 0xfc, 0xf6, 0x6c, 0xff]
+    );
+}
+
+// Variant assignment from a Long: load it, convert Long->Variant into the temp
+// (fd 69), then variant-store (fc f6).
+#[test]
+fn e2e_variant_from_long() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, v As Variant\r\n\
+             v = a\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xfd, 0x69, 0x58, 0xff, 0xfc, 0xf6, 0x68, 0xff]
+    );
+}
+
 // Byte: 2-byte escape-paged load (fc e0) / store (fc f0) via the value-emitter
 // index path; add via the generic emitter (tag 5 -> RT_OPCODE_BYTE[0x8e]=fb escape).
 #[test]

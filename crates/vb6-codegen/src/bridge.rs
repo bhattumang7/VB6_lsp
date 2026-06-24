@@ -50,7 +50,9 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
         // Date is stored exactly as Double (8-byte, Double frame class and
         // load/store opcodes 0x6f/0x74).
         VbaType::Date => 4,
-        VbaType::Variant | VbaType::Decimal => return None,
+        // Variant is a 16-byte structure (ctx 10).
+        VbaType::Variant => 10,
+        VbaType::Decimal => return None,
         VbaType::UserDefined(_) | VbaType::Array(_) => return None,
     })
 }
