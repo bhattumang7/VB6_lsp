@@ -891,6 +891,22 @@ fn e2e_multidim_array_store() {
     );
 }
 
+// ReDim of a dynamic array: push the lower (0) and upper (10) bound, LdAddr the
+// array pointer, then the ReDim opcode (fe 8e) + dim-count, element VARTYPE (Long
+// = 3), element size (4), and flags (0x80).
+#[test]
+fn e2e_redim() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n\
+             Dim a() As Long\r\n ReDim a(10)\r\nEnd Sub\r\n",
+            0x0008,
+        ),
+        &[0xf5, 0x00, 0x00, 0x00, 0x00, 0xf5, 0x0a, 0x00, 0x00, 0x00, 0x04, 0x78,
+          0xff, 0xfe, 0x8e, 0x01, 0x00, 0x03, 0x00, 0x04, 0x00, 0x80, 0x00]
+    );
+}
+
 // Array element store `a(0) = 5`: push value, push Long index, LdAddr the array
 // descriptor (0x04), element-store (0xa3). a(10) As Long is a 28-byte descriptor.
 #[test]

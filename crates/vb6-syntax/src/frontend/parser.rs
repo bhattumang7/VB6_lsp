@@ -1155,11 +1155,13 @@ impl<'src> Parser<'src> {
         id
     }
 
-    /// Parses array bounds. Returns the bounds-list `ArgList` node, or `None`
-    /// for a dynamic array (empty `()`).
+    /// Parses array bounds. Returns the bounds-list `ArgList` node. A dynamic
+    /// array (`a()`) yields an empty `ArgList` — `Some` so the declaration is
+    /// still recognised as an array (distinct from a scalar), but with no
+    /// dimensions until `ReDim`.
     fn parse_array_bounds(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
         if self.peek().kind == TokenKind::Kw(Kw::RParen) {
-            return None; // dynamic array: no bounds
+            return Some(arena.alloc(ExprNode::ArgList { args: Vec::new() }));
         }
         let mut args = Vec::new();
         loop {

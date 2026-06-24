@@ -220,14 +220,20 @@ pub fn lower_proc(
             let size = 2 * (n as i16);
             local_slots.push(frame.declare_anon_bytes(size));
         } else if matches!(v.vba_type, VbaType::Array(_)) {
-            // A fixed local array is a SAFEARRAY descriptor (size-independent of the
-            // element count — data is heap-allocated): 20 bytes + 8 per dimension
-            // (28 for 1-D, 36 for 2-D — oracle-confirmed); the LdAddr target sits 4
-            // bytes above the slot bottom.
-            let dims = v.array_dims.unwrap_or(1) as i16;
-            let mut slot = frame.declare_anon_bytes(20 + 8 * dims);
-            slot.frame_offset += 4;
-            local_slots.push(slot);
+            match v.array_dims {
+                // A fixed array is a SAFEARRAY descriptor (size-independent of the
+                // element count — data is heap-allocated): 20 bytes + 8 per
+                // dimension (28 for 1-D, 36 for 2-D); the LdAddr target sits 4
+                // bytes above the slot bottom.
+                Some(dims) => {
+                    let mut slot = frame.declare_anon_bytes(20 + 8 * dims as i16);
+                    slot.frame_offset += 4;
+                    local_slots.push(slot);
+                }
+                // A dynamic array (`Dim a()`) is a 4-byte pointer slot; the array
+                // is allocated by `ReDim`.
+                None => local_slots.push(frame.declare_anon_bytes(4)),
+            }
         } else {
             let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
             local_slots.push(frame.declare_anon(tctx));
@@ -514,6 +520,55 @@ fn lower_stmt(
             out.push(0x47);
             out.push(0x00);
             out.push(0x00);
+            Ok(())
+        }
+        // `ReDim a(bounds)`: push each dimension's lower and upper bound (Long),
+        // LdAddr the array pointer, then the ReDim opcode (0xfe 0x8e) followed by
+        // dim-count, element VARTYPE, element size, and flags.
+        ExprNode::ReDimItem { name, bounds, .. } => {
+            let local_idx = ctx
+                .proc
+                .locals
+                .iter()
+                .position(|v| v.sym_id == *name)
+                .ok_or(LowerError::Unresolved)?;
+            let elem = match &ctx.proc.locals[local_idx].vba_type {
+                VbaType::Array(e) => (**e).clone(),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let (vartype, size): (u16, u16) = match elem {
+                VbaType::Long => (3, 4),
+                VbaType::Integer => (2, 2),
+                VbaType::Double => (5, 8),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let arr_off = ctx.local_slots[local_idx].frame_offset;
+            let bounds_id = bounds.ok_or(LowerError::UnsupportedNode)?;
+            let dim_ids = match expr_arena.get(bounds_id) {
+                ExprNode::ArgList { args } => args.clone(),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            for &d in &dim_ids {
+                match expr_arena.get(d) {
+                    ExprNode::RangeTo { lo, hi } => {
+                        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *lo, expr_arena, Some(8))?);
+                        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *hi, expr_arena, Some(8))?);
+                    }
+                    // bare upper bound — the lower bound defaults to 0.
+                    _ => {
+                        out.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+                        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, d, expr_arena, Some(8))?);
+                    }
+                }
+            }
+            out.push(0x04);
+            out.extend_from_slice(&arr_off.to_le_bytes());
+            out.push(0xfe);
+            out.push(0x8e);
+            out.extend_from_slice(&(dim_ids.len() as u16).to_le_bytes());
+            out.extend_from_slice(&vartype.to_le_bytes());
+            out.extend_from_slice(&size.to_le_bytes());
+            out.extend_from_slice(&0x80u16.to_le_bytes());
             Ok(())
         }
         // `On Error GoTo label` = opcode 0x4b + the (backpatched) label offset.
