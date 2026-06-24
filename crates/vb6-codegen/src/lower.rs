@@ -784,6 +784,21 @@ fn lower_stmt(
             };
             lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
         }
+        // Implicit Sub call with parenthesised args as a statement: `Foo(5)`
+        // (parses to a bare `Call` node) — statement-form call, result discarded.
+        ExprNode::Call { func, args }
+            if matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_))) =>
+        {
+            lower_call(ctx, *func, *args, false, expr_arena, out)
+        }
+        // Bare implicit Sub call with no arguments as a statement: `Foo`
+        // (parses to a bare `NameRef`). Passing the node itself as the arg list
+        // yields no arguments (it is not an ArgList).
+        ExprNode::NameRef { .. }
+            if matches!(ctx.module.resolutions.get(&node_id.0), Some(NameResolution::Proc(_))) =>
+        {
+            lower_call(ctx, node_id, node_id, false, expr_arena, out)
+        }
         ExprNode::Stop => {
             out.extend_from_slice(&[0xfc, 0xc2]);
             Ok(())
@@ -1667,6 +1682,25 @@ fn emit_static_access(ctx: &LowerCtx, out: &mut Vec<u8>, op: &[u8], var_off: u16
     out.extend_from_slice(&var_off.to_le_bytes());
 }
 
+/// Total pushed byte size of a ByVal argument of `ty`: rounded up to a multiple
+/// of 4 (Integer/Byte → 4), except 8- and 16-byte types keep their size.
+fn call_arg_bytes(ty: &VbaType) -> u16 {
+    let s = static_var_size(ty);
+    if s <= 4 { 4 } else { s }
+}
+
+/// Emit a size-based value load (load `size` bytes from a frame offset), the form
+/// used to push a same-typed ByVal argument: 1→0xfc 0xe0, 2→0x6b, 4→0x6c, 8→0x6d.
+fn emit_sized_value_load(size: u16, off: i16, buf: &mut Vec<u8>) {
+    match size {
+        1 => buf.extend_from_slice(&[0xfc, 0xe0]),
+        2 => buf.push(0x6b),
+        8 => buf.push(0x6d),
+        _ => buf.push(0x6c),
+    }
+    buf.extend_from_slice(&off.to_le_bytes());
+}
+
 /// Frame offset of a local-variable argument (for a ByRef argument's LdAddr).
 fn arg_var_offset(ctx: &LowerCtx, arg_id: NodeId) -> Option<i16> {
     match ctx.module.resolutions.get(&arg_id.0) {
@@ -1712,17 +1746,30 @@ fn lower_call(
             buf.extend_from_slice(&off.to_le_bytes());
             arg_bytes += 4;
         } else {
-            // ByVal: push the value, coerced to the parameter type (an argument is
-            // assigned to the parameter, so it carries the same coercion as a store).
+            // ByVal. A same-typed local-variable argument (no conversion) is pushed
+            // with a *size-based* value load (load N bytes), not the type-specific
+            // load: 1→0xfc 0xe0, 2→0x6b, 4→0x6c, 8→0x6d. An argument needing a
+            // conversion is loaded as its own type and converted (the store-style
+            // coercion). A Variant ByVal argument needs the variant-copy path.
             let pty = param.map(|p| p.vba_type.clone());
-            let coerce = pty.as_ref().and_then(vba_type_to_node_tag);
-            let mut arena = NodeArena::new();
-            let root = lower_expr_coerced(ctx, arg, expr_arena, &mut arena, coerce)?;
-            let root = coerce_assign_value(ctx, arg, root, coerce, &mut arena);
-            let mut emitter = Emitter::new(&arena);
-            emitter.emit_expr(root, 2);
-            buf.extend(emitter.into_bytes());
-            arg_bytes += pty.as_ref().map(static_var_size).unwrap_or(4);
+            if matches!(pty, Some(VbaType::Variant)) {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let same_type = matches!(expr_arena.get(arg), ExprNode::NameRef { .. })
+                && pty.as_ref() == ctx.module.types.get(&arg.0);
+            let off = arg_var_offset(ctx, arg);
+            if let (true, Some(off), Some(ty)) = (same_type, off, pty.as_ref()) {
+                emit_sized_value_load(static_var_size(ty), off, &mut buf);
+            } else {
+                let coerce = pty.as_ref().and_then(vba_type_to_node_tag);
+                let mut arena = NodeArena::new();
+                let root = lower_expr_coerced(ctx, arg, expr_arena, &mut arena, coerce)?;
+                let root = coerce_assign_value(ctx, arg, root, coerce, &mut arena);
+                let mut emitter = Emitter::new(&arena);
+                emitter.emit_expr(root, 2);
+                buf.extend(emitter.into_bytes());
+            }
+            arg_bytes += pty.as_ref().map(call_arg_bytes).unwrap_or(4);
         }
         pushes.push(buf);
     }

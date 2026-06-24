@@ -147,6 +147,40 @@ fn e2e_call_arg_coercion() {
 }
 
 #[test]
+fn e2e_call_bare_implicit_no_args() {
+    // A bare `Foo` statement (no `Call`, no parens) is an implicit Sub call.
+    assert_eq!(
+        caller_bytes("    Foo\r\n", "Sub Foo()\r\n    Dim z As Long\r\n    z = 1\r\nEnd Sub\r\n"),
+        &[0x0a, 0x00, 0x00, 0x00, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_byval_double_sized_load() {
+    // A same-typed ByVal Double argument is pushed with the size-8 value load
+    // (0x6d), not the Double type load (0x6f); arg-bytes 8.
+    assert_eq!(
+        caller_bytes(
+            "    Dim a As Double\r\n    Call Foo(a)\r\n",
+            "Sub Foo(ByVal d As Double)\r\n    Dim z As Double\r\n    z = d\r\nEnd Sub\r\n"
+        ),
+        &[0x6d, 0x74, 0xff, 0x0a, 0x00, 0x00, 0x08, 0x00]
+    );
+}
+
+#[test]
+fn e2e_call_byval_integer_argbytes_padded() {
+    // A ByVal Integer argument loads with 0x6b but its arg-bytes round up to 4.
+    assert_eq!(
+        caller_bytes(
+            "    Dim a As Integer\r\n    Call Foo(a)\r\n",
+            "Sub Foo(ByVal x As Integer)\r\n    Dim z As Integer\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0x6b, 0x7a, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
 fn e2e_call_string_arg_reference_index() {
     // A string-literal argument consumes a per-proc reference slot, so the call's
     // own reference index is 1 (the string took slot 0): `1b 00` then `0a 01 …`.
