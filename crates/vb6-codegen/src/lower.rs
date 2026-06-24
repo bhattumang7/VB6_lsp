@@ -643,6 +643,33 @@ fn lower_stmt(
             }
             Ok(())
         }
+        // `On expr GoTo/GoSub label-list`: emit the selector coerced to Integer,
+        // then the dispatch opcode (0xfe 0x96 GoTo / 0xfe 0x95 GoSub), the table
+        // byte length (labels * 2), then one 2-byte (backpatched) offset per label.
+        ExprNode::OnGo { is_gosub, expr, labels } => {
+            let mut arena = NodeArena::new();
+            let root = lower_expr(ctx, *expr, expr_arena, &mut arena)?;
+            // The selector is converted to Integer (e.g. Long selector → 0xe4).
+            let root = coerce_operand(ctx, *expr, root, Some(6), expr_arena, &mut arena);
+            let mut emitter = Emitter::new(&arena);
+            emitter.emit_expr(root, 2);
+            out.extend(emitter.into_bytes());
+            out.push(0xfe);
+            out.push(if *is_gosub { 0x95 } else { 0x96 });
+            out.extend_from_slice(&((labels.len() * 2) as u16).to_le_bytes());
+            for &lbl in labels {
+                let target = match expr_arena.get(lbl) {
+                    ExprNode::NameRef { sym, .. } => LabelRef::Name(*sym),
+                    ExprNode::Literal { lit: AstLit::Int(v) } => LabelRef::Line(*v),
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                let patch = out.len();
+                out.push(0x00);
+                out.push(0x00);
+                ctx.goto_patches.borrow_mut().push((target, patch));
+            }
+            Ok(())
+        }
         // `GoSub label` — push a return address and jump: opcode 0xfd 0x0a + the
         // (backpatched) label byte offset.
         ExprNode::GoSub { target } => {
