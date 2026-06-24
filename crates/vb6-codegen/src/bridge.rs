@@ -64,7 +64,9 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
 /// than emit an unverified opcode.
 pub fn load_store_ctx(t: &VbaType) -> Option<usize> {
     Some(match t {
-        VbaType::Integer => 1,
+        // Boolean is stored exactly as Integer (2-byte, Integer-class storage and
+        // load/store opcodes — same node tag 6).
+        VbaType::Integer | VbaType::Boolean => 1,
         VbaType::Long => 2,
         VbaType::Single => 3,
         VbaType::Double => 4,

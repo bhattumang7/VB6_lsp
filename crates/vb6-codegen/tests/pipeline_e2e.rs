@@ -621,6 +621,56 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Currency arithmetic: node tag 0x0d (grounded from the kind->VARTYPE table),
+// add opcode 0xac. Load/store use the Currency frame class (6): 6d/72.
+#[test]
+fn e2e_currency_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Currency, b As Currency, r As Currency\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6d, 0x74, 0xff, 0x6d, 0x6c, 0xff, 0xac, 0x72, 0x64, 0xff]
+    );
+}
+
+// Boolean is operated on as Integer (tag 6, Integer-class load/store): And = 0xc4.
+#[test]
+fn e2e_boolean_and() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Boolean, b As Boolean, r As Boolean\r\n\
+             r = a And b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xc4, 0x70, 0x76, 0xff]
+    );
+}
+
+// Long widened to Currency (the wider operand): conversion opcode 0xf0, then the
+// Currency add 0xac.
+#[test]
+fn e2e_mixed_long_currency_add() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Currency, r As Currency\r\n\
+             r = a + b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0xf0, 0x6d, 0x70, 0xff, 0xac, 0x72, 0x68, 0xff]
+    );
+}
+
 // Single→Double widening emits NO conversion opcode: a floating-point operand
 // widened to a wider float is consumed directly by the operation (only
 // integer-typed operands carry an explicit widening conversion). Load Single,

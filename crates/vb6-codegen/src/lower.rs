@@ -45,15 +45,19 @@ impl From<UnsupportedType> for LowerError {
 /// Map a `VbaType` to the VB6 internal type tag stored in the high 16 bits of
 /// an expression node's `word[0]`.
 ///
-/// Oracle-confirmed constants (from oracle_pcode.rs constants and emit.rs
-/// float-literal comments): T_INTEGER/Boolean = 6, T_LONG = 8, T_SINGLE = 10,
-/// T_DOUBLE = 11.
+/// Node type tags (the high-16 of word[0]), grounded from VB6's kind->VARTYPE
+/// table (`DAT_0fa92778[kind] = VARTYPE`): Integer=6, Long=8, Single=0xa,
+/// Double=0xb, Date=0xc, Currency=0xd, Variant=0xf, String=0x10. A Boolean
+/// *value* is operated on as Integer (tag 6) — VB6 selects opcodes by the
+/// Integer class for Boolean — so it shares tag 6 here (its declaration kind 3
+/// is a separate namespace).
 fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
     match ty {
         VbaType::Integer | VbaType::Boolean => Some(6),
         VbaType::Long => Some(8),
         VbaType::Single => Some(10),
         VbaType::Double => Some(11),
+        VbaType::Currency => Some(0xd),
         _ => None,
     }
 }
@@ -627,13 +631,17 @@ fn lower_assign(
 /// Returns the "wider" of two VBA types for numeric literal promotion.
 /// VB6 widens integer literals to match the type of the wider operand.
 fn wider_numeric_tag(a: Option<&VbaType>, b: Option<&VbaType>) -> Option<u16> {
+    // VB6 numeric promotion order, matching vb6-sema's `numeric_promote`.
     fn rank(t: &VbaType) -> u8 {
         match t {
-            VbaType::Integer | VbaType::Boolean => 1,
-            VbaType::Long   => 2,
-            VbaType::Single => 3,
-            VbaType::Double => 4,
-            _ => 0,
+            VbaType::Boolean => 0,
+            VbaType::Byte    => 1,
+            VbaType::Integer => 2,
+            VbaType::Long    => 3,
+            VbaType::Single  => 4,
+            VbaType::Double | VbaType::Date => 5,
+            VbaType::Currency => 6,
+            _ => 7,
         }
     }
     let ta = a.map(rank).unwrap_or(0);
