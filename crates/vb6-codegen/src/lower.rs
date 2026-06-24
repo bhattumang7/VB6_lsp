@@ -266,7 +266,7 @@ pub fn lower_proc(
 
     // One hidden 4-byte string temp per intermediate result in a concat chain.
     let concat_base = local_slots.len();
-    let concat_temps = count_concat_temps(NodeId(proc.body), expr_arena);
+    let concat_temps = count_concat_temps(module, proc, NodeId(proc.body), expr_arena);
     for _ in 0..concat_temps {
         local_slots.push(frame.declare_anon(5));
     }
@@ -949,14 +949,95 @@ fn flatten_concat(node_id: NodeId, expr_arena: &ExprArena, out: &mut Vec<NodeId>
 
 /// Count the hidden string temps needed for concat chains: a chain of N operands
 /// materializes its N-2 intermediate results to temps (for BSTR cleanup).
-fn count_concat_temps(node_id: NodeId, expr_arena: &ExprArena) -> usize {
-    let c = |id: NodeId| count_concat_temps(id, expr_arena);
+/// Allocate the next concat temp slot, emit a store-keep (0x23) of the top-of-stack
+/// BSTR into it, and return its frame offset (recorded for later release).
+fn alloc_concat_temp(ctx: &LowerCtx, out: &mut Vec<u8>) -> i16 {
+    let ti = ctx.concat_next.get();
+    ctx.concat_next.set(ti + 1);
+    let t_off = ctx.local_slots[ctx.concat_base + ti].frame_offset;
+    out.push(0x23);
+    out.extend_from_slice(&t_off.to_le_bytes());
+    t_off
+}
+
+/// Emit one concatenation operand's value bytes: a fixed-length string loads its
+/// inline buffer length-aware (LdAddr + 0x33<len>); a non-String operand loads and
+/// converts to String (the numeric→String conversion); a plain String operand or
+/// literal loads directly.
+fn emit_concat_operand(
+    ctx: &LowerCtx,
+    op_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    match ctx.module.types.get(&op_id.0) {
+        Some(VbaType::String) => {
+            if let Some(NameResolution::Local { local_idx, .. }) =
+                ctx.module.resolutions.get(&op_id.0)
+            {
+                if let Some(len) = ctx.proc.locals[*local_idx].fixed_string_len {
+                    let off = ctx.local_slots[*local_idx].frame_offset;
+                    out.push(0x04);
+                    out.extend_from_slice(&off.to_le_bytes());
+                    out.push(0x33);
+                    out.extend_from_slice(&len.to_le_bytes());
+                    return Ok(());
+                }
+            }
+            out.extend_from_slice(&lower_expr_to_bytes(ctx, op_id, expr_arena)?);
+            Ok(())
+        }
+        Some(_) => {
+            // Numeric operand: load it, then convert to String (e.g. Long → 0xfb 0xfe).
+            let mut arena = NodeArena::new();
+            let root = lower_expr(ctx, op_id, expr_arena, &mut arena)?;
+            let src_tag = arena.get(root).type_tag();
+            let mut emitter = Emitter::new(&arena);
+            emitter.emit_expr(root, 2);
+            emitter.emit_conversion(0x10, src_tag);
+            out.extend(emitter.into_bytes());
+            Ok(())
+        }
+        None => {
+            out.extend_from_slice(&lower_expr_to_bytes(ctx, op_id, expr_arena)?);
+            Ok(())
+        }
+    }
+}
+
+/// Whether a concat operand materializes a *fresh* BSTR temp that needs tracking
+/// for cleanup: any non-String operand (it is converted to a string) and any
+/// fixed-length-string operand (its inline buffer is copied into a BSTR). A plain
+/// variable-length String operand and a string literal are not fresh.
+fn concat_operand_is_fresh(module: &BoundModule, proc: &BoundProc, op_id: NodeId) -> bool {
+    match module.types.get(&op_id.0) {
+        Some(VbaType::String) => {
+            if let Some(NameResolution::Local { local_idx, .. }) = module.resolutions.get(&op_id.0) {
+                proc.locals[*local_idx].fixed_string_len.is_some()
+            } else {
+                false
+            }
+        }
+        Some(_) => true,
+        None => false,
+    }
+}
+
+/// Number of concat temps for one concatenation: one per fresh operand plus one
+/// per intermediate result (every concat but the last keeps its accumulator).
+fn concat_chain_temps(module: &BoundModule, proc: &BoundProc, ops: &[NodeId]) -> usize {
+    let fresh = ops.iter().filter(|&&o| concat_operand_is_fresh(module, proc, o)).count();
+    fresh + ops.len().saturating_sub(2)
+}
+
+fn count_concat_temps(module: &BoundModule, proc: &BoundProc, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_concat_temps(module, proc, id, expr_arena);
     match expr_arena.get(node_id) {
         ExprNode::Assign { value, .. } => {
             if matches!(expr_arena.get(*value), ExprNode::BinOp { op: BinOpKind::Cat, .. }) {
                 let mut ops = Vec::new();
                 flatten_concat(*value, expr_arena, &mut ops);
-                ops.len().saturating_sub(2)
+                concat_chain_temps(module, proc, &ops)
             } else {
                 0
             }
@@ -1609,25 +1690,38 @@ fn lower_assign(
         };
         let mut ops = Vec::new();
         flatten_concat(value_id, expr_arena, &mut ops);
-        out.extend_from_slice(&lower_expr_to_bytes(ctx, ops[0], expr_arena)?);
-        out.extend_from_slice(&lower_expr_to_bytes(ctx, ops[1], expr_arena)?);
-        out.push(0x2a);
-        let mut temps = Vec::new();
-        for &op in &ops[2..] {
-            let ti = ctx.concat_next.get();
-            ctx.concat_next.set(ti + 1);
-            let t_off = ctx.local_slots[ctx.concat_base + ti].frame_offset;
-            out.push(0x23);
-            out.extend_from_slice(&t_off.to_le_bytes());
-            temps.push(t_off);
-            out.extend_from_slice(&lower_expr_to_bytes(ctx, op, expr_arena)?);
-            out.push(0x2a);
+        let mut temps: Vec<i16> = Vec::new();
+        // Every operand that materializes a fresh BSTR (a converted numeric or a
+        // fixed-length string) is store-kept (0x23) to a temp for later cleanup;
+        // so is every intermediate concat result except the last.
+        for (i, &op) in ops.iter().enumerate() {
+            emit_concat_operand(ctx, op, expr_arena, out)?;
+            if concat_operand_is_fresh(ctx.module, ctx.proc, op) {
+                temps.push(alloc_concat_temp(ctx, out));
+            }
+            if i >= 1 {
+                out.push(0x2a);
+                if i < ops.len() - 1 {
+                    temps.push(alloc_concat_temp(ctx, out));
+                }
+            }
         }
         out.push(0x31);
         out.extend_from_slice(&s_off.to_le_bytes());
-        for t_off in temps {
-            out.push(0x2f);
-            out.extend_from_slice(&t_off.to_le_bytes());
+        // Release the tracked temps: a single 0x2f, or 0x32 <byte-len> <offsets…>.
+        match temps.len() {
+            0 => {}
+            1 => {
+                out.push(0x2f);
+                out.extend_from_slice(&temps[0].to_le_bytes());
+            }
+            n => {
+                out.push(0x32);
+                out.extend_from_slice(&((n * 2) as u16).to_le_bytes());
+                for t in &temps {
+                    out.extend_from_slice(&t.to_le_bytes());
+                }
+            }
         }
         return Ok(());
     }
