@@ -2207,3 +2207,69 @@ fn e2e_static_two_longs() {
         &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x00, 0x00, 0xf5, 0x02, 0x00, 0x00, 0x00, 0x5f, 0x08, 0x00, 0x04, 0x00, 0x8f, 0x04, 0x00]
     );
 }
+
+// ── Multi-procedure: parameters, Function/Property returns, arrays ───────────
+
+#[test]
+fn e2e_mp_byval_long_param() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nSub Foo(ByVal x As Long)\r\n    Dim y As Long\r\n    y = x\r\nEnd Sub\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0x6c, 0x0c, 0x00, 0x71, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_mp_byref_long_param() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nSub Foo(x As Long)\r\n    Dim y As Long\r\n    y = x\r\nEnd Sub\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0x80, 0x0c, 0x00, 0x71, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_mp_optional_long_param() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nSub Foo(Optional ByVal x As Long)\r\n    Dim y As Long\r\n    y = x\r\nEnd Sub\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0x6c, 0x0c, 0x00, 0x71, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_mp_function_string_return() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nFunction F() As String\r\n    F = \"x\"\r\nEnd Function\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0x1b, 0x00, 0x00, 0x43, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_mp_function_double_return() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nFunction F() As Double\r\n    Dim d As Double\r\n    F = d\r\nEnd Function\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0x6f, 0x6c, 0xff, 0x74, 0x74, 0xff]);
+}
+
+#[test]
+fn e2e_mp_function_coerced_return() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nFunction F() As Long\r\n    Dim i As Integer\r\n    F = i\r\nEnd Function\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0x6b, 0x76, 0xff, 0xe7, 0x71, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_mp_property_get_long() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a As Long\r\n    a = 1\r\nEnd Sub\r\nProperty Get P() As Long\r\n    P = 5\r\nEnd Property\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0xf5, 0x05, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff]);
+}
+
+#[test]
+fn e2e_mp_array_store_second_proc() {
+    let procs = compile_module(
+            "Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n    Dim a(10) As Long\r\n    a(0) = 1\r\nEnd Sub\r\nSub Foo()\r\n    Dim b(10) As Long\r\n    b(0) = 2\r\nEnd Sub\r\n",
+        0x0008);
+    assert_eq!(procs[1], &[0xf5, 0x02, 0x00, 0x00, 0x00, 0xf5, 0x00, 0x00, 0x00, 0x00, 0x04, 0x64, 0xff, 0xa3]);
+}
