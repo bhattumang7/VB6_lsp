@@ -735,11 +735,14 @@ fn lower_stmt(
                     }
                     _ => return Err(LowerError::UnsupportedNode),
                 };
-                if !is_dynamic {
-                    return Err(LowerError::UnsupportedNode);
-                }
                 out.push(0x04);
                 out.extend_from_slice(&arr_off.to_le_bytes());
+                if !is_dynamic {
+                    // A fixed array is reinitialized in place: 0x59 with the array's
+                    // data offset (the LdAddr target minus 8), then 0x5a.
+                    out.push(0x59);
+                    out.extend_from_slice(&(arr_off - 8).to_le_bytes());
+                }
                 out.push(0x5a);
             }
             Ok(())
