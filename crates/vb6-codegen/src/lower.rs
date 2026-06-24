@@ -133,7 +133,43 @@ fn count_for_loops(node_id: NodeId, expr_arena: &ExprArena) -> usize {
         }
         ExprNode::While { body, .. } => count_for_loops(*body, expr_arena),
         ExprNode::Do { body, .. } => count_for_loops(*body, expr_arena),
+        ExprNode::SelectCase { cases, .. } => {
+            cases.iter().map(|&id| count_for_loops(id, expr_arena)).sum()
+        }
+        ExprNode::CaseBlock { body, .. } => count_for_loops(*body, expr_arena),
+        ExprNode::CaseElse { body } => count_for_loops(*body, expr_arena),
         _ => 0,
+    }
+}
+
+/// Collect, in statement order, the subject expression of every `Select Case` in
+/// a subtree. Each needs one hidden frame slot (typed as the subject) to hold the
+/// evaluated subject across the per-case comparisons.
+fn collect_select_subjects(node_id: NodeId, expr_arena: &ExprArena, out: &mut Vec<NodeId>) {
+    match expr_arena.get(node_id) {
+        ExprNode::SelectCase { subject, cases, .. } => {
+            out.push(*subject);
+            for &id in cases {
+                collect_select_subjects(id, expr_arena, out);
+            }
+        }
+        ExprNode::CaseBlock { body, .. } => collect_select_subjects(*body, expr_arena, out),
+        ExprNode::CaseElse { body } => collect_select_subjects(*body, expr_arena, out),
+        ExprNode::Block { stmts } => {
+            for &id in stmts {
+                collect_select_subjects(id, expr_arena, out);
+            }
+        }
+        ExprNode::If { then_body, else_body, .. } => {
+            collect_select_subjects(*then_body, expr_arena, out);
+            if let Some(id) = else_body {
+                collect_select_subjects(*id, expr_arena, out);
+            }
+        }
+        ExprNode::While { body, .. } => collect_select_subjects(*body, expr_arena, out),
+        ExprNode::Do { body, .. } => collect_select_subjects(*body, expr_arena, out),
+        ExprNode::For { body, .. } => collect_select_subjects(*body, expr_arena, out),
+        _ => {}
     }
 }
 
@@ -165,6 +201,16 @@ pub fn lower_proc(
         local_types.push(VbaType::Long);
     }
 
+    // Pre-allocate one hidden slot per Select Case (typed as its subject) to hold
+    // the evaluated subject across the per-case comparisons.
+    let select_base = local_types.len();
+    let mut select_subjects = Vec::new();
+    collect_select_subjects(NodeId(proc.body), expr_arena, &mut select_subjects);
+    for &subj in &select_subjects {
+        let ty = module.types.get(&subj.0).cloned().unwrap_or(VbaType::Long);
+        local_types.push(ty);
+    }
+
     let param_types: Vec<VbaType> = proc.params.iter().map(|p| p.vba_type.clone()).collect();
     let param_byref: Vec<bool> = proc.params.iter().map(|p| !p.flags.by_val).collect();
     let global_types: Vec<VbaType> =
@@ -182,6 +228,8 @@ pub fn lower_proc(
         global_slots,
         user_local_count,
         for_next_pair: Cell::new(0),
+        select_base,
+        select_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
@@ -217,6 +265,10 @@ struct LowerCtx<'m> {
     user_local_count: usize,
     /// Which hidden-slot pair the next For loop should use.
     for_next_pair: Cell<usize>,
+    /// Frame index of the first Select-subject temp slot.
+    select_base: usize,
+    /// Which Select-subject temp slot the next Select Case should use.
+    select_next: Cell<usize>,
     /// Label definitions: `(label, byte offset)`, filled as labels are emitted.
     labels: RefCell<Vec<(LabelRef, u16)>>,
     /// Pending `GoTo` jumps: `(target label, patch offset)`, patched at proc end.
@@ -293,6 +345,13 @@ fn lower_stmt(
             let (var_id, start_id, end_id, step_id, body_id) =
                 (*var, *start, *end, *step, *body);
             lower_for(ctx, var_id, start_id, end_id, step_id, body_id, expr_arena, out)
+        }
+        ExprNode::SelectCase { subject, pre, cases } => {
+            if !pre.is_empty() {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let (subject_id, cases) = (*subject, cases.clone());
+            lower_select(ctx, subject_id, &cases, expr_arena, out)
         }
         // A line label emits no code; it records the current byte offset as the
         // jump target for any `GoTo`/`Exit` referencing it.
@@ -682,6 +741,94 @@ fn lower_for(
         out[patch..patch + 2].copy_from_slice(&exit_offset.to_le_bytes());
     }
 
+    Ok(())
+}
+
+/// `Select Case subject ... End Select`. VB6 evaluates the subject once into a
+/// hidden temp slot, then for each `Case` loads the temp, compares it (`=`)
+/// against the case value, and branches past the body (BranchFalse) when not
+/// equal. Each matched body jumps to the Select end; `Case Else` falls through.
+fn lower_select(
+    ctx: &LowerCtx,
+    subject_id: NodeId,
+    cases: &[NodeId],
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let sel = ctx.select_next.get();
+    ctx.select_next.set(sel + 1);
+    let temp_offset = ctx.local_slots[ctx.select_base + sel].frame_offset;
+
+    let subj_ty = ctx
+        .module
+        .types
+        .get(&subject_id.0)
+        .ok_or(LowerError::Unresolved)?;
+    let subj_tag = vba_type_to_node_tag(subj_ty).ok_or(LowerError::UnsupportedType)?;
+    let lctx = load_store_ctx(subj_ty).ok_or(LowerError::UnsupportedType)?;
+
+    // Evaluate the subject once and store it to the hidden temp.
+    {
+        let mut arena = NodeArena::new();
+        let root = lower_expr(ctx, subject_id, expr_arena, &mut arena)?;
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(root, 0);
+        emitter.emit_var_store(lctx, temp_offset);
+        out.extend_from_slice(&emitter.into_bytes());
+    }
+
+    let mut end_patches = Vec::new();
+    for &case_id in cases {
+        match expr_arena.get(case_id) {
+            ExprNode::CaseBlock { test, body } => {
+                // `test` is an ArgList of case clauses. Handle the single bare-value
+                // form (`Case <expr>`); ranges (`lo To hi`) and `Is <op> <expr>`
+                // and multi-value lists need the OR-of-clauses dispatch — gated.
+                let test_val = match expr_arena.get(*test) {
+                    ExprNode::ArgList { args } if args.len() == 1 => {
+                        let a = args[0];
+                        match expr_arena.get(a) {
+                            ExprNode::RangeTo { .. } | ExprNode::CaseIs { .. } => {
+                                return Err(LowerError::UnsupportedNode);
+                            }
+                            _ => a,
+                        }
+                    }
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                // load temp; push case value (coerced to the subject type); `=`.
+                let mut arena = NodeArena::new();
+                let temp_load =
+                    build_frame_load_node(&mut arena, 0x74, subj_tag, lctx, temp_offset);
+                let test_ref =
+                    lower_expr_coerced(ctx, test_val, expr_arena, &mut arena, Some(subj_tag))?;
+                let eq = arena.alloc(NodeArena::node(0x26, 0, temp_load.0, test_ref.0, 0, 0));
+                let mut emitter = Emitter::new(&arena);
+                emitter.emit_expr(eq, 0);
+                out.extend_from_slice(&emitter.into_bytes());
+
+                // Skip this case's body when the comparison is false.
+                let next_patch = emit_branch_placeholder(out, 0x1c);
+                lower_block(ctx, *body, expr_arena, out)?;
+                // Matched body jumps to the Select end.
+                out.push(0x1e);
+                let end_patch = out.len();
+                out.push(0x00);
+                out.push(0x00);
+                end_patches.push(end_patch);
+                // The BranchFalse lands at the next case.
+                patch_u16(out, next_patch, out.len() as u16);
+            }
+            ExprNode::CaseElse { body } => {
+                lower_block(ctx, *body, expr_arena, out)?;
+            }
+            _ => return Err(LowerError::UnsupportedNode),
+        }
+    }
+    let end = out.len() as u16;
+    for patch in end_patches {
+        patch_u16(out, patch, end);
+    }
     Ok(())
 }
 

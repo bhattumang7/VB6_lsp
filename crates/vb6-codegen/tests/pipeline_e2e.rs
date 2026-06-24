@@ -621,6 +621,32 @@ fn e2e_mixed_int_long_add() {
     );
 }
 
+// Select Case: subject evaluated once into a hidden temp (store 0x71 to -0x8c),
+// each Case loads the temp, compares `=` (0xc7), BranchFalse past its body to the
+// next case; the matched body jumps (0x1e) to the end. Case Else falls through.
+#[test]
+fn e2e_select_case() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long\r\n\
+             Select Case a\r\n\
+             Case 1\r\n\
+             a = 2\r\n\
+             Case Else\r\n\
+             a = 3\r\n\
+             End Select\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x71, 0x74, 0xff, 0x6c, 0x74, 0xff, 0xf5, 0x01, 0x00,
+          0x00, 0x00, 0xc7, 0x1c, 0x1d, 0x00, 0xf5, 0x02, 0x00, 0x00, 0x00, 0x71,
+          0x78, 0xff, 0x1e, 0x25, 0x00, 0xf5, 0x03, 0x00, 0x00, 0x00, 0x71, 0x78,
+          0xff]
+    );
+}
+
 // Date is Double-backed: load 0x6f / store 0x74 (Double load/store opcodes).
 #[test]
 fn e2e_date_copy() {
