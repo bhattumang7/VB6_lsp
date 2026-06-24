@@ -70,9 +70,18 @@ fn binop_node_opcode(op: BinOpKind) -> Option<u16> {
         // valid base and the stmt jump table routes 0x19 to the generic-binop
         // emitter (stmt_case_0fab1da9), like Add/Sub.
         BinOpKind::Div => 0x19,
+        // The multiplicative and logical operators the front-end operator table
+        // assigns by precedence (consumed by the generic operation emitter):
+        //   `\`  (integer divide) -> 0x1e   Mod -> 0x1d
+        //   Eqv -> 0x20                      Imp -> 0x1f
+        // (precedence ladder * / > \ > Mod > + - and And > Or > Xor > Eqv > Imp).
+        BinOpKind::IDiv => 0x1e,
+        BinOpKind::Mod => 0x1d,
         BinOpKind::Or  => 0x21,
         BinOpKind::Xor => 0x22,
         BinOpKind::And => 0x23,
+        BinOpKind::Eqv => 0x20,
+        BinOpKind::Imp => 0x1f,
         BinOpKind::Eq  => 0x26,
         BinOpKind::Ne  => 0x27,
         BinOpKind::Le  => 0x28,

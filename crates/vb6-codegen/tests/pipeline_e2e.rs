@@ -539,6 +539,69 @@ fn e2e_long_xor() {
     );
 }
 
+// The four operators the front-end operator table (DAT_0faa5e10) assigns by
+// precedence, all routed to the generic operation emitter: `\`=0x1e, Mod=0x1d,
+// Eqv=0x20, Imp=0x1f. Long operands; only the operator byte differs.
+#[test]
+fn e2e_long_idiv() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a \\ b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc0, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_mod() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a Mod b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc2, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_eqv() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a Eqv b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, 0x0b, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_long_imp() {
+    assert_eq!(
+        compile(
+            "Attribute VB_Name = \"Module1\"\r\n\
+             Sub Main()\r\n\
+             Dim a As Long, b As Long, r As Long\r\n\
+             r = a Imp b\r\n\
+             End Sub\r\n",
+            0x0008,
+        ),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, 0x03, 0x71, 0x70, 0xff]
+    );
+}
+
 // Unary minus: emitted through the generic operation emitter as the single-operand
 // op 7 (base 0x00c6); arithmetic dispatch → RT_TYPE_OFFSET[Long] selects 0xb8.
 #[test]
