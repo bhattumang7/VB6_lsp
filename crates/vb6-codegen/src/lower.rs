@@ -323,6 +323,13 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(5));
     }
 
+    // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
+    // callee receives a packed array of the caller's trailing arguments); it
+    // belongs to the procedure-call tier, which is out of scope. Gate it cleanly
+    // rather than emit a wrong frame.
+    if proc.params.iter().any(|p| p.flags.param_array) {
+        return Err(LowerError::UnsupportedNode);
+    }
     let param_types: Vec<VbaType> = proc.params.iter().map(|p| p.vba_type.clone()).collect();
     let param_byref: Vec<bool> = proc.params.iter().map(|p| !p.flags.by_val).collect();
     let global_types: Vec<VbaType> =
