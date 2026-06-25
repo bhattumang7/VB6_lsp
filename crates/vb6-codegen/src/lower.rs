@@ -331,6 +331,14 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(10));
     }
 
+    // One hidden 4-byte BSTR temp per runtime-string call argument (the owned result
+    // copied for a ByVal String parameter), placed after the 16-byte string temps.
+    let owned_copy_base = local_slots.len();
+    let owned_copy_temps = count_owned_copy_temps(module, NodeId(proc.body), expr_arena);
+    for _ in 0..owned_copy_temps {
+        local_slots.push(frame.declare_anon(5));
+    }
+
     // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
     // callee receives a packed array of the caller's trailing arguments); it
     // belongs to the procedure-call tier, which is out of scope. Gate it cleanly
@@ -362,6 +370,8 @@ fn lower_proc_pooled(
         concat_next: Cell::new(0),
         string_rtc_base,
         string_rtc_next: Cell::new(0),
+        owned_copy_base,
+        owned_copy_next: Cell::new(0),
         call_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
@@ -442,6 +452,10 @@ struct LowerCtx<'m> {
     string_rtc_base: usize,
     /// Which string-result temp slot the next such intrinsic should use.
     string_rtc_next: Cell<usize>,
+    /// Frame index of the first 4-byte owned-string call-argument copy temp.
+    owned_copy_base: usize,
+    /// Which owned-copy temp slot the next runtime-string call argument should use.
+    owned_copy_next: Cell<usize>,
     /// Sequential index of the next call site within this procedure (each call's
     /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
     call_next: Cell<usize>,
@@ -1220,6 +1234,16 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
             }
             _ => 0,
         },
+        // A statement-level call whose argument is a runtime-string result needs the
+        // rtc call's temps plus a copy temp for the owned BSTR.
+        ExprNode::CallStmt { callee, args } => {
+            let args_node = match expr_arena.get(*callee) {
+                ExprNode::Call { args: inner, .. } => *inner,
+                _ => *args,
+            };
+            count_call_owned_temps(module, args_node, expr_arena)
+        }
+        ExprNode::Call { args, .. } => count_call_owned_temps(module, *args, expr_arena),
         ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
         ExprNode::If { then_body, else_body, .. } => c(*then_body) + else_body.map(c).unwrap_or(0),
         ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => c(*body),
@@ -1227,6 +1251,58 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
         ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
         _ => 0,
     }
+}
+
+/// Count the hidden 16-byte temps a call's runtime-string arguments need (the rtc
+/// call's own temps; the 4-byte owned-copy temp is counted separately).
+fn count_call_owned_temps(module: &BoundModule, args_node: NodeId, expr_arena: &ExprArena) -> usize {
+    let args = match expr_arena.get(args_node) {
+        ExprNode::ArgList { args } => args,
+        _ => return 0,
+    };
+    args.iter()
+        .map(|&a| match module.builtins.get(&a.0) {
+            Some(BuiltinCall::RtcString { args: sig }) => rtc_call_temp_count(sig),
+            _ => 0,
+        })
+        .sum()
+}
+
+/// Count the 4-byte owned-copy temps needed: one per runtime-string call argument.
+fn count_owned_copy_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_owned_copy_temps(module, id, expr_arena);
+    let count_args = |args_node: NodeId| -> usize {
+        match expr_arena.get(args_node) {
+            ExprNode::ArgList { args } => args
+                .iter()
+                .filter(|&&a| matches!(module.builtins.get(&a.0), Some(BuiltinCall::RtcString { .. })))
+                .count(),
+            _ => 0,
+        }
+    };
+    match expr_arena.get(node_id) {
+        ExprNode::CallStmt { callee, args } => {
+            let args_node = match expr_arena.get(*callee) {
+                ExprNode::Call { args: inner, .. } => *inner,
+                _ => *args,
+            };
+            count_args(args_node)
+        }
+        ExprNode::Call { args, .. } => count_args(*args),
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
+        ExprNode::If { then_body, else_body, .. } => c(*then_body) + else_body.map(c).unwrap_or(0),
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => c(*body),
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+        _ => 0,
+    }
+}
+
+/// Allocate the next 4-byte owned-string call-argument copy temp.
+fn alloc_owned_copy_temp(ctx: &LowerCtx) -> i16 {
+    let i = ctx.owned_copy_next.get();
+    ctx.owned_copy_next.set(i + 1);
+    ctx.local_slots[ctx.owned_copy_base + i].frame_offset
 }
 
 fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
@@ -1826,6 +1902,37 @@ fn lower_call(
     // count rather than emit a short argument list.
     if args.len() != ctx.module.procs[proc_idx].params.len() {
         return Err(LowerError::UnsupportedNode);
+    }
+    // A runtime-string result passed as a ByVal String argument: materialize the
+    // rtc into a temp, copy that owned BSTR into a string temp (0xfd 0xfe), pass the
+    // string temp, and after the call free the string temp (0x2f) and the rtc result
+    // temp (0x35). Only the single-argument Sub-call form is handled.
+    let has_owned_arg = args
+        .iter()
+        .any(|&a| matches!(ctx.module.builtins.get(&a.0), Some(BuiltinCall::RtcString { .. })));
+    if has_owned_arg {
+        if args.len() != 1 || is_function {
+            return Err(LowerError::UnsupportedNode);
+        }
+        let param = &ctx.module.procs[proc_idx].params[0];
+        if !param.flags.by_val || !matches!(param.vba_type, VbaType::String) {
+            return Err(LowerError::UnsupportedNode);
+        }
+        let (result_temp, free) = emit_rtc_string_call(ctx, args[0], expr_arena, out)?;
+        out.push(0x04);
+        out.extend_from_slice(&result_temp.to_le_bytes());
+        let copy_temp = alloc_owned_copy_temp(ctx);
+        out.extend_from_slice(&[0xfd, 0xfe]);
+        out.extend_from_slice(&copy_temp.to_le_bytes());
+        let idx = ctx.call_next.get();
+        ctx.call_next.set(idx + 1);
+        out.push(0x0a);
+        out.extend_from_slice(&(idx as u16).to_le_bytes());
+        out.extend_from_slice(&4u16.to_le_bytes());
+        out.push(0x2f);
+        out.extend_from_slice(&copy_temp.to_le_bytes());
+        emit_variant_temp_free(out, &free);
+        return Ok(());
     }
     // Build each argument's push bytes (matched to its parameter by position),
     // then emit them right-to-left — VB6 pushes arguments in reverse order.

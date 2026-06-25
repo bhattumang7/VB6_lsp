@@ -1812,6 +1812,26 @@ fn e2e_owned_compare_both_rtc() {
     );
 }
 
+// ── Owned-temp string call argument (ByVal String) ──────────────────────────
+//
+// A runtime-string result passed as a ByVal String argument is produced into a temp,
+// copied into a 4-byte BSTR temp (0xfd 0xfe), and that temp is passed; after the call
+// the string temp is freed (0x2f) and the rtc result temp (0x35). The copy temp sits
+// just below the 16-byte rtc temps (a separate 4-byte pool).
+
+#[test]
+fn e2e_owned_call_argument_byval_string() {
+    assert_eq!(
+        caller_bytes(
+            "    Dim t As String\r\n    Call Foo(UCase(t))\r\n",
+            "Sub Foo(ByVal x As String)\r\nEnd Sub\r\n"
+        ),
+        &[0x04, 0x78, 0xff, 0x4d, 0x68, 0xff, 0x08, 0x40, 0x04, 0x58, 0xff,
+          0x0a, 0x00, 0x00, 0x08, 0x00, 0x04, 0x58, 0xff, 0xfd, 0xfe, 0x54, 0xff,
+          0x0a, 0x01, 0x00, 0x04, 0x00, 0x2f, 0x54, 0xff, 0x35, 0x58, 0xff]
+    );
+}
+
 // On Error GoTo label: opcode 0x4b + the backpatched label offset.
 #[test]
 fn e2e_on_error_goto() {
