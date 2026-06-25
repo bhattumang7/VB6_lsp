@@ -323,6 +323,14 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(5));
     }
 
+    // One hidden 16-byte string-result temp per String-returning runtime intrinsic
+    // call (Chr/Space), used to receive the runtime function's result.
+    let string_rtc_base = local_slots.len();
+    let string_rtc_temps = count_string_rtc_temps(module, NodeId(proc.body), expr_arena);
+    for _ in 0..string_rtc_temps {
+        local_slots.push(frame.declare_anon(10));
+    }
+
     // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
     // callee receives a packed array of the caller's trailing arguments); it
     // belongs to the procedure-call tier, which is out of scope. Gate it cleanly
@@ -352,6 +360,8 @@ fn lower_proc_pooled(
         variant_next: Cell::new(0),
         concat_base,
         concat_next: Cell::new(0),
+        string_rtc_base,
+        string_rtc_next: Cell::new(0),
         call_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
@@ -428,6 +438,10 @@ struct LowerCtx<'m> {
     concat_base: usize,
     /// Which concat temp slot the next concat-chain intermediate should use.
     concat_next: Cell<usize>,
+    /// Frame index of the first String-returning-runtime-intrinsic result temp.
+    string_rtc_base: usize,
+    /// Which string-result temp slot the next such intrinsic should use.
+    string_rtc_next: Cell<usize>,
     /// Sequential index of the next call site within this procedure (each call's
     /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
     call_next: Cell<usize>,
@@ -1158,6 +1172,24 @@ fn count_concat_temps(module: &BoundModule, proc: &BoundProc, node_id: NodeId, e
 
 /// Count assignments whose target is a `Variant`. Each needs a hidden 16-byte
 /// Variant temp to hold the converted value before the variant store.
+/// Count hidden string-result temps needed: one per String-returning runtime
+/// intrinsic call whose result is stored (the numeric-input `Chr`/`Space` family).
+fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_string_rtc_temps(module, id, expr_arena);
+    match expr_arena.get(node_id) {
+        ExprNode::Assign { value, .. } => matches!(
+            module.builtins.get(&value.0),
+            Some(BuiltinCall::RtcString { string_input: false, .. })
+        ) as usize,
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
+        ExprNode::If { then_body, else_body, .. } => c(*then_body) + else_body.map(c).unwrap_or(0),
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => c(*body),
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+        _ => 0,
+    }
+}
+
 fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_variant_assigns(module, id, expr_arena);
     match expr_arena.get(node_id) {
@@ -1810,6 +1842,48 @@ fn lower_assign(
         .get(&target_id.0)
         .ok_or(LowerError::Unresolved)?;
 
+    // String-returning runtime intrinsic (Chr/Space) into a String target: load the
+    // argument (coerced), pass a hidden result temp by address, runtime-call (0x0a),
+    // then load the result from the temp (0x60), move it into the target (0x31), and
+    // free the temp (0x35).
+    if let ExprNode::Call { args, .. } = expr_arena.get(value_id) {
+        if let Some(BuiltinCall::RtcString { arg: arg_ty, string_input: false }) =
+            ctx.module.builtins.get(&value_id.0)
+        {
+            let tgt_off = match resolution {
+                NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let ti = ctx.string_rtc_next.get();
+            ctx.string_rtc_next.set(ti + 1);
+            let temp_off = ctx.local_slots[ctx.string_rtc_base + ti].frame_offset;
+            let arg = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+            // Argument coerced to the runtime function's parameter type.
+            let coerce = vba_type_to_node_tag(arg_ty);
+            let mut a = NodeArena::new();
+            let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
+            let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
+            let mut em = Emitter::new(&a);
+            em.emit_expr(root, 2);
+            out.extend(em.into_bytes());
+            out.push(0x04);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+            let r = ctx.call_next.get();
+            ctx.call_next.set(r + 1);
+            out.push(0x0a);
+            out.extend_from_slice(&(r as u16).to_le_bytes());
+            out.extend_from_slice(&(call_arg_bytes(arg_ty) + 4).to_le_bytes());
+            out.push(0x04);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+            out.push(0x60);
+            out.push(0x31);
+            out.extend_from_slice(&tgt_off.to_le_bytes());
+            out.push(0x35);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+            return Ok(());
+        }
+    }
+
     // Static local target: the value is pushed, then stored into the procedure's
     // static block (0x5f-addressed) rather than the frame.
     if let NameResolution::Local { local_idx, .. } = resolution {
@@ -2264,6 +2338,10 @@ fn lower_expr_coerced(
                     let blob = arena.alloc_blob(&bytes);
                     Ok(arena.alloc(NodeArena::node(0x7e, ret_tag, blob, bytes.len() as u32, 0, 0)))
                 }
+                // A String-returning runtime intrinsic is handled as an assignment
+                // (it writes a result temp); using one as an expression operand is
+                // not yet supported.
+                Some(BuiltinCall::RtcString { .. }) => Err(LowerError::UnsupportedNode),
                 None => Err(LowerError::UnsupportedNode),
             }
         }

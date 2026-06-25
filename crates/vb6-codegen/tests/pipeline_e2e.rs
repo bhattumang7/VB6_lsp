@@ -124,6 +124,29 @@ fn e2e_cstr_from_long_move_store() {
     );
 }
 
+// ── String-result runtime intrinsics (Chr/Space) ─────────────────────────────
+
+#[test]
+fn e2e_space_string_result() {
+    // s = Space(n): load n, LdAddr result temp, runtime call (0x0a), load result
+    // (0x60), move to s (0x31), free temp (0x35).
+    assert_eq!(
+        conv("Dim n As Long, s As String", "s = Space(n)"),
+        &[0x6c, 0x78, 0xff, 0x04, 0x64, 0xff, 0x0a, 0x00, 0x00, 0x08, 0x00,
+          0x04, 0x64, 0xff, 0x60, 0x31, 0x74, 0xff, 0x35, 0x64, 0xff]
+    );
+}
+
+#[test]
+fn e2e_chr_from_integer() {
+    // Chr's Integer argument is widened to Long (0xe7) before the runtime call.
+    assert_eq!(
+        conv("Dim n As Integer, s As String", "s = Chr(n)"),
+        &[0x6b, 0x7a, 0xff, 0xe7, 0x04, 0x64, 0xff, 0x0a, 0x00, 0x00, 0x08, 0x00,
+          0x04, 0x64, 0xff, 0x60, 0x31, 0x74, 0xff, 0x35, 0x64, 0xff]
+    );
+}
+
 // ── Numeric-result runtime-library intrinsics (Asc/Sqr/Val) ──────────────────
 
 #[test]

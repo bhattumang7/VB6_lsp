@@ -788,6 +788,9 @@ impl<'a> Binder<'a> {
                             } else if let Some((a, r)) = rtc_numeric_intrinsic(&name, arg_ty()) {
                                 self.builtins.insert(id.0, BuiltinCall::RtcNumeric { arg: a, ret: r.clone() });
                                 r
+                            } else if let Some((arg, string_input)) = rtc_string_intrinsic(&name) {
+                                self.builtins.insert(id.0, BuiltinCall::RtcString { arg, string_input });
+                                VbaType::String
                             } else {
                                 VbaType::Variant
                             }
@@ -1010,6 +1013,19 @@ fn rtc_numeric_intrinsic(name_lower: &str, arg: Option<VbaType>) -> Option<(VbaT
         "asc" => Some((VbaType::String, VbaType::Integer)),
         "sqr" => Some((arg.unwrap_or(VbaType::Double), VbaType::Double)),
         "val" => Some((VbaType::String, VbaType::Double)),
+        _ => None,
+    }
+}
+
+/// Classify a single-argument String-returning runtime intrinsic by name,
+/// returning `(coerced argument type, is the argument itself a String)`.
+/// `Chr`/`Space` take a Long count; the String-input family (`UCase`/`LCase`/
+/// `Trim`) is recognised but flagged for the (gated) input-copy path.
+fn rtc_string_intrinsic(name_lower: &str) -> Option<(VbaType, bool)> {
+    match name_lower {
+        "chr" | "chr$" | "space" | "space$" => Some((VbaType::Long, false)),
+        "ucase" | "ucase$" | "lcase" | "lcase$" | "trim" | "trim$"
+        | "ltrim" | "ltrim$" | "rtrim" | "rtrim$" => Some((VbaType::String, true)),
         _ => None,
     }
 }
