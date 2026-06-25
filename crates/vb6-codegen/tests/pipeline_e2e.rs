@@ -147,6 +147,39 @@ fn e2e_chr_from_integer() {
     );
 }
 
+// ── String-input string-result intrinsics (UCase/LCase/Trim/LTrim/RTrim) ─────
+//
+// The String argument is copied into an input temp (0x4d) then the runtime call
+// writes a second result temp, which is moved to the target and freed. The two
+// 16-byte string temps sit at consecutive frame slots (input temp1 above result
+// temp2). The caller-side byte stream is identical across the family.
+
+#[test]
+fn e2e_ucase_string_input() {
+    // s = UCase(t): LdAddr t, copy to input temp (0x4d), 08 40, LdAddr result temp,
+    // runtime call (0x0a, argbytes 8), load result (0x60), move to s, free temp.
+    assert_eq!(
+        conv("Dim t As String, s As String", "s = UCase(t)"),
+        &[0x04, 0x78, 0xff, 0x4d, 0x64, 0xff, 0x08, 0x40, 0x04, 0x54, 0xff,
+          0x0a, 0x00, 0x00, 0x08, 0x00, 0x04, 0x54, 0xff, 0x60, 0x31, 0x74, 0xff,
+          0x35, 0x54, 0xff]
+    );
+}
+
+#[test]
+fn e2e_string_input_family_identical_caller_bytes() {
+    // LCase/Trim/LTrim/RTrim emit the same caller-side stream as UCase (the
+    // runtime function differs only in the gated proc-descriptor binding).
+    let ucase = conv("Dim t As String, s As String", "s = UCase(t)");
+    for f in ["LCase", "Trim", "LTrim", "RTrim"] {
+        assert_eq!(
+            conv("Dim t As String, s As String", &format!("s = {f}(t)")),
+            ucase,
+            "{f} caller bytes diverged from UCase"
+        );
+    }
+}
+
 // ── Numeric-result runtime-library intrinsics (Asc/Sqr/Val) ──────────────────
 
 #[test]

@@ -1177,10 +1177,13 @@ fn count_concat_temps(module: &BoundModule, proc: &BoundProc, node_id: NodeId, e
 fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_string_rtc_temps(module, id, expr_arena);
     match expr_arena.get(node_id) {
-        ExprNode::Assign { value, .. } => matches!(
-            module.builtins.get(&value.0),
-            Some(BuiltinCall::RtcString { string_input: false, .. })
-        ) as usize,
+        ExprNode::Assign { value, .. } => match module.builtins.get(&value.0) {
+            // Numeric-input (Chr/Space): one result temp. String-input (UCase/…):
+            // an input-copy temp plus the result temp.
+            Some(BuiltinCall::RtcString { string_input: false, .. }) => 1,
+            Some(BuiltinCall::RtcString { string_input: true, .. }) => 2,
+            _ => 0,
+        },
         ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
         ExprNode::If { then_body, else_body, .. } => c(*then_body) + else_body.map(c).unwrap_or(0),
         ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => c(*body),
@@ -1847,39 +1850,68 @@ fn lower_assign(
     // then load the result from the temp (0x60), move it into the target (0x31), and
     // free the temp (0x35).
     if let ExprNode::Call { args, .. } = expr_arena.get(value_id) {
-        if let Some(BuiltinCall::RtcString { arg: arg_ty, string_input: false }) =
+        if let Some(BuiltinCall::RtcString { arg: arg_ty, string_input }) =
             ctx.module.builtins.get(&value_id.0)
         {
+            let string_input = *string_input;
             let tgt_off = match resolution {
                 NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
                 _ => return Err(LowerError::UnsupportedNode),
             };
             let ti = ctx.string_rtc_next.get();
-            ctx.string_rtc_next.set(ti + 1);
-            let temp_off = ctx.local_slots[ctx.string_rtc_base + ti].frame_offset;
             let arg = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
-            // Argument coerced to the runtime function's parameter type.
-            let coerce = vba_type_to_node_tag(arg_ty);
-            let mut a = NodeArena::new();
-            let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
-            let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
-            let mut em = Emitter::new(&a);
-            em.emit_expr(root, 2);
-            out.extend(em.into_bytes());
-            out.push(0x04);
-            out.extend_from_slice(&temp_off.to_le_bytes());
-            let r = ctx.call_next.get();
-            ctx.call_next.set(r + 1);
-            out.push(0x0a);
-            out.extend_from_slice(&(r as u16).to_le_bytes());
-            out.extend_from_slice(&(call_arg_bytes(arg_ty) + 4).to_le_bytes());
-            out.push(0x04);
-            out.extend_from_slice(&temp_off.to_le_bytes());
-            out.push(0x60);
-            out.push(0x31);
-            out.extend_from_slice(&tgt_off.to_le_bytes());
-            out.push(0x35);
-            out.extend_from_slice(&temp_off.to_le_bytes());
+            if string_input {
+                // Input-copy form (UCase/LCase/Trim/…): copy the String argument into
+                // temp1, then runtime-call writing temp2; result moved to target.
+                ctx.string_rtc_next.set(ti + 2);
+                let temp1 = ctx.local_slots[ctx.string_rtc_base + ti].frame_offset;
+                let temp2 = ctx.local_slots[ctx.string_rtc_base + ti + 1].frame_offset;
+                let src = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+                out.push(0x04);
+                out.extend_from_slice(&src.to_le_bytes());
+                out.push(0x4d);
+                out.extend_from_slice(&temp1.to_le_bytes());
+                out.extend_from_slice(&[0x08, 0x40]);
+                out.push(0x04);
+                out.extend_from_slice(&temp2.to_le_bytes());
+                let r = ctx.call_next.get();
+                ctx.call_next.set(r + 1);
+                out.push(0x0a);
+                out.extend_from_slice(&(r as u16).to_le_bytes());
+                out.extend_from_slice(&8u16.to_le_bytes());
+                out.push(0x04);
+                out.extend_from_slice(&temp2.to_le_bytes());
+                out.push(0x60);
+                out.push(0x31);
+                out.extend_from_slice(&tgt_off.to_le_bytes());
+                out.push(0x35);
+                out.extend_from_slice(&temp2.to_le_bytes());
+            } else {
+                // Numeric-input (Chr/Space): one result temp.
+                ctx.string_rtc_next.set(ti + 1);
+                let temp_off = ctx.local_slots[ctx.string_rtc_base + ti].frame_offset;
+                let coerce = vba_type_to_node_tag(arg_ty);
+                let mut a = NodeArena::new();
+                let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
+                let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
+                let mut em = Emitter::new(&a);
+                em.emit_expr(root, 2);
+                out.extend(em.into_bytes());
+                out.push(0x04);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+                let r = ctx.call_next.get();
+                ctx.call_next.set(r + 1);
+                out.push(0x0a);
+                out.extend_from_slice(&(r as u16).to_le_bytes());
+                out.extend_from_slice(&(call_arg_bytes(arg_ty) + 4).to_le_bytes());
+                out.push(0x04);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+                out.push(0x60);
+                out.push(0x31);
+                out.extend_from_slice(&tgt_off.to_le_bytes());
+                out.push(0x35);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+            }
             return Ok(());
         }
     }

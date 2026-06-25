@@ -198,10 +198,12 @@ pub enum BuiltinCall {
     /// `Val`): emitted as a runtime call whose opcode is selected by the result
     /// type. `arg` is the argument type (for the size-based push), `ret` the result.
     RtcNumeric { arg: VbaType, ret: VbaType },
-    /// A single-argument runtime-library call returning a String (`Chr`/`Space`):
-    /// the argument is coerced to `arg`, the result is produced into a hidden
-    /// string temp and moved to the target. `string_input` marks the family whose
-    /// argument is itself a String (an extra input copy), which is not yet handled.
+    /// A single-argument runtime-library call returning a String. With
+    /// `string_input == false` (`Chr`/`Space`) the argument is coerced to `arg`
+    /// and the result produced into a hidden string temp, then moved to the
+    /// target. With `string_input == true` (`UCase`/`LCase`/`Trim`/`LTrim`/
+    /// `RTrim`) the String argument is first copied into an input temp, the call
+    /// writes a second result temp, and that is moved to the target.
     RtcString { arg: VbaType, string_input: bool },
 }
 
