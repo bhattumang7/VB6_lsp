@@ -1444,6 +1444,55 @@ fn e2e_string_compare() {
     );
 }
 
+// ── String relational operators (Option Compare Binary) ─────────────────────
+//
+// Both operands load as 4-byte BSTR pointers (0x6c / string literal 0x1b); the
+// comparison emits a dedicated two-byte string-compare opcode (0xfb <op>) whose
+// second byte is selected by the operator, leaving an Integer (Boolean) result.
+
+#[test]
+fn e2e_string_compare_all_operators() {
+    let decl = "Dim a As String, b As String, r As Integer";
+    // load a (0x78), load b (0x74), fb <op>, store to r (0x72).
+    for (stmt, op) in [
+        ("r = (a = b)", 0x30u8),
+        ("r = (a <> b)", 0x3d),
+        ("r = (a < b)", 0x64),
+        ("r = (a > b)", 0x71),
+        ("r = (a <= b)", 0x4a),
+        ("r = (a >= b)", 0x57),
+    ] {
+        assert_eq!(
+            conv(decl, stmt),
+            &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, op, 0x70, 0x72, 0xff],
+            "string compare {stmt}"
+        );
+    }
+}
+
+#[test]
+fn e2e_string_compare_literal_operand() {
+    // A string-literal operand loads via 0x1b <pool-ref>; the compare is unchanged.
+    assert_eq!(
+        conv("Dim a As String, r As Integer", "r = (a = \"x\")"),
+        &[0x6c, 0x78, 0xff, 0x1b, 0x00, 0x00, 0xfb, 0x30, 0x70, 0x76, 0xff]
+    );
+    assert_eq!(
+        conv("Dim a As String, r As Integer", "r = (\"x\" = a)"),
+        &[0x1b, 0x00, 0x00, 0x6c, 0x78, 0xff, 0xfb, 0x30, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_string_compare_in_condition() {
+    // As an `If` condition the same compare opcode feeds the branch-false (0x1c).
+    assert_eq!(
+        conv("Dim a As String, b As String", "If a < b Then\r\na = b\r\nEnd If"),
+        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xfb, 0x64, 0x1c, 0x11, 0x00,
+          0x6c, 0x74, 0xff, 0x43, 0x78, 0xff]
+    );
+}
+
 // String concat (`&`): node 0x24 with String tag emits the concat opcode (0x2a);
 // the fresh temp result is moved into s via 0x31 (not the copy store 0x43).
 #[test]
