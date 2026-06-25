@@ -1149,7 +1149,11 @@ fn count_concat_temps(module: &BoundModule, proc: &BoundProc, node_id: NodeId, e
     let c = |id: NodeId| count_concat_temps(module, proc, id, expr_arena);
     match expr_arena.get(node_id) {
         ExprNode::Assign { value, .. } => {
-            if matches!(expr_arena.get(*value), ExprNode::BinOp { op: BinOpKind::Cat, .. }) {
+            // An owned-temp concat uses the 16-byte string-rtc pool instead, so it is
+            // not counted here.
+            if matches!(expr_arena.get(*value), ExprNode::BinOp { op: BinOpKind::Cat, .. })
+                && !is_owned_concat(module, *value, expr_arena)
+            {
                 let mut ops = Vec::new();
                 flatten_concat(*value, expr_arena, &mut ops);
                 concat_chain_temps(module, proc, &ops)
@@ -1181,15 +1185,13 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
             // 16-byte temps: one per boxed argument; two per omitted-Optional
             // (a Missing-variant literal needs a separate value buffer alongside its
             // temp); plus one result temp.
-            Some(BuiltinCall::RtcString { args }) => {
-                args.iter()
-                    .map(|a| match a {
-                        RtcArg::Boxed => 1,
-                        RtcArg::MissingVariant => 2,
-                        RtcArg::ByVal(_) => 0,
-                    })
-                    .sum::<usize>()
-                    + 1
+            Some(BuiltinCall::RtcString { args }) => rtc_call_temp_count(args),
+            // An owned-temp concat uses the 16-byte pool for every operand
+            // materialization and intermediate concat result.
+            _ if is_owned_concat(module, *value, expr_arena) => {
+                let mut ops = Vec::new();
+                flatten_concat(*value, expr_arena, &mut ops);
+                count_owned_concat_temps(module, &ops)
             }
             _ => 0,
         },
@@ -1853,6 +1855,288 @@ fn lower_call(
     Ok(())
 }
 
+/// Number of hidden 16-byte temps a String-returning runtime call needs: one per
+/// boxed argument, two per omitted-Optional argument, plus the result temp.
+fn rtc_call_temp_count(sig: &[RtcArg]) -> usize {
+    sig.iter()
+        .map(|a| match a {
+            RtcArg::Boxed => 1,
+            RtcArg::MissingVariant => 2,
+            RtcArg::ByVal(_) => 0,
+        })
+        .sum::<usize>()
+        + 1
+}
+
+/// Allocate the next hidden 16-byte string/variant temp (from the `string_rtc`
+/// pool) and return its frame offset.
+fn alloc_string_rtc_temp(ctx: &LowerCtx) -> i16 {
+    let i = ctx.string_rtc_next.get();
+    ctx.string_rtc_next.set(i + 1);
+    ctx.local_slots[ctx.string_rtc_base + i].frame_offset
+}
+
+/// Emit the variant-temp free for a set of owned temps: a single temp uses the
+/// short free (0x35); two or more use the combined free (0x36 <count*2> <offsets…>),
+/// offsets in allocation order.
+fn emit_variant_temp_free(out: &mut Vec<u8>, offsets: &[i16]) {
+    if offsets.len() == 1 {
+        out.push(0x35);
+        out.extend_from_slice(&offsets[0].to_le_bytes());
+    } else {
+        out.push(0x36);
+        out.extend_from_slice(&((offsets.len() * 2) as u16).to_le_bytes());
+        for off in offsets {
+            out.extend_from_slice(&off.to_le_bytes());
+        }
+    }
+}
+
+/// Reserve the hidden temps for one String-returning runtime call, returning the
+/// base slot index (relative to `string_rtc_base`). Lets a caller pre-allocate an
+/// rtc operand's temps before emitting unrelated operands (the compiler assigns all
+/// of an expression's rtc-call temps ahead of its materialization/result temps).
+fn reserve_rtc_temps(ctx: &LowerCtx, sig: &[RtcArg]) -> usize {
+    let base = ctx.string_rtc_next.get();
+    ctx.string_rtc_next.set(base + rtc_call_temp_count(sig));
+    base
+}
+
+/// Emit a String-returning runtime-library call, producing its result into a hidden
+/// 16-byte temp: the sequence `<args> 04<result> 0a<ref> <arg-bytes>`. Allocates the
+/// call's temps and emits; see [`emit_rtc_string_call_at`] for the pre-reserved form.
+fn emit_rtc_string_call(
+    ctx: &LowerCtx,
+    call_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(i16, Vec<i16>), LowerError> {
+    let sig = match ctx.module.builtins.get(&call_id.0) {
+        Some(BuiltinCall::RtcString { args }) => args.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let base = reserve_rtc_temps(ctx, &sig);
+    emit_rtc_string_call_at(ctx, call_id, base, expr_arena, out)
+}
+
+/// Emit a String-returning runtime call using temps pre-reserved at slot `base`
+/// (relative to `string_rtc_base`). Leaves nothing on the stack. Returns
+/// `(result_temp, variant_temps_to_free)` — the owned variant temps (any
+/// Missing-variant temps and the result temp), in allocation order.
+fn emit_rtc_string_call_at(
+    ctx: &LowerCtx,
+    call_id: NodeId,
+    base: usize,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(i16, Vec<i16>), LowerError> {
+    let sig = match ctx.module.builtins.get(&call_id.0) {
+        Some(BuiltinCall::RtcString { args }) => args.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let args_id = match expr_arena.get(call_id) {
+        ExprNode::Call { args, .. } => *args,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let arg_ids: Vec<NodeId> = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let supplied = sig
+        .iter()
+        .filter(|a| !matches!(a, RtcArg::MissingVariant))
+        .count();
+    if arg_ids.len() != supplied {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let n_temps = rtc_call_temp_count(&sig) - 1;
+    let base = ctx.string_rtc_base + base;
+    let result_temp = ctx.local_slots[base + n_temps].frame_offset;
+
+    let mut pushes: Vec<Vec<u8>> = Vec::with_capacity(sig.len());
+    let mut arg_bytes: u16 = 0;
+    let mut slot_k = 0usize;
+    let mut arg_cursor = 0usize;
+    let mut missing_temps: Vec<i16> = Vec::new();
+    for mode in sig.iter() {
+        let mut p = Vec::new();
+        match mode {
+            RtcArg::ByVal(ty) => {
+                let arg = arg_ids[arg_cursor];
+                arg_cursor += 1;
+                let coerce = vba_type_to_node_tag(ty);
+                let mut a = NodeArena::new();
+                let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
+                let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
+                let mut em = Emitter::new(&a);
+                em.emit_expr(root, 2);
+                p.extend(em.into_bytes());
+                arg_bytes += call_arg_bytes(ty);
+            }
+            RtcArg::Boxed => {
+                let arg = arg_ids[arg_cursor];
+                arg_cursor += 1;
+                let temp = ctx.local_slots[base + slot_k].frame_offset;
+                slot_k += 1;
+                let src = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+                let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedNode)?;
+                let vt = vba_type_to_vartype(arg_ty).ok_or(LowerError::UnsupportedType)?;
+                p.push(0x04);
+                p.extend_from_slice(&src.to_le_bytes());
+                p.push(0x4d);
+                p.extend_from_slice(&temp.to_le_bytes());
+                p.extend_from_slice(&[vt, 0x40]);
+                arg_bytes += 4;
+            }
+            RtcArg::MissingVariant => {
+                slot_k += 1;
+                let temp = ctx.local_slots[base + slot_k].frame_offset;
+                slot_k += 1;
+                missing_temps.push(temp);
+                p.push(0x27);
+                p.extend_from_slice(&temp.to_le_bytes());
+                arg_bytes += 4;
+            }
+        }
+        pushes.push(p);
+    }
+    for p in pushes.iter().rev() {
+        out.extend_from_slice(p);
+    }
+    out.push(0x04);
+    out.extend_from_slice(&result_temp.to_le_bytes());
+    let r = ctx.call_next.get();
+    ctx.call_next.set(r + 1);
+    out.push(0x0a);
+    out.extend_from_slice(&(r as u16).to_le_bytes());
+    out.extend_from_slice(&(arg_bytes + 4).to_le_bytes());
+    let mut free = missing_temps;
+    free.push(result_temp);
+    Ok((result_temp, free))
+}
+
+/// True if `node` is a `&` concatenation at least one of whose operands is a
+/// String-returning runtime intrinsic call — an owned-temp concat, which uses the
+/// cleanup-aware concat opcode (0xfb 0xef) over the plain one (0x2a).
+fn is_owned_concat(module: &BoundModule, node: NodeId, expr_arena: &ExprArena) -> bool {
+    if !matches!(expr_arena.get(node), ExprNode::BinOp { op: BinOpKind::Cat, .. }) {
+        return false;
+    }
+    let mut ops = Vec::new();
+    flatten_concat(node, expr_arena, &mut ops);
+    ops.iter()
+        .any(|&o| matches!(module.builtins.get(&o.0), Some(BuiltinCall::RtcString { .. })))
+}
+
+/// Number of hidden 16-byte temps an owned-temp concat needs: each runtime-string
+/// operand contributes its call's temps, each plain String var or string literal
+/// contributes one materialization temp, plus one temp per intermediate concat.
+fn count_owned_concat_temps(module: &BoundModule, ops: &[NodeId]) -> usize {
+    let mut n = 0;
+    for &op in ops {
+        match module.builtins.get(&op.0) {
+            Some(BuiltinCall::RtcString { args }) => n += rtc_call_temp_count(args),
+            _ => n += 1,
+        }
+    }
+    n + ops.len().saturating_sub(1)
+}
+
+/// Materialize one operand of an owned-temp concat as a BSTR address on the stack.
+/// `rtc_base` is the pre-reserved temp base for an rtc operand (`None` for a plain
+/// operand). A runtime-string result is produced into its temp then `04<temp>` (the
+/// owned variant temps are appended to `rtc_owned`); a plain String variable is
+/// value-loaded and copied into a fresh temp (`6c<var> 46<temp>`); a string literal
+/// loads into a fresh temp (`3a<temp> <ref>`). The copy/literal temps are not owned.
+fn materialize_owned_concat_operand(
+    ctx: &LowerCtx,
+    op: NodeId,
+    rtc_base: Option<usize>,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+    rtc_owned: &mut Vec<i16>,
+) -> Result<(), LowerError> {
+    if let Some(base) = rtc_base {
+        let (result_temp, free) = emit_rtc_string_call_at(ctx, op, base, expr_arena, out)?;
+        rtc_owned.extend(free);
+        out.push(0x04);
+        out.extend_from_slice(&result_temp.to_le_bytes());
+        return Ok(());
+    }
+    match expr_arena.get(op) {
+        ExprNode::Literal { lit: AstLit::Str(s) } => {
+            let temp = alloc_string_rtc_temp(ctx);
+            let r = ctx.call_next.get();
+            ctx.call_next.set(r + 1);
+            ctx.intern_string(s);
+            out.push(0x3a);
+            out.extend_from_slice(&temp.to_le_bytes());
+            out.extend_from_slice(&(r as u16).to_le_bytes());
+            Ok(())
+        }
+        ExprNode::NameRef { .. }
+            if matches!(ctx.module.types.get(&op.0), Some(VbaType::String)) =>
+        {
+            let off = arg_var_offset(ctx, op).ok_or(LowerError::UnsupportedNode)?;
+            let temp = alloc_string_rtc_temp(ctx);
+            out.push(0x6c);
+            out.extend_from_slice(&off.to_le_bytes());
+            out.push(0x46);
+            out.extend_from_slice(&temp.to_le_bytes());
+            Ok(())
+        }
+        _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// Lower an owned-temp concatenation assignment `s = <chain>` where at least one
+/// operand is a runtime-string result. The compiler reserves every rtc operand's
+/// temps first (in source order), then the materialization/concat temps. Each
+/// operand is materialized to a BSTR address (left-to-right); adjacent pairs
+/// concatenate with `0xfb 0xef <temp>` (the result address stays on the stack and
+/// chains). Finally the result is loaded (0x60), moved into the target (0x31), and
+/// all owned temps (rtc results first, then concat results) freed.
+fn lower_owned_concat(
+    ctx: &LowerCtx,
+    tgt_off: i16,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let mut ops = Vec::new();
+    flatten_concat(value_id, expr_arena, &mut ops);
+    if ops.len() < 2 {
+        return Err(LowerError::UnsupportedNode);
+    }
+    // Reserve each rtc operand's temps up front, in source order.
+    let rtc_bases: Vec<Option<usize>> = ops
+        .iter()
+        .map(|&op| match ctx.module.builtins.get(&op.0) {
+            Some(BuiltinCall::RtcString { args }) => Some(reserve_rtc_temps(ctx, args)),
+            _ => None,
+        })
+        .collect();
+
+    let mut rtc_owned: Vec<i16> = Vec::new();
+    let mut concat_owned: Vec<i16> = Vec::new();
+    materialize_owned_concat_operand(ctx, ops[0], rtc_bases[0], expr_arena, out, &mut rtc_owned)?;
+    for (i, &op) in ops.iter().enumerate().skip(1) {
+        materialize_owned_concat_operand(ctx, op, rtc_bases[i], expr_arena, out, &mut rtc_owned)?;
+        let result = alloc_string_rtc_temp(ctx);
+        concat_owned.push(result);
+        out.extend_from_slice(&[0xfb, 0xef]);
+        out.extend_from_slice(&result.to_le_bytes());
+    }
+    out.push(0x60);
+    out.push(0x31);
+    out.extend_from_slice(&tgt_off.to_le_bytes());
+    // Owned temps to free: the rtc result/Missing temps (allocation order) then the
+    // concat result temps (allocation order).
+    rtc_owned.append(&mut concat_owned);
+    emit_variant_temp_free(out, &rtc_owned);
+    Ok(())
+}
+
 fn lower_assign(
     ctx: &LowerCtx,
     target_id: NodeId,
@@ -1879,125 +2163,28 @@ fn lower_assign(
     // the result is loaded (0x60), moved into the target (0x31), and the result temp
     // freed (0x35). The runtime-call reference index and total argument-byte count
     // follow the same convention as user calls.
-    if let ExprNode::Call { args, .. } = expr_arena.get(value_id) {
-        if let Some(BuiltinCall::RtcString { args: sig }) = ctx.module.builtins.get(&value_id.0) {
-            let tgt_off = match resolution {
-                NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            let arg_ids: Vec<NodeId> = match expr_arena.get(*args) {
-                ExprNode::ArgList { args } => args.clone(),
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            // Every parameter except an omitted Optional consumes one source argument.
-            let supplied = sig
-                .iter()
-                .filter(|a| !matches!(a, RtcArg::MissingVariant))
-                .count();
-            if arg_ids.len() != supplied {
-                return Err(LowerError::UnsupportedNode);
-            }
-            // Hidden temps, assigned in source order (first gets the highest-addressed
-            // temp): one slot per boxed parameter, two per omitted Optional (value
-            // buffer + temp), plus the result temp last — independent of the reverse
-            // argument push order.
-            let n_temps: usize = sig
-                .iter()
-                .map(|a| match a {
-                    RtcArg::Boxed => 1,
-                    RtcArg::MissingVariant => 2,
-                    RtcArg::ByVal(_) => 0,
-                })
-                .sum();
-            let base = ctx.string_rtc_base + ctx.string_rtc_next.get();
-            ctx.string_rtc_next.set(ctx.string_rtc_next.get() + n_temps + 1);
-            let result_temp = ctx.local_slots[base + n_temps].frame_offset;
-
-            // Build each argument's push bytes and its argument-byte contribution.
-            // The missing-variant temps are collected (in allocation order) so they
-            // can be freed together with the result temp.
-            let mut pushes: Vec<Vec<u8>> = Vec::with_capacity(sig.len());
-            let mut arg_bytes: u16 = 0;
-            let mut slot_k = 0usize;
-            let mut arg_cursor = 0usize;
-            let mut missing_temps: Vec<i16> = Vec::new();
-            for mode in sig.iter() {
-                let mut p = Vec::new();
-                match mode {
-                    RtcArg::ByVal(ty) => {
-                        let arg = arg_ids[arg_cursor];
-                        arg_cursor += 1;
-                        let coerce = vba_type_to_node_tag(ty);
-                        let mut a = NodeArena::new();
-                        let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
-                        let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
-                        let mut em = Emitter::new(&a);
-                        em.emit_expr(root, 2);
-                        p.extend(em.into_bytes());
-                        arg_bytes += call_arg_bytes(ty);
-                    }
-                    RtcArg::Boxed => {
-                        let arg = arg_ids[arg_cursor];
-                        arg_cursor += 1;
-                        let temp = ctx.local_slots[base + slot_k].frame_offset;
-                        slot_k += 1;
-                        let src = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
-                        let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedNode)?;
-                        let vt = vba_type_to_vartype(arg_ty).ok_or(LowerError::UnsupportedType)?;
-                        p.push(0x04);
-                        p.extend_from_slice(&src.to_le_bytes());
-                        p.push(0x4d);
-                        p.extend_from_slice(&temp.to_le_bytes());
-                        p.extend_from_slice(&[vt, 0x40]);
-                        arg_bytes += 4;
-                    }
-                    RtcArg::MissingVariant => {
-                        // The first slot is the literal's value buffer (unreferenced);
-                        // the second is the variant temp passed by address and freed.
-                        slot_k += 1;
-                        let temp = ctx.local_slots[base + slot_k].frame_offset;
-                        slot_k += 1;
-                        missing_temps.push(temp);
-                        // Push the address of a hidden Missing variant temp.
-                        p.push(0x27);
-                        p.extend_from_slice(&temp.to_le_bytes());
-                        arg_bytes += 4;
-                    }
-                }
-                pushes.push(p);
-            }
-            // Arguments are pushed right-to-left.
-            for p in pushes.iter().rev() {
-                out.extend_from_slice(p);
-            }
-            out.push(0x04);
-            out.extend_from_slice(&result_temp.to_le_bytes());
-            let r = ctx.call_next.get();
-            ctx.call_next.set(r + 1);
-            out.push(0x0a);
-            out.extend_from_slice(&(r as u16).to_le_bytes());
-            out.extend_from_slice(&(arg_bytes + 4).to_le_bytes());
-            out.push(0x04);
-            out.extend_from_slice(&result_temp.to_le_bytes());
-            out.push(0x60);
-            out.push(0x31);
-            out.extend_from_slice(&tgt_off.to_le_bytes());
-            // Free the variant temps: the missing-variant temps (in allocation order)
-            // and the result temp. A single temp uses the short free (0x35); two or
-            // more use the combined free (0x36 <count*2> <offsets…>).
-            let mut free_offsets = missing_temps;
-            free_offsets.push(result_temp);
-            if free_offsets.len() == 1 {
-                out.push(0x35);
-                out.extend_from_slice(&free_offsets[0].to_le_bytes());
-            } else {
-                out.push(0x36);
-                out.extend_from_slice(&((free_offsets.len() * 2) as u16).to_le_bytes());
-                for off in &free_offsets {
-                    out.extend_from_slice(&off.to_le_bytes());
-                }
-            }
-            return Ok(());
+    if let Some(BuiltinCall::RtcString { .. }) = ctx.module.builtins.get(&value_id.0) {
+        let tgt_off = match resolution {
+            NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        // Emit the runtime call (result into a hidden temp), then load the result
+        // (0x60), move it into the target (0x31), and free the owned variant temps.
+        let (result_temp, free_offsets) = emit_rtc_string_call(ctx, value_id, expr_arena, out)?;
+        out.push(0x04);
+        out.extend_from_slice(&result_temp.to_le_bytes());
+        out.push(0x60);
+        out.push(0x31);
+        out.extend_from_slice(&tgt_off.to_le_bytes());
+        emit_variant_temp_free(out, &free_offsets);
+        return Ok(());
+    }
+    // An owned-temp string concatenation (a `&` chain with a runtime-string operand)
+    // is lowered with the cleanup-aware concat opcode family.
+    if is_owned_concat(ctx.module, value_id, expr_arena) {
+        if let NameResolution::Local { local_idx, .. } = resolution {
+            let tgt_off = ctx.local_slots[*local_idx].frame_offset;
+            return lower_owned_concat(ctx, tgt_off, value_id, expr_arena, out);
         }
     }
 
