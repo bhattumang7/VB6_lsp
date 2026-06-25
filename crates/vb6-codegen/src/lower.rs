@@ -1193,6 +1193,20 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
                 flatten_concat(*value, expr_arena, &mut ops);
                 count_owned_concat_temps(module, &ops)
             }
+            // `Len` of a runtime-string result: the rtc call's temps plus a Len
+            // scratch temp.
+            _ if is_owned_len(module, *value, expr_arena) => {
+                if let ExprNode::Call { args, .. } = expr_arena.get(*value) {
+                    if let Some(arg) = single_index(*args, expr_arena) {
+                        if let Some(BuiltinCall::RtcString { args: sig }) =
+                            module.builtins.get(&arg.0)
+                        {
+                            return rtc_call_temp_count(sig) + 1;
+                        }
+                    }
+                }
+                0
+            }
             _ => 0,
         },
         ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
@@ -2137,6 +2151,53 @@ fn lower_owned_concat(
     Ok(())
 }
 
+/// True if `node` is `Len(<runtime-string call>)` — a `Len` whose argument is a
+/// freshly-produced runtime-string result, which uses the release-aware Len opcode
+/// (0xfb 0xeb) over an owned BSTR temp.
+fn is_owned_len(module: &BoundModule, node: NodeId, expr_arena: &ExprArena) -> bool {
+    if !matches!(
+        module.builtins.get(&node.0),
+        Some(BuiltinCall::Unary(UnaryIntrinsic::Len))
+    ) {
+        return false;
+    }
+    if let ExprNode::Call { args, .. } = expr_arena.get(node) {
+        if let Some(arg) = single_index(*args, expr_arena) {
+            return matches!(module.builtins.get(&arg.0), Some(BuiltinCall::RtcString { .. }));
+        }
+    }
+    false
+}
+
+/// Lower `r = Len(<runtime-string call>)` into a Long target: produce the rtc result
+/// into a hidden temp, take its length with the release-aware Len opcode
+/// (`0xfb 0xeb <scratch>` then `0xfc 0x22`), store the Long, and free the result
+/// temp. The Len scratch temp is not freed.
+fn lower_owned_len(
+    ctx: &LowerCtx,
+    tgt_off: i16,
+    len_node: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let args_id = match expr_arena.get(len_node) {
+        ExprNode::Call { args, .. } => *args,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let arg = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+    let (result_temp, free) = emit_rtc_string_call(ctx, arg, expr_arena, out)?;
+    out.push(0x04);
+    out.extend_from_slice(&result_temp.to_le_bytes());
+    let scratch = alloc_string_rtc_temp(ctx);
+    out.extend_from_slice(&[0xfb, 0xeb]);
+    out.extend_from_slice(&scratch.to_le_bytes());
+    out.extend_from_slice(&[0xfc, 0x22]);
+    out.push(0x71);
+    out.extend_from_slice(&tgt_off.to_le_bytes());
+    emit_variant_temp_free(out, &free);
+    Ok(())
+}
+
 fn lower_assign(
     ctx: &LowerCtx,
     target_id: NodeId,
@@ -2185,6 +2246,15 @@ fn lower_assign(
         if let NameResolution::Local { local_idx, .. } = resolution {
             let tgt_off = ctx.local_slots[*local_idx].frame_offset;
             return lower_owned_concat(ctx, tgt_off, value_id, expr_arena, out);
+        }
+    }
+    // `Len` of a runtime-string result (the release-aware Len form) into a Long.
+    if is_owned_len(ctx.module, value_id, expr_arena) {
+        if let NameResolution::Local { local_idx, .. } = resolution {
+            if matches!(ctx.local_type(*local_idx), VbaType::Long) {
+                let tgt_off = ctx.local_slots[*local_idx].frame_offset;
+                return lower_owned_len(ctx, tgt_off, value_id, expr_arena, out);
+            }
         }
     }
 
