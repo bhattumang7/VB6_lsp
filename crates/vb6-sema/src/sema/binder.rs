@@ -41,7 +41,7 @@ use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
 use crate::sema::symbol::{
     BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc, BoundTypeDecl,
-    BoundTypeMember, BoundVar, BuiltinCall, NameResolution, ParamFlags,
+    BoundTypeMember, BoundVar, BuiltinCall, NameResolution, ParamFlags, UnaryIntrinsic,
 };
 use crate::sema::types::VbaType;
 
@@ -762,9 +762,29 @@ impl<'a> Binder<'a> {
                         }
                         Some(NameResolution::Builtin) => {
                             let name = self.name_of(sym).to_ascii_lowercase();
+                            // Type of this call's single argument (already typed
+                            // bottom-up), for intrinsics whose result follows it.
+                            let arg_ty = || {
+                                if let ExprNode::Call { args, .. } = self.arena.get(id) {
+                                    if let ExprNode::ArgList { args } = self.arena.get(*args) {
+                                        if let Some(&a) = args.first() {
+                                            return self.types.get(&a.0).cloned();
+                                        }
+                                    }
+                                }
+                                None
+                            };
                             if let Some(t) = conversion_intrinsic_type(&name) {
                                 self.builtins.insert(id.0, BuiltinCall::Convert(t.clone()));
                                 t
+                            } else if let Some(k) = unary_intrinsic(&name) {
+                                self.builtins.insert(id.0, BuiltinCall::Unary(k));
+                                match k {
+                                    UnaryIntrinsic::Len => VbaType::Long,
+                                    UnaryIntrinsic::Sgn => VbaType::Integer,
+                                    // Abs/Int/Fix return their argument type.
+                                    _ => arg_ty().unwrap_or(VbaType::Variant),
+                                }
                             } else {
                                 VbaType::Variant
                             }
@@ -974,6 +994,18 @@ fn conversion_intrinsic_type(name_lower: &str) -> Option<VbaType> {
         "cdbl" => VbaType::Double,
         "ccur" => VbaType::Currency,
         "cstr" => VbaType::String,
+        _ => return None,
+    })
+}
+
+/// Classify a single-argument dedicated-opcode intrinsic by name.
+fn unary_intrinsic(name_lower: &str) -> Option<UnaryIntrinsic> {
+    Some(match name_lower {
+        "len" => UnaryIntrinsic::Len,
+        "abs" => UnaryIntrinsic::Abs,
+        "sgn" => UnaryIntrinsic::Sgn,
+        "int" => UnaryIntrinsic::Int,
+        "fix" => UnaryIntrinsic::Fix,
         _ => return None,
     })
 }

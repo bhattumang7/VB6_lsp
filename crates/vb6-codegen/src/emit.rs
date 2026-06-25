@@ -225,6 +225,17 @@ impl<'a> Emitter<'a> {
             }
             return 0;
         }
+        // Synthetic dedicated-opcode unary intrinsic (opcode 0x7d): Len/Abs/Sgn/
+        // Int/Fix. Emit the argument, then the intrinsic opcode selected by the
+        // argument's type (kind in word[5]).
+        if op == 0x7d {
+            self.emit_expr(NodeRef(n.w[4]), 2);
+            let arg = self.arena.get(NodeRef(n.w[4])).type_tag();
+            for &b in unary_intrinsic_bytes(n.w[5], arg) {
+                self.stream.emit_byte(b);
+            }
+            return 0;
+        }
 
         // Guard: opcodes outside `1..=0x73` emit nothing (opcode 0 wraps to
         // 0xffffffff and is also rejected).
@@ -2760,6 +2771,39 @@ fn explicit_conversion_bytes(dest: i32, src: i32) -> &'static [u8] {
         (0x10, 0xa) => &[0xfb, 0xff],
         (0x10, 0xb) => &[0xfc, 0x00],
         (0x10, 0xd) => &[0xfc, 0x01],
+        _ => &[],
+    }
+}
+
+/// Opcode bytes for a dedicated-opcode unary intrinsic, keyed by the kind (Len=0,
+/// Abs=1, Sgn=2, Int=3, Fix=4) and the argument type tag. `Int`/`Fix` of an
+/// already-integral argument is a no-op (empty). Type tags: Integer=6, Long=8,
+/// Single=0xa, Double=0xb, Currency=0xd.
+fn unary_intrinsic_bytes(kind: u32, arg: i32) -> &'static [u8] {
+    match (kind, arg) {
+        // Len → Long: a single opcode regardless of (String) argument.
+        (0, _) => &[0x4a],
+        // Abs → argument type.
+        (1, 6) => &[0xbb],
+        (1, 8) => &[0xbc],
+        (1, 0xa) | (1, 0xb) => &[0xbd],
+        (1, 0xd) => &[0xbe],
+        // Sgn → Integer.
+        (2, 6) => &[0xfb, 0xf3],
+        (2, 8) => &[0xfb, 0xf4],
+        (2, 0xa) => &[0xfb, 0xf5],
+        (2, 0xb) => &[0xfb, 0xf6],
+        (2, 0xd) => &[0xfb, 0xf7],
+        // Int → argument type (no-op for integral arguments).
+        (3, 6) | (3, 8) => &[],
+        (3, 0xa) => &[0xfb, 0xe6],
+        (3, 0xb) => &[0xfb, 0xe7],
+        (3, 0xd) => &[0xfb, 0xe8],
+        // Fix → argument type (no-op for integral arguments).
+        (4, 6) | (4, 8) => &[],
+        (4, 0xa) => &[0xfb, 0xde],
+        (4, 0xb) => &[0xfb, 0xdf],
+        (4, 0xd) => &[0xfb, 0xe0],
         _ => &[],
     }
 }

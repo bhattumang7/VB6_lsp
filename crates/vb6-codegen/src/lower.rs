@@ -13,7 +13,7 @@
 
 use std::cell::{Cell, RefCell};
 
-use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, VbaType, NameResolution};
+use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, UnaryIntrinsic, VbaType, NameResolution};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
@@ -2175,24 +2175,55 @@ fn lower_expr_coerced(
         // (0x7c), so it composes inside any expression. Sources and destinations
         // outside the supported scalar set (Byte, Boolean/Date/Variant) are gated.
         ExprNode::Call { args, .. } => {
-            let Some(BuiltinCall::Convert(t)) = ctx.module.builtins.get(&node_id.0) else {
-                return Err(LowerError::UnsupportedNode);
-            };
-            let dest = vba_type_to_node_tag(t).ok_or(LowerError::UnsupportedType)?;
             let arg = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
-            let src = ctx
-                .module
-                .types
-                .get(&arg.0)
-                .and_then(vba_type_to_node_tag)
-                .ok_or(LowerError::UnsupportedType)?;
-            // Only the scalar pairs in the explicit-conversion table are supported.
-            const OK: &[u16] = &[6, 8, 0xa, 0xb, 0xd, 0x10];
-            if !OK.contains(&dest) || !matches!(src, 6 | 8 | 0xa | 0xb | 0xd) {
-                return Err(LowerError::UnsupportedNode);
+            match ctx.module.builtins.get(&node_id.0) {
+                // Type-conversion intrinsic → explicit-conversion node (0x7c).
+                Some(BuiltinCall::Convert(t)) => {
+                    let dest = vba_type_to_node_tag(t).ok_or(LowerError::UnsupportedType)?;
+                    let src = ctx
+                        .module
+                        .types
+                        .get(&arg.0)
+                        .and_then(vba_type_to_node_tag)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    const OK: &[u16] = &[6, 8, 0xa, 0xb, 0xd, 0x10];
+                    if !OK.contains(&dest) || !matches!(src, 6 | 8 | 0xa | 0xb | 0xd) {
+                        return Err(LowerError::UnsupportedNode);
+                    }
+                    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+                    Ok(arena.alloc(NodeArena::node(0x7c, dest, arg_root.0, 0, 0, 0)))
+                }
+                // Dedicated-opcode unary intrinsic → node 0x7d (kind in w[5]); the
+                // opcode is selected by the argument type at emit time. The node's
+                // type tag is the intrinsic's result type.
+                Some(BuiltinCall::Unary(k)) => {
+                    let result = ctx
+                        .module
+                        .types
+                        .get(&node_id.0)
+                        .and_then(vba_type_to_node_tag)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    let arg_tag = ctx
+                        .module
+                        .types
+                        .get(&arg.0)
+                        .and_then(vba_type_to_node_tag)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    // Supported argument types: Len takes a String; the numeric
+                    // intrinsics take Integer/Long/Single/Double/Currency.
+                    let supported = match k {
+                        UnaryIntrinsic::Len => arg_tag == 0x10,
+                        _ => matches!(arg_tag, 6 | 8 | 0xa | 0xb | 0xd),
+                    };
+                    if !supported {
+                        return Err(LowerError::UnsupportedNode);
+                    }
+                    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+                    let kind = *k as u32;
+                    Ok(arena.alloc(NodeArena::node(0x7d, result, arg_root.0, kind, 0, 0)))
+                }
+                None => Err(LowerError::UnsupportedNode),
             }
-            let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
-            Ok(arena.alloc(NodeArena::node(0x7c, dest, arg_root.0, 0, 0, 0)))
         }
         _ => Err(LowerError::UnsupportedNode),
     }

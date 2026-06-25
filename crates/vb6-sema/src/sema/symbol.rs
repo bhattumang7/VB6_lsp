@@ -174,12 +174,26 @@ pub enum ExternalDecl {
     EnumMember { enum_idx: usize, member_idx: usize },
 }
 
+/// A single-argument intrinsic emitted as a dedicated, argument-type-indexed
+/// opcode (`Len`/`Abs`/`Sgn`/`Int`/`Fix`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnaryIntrinsic {
+    Len,
+    Abs,
+    Sgn,
+    Int,
+    Fix,
+}
+
 /// How a built-in (intrinsic) call is emitted by the code generator.
 #[derive(Debug, Clone, PartialEq)]
 pub enum BuiltinCall {
     /// A type-conversion intrinsic (`CInt`/`CLng`/`CStr`/…): its single argument
     /// is converted to the given type, reusing the assignment-conversion opcodes.
     Convert(VbaType),
+    /// A dedicated-opcode unary intrinsic; the opcode is selected by the argument
+    /// type at lowering time.
+    Unary(UnaryIntrinsic),
 }
 
 /// The fully-bound representation of one VBA module.

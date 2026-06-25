@@ -124,6 +124,35 @@ fn e2e_cstr_from_long_move_store() {
     );
 }
 
+// ── Dedicated-opcode unary intrinsics (Len/Abs/Sgn/Int/Fix) ──────────────────
+
+#[test]
+fn e2e_len_string() {
+    assert_eq!(conv("Dim s As String, r As Long", "r = Len(s)"), &[0x6c, 0x78, 0xff, 0x4a, 0x71, 0x74, 0xff]);
+}
+
+#[test]
+fn e2e_abs_by_type() {
+    // Abs returns its argument type; opcode is type-indexed (0xbb/0xbc/0xbd).
+    assert_eq!(conv("Dim a As Integer, r As Integer", "r = Abs(a)"), &[0x6b, 0x7a, 0xff, 0xbb, 0x70, 0x78, 0xff]);
+    assert_eq!(conv("Dim a As Long, r As Long", "r = Abs(a)"), &[0x6c, 0x78, 0xff, 0xbc, 0x71, 0x74, 0xff]);
+    assert_eq!(conv("Dim a As Double, r As Double", "r = Abs(a)"), &[0x6f, 0x74, 0xff, 0xbd, 0x74, 0x6c, 0xff]);
+}
+
+#[test]
+fn e2e_sgn_returns_integer() {
+    // Sgn → Integer; opcode indexed by argument type (0xfb 0xf4 for Long).
+    assert_eq!(conv("Dim a As Long, r As Integer", "r = Sgn(a)"), &[0x6c, 0x78, 0xff, 0xfb, 0xf4, 0x70, 0x76, 0xff]);
+}
+
+#[test]
+fn e2e_int_fix_float_only() {
+    // Int/Fix are no-ops on integral args; floats use 0xfb 0xe7 / 0xfb 0xdf.
+    assert_eq!(conv("Dim a As Long, r As Long", "r = Int(a)"), &[0x6c, 0x78, 0xff, 0x71, 0x74, 0xff]);
+    assert_eq!(conv("Dim a As Double, r As Double", "r = Int(a)"), &[0x6f, 0x74, 0xff, 0xfb, 0xe7, 0x74, 0x6c, 0xff]);
+    assert_eq!(conv("Dim a As Double, r As Double", "r = Fix(a)"), &[0x6f, 0x74, 0xff, 0xfb, 0xdf, 0x74, 0x6c, 0xff]);
+}
+
 // ── Intra-module Sub/Function calls ──────────────────────────────────────────
 //
 // The caller (Sub Main = proc 0) pushes each argument (ByVal value / ByRef
