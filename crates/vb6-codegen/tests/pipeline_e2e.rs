@@ -239,10 +239,38 @@ fn e2e_mid_three_args() {
 }
 
 #[test]
-fn e2e_mid_two_args_omitted_optional_gated() {
-    // Mid with an omitted Optional length needs the Missing-Variant marshalling
-    // form, which is not yet modelled → the call is gated (not mis-emitted).
-    assert!(try_compile("Dim t As String, n As Long, s As String", "s = Mid(t, n)").is_err());
+fn e2e_mid_two_args_omitted_optional() {
+    // Mid with the optional length omitted: the missing parameter is a hidden
+    // Missing variant (pushed by address, 0x27), and the cleanup frees both that
+    // variant temp and the result temp with the combined free (0x36 <count*2> …).
+    // The Missing literal reserves a value-buffer slot, so its temp (0x40) sits one
+    // 16-byte slot below the boxed string temp (0x60).
+    assert_eq!(
+        conv("Dim t As String, n As Long, s As String", "s = Mid(t, n)"),
+        &[0x27, 0x40, 0xff, 0x6c, 0x74, 0xff, 0x04, 0x78, 0xff, 0x4d, 0x60, 0xff,
+          0x08, 0x40, 0x04, 0x30, 0xff, 0x0a, 0x00, 0x00, 0x10, 0x00, 0x04, 0x30,
+          0xff, 0x60, 0x31, 0x70, 0xff, 0x36, 0x04, 0x00, 0x40, 0xff, 0x30, 0xff]
+    );
+}
+
+#[test]
+fn e2e_mid_two_args_literal_start() {
+    // Same omitted-optional form with a literal start position (pushed as a Long
+    // literal, 0xf5).
+    assert_eq!(
+        conv("Dim t As String, s As String", "s = Mid(t, 2)"),
+        &[0x27, 0x44, 0xff, 0xf5, 0x02, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0x4d,
+          0x64, 0xff, 0x08, 0x40, 0x04, 0x34, 0xff, 0x0a, 0x00, 0x00, 0x10, 0x00,
+          0x04, 0x34, 0xff, 0x60, 0x31, 0x74, 0xff, 0x36, 0x04, 0x00, 0x44, 0xff,
+          0x34, 0xff]
+    );
+}
+
+#[test]
+fn e2e_instr_gated() {
+    // InStr returns a Long via a distinct compare-style runtime shape, not the
+    // string-result temp machinery → it is gated (not mis-emitted) for now.
+    assert!(try_compile("Dim t As String, u As String, r As Long", "r = InStr(t, u)").is_err());
 }
 
 #[test]

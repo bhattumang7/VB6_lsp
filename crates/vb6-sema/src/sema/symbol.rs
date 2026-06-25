@@ -196,6 +196,11 @@ pub enum RtcArg {
     /// (e.g. the String argument of `UCase`/`Left`/`Mid`, or the Variant argument
     /// of `Str`/`Hex`/`Oct`). The argument must be a simple variable reference.
     Boxed,
+    /// An omitted Optional Variant parameter: no source argument is supplied. The
+    /// compiler materialises a hidden Missing variant temp (VT_ERROR /
+    /// DISP_E_PARAMNOTFOUND) and passes it by address. The temp is freed alongside
+    /// the result temp.
+    MissingVariant,
 }
 
 /// How a built-in (intrinsic) call is emitted by the code generator.

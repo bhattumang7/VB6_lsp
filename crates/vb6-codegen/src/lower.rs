@@ -1178,9 +1178,18 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
     let c = |id: NodeId| count_string_rtc_temps(module, id, expr_arena);
     match expr_arena.get(node_id) {
         ExprNode::Assign { value, .. } => match module.builtins.get(&value.0) {
-            // One hidden 16-byte temp per boxed argument, plus one for the result.
+            // 16-byte temps: one per boxed argument; two per omitted-Optional
+            // (a Missing-variant literal needs a separate value buffer alongside its
+            // temp); plus one result temp.
             Some(BuiltinCall::RtcString { args }) => {
-                args.iter().filter(|a| matches!(a, RtcArg::Boxed)).count() + 1
+                args.iter()
+                    .map(|a| match a {
+                        RtcArg::Boxed => 1,
+                        RtcArg::MissingVariant => 2,
+                        RtcArg::ByVal(_) => 0,
+                    })
+                    .sum::<usize>()
+                    + 1
             }
             _ => 0,
         },
@@ -1880,48 +1889,78 @@ fn lower_assign(
                 ExprNode::ArgList { args } => args.clone(),
                 _ => return Err(LowerError::UnsupportedNode),
             };
-            if arg_ids.len() != sig.len() {
+            // Every parameter except an omitted Optional consumes one source argument.
+            let supplied = sig
+                .iter()
+                .filter(|a| !matches!(a, RtcArg::MissingVariant))
+                .count();
+            if arg_ids.len() != supplied {
                 return Err(LowerError::UnsupportedNode);
             }
-            let n_boxed = sig.iter().filter(|a| matches!(a, RtcArg::Boxed)).count();
+            // Hidden temps, assigned in source order (first gets the highest-addressed
+            // temp): one slot per boxed parameter, two per omitted Optional (value
+            // buffer + temp), plus the result temp last — independent of the reverse
+            // argument push order.
+            let n_temps: usize = sig
+                .iter()
+                .map(|a| match a {
+                    RtcArg::Boxed => 1,
+                    RtcArg::MissingVariant => 2,
+                    RtcArg::ByVal(_) => 0,
+                })
+                .sum();
             let base = ctx.string_rtc_base + ctx.string_rtc_next.get();
-            ctx.string_rtc_next.set(ctx.string_rtc_next.get() + n_boxed + 1);
-            let result_temp = ctx.local_slots[base + n_boxed].frame_offset;
+            ctx.string_rtc_next.set(ctx.string_rtc_next.get() + n_temps + 1);
+            let result_temp = ctx.local_slots[base + n_temps].frame_offset;
 
             // Build each argument's push bytes and its argument-byte contribution.
-            // Boxed temps are assigned in source order (the first boxed argument gets
-            // the highest-addressed temp), independent of the reverse push order.
+            // The missing-variant temps are collected (in allocation order) so they
+            // can be freed together with the result temp.
             let mut pushes: Vec<Vec<u8>> = Vec::with_capacity(sig.len());
             let mut arg_bytes: u16 = 0;
-            let mut boxed_k = 0usize;
-            for (i, mode) in sig.iter().enumerate() {
+            let mut slot_k = 0usize;
+            let mut arg_cursor = 0usize;
+            let mut missing_temps: Vec<i16> = Vec::new();
+            for mode in sig.iter() {
                 let mut p = Vec::new();
                 match mode {
                     RtcArg::ByVal(ty) => {
+                        let arg = arg_ids[arg_cursor];
+                        arg_cursor += 1;
                         let coerce = vba_type_to_node_tag(ty);
                         let mut a = NodeArena::new();
-                        let root = lower_expr_coerced(ctx, arg_ids[i], expr_arena, &mut a, coerce)?;
-                        let root = coerce_assign_value(ctx, arg_ids[i], root, coerce, &mut a);
+                        let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
+                        let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
                         let mut em = Emitter::new(&a);
                         em.emit_expr(root, 2);
                         p.extend(em.into_bytes());
                         arg_bytes += call_arg_bytes(ty);
                     }
                     RtcArg::Boxed => {
-                        let temp = ctx.local_slots[base + boxed_k].frame_offset;
-                        boxed_k += 1;
-                        let src = arg_var_offset(ctx, arg_ids[i]).ok_or(LowerError::UnsupportedNode)?;
-                        let arg_ty = ctx
-                            .module
-                            .types
-                            .get(&arg_ids[i].0)
-                            .ok_or(LowerError::UnsupportedNode)?;
+                        let arg = arg_ids[arg_cursor];
+                        arg_cursor += 1;
+                        let temp = ctx.local_slots[base + slot_k].frame_offset;
+                        slot_k += 1;
+                        let src = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+                        let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedNode)?;
                         let vt = vba_type_to_vartype(arg_ty).ok_or(LowerError::UnsupportedType)?;
                         p.push(0x04);
                         p.extend_from_slice(&src.to_le_bytes());
                         p.push(0x4d);
                         p.extend_from_slice(&temp.to_le_bytes());
                         p.extend_from_slice(&[vt, 0x40]);
+                        arg_bytes += 4;
+                    }
+                    RtcArg::MissingVariant => {
+                        // The first slot is the literal's value buffer (unreferenced);
+                        // the second is the variant temp passed by address and freed.
+                        slot_k += 1;
+                        let temp = ctx.local_slots[base + slot_k].frame_offset;
+                        slot_k += 1;
+                        missing_temps.push(temp);
+                        // Push the address of a hidden Missing variant temp.
+                        p.push(0x27);
+                        p.extend_from_slice(&temp.to_le_bytes());
                         arg_bytes += 4;
                     }
                 }
@@ -1943,8 +1982,21 @@ fn lower_assign(
             out.push(0x60);
             out.push(0x31);
             out.extend_from_slice(&tgt_off.to_le_bytes());
-            out.push(0x35);
-            out.extend_from_slice(&result_temp.to_le_bytes());
+            // Free the variant temps: the missing-variant temps (in allocation order)
+            // and the result temp. A single temp uses the short free (0x35); two or
+            // more use the combined free (0x36 <count*2> <offsets…>).
+            let mut free_offsets = missing_temps;
+            free_offsets.push(result_temp);
+            if free_offsets.len() == 1 {
+                out.push(0x35);
+                out.extend_from_slice(&free_offsets[0].to_le_bytes());
+            } else {
+                out.push(0x36);
+                out.extend_from_slice(&((free_offsets.len() * 2) as u16).to_le_bytes());
+                for off in &free_offsets {
+                    out.extend_from_slice(&off.to_le_bytes());
+                }
+            }
             return Ok(());
         }
     }

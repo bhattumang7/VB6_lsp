@@ -1033,7 +1033,7 @@ fn rtc_numeric_intrinsic(name_lower: &str, arg: Option<VbaType>) -> Option<(VbaT
 /// `Mid` with an omitted Optional length (the 2-argument form) needs the
 /// Missing-Variant marshalling form and is left unclassified (gated).
 fn rtc_string_intrinsic(name_lower: &str, arg_count: usize) -> Option<Vec<RtcArg>> {
-    use RtcArg::{ByVal, Boxed};
+    use RtcArg::{ByVal, Boxed, MissingVariant};
     Some(match name_lower {
         // Numeric count → String: the count is pushed by value as a Long.
         "chr" | "chr$" | "space" | "space$" => vec![ByVal(VbaType::Long)],
@@ -1048,9 +1048,12 @@ fn rtc_string_intrinsic(name_lower: &str, arg_count: usize) -> Option<Vec<RtcArg
         }
         // (number As Long, character As String).
         "string" | "string$" if arg_count == 2 => vec![ByVal(VbaType::Long), Boxed],
-        // Mid(String, start As Long, length As Variant) — the 3-argument form only;
-        // the 2-argument (omitted length) form is gated.
+        // Mid(String, start As Long, length As Variant). With the optional length
+        // omitted (2-argument form) a Missing variant is materialised for it.
         "mid" | "mid$" if arg_count == 3 => vec![Boxed, ByVal(VbaType::Long), Boxed],
+        "mid" | "mid$" if arg_count == 2 => {
+            vec![Boxed, ByVal(VbaType::Long), MissingVariant]
+        }
         _ => return None,
     })
 }
