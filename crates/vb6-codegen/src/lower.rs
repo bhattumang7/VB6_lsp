@@ -13,7 +13,7 @@
 
 use std::cell::{Cell, RefCell};
 
-use vb6_sema::sema::{BoundModule, BoundProc, VbaType, NameResolution};
+use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, VbaType, NameResolution};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
@@ -2039,13 +2039,13 @@ fn lower_assign(
     let value_root = coerce_assign_value(ctx, value_id, value_root, coerce_tag, &mut arena);
 
     // A String target receives a *move* store (0x31, ctx 9) when the value is a
-    // freshly-produced temp — a `&` concatenation, or a numeric→String conversion
-    // (a 0x78 coerce node) — and a *copy* store (0x43, ctx 8) when it is a plain
-    // string variable. The move avoids an extra BSTR allocation for the temp.
+    // freshly-produced temp — a `&` concatenation, a numeric→String coercion (0x78),
+    // or a `CStr` explicit conversion (0x7c) — and a *copy* store (0x43, ctx 8) when
+    // it is a plain string variable. The move avoids an extra BSTR allocation.
     let value_is_fresh_string = matches!(
         expr_arena.get(value_id),
         ExprNode::BinOp { op: BinOpKind::Cat, .. }
-    ) || arena.get(value_root).opcode() == 0x78;
+    ) || matches!(arena.get(value_root).opcode(), 0x78 | 0x7c);
 
     let mut emitter = Emitter::new(&arena);
     // The assigned value is an rvalue: emit it in value context (2). This is the
@@ -2169,6 +2169,30 @@ fn lower_expr_coerced(
         ExprNode::Paren { inner } => {
             let inner_id = *inner;
             lower_expr_coerced(ctx, inner_id, expr_arena, arena, coerce_tag)
+        }
+        // A type-conversion intrinsic (CInt/CLng/CSng/CDbl/CCur/CStr): convert its
+        // single argument to the target type via the explicit-conversion node
+        // (0x7c), so it composes inside any expression. Sources and destinations
+        // outside the supported scalar set (Byte, Boolean/Date/Variant) are gated.
+        ExprNode::Call { args, .. } => {
+            let Some(BuiltinCall::Convert(t)) = ctx.module.builtins.get(&node_id.0) else {
+                return Err(LowerError::UnsupportedNode);
+            };
+            let dest = vba_type_to_node_tag(t).ok_or(LowerError::UnsupportedType)?;
+            let arg = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+            let src = ctx
+                .module
+                .types
+                .get(&arg.0)
+                .and_then(vba_type_to_node_tag)
+                .ok_or(LowerError::UnsupportedType)?;
+            // Only the scalar pairs in the explicit-conversion table are supported.
+            const OK: &[u16] = &[6, 8, 0xa, 0xb, 0xd, 0x10];
+            if !OK.contains(&dest) || !matches!(src, 6 | 8 | 0xa | 0xb | 0xd) {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+            Ok(arena.alloc(NodeArena::node(0x7c, dest, arg_root.0, 0, 0, 0)))
         }
         _ => Err(LowerError::UnsupportedNode),
     }

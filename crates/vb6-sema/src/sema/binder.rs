@@ -41,7 +41,7 @@ use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
 use crate::sema::symbol::{
     BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc, BoundTypeDecl,
-    BoundTypeMember, BoundVar, NameResolution, ParamFlags,
+    BoundTypeMember, BoundVar, BuiltinCall, NameResolution, ParamFlags,
 };
 use crate::sema::types::VbaType;
 
@@ -107,6 +107,7 @@ struct Binder<'a> {
 
     resolutions: HashMap<u32, NameResolution>,
     types:       HashMap<u32, VbaType>,
+    builtins:    HashMap<u32, BuiltinCall>,
 
     /// `DefType` letter-range map: first character of an untyped name → inferred VbaType.
     deftype_map: HashMap<char, VbaType>,
@@ -134,6 +135,7 @@ impl<'a> Binder<'a> {
             enum_decls:  Vec::new(),
             resolutions: HashMap::new(),
             types:       HashMap::new(),
+            builtins:    HashMap::new(),
             deftype_map: HashMap::new(),
             diagnostics:     Diagnostics::new(),
             option_explicit: false,
@@ -148,6 +150,7 @@ impl<'a> Binder<'a> {
             enum_decls:  self.enum_decls,
             resolutions: self.resolutions,
             types:       self.types,
+            builtins:    self.builtins,
             diagnostics:     self.diagnostics,
             option_explicit: self.option_explicit,
         }
@@ -748,11 +751,23 @@ impl<'a> Binder<'a> {
                 self.types.insert(id.0, t);
             }
             ExprNode::Call { func, .. } => {
-                // Return type: the resolution of `func` if it names a proc.
-                let ret = if matches!(self.arena.get(*func), ExprNode::NameRef { .. }) {
+                // Return type: the resolution of `func` if it names a proc; a
+                // type-conversion intrinsic returns (and is classified as) its
+                // target type.
+                let ret = if let ExprNode::NameRef { sym, .. } = self.arena.get(*func) {
+                    let sym = *sym;
                     match self.resolutions.get(&func.0).cloned() {
                         Some(NameResolution::Proc(pi)) => {
                             self.procs.get(pi).map(|p| p.ret_type.clone()).unwrap_or_default()
+                        }
+                        Some(NameResolution::Builtin) => {
+                            let name = self.name_of(sym).to_ascii_lowercase();
+                            if let Some(t) = conversion_intrinsic_type(&name) {
+                                self.builtins.insert(id.0, BuiltinCall::Convert(t.clone()));
+                                t
+                            } else {
+                                VbaType::Variant
+                            }
                         }
                         _ => VbaType::Variant,
                     }
@@ -945,6 +960,22 @@ fn lit_type(lit: &crate::frontend::ast::AstLit) -> VbaType {
         Empty       => VbaType::Variant,
         Null        => VbaType::Variant,
     }
+}
+
+/// Target type of a type-conversion intrinsic that reuses the assignment-
+/// conversion opcodes. `CBool`/`CDate`/`CVar` use special conversions and are
+/// intentionally excluded here.
+fn conversion_intrinsic_type(name_lower: &str) -> Option<VbaType> {
+    Some(match name_lower {
+        "cint" => VbaType::Integer,
+        "clng" => VbaType::Long,
+        "cbyte" => VbaType::Byte,
+        "csng" => VbaType::Single,
+        "cdbl" => VbaType::Double,
+        "ccur" => VbaType::Currency,
+        "cstr" => VbaType::String,
+        _ => return None,
+    })
 }
 
 fn binop_type(

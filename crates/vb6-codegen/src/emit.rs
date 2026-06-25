@@ -212,6 +212,19 @@ impl<'a> Emitter<'a> {
             self.emit_static_load(&n);
             return 0;
         }
+        // Synthetic explicit type-conversion (opcode 0x7c): an explicit conversion
+        // intrinsic (CInt/CLng/CSng/CDbl/CCur/CStr). Emit the child operand, then
+        // the explicit-conversion opcode for (dest = node type tag, src = child
+        // type tag). This family differs from the implicit assignment coercion.
+        if op == 0x7c {
+            self.emit_expr(NodeRef(n.w[4]), 2);
+            let dest = n.type_tag();
+            let src = self.arena.get(NodeRef(n.w[4])).type_tag();
+            for &b in explicit_conversion_bytes(dest, src) {
+                self.stream.emit_byte(b);
+            }
+            return 0;
+        }
 
         // Guard: opcodes outside `1..=0x73` emit nothing (opcode 0 wraps to
         // 0xffffffff and is also rejected).
@@ -2702,6 +2715,52 @@ impl<'a> Emitter<'a> {
             let type_tag = (desc.node_word0 as i32) >> 16;
             self.emit_validate_type_operation(type_tag, 0, context);
         }
+    }
+}
+
+/// Opcode bytes for an explicit type-conversion intrinsic, keyed by
+/// (destination type tag, source type tag). Distinct from the implicit
+/// assignment-coercion family: a same-type conversion is usually a no-op, and the
+/// floating-point destinations use the dedicated `0xfc 0x39..0x41` block. Returns
+/// an empty slice for a no-op; an empty slice is also returned (caller treats as a
+/// gate) for unsupported pairs (Byte, Boolean/Date/Variant destinations).
+/// Type tags: Integer=6, Long=8, Single=0xa, Double=0xb, Currency=0xd, String=0x10.
+fn explicit_conversion_bytes(dest: i32, src: i32) -> &'static [u8] {
+    match (dest, src) {
+        // → Integer
+        (6, 6) => &[],
+        (6, 8) => &[0xe4],
+        (6, 0xa) | (6, 0xb) => &[0xe5],
+        (6, 0xd) => &[0xe6],
+        // → Long
+        (8, 6) => &[0xe7],
+        (8, 8) => &[],
+        (8, 0xa) | (8, 0xb) => &[0xe8],
+        (8, 0xd) => &[0xe9],
+        // → Single
+        (0xa, 6) => &[0xeb],
+        (0xa, 8) => &[0xfc, 0x3e],
+        (0xa, 0xa) => &[],
+        (0xa, 0xb) => &[0xfc, 0x40],
+        (0xa, 0xd) => &[0xfc, 0x41],
+        // → Double
+        (0xb, 6) => &[0xeb],
+        (0xb, 8) => &[0xec],
+        (0xb, 0xa) => &[0xfc, 0x3a],
+        (0xb, 0xb) => &[0xfc, 0x3b],
+        (0xb, 0xd) => &[0xfc, 0x39],
+        // → Currency
+        (0xd, 6) => &[0xef],
+        (0xd, 8) => &[0xf0],
+        (0xd, 0xa) | (0xd, 0xb) => &[0xf1],
+        (0xd, 0xd) => &[],
+        // → String
+        (0x10, 6) => &[0xfb, 0xfd],
+        (0x10, 8) => &[0xfb, 0xfe],
+        (0x10, 0xa) => &[0xfb, 0xff],
+        (0x10, 0xb) => &[0xfc, 0x00],
+        (0x10, 0xd) => &[0xfc, 0x01],
+        _ => &[],
     }
 }
 

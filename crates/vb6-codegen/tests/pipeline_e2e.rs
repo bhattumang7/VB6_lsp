@@ -52,6 +52,78 @@ fn compile_module(src: &str, module_desc: u16) -> Vec<Vec<u8>> {
         .unwrap_or_else(|e| panic!("lower_module failed: {e:?}"))
 }
 
+// ── Type-conversion intrinsics (CInt/CLng/CSng/CDbl/CCur/CStr) ───────────────
+//
+// Each converts its argument to the target type with the explicit-conversion
+// opcode family (distinct from implicit assignment coercion). Confirmed against
+// the VB6-compiled exe.
+
+fn conv(decl: &str, stmt: &str) -> Vec<u8> {
+    compile(
+        &format!("Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n{decl}\r\n{stmt}\r\nEnd Sub\r\n"),
+        0x0008,
+    )
+}
+
+#[test]
+fn e2e_cint_from_double() {
+    assert_eq!(
+        conv("Dim a As Double, r As Integer", "r = CInt(a)"),
+        &[0x6f, 0x74, 0xff, 0xe5, 0x70, 0x72, 0xff]
+    );
+}
+
+#[test]
+fn e2e_cint_from_integer_noop() {
+    // CInt of an Integer is a no-op (no conversion opcode).
+    assert_eq!(
+        conv("Dim a As Integer, r As Integer", "r = CInt(a)"),
+        &[0x6b, 0x7a, 0xff, 0x70, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_clng_from_single() {
+    assert_eq!(
+        conv("Dim a As Single, r As Long", "r = CLng(a)"),
+        &[0x6e, 0x78, 0xff, 0xe8, 0x71, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_csng_from_long() {
+    // The →Single explicit conversion uses the dedicated 0xfc 0x3e form.
+    assert_eq!(
+        conv("Dim a As Long, r As Single", "r = CSng(a)"),
+        &[0x6c, 0x78, 0xff, 0xfc, 0x3e, 0x73, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_cdbl_from_single() {
+    assert_eq!(
+        conv("Dim a As Single, r As Double", "r = CDbl(a)"),
+        &[0x6e, 0x78, 0xff, 0xfc, 0x3a, 0x74, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_ccur_from_long() {
+    assert_eq!(
+        conv("Dim a As Long, r As Currency", "r = CCur(a)"),
+        &[0x6c, 0x78, 0xff, 0xf0, 0x72, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_cstr_from_long_move_store() {
+    // CStr yields a fresh string temp → move-store (0x31), not copy (0x43).
+    assert_eq!(
+        conv("Dim a As Long, s As String", "s = CStr(a)"),
+        &[0x6c, 0x78, 0xff, 0xfb, 0xfe, 0x31, 0x74, 0xff]
+    );
+}
+
 // ── Intra-module Sub/Function calls ──────────────────────────────────────────
 //
 // The caller (Sub Main = proc 0) pushes each argument (ByVal value / ByRef

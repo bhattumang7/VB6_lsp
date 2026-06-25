@@ -174,6 +174,14 @@ pub enum ExternalDecl {
     EnumMember { enum_idx: usize, member_idx: usize },
 }
 
+/// How a built-in (intrinsic) call is emitted by the code generator.
+#[derive(Debug, Clone, PartialEq)]
+pub enum BuiltinCall {
+    /// A type-conversion intrinsic (`CInt`/`CLng`/`CStr`/…): its single argument
+    /// is converted to the given type, reusing the assignment-conversion opcodes.
+    Convert(VbaType),
+}
+
 /// The fully-bound representation of one VBA module.
 #[derive(Debug, Default, Clone)]
 pub struct BoundModule {
@@ -189,6 +197,10 @@ pub struct BoundModule {
     pub resolutions: std::collections::HashMap<u32, NameResolution>,
     /// Inferred type for each expression node, keyed by `NodeId.0`.
     pub types: std::collections::HashMap<u32, VbaType>,
+    /// Classification of each intrinsic (built-in) call, keyed by the `Call`
+    /// node's `NodeId.0`. Lets the code generator emit the right form for a
+    /// built-in without a name table.
+    pub builtins: std::collections::HashMap<u32, BuiltinCall>,
     /// Semantic diagnostics detectable from this module alone (e.g. duplicate
     /// declaration in scope). Project-scoped diagnostics (e.g. "Variable not
     /// defined", which requires cross-module knowledge) are added by the session
