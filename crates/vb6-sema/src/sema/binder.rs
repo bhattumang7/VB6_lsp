@@ -799,6 +799,12 @@ impl<'a> Binder<'a> {
                             } else if let Some(args) = rtc_string_intrinsic(&name, arg_count()) {
                                 self.builtins.insert(id.0, BuiltinCall::RtcString { args });
                                 VbaType::String
+                            } else if matches!(name.as_str(), "instr")
+                                && (arg_count() == 2 || arg_count() == 3)
+                            {
+                                self.builtins
+                                    .insert(id.0, BuiltinCall::Instr { three_arg: arg_count() == 3 });
+                                VbaType::Long
                             } else {
                                 VbaType::Variant
                             }

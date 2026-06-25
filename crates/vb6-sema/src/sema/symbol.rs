@@ -222,6 +222,12 @@ pub enum BuiltinCall {
     /// hidden string temp and moved to the target. `args` describes the
     /// passing mode of each parameter, in source order.
     RtcString { args: Vec<RtcArg> },
+    /// `InStr` in its 2- or 3-argument form, returning a Long. Emitted as a
+    /// dedicated opcode with four operands pushed in order — start (Long), string1,
+    /// string2, compare-mode (Long) — where an omitted leading start defaults to
+    /// literal 1 and the compare-mode defaults to literal 0 (`Option Compare
+    /// Binary`). `three_arg` is true when an explicit start is supplied.
+    Instr { three_arg: bool },
 }
 
 /// The fully-bound representation of one VBA module.

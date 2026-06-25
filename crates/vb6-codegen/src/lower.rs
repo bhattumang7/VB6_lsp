@@ -2384,6 +2384,43 @@ fn lower_expr_coerced(
                     .unwrap_or(8);
                 return Ok(arena.alloc(NodeArena::node(0x7e, ret, off, bytes.len() as u32, 0, 0)));
             }
+            // `InStr` (2- or 3-argument): a dedicated opcode (`fe fd`) with four
+            // operands pushed in order — start (Long), string1, string2, compare-mode
+            // (Long) — leaving a Long result on the stack (blob node 0x7e). An omitted
+            // leading start defaults to literal 1; the compare-mode is literal 0
+            // (Option Compare Binary).
+            if let Some(BuiltinCall::Instr { three_arg }) = ctx.module.builtins.get(&node_id.0) {
+                let three_arg = *three_arg;
+                let arg_ids: Vec<NodeId> = match expr_arena.get(args_id) {
+                    ExprNode::ArgList { args } => args.clone(),
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                if arg_ids.len() != if three_arg { 3 } else { 2 } {
+                    return Err(LowerError::UnsupportedNode);
+                }
+                let (start, s1, s2) = if three_arg {
+                    (Some(arg_ids[0]), arg_ids[1], arg_ids[2])
+                } else {
+                    (None, arg_ids[0], arg_ids[1])
+                };
+                // The two searched operands must be Strings.
+                for s in [s1, s2] {
+                    if !matches!(ctx.module.types.get(&s.0), Some(VbaType::String)) {
+                        return Err(LowerError::UnsupportedNode);
+                    }
+                }
+                let mut bytes = Vec::new();
+                match start {
+                    Some(st) => bytes.extend(lower_expr_to_bytes_coerced(ctx, st, expr_arena, Some(8))?),
+                    None => bytes.extend_from_slice(&[0xf5, 0x01, 0x00, 0x00, 0x00]),
+                }
+                bytes.extend(lower_expr_to_bytes(ctx, s1, expr_arena)?);
+                bytes.extend(lower_expr_to_bytes(ctx, s2, expr_arena)?);
+                bytes.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+                bytes.extend_from_slice(&[0xfe, 0xfd]);
+                let off = arena.alloc_blob(&bytes);
+                return Ok(arena.alloc(NodeArena::node(0x7e, 8, off, bytes.len() as u32, 0, 0)));
+            }
             let arg = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
             match ctx.module.builtins.get(&node_id.0) {
                 // Type-conversion intrinsic → explicit-conversion node (0x7c).
@@ -2459,6 +2496,8 @@ fn lower_expr_coerced(
                 // (it writes a result temp); using one as an expression operand is
                 // not yet supported.
                 Some(BuiltinCall::RtcString { .. }) => Err(LowerError::UnsupportedNode),
+                // `InStr` is handled by the dedicated-opcode path above (early return).
+                Some(BuiltinCall::Instr { .. }) => Err(LowerError::UnsupportedNode),
                 None => Err(LowerError::UnsupportedNode),
             }
         }

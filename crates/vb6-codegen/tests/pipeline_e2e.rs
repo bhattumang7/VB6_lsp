@@ -266,11 +266,64 @@ fn e2e_mid_two_args_literal_start() {
     );
 }
 
+// ── InStr (dedicated opcode 0xfe 0xfd) ───────────────────────────────────────
+//
+// Four operands push in order — start (Long), string1, string2, compare-mode
+// (Long) — then the InStr opcode, leaving a Long on the stack. An omitted leading
+// start defaults to literal 1; the compare-mode is literal 0 (Option Compare
+// Binary). The result composes in expressions (the opcode takes no ref operand).
+
 #[test]
-fn e2e_instr_gated() {
-    // InStr returns a Long via a distinct compare-style runtime shape, not the
-    // string-result temp machinery → it is gated (not mis-emitted) for now.
-    assert!(try_compile("Dim t As String, u As String, r As Long", "r = InStr(t, u)").is_err());
+fn e2e_instr_two_args() {
+    // InStr(a, b): start defaults to 1 (0xf5 imm), a, b, compare-mode 0, then fe fd.
+    assert_eq!(
+        conv("Dim a As String, b As String, r As Long", "r = InStr(a, b)"),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff,
+          0xf5, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xfd, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_instr_three_args() {
+    // InStr(n, a, b): explicit start n loaded by value; compare-mode still 0.
+    assert_eq!(
+        conv("Dim a As String, b As String, n As Long, r As Long", "r = InStr(n, a, b)"),
+        &[0x6c, 0x70, 0xff, 0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff,
+          0xf5, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xfd, 0x71, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_instr_literal_operand() {
+    // A string-literal search operand loads via the pool reference (0x1b).
+    assert_eq!(
+        conv("Dim a As String, r As Long", "r = InStr(a, \"x\")"),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x6c, 0x78, 0xff, 0x1b, 0x00, 0x00,
+          0xf5, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xfd, 0x71, 0x74, 0xff]
+    );
+}
+
+#[test]
+fn e2e_instr_in_expression() {
+    // InStr leaves its Long result on the stack, so it composes with a following
+    // operator (`+ 1` → push 1, add 0xaa) before the store.
+    assert_eq!(
+        conv("Dim a As String, b As String, r As Long", "r = InStr(a, b) + 1"),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff,
+          0xf5, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xfd, 0xf5, 0x01, 0x00, 0x00, 0x00,
+          0xaa, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn e2e_instr_four_args_gated() {
+    // An explicit compare-mode argument (4-arg form) needs Option Compare handling
+    // → gated, not mis-emitted.
+    assert!(try_compile(
+        "Dim a As String, b As String, r As Long",
+        "r = InStr(1, a, b, 1)"
+    )
+    .is_err());
 }
 
 #[test]
