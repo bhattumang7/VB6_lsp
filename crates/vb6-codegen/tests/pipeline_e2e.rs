@@ -224,6 +224,30 @@ fn e2e_call_two_sites_indexed() {
 }
 
 #[test]
+fn e2e_call_function_in_expression() {
+    // `r = F() + 1`: the Function call (0x5e) leaves its result on the stack, then
+    // the `+ 1` consumes it.
+    assert_eq!(
+        caller_bytes("    Dim r As Long\r\n    r = F() + 1\r\n", "Function F() As Long\r\n    F = 7\r\nEnd Function\r\n"),
+        &[0x5e, 0x00, 0x00, 0x00, 0x00, 0xf5, 0x01, 0x00, 0x00, 0x00, 0xaa, 0x71, 0x78, 0xff]
+    );
+}
+
+#[test]
+fn e2e_call_function_as_argument() {
+    // `Call Foo(F())`: F() (reference index 0) is evaluated as Foo's argument; the
+    // outer Sub call takes reference index 1.
+    assert_eq!(
+        caller_bytes(
+            "    Call Foo(F())\r\n",
+            "Function F() As Long\r\n    F = 7\r\nEnd Function\r\n\
+             Sub Foo(ByVal x As Long)\r\n    Dim z As Long\r\n    z = x\r\nEnd Sub\r\n"
+        ),
+        &[0x5e, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x01, 0x00, 0x04, 0x00]
+    );
+}
+
+#[test]
 fn e2e_call_two_args_reverse_order() {
     // Arguments are pushed right-to-left: `Foo(5, 6)` pushes 6 then 5; arg-bytes 8.
     assert_eq!(

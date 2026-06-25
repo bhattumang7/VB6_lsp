@@ -2174,8 +2174,26 @@ fn lower_expr_coerced(
         // single argument to the target type via the explicit-conversion node
         // (0x7c), so it composes inside any expression. Sources and destinations
         // outside the supported scalar set (Byte, Boolean/Date/Variant) are gated.
-        ExprNode::Call { args, .. } => {
-            let arg = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+        ExprNode::Call { func, args } => {
+            let (func, args_id) = (*func, *args);
+            // A user Function call used as an expression operand: emit the call
+            // (0x5e, result left on the stack) into a byte blob wrapped in a 0x7e
+            // node, so it composes with the enclosing operator.
+            if ctx.module.builtins.get(&node_id.0).is_none()
+                && matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_)))
+            {
+                let mut bytes = Vec::new();
+                lower_call(ctx, func, args_id, true, expr_arena, &mut bytes)?;
+                let off = arena.alloc_blob(&bytes);
+                let ret = ctx
+                    .module
+                    .types
+                    .get(&node_id.0)
+                    .and_then(vba_type_to_node_tag)
+                    .unwrap_or(8);
+                return Ok(arena.alloc(NodeArena::node(0x7e, ret, off, bytes.len() as u32, 0, 0)));
+            }
+            let arg = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
             match ctx.module.builtins.get(&node_id.0) {
                 // Type-conversion intrinsic → explicit-conversion node (0x7c).
                 Some(BuiltinCall::Convert(t)) => {

@@ -225,6 +225,14 @@ impl<'a> Emitter<'a> {
             }
             return 0;
         }
+        // Synthetic function-call-in-expression (opcode 0x7e): a pre-emitted call
+        // byte blob (result left on the stack) at blob offset word[4], length
+        // word[5]. Emit the blob verbatim.
+        if op == 0x7e {
+            let bytes = self.arena.blob(n.w[4], n.w[5] as usize).to_vec();
+            self.stream.emit_bytes(&bytes);
+            return 0;
+        }
         // Synthetic dedicated-opcode unary intrinsic (opcode 0x7d): Len/Abs/Sgn/
         // Int/Fix. Emit the argument, then the intrinsic opcode selected by the
         // argument's type (kind in word[5]).
