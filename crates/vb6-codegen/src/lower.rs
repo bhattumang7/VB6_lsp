@@ -1207,6 +1207,17 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
                 }
                 0
             }
+            // A String comparison with a runtime-string operand: both operands'
+            // materialization temps plus one compare temp.
+            _ if is_owned_compare(module, unwrap_parens(*value, expr_arena), expr_arena) => {
+                if let ExprNode::BinOp { lhs, rhs, .. } =
+                    expr_arena.get(unwrap_parens(*value, expr_arena))
+                {
+                    count_owned_compare_temps(module, *lhs, *rhs)
+                } else {
+                    0
+                }
+            }
             _ => 0,
         },
         ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
@@ -2198,6 +2209,98 @@ fn lower_owned_len(
     Ok(())
 }
 
+/// Follow `Paren` wrappers to the inner expression node.
+fn unwrap_parens(mut node: NodeId, expr_arena: &ExprArena) -> NodeId {
+    while let ExprNode::Paren { inner } = expr_arena.get(node) {
+        node = *inner;
+    }
+    node
+}
+
+/// The release-aware string-comparison opcode (`0xfb <op>`) for an owned-operand
+/// comparison — one less than the plain string-compare second byte for each operator.
+fn owned_string_compare_op(op: BinOpKind) -> Option<u8> {
+    Some(match op {
+        BinOpKind::Eq => 0x2f,
+        BinOpKind::Ne => 0x3c,
+        BinOpKind::Lt => 0x63,
+        BinOpKind::Gt => 0x70,
+        BinOpKind::Le => 0x49,
+        BinOpKind::Ge => 0x56,
+        _ => return None,
+    })
+}
+
+/// True if `node` is a String relational comparison at least one of whose operands
+/// is a runtime-string result — an owned-operand compare, which uses the
+/// compare-into-temp opcode family wrapped by the `0x5d`/`0x55` owned markers.
+fn is_owned_compare(module: &BoundModule, node: NodeId, expr_arena: &ExprArena) -> bool {
+    if let ExprNode::BinOp { op, lhs, rhs } = expr_arena.get(node) {
+        if owned_string_compare_op(*op).is_some()
+            && matches!(module.types.get(&lhs.0), Some(VbaType::String))
+            && matches!(module.types.get(&rhs.0), Some(VbaType::String))
+        {
+            return matches!(module.builtins.get(&lhs.0), Some(BuiltinCall::RtcString { .. }))
+                || matches!(module.builtins.get(&rhs.0), Some(BuiltinCall::RtcString { .. }));
+        }
+    }
+    false
+}
+
+/// Number of hidden 16-byte temps an owned-operand compare needs: each operand's
+/// materialization temps (an rtc call's temps, or one copy/literal temp) plus one
+/// compare temp.
+fn count_owned_compare_temps(module: &BoundModule, lhs: NodeId, rhs: NodeId) -> usize {
+    let one = |op: NodeId| match module.builtins.get(&op.0) {
+        Some(BuiltinCall::RtcString { args }) => rtc_call_temp_count(args),
+        _ => 1,
+    };
+    one(lhs) + one(rhs) + 1
+}
+
+/// Lower `r = (<a> CMP <b>)` where at least one operand is a runtime-string result.
+/// Operands are materialized to BSTR addresses (rtc temps reserved first); the
+/// owned marker `0x5d` follows the non-owned operand (none if both are owned); then
+/// the compare-into-temp opcode (`0xfb <op> <temp>`) and finalize (`0x55`). The
+/// Integer result is stored; only the rtc result temps are freed.
+fn lower_owned_compare(
+    ctx: &LowerCtx,
+    tgt_off: i16,
+    node: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let (op, lhs, rhs) = match expr_arena.get(node) {
+        ExprNode::BinOp { op, lhs, rhs } => (*op, *lhs, *rhs),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let cmp = owned_string_compare_op(op).ok_or(LowerError::UnsupportedNode)?;
+    let ops = [lhs, rhs];
+    let rtc_bases: Vec<Option<usize>> = ops
+        .iter()
+        .map(|&o| match ctx.module.builtins.get(&o.0) {
+            Some(BuiltinCall::RtcString { args }) => Some(reserve_rtc_temps(ctx, args)),
+            _ => None,
+        })
+        .collect();
+    let mut rtc_owned: Vec<i16> = Vec::new();
+    for (i, &op_id) in ops.iter().enumerate() {
+        materialize_owned_concat_operand(ctx, op_id, rtc_bases[i], expr_arena, out, &mut rtc_owned)?;
+        // The owned marker follows the non-owned (plain) operand's materialization.
+        if rtc_bases[i].is_none() {
+            out.push(0x5d);
+        }
+    }
+    let cmp_temp = alloc_string_rtc_temp(ctx);
+    out.extend_from_slice(&[0xfb, cmp]);
+    out.extend_from_slice(&cmp_temp.to_le_bytes());
+    out.push(0x55);
+    out.push(0x70);
+    out.extend_from_slice(&tgt_off.to_le_bytes());
+    emit_variant_temp_free(out, &rtc_owned);
+    Ok(())
+}
+
 fn lower_assign(
     ctx: &LowerCtx,
     target_id: NodeId,
@@ -2254,6 +2357,16 @@ fn lower_assign(
             if matches!(ctx.local_type(*local_idx), VbaType::Long) {
                 let tgt_off = ctx.local_slots[*local_idx].frame_offset;
                 return lower_owned_len(ctx, tgt_off, value_id, expr_arena, out);
+            }
+        }
+    }
+    // A String comparison with a runtime-string operand into an Integer/Boolean.
+    let cmp_value = unwrap_parens(value_id, expr_arena);
+    if is_owned_compare(ctx.module, cmp_value, expr_arena) {
+        if let NameResolution::Local { local_idx, .. } = resolution {
+            if matches!(ctx.local_type(*local_idx), VbaType::Integer | VbaType::Boolean) {
+                let tgt_off = ctx.local_slots[*local_idx].frame_offset;
+                return lower_owned_compare(ctx, tgt_off, cmp_value, expr_arena, out);
             }
         }
     }
