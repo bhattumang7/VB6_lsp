@@ -13,7 +13,7 @@
 
 use std::cell::{Cell, RefCell};
 
-use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, UnaryIntrinsic, VbaType, NameResolution};
+use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, RtcArg, UnaryIntrinsic, VbaType, NameResolution};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
@@ -1178,10 +1178,10 @@ fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &Ex
     let c = |id: NodeId| count_string_rtc_temps(module, id, expr_arena);
     match expr_arena.get(node_id) {
         ExprNode::Assign { value, .. } => match module.builtins.get(&value.0) {
-            // Numeric-input (Chr/Space): one result temp. String-input (UCase/…):
-            // an input-copy temp plus the result temp.
-            Some(BuiltinCall::RtcString { string_input: false, .. }) => 1,
-            Some(BuiltinCall::RtcString { string_input: true, .. }) => 2,
+            // One hidden 16-byte temp per boxed argument, plus one for the result.
+            Some(BuiltinCall::RtcString { args }) => {
+                args.iter().filter(|a| matches!(a, RtcArg::Boxed)).count() + 1
+            }
             _ => 0,
         },
         ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
@@ -1724,6 +1724,24 @@ fn call_arg_bytes(ty: &VbaType) -> u16 {
     if s <= 4 { 4 } else { s }
 }
 
+/// The OLE Automation VARTYPE used to tag a value boxed into a runtime-call temp
+/// (the byte before the fixed `0x40` marker). `None` for types whose boxed form is
+/// not yet confirmed (gated rather than guessed).
+fn vba_type_to_vartype(ty: &VbaType) -> Option<u8> {
+    Some(match ty {
+        VbaType::Integer => 2,
+        VbaType::Long => 3,
+        VbaType::Single => 4,
+        VbaType::Double => 5,
+        VbaType::Currency => 6,
+        VbaType::Date => 7,
+        VbaType::String => 8,
+        VbaType::Boolean => 11,
+        VbaType::Byte => 17,
+        _ => return None,
+    })
+}
+
 /// Emit a size-based value load (load `size` bytes from a frame offset), the form
 /// used to push a same-typed ByVal argument: 1→0xfc 0xe0, 2→0x6b, 4→0x6c, 8→0x6d.
 fn emit_sized_value_load(size: u16, off: i16, buf: &mut Vec<u8>) {
@@ -1845,73 +1863,88 @@ fn lower_assign(
         .get(&target_id.0)
         .ok_or(LowerError::Unresolved)?;
 
-    // String-returning runtime intrinsic (Chr/Space) into a String target: load the
-    // argument (coerced), pass a hidden result temp by address, runtime-call (0x0a),
-    // then load the result from the temp (0x60), move it into the target (0x31), and
-    // free the temp (0x35).
+    // String-returning runtime intrinsic into a String target. Each argument is
+    // pushed (right-to-left) either by value (size-load, coerced) or boxed into a
+    // hidden 16-byte temp tagged with its VARTYPE (`04 <var> 4d <temp> <vt> 40`).
+    // A final hidden result temp is passed by address; after the runtime call (0x0a)
+    // the result is loaded (0x60), moved into the target (0x31), and the result temp
+    // freed (0x35). The runtime-call reference index and total argument-byte count
+    // follow the same convention as user calls.
     if let ExprNode::Call { args, .. } = expr_arena.get(value_id) {
-        if let Some(BuiltinCall::RtcString { arg: arg_ty, string_input }) =
-            ctx.module.builtins.get(&value_id.0)
-        {
-            let string_input = *string_input;
+        if let Some(BuiltinCall::RtcString { args: sig }) = ctx.module.builtins.get(&value_id.0) {
             let tgt_off = match resolution {
                 NameResolution::Local { local_idx, .. } => ctx.local_slots[*local_idx].frame_offset,
                 _ => return Err(LowerError::UnsupportedNode),
             };
-            let ti = ctx.string_rtc_next.get();
-            let arg = single_index(*args, expr_arena).ok_or(LowerError::UnsupportedNode)?;
-            if string_input {
-                // Input-copy form (UCase/LCase/Trim/…): copy the String argument into
-                // temp1, then runtime-call writing temp2; result moved to target.
-                ctx.string_rtc_next.set(ti + 2);
-                let temp1 = ctx.local_slots[ctx.string_rtc_base + ti].frame_offset;
-                let temp2 = ctx.local_slots[ctx.string_rtc_base + ti + 1].frame_offset;
-                let src = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
-                out.push(0x04);
-                out.extend_from_slice(&src.to_le_bytes());
-                out.push(0x4d);
-                out.extend_from_slice(&temp1.to_le_bytes());
-                out.extend_from_slice(&[0x08, 0x40]);
-                out.push(0x04);
-                out.extend_from_slice(&temp2.to_le_bytes());
-                let r = ctx.call_next.get();
-                ctx.call_next.set(r + 1);
-                out.push(0x0a);
-                out.extend_from_slice(&(r as u16).to_le_bytes());
-                out.extend_from_slice(&8u16.to_le_bytes());
-                out.push(0x04);
-                out.extend_from_slice(&temp2.to_le_bytes());
-                out.push(0x60);
-                out.push(0x31);
-                out.extend_from_slice(&tgt_off.to_le_bytes());
-                out.push(0x35);
-                out.extend_from_slice(&temp2.to_le_bytes());
-            } else {
-                // Numeric-input (Chr/Space): one result temp.
-                ctx.string_rtc_next.set(ti + 1);
-                let temp_off = ctx.local_slots[ctx.string_rtc_base + ti].frame_offset;
-                let coerce = vba_type_to_node_tag(arg_ty);
-                let mut a = NodeArena::new();
-                let root = lower_expr_coerced(ctx, arg, expr_arena, &mut a, coerce)?;
-                let root = coerce_assign_value(ctx, arg, root, coerce, &mut a);
-                let mut em = Emitter::new(&a);
-                em.emit_expr(root, 2);
-                out.extend(em.into_bytes());
-                out.push(0x04);
-                out.extend_from_slice(&temp_off.to_le_bytes());
-                let r = ctx.call_next.get();
-                ctx.call_next.set(r + 1);
-                out.push(0x0a);
-                out.extend_from_slice(&(r as u16).to_le_bytes());
-                out.extend_from_slice(&(call_arg_bytes(arg_ty) + 4).to_le_bytes());
-                out.push(0x04);
-                out.extend_from_slice(&temp_off.to_le_bytes());
-                out.push(0x60);
-                out.push(0x31);
-                out.extend_from_slice(&tgt_off.to_le_bytes());
-                out.push(0x35);
-                out.extend_from_slice(&temp_off.to_le_bytes());
+            let arg_ids: Vec<NodeId> = match expr_arena.get(*args) {
+                ExprNode::ArgList { args } => args.clone(),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            if arg_ids.len() != sig.len() {
+                return Err(LowerError::UnsupportedNode);
             }
+            let n_boxed = sig.iter().filter(|a| matches!(a, RtcArg::Boxed)).count();
+            let base = ctx.string_rtc_base + ctx.string_rtc_next.get();
+            ctx.string_rtc_next.set(ctx.string_rtc_next.get() + n_boxed + 1);
+            let result_temp = ctx.local_slots[base + n_boxed].frame_offset;
+
+            // Build each argument's push bytes and its argument-byte contribution.
+            // Boxed temps are assigned in source order (the first boxed argument gets
+            // the highest-addressed temp), independent of the reverse push order.
+            let mut pushes: Vec<Vec<u8>> = Vec::with_capacity(sig.len());
+            let mut arg_bytes: u16 = 0;
+            let mut boxed_k = 0usize;
+            for (i, mode) in sig.iter().enumerate() {
+                let mut p = Vec::new();
+                match mode {
+                    RtcArg::ByVal(ty) => {
+                        let coerce = vba_type_to_node_tag(ty);
+                        let mut a = NodeArena::new();
+                        let root = lower_expr_coerced(ctx, arg_ids[i], expr_arena, &mut a, coerce)?;
+                        let root = coerce_assign_value(ctx, arg_ids[i], root, coerce, &mut a);
+                        let mut em = Emitter::new(&a);
+                        em.emit_expr(root, 2);
+                        p.extend(em.into_bytes());
+                        arg_bytes += call_arg_bytes(ty);
+                    }
+                    RtcArg::Boxed => {
+                        let temp = ctx.local_slots[base + boxed_k].frame_offset;
+                        boxed_k += 1;
+                        let src = arg_var_offset(ctx, arg_ids[i]).ok_or(LowerError::UnsupportedNode)?;
+                        let arg_ty = ctx
+                            .module
+                            .types
+                            .get(&arg_ids[i].0)
+                            .ok_or(LowerError::UnsupportedNode)?;
+                        let vt = vba_type_to_vartype(arg_ty).ok_or(LowerError::UnsupportedType)?;
+                        p.push(0x04);
+                        p.extend_from_slice(&src.to_le_bytes());
+                        p.push(0x4d);
+                        p.extend_from_slice(&temp.to_le_bytes());
+                        p.extend_from_slice(&[vt, 0x40]);
+                        arg_bytes += 4;
+                    }
+                }
+                pushes.push(p);
+            }
+            // Arguments are pushed right-to-left.
+            for p in pushes.iter().rev() {
+                out.extend_from_slice(p);
+            }
+            out.push(0x04);
+            out.extend_from_slice(&result_temp.to_le_bytes());
+            let r = ctx.call_next.get();
+            ctx.call_next.set(r + 1);
+            out.push(0x0a);
+            out.extend_from_slice(&(r as u16).to_le_bytes());
+            out.extend_from_slice(&(arg_bytes + 4).to_le_bytes());
+            out.push(0x04);
+            out.extend_from_slice(&result_temp.to_le_bytes());
+            out.push(0x60);
+            out.push(0x31);
+            out.extend_from_slice(&tgt_off.to_le_bytes());
+            out.push(0x35);
+            out.extend_from_slice(&result_temp.to_le_bytes());
             return Ok(());
         }
     }

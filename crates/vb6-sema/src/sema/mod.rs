@@ -10,6 +10,7 @@ pub mod types;
 pub use binder::{bind, unbound_namerefs};
 pub use symbol::{
     BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc, BoundTypeDecl,
-    BoundTypeMember, BoundVar, BuiltinCall, ExternalDecl, NameResolution, ParamFlags, UnaryIntrinsic,
+    BoundTypeMember, BoundVar, BuiltinCall, ExternalDecl, NameResolution, ParamFlags, RtcArg,
+    UnaryIntrinsic,
 };
 pub use types::VbaType;

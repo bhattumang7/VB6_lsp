@@ -36,6 +36,23 @@ fn compile(src: &str, module_desc: u16) -> Vec<u8> {
         .unwrap_or_else(|e| panic!("lower_proc failed: {e:?}"))
 }
 
+/// Like `conv`, but returns the lowering `Result` so a test can assert that an
+/// unsupported construct is gated (an error) rather than mis-emitted.
+fn try_compile(decl: &str, stmt: &str) -> Result<Vec<u8>, vb6_codegen::LowerError> {
+    let src =
+        format!("Attribute VB_Name = \"Module1\"\r\nSub Main()\r\n{decl}\r\n{stmt}\r\nEnd Sub\r\n");
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    let top = parser.parse_module(&mut arena);
+    let spans = std::mem::take(&mut parser.node_spans);
+    let vis = std::mem::take(&mut parser.decl_public);
+    drop(parser);
+    let module = bind(&ctx, &arena, &top, &spans, &vis);
+    lower_proc(&module, 0, &arena, 0x0008)
+}
+
 /// Like `compile`, but lowers every procedure of the module sharing one
 /// module-global string pool, returning each procedure's byte stream.
 fn compile_module(src: &str, module_desc: u16) -> Vec<Vec<u8>> {
@@ -176,6 +193,91 @@ fn e2e_string_input_family_identical_caller_bytes() {
             conv("Dim t As String, s As String", &format!("s = {f}(t)")),
             ucase,
             "{f} caller bytes diverged from UCase"
+        );
+    }
+}
+
+// ── Multi-argument string-result intrinsics (Left/Right/Mid/String) ──────────
+//
+// Each argument is pushed right-to-left as either a by-value load (numeric) or a
+// boxed 16-byte temp tagged with its VARTYPE (`04 <var> 4d <temp> <vt> 40`; 0x08
+// for a String, 0x03 for a Long). A final result temp is passed by address; the
+// runtime call's arg-byte count sums each push (boxed → 4) plus the result (4).
+
+#[test]
+fn e2e_left_string_and_length() {
+    // Left(t, n): length n pushed by value (0x6c), string t boxed (0x4d … 08 40),
+    // result temp, runtime call with arg-bytes 0x0c (n 4 + t-box 4 + result 4).
+    assert_eq!(
+        conv("Dim t As String, n As Long, s As String", "s = Left(t, n)"),
+        &[0x6c, 0x74, 0xff, 0x04, 0x78, 0xff, 0x4d, 0x60, 0xff, 0x08, 0x40,
+          0x04, 0x50, 0xff, 0x0a, 0x00, 0x00, 0x0c, 0x00, 0x04, 0x50, 0xff,
+          0x60, 0x31, 0x70, 0xff, 0x35, 0x50, 0xff]
+    );
+}
+
+#[test]
+fn e2e_right_matches_left_caller_bytes() {
+    // Right shares Left's caller-side stream (signature-identical).
+    assert_eq!(
+        conv("Dim t As String, n As Long, s As String", "s = Right(t, n)"),
+        conv("Dim t As String, n As Long, s As String", "s = Left(t, n)")
+    );
+}
+
+#[test]
+fn e2e_mid_three_args() {
+    // Mid(t, n, m): the optional length m is a Variant boxed as VT_I4 (0x03 0x40);
+    // the start n is a by-value Long; t is boxed VT_BSTR. Arg-bytes 0x10.
+    assert_eq!(
+        conv("Dim t As String, n As Long, m As Long, s As String", "s = Mid(t, n, m)"),
+        &[0x04, 0x70, 0xff, 0x4d, 0x4c, 0xff, 0x03, 0x40, 0x6c, 0x74, 0xff,
+          0x04, 0x78, 0xff, 0x4d, 0x5c, 0xff, 0x08, 0x40, 0x04, 0x3c, 0xff,
+          0x0a, 0x00, 0x00, 0x10, 0x00, 0x04, 0x3c, 0xff, 0x60, 0x31, 0x6c, 0xff,
+          0x35, 0x3c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_mid_two_args_omitted_optional_gated() {
+    // Mid with an omitted Optional length needs the Missing-Variant marshalling
+    // form, which is not yet modelled → the call is gated (not mis-emitted).
+    assert!(try_compile("Dim t As String, n As Long, s As String", "s = Mid(t, n)").is_err());
+}
+
+#[test]
+fn e2e_string_number_and_char() {
+    // String(n, t): number n by value (Long), character t boxed (VT_BSTR).
+    assert_eq!(
+        conv("Dim n As Long, t As String, s As String", "s = String(n, t)"),
+        &[0x04, 0x74, 0xff, 0x4d, 0x60, 0xff, 0x08, 0x40, 0x6c, 0x78, 0xff,
+          0x04, 0x50, 0xff, 0x0a, 0x00, 0x00, 0x0c, 0x00, 0x04, 0x50, 0xff,
+          0x60, 0x31, 0x70, 0xff, 0x35, 0x50, 0xff]
+    );
+}
+
+// ── Number→String boxed-Variant intrinsics (Str/Hex/Oct) ─────────────────────
+
+#[test]
+fn e2e_str_boxes_number_as_variant() {
+    // Str(n): the Long argument is boxed as a Variant (VT_I4 = 0x03), result temp,
+    // runtime call arg-bytes 0x08.
+    assert_eq!(
+        conv("Dim n As Long, s As String", "s = Str(n)"),
+        &[0x04, 0x78, 0xff, 0x4d, 0x64, 0xff, 0x03, 0x40, 0x04, 0x54, 0xff,
+          0x0a, 0x00, 0x00, 0x08, 0x00, 0x04, 0x54, 0xff, 0x60, 0x31, 0x74, 0xff,
+          0x35, 0x54, 0xff]
+    );
+}
+
+#[test]
+fn e2e_hex_oct_match_str_caller_bytes() {
+    let str_bytes = conv("Dim n As Long, s As String", "s = Str(n)");
+    for f in ["Hex", "Oct"] {
+        assert_eq!(
+            conv("Dim n As Long, s As String", &format!("s = {f}(n)")),
+            str_bytes,
+            "{f} caller bytes diverged from Str"
         );
     }
 }

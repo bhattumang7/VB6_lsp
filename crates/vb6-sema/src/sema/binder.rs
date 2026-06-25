@@ -41,7 +41,7 @@ use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
 use crate::sema::symbol::{
     BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc, BoundTypeDecl,
-    BoundTypeMember, BoundVar, BuiltinCall, NameResolution, ParamFlags, UnaryIntrinsic,
+    BoundTypeMember, BoundVar, BuiltinCall, NameResolution, ParamFlags, RtcArg, UnaryIntrinsic,
 };
 use crate::sema::types::VbaType;
 
@@ -774,6 +774,14 @@ impl<'a> Binder<'a> {
                                 }
                                 None
                             };
+                            let arg_count = || {
+                                if let ExprNode::Call { args, .. } = self.arena.get(id) {
+                                    if let ExprNode::ArgList { args } = self.arena.get(*args) {
+                                        return args.len();
+                                    }
+                                }
+                                0
+                            };
                             if let Some(t) = conversion_intrinsic_type(&name) {
                                 self.builtins.insert(id.0, BuiltinCall::Convert(t.clone()));
                                 t
@@ -788,8 +796,8 @@ impl<'a> Binder<'a> {
                             } else if let Some((a, r)) = rtc_numeric_intrinsic(&name, arg_ty()) {
                                 self.builtins.insert(id.0, BuiltinCall::RtcNumeric { arg: a, ret: r.clone() });
                                 r
-                            } else if let Some((arg, string_input)) = rtc_string_intrinsic(&name) {
-                                self.builtins.insert(id.0, BuiltinCall::RtcString { arg, string_input });
+                            } else if let Some(args) = rtc_string_intrinsic(&name, arg_count()) {
+                                self.builtins.insert(id.0, BuiltinCall::RtcString { args });
                                 VbaType::String
                             } else {
                                 VbaType::Variant
@@ -1017,17 +1025,34 @@ fn rtc_numeric_intrinsic(name_lower: &str, arg: Option<VbaType>) -> Option<(VbaT
     }
 }
 
-/// Classify a single-argument String-returning runtime intrinsic by name,
-/// returning `(coerced argument type, is the argument itself a String)`.
-/// `Chr`/`Space` take a Long count; the String-input family (`UCase`/`LCase`/
-/// `Trim`) is recognised but flagged for the (gated) input-copy path.
-fn rtc_string_intrinsic(name_lower: &str) -> Option<(VbaType, bool)> {
-    match name_lower {
-        "chr" | "chr$" | "space" | "space$" => Some((VbaType::Long, false)),
+/// Classify a String-returning runtime intrinsic by name and argument count,
+/// returning the passing mode of each parameter (in source order). The result is
+/// always a String. Each parameter is either pushed by value ([`RtcArg::ByVal`])
+/// or boxed into a hidden 16-byte temp ([`RtcArg::Boxed`]).
+///
+/// `Mid` with an omitted Optional length (the 2-argument form) needs the
+/// Missing-Variant marshalling form and is left unclassified (gated).
+fn rtc_string_intrinsic(name_lower: &str, arg_count: usize) -> Option<Vec<RtcArg>> {
+    use RtcArg::{ByVal, Boxed};
+    Some(match name_lower {
+        // Numeric count → String: the count is pushed by value as a Long.
+        "chr" | "chr$" | "space" | "space$" => vec![ByVal(VbaType::Long)],
+        // String → String: the argument is boxed.
         "ucase" | "ucase$" | "lcase" | "lcase$" | "trim" | "trim$"
-        | "ltrim" | "ltrim$" | "rtrim" | "rtrim$" => Some((VbaType::String, true)),
-        _ => None,
-    }
+        | "ltrim" | "ltrim$" | "rtrim" | "rtrim$" => vec![Boxed],
+        // Number → String, boxed as a Variant argument.
+        "str" | "str$" | "hex" | "hex$" | "oct" | "oct$" => vec![Boxed],
+        // (String, length As Long): the string is boxed, the length by value.
+        "left" | "left$" | "right" | "right$" if arg_count == 2 => {
+            vec![Boxed, ByVal(VbaType::Long)]
+        }
+        // (number As Long, character As String).
+        "string" | "string$" if arg_count == 2 => vec![ByVal(VbaType::Long), Boxed],
+        // Mid(String, start As Long, length As Variant) — the 3-argument form only;
+        // the 2-argument (omitted length) form is gated.
+        "mid" | "mid$" if arg_count == 3 => vec![Boxed, ByVal(VbaType::Long), Boxed],
+        _ => return None,
+    })
 }
 
 /// Classify a single-argument dedicated-opcode intrinsic by name.

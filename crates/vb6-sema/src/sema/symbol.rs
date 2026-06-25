@@ -185,6 +185,19 @@ pub enum UnaryIntrinsic {
     Fix,
 }
 
+/// How a single argument of a String-returning runtime call ([`BuiltinCall::RtcString`])
+/// is passed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RtcArg {
+    /// Pushed by value, coerced to this type (e.g. `Chr`'s `Long` argument, or the
+    /// start position of `Left`/`Mid`).
+    ByVal(VbaType),
+    /// Boxed into a hidden 16-byte temp tagged with the argument's runtime VARTYPE
+    /// (e.g. the String argument of `UCase`/`Left`/`Mid`, or the Variant argument
+    /// of `Str`/`Hex`/`Oct`). The argument must be a simple variable reference.
+    Boxed,
+}
+
 /// How a built-in (intrinsic) call is emitted by the code generator.
 #[derive(Debug, Clone, PartialEq)]
 pub enum BuiltinCall {
@@ -198,13 +211,12 @@ pub enum BuiltinCall {
     /// `Val`): emitted as a runtime call whose opcode is selected by the result
     /// type. `arg` is the argument type (for the size-based push), `ret` the result.
     RtcNumeric { arg: VbaType, ret: VbaType },
-    /// A single-argument runtime-library call returning a String. With
-    /// `string_input == false` (`Chr`/`Space`) the argument is coerced to `arg`
-    /// and the result produced into a hidden string temp, then moved to the
-    /// target. With `string_input == true` (`UCase`/`LCase`/`Trim`/`LTrim`/
-    /// `RTrim`) the String argument is first copied into an input temp, the call
-    /// writes a second result temp, and that is moved to the target.
-    RtcString { arg: VbaType, string_input: bool },
+    /// A runtime-library call returning a String (`Chr`/`Space`/`UCase`/`Left`/
+    /// `Mid`/`Str`/…). Each parameter is pushed either by value or boxed into a
+    /// hidden 16-byte temp (see [`RtcArg`]); the result is produced into a final
+    /// hidden string temp and moved to the target. `args` describes the
+    /// passing mode of each parameter, in source order.
+    RtcString { args: Vec<RtcArg> },
 }
 
 /// The fully-bound representation of one VBA module.
