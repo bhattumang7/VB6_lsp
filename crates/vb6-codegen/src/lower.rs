@@ -2240,6 +2240,30 @@ fn lower_expr_coerced(
                     let kind = *k as u32;
                     Ok(arena.alloc(NodeArena::node(0x7d, result, arg_root.0, kind, 0, 0)))
                 }
+                // Single-argument numeric-result runtime call (Asc/Sqr/Val): the
+                // argument is size-loaded, then a runtime call whose opcode follows
+                // the result type (Integer 0x0b, Double 0x0a) with the per-proc
+                // reference index and argument bytes. Result left on the stack
+                // (blob node 0x7e). The argument must be a local variable.
+                Some(BuiltinCall::RtcNumeric { ret, .. }) => {
+                    let ret_tag = vba_type_to_node_tag(ret).ok_or(LowerError::UnsupportedType)?;
+                    let opcode: u8 = match ret_tag {
+                        6 => 0x0b,
+                        0xb => 0x0a,
+                        _ => return Err(LowerError::UnsupportedNode),
+                    };
+                    let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+                    let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedType)?;
+                    let mut bytes = Vec::new();
+                    emit_sized_value_load(static_var_size(arg_ty), off, &mut bytes);
+                    let r = ctx.call_next.get();
+                    ctx.call_next.set(r + 1);
+                    bytes.push(opcode);
+                    bytes.extend_from_slice(&(r as u16).to_le_bytes());
+                    bytes.extend_from_slice(&call_arg_bytes(arg_ty).to_le_bytes());
+                    let blob = arena.alloc_blob(&bytes);
+                    Ok(arena.alloc(NodeArena::node(0x7e, ret_tag, blob, bytes.len() as u32, 0, 0)))
+                }
                 None => Err(LowerError::UnsupportedNode),
             }
         }

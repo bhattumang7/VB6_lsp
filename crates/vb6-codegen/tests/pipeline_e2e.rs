@@ -124,6 +124,34 @@ fn e2e_cstr_from_long_move_store() {
     );
 }
 
+// ── Numeric-result runtime-library intrinsics (Asc/Sqr/Val) ──────────────────
+
+#[test]
+fn e2e_asc_runtime_call() {
+    // Asc → Integer: size-load the String arg, runtime call opcode 0x0b.
+    assert_eq!(
+        conv("Dim s As String, r As Integer", "r = Asc(s)"),
+        &[0x6c, 0x78, 0xff, 0x0b, 0x00, 0x00, 0x04, 0x00, 0x70, 0x76, 0xff]
+    );
+}
+
+#[test]
+fn e2e_sqr_runtime_call() {
+    // Sqr → Double: size-8 load the Double arg, runtime call opcode 0x0a.
+    assert_eq!(
+        conv("Dim d As Double, r As Double", "r = Sqr(d)"),
+        &[0x6d, 0x74, 0xff, 0x0a, 0x00, 0x00, 0x08, 0x00, 0x74, 0x6c, 0xff]
+    );
+}
+
+#[test]
+fn e2e_val_runtime_call() {
+    assert_eq!(
+        conv("Dim s As String, r As Double", "r = Val(s)"),
+        &[0x6c, 0x78, 0xff, 0x0a, 0x00, 0x00, 0x04, 0x00, 0x74, 0x70, 0xff]
+    );
+}
+
 // ── Dedicated-opcode unary intrinsics (Len/Abs/Sgn/Int/Fix) ──────────────────
 
 #[test]

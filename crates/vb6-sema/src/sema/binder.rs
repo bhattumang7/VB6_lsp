@@ -785,6 +785,9 @@ impl<'a> Binder<'a> {
                                     // Abs/Int/Fix return their argument type.
                                     _ => arg_ty().unwrap_or(VbaType::Variant),
                                 }
+                            } else if let Some((a, r)) = rtc_numeric_intrinsic(&name, arg_ty()) {
+                                self.builtins.insert(id.0, BuiltinCall::RtcNumeric { arg: a, ret: r.clone() });
+                                r
                             } else {
                                 VbaType::Variant
                             }
@@ -996,6 +999,19 @@ fn conversion_intrinsic_type(name_lower: &str) -> Option<VbaType> {
         "cstr" => VbaType::String,
         _ => return None,
     })
+}
+
+/// Classify a single-argument numeric-result runtime-library intrinsic by name,
+/// returning `(argument type, result type)`. `Asc` takes a String → Integer; `Sqr`
+/// a Double → Double; `Val` a String → Double. Other runtime intrinsics (string-
+/// returning / multi-argument) are not classified here and are gated.
+fn rtc_numeric_intrinsic(name_lower: &str, arg: Option<VbaType>) -> Option<(VbaType, VbaType)> {
+    match name_lower {
+        "asc" => Some((VbaType::String, VbaType::Integer)),
+        "sqr" => Some((arg.unwrap_or(VbaType::Double), VbaType::Double)),
+        "val" => Some((VbaType::String, VbaType::Double)),
+        _ => None,
+    }
 }
 
 /// Classify a single-argument dedicated-opcode intrinsic by name.

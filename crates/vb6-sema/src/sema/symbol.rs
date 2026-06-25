@@ -194,6 +194,10 @@ pub enum BuiltinCall {
     /// A dedicated-opcode unary intrinsic; the opcode is selected by the argument
     /// type at lowering time.
     Unary(UnaryIntrinsic),
+    /// A single-argument runtime-library call with a numeric result (`Asc`, `Sqr`,
+    /// `Val`): emitted as a runtime call whose opcode is selected by the result
+    /// type. `arg` is the argument type (for the size-based push), `ret` the result.
+    RtcNumeric { arg: VbaType, ret: VbaType },
 }
 
 /// The fully-bound representation of one VBA module.
