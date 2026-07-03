@@ -1,0 +1,564 @@
+use super::*;
+use super::decl::*;
+use super::intrinsics::*;
+use super::stmt::*;
+
+
+// ── Expression lowering ───────────────────────────────────────────────────────
+
+/// Returns the "wider" of two VBA types for numeric literal promotion.
+/// VB6 widens integer literals to match the type of the wider operand.
+pub(super) fn wider_numeric_tag(a: Option<&VbaType>, b: Option<&VbaType>) -> Option<u16> {
+    // VB6 numeric promotion order, matching vb6-sema's `numeric_promote`.
+    fn rank(t: &VbaType) -> u8 {
+        match t {
+            VbaType::Boolean => 0,
+            VbaType::Byte    => 1,
+            VbaType::Integer => 2,
+            VbaType::Long    => 3,
+            VbaType::Single  => 4,
+            VbaType::Double | VbaType::Date => 5,
+            VbaType::Currency => 6,
+            _ => 7,
+        }
+    }
+    let ta = a.map(rank).unwrap_or(0);
+    let tb = b.map(rank).unwrap_or(0);
+    let wider = if ta >= tb { a } else { b };
+    // Date operands are computed in Double (the runtime widens the OLE serial to a
+    // Double; the result is converted back to Date on store).
+    wider.and_then(|t| {
+        vba_type_to_node_tag(if matches!(t, VbaType::Date) { &VbaType::Double } else { t })
+    })
+}
+
+pub(super) fn lower_expr(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    lower_expr_coerced(ctx, node_id, expr_arena, arena, None)
+}
+
+/// Like `lower_expr` but when `coerce_tag` is `Some(tag)`, integer literals are
+/// emitted with that type tag instead of their natural type.  This implements
+/// VB6's implicit widening of integer literals to match their context type.
+pub(super) fn lower_expr_coerced(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+    coerce_tag: Option<u16>,
+) -> Result<NodeRef, LowerError> {
+    match expr_arena.get(node_id) {
+        ExprNode::Literal { lit } => {
+            // A string literal interns into the module string pool and emits
+            // `0x1b <pool index>` (synthetic node 0x79); other literals fold in place.
+            // Each string-literal reference also consumes one per-procedure
+            // reference slot (the same counter a call's 2-byte operand reports).
+            if let AstLit::Str(s) = lit {
+                let idx = ctx.intern_string(s);
+                ctx.call_next.set(ctx.call_next.get() + 1);
+                return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
+            }
+            lower_lit_coerced(lit, coerce_tag, arena)
+        }
+        ExprNode::NameRef { .. } => lower_name_ref(ctx, node_id, arena),
+        ExprNode::BinOp { op, lhs, rhs } => {
+            let (op, lhs_id, rhs_id) = (*op, *lhs, *rhs);
+            lower_binop(ctx, node_id, op, lhs_id, rhs_id, expr_arena, arena)
+        }
+        ExprNode::UnOp { op, operand } => {
+            let (op, operand_id) = (*op, *operand);
+            // VB6 constant-folds a negated integer literal (`-5`) into a single
+            // push of the negated value (coerced to the context type), rather than
+            // push-then-negate.
+            if matches!(op, UnOpKind::Neg) {
+                if let ExprNode::Literal { lit: AstLit::Int(v) } = expr_arena.get(operand_id) {
+                    return lower_lit_coerced(&AstLit::Int(-*v), coerce_tag, arena);
+                }
+            }
+            lower_unop(ctx, node_id, op, operand_id, expr_arena, arena)
+        }
+        ExprNode::Paren { inner } => {
+            let inner_id = *inner;
+            lower_expr_coerced(ctx, inner_id, expr_arena, arena, coerce_tag)
+        }
+        // A type-conversion intrinsic (CInt/CLng/CSng/CDbl/CCur/CStr): convert its
+        // single argument to the target type via the explicit-conversion node
+        // (0x7c), so it composes inside any expression. Sources and destinations
+        // outside the supported scalar set (Byte, Boolean/Date/Variant) are gated.
+        ExprNode::Call { func, args } => {
+            let (func, args_id) = (*func, *args);
+            // A user Function call used as an expression operand: emit the call
+            // (0x5e, result left on the stack) into a byte blob wrapped in a 0x7e
+            // node, so it composes with the enclosing operator.
+            if ctx.module.builtins.get(&node_id.0).is_none()
+                && matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_)))
+            {
+                let mut bytes = Vec::new();
+                lower_call(ctx, func, args_id, true, expr_arena, &mut bytes)?;
+                let off = arena.alloc_blob(&bytes);
+                let ret = ctx
+                    .module
+                    .types
+                    .get(&node_id.0)
+                    .and_then(vba_type_to_node_tag)
+                    .unwrap_or(8);
+                return Ok(arena.alloc(NodeArena::node(0x7e, ret, off, bytes.len() as u32, 0, 0)));
+            }
+            // `InStr` (2- or 3-argument): a dedicated opcode (`fe fd`) with four
+            // operands pushed in order — start (Long), string1, string2, compare-mode
+            // (Long) — leaving a Long result on the stack (blob node 0x7e). An omitted
+            // leading start defaults to literal 1; the compare-mode is literal 0
+            // (Option Compare Binary).
+            if let Some(BuiltinCall::Instr { three_arg }) = ctx.module.builtins.get(&node_id.0) {
+                let three_arg = *three_arg;
+                let arg_ids: Vec<NodeId> = match expr_arena.get(args_id) {
+                    ExprNode::ArgList { args } => args.clone(),
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                if arg_ids.len() != if three_arg { 3 } else { 2 } {
+                    return Err(LowerError::UnsupportedNode);
+                }
+                let (start, s1, s2) = if three_arg {
+                    (Some(arg_ids[0]), arg_ids[1], arg_ids[2])
+                } else {
+                    (None, arg_ids[0], arg_ids[1])
+                };
+                // The two searched operands must be Strings.
+                for s in [s1, s2] {
+                    if !matches!(ctx.module.types.get(&s.0), Some(VbaType::String)) {
+                        return Err(LowerError::UnsupportedNode);
+                    }
+                }
+                let mut bytes = Vec::new();
+                match start {
+                    Some(st) => bytes.extend(lower_expr_to_bytes_coerced(ctx, st, expr_arena, Some(8))?),
+                    None => bytes.extend_from_slice(&[0xf5, 0x01, 0x00, 0x00, 0x00]),
+                }
+                bytes.extend(lower_expr_to_bytes(ctx, s1, expr_arena)?);
+                bytes.extend(lower_expr_to_bytes(ctx, s2, expr_arena)?);
+                bytes.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+                bytes.extend_from_slice(&[0xfe, 0xfd]);
+                let off = arena.alloc_blob(&bytes);
+                return Ok(arena.alloc(NodeArena::node(0x7e, 8, off, bytes.len() as u32, 0, 0)));
+            }
+            let arg = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+            match ctx.module.builtins.get(&node_id.0) {
+                // Type-conversion intrinsic → explicit-conversion node (0x7c).
+                Some(BuiltinCall::Convert(t)) => {
+                    let dest = vba_type_to_node_tag(t).ok_or(LowerError::UnsupportedType)?;
+                    let src = ctx
+                        .module
+                        .types
+                        .get(&arg.0)
+                        .and_then(vba_type_to_node_tag)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    const OK: &[u16] = &[6, 8, 0xa, 0xb, 0xd, 0x10];
+                    if !OK.contains(&dest) || !matches!(src, 6 | 8 | 0xa | 0xb | 0xd) {
+                        return Err(LowerError::UnsupportedNode);
+                    }
+                    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+                    Ok(arena.alloc(NodeArena::node(0x7c, dest, arg_root.0, 0, 0, 0)))
+                }
+                // Dedicated-opcode unary intrinsic → node 0x7d (kind in w[5]); the
+                // opcode is selected by the argument type at emit time. The node's
+                // type tag is the intrinsic's result type.
+                Some(BuiltinCall::Unary(k)) => {
+                    let result = ctx
+                        .module
+                        .types
+                        .get(&node_id.0)
+                        .and_then(vba_type_to_node_tag)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    let arg_tag = ctx
+                        .module
+                        .types
+                        .get(&arg.0)
+                        .and_then(vba_type_to_node_tag)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    // Supported argument types: Len takes a String; the numeric
+                    // intrinsics take Integer/Long/Single/Double/Currency.
+                    let supported = match k {
+                        UnaryIntrinsic::Len => arg_tag == 0x10,
+                        _ => matches!(arg_tag, 6 | 8 | 0xa | 0xb | 0xd),
+                    };
+                    if !supported {
+                        return Err(LowerError::UnsupportedNode);
+                    }
+                    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+                    let kind = *k as u32;
+                    Ok(arena.alloc(NodeArena::node(0x7d, result, arg_root.0, kind, 0, 0)))
+                }
+                // Single-argument numeric-result runtime call (Asc/Sqr/Val): the
+                // argument is size-loaded, then a runtime call whose opcode follows
+                // the result type (Integer 0x0b, Double 0x0a) with the per-proc
+                // reference index and argument bytes. Result left on the stack
+                // (blob node 0x7e). The argument must be a local variable.
+                Some(BuiltinCall::RtcNumeric { ret, .. }) => {
+                    let ret_tag = vba_type_to_node_tag(ret).ok_or(LowerError::UnsupportedType)?;
+                    let opcode: u8 = match ret_tag {
+                        6 => 0x0b,
+                        0xb => 0x0a,
+                        _ => return Err(LowerError::UnsupportedNode),
+                    };
+                    let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+                    let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedType)?;
+                    let mut bytes = Vec::new();
+                    emit_sized_value_load(static_var_size(arg_ty), off, &mut bytes);
+                    let r = ctx.call_next.get();
+                    ctx.call_next.set(r + 1);
+                    bytes.push(opcode);
+                    bytes.extend_from_slice(&(r as u16).to_le_bytes());
+                    bytes.extend_from_slice(&call_arg_bytes(arg_ty).to_le_bytes());
+                    let blob = arena.alloc_blob(&bytes);
+                    Ok(arena.alloc(NodeArena::node(0x7e, ret_tag, blob, bytes.len() as u32, 0, 0)))
+                }
+                // A String-returning runtime intrinsic is handled as an assignment
+                // (it writes a result temp); using one as an expression operand is
+                // not yet supported.
+                Some(BuiltinCall::RtcString { .. }) => Err(LowerError::UnsupportedNode),
+                // `InStr` is handled by the dedicated-opcode path above (early return).
+                Some(BuiltinCall::Instr { .. }) => Err(LowerError::UnsupportedNode),
+                None => Err(LowerError::UnsupportedNode),
+            }
+        }
+        _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+pub(super) fn lower_lit(lit: &AstLit, arena: &mut NodeArena) -> Result<NodeRef, LowerError> {
+    match lit {
+        AstLit::Int(v) => Ok(arena.alloc(NodeArena::node(1, 6, *v as u32, 0, 0, 0))),
+        AstLit::Long(v) => Ok(arena.alloc(NodeArena::node(1, 8, *v as u32, 0, 0, 0))),
+        AstLit::Bool(v) => {
+            let val: u32 = if *v { (-1i32) as u32 } else { 0 };
+            Ok(arena.alloc(NodeArena::node(1, 6, val, 0, 0, 0)))
+        }
+        AstLit::Single(v) => Ok(arena.alloc(NodeArena::node(3, 10, (*v).to_bits(), 0, 0, 0))),
+        AstLit::Double(v) => {
+            let bits = v.to_bits();
+            Ok(arena.alloc(NodeArena::node(3, 11, bits as u32, (bits >> 32) as u32, 0, 0)))
+        }
+        AstLit::Currency(v) => {
+            let bits = *v as u64;
+            Ok(arena.alloc(NodeArena::node(2, 0, bits as u32, (bits >> 32) as u32, 0, 0)))
+        }
+        // A Date literal carries the OLE date serial as an f64; it pushes as an
+        // 8-byte literal (the case-2 path) tagged Date (0xc) → push opcode 0xfa.
+        AstLit::Date(v) => {
+            let bits = v.to_bits();
+            Ok(arena.alloc(NodeArena::node(2, 0xc, bits as u32, (bits >> 32) as u32, 0, 0)))
+        }
+        _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// Like `lower_lit` but promotes an integer literal to `coerce_tag` when the
+/// context type is a wider *integer* type (e.g. an integer literal in a Long
+/// expression is pushed directly as Long). Promotion to a floating-point or
+/// Currency context is *not* done in place: VB6 pushes the integer literal in its
+/// natural type and emits a runtime conversion (handled by the operand/assignment
+/// coercion), so for those targets the literal keeps its natural type here.
+pub(super) fn lower_lit_coerced(
+    lit: &AstLit,
+    coerce_tag: Option<u16>,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    match coerce_tag {
+        // Integer tags: Byte=5, Integer=6, Long=8.
+        Some(tag @ (5 | 6 | 8)) => match lit {
+            AstLit::Int(v) => Ok(arena.alloc(NodeArena::node(1, tag, *v as u32, 0, 0, 0))),
+            _ => lower_lit(lit, arena),
+        },
+        _ => lower_lit(lit, arena),
+    }
+}
+
+pub(super) fn lower_name_ref(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let resolution = ctx
+        .module
+        .resolutions
+        .get(&node_id.0)
+        .ok_or(LowerError::Unresolved)?;
+
+    match resolution {
+        NameResolution::Local { local_idx, .. } => {
+            let local = &ctx.proc.locals[*local_idx];
+            // A `Const` is folded to its literal value at the use site (it has no
+            // frame slot). Integer-valued consts emit an integer literal node.
+            if local.is_const {
+                // Integer-valued consts emit an integer literal node in the
+                // declared type. Non-integer consts (String/Double/etc.) fold the
+                // carried literal directly: a String interns into the pool, every
+                // other literal lowers in its own type.
+                if let Some(v) = local.const_value {
+                    let tag = vba_type_to_node_tag(&local.vba_type)
+                        .ok_or(LowerError::UnsupportedType)?;
+                    return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+                }
+                let lit = local.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
+                if let AstLit::Str(s) = lit {
+                    let idx = ctx.intern_string(s);
+                    ctx.call_next.set(ctx.call_next.get() + 1);
+                    return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
+                }
+                return lower_lit(lit, arena);
+            }
+            // A Static local is read from the procedure's static block: synthetic
+            // node 0x7b carries the module descriptor (low 16 of w[4]) and the
+            // static offset (high 16); the load opcode follows from the type tag.
+            if local.is_static {
+                if static_load_op(&local.vba_type).is_none() {
+                    return Err(LowerError::UnsupportedType);
+                }
+                let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
+                let off = ctx.static_offsets[*local_idx] as u32;
+                let packed = (ctx.module_desc as u32) | (off << 16);
+                return Ok(arena.alloc(NodeArena::node(0x7b, tag, packed, 0, 0, 0)));
+            }
+            // Fixed-length strings (`As String * n`) copy via a length-aware
+            // sequence (LdAddr + 0x33<len> + store 0x31), not the plain BSTR load;
+            // gated until that path is ported.
+            if local.fixed_string_len.is_some() {
+                return Err(LowerError::UnsupportedType);
+            }
+            let ty = &local.vba_type;
+            let slot = &ctx.local_slots[*local_idx];
+            let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
+            let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+            Ok(build_frame_load_node(arena, 0x74, tag, lctx, slot.frame_offset))
+        }
+        NameResolution::Param { param_idx, .. } => {
+            let ty = ctx.param_type(*param_idx);
+            let slot = &ctx.param_slots[*param_idx];
+            let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
+            let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+            let opcode = if slot.byref { 0x75u16 } else { 0x74u16 };
+            Ok(build_frame_load_node(arena, opcode, tag, lctx, slot.frame_offset))
+        }
+        NameResolution::ModuleVar(idx) => {
+            let ty = ctx.global_type(*idx);
+            let slot = &ctx.global_slots[*idx];
+            let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+            Ok(build_global_load_node(arena, lctx, slot.module_desc, slot.field_offset))
+        }
+        _ => Err(LowerError::Unresolved),
+    }
+}
+
+/// Build a typed local/param load node (opcode 0x74 = ByVal, 0x75 = ByRef).
+/// Node layout: w[4] = sym-child (frame offset in high 16 bits), w[5] = type_ctx.
+pub(super) fn build_frame_load_node(
+    arena: &mut NodeArena,
+    opcode: u16,
+    type_tag: u16,
+    ctx: usize,
+    frame_offset: i16,
+) -> NodeRef {
+    let sym = arena.alloc(NodeArena::node(0, 0, (frame_offset as u16 as u32) << 16, 0, 0, 0));
+    arena.alloc(NodeArena::node(opcode, type_tag, sym.0, ctx as u32, 0, 0))
+}
+
+/// Build a module-global load node (opcode 0x77).
+/// Node layout: w[4] = (module_desc | (field_offset << 16)), w[5] = type_ctx.
+pub(super) fn build_global_load_node(
+    arena: &mut NodeArena,
+    ctx: usize,
+    module_desc: u16,
+    field_offset: u16,
+) -> NodeRef {
+    let packed = (module_desc as u32) | ((field_offset as u32) << 16);
+    arena.alloc(NodeArena::node(0x77, 0, packed, ctx as u32, 0, 0))
+}
+
+pub(super) fn lower_binop(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    op: BinOpKind,
+    lhs_id: NodeId,
+    rhs_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    // VB6 widens both operands to the wider of their types before emitting;
+    // integer literals in Long expressions are promoted to Long.
+    let lhs_ty = ctx.module.types.get(&lhs_id.0);
+    let rhs_ty = ctx.module.types.get(&rhs_id.0);
+    let mut operand_coerce = wider_numeric_tag(lhs_ty, rhs_ty);
+    // Floating division (`/`) widens its operands to the operation (result) type.
+    // For Currency operands that is Double (Currency is divided in Double), not
+    // the operands' common Currency type.
+    if op == BinOpKind::Div {
+        if let Some(rt) = ctx.module.types.get(&node_id.0).and_then(vba_type_to_node_tag) {
+            operand_coerce = Some(rt);
+        }
+    }
+
+    let lhs_ref = lower_expr_coerced(ctx, lhs_id, expr_arena, arena, operand_coerce)?;
+    let lhs_ref = coerce_operand(ctx, lhs_id, lhs_ref, operand_coerce, expr_arena, arena);
+    let rhs_ref = lower_expr_coerced(ctx, rhs_id, expr_arena, arena, operand_coerce)?;
+    let rhs_ref = coerce_operand(ctx, rhs_id, rhs_ref, operand_coerce, expr_arena, arena);
+
+    // Power (`^`) is its own bound-node opcode (0x1a) and always yields Double.
+    // It is byte-exact only when both operands are already Double (no operand
+    // coercion to emit); other operand types need the coercion machinery, so
+    // they are left unsupported rather than mis-emitted.
+    if op == BinOpKind::Pow {
+        let both_double = matches!(lhs_ty, Some(VbaType::Double))
+            && matches!(rhs_ty, Some(VbaType::Double));
+        if !both_double {
+            return Err(LowerError::UnsupportedType);
+        }
+        return Ok(arena.alloc(NodeArena::node(0x1a, 11, lhs_ref.0, rhs_ref.0, 0, 0)));
+    }
+
+    let opcode = binop_node_opcode(op).ok_or(LowerError::UnsupportedNode)?;
+
+    let type_tag = if is_comparison_op(op) {
+        0u16
+    } else {
+        let result_type = ctx.module.types.get(&node_id.0).ok_or(LowerError::Unresolved)?;
+        vba_type_to_node_tag(result_type).ok_or(LowerError::UnsupportedType)?
+    };
+
+    Ok(arena.alloc(NodeArena::node(opcode, type_tag, lhs_ref.0, rhs_ref.0, 0, 0)))
+}
+
+/// Widen a binary-operation operand to the operation type when its own type is
+/// narrower. VB6 wraps such an operand in a coercion node whose emission is the
+/// operand load followed by a single type-conversion opcode (e.g. Integer→Long
+/// emits 0xe7, Long→Double emits 0xec). We model that with the synthetic
+/// coercion node (opcode 0x78): target type tag in the node, operand as word[4].
+///
+/// Integer *literals* are already widened in place by `lower_lit_coerced`, so
+/// they need no conversion node (VB6 folds the literal to the wider type).
+/// Insert an assignment-value coercion node when the source type differs from the
+/// assignment target type. VB6 computes the rvalue in its natural type and then
+/// converts it to the destination type before storing.
+///
+/// The conversion is omitted in two cases: when the types already match, and when
+/// both source and destination are floating-point (Single/Double) — there the
+/// typed load pushes the common float representation and the typed store
+/// narrows/widens, so no separate conversion opcode appears. Every other cross-type
+/// pair (integer<->integer, ->/<- Currency, ->/<- Date, ->/<- Byte) carries an
+/// explicit conversion opcode, emitted by the value-emitter for the 0x78 node.
+///
+/// Literals are skipped: integer literals are already lowered in the destination
+/// type by `lower_lit_coerced`, so wrapping them would double-convert.
+pub(super) fn coerce_assign_value(
+    ctx: &LowerCtx,
+    value_id: NodeId,
+    value_root: NodeRef,
+    target_tag: Option<u16>,
+    arena: &mut NodeArena,
+) -> NodeRef {
+    let Some(target) = target_tag else {
+        return value_root;
+    };
+    match arena.get(value_root).opcode() {
+        // 8-byte (Currency/Date), floating-point, and pooled-string literals are
+        // already their final type — wrapping would double-convert.
+        2 | 3 | 0x79 => return value_root,
+        // An integer literal is retyped in place for an integer target (no
+        // conversion); for a float/Currency target it keeps its natural type and
+        // needs an explicit Int→T conversion, emitted below.
+        1 if matches!(target, 5 | 6 | 8) => return value_root,
+        _ => {}
+    }
+    let Some(src_tag) = ctx.module.types.get(&value_id.0).and_then(vba_type_to_node_tag) else {
+        return value_root;
+    };
+    if src_tag == target {
+        return value_root;
+    }
+    let is_float = |t: u16| t == 10 || t == 11;
+    if is_float(src_tag) && is_float(target) {
+        return value_root;
+    }
+    arena.alloc(NodeArena::node(0x78, target, value_root.0, 0, 0, 0))
+}
+
+pub(super) fn coerce_operand(
+    ctx: &LowerCtx,
+    operand_id: NodeId,
+    operand_ref: NodeRef,
+    target_tag: Option<u16>,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> NodeRef {
+    let Some(target) = target_tag else {
+        return operand_ref;
+    };
+    // An integer literal is retyped in place by `lower_lit_coerced` for an integer
+    // operation type (no conversion); for a float/Currency operation type it keeps
+    // its natural type and needs an explicit conversion, emitted below. Every other
+    // literal is already its final type.
+    if let ExprNode::Literal { lit } = expr_arena.get(operand_id) {
+        let is_int_lit = matches!(lit, AstLit::Int(_) | AstLit::Long(_) | AstLit::Bool(_));
+        if !is_int_lit || matches!(target, 5 | 6 | 8) {
+            return operand_ref;
+        }
+    }
+    let Some(src_ty) = ctx.module.types.get(&operand_id.0) else {
+        return operand_ref;
+    };
+    let Some(src_tag) = vba_type_to_node_tag(src_ty) else {
+        return operand_ref;
+    };
+    if src_tag == target {
+        return operand_ref;
+    }
+    // VB6 emits an explicit widening conversion opcode only for an integer-typed
+    // operand (Integer / Long / Byte). A floating-point operand widened to a
+    // wider float (e.g. Single -> Double) carries no conversion opcode — the
+    // operation consumes the value directly. (The complete per-type-pair gate
+    // lives in the value-emitter; for the reachable widening cases — where the
+    // operand type is never wider than the operation type — this integer-source
+    // rule is exact and oracle-confirmed.)
+    if !matches!(
+        src_ty,
+        VbaType::Integer | VbaType::Long | VbaType::Byte | VbaType::Boolean | VbaType::Currency
+    ) {
+        return operand_ref;
+    }
+    arena.alloc(NodeArena::node(0x78, target, operand_ref.0, 0, 0, 0))
+}
+
+pub(super) fn lower_unop(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    op: UnOpKind,
+    operand_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let operand_ref = lower_expr(ctx, operand_id, expr_arena, arena)?;
+    match op {
+        // Unary plus is a no-op: the operand is emitted unchanged.
+        UnOpKind::Pos => Ok(operand_ref),
+        // Negate and Not are emitted through the generic operation emitter
+        // (the single-operand arithmetic form: only `word[4]` is set, so no
+        // right operand is emitted). The opcode byte is selected by that
+        // emitter as RT_BINOP_BASE[op] + RT_TYPE_OFFSET[result type tag]:
+        //   negate -> op 7 (base 0x00c6),  Not -> op 6 (base 0x00be).
+        // Both use the arithmetic dispatch (RT_DISPATCH_FLAG & 0x10 == 0), so
+        // the offset comes from the node's own (result) type tag.
+        UnOpKind::Neg | UnOpKind::Not => {
+            let result_type = ctx
+                .module
+                .types
+                .get(&node_id.0)
+                .ok_or(LowerError::Unresolved)?;
+            let type_tag = vba_type_to_node_tag(result_type).ok_or(LowerError::UnsupportedType)?;
+            let opcode: u16 = if matches!(op, UnOpKind::Neg) { 7 } else { 6 };
+            Ok(arena.alloc(NodeArena::node(opcode, type_tag, operand_ref.0, 0, 0, 0)))
+        }
+    }
+}
