@@ -3,9 +3,12 @@
 //!
 //! This ports `EbBuildDeclaration`'s scalar-member path: allocate the bag, write
 //! its fields from the declaration descriptor, and attach the inline type node
-//! produced by `EbBuildTypeNode2`'s base-type path. The parameter/slot loop, the
-//! `0x19` (has-parameters) form, the record-type (`type_flags == 8`) check, the
-//! symbol-list threading, and the COM `ITypeInfo` tail are gated.
+//! produced by `EbBuildTypeNode2`'s base-type path. The record (`Type...End
+//! Type`, `type_flags == 8`) path is also ported for plain-scalar fields — it
+//! reuses the same slot loop the parameter path would, building one field
+//! record per field via [`build_property_slot_scalar`]. The parameter slot
+//! loop, the `0x19` (has-parameters) form, the symbol-list threading, and the
+//! COM `ITypeInfo` tail are gated.
 
 use crate::heap::HeapContext;
 use crate::typenode::build_inline_type_node;
@@ -63,19 +66,32 @@ fn get_u16(heap: &HeapContext, off: u32) -> u16 {
     u16::from_le_bytes([heap.mem[o], heap.mem[o + 1]])
 }
 
-/// Port of `EbBuildDeclaration` for a scalar member (no parameters/slots).
+/// Port of `EbBuildDeclaration` for a scalar member, OR a record (`Type...End
+/// Type`, `ctx.type_flags == 8`) declaration whose fields are all plain
+/// scalars.
 ///
-/// Allocates the member record, writes its fields from `ctx`, and stores the
-/// inline type node for `ctx.return_type_word`. Returns the record's offset in
-/// the heap.
+/// Allocates the member record and writes its fields from `ctx`. For a plain
+/// scalar (`type_flags != 8`) it stores the inline type node for
+/// `ctx.return_type_word`, as before. For a record (`type_flags == 8`) the
+/// source skips that single-scalar type node entirely and instead runs the
+/// same slot loop the parameter path uses (`LAB_0fac43d7`) — one call here
+/// builds one field record per `field_type_words` entry via
+/// [`build_property_slot_scalar`] (`ctx.slot_count` must equal
+/// `field_type_words.len()`). `field_type_words` is ignored when
+/// `type_flags != 8`.
 ///
 /// Gated (each `unimplemented!` rather than a guessed byte): a kind
 /// discriminator `>= 5` (no bag is allocated in the source), the `0x19`
-/// has-parameters form, a non-zero `slot_count` (the parameter/field loop), and
-/// the `type_flags == 8` record-type check. The symbol-list insertion (record
-/// `+4` / context list head) and the COM `ITypeInfo` tail are the caller's
-/// concern.
-pub fn build_declaration_scalar(heap: &mut HeapContext, ctx: &DeclContext) -> Result<u32, i32> {
+/// has-parameters form, and a non-zero `slot_count` on the non-record
+/// (parameter) path — the parameter slot loop needs per-slot byref/optional/
+/// array descriptors this port doesn't model yet. The symbol-list insertion
+/// (record `+4` / context list head) and the COM `ITypeInfo` tail are the
+/// caller's concern.
+pub fn build_declaration_scalar(
+    heap: &mut HeapContext,
+    ctx: &DeclContext,
+    field_type_words: &[u16],
+) -> Result<u32, i32> {
     if ctx.kind_disc < 0 {
         return Err(EB_BAD_DECL);
     }
@@ -171,19 +187,23 @@ pub fn build_declaration_scalar(heap: &mut HeapContext, ctx: &DeclContext) -> Re
         unimplemented!("EbBuildDeclaration has-parameters form (ctx[9] == 0x19); Phase 6");
     }
 
-    // ── Return/element type node (EbBuildTypeNode2 base-type path) ────────────
-    let node = build_inline_type_node(ctx.return_type_word);
-    let o2c = (rec + 0x2c) as usize;
-    heap.mem[o2c..o2c + 4].copy_from_slice(&node.to_le_bytes());
-    // +0x3a bit 3 = inline flag (the type node reports inline ⇒ 1)
-    {
-        let o = (rec + 0x3a) as usize;
-        heap.mem[o] = (1 << 3) | (heap.mem[o] & 0xf7);
-    }
-    // +0 |= 0x20 (clearing 0x10) unless ctx[9] == 0x18
-    if ctx.flag9 != 0x18 {
-        let o = rec as usize;
-        heap.mem[o] = (heap.mem[o] & 0xef) | 0x20;
+    let is_record = ctx.type_flags == 8;
+
+    if !is_record {
+        // ── Return/element type node (EbBuildTypeNode2 base-type path) ──────
+        let node = build_inline_type_node(ctx.return_type_word);
+        let o2c = (rec + 0x2c) as usize;
+        heap.mem[o2c..o2c + 4].copy_from_slice(&node.to_le_bytes());
+        // +0x3a bit 3 = inline flag (the type node reports inline ⇒ 1)
+        {
+            let o = (rec + 0x3a) as usize;
+            heap.mem[o] = (1 << 3) | (heap.mem[o] & 0xf7);
+        }
+        // +0 |= 0x20 (clearing 0x10) unless ctx[9] == 0x18
+        if ctx.flag9 != 0x18 {
+            let o = rec as usize;
+            heap.mem[o] = (heap.mem[o] & 0xef) | 0x20;
+        }
     }
 
     // ── Slot loop prologue (LAB_0fac43d7) ────────────────────────────────────
@@ -193,15 +213,27 @@ pub fn build_declaration_scalar(heap: &mut HeapContext, ctx: &DeclContext) -> Re
         heap.mem[o] = ((sc as u8 ^ heap.mem[o]) & 0x3f) ^ heap.mem[o];
     }
     if sc > 0 {
-        unimplemented!("EbBuildDeclaration parameter/field slot loop (slot_count > 0); Phase 6");
+        if is_record {
+            assert_eq!(
+                field_type_words.len(),
+                sc as usize,
+                "build_declaration_scalar: field_type_words must have one entry \
+                 per ctx.slot_count for a record declaration"
+            );
+            let mut tail = crate::heap::NIL;
+            for &w in field_type_words {
+                build_property_slot_scalar(heap, w, 0, rec, &mut tail)?;
+            }
+        } else {
+            unimplemented!(
+                "EbBuildDeclaration parameter slot loop (slot_count > 0); Phase 6"
+            );
+        }
     }
-    // Post-loop: +0x3a bit 4 = local_3c (0 on the scalar path).
+    // Post-loop: +0x3a bit 4 = local_3c (0 on the scalar/record-scalar-fields path).
     {
         let o = (rec + 0x3a) as usize;
         heap.mem[o] &= 0xef;
-    }
-    if ctx.type_flags == 8 {
-        unimplemented!("EbBuildDeclaration record-type check (type_flags == 8); Phase 6");
     }
 
     Ok(rec)

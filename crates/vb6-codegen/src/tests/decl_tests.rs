@@ -42,7 +42,7 @@ fn scalar_method_member_record_bytes() {
         return_type_word: 8, // e.g. Long
     };
 
-    let rec = build_declaration_scalar(&mut h, &ctx).unwrap();
+    let rec = build_declaration_scalar(&mut h, &ctx, &[]).unwrap();
     let r = rec as usize;
     let b = &h.mem[r..r + 0x40];
 
@@ -79,7 +79,7 @@ fn scalar_interface_member_kind3_low3_is_2() {
         return_type_word: 6, // e.g. Integer
     };
 
-    let rec = build_declaration_scalar(&mut h, &ctx).unwrap();
+    let rec = build_declaration_scalar(&mut h, &ctx, &[]).unwrap();
     let r = rec as usize;
 
     assert_eq!(h.mem[r], 0x20); // +0 |= 0x20 (no method tag on interface bag)
@@ -99,7 +99,7 @@ fn negative_kind_disc_is_bad_decl() {
         kind_disc: -1,
         ..DeclContext::default()
     };
-    assert_eq!(build_declaration_scalar(&mut h, &ctx), Err(0x80028ca1u32 as i32));
+    assert_eq!(build_declaration_scalar(&mut h, &ctx, &[]), Err(0x80028ca1u32 as i32));
 }
 
 #[test]
@@ -111,7 +111,7 @@ fn out_of_range_slot_count_is_bad_decl() {
         field_1a: -1,
         ..DeclContext::default()
     };
-    assert_eq!(build_declaration_scalar(&mut h, &ctx), Err(0x80028ca1u32 as i32));
+    assert_eq!(build_declaration_scalar(&mut h, &ctx, &[]), Err(0x80028ca1u32 as i32));
 }
 
 #[test]
@@ -124,7 +124,7 @@ fn has_parameters_form_is_gated() {
         ..DeclContext::default()
     };
     let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        let _ = build_declaration_scalar(&mut h, &ctx);
+        let _ = build_declaration_scalar(&mut h, &ctx, &[]);
     }));
     assert!(r.is_err());
 }
@@ -145,6 +145,7 @@ fn scalar_slot_record_flows_through_resolver() {
             return_type_word: 8,
             ..DeclContext::default()
         },
+        &[],
     )
     .unwrap();
 
@@ -189,7 +190,7 @@ fn produced_record_kind_and_byref_readable() {
         field_1a: -1,
         return_type_word: 8,
     };
-    let rec = build_declaration_scalar(&mut h, &ctx).unwrap();
+    let rec = build_declaration_scalar(&mut h, &ctx, &[]).unwrap();
     let r = rec as usize;
 
     // Copy the produced bytes into a MemberRecord and read the call-path fields.
@@ -200,4 +201,83 @@ fn produced_record_kind_and_byref_readable() {
     assert_eq!(mr.member_id(), 0x55);
     // +0x3a low3 == 0 ⇒ convention kind 0 (no 0x10 bit set here).
     assert_eq!(mr.kind(), 0);
+}
+
+// ── Record (`Type...End Type`) declaration: the field slot loop ─────────────
+
+/// `Type Point : X As Long : Y As Long : End Type` — the milestone-1 fixture's
+/// declaration. `type_flags == 8` routes straight to the slot loop (no single
+/// scalar type node at `+0x2c`); each field becomes a property-bag slot
+/// record via `build_property_slot_scalar`, linked under the declaration's
+/// child list.
+#[test]
+fn record_declaration_builds_one_field_slot_per_entry() {
+    let mut h = seeded_heap(0x400);
+    let ctx = DeclContext {
+        sig: 0,
+        kind_disc: 0,
+        type_flags: 8, // record type
+        field5: 0,
+        slot_count: 2, // two fields
+        member_id: 0,
+        flag9: 0,
+        flags_c: 0,
+        field_1a: -1,
+        return_type_word: 0, // unused on the record path
+    };
+    let rec = build_declaration_scalar(&mut h, &ctx, &[8, 8] /* Long, Long */).unwrap();
+    let r = rec as usize;
+
+    // No single scalar type node written at +0x2c (the record path skips it).
+    assert_eq!(h.mem[r + 0x2c], 0);
+    // +0x3b low6 = slot count (2).
+    assert_eq!(h.mem[r + 0x3b] & 0x3f, 2);
+
+    // Two field records linked under the declaration's child list (head at
+    // rec+0x28), in declaration order.
+    let field_x = h.read_dword(rec + 0x28);
+    assert_ne!(field_x, NIL);
+    assert_eq!(h.mem[field_x as usize + 1], 0x03); // property-slot low3 = 3
+    assert_eq!(h.mem[field_x as usize + 0xc], 8); // inline Long type node
+
+    let field_y = h.read_dword(field_x + 0x14); // next-link
+    assert_ne!(field_y, NIL);
+    assert_eq!(h.mem[field_y as usize + 1], 0x03);
+    assert_eq!(h.mem[field_y as usize + 0xc], 8);
+
+    // Each field resolves cleanly through the ported classifier.
+    assert_eq!(expression_type2(&h.mem, field_x as usize).category, EXPECTED_LONG_SLOT_CATEGORY);
+    assert_eq!(expression_type2(&h.mem, field_y as usize).category, EXPECTED_LONG_SLOT_CATEGORY);
+}
+
+#[test]
+#[should_panic(expected = "field_type_words must have one entry")]
+fn record_declaration_rejects_mismatched_field_count() {
+    let mut h = seeded_heap(0x400);
+    let ctx = DeclContext {
+        kind_disc: 0,
+        type_flags: 8,
+        slot_count: 2,
+        field_1a: -1,
+        ..DeclContext::default()
+    };
+    // Only one type word for a 2-field declaration.
+    let _ = build_declaration_scalar(&mut h, &ctx, &[8]);
+}
+
+#[test]
+fn record_declaration_with_no_fields_leaves_prior_gate_intact() {
+    // type_flags == 8 with slot_count == 0: no fields to build, but this must
+    // no longer hit the old "record-type check" gate — it just skips both the
+    // scalar type node and the (empty) loop.
+    let mut h = seeded_heap(0x200);
+    let ctx = DeclContext {
+        kind_disc: 0,
+        type_flags: 8,
+        slot_count: 0,
+        field_1a: -1,
+        ..DeclContext::default()
+    };
+    let rec = build_declaration_scalar(&mut h, &ctx, &[]).unwrap();
+    assert_eq!(h.mem[rec as usize + 0x2c], 0);
 }
