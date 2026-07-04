@@ -120,9 +120,13 @@ impl<'a> Emitter<'a> {
                     n_op = 2;
                 }
             }
-            // kinds 3/4/5/6/0xa: the opcode base is supplied by the resolver's
+            // kind 6: indirect module-level variable, ByRef form (the
+            // by-reference counterpart of kind 7). Unconditional — no ByRef
+            // promotion branch.
+            6 => opcode_base = 0x3d0,
+            // kinds 3/4/5/0xa: the opcode base is supplied by the resolver's
             // call chain, not available without the full module context.
-            3 | 4 | 5 | 6 | 0xa => unimplemented!(
+            3 | 4 | 5 | 0xa => unimplemented!(
                 "reference kind {}: needs the resolver-supplied opcode base from \
                  the full module compilation context",
                 desc.kind

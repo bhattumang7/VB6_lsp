@@ -710,6 +710,28 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
     assert_eq!(b_byref[0], op_byref);
 }
 
+#[test]
+fn emit_reference_kind6_emits_0x3d0_base_unconditionally() {
+    // kind==6 (indirect module-level variable, ByRef form): opcode_base = 0x3d0,
+    // no ByRef-promotion branch — nOp stays whatever the caller passed.
+    use crate::tables::RT_OPCODE_BYTE;
+    use crate::tables::RT_TYPE_OFFSET;
+    let u_var7 = 0x3d0i32;
+    let off = RT_TYPE_OFFSET[2] as i32;
+    let expected_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    let desc = crate::emit::RefDescriptor { kind: 6, operand: 0x0021, word6: 0, word8: 0, flags1: 0 };
+    let bytes = ref_bytes(&desc, 1, 0, 2);
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x21, 0x00]);
+    } else {
+        assert_eq!(
+            bytes,
+            &[expected_opcode, (expected_idx & 0xff) as u8, 0x21, 0x00]
+        );
+    }
+}
+
 // ── value-emitter operator-reference kinds (8/9/0xb) ─────────────────────────
 // (uses the `opc2` opcode+operand helper defined later in this module)
 

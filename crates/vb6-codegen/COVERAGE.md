@@ -39,7 +39,7 @@ The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
 | 0x61 | call | emit (by-ref common); **GAP** ByVal / dispatch / member numbering |
 | 0x63, 0x65–0x67 | group | emit |
 | 0x68 | object child | emit (trailing word); **GAP** object-child attr path |
-| 0x69 | binary-operation setup | emit (operands + operator descriptor kinds 9/0xb, nOp 5/6); **GAP** kind-0xa + nOp 1-4 finalize (EbEmitExpressionOp opcode base, asm-needed) |
+| 0x69 | binary-operation setup | emit (operands + operator descriptor kinds 6/7/8/9/0xb, nOp 5/6); **GAP** kind-0xa + nOp 1-4 finalize (EbEmitExpressionOp opcode base; RE complete — full asm+decompile of the entire outer 11-entry / inner 6-entry dispatch captured in `re_lab/pcode_lab/emit_rip/{jumptable_bytes.txt, expr_emit2_kinds_5_6_7_8_10_decomp.c}`; kind 6/7/8/9/0xb opcode-base bodies now ported, kind-0xa base + the nOp 1-4 finalize re-entry still need the resolver-supplied context) |
 | 0x6a–0x6e | instruction group | emit |
 | 0x72 | type-node builder | **GAP** (resolver / EbCreateTypeNode3) |
 | 0x73 | group | emit |
@@ -49,8 +49,8 @@ The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
 
 | path | status |
 |------|--------|
-| reference kinds 1/2 | emit |
-| reference kinds 3–9 | **GAP** (resolver-built descriptor) |
+| reference kinds 1/2/6/7 | emit |
+| reference kinds 3/4/5/0xa | **GAP** (resolver-supplied opcode base) |
 | value-emitter kinds 8/9/0xb + typed store | emit |
 | value-emitter kind-3 resolver-base finalize | **GAP** |
 
