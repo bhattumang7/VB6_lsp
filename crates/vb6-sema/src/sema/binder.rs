@@ -41,7 +41,8 @@ use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
 use crate::sema::symbol::{
     BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc, BoundTypeDecl,
-    BoundTypeMember, BoundVar, BuiltinCall, NameResolution, ParamFlags, RtcArg, UnaryIntrinsic,
+    BoundTypeMember, BoundVar, BuiltinCall, ExternalClass, NameResolution, ParamFlags, RtcArg,
+    UnaryIntrinsic,
 };
 use crate::sema::types::VbaType;
 
@@ -64,7 +65,26 @@ pub fn bind(
     spans: &NodeSpans,
     visibility: &HashMap<u32, bool>,
 ) -> BoundModule {
-    let mut b = Binder::new(ctx, arena, spans, visibility);
+    let empty = HashMap::new();
+    bind_with_classes(ctx, arena, top_nodes, spans, visibility, &empty)
+}
+
+/// Like [`bind`], but with cross-module class member resolution: `classes`
+/// maps a class's name (lowercase) to its already-bound Public field list
+/// (see [`ExternalClass`]) — the caller (a project/fixture-level compiler)
+/// binds the class's own module first, then passes its field list in here so
+/// `Dim o As New ClassName` / `o.Field` in THIS module resolves `o.Field`'s
+/// type instead of falling back to `Variant`. Sema itself has no "class
+/// module" or "project" concept beyond this lookup table.
+pub fn bind_with_classes(
+    ctx: &ScannerContext,
+    arena: &ExprArena,
+    top_nodes: &[NodeId],
+    spans: &NodeSpans,
+    visibility: &HashMap<u32, bool>,
+    classes: &HashMap<String, ExternalClass>,
+) -> BoundModule {
+    let mut b = Binder::new(ctx, arena, spans, visibility, classes);
     b.bind_top_level(top_nodes);
     b.finish()
 }
@@ -95,6 +115,9 @@ struct Binder<'a> {
     arena: &'a ExprArena,
     spans: &'a NodeSpans,
     visibility: &'a HashMap<u32, bool>,
+    /// Known external classes (name lowercase → Public field list), for
+    /// cross-module member resolution. See [`bind_with_classes`].
+    known_classes: &'a HashMap<String, ExternalClass>,
 
     procs:       Vec<BoundProc>,
     /// Parameter `ArgList` node per proc (aligned with `procs`), kept so the
@@ -122,12 +145,14 @@ impl<'a> Binder<'a> {
         arena: &'a ExprArena,
         spans: &'a NodeSpans,
         visibility: &'a HashMap<u32, bool>,
+        known_classes: &'a HashMap<String, ExternalClass>,
     ) -> Self {
         Self {
             ctx,
             arena,
             spans,
             visibility,
+            known_classes,
             procs:       Vec::new(),
             proc_param_nodes: Vec::new(),
             module_vars: Vec::new(),
@@ -978,6 +1003,17 @@ impl<'a> Binder<'a> {
                     }
                 }
                 return VbaType::Variant;
+            }
+        }
+        // Not a same-module UDT — try a known external class (Dim o As New
+        // ClassName; o.Field), matched by name text (cross-module, so sym_ids
+        // aren't comparable — see `bind_with_classes`).
+        let type_name = self.name_of(*type_sym);
+        if let Some(class) = self.known_classes.get(&type_name) {
+            for (fname, fty) in &class.fields {
+                if fname.eq_ignore_ascii_case(&member_name) {
+                    return fty.clone();
+                }
             }
         }
         VbaType::Variant

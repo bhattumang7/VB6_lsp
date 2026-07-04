@@ -77,6 +77,20 @@ pub struct BoundVar {
     pub name_span: Span,
 }
 
+/// A known EXTERNAL class module's Public field list (name → declared type,
+/// in declaration order), supplied by the caller (a project/fixture-level
+/// compiler that has already bound the class's own module) for cross-module
+/// member resolution — `Dim o As New ClassName` / `o.Field`. Sema has no
+/// concept of a "class module" or a project beyond this: a class's `Public`
+/// fields bind exactly like a Standard module's (`BoundModule::module_vars`);
+/// this struct is just that list, handed back in for a DIFFERENT module's
+/// `resolve_member_type` to consult. Field order matters downstream — codegen
+/// numbers vtable dispatch slots by it.
+#[derive(Debug, Clone, Default)]
+pub struct ExternalClass {
+    pub fields: Vec<(String, VbaType)>,
+}
+
 /// A member of a user-defined `Type ... End Type`.
 #[derive(Debug, Clone)]
 pub struct BoundTypeMember {
