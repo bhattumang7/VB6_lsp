@@ -649,8 +649,9 @@ pub(super) fn lower_binop(
     let mut operand_coerce = wider_numeric_tag(lhs_ty, rhs_ty);
     // Floating division (`/`) widens its operands to the operation (result) type.
     // For Currency operands that is Double (Currency is divided in Double), not
-    // the operands' common Currency type.
-    if op == BinOpKind::Div {
+    // the operands' common Currency type. Exponentiation (`^`) always computes in
+    // Double regardless of operand type, so it widens the same way.
+    if matches!(op, BinOpKind::Div | BinOpKind::Pow) {
         if let Some(rt) = ctx.module.types.get(&node_id.0).and_then(vba_type_to_node_tag) {
             operand_coerce = Some(rt);
         }
@@ -661,16 +662,9 @@ pub(super) fn lower_binop(
     let rhs_ref = lower_expr_coerced(ctx, rhs_id, expr_arena, arena, operand_coerce)?;
     let rhs_ref = coerce_operand(ctx, rhs_id, rhs_ref, operand_coerce, expr_arena, arena);
 
-    // Power (`^`) is its own bound-node opcode (0x1a) and always yields Double.
-    // It is byte-exact only when both operands are already Double (no operand
-    // coercion to emit); other operand types need the coercion machinery, so
-    // they are left unsupported rather than mis-emitted.
+    // Power (`^`) is its own bound-node opcode (0x1a) and always yields Double;
+    // both operands are already widened to Double above via `operand_coerce`.
     if op == BinOpKind::Pow {
-        let both_double = matches!(lhs_ty, Some(VbaType::Double))
-            && matches!(rhs_ty, Some(VbaType::Double));
-        if !both_double {
-            return Err(LowerError::UnsupportedType);
-        }
         return Ok(arena.alloc(NodeArena::node(0x1a, 11, lhs_ref.0, rhs_ref.0, 0, 0)));
     }
 

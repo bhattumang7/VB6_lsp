@@ -1161,10 +1161,14 @@ fn binop_type(
             t @ (VbaType::Byte | VbaType::Integer | VbaType::Long | VbaType::Boolean) => t,
             _ => VbaType::Long,
         },
+        // Exponentiation always computes and returns Double, regardless of operand
+        // type (unlike the other arithmetic ops, which promote to the operands'
+        // common type).
+        B::Pow => VbaType::Double,
         // Arithmetic: numeric promotion. Date operands are computed in Double (the
         // OLE serial is widened; the Date result type is restored on store), so an
         // arithmetic expression never has type Date.
-        B::Add | B::Sub | B::Mul | B::Div | B::Pow => {
+        B::Add | B::Sub | B::Mul | B::Div => {
             match numeric_promote(lhs, rhs) {
                 VbaType::Date => VbaType::Double,
                 // Floating division (`/`) of Currency is performed in Double; the
