@@ -243,6 +243,52 @@ pub(super) fn alloc_owned_copy_temp(ctx: &LowerCtx) -> i16 {
     ctx.local_slots[ctx.owned_copy_base + i].frame_offset
 }
 
+/// True if `base` (a `MemberAccess`'s qualifier) resolves to a local whose
+/// type is a known external class (`Dim o As New ClassName`) rather than a
+/// same-module `Type` (UDT) — the two route through entirely different
+/// mechanisms (vtable dispatch vs. a flat frame offset).
+pub(super) fn member_access_base_is_class(module: &BoundModule, base: NodeId) -> bool {
+    match module.resolutions.get(&base.0) {
+        Some(NameResolution::Local { proc_idx, local_idx }) => {
+            match module.procs.get(*proc_idx).and_then(|p| p.locals.get(*local_idx)) {
+                Some(v) => match &v.vba_type {
+                    VbaType::UserDefined(sym) => module.class_field_info.contains_key(sym),
+                    _ => false,
+                },
+                None => false,
+            }
+        }
+        _ => false,
+    }
+}
+
+/// Count the hidden 4-byte temps a proc's class-member Property-Get accesses
+/// need (`x = o.F`): the vtable Get call writes its result through an
+/// out-parameter address into a temp, which is then loaded as the
+/// expression's value. Only the `Assign` RHS position is scanned — the
+/// single-Public-Long-field vertical this was built against never nests a
+/// class member access inside a larger expression (gated elsewhere if it
+/// does; see `resolve_class_field`).
+pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_class_get_temps(module, id, expr_arena);
+    match expr_arena.get(node_id) {
+        ExprNode::Assign { value, .. } => match expr_arena.get(*value) {
+            ExprNode::MemberAccess { base, .. } => member_access_base_is_class(module, *base) as usize,
+            _ => 0,
+        },
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
+        ExprNode::If { then_body, else_body, .. } => {
+            c(*then_body) + else_body.map(c).unwrap_or(0)
+        }
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+            c(*body)
+        }
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+        _ => 0,
+    }
+}
+
 pub(super) fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_variant_assigns(module, id, expr_arena);
     match expr_arena.get(node_id) {

@@ -16,12 +16,16 @@ pub(super) fn lower_assign(
     if let ExprNode::Call { func, args } = expr_arena.get(target_id) {
         return lower_array_store(ctx, *func, *args, value_id, expr_arena, out);
     }
-    // UDT field store: `t.X = v` (target is a `MemberAccess`). This goes
-    // through the real resolver/value-emitter chain (a bound `0x2c` node),
-    // not the scalar bypass store this function otherwise builds — a UDT
-    // field has no frame slot of its own to feed `emit_var_store`.
+    // Member store: `t.X = v` (UDT field) or `o.F = v` (class field) — target
+    // is a `MemberAccess`. Both go through the real resolver/value-emitter or
+    // vtable-dispatch chain, not the scalar bypass store this function
+    // otherwise builds — neither has a frame slot of its own to feed
+    // `emit_var_store`.
     if let ExprNode::MemberAccess { base, member, bang } = expr_arena.get(target_id) {
         let (base, member, bang) = (*base, *member, *bang);
+        if member_access_base_is_class(ctx.module, base) {
+            return lower_class_field_store(ctx, base, bang, value_id, expr_arena, out);
+        }
         return lower_udt_field_store(ctx, base, member, bang, value_id, expr_arena, out);
     }
     // Resolve the target first so its type can be used to coerce integer literals

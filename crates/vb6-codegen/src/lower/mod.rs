@@ -435,6 +435,16 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(5));
     }
 
+    // One hidden 4-byte Long temp per class-member Property-Get access
+    // (`x = o.F`) — the vtable Get call's out-parameter target (see
+    // `count_class_get_temps`). Long-sized only: the single-Public-Long-field
+    // vertical this was built against is the only confirmed case.
+    let class_get_base = local_slots.len();
+    let class_get_temps = count_class_get_temps(module, NodeId(proc.body), expr_arena);
+    for _ in 0..class_get_temps {
+        local_slots.push(frame.declare_anon(2));
+    }
+
     // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
     // callee receives a packed array of the caller's trailing arguments); it
     // belongs to the procedure-call tier, which is out of scope. Gate it cleanly
@@ -471,6 +481,8 @@ fn lower_proc_pooled(
         string_rtc_next: Cell::new(0),
         owned_copy_base,
         owned_copy_next: Cell::new(0),
+        class_get_base,
+        class_get_next: Cell::new(0),
         call_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
@@ -566,6 +578,10 @@ struct LowerCtx<'m> {
     owned_copy_base: usize,
     /// Which owned-copy temp slot the next runtime-string call argument should use.
     owned_copy_next: Cell<usize>,
+    /// Frame index of the first class-member Property-Get out-parameter temp.
+    class_get_base: usize,
+    /// Which class-Get temp slot the next `o.Field` read should use.
+    class_get_next: Cell<usize>,
     /// Sequential index of the next call site within this procedure (each call's
     /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
     call_next: Cell<usize>,

@@ -497,3 +497,92 @@ fn class_instance_local_gets_a_plain_4byte_object_slot() {
     // class-typed local would otherwise trigger).
     assert_eq!(bytes, Vec::<u8>::new());
 }
+
+// ── Class-member vtable dispatch (0x24 resolve-object + 0x0d vtable-call) ────
+//
+// Oracle-captured for `Class1 : Public F As Long` accessed from
+// `Dim o As New Class1` as `o.F = 1` then `x = o.F`. Frame: o (Object, 4
+// bytes) at -136, x (Long) at -140, the hidden class-Get temp at -144.
+// Full raw bytes (re_lab recon, byte-exact):
+//   f5 01 00 00 00 04 78 ff 24 00 00 0d 20 00 01 00
+//   04 70 ff 04 78 ff 24 00 00 0d 1c 00 01 00 6c 70 ff 71 74 ff
+
+#[test]
+fn class_field_store_then_load_matches_oracle_recon() {
+    let mut ea = ExprArena::new();
+    let o = name_ref(&mut ea, 0);
+    let field_f_store = member_access_node(&mut ea, o, 10 /* sym for F */);
+    let one = int_lit_node(&mut ea, 1);
+    let stmt1 = assign_node(&mut ea, field_f_store, one);
+
+    let o2 = name_ref(&mut ea, 0);
+    let field_f_load = member_access_node(&mut ea, o2, 10);
+    let x = name_ref(&mut ea, 1);
+    let stmt2 = assign_node(&mut ea, x, field_f_load);
+
+    let body = block_node(&mut ea, vec![stmt1, stmt2]);
+
+    let mut resolutions = HashMap::new();
+    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
+    resolutions.insert(o2.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
+    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
+
+    let mut types = HashMap::new();
+    types.insert(field_f_store.0, VbaType::Long);
+    types.insert(field_f_load.0, VbaType::Long);
+
+    let mut class_field_info = HashMap::new();
+    class_field_info.insert(100u32, ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] });
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
+        class_field_info,
+        resolutions,
+        types,
+        ..BoundModule::default()
+    };
+
+    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
+    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    assert_eq!(
+        bytes,
+        &[
+            0xf5, 0x01, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x20, 0x00,
+            0x01, 0x00, 0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00,
+            0x01, 0x00, 0x6c, 0x70, 0xff, 0x71, 0x74, 0xff,
+        ]
+    );
+}
+
+#[test]
+#[should_panic(expected = "general vtable slot-stride rule not yet RE'd")]
+fn class_field_access_with_two_fields_is_gated() {
+    let mut ea = ExprArena::new();
+    let o = name_ref(&mut ea, 0);
+    let field_access = member_access_node(&mut ea, o, 10);
+    let x = name_ref(&mut ea, 1);
+    let stmt = assign_node(&mut ea, x, field_access);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let mut resolutions = HashMap::new();
+    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
+    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
+
+    let mut class_field_info = HashMap::new();
+    class_field_info.insert(
+        100u32,
+        ExternalClass {
+            fields: vec![("F".to_string(), VbaType::Long), ("G".to_string(), VbaType::Long)],
+        },
+    );
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
+        class_field_info,
+        resolutions,
+        ..BoundModule::default()
+    };
+
+    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
+    let _ = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes);
+}

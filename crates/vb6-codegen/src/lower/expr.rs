@@ -67,7 +67,11 @@ pub(super) fn lower_expr_coerced(
         ExprNode::NameRef { .. } => lower_name_ref(ctx, node_id, arena),
         ExprNode::MemberAccess { base, member, bang } => {
             let (base, member, bang) = (*base, *member, *bang);
-            lower_udt_field_access(ctx, base, member, bang, arena)
+            if member_access_base_is_class(ctx.module, base) {
+                lower_class_field_get(ctx, base, bang, arena)
+            } else {
+                lower_udt_field_access(ctx, base, member, bang, arena)
+            }
         }
         ExprNode::BinOp { op, lhs, rhs } => {
             let (op, lhs_id, rhs_id) = (*op, *lhs, *rhs);
@@ -470,6 +474,138 @@ pub(super) fn lower_udt_field_access(
     let mut n = NodeArena::node(0x60, field.type_tag, 0, 0, 0, field.offset as u32);
     n.w[5] = size_desc.0;
     Ok(arena.alloc(n))
+}
+
+/// The IDispatch vtable prefix width: 7 standard methods (QueryInterface,
+/// AddRef, Release, GetTypeInfoCount, GetTypeInfo, GetIDsOfNames, Invoke) ×
+/// 4 bytes = 0x1c. A class's first user member's dispatch slots start here.
+/// Confirmed against a live oracle capture (a single `Public F As Long`
+/// class member: Get at 0x1c, Let at 0x1c+4=0x20) — this is a fixed COM ABI
+/// constant, not something derived from the decompile.
+const IDISPATCH_PREFIX: u16 = 0x1c;
+
+/// A resolved class-instance field reference: everything the vtable-dispatch
+/// (`0x24` resolve-object / `0x0d` call) emission needs.
+pub(super) struct ClassFieldRef {
+    /// The class-instance local's own frame offset (its object-reference
+    /// slot — LdAddr'd before every vtable call, per the oracle capture).
+    pub obj_offset: i16,
+    /// Vtable byte offset of the field's synthesized Property Get.
+    pub get_slot: u16,
+    /// Vtable byte offset of the field's synthesized Property Let.
+    pub let_slot: u16,
+    /// The field's VBA6 type tag (`vba_type_to_node_tag`).
+    pub type_tag: u16,
+}
+
+/// Resolve `base.<the class's field>` for a plain local class-instance base
+/// (`Dim o As New ClassName`). The member name itself is never inspected —
+/// codegen has no scanner/interner to turn the `MemberAccess`'s `member`
+/// sym_id back into text, and it doesn't need to: this is gated to classes
+/// with EXACTLY one Public field, so any member access on such a base can
+/// only refer to that one field.
+///
+/// The general multi-member / mixed-kind (method vs. property vs. field)
+/// vtable slot-stride rule is NOT known — confirmed absent from every
+/// decompiled artifact available (a different compiler than the one that
+/// produced the oracle capture, answering a different question — type-info
+/// DISPID assignment, not p-code vtable-offset assignment). Gated loudly
+/// rather than guessed.
+pub(super) fn resolve_class_field(ctx: &LowerCtx, base: NodeId) -> Result<ClassFieldRef, LowerError> {
+    let local_idx = match ctx.module.resolutions.get(&base.0) {
+        Some(NameResolution::Local { local_idx, .. }) => *local_idx,
+        Some(_) => return Err(LowerError::UnsupportedNode),
+        None => return Err(LowerError::Unresolved),
+    };
+    let class = ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
+    if class.fields.len() != 1 {
+        unimplemented!(
+            "general vtable slot-stride rule not yet RE'd — needs empirical probe \
+             (only a single-Public-Long-field class is oracle-confirmed: Get at \
+             prefix 0x1c, Let at prefix+4 0x20)"
+        );
+    }
+    let (_, field_ty) = &class.fields[0];
+    let type_tag = vba_type_to_node_tag(field_ty).ok_or(LowerError::UnsupportedType)?;
+    let obj_offset = ctx.local_slots[local_idx].frame_offset;
+    Ok(ClassFieldRef {
+        obj_offset,
+        get_slot: IDISPATCH_PREFIX,
+        let_slot: IDISPATCH_PREFIX + 4,
+        type_tag,
+    })
+}
+
+/// Lower `o.F` (read position): the vtable-dispatch Property-Get idiom —
+/// `LdAddr(out-temp)`, `LdAddr(o)`, resolve-object (`0x24`, module index 0),
+/// vtable-call (`0x0d`) at the field's Get slot, then load the temp as the
+/// expression's value. Byte-for-byte from a live oracle capture (see
+/// `re_lab`'s Class1.F recon) — this front end has no scanner/interner, so
+/// the emitted bytes are pre-built here (bypassing `NodeArena`'s per-node
+/// dispatch, which has no shape for "several fixed instructions then a
+/// value") and wrapped in a synthetic `0x7e` blob node, the same mechanism
+/// already used for pre-emitted call sequences.
+pub(super) fn lower_class_field_get(
+    ctx: &LowerCtx,
+    base: NodeId,
+    bang: bool,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    if bang {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let field = resolve_class_field(ctx, base)?;
+    let temp_idx = ctx.class_get_next.get();
+    ctx.class_get_next.set(temp_idx + 1);
+    let temp_offset = ctx.local_slots[ctx.class_get_base + temp_idx].frame_offset;
+
+    let mut bytes = Vec::new();
+    bytes.push(0x04);
+    bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+    bytes.push(0x04);
+    bytes.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
+    bytes.extend_from_slice(&[0x24, 0x00, 0x00]);
+    bytes.push(0x0d);
+    bytes.extend_from_slice(&field.get_slot.to_le_bytes());
+    bytes.extend_from_slice(&[0x01, 0x00]);
+    bytes.push(0x6c);
+    bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+
+    let off = arena.alloc_blob(&bytes);
+    Ok(arena.alloc(NodeArena::node(0x7e, field.type_tag, off, bytes.len() as u32, 0, 0)))
+}
+
+/// Lower `o.F = v` (a class-field assignment): the vtable-dispatch
+/// Property-Let idiom — emit the coerced value, then `LdAddr(o)`,
+/// resolve-object (`0x24`), vtable-call (`0x0d`) at the field's Let slot.
+/// Byte-for-byte from the same oracle capture as [`lower_class_field_get`].
+pub(super) fn lower_class_field_store(
+    ctx: &LowerCtx,
+    base: NodeId,
+    bang: bool,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    if bang {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let field = resolve_class_field(ctx, base)?;
+
+    let mut arena = NodeArena::new();
+    let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, Some(field.type_tag))?;
+    let root = coerce_assign_value(ctx, value_id, root, Some(field.type_tag), &mut arena);
+    let mut emitter = Emitter::new(&arena);
+    emitter.emit_expr(root, 2);
+    out.extend(emitter.into_bytes());
+
+    out.push(0x04);
+    out.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
+    out.extend_from_slice(&[0x24, 0x00, 0x00]);
+    out.push(0x0d);
+    out.extend_from_slice(&field.let_slot.to_le_bytes());
+    out.extend_from_slice(&[0x01, 0x00]);
+    Ok(())
 }
 
 /// Build a typed local/param load node (opcode 0x74 = ByVal, 0x75 = ByRef).
