@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
 use vb6_sema::sema::{
-    BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar, NameResolution,
-    ParamFlags, VbaType,
+    BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar, ExternalClass,
+    NameResolution, ParamFlags, VbaType,
 };
 use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprArena, ExprNode, ProcKind};
 use vb6_syntax::frontend::token::{Span, TypeSuffix};
 use vb6_syntax::support::arena::NodeId;
 
-use super::lower_proc;
+use super::{lower_proc, lower_proc_with_classes};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -464,4 +464,36 @@ fn lower_udt_field_store_matches_current_pipeline_output() {
         lower_proc(&module, 0, &ea, 0x0008).unwrap(),
         &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x74, 0xff]
     );
+}
+
+// ── Class-instance local frame layout (object-base unblock) ─────────────────
+
+#[test]
+fn class_instance_local_gets_a_plain_4byte_object_slot() {
+    // `Dim o As New Class1` allocates a plain 4-byte object-reference slot
+    // (ctx 0, like any Object local) — NOT an embedded struct like a UDT.
+    // `Dim x As Long` declared right after must land at the SAME offset a
+    // plain 4-byte-typed local would (-140), proving the class local doesn't
+    // consume UDT-style struct space.
+    let mut ea = ExprArena::new();
+    let body = block_node(&mut ea, vec![]);
+
+    let o_var = udt_var(0, 100); // reuse: sym_id 0, type_sym 100 (VbaType::UserDefined(100))
+    let x_var = long_var(1);
+
+    let mut class_field_info = HashMap::new();
+    class_field_info.insert(100u32, ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] });
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![o_var, x_var], vec![], body)],
+        class_field_info,
+        ..BoundModule::default()
+    };
+
+    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
+    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    // Empty body: no bytes emitted, but lowering must succeed (frame builds
+    // without hitting the UDT `type_decls` lookup / UnsupportedType error a
+    // class-typed local would otherwise trigger).
+    assert_eq!(bytes, Vec::<u8>::new());
 }

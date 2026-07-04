@@ -12,8 +12,12 @@
 //! or [`LowerError::UnsupportedType`] — never a silently wrong byte.
 
 use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 
-use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, RtcArg, UnaryIntrinsic, VbaType, NameResolution};
+use vb6_sema::sema::{
+    BoundModule, BoundProc, BuiltinCall, ExternalClass, RtcArg, UnaryIntrinsic, VbaType,
+    NameResolution,
+};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
@@ -213,12 +217,28 @@ pub fn lower_module(
     expr_arena: &ExprArena,
     module_desc: u16,
 ) -> Result<Vec<Vec<u8>>, LowerError> {
+    let empty = HashMap::new();
+    lower_module_with_classes(module, expr_arena, module_desc, &empty)
+}
+
+/// Like [`lower_module`], but with the known-external-classes table (`Dim o As
+/// New ClassName` / `o.Field`) needed to lower a class instance's frame slot
+/// and member access — see [`bind_with_classes`](vb6_sema::sema::bind_with_classes)
+/// (the sema-side counterpart that types `o.Field`; this is codegen's, keyed
+/// the same way, needed for the field's vtable dispatch slot / frame layout).
+pub fn lower_module_with_classes(
+    module: &BoundModule,
+    expr_arena: &ExprArena,
+    module_desc: u16,
+    known_classes: &HashMap<String, ExternalClass>,
+) -> Result<Vec<Vec<u8>>, LowerError> {
     let mut pool: Vec<String> = Vec::new();
     let mut static_base: u16 = 0;
     let mut procs = Vec::with_capacity(module.procs.len());
     for idx in 0..module.procs.len() {
-        let (bytes, next_pool, next_static) =
-            lower_proc_pooled(module, idx, expr_arena, module_desc, pool, static_base)?;
+        let (bytes, next_pool, next_static) = lower_proc_pooled(
+            module, idx, expr_arena, module_desc, pool, static_base, known_classes,
+        )?;
         pool = next_pool;
         static_base = next_static;
         procs.push(bytes);
@@ -232,9 +252,23 @@ pub fn lower_proc(
     expr_arena: &ExprArena,
     module_desc: u16,
 ) -> Result<Vec<u8>, LowerError> {
+    let empty = HashMap::new();
+    lower_proc_with_classes(module, proc_idx, expr_arena, module_desc, &empty)
+}
+
+/// Like [`lower_proc`], but with the known-external-classes table — see
+/// [`lower_module_with_classes`].
+pub fn lower_proc_with_classes(
+    module: &BoundModule,
+    proc_idx: usize,
+    expr_arena: &ExprArena,
+    module_desc: u16,
+    known_classes: &HashMap<String, ExternalClass>,
+) -> Result<Vec<u8>, LowerError> {
     // A standalone single-procedure lowering starts with an empty string pool.
-    let (bytes, _pool, _static) =
-        lower_proc_pooled(module, proc_idx, expr_arena, module_desc, Vec::new(), 0)?;
+    let (bytes, _pool, _static) = lower_proc_pooled(
+        module, proc_idx, expr_arena, module_desc, Vec::new(), 0, known_classes,
+    )?;
     Ok(bytes)
 }
 
@@ -248,6 +282,7 @@ fn lower_proc_pooled(
     module_desc: u16,
     pool_in: Vec<String>,
     static_base: u16,
+    known_classes: &HashMap<String, ExternalClass>,
 ) -> Result<(Vec<u8>, Vec<String>, u16), LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
@@ -263,6 +298,10 @@ fn lower_proc_pooled(
     // A `Type...End Type`-typed local's UDT binding, parallel to `local_slots`
     // (which carries an index-aligned placeholder for these, like Const/Static).
     let mut local_udts: Vec<Option<UdtLocal>> = Vec::with_capacity(proc.locals.len());
+    // A class-instance local's (`Dim o As New ClassName`) field list, parallel
+    // to `local_slots` (which carries the real 4-byte object-reference
+    // binding for these, not a placeholder — see the loop below).
+    let mut local_classes: Vec<Option<ExternalClass>> = Vec::with_capacity(proc.locals.len());
     // Static locals live in a per-procedure static block (not the frame): each is
     // assigned a byte offset within that block, packed by type size in declaration
     // order. `static_offsets[i]` is meaningful only when `locals[i].is_static`.
@@ -275,18 +314,21 @@ fn lower_proc_pooled(
             // No frame slot: a placeholder keeps local_idx aligned.
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
             local_udts.push(None);
+            local_classes.push(None);
             continue;
         }
         static_offsets.push(0);
         if v.is_const {
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
             local_udts.push(None);
+            local_classes.push(None);
         } else if let Some(n) = v.fixed_string_len {
             // A fixed-length string (`As String * n`) holds an inline Unicode
             // buffer of `n` chars = 2*n bytes (oracle-confirmed for n=1,4,8,10,16,20).
             let size = 2 * (n as i16);
             local_slots.push(frame.declare_anon_bytes(size));
             local_udts.push(None);
+            local_classes.push(None);
         } else if matches!(v.vba_type, VbaType::Array(_)) {
             match v.array_dims {
                 // A fixed array is a SAFEARRAY descriptor (size-independent of the
@@ -303,6 +345,23 @@ fn lower_proc_pooled(
                 None => local_slots.push(frame.declare_anon_bytes(4)),
             }
             local_udts.push(None);
+            local_classes.push(None);
+        } else if let Some(class) = match &v.vba_type {
+            VbaType::UserDefined(sym) => module.class_field_info.get(sym),
+            _ => None,
+        } {
+            // A class-instance local (`Dim o As New ClassName`): a plain
+            // 4-byte object reference (ctx 0 — the same "Object/untyped
+            // pointer" frame class already mapped in bridge.rs::type_ctx),
+            // NOT an embedded struct like a UDT — the field's storage lives
+            // in the (separately allocated) object instance, reached via the
+            // vtable-dispatch mechanism (emit/reference.rs's class-member
+            // path), not a frame offset. `local_slots` keeps an
+            // index-aligned placeholder; the real binding lives in
+            // `local_classes`.
+            local_slots.push(frame.declare_anon(0));
+            local_udts.push(None);
+            local_classes.push(Some(class.clone()));
         } else if let VbaType::UserDefined(type_sym) = &v.vba_type {
             // A `Type...End Type`-typed local: lay out one frame slot sized for
             // every declared field (uniform-size fields only — see
@@ -321,10 +380,12 @@ fn lower_proc_pooled(
             let udt = frame.declare_anon_udt(&field_ctxs);
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
             local_udts.push(Some(udt));
+            local_classes.push(None);
         } else {
             let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
             local_slots.push(frame.declare_anon(tctx));
             local_udts.push(None);
+            local_classes.push(None);
         }
     }
 
@@ -394,6 +455,8 @@ fn lower_proc_pooled(
         proc,
         local_slots,
         local_udts,
+        local_classes,
+        known_classes,
         param_slots,
         global_slots,
         user_local_count,
@@ -470,6 +533,13 @@ struct LowerCtx<'m> {
     /// A `Type...End Type`-typed local's UDT binding, parallel to
     /// `local_slots` (`None` for every non-UDT local).
     local_udts: Vec<Option<UdtLocal>>,
+    /// A class-instance local's field list, parallel to `local_slots` (`None`
+    /// for every non-class local).
+    local_classes: Vec<Option<ExternalClass>>,
+    /// The known-external-classes table this proc was lowered with (see
+    /// [`lower_module_with_classes`]) — not indexed by local, kept for
+    /// completeness/future multi-class lookups.
+    known_classes: &'m HashMap<String, ExternalClass>,
     param_slots: Vec<ParamVar>,
     global_slots: Vec<GlobalVar>,
     /// Number of user-declared locals (hidden For-loop slots come after).
@@ -550,6 +620,9 @@ impl<'m> LowerCtx<'m> {
     }
     fn local_udt(&self, idx: usize) -> Option<UdtLocal> {
         self.local_udts[idx]
+    }
+    fn local_class(&self, idx: usize) -> Option<&ExternalClass> {
+        self.local_classes[idx].as_ref()
     }
     fn param_type(&self, idx: usize) -> &VbaType {
         &self.proc.params[idx].vba_type
