@@ -399,12 +399,9 @@ fn lower_two_sequential_assigns() {
 
 #[test]
 fn lower_udt_field_load_matches_isolated_probe() {
-    // `y = t.X` in isolation (no preceding store) — the byte sequence this
-    // produces via the real lower_proc/emit pipeline, confirmed by running the
-    // actual source through `examples/emit_pcode`: `6c 74 ff` (load t.X at
-    // -140) then `71 70 ff` (store y at -144). No resolver front-half
-    // surprises on this path — the reload-after-store question below is
-    // isolated to the store side.
+    // `y = t.X` in isolation (no preceding store) — oracle-confirmed
+    // (e2e_udt_field_scalar_access): `6c 74 ff` (load t.X at -140) then
+    // `71 70 ff` (store y at -144).
     let mut ea = ExprArena::new();
     let t = name_ref(&mut ea, 0);
     let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
@@ -440,20 +437,14 @@ fn lower_udt_field_load_matches_isolated_probe() {
 #[test]
 fn lower_udt_field_store_matches_current_pipeline_output() {
     // `t.X = 1` in isolation — goes through the real 0x2c/resolver chain (a
-    // UDT field has no bypass frame slot). Current output (confirmed by
-    // running the actual source through `examples/emit_pcode`):
-    // `f5 01 00 00 00` (push Long literal 1), `71 74 ff` (store t.X at -140),
-    // THEN an extra `6c 74 ff` (reload of the same offset).
-    //
-    // The reload is NOT something this change introduced — it's the existing
-    // (prior-session, unit-tested-only) `emit_reference` nOp=4/f_flags&0x40
-    // remap path (opcode-index 0x1f2 → byte 0x71, remapped to 0x1e2 → byte
-    // 0x6c), now reached by real source for the first time. Whether VB6
-    // genuinely emits this reload for a resolver-based assignment, or this is
-    // a latent bug the fixture exposes, is UNCONFIRMED — flagged for oracle
-    // capture (see tests/fixtures/e2e_udt_field_scalar_access/), not decided
-    // here. This test locks today's actual behavior so a future change to it
-    // is deliberate, not silent.
+    // UDT field has no bypass frame slot). Oracle-confirmed
+    // (e2e_udt_field_scalar_access): `f5 01 00 00 00` (push Long literal 1),
+    // `71 74 ff` (store t.X at -140) — no trailing reload. An earlier version
+    // of `emit_reference`'s nOp=4/f_flags&0x40 remap path (opcode-index
+    // 0x1f2 → byte 0x71 unconditionally remapped to 0x1e2 → byte 0x6c) added
+    // a spurious extra `6c 74 ff`; the real compiler's output — captured here
+    // for the first time by real source reaching this path — proved that
+    // wrong, and the remap arm was removed.
     let mut ea = ExprArena::new();
     let t = name_ref(&mut ea, 0);
     let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
@@ -471,6 +462,6 @@ fn lower_udt_field_store_matches_current_pipeline_output() {
 
     assert_eq!(
         lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x74, 0xff, 0x6c, 0x74, 0xff]
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x74, 0xff]
     );
 }

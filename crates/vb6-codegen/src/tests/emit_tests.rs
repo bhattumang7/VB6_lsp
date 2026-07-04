@@ -2561,8 +2561,9 @@ fn assignment_0x2c_emits_rhs_then_resolved_store() {
 
 // RHS Long load (6c f8 ff) then the resolved store of the LHS member at its
 // front-end-resolved frame offset (0x74), through the ported
-// EbEmitAssignmentStmt → resolve_reference2 → value-emitter chain.
-const ASSIGN_0X2C_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x71, 0x74, 0x00, 0x6c, 0x74, 0x00];
+// EbEmitAssignmentStmt → resolve_reference2 → value-emitter chain. No
+// trailing reload — oracle-confirmed (e2e_udt_field_scalar_access).
+const ASSIGN_0X2C_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x71, 0x74, 0x00];
 
 // ── Binary-operation setup (0x69) → operator descriptor + value emit ────────
 

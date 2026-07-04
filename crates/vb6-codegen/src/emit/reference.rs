@@ -272,14 +272,18 @@ impl<'a> Emitter<'a> {
                 } else {
                     v = (if f_flags & 0x800 != 0 { 2 } else { 0 }) + 0x1b7;
                 }
-                // (f_flags & 0x40) with a local descriptor: opcode remap, some
-                // variants emitting an extra operand first.
+                // (f_flags & 0x40) with a local descriptor: opcode remap for
+                // some non-scalar-store variants. `0x1f2` (the plain scalar
+                // Long/Integer/small-type store) does NOT remap — oracle-
+                // confirmed (e2e_udt_field_scalar_access: `t.X = 1` emits a
+                // bare `71 <offset>` store, no trailing reload; the earlier
+                // `0x1f2 => { emit 0x1f2; 0x1e2 }` arm produced a spurious
+                // extra `6c <offset>` load that no capture had caught until
+                // this fixture reached the real pipeline). The other arms
+                // (String/Variant-shaped classes) are unverified by any
+                // oracle fixture yet — left as ported, not re-derived here.
                 if f_flags & 0x40 != 0 && desc.kind == 1 {
                     v = match v {
-                        0x1f2 => {
-                            self.emit_opcode2(v as usize, operand_word);
-                            0x1e2
-                        }
                         0x1f6 => 0x263,
                         0x1f7 => 0x264,
                         0x1f8 => 0x29c,
