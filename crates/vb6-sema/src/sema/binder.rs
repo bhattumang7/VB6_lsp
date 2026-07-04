@@ -1037,6 +1037,11 @@ impl<'a> Binder<'a> {
                     return fty.clone();
                 }
             }
+            for prop in &class.properties {
+                if prop.name.eq_ignore_ascii_case(&member_name) {
+                    return prop.vba_type.clone();
+                }
+            }
         }
         VbaType::Variant
     }

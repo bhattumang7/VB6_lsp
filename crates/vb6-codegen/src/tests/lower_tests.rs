@@ -482,7 +482,10 @@ fn class_instance_local_gets_a_plain_4byte_object_slot() {
     let x_var = long_var(1);
 
     let mut class_field_info = HashMap::new();
-    class_field_info.insert(100u32, ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] });
+    class_field_info.insert(
+        100u32,
+        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
+    );
 
     let module = BoundModule {
         procs: vec![make_proc(vec![o_var, x_var], vec![], body)],
@@ -532,7 +535,10 @@ fn class_field_store_then_load_matches_oracle_recon() {
     types.insert(field_f_load.0, VbaType::Long);
 
     let mut class_field_info = HashMap::new();
-    class_field_info.insert(100u32, ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] });
+    class_field_info.insert(
+        100u32,
+        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
+    );
 
     let module = BoundModule {
         procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
@@ -573,6 +579,7 @@ fn class_field_access_with_two_fields_is_gated() {
         100u32,
         ExternalClass {
             fields: vec![("F".to_string(), VbaType::Long), ("G".to_string(), VbaType::Long)],
+            ..Default::default()
         },
     );
 

@@ -484,26 +484,37 @@ pub(super) fn lower_udt_field_access(
 /// constant, not something derived from the decompile.
 const IDISPATCH_PREFIX: u16 = 0x1c;
 
-/// A resolved class-instance field reference: everything the vtable-dispatch
-/// (`0x24` resolve-object / `0x0d` call) emission needs.
+/// A resolved class-instance field/property reference: everything the
+/// vtable-dispatch (`0x24` resolve-object / `0x0d` call) emission needs.
 pub(super) struct ClassFieldRef {
     /// The class-instance local's own frame offset (its object-reference
     /// slot — LdAddr'd before every vtable call, per the oracle capture).
     pub obj_offset: i16,
-    /// Vtable byte offset of the field's synthesized Property Get.
-    pub get_slot: u16,
-    /// Vtable byte offset of the field's synthesized Property Let.
-    pub let_slot: u16,
-    /// The field's VBA6 type tag (`vba_type_to_node_tag`).
+    /// Vtable byte offset of the Property Get accessor, when present.
+    pub get_slot: Option<u16>,
+    /// Vtable byte offset of the Property Let accessor, when present.
+    pub let_slot: Option<u16>,
+    /// The field's/property's VBA6 type tag (`vba_type_to_node_tag`).
     pub type_tag: u16,
+    /// `true` for an explicit `Property Get`/`Let` member; `false` for a
+    /// plain Public field. A property's Let call stages its argument into a
+    /// temp frame slot first (`0x59 <offset>`) — a field's store does not.
+    pub is_property: bool,
 }
 
-/// Resolve `base.<the class's field>` for a plain local class-instance base
+/// Resolve `base.<the class's member>` for a plain local class-instance base
 /// (`Dim o As New ClassName`). The member name itself is never inspected —
 /// codegen has no scanner/interner to turn the `MemberAccess`'s `member`
 /// sym_id back into text, and it doesn't need to: this is gated to classes
-/// with EXACTLY one Public field, so any member access on such a base can
-/// only refer to that one field.
+/// with EXACTLY one Public field or one explicit Property, so any member
+/// access on such a base can only refer to that one member.
+///
+/// Vtable slot assignment (oracle-confirmed against `Property Get`/`Let`
+/// recon, `re_lab`): ordinals are assigned sequentially from
+/// [`IDISPATCH_PREFIX`], stride 4, over accessors that actually exist —
+/// Get+Let both present → Get=prefix, Let=prefix+4; either one alone (Get-
+/// only or Let-only) → that one accessor alone takes `prefix`. A missing
+/// accessor does not leave a hole (Let-only does NOT sit at prefix+4).
 ///
 /// The general multi-member / mixed-kind (method vs. property vs. field)
 /// vtable slot-stride rule is NOT known — confirmed absent from every
@@ -518,22 +529,35 @@ pub(super) fn resolve_class_field(ctx: &LowerCtx, base: NodeId) -> Result<ClassF
         None => return Err(LowerError::Unresolved),
     };
     let class = ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
-    if class.fields.len() != 1 {
+    let obj_offset = ctx.local_slots[local_idx].frame_offset;
+    if class.fields.len() + class.properties.len() != 1 {
         unimplemented!(
             "general vtable slot-stride rule not yet RE'd — needs empirical probe \
-             (only a single-Public-Long-field class is oracle-confirmed: Get at \
-             prefix 0x1c, Let at prefix+4 0x20)"
+             (only single-member classes are oracle-confirmed: a Public field or a \
+             lone Property, Get at prefix 0x1c, Let at prefix+4 0x20 when both exist)"
         );
     }
-    let (_, field_ty) = &class.fields[0];
-    let type_tag = vba_type_to_node_tag(field_ty).ok_or(LowerError::UnsupportedType)?;
-    let obj_offset = ctx.local_slots[local_idx].frame_offset;
-    Ok(ClassFieldRef {
-        obj_offset,
-        get_slot: IDISPATCH_PREFIX,
-        let_slot: IDISPATCH_PREFIX + 4,
-        type_tag,
-    })
+    if let Some((_, field_ty)) = class.fields.first() {
+        let type_tag = vba_type_to_node_tag(field_ty).ok_or(LowerError::UnsupportedType)?;
+        return Ok(ClassFieldRef {
+            obj_offset,
+            get_slot: Some(IDISPATCH_PREFIX),
+            let_slot: Some(IDISPATCH_PREFIX + 4),
+            type_tag,
+            is_property: false,
+        });
+    }
+    let prop = &class.properties[0];
+    let type_tag = vba_type_to_node_tag(&prop.vba_type).ok_or(LowerError::UnsupportedType)?;
+    let mut next = IDISPATCH_PREFIX;
+    let mut slot = || {
+        let s = next;
+        next += 4;
+        s
+    };
+    let get_slot = prop.has_get.then(&mut slot);
+    let let_slot = prop.has_let.then(&mut slot);
+    Ok(ClassFieldRef { obj_offset, get_slot, let_slot, type_tag, is_property: true })
 }
 
 /// Lower `o.F` (read position): the vtable-dispatch Property-Get idiom —
@@ -555,9 +579,8 @@ pub(super) fn lower_class_field_get(
         return Err(LowerError::UnsupportedNode);
     }
     let field = resolve_class_field(ctx, base)?;
-    let temp_idx = ctx.class_get_next.get();
-    ctx.class_get_next.set(temp_idx + 1);
-    let temp_offset = ctx.local_slots[ctx.class_get_base + temp_idx].frame_offset;
+    let get_slot = field.get_slot.ok_or(LowerError::UnsupportedNode)?;
+    let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
 
     let mut bytes = Vec::new();
     bytes.push(0x04);
@@ -566,7 +589,7 @@ pub(super) fn lower_class_field_get(
     bytes.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
     bytes.extend_from_slice(&[0x24, 0x00, 0x00]);
     bytes.push(0x0d);
-    bytes.extend_from_slice(&field.get_slot.to_le_bytes());
+    bytes.extend_from_slice(&get_slot.to_le_bytes());
     bytes.extend_from_slice(&[0x01, 0x00]);
     bytes.push(0x6c);
     bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
@@ -575,10 +598,16 @@ pub(super) fn lower_class_field_get(
     Ok(arena.alloc(NodeArena::node(0x7e, field.type_tag, off, bytes.len() as u32, 0, 0)))
 }
 
-/// Lower `o.F = v` (a class-field assignment): the vtable-dispatch
-/// Property-Let idiom — emit the coerced value, then `LdAddr(o)`,
-/// resolve-object (`0x24`), vtable-call (`0x0d`) at the field's Let slot.
-/// Byte-for-byte from the same oracle capture as [`lower_class_field_get`].
+/// Lower `o.F = v` (a class-field assignment) or `o.P = v` (a Property-Let
+/// call): the vtable-dispatch idiom — emit the coerced value, then (for a
+/// property only) stage it into an addressable temp (`0x59 <offset>`, the
+/// runtime handler for opcode 0x59 stores the top-of-stack value at
+/// `[EBP+offset]` — confirmed from the decompiled runtime handler, matching
+/// the same staging already used for `Erase`'s in-place reinit), `LdAddr(o)`,
+/// resolve-object (`0x24`), vtable-call (`0x0d`) at the Let slot. A plain
+/// field store passes the value directly with no staging — oracle-confirmed:
+/// the field recon capture has no `0x59` between the pushed value and
+/// `LdAddr(o)`, while every Property-Let recon capture does.
 pub(super) fn lower_class_field_store(
     ctx: &LowerCtx,
     base: NodeId,
@@ -591,6 +620,7 @@ pub(super) fn lower_class_field_store(
         return Err(LowerError::UnsupportedNode);
     }
     let field = resolve_class_field(ctx, base)?;
+    let let_slot = field.let_slot.ok_or(LowerError::UnsupportedNode)?;
 
     let mut arena = NodeArena::new();
     let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, Some(field.type_tag))?;
@@ -599,11 +629,17 @@ pub(super) fn lower_class_field_store(
     emitter.emit_expr(root, 2);
     out.extend(emitter.into_bytes());
 
+    if field.is_property {
+        let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
+        out.push(0x59);
+        out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+    }
+
     out.push(0x04);
     out.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
     out.extend_from_slice(&[0x24, 0x00, 0x00]);
     out.push(0x0d);
-    out.extend_from_slice(&field.let_slot.to_le_bytes());
+    out.extend_from_slice(&let_slot.to_le_bytes());
     out.extend_from_slice(&[0x01, 0x00]);
     Ok(())
 }

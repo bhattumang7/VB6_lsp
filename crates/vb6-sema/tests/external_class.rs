@@ -26,7 +26,7 @@ fn member_access_on_known_class_resolves_field_type() {
     let mut classes = HashMap::new();
     classes.insert(
         "class1".to_string(),
-        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] },
+        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
     );
 
     let src = "Attribute VB_Name = \"Module1\"\r\n\
@@ -85,7 +85,7 @@ fn class_field_info_records_the_matched_class_by_type_sym() {
     let mut classes = HashMap::new();
     classes.insert(
         "class1".to_string(),
-        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] },
+        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
     );
     let src = "Attribute VB_Name = \"Module1\"\r\n\
                Sub Main()\r\n\

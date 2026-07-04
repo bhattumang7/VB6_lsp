@@ -289,6 +289,44 @@ pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_
     }
 }
 
+/// Count the hidden 4-byte temps a proc's class-member Property-Let writes
+/// need (`o.P = v`): the vtable Let call's argument is staged into an
+/// addressable frame slot (`0x59 <offset>`) before the call — unlike a plain
+/// field store, which passes the value directly. Only triggers when the
+/// assignment target's class member is a `Property` (not a plain field): a
+/// gated class (per `resolve_class_field`'s single-member rule) has either
+/// fields or properties, never both, so checking `properties` is non-empty
+/// is enough to tell them apart here.
+pub(super) fn count_class_let_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let c = |id: NodeId| count_class_let_temps(module, id, expr_arena);
+    let target_is_class_property = |base: NodeId| -> bool {
+        match module.types.get(&base.0) {
+            Some(VbaType::UserDefined(sym)) => module
+                .class_field_info
+                .get(sym)
+                .map(|class| !class.properties.is_empty())
+                .unwrap_or(false),
+            _ => false,
+        }
+    };
+    match expr_arena.get(node_id) {
+        ExprNode::Assign { target, .. } => match expr_arena.get(*target) {
+            ExprNode::MemberAccess { base, .. } => target_is_class_property(*base) as usize,
+            _ => 0,
+        },
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
+        ExprNode::If { then_body, else_body, .. } => {
+            c(*then_body) + else_body.map(c).unwrap_or(0)
+        }
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+            c(*body)
+        }
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+        _ => 0,
+    }
+}
+
 pub(super) fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_variant_assigns(module, id, expr_arena);
     match expr_arena.get(node_id) {

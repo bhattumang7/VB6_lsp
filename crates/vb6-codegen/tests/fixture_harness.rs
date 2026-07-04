@@ -16,10 +16,10 @@ use std::fs;
 use std::path::PathBuf;
 
 use vb6_codegen::lower_module_with_classes;
-use vb6_sema::frontend::ast::ExprArena;
+use vb6_sema::frontend::ast::{ExprArena, ProcKind};
 use vb6_sema::frontend::parser::Parser;
 use vb6_sema::frontend::scanner::ScannerContext;
-use vb6_sema::sema::{bind, bind_with_classes, ExternalClass};
+use vb6_sema::sema::{bind, bind_with_classes, ExternalClass, ExternalProperty};
 
 const MODULE_DESC: u16 = 0x0008;
 
@@ -65,7 +65,34 @@ fn bind_class(src: &str) -> (String, ExternalClass) {
         .filter(|v| v.is_public)
         .map(|v| (ctx.symbol(v.sym_id as usize).name.clone(), v.vba_type.clone()))
         .collect();
-    (class_name_from_source(src), ExternalClass { fields })
+    // Group Property Get/Let procs by name (declaration order, first-seen),
+    // recording which accessors each named property actually has — codegen
+    // numbers vtable slots over accessors present, so the Get/Let split (not
+    // just the type) matters.
+    let mut properties: Vec<ExternalProperty> = Vec::new();
+    for proc in &module.procs {
+        if !proc.is_public {
+            continue;
+        }
+        let (is_get, is_let) = match proc.kind {
+            ProcKind::PropGet => (true, false),
+            ProcKind::PropLet => (false, true),
+            _ => continue,
+        };
+        let name = ctx.symbol(proc.sym_id as usize).name.clone();
+        let ty = if is_get {
+            proc.ret_type.clone()
+        } else {
+            proc.params.first().map(|p| p.vba_type.clone()).unwrap_or_default()
+        };
+        if let Some(existing) = properties.iter_mut().find(|p| p.name.eq_ignore_ascii_case(&name)) {
+            existing.has_get |= is_get;
+            existing.has_let |= is_let;
+        } else {
+            properties.push(ExternalProperty { name, vba_type: ty, has_get: is_get, has_let: is_let });
+        }
+    }
+    (class_name_from_source(src), ExternalClass { fields, properties })
 }
 
 fn compile_module_bytes(src: &str, class_src: Option<&str>) -> Vec<Vec<u8>> {

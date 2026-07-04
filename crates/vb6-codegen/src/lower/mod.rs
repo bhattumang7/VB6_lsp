@@ -435,13 +435,22 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(5));
     }
 
-    // One hidden 4-byte Long temp per class-member Property-Get access
-    // (`x = o.F`) — the vtable Get call's out-parameter target (see
-    // `count_class_get_temps`). Long-sized only: the single-Public-Long-field
-    // vertical this was built against is the only confirmed case.
-    let class_get_base = local_slots.len();
-    let class_get_temps = count_class_get_temps(module, NodeId(proc.body), expr_arena);
-    for _ in 0..class_get_temps {
+    // One shared hidden 4-byte Long temp for the proc's class-member vtable
+    // dispatch scratch use: a Property-Get access (`x = o.F`) writes its
+    // out-parameter through it, and a Property-Let call (`o.P = v`) stages
+    // its argument through it (`0x59 <offset>`) before the vtable call — a
+    // plain-field store needs no staging. Oracle-confirmed (a Get-then-Let
+    // sequence in one proc reuses the SAME slot for both, not one each — see
+    // `re_lab`'s Property recon): this is one scratch slot per proc, not one
+    // per access. Long-sized only: only single-field/single-Long-property
+    // classes are oracle-confirmed. Repeated same-kind accesses within one
+    // proc (e.g. two separate `x = o.F` reads) are untested; this model
+    // reuses the same slot for those too, the simplest rule consistent with
+    // every capture in hand.
+    let class_member_base = local_slots.len();
+    let needs_class_member_temp = count_class_get_temps(module, NodeId(proc.body), expr_arena) > 0
+        || count_class_let_temps(module, NodeId(proc.body), expr_arena) > 0;
+    if needs_class_member_temp {
         local_slots.push(frame.declare_anon(2));
     }
 
@@ -481,8 +490,7 @@ fn lower_proc_pooled(
         string_rtc_next: Cell::new(0),
         owned_copy_base,
         owned_copy_next: Cell::new(0),
-        class_get_base,
-        class_get_next: Cell::new(0),
+        class_member_base,
         call_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
@@ -578,10 +586,11 @@ struct LowerCtx<'m> {
     owned_copy_base: usize,
     /// Which owned-copy temp slot the next runtime-string call argument should use.
     owned_copy_next: Cell<usize>,
-    /// Frame index of the first class-member Property-Get out-parameter temp.
-    class_get_base: usize,
-    /// Which class-Get temp slot the next `o.Field` read should use.
-    class_get_next: Cell<usize>,
+    /// Frame index of the shared class-member vtable-dispatch scratch temp
+    /// (used by both Property-Get reads and Property-Let writes — see the
+    /// allocation comment in `lower_proc`). Absent (never indexed) when the
+    /// proc has no class-member access.
+    class_member_base: usize,
     /// Sequential index of the next call site within this procedure (each call's
     /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
     call_next: Cell<usize>,

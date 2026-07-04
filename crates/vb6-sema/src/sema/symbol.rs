@@ -89,6 +89,23 @@ pub struct BoundVar {
 #[derive(Debug, Clone, Default)]
 pub struct ExternalClass {
     pub fields: Vec<(String, VbaType)>,
+    pub properties: Vec<ExternalProperty>,
+}
+
+/// A known EXTERNAL class's explicit `Property Get`/`Property Let` member,
+/// grouped by name (declaration order) — one entry per distinct property
+/// name, recording which accessors it has. Codegen numbers vtable dispatch
+/// slots over accessors that actually exist, compacting: a property missing
+/// one accessor does not leave a hole (confirmed against a live oracle
+/// capture — see `resolve_class_field`'s vtable-slot assignment).
+#[derive(Debug, Clone)]
+pub struct ExternalProperty {
+    pub name: String,
+    /// `Property Get`'s return type, or `Property Let`'s parameter type when
+    /// there is no `Get` (the two must agree for a well-formed property).
+    pub vba_type: VbaType,
+    pub has_get: bool,
+    pub has_let: bool,
 }
 
 /// A member of a user-defined `Type ... End Type`.
