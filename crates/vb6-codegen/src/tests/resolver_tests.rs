@@ -9,7 +9,8 @@ fn size_desc(a: &mut NodeArena, size: u16) -> NodeRef {
 
 /// Build a reference expression node: region tag in word[0] high half, flag word
 /// in word[1], the size descriptor in word[5], and the secondary descriptor in
-/// word[6].
+/// word[6]. `word[7]` defaults to 0 (no front-end-resolved frame offset); use
+/// [`ref_node_with_offset`] when the test cares about the emitted operand.
 fn ref_node(
     a: &mut NodeArena,
     region_tag: u16,
@@ -17,7 +18,22 @@ fn ref_node(
     w5_desc: NodeRef,
     w6_desc: NodeRef,
 ) -> NodeRef {
-    let mut n = NodeArena::node(0x60, region_tag, 0, w5_desc.0, w6_desc.0, 0);
+    ref_node_with_offset(a, region_tag, flags1word, w5_desc, w6_desc, 0)
+}
+
+/// [`ref_node`] plus an explicit `word[7]` — the front-end-resolved frame
+/// offset `init_expr_descriptor` copies verbatim into the descriptor operand
+/// (a value deliberately distinct from the word[5] type size, so a test
+/// asserting on `operand` proves the two are not conflated).
+fn ref_node_with_offset(
+    a: &mut NodeArena,
+    region_tag: u16,
+    flags1word: u32,
+    w5_desc: NodeRef,
+    w6_desc: NodeRef,
+    offset: u16,
+) -> NodeRef {
+    let mut n = NodeArena::node(0x60, region_tag, 0, w5_desc.0, w6_desc.0, offset as u32);
     n.w[1] = flags1word;
     a.alloc(n)
 }
@@ -26,11 +42,13 @@ fn ref_node(
 fn small_type_by_value_is_kind_2() {
     let mut a = NodeArena::new();
     let d = size_desc(&mut a, 4);
-    let n = ref_node(&mut a, 0, 0, d, NodeRef(0));
+    // Offset (0x20) deliberately differs from the word[5] size (4): operand
+    // must track the offset, not the size.
+    let n = ref_node_with_offset(&mut a, 0, 0, d, NodeRef(0), 0x20);
     let desc = init_expr_descriptor(&a, n, false, true);
     assert_eq!(
         desc,
-        RefDescriptor { kind: 2, operand: 4, word6: 0, word8: 0, flags1: 0 }
+        RefDescriptor { kind: 2, operand: 0x20, word6: 0, word8: 0, flags1: 0 }
     );
 }
 
@@ -38,10 +56,10 @@ fn small_type_by_value_is_kind_2() {
 fn small_type_by_reference_is_kind_1() {
     let mut a = NodeArena::new();
     let d = size_desc(&mut a, 4);
-    let n = ref_node(&mut a, 0, 0, d, NodeRef(0));
+    let n = ref_node_with_offset(&mut a, 0, 0, d, NodeRef(0), 0x20);
     let desc = init_expr_descriptor(&a, n, true, true);
     assert_eq!(desc.kind, 1);
-    assert_eq!(desc.operand, 4);
+    assert_eq!(desc.operand, 0x20);
 }
 
 #[test]
@@ -49,10 +67,10 @@ fn other_type_by_value_is_kind_7() {
     // flags bit 0x100 set and size != 8 → "other" class.
     let mut a = NodeArena::new();
     let d = size_desc(&mut a, 2);
-    let n = ref_node(&mut a, 0, 0x100, d, NodeRef(0));
+    let n = ref_node_with_offset(&mut a, 0, 0x100, d, NodeRef(0), 0x20);
     let desc = init_expr_descriptor(&a, n, false, true);
     assert_eq!(desc.kind, 7);
-    assert_eq!(desc.operand, 2);
+    assert_eq!(desc.operand, 0x20);
 }
 
 #[test]
@@ -67,12 +85,13 @@ fn other_type_by_reference_is_kind_6() {
 #[test]
 fn size_eight_forces_small_class_even_with_flag() {
     // flags bit 0x100 set but size == 8 → still the small class (kind 2/1).
+    // Offset (0x20) deliberately differs from the word[5] size (8).
     let mut a = NodeArena::new();
     let d = size_desc(&mut a, 8);
-    let n = ref_node(&mut a, 0, 0x100, d, NodeRef(0));
+    let n = ref_node_with_offset(&mut a, 0, 0x100, d, NodeRef(0), 0x20);
     let desc = init_expr_descriptor(&a, n, false, true);
     assert_eq!(desc.kind, 2);
-    assert_eq!(desc.operand, 8);
+    assert_eq!(desc.operand, 0x20);
 }
 
 #[test]
@@ -331,10 +350,12 @@ fn ident_heap(rec0: u8, rec1: u8, op: u8, op_byte1: u8) -> Vec<u8> {
 }
 
 /// A clean 0x60 reference node: type tag in the high half, the given flags, a
-/// fixed-size (4-byte) type descriptor in word[5].
+/// fixed-size (4-byte) type descriptor in word[5], and a front-end-resolved
+/// frame offset (0x20 — deliberately distinct from the word[5] size) in
+/// word[7], so a test asserting on `operand` proves it tracks the offset.
 fn ident_node(a: &mut NodeArena, type_tag: u16, flags: u32) -> NodeRef {
     let d = size_desc(a, 4);
-    ref_node(a, type_tag, flags, d, NodeRef(0))
+    ref_node_with_offset(a, type_tag, flags, d, NodeRef(0), 0x20)
 }
 
 #[test]
@@ -347,7 +368,7 @@ fn resolve_ident_ref_category_7_value_load() {
     let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
     assert_eq!(
         desc,
-        RefDescriptor { kind: 2, operand: 4, word6: 0, word8: 0, flags1: 0 }
+        RefDescriptor { kind: 2, operand: 0x20, word6: 0, word8: 0, flags1: 0 }
     );
 }
 
@@ -359,7 +380,7 @@ fn resolve_ident_ref_category_0xc_non_optional() {
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 3, 0x02, 5);
     let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
-    assert_eq!(desc, RefDescriptor { kind: 2, operand: 4, word6: 0, word8: 0, flags1: 4 });
+    assert_eq!(desc, RefDescriptor { kind: 2, operand: 0x20, word6: 0, word8: 0, flags1: 4 });
 }
 
 #[test]
@@ -369,7 +390,7 @@ fn resolve_ident_ref_category_9_by_reference() {
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 3, 0x02, 4);
     let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
-    assert_eq!(desc, RefDescriptor { kind: 1, operand: 4, word6: 0, word8: 0, flags1: 4 });
+    assert_eq!(desc, RefDescriptor { kind: 1, operand: 0x20, word6: 0, word8: 0, flags1: 4 });
 }
 
 #[test]
@@ -380,7 +401,7 @@ fn resolve_ident_ref_category_1_sets_attribute_flag() {
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 0x24, 0x02, 0);
     let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
-    assert_eq!(desc, RefDescriptor { kind: 1, operand: 4, word6: 0, word8: 0, flags1: 2 });
+    assert_eq!(desc, RefDescriptor { kind: 1, operand: 0x20, word6: 0, word8: 0, flags1: 2 });
     // ctx flag bit 2 set suppresses the attribute flag.
     let desc = resolve_ident_ref(&a, n, &h, 0x10, 2, None);
     assert_eq!(desc.flags1, 0);
@@ -463,11 +484,11 @@ fn call_conv_descriptor_selects_record_and_builds() {
     // descriptor kind 1.
     let mut a = NodeArena::new();
     let d = size_desc(&mut a, 4);
-    let n = ref_node(&mut a, 0, 0, d, NodeRef(0));
+    let n = ref_node_with_offset(&mut a, 0, 0, d, NodeRef(0), 0x20);
     for &(kind, byref) in &[(4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (4, 1)] {
         let desc = call_conv_descriptor(&a, n, 6, kind, byref);
         assert_eq!(desc.kind, 1, "kind={kind} byref={byref}");
-        assert_eq!(desc.operand, 4);
+        assert_eq!(desc.operand, 0x20);
         // optional = true ⇒ no usage flag set.
         assert_eq!(desc.flags1, 0);
     }
@@ -494,7 +515,7 @@ fn category4_resolves_with_binder_binding() {
     // resolver now produces a descriptor instead of gating.
     let mut a = NodeArena::new();
     let d = size_desc(&mut a, 4);
-    let n = ref_node(&mut a, 8, 0, d, NodeRef(0)); // type tag 8
+    let n = ref_node_with_offset(&mut a, 8, 0, d, NodeRef(0), 0x20); // type tag 8
 
     let mut h = vec![0u8; 0x40];
     h[0x10] = 0x40; // +0 bit 6 (inline operand at +0xc)
@@ -512,7 +533,7 @@ fn category4_resolves_with_binder_binding() {
     // With the binder-resolved (kind 4, byref 0) it resolves to a descriptor.
     let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, Some((4, 0)));
     assert_eq!(desc.kind, 1);
-    assert_eq!(desc.operand, 4);
+    assert_eq!(desc.operand, 0x20);
 }
 
 #[test]

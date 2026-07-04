@@ -2471,11 +2471,11 @@ fn member_reference_0x60_resolves_and_emits() {
     use crate::emit::SymbolContext;
 
     let mut a = NodeArena::new();
-    // Size descriptor (word[0]==4, size in word[4]) for init_expr_descriptor.
+    // Size descriptor (word[0]==4, size in word[4]) — feeds kind selection only.
     let d = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0));
     // 0x60 member-reference node: type tag 8, no member sub-expr (w4=0), size
-    // descriptor in w5.
-    let mut n = NodeArena::node(0x60, 8, 0, 0, 0, 0);
+    // descriptor in w5, front-end-resolved frame offset (0x78) in w7.
+    let mut n = NodeArena::node(0x60, 8, 0, 0, 0, 0x78);
     n.w[5] = d.0;
     let node = a.alloc(n);
 
@@ -2497,13 +2497,14 @@ fn member_reference_0x60_resolves_and_emits() {
     e.emit_expr(node, 1);
     let bytes = e.into_bytes();
 
-    // The resolver yields a kind-1 (local, by-ref) descriptor with operand 4;
-    // the value emitter emits its load opcode + operand. Locked from the ported
-    // EbEmitExpression2 path.
+    // The resolver yields a kind-1 (local, by-ref) descriptor whose operand is
+    // the node's front-end-resolved frame offset (word[7] = 0x78), not the
+    // word[5] type size (4) — the value emitter emits its load opcode +
+    // that offset. Locked from the ported EbEmitExpression2 path.
     assert_eq!(bytes, MEMBER_REF_0X60_BYTES);
 }
 
-const MEMBER_REF_0X60_BYTES: &[u8] = &[0x6c, 0x04, 0x00];
+const MEMBER_REF_0X60_BYTES: &[u8] = &[0x6c, 0x78, 0x00];
 
 #[test]
 fn member_reference_0x60_without_context_is_gated() {
@@ -2529,9 +2530,10 @@ fn assignment_0x2c_emits_rhs_then_resolved_store() {
     // RHS: a Long local load at frame offset -8.
     let s = a.alloc(NodeArena::node(0, 0, (0xfff8u32) << 16, 0, 0, 0));
     let rhs = a.alloc(NodeArena::node(0x74, 8, s.0, 2 /* CTX_LONG */, 0, 0));
-    // LHS: a 0x60 member reference (type tag 8), size descriptor in w5.
+    // LHS: a 0x60 member reference (type tag 8), size descriptor in w5, and a
+    // front-end-resolved frame offset (0x74) in w7.
     let d = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0));
-    let mut lhs_n = NodeArena::node(0x60, 8, 0, 0, 0, 0);
+    let mut lhs_n = NodeArena::node(0x60, 8, 0, 0, 0, 0x74);
     lhs_n.w[5] = d.0;
     let lhs = a.alloc(lhs_n);
     // 0x2c assignment node: w4 = LHS, w5 = RHS, region 0 (not 0x20000).
@@ -2557,9 +2559,10 @@ fn assignment_0x2c_emits_rhs_then_resolved_store() {
     assert_eq!(bytes, ASSIGN_0X2C_BYTES);
 }
 
-// RHS Long load (6c f8 ff) then the resolved store of the LHS member, through
-// the ported EbEmitAssignmentStmt → resolve_reference2 → value-emitter chain.
-const ASSIGN_0X2C_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x71, 0x04, 0x00, 0x6c, 0x04, 0x00];
+// RHS Long load (6c f8 ff) then the resolved store of the LHS member at its
+// front-end-resolved frame offset (0x74), through the ported
+// EbEmitAssignmentStmt → resolve_reference2 → value-emitter chain.
+const ASSIGN_0X2C_BYTES: &[u8] = &[0x6c, 0xf8, 0xff, 0x71, 0x74, 0x00, 0x6c, 0x74, 0x00];
 
 // ── Binary-operation setup (0x69) → operator descriptor + value emit ────────
 

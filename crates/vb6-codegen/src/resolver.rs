@@ -44,10 +44,20 @@ pub(crate) fn get_type_size3(arena: &NodeArena, type_desc: u32) -> u32 {
 /// The descriptor kind encodes the storage class together with `by_ref`:
 /// small/8-byte types use `2 - by_ref` (→ kind 2 by-value, kind 1 by-reference),
 /// other types use `7 - by_ref` (→ kind 7 by-value, kind 6 by-reference). The
-/// `+10` operand carries the type size. The `0x2000`-flag path (a by-value slot
-/// with an out-of-line size) marks `word6` bit 0 and stores the secondary size
-/// in `word8`. The type-library variant (`0x4000` flag with a `0x170000`-region
-/// node) needs the type-library attribute path and is gated.
+/// type size (via `EbGetTypeSize3`) only feeds that kind selection (the
+/// small-vs-other / size-8 override) — it is not what reaches the emitted
+/// bytecode. The value-emitter's kind-1/2 opcode takes the descriptor's
+/// `+10` operand as its literal p-code operand word, and the runtime decode of
+/// that opcode (confirmed independently against the real engine, and against
+/// `e2e_two_sequential_long_assigns`'s oracle-verified bytes) is a **frame-
+/// relative offset**, not a size. So `+10` here is the resolved reference's
+/// frame offset — supplied by the front end via `expr`'s own `word[7]` (our own
+/// convention: `lower.rs` computes the combined offset for a resolved
+/// local/member reference and stores it there; there is no COM/type-library
+/// storage to consult for a plain scalar). The `0x2000`-flag path (a by-value
+/// slot with an out-of-line size) marks `word6` bit 0 and stores the secondary
+/// size in `word8`. The type-library variant (`0x4000` flag with a `0x170000`-
+/// region node) needs the type-library attribute path and is gated.
 pub fn init_expr_descriptor(
     arena: &NodeArena,
     expr: NodeRef,
@@ -64,7 +74,7 @@ pub fn init_expr_descriptor(
     };
     let mut desc = RefDescriptor {
         kind,
-        operand: size as u16,
+        operand: e.w[7] as u16,
         ..RefDescriptor::default()
     };
     if flags & 0x2000 == 0 || flags & 1 != 0 {
@@ -313,7 +323,9 @@ fn heap_dword(heap: &[u8], off: usize) -> u32 {
 /// [`init_expr_descriptor`]) plus two trailing flag adjustments.
 ///
 /// * `node` — the `0x60` reference node; its `word[5]` is the member-access
-///   context node [`init_expr_descriptor`] reads for the type size.
+///   context node [`init_expr_descriptor`] reads for kind selection, and its
+///   `word[7]` is the front-end-resolved frame offset [`init_expr_descriptor`]
+///   copies into the descriptor operand.
 /// * `heap` — the module records heap (`*symbol_base`).
 /// * `member_off` — the member record's byte offset into `heap` (the
 ///   [`get_expr_context`] result).
