@@ -309,6 +309,16 @@ pub const RT_ASSIGN_STORE_OPCODE: [i32; 14] = [
     0x12c, 0x293, 0x000, 0x000,
 ];
 
+/// Sub-dispatch selector for an object/UDT destination store, indexed by
+/// `source_type_tag - 3` (21 entries, class 0–0x14). Selects one of 7
+/// specialized store-emission handlers in place of the generic
+/// `RT_ASSIGN_STORE_OPCODE`-driven formula; class 6 is the generic fallback
+/// (the same `assign_store_base`/`assign_source_adjust` formula used
+/// elsewhere).
+pub const RT_ASSIGN_SUBDISPATCH_SEL: [u8; 21] = [
+    0, 6, 6, 6, 6, 6, 6, 6, 6, 1, 6, 6, 6, 6, 6, 2, 6, 3, 6, 4, 5,
+];
+
 // ── Call-site dispatch tables (Sub/Function/built-in calls) ──────────────────
 
 /// Call-convention dispatch records, one per call-convention class. Each record

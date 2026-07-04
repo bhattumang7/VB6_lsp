@@ -430,10 +430,8 @@ impl<'a> Emitter<'a> {
 
                 // 0x400 flag with a 0x69 LHS (compound-op store).
                 if flags & 0x400 != 0 && lhs_op == 0x69 {
-                    unimplemented!(
-                        "EbEmitAssignmentStmt compound-op store (flag 0x400 + 0x69 \
-                         LHS); Phase 6"
-                    );
+                    self.emit_compound_op_store(lhs);
+                    return 0;
                 }
                 // Array / special LHS class.
                 if flags & 0x6000 != 0 {

@@ -1,0 +1,65 @@
+Call-finalize word emission (emit/calls.rs: emit_call / finalize_call) — no
+fixture-level (input.bas + expected.pcode) coverage is possible yet, for any
+of the three finalize paths (dispatch finalize word, result-descriptor,
+finalize type-node), including the dispatch finalize word path fixed in this
+change.
+
+Reason: the fixture harness drives the real front-end pipeline (Parser ->
+bind -> lower_module) and diffs the emitted bytes against an oracle capture.
+lower_module never constructs a `0x61` call node — user/intra-module calls
+are lowered directly by `lower_call` (crates/vb6-codegen/src/lower/expr.rs),
+which emits call bytes itself and never builds a `CallDescriptor` or reaches
+`Emitter::emit_call`/`finalize_call`. There is currently no VB6 source form
+that reaches this code path through the real pipeline, so there is nothing
+for the user to compile against an oracle here.
+
+Coverage for `emit_call`/`finalize_call` is therefore unit-level only,
+constructing `CallDescriptor` directly and asserting on the emitted byte
+stream (see crates/vb6-codegen/src/tests/emit_tests.rs, the
+`emit_call_*`/`emit_call_dispatch_*` tests) — this was already the existing
+pattern before this change (the byref-common-path and finalize-type-node-gate
+tests), not something newly introduced to work around the gap.
+
+Once front-end lowering is wired to build `0x61` call nodes (out of scope for
+this change), fixture captures for the dispatch finalize word, the
+result-descriptor path (also currently unreachable in code — see the comment
+on the `_` arm in `emit_call`), and the finalize type-node path (region
+0x140000, still gated pending the type-pool allocator) can be added and
+oracle-verified then.
+
+---
+
+Compound-op store (emit/assign.rs: Emitter::emit_compound_op_store) and the
+object/UDT-destination store sub-dispatch (Emitter::emit_object_store_subdispatch)
+— no fixture-level (input.bas + expected.pcode) coverage yet.
+
+`e2e_compound_op_store_long_increment/input.bas` (`x = x + 1`): this is the
+form the task that ported this path named as the expected trigger for
+`EbEmitAssignmentStmt`'s flag-0x400 + 0x69-LHS shortcut, but the current
+front-end lowering (crates/vb6-codegen/src/lower/assign.rs) does not build a
+`0x2c`/`0x69` node shape for any source form yet — `lower_assign` emits the
+load/store bytes directly without ever routing through `emit_expr`'s
+statement-level assignment dispatch. There is currently no way to reach
+`emit_compound_op_store` through the real pipeline, so no expected.pcode can
+be captured until that lowering exists. Coverage is unit-level only (see
+`crates/vb6-codegen/src/tests/emit_tests.rs`, the `compound_op_store_*` and
+`assignment_statement_compound_op_store_*` tests), constructing the node
+shape directly and asserting the emitted bytes — verified against the
+decompiled routine at the assembly level (register-precise, not just the
+higher-level decompile), not fabricated.
+
+`e2e_udt_variable_assign/input.bas` (`a = b` for a UDT-typed `Point`): a
+candidate to reach `emit_object_store_subdispatch` (dest region `0xf0000`,
+UDT/object destination), but UDT assignment in this codegen currently lowers
+through the case-0xe "UDT copy" op-class-1 branch (`emit_opcode2(0x2fe, ...)`
+in emit/expr.rs), not through `emit_assign_op`'s object-destination branch —
+and `emit_expr`'s own case-0xe entry additionally guards `node_hi == 0xf0000`
+unconditionally before dispatching on op-class, which currently blocks
+`emit_assign_op`'s object-destination branch from being reached through the
+ordinary dispatch tree at all (a pre-existing gap, not introduced by this
+change). Coverage is likewise unit-level only (the `object_store_subdispatch_*`
+tests), calling the pure selection function directly with representative
+destination/source type tags.
+
+If a source form is found that does reach either path through the real
+pipeline, capture `expected.pcode` for it and this note can be dropped.

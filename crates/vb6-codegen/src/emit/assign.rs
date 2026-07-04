@@ -238,6 +238,57 @@ impl<'a> Emitter<'a> {
         self.stream.emit_word(static_off);
     }
 
+    /// Emit the store opcode for an object/UDT-destination assignment whose
+    /// source type falls in the sub-dispatch domain (`source_type_tag - 3 <
+    /// 0x15`), selecting one of the specialized store handlers via
+    /// [`RT_ASSIGN_SUBDISPATCH_SEL`] instead of the generic
+    /// `assign_store_base`/`assign_source_adjust` formula. `size` is the
+    /// destination's already-resolved type size, the sole trailing operand
+    /// every handler in this family emits alongside its opcode.
+    ///
+    /// Only the fixed-opcode cases (class 0 / class 9) and the generic
+    /// fallback (class 6, the same base+adjust formula used elsewhere) are
+    /// implemented; the remaining classes route through undeciphered runtime
+    /// helpers and stay gated.
+    pub(super) fn emit_object_store_subdispatch(&mut self, dest_tag: i32, src_tag: i32, size: u32) {
+        use crate::tables::RT_ASSIGN_SUBDISPATCH_SEL;
+        let class = (src_tag - 3) as usize;
+        match RT_ASSIGN_SUBDISPATCH_SEL[class] {
+            0 => self.emit_opcode2(0x2f8, size as u16),
+            1 => self.emit_opcode2(0x2fb, size as u16),
+            6 => {
+                let opcode =
+                    Self::assign_source_adjust(src_tag) + Self::assign_store_base(dest_tag);
+                self.emit_opcode2(opcode as usize, size as u16);
+            }
+            sel => unimplemented!(
+                "object/UDT store sub-dispatch case {sel} (source type tag {src_tag}): \
+                 needs an undeciphered runtime helper; Wave 2"
+            ),
+        }
+    }
+
+    /// Emit the compound-op store (`EbEmitAssignmentStmt`'s flag `0x400` + a
+    /// `0x69`-typed LHS): the LHS wraps a reference-descriptor node whose
+    /// `word[4]` child carries the store's type-size descriptor at its
+    /// `word[5]`, and whose own `word[5]` carries the frame-slot node to
+    /// store into (through an optional `0x37` sequence-wrapper unwrap). The
+    /// frame-slot's `word[4]` is truncated to 16 bits as the trailing operand
+    /// word (the store opcode's only operand is 16-bit; the wider value
+    /// carried by the runtime's register in this path resolves to the same
+    /// truncated word).
+    pub(super) fn emit_compound_op_store(&mut self, lhs: NodeRef) {
+        let ln = *self.arena.get(lhs);
+        let size_node = *self.arena.get(NodeRef(ln.w[4]));
+        let size = self.emit_get_type_size3(size_node.w[5]);
+        let mut slot = *self.arena.get(NodeRef(ln.w[5]));
+        if slot.w[0] & 0xffff == 0x37 {
+            slot = *self.arena.get(NodeRef(slot.w[4]));
+        }
+        self.emit_opcode2(0x18f, size as u16);
+        self.emit_word2(slot.w[4] as u16);
+    }
+
     pub(super) fn emit_assign_op(&mut self, n: &RawNode) {
         let source = *self.arena.get(NodeRef(n.w[4]));
         let dest_hi = n.w[0] & 0xffff_0000;
@@ -251,10 +302,8 @@ impl<'a> Emitter<'a> {
         if dest_hi == 0xf0000 {
             let size = self.emit_get_type_size3(n.w[6]);
             if ((src_tag - 3) as u32) < 0x15 {
-                unimplemented!(
-                    "sized object/UDT store (per-source-type sub-dispatch emitting \
-                     size operand words); needs the type-descriptor model; Phase 4"
-                );
+                self.emit_object_store_subdispatch(dest_tag, src_tag, size);
+                return;
             }
             let opcode = Self::assign_source_adjust(src_tag) + Self::assign_store_base(dest_tag);
             self.emit_opcode2(opcode as usize, size as u16);

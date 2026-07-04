@@ -924,6 +924,122 @@ fn assign_single_src_into_kind6_emits_nothing() {
     assert_eq!(emit(&a, n), &[]);
 }
 
+// ── emit_object_store_subdispatch (object/UDT-destination store selection) ───
+//
+// Exercises `Emitter::emit_object_store_subdispatch` directly: it is reached
+// from `emit_assign_op`'s object-destination branch (`dest_hi == 0xf0000`),
+// which sits behind `emit_expr` case `0xe`'s own object-target guard — so
+// there is currently no way to reach it through the full `emit_expr`
+// dispatch (the same front-end-unreachability as the call-finalize paths;
+// see tests/fixtures/NEEDS_ORACLE_CAPTURE.txt). Calling the pure selection
+// function directly still exercises the ported opcode logic exactly.
+
+#[test]
+fn object_store_subdispatch_class0_emits_fixed_0x2f8() {
+    // source type tag 3 → class (src_tag - 3) = 0 → RT_ASSIGN_SUBDISPATCH_SEL[0] = 0
+    // (case0): fixed opcode 0x2f8, operand = size.
+    let a = NodeArena::new();
+    let mut e = Emitter::new(&a);
+    e.emit_object_store_subdispatch(0xf, 3, 0x0028);
+    assert_eq!(e.into_bytes(), opc2(0x2f8, 0x0028));
+}
+
+#[test]
+fn object_store_subdispatch_class9_emits_fixed_0x2fb() {
+    // source type tag 0xc → class 9 → RT_ASSIGN_SUBDISPATCH_SEL[9] = 1 (case1):
+    // fixed opcode 0x2fb, operand = size.
+    let a = NodeArena::new();
+    let mut e = Emitter::new(&a);
+    e.emit_object_store_subdispatch(0xf, 0xc, 0xffff);
+    assert_eq!(e.into_bytes(), opc2(0x2fb, 0xffff));
+}
+
+#[test]
+fn object_store_subdispatch_default_class_uses_generic_formula() {
+    // source type tag 4 → class 1 → RT_ASSIGN_SUBDISPATCH_SEL[1] = 6 (default):
+    // opcode = assign_store_base(dest) + assign_source_adjust(src).
+    // dest_tag 5: RT_TYPE_OFFSET[5] = 0 → base = RT_ASSIGN_STORE_OPCODE[0] = 0x10c.
+    // src_tag 4: RT_TYPE_OFFSET[4] = 19 (unused/no-adjust passthrough) → adjust = 19.
+    let a = NodeArena::new();
+    let mut e = Emitter::new(&a);
+    e.emit_object_store_subdispatch(5, 4, 0x10);
+    assert_eq!(e.into_bytes(), opc2(0x10c + 19, 0x10));
+}
+
+#[test]
+#[should_panic(expected = "Wave 2")]
+fn object_store_subdispatch_undeciphered_class_is_gated() {
+    // source type tag 0x12 → class 0xf → RT_ASSIGN_SUBDISPATCH_SEL[0xf] = 2
+    // (case2): needs an undeciphered runtime helper, stays gated.
+    let a = NodeArena::new();
+    let mut e = Emitter::new(&a);
+    e.emit_object_store_subdispatch(0xf, 0x12, 0);
+}
+
+// ── emit_compound_op_store (EbEmitAssignmentStmt flag 0x400 + 0x69 LHS) ──────
+
+/// Build the compound-op-store LHS shape: a `0x69` node whose `word[4]` child
+/// carries the size descriptor at its own `word[5]`, and whose `word[5]`
+/// points at the frame-slot node (optionally through one `0x37` wrapper hop).
+fn compound_store_lhs(a: &mut NodeArena, size: u16, slot_operand: u32, wrap: bool) -> NodeRef {
+    let type_d = type_desc(a, size);
+    let size_node = a.alloc(NodeArena::node(0, 0, 0, type_d.0, 0, 0));
+    let slot = a.alloc(NodeArena::node(0x2, 0, slot_operand, 0, 0, 0));
+    let slot_ref = if wrap {
+        a.alloc(NodeArena::node(0x37, 0, slot.0, 0, 0, 0))
+    } else {
+        slot
+    };
+    a.alloc(NodeArena::node(0x69, 0, size_node.0, slot_ref.0, 0, 0))
+}
+
+#[test]
+fn compound_op_store_emits_size_and_slot_operand() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let lhs = compound_store_lhs(&mut a, 40, 0x1234, false);
+    let mut e = Emitter::new(&a);
+    e.emit_compound_op_store(lhs);
+    let mut want = opc2(0x18f, 40);
+    want.extend_from_slice(&0x1234u16.to_le_bytes());
+    assert_eq!(e.into_bytes(), want);
+}
+
+#[test]
+fn compound_op_store_unwraps_0x37_sequence_wrapper() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let lhs = compound_store_lhs(&mut a, 8, 0x5678, true);
+    let mut e = Emitter::new(&a);
+    e.emit_compound_op_store(lhs);
+    let mut want = opc2(0x18f, 8);
+    want.extend_from_slice(&0x5678u16.to_le_bytes());
+    assert_eq!(e.into_bytes(), want);
+}
+
+#[test]
+fn assignment_statement_compound_op_store_dispatches_through_case_0x2c() {
+    // The full `case 0x2c` (assignment statement) path: flags & 0x400 with a
+    // 0x69 LHS routes through `emit_compound_op_store` before ever reaching
+    // the resolver, so this is exercisable via the ordinary `emit_expr`
+    // dispatch (unlike the object-destination sub-dispatch above).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let lhs = compound_store_lhs(&mut a, 4, 0x0042, false);
+    // RHS: a null-emit node (opcode 0, no bytes) so only the compound store
+    // path's own bytes appear in the output.
+    let rhs = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let mut stmt = NodeArena::node(0x2c, 0, lhs.0, rhs.0, 0, 0);
+    stmt.w[1] = 0x400;
+    let node = a.alloc(stmt);
+
+    let mut e = Emitter::new(&a);
+    e.emit_expr(node, 0);
+    let mut want = opc2(0x18f, 4);
+    want.extend_from_slice(&0x0042u16.to_le_bytes());
+    assert_eq!(e.into_bytes(), want);
+}
+
 
 // ── traverse_node_tree ────────────────────────────────────────────────────────
 //
@@ -1473,6 +1589,7 @@ fn emit_call_byref_common_path_emits_callee_opcode_then_member_word() {
         arg_list: _null, // index 0 → no argument list
         member_id: 0x0007,
         size: 0,
+        node9: 0,
     };
     let mut e = Emitter::new(&a);
     e.emit_call(&desc, 0);
@@ -1501,8 +1618,103 @@ fn emit_call_finalize_type_node_region_is_gated() {
         arg_list: _null,
         member_id: 1,
         size: 0,
+        node9: 0,
     };
     Emitter::new(&a).emit_call(&desc, 0);
+}
+
+// ── Call site: dispatch (emit_mode 1) finalize word ──────────────────────────
+//
+// The dispatch path (flag `0x8000` set) maps the call type-code through
+// `map_call_type_code`, emits the callee and the mapped call opcode, then the
+// finalize tail: the member-id word (`word[7]`), followed by the trailing
+// word — the type-pool index of `word[9]` (`extract_type_value2`), not the
+// member id again. The `0x20000`/type-tag-2 region selects a validation that
+// emits nothing, so the call site ends at the two finalize words.
+
+#[test]
+fn emit_call_dispatch_finalize_word_is_type_pool_index_of_node9() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let callee = global_long_load(&mut a, 0);
+    let desc = CallDescriptor {
+        kind: 4,
+        byref: 1,
+        flags: 0x8000, // dispatch path → emit_mode 1
+        node_word0: 0x0002_0000, // region 0x20000, type tag 2
+        callee,
+        arg_list: _null,
+        member_id: 0x0005,
+        size: 0,
+        node9: 0x1234,
+    };
+    let mut e = Emitter::new(&a);
+    e.emit_call(&desc, 0);
+
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x34f)); // map_call_type_code(RT_CALL_TYPECODE[5] = 0x320)
+    expected.extend_from_slice(&[0x05, 0x00]); // member-id word
+    expected.extend_from_slice(&[0x00, 0x00]); // trailing: type-pool index 0 (first intern)
+    assert_eq!(e.into_bytes(), expected);
+}
+
+// A repeat call with the same `node9` type value reuses the first-seen
+// type-pool index; a distinct value gets the next index. The pool is shared
+// across call sites emitted by the same `Emitter` (`EbRegisterTypeInfo2`'s
+// first-seen/dedup behaviour), so this must hold across two `emit_call`s.
+#[test]
+fn emit_call_dispatch_finalize_word_dedups_across_call_sites() {
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let callee_a = global_long_load(&mut a, 0);
+    let callee_b = global_long_load(&mut a, 4);
+    let desc_a = CallDescriptor {
+        kind: 4,
+        byref: 1,
+        flags: 0x8000,
+        node_word0: 0x0002_0000,
+        callee: callee_a,
+        arg_list: _null,
+        member_id: 1,
+        size: 0,
+        node9: 0x1234,
+    };
+    let desc_b = CallDescriptor {
+        kind: 4,
+        byref: 1,
+        flags: 0x8000,
+        node_word0: 0x0002_0000,
+        callee: callee_b,
+        arg_list: _null,
+        member_id: 2,
+        size: 0,
+        node9: 0x5678, // distinct type value → next index
+    };
+    let desc_c = CallDescriptor {
+        node9: 0x1234, // repeat of desc_a's value → dedups to index 0
+        member_id: 3,
+        ..desc_b
+    };
+
+    let mut e = Emitter::new(&a);
+    e.emit_call(&desc_a, 0);
+    e.emit_call(&desc_b, 0);
+    e.emit_call(&desc_c, 0);
+
+    let mut expected = GL0.to_vec();
+    expected.extend(v2(0x34f));
+    expected.extend_from_slice(&[0x01, 0x00]); // desc_a member id
+    expected.extend_from_slice(&[0x00, 0x00]); // desc_a trailing: index 0 (first seen)
+    expected.extend(GL4);
+    expected.extend(v2(0x34f));
+    expected.extend_from_slice(&[0x02, 0x00]); // desc_b member id
+    expected.extend_from_slice(&[0x01, 0x00]); // desc_b trailing: index 1 (new value)
+    expected.extend(GL4);
+    expected.extend(v2(0x34f));
+    expected.extend_from_slice(&[0x03, 0x00]); // desc_c member id
+    expected.extend_from_slice(&[0x00, 0x00]); // desc_c trailing: index 0 (dedup of 0x1234)
+    assert_eq!(e.type_pool().len(), 2);
+    assert_eq!(e.into_bytes(), expected);
 }
 
 // A 0x61 call node routed through emit_expr assembles the CallDescriptor from
