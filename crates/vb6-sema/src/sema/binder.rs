@@ -118,6 +118,13 @@ struct Binder<'a> {
     /// Known external classes (name lowercase → Public field list), for
     /// cross-module member resolution. See [`bind_with_classes`].
     known_classes: &'a HashMap<String, ExternalClass>,
+    /// Type-sym -> matched external class, recorded as `extract_type` resolves
+    /// each `UserType` reference against `known_classes` (interior mutability:
+    /// `extract_type` is called with `&self` from many non-`&mut` contexts).
+    /// Exposed on `BoundModule` so codegen (no scanner/interner of its own)
+    /// can recognize a `VbaType::UserDefined(sym)` local as a class instance
+    /// by sym_id, without a name-text lookup.
+    class_field_info: std::cell::RefCell<HashMap<u32, ExternalClass>>,
 
     procs:       Vec<BoundProc>,
     /// Parameter `ArgList` node per proc (aligned with `procs`), kept so the
@@ -153,6 +160,7 @@ impl<'a> Binder<'a> {
             spans,
             visibility,
             known_classes,
+            class_field_info: std::cell::RefCell::new(HashMap::new()),
             procs:       Vec::new(),
             proc_param_nodes: Vec::new(),
             module_vars: Vec::new(),
@@ -178,6 +186,7 @@ impl<'a> Binder<'a> {
             builtins:    self.builtins,
             diagnostics:     self.diagnostics,
             option_explicit: self.option_explicit,
+            class_field_info: self.class_field_info.into_inner(),
         }
     }
 
@@ -210,7 +219,20 @@ impl<'a> Binder<'a> {
         match self.arena.get(type_node_id) {
             ExprNode::BuiltinType { kind } => VbaType::from_kind(*kind),
             ExprNode::StringType { .. }   => VbaType::String,
-            ExprNode::UserType { name, .. } => VbaType::UserDefined(*name),
+            ExprNode::UserType { name, .. } => {
+                // If `name` matches a known external class (not a same-module
+                // `Type` declaration — those stay resolved via `type_decls`),
+                // record its field list keyed by this type sym so codegen
+                // (which has no scanner/interner to resolve sym -> name
+                // itself) can look the class up directly by sym_id, without
+                // redoing the name-text lookup `resolve_member_type` does.
+                if let Some(class) = self.known_classes.get(&self.name_of(*name)) {
+                    self.class_field_info
+                        .borrow_mut()
+                        .insert(*name, class.clone());
+                }
+                VbaType::UserDefined(*name)
+            }
             // User-defined-type *references* (`Dim x As MyType`) are emitted by
             // the recursive-descent parser as `UserType` and resolved above. The
             // raw 0xb3 `TypeSpec`/`UdtTypeSpec` nodes (built only by

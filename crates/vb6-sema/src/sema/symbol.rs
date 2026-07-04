@@ -271,4 +271,10 @@ pub struct BoundModule {
     /// True if the module declares `Option Explicit` (drives the project-level
     /// undeclared-variable check).
     pub option_explicit: bool,
+    /// Type-sym → matched external class (see [`ExternalClass`]), for every
+    /// `UserType` reference the binder resolved against `bind_with_classes`'s
+    /// `classes` table. Lets codegen recognize a `VbaType::UserDefined(sym)`
+    /// declaration as a class instance (not a same-module UDT) by sym_id,
+    /// with no scanner/interner access of its own.
+    pub class_field_info: std::collections::HashMap<u32, ExternalClass>,
 }

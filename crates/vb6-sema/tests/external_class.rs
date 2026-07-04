@@ -79,3 +79,20 @@ fn member_access_on_unknown_class_falls_back_to_variant() {
         .expect("expected one member access");
     assert_eq!(m.types.get(&member_id.0), Some(&VbaType::Variant));
 }
+
+#[test]
+fn class_field_info_records_the_matched_class_by_type_sym() {
+    let mut classes = HashMap::new();
+    classes.insert(
+        "class1".to_string(),
+        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)] },
+    );
+    let src = "Attribute VB_Name = \"Module1\"\r\n\
+               Sub Main()\r\n\
+               \x20   Dim o As New Class1\r\n\
+               End Sub\r\n";
+    let m = bind_with(src, &classes);
+    assert_eq!(m.class_field_info.len(), 1, "expected exactly one recorded class-typed sym");
+    let recorded = m.class_field_info.values().next().unwrap();
+    assert_eq!(recorded.fields, vec![("F".to_string(), VbaType::Long)]);
+}
