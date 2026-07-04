@@ -25,6 +25,47 @@ fn put_block(h: &mut HeapContext, off: u32, next: u32, size: u16) {
 }
 
 #[test]
+fn new_seeds_byte_exact_initial_state() {
+    let h = HeapContext::new(true, false);
+
+    assert_eq!(h.mem.len(), 0x80);
+    assert_eq!(h.buffer_flag, 0);
+    assert_eq!(h.free_head, 0);
+    assert_eq!(h.flags, 0b01);
+
+    // Single free block spanning the whole buffer: next=NIL, size=0x78, pad=0.
+    assert_eq!(&h.mem[0..4], &NIL.to_le_bytes());
+    assert_eq!(&h.mem[4..6], &0x78u16.to_le_bytes());
+    assert_eq!(&h.mem[6..8], &0u16.to_le_bytes());
+    assert!(h.mem[8..].iter().all(|&b| b == 0));
+
+    assert_eq!(h.block_next(0), NIL);
+    assert_eq!(h.block_size(0), 0x78);
+}
+
+#[test]
+fn new_flags_from_constructor_params() {
+    assert_eq!(HeapContext::new(false, false).flags, 0b00);
+    assert_eq!(HeapContext::new(true, false).flags, 0b01);
+    assert_eq!(HeapContext::new(false, true).flags, 0b10);
+    assert_eq!(HeapContext::new(true, true).flags, 0b11);
+}
+
+#[test]
+fn new_allocate_carves_from_seeded_block() {
+    let mut h = HeapContext::new(true, false);
+
+    let off = h.allocate_heap_space(0x20).unwrap();
+
+    assert_eq!(off, 0);
+    // Remainder free block carved just past the allocation: size = 0x78 -
+    // aligned(0x20) = 0x78 - 0x20 = 0x58 (2-byte alignment mode).
+    assert_eq!(h.free_head, 0x20);
+    assert_eq!(h.block_next(0x20), NIL);
+    assert_eq!(h.block_size(0x20), 0x58);
+}
+
+#[test]
 fn align_size8_two_byte_mode() {
     let h = heap(0);
     // flag bit 1 clear → align to 2, minimum 8.

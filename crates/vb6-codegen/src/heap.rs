@@ -44,7 +44,32 @@ pub struct HeapContext {
     pub buffer_flag: i32,
 }
 
+/// Size of the backing buffer a fresh [`HeapContext`] starts with.
+const INITIAL_BUFFER_SIZE: usize = 0x80;
+
 impl HeapContext {
+    /// Port of the module-heap initializer: allocate the context's starting
+    /// buffer and format it as one free block spanning the whole thing.
+    ///
+    /// `coalesce_mode` sets flag bit `0` (in-place coalescing when set, the
+    /// gated deferred-free path when clear); `align8` sets flag bit `1`
+    /// (8-byte alignment when set, 2-byte alignment when clear).
+    ///
+    /// The initial buffer is `0x80` bytes, formatted as a single free block at
+    /// offset `0` with usable size `0x78` (`0x80` minus the 8-byte header) and
+    /// no successor (`NIL`). Growth is enabled (`buffer_flag = 0`).
+    pub fn new(coalesce_mode: bool, align8: bool) -> Self {
+        let mut mem = vec![0u8; INITIAL_BUFFER_SIZE];
+        let usable = (INITIAL_BUFFER_SIZE - 8) as u16;
+        mem[0..4].copy_from_slice(&NIL.to_le_bytes());
+        mem[4..6].copy_from_slice(&usable.to_le_bytes());
+        mem[6..8].copy_from_slice(&0u16.to_le_bytes());
+
+        let flags = (coalesce_mode as u8) | ((align8 as u8) << 1);
+
+        HeapContext { mem, free_head: 0, flags, buffer_flag: 0 }
+    }
+
     /// Read the next-free offset stored in the block header at `off`.
     pub fn block_next(&self, off: u32) -> u32 {
         let o = off as usize;
