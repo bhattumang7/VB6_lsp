@@ -910,7 +910,8 @@ impl<'a> Emitter<'a> {
             // `word[1]` flags, `word[5]` arg list, `word[6]` callee, `word[7]`
             // low half the member-dispatch id, `word[8]` the callee's type
             // descriptor (resolved to a size only when the dispatch record asks
-            // for one).
+            // for one), `word[9]` the finalize dispatch-word type value (interned
+            // on the emit-mode-1 path).
             0x61 => {
                 let desc = CallDescriptor {
                     kind: n.w[2] as i32,
@@ -921,6 +922,7 @@ impl<'a> Emitter<'a> {
                     arg_list: NodeRef(n.w[5]),
                     member_id: n.w[7] as u16,
                     size: self.emit_get_type_size3(n.w[8]) as u16,
+                    node9: n.w[9],
                 };
                 return self.emit_call(&desc, context);
             }

@@ -128,15 +128,15 @@ impl<'a> Emitter<'a> {
             // per-type tail.
             0 => self.finalize_call(desc, rec_1d, desc.member_id, context),
             // Dispatch path: the member-id word is emitted here; the finalize
-            // step's trailing word is a type-pool lookup of node[9], which the
-            // pool subsystem (not yet built) must supply.
+            // step's trailing word is the type-pool index of node[9].
             1 => {
+                let trailing = self.type_pool.extract_type_value2(desc.node9);
                 self.emit_word2(desc.member_id);
-                unimplemented!(
-                    "call dispatch finalize word (emit mode 1): the trailing word \
-                     is a type-pool lookup of node[9]; needs the type pool; Phase 5"
-                );
+                self.finalize_call(desc, rec_1d, trailing, context);
             }
+            // Result-descriptor path: unreachable while the type-expression
+            // argument gate above (flag 0x800) is the only site that selects
+            // this mode — it throws before emit_mode is ever set to 2.
             _ => unimplemented!(
                 "call result-descriptor path (emit mode 2): needs the struct-size / \
                  member-type model; Phase 5"

@@ -117,6 +117,9 @@ pub struct RefDescriptor {
 ///   trailing word on the dispatch path.
 /// * `size` — the callee's resolved type size (from `word[8]`), emitted only
 ///   when the dispatch record requests a size operand.
+/// * `node9` — the call node's `word[9]`, interned through the type pool to
+///   produce the finalize step's trailing word on the dispatch path (emit
+///   mode 1).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CallDescriptor {
     pub kind: i32,
@@ -127,6 +130,7 @@ pub struct CallDescriptor {
     pub arg_list: NodeRef,
     pub member_id: u16,
     pub size: u16,
+    pub node9: u32,
 }
 
 /// Drives [`Emitter::emit_expr`] over a [`NodeArena`], writing the runtime
