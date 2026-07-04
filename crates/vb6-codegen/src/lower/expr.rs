@@ -65,6 +65,10 @@ pub(super) fn lower_expr_coerced(
             lower_lit_coerced(lit, coerce_tag, arena)
         }
         ExprNode::NameRef { .. } => lower_name_ref(ctx, node_id, arena),
+        ExprNode::MemberAccess { base, member, bang } => {
+            let (base, member, bang) = (*base, *member, *bang);
+            lower_udt_field_access(ctx, base, member, bang, arena)
+        }
         ExprNode::BinOp { op, lhs, rhs } => {
             let (op, lhs_id, rhs_id) = (*op, *lhs, *rhs);
             lower_binop(ctx, node_id, op, lhs_id, rhs_id, expr_arena, arena)
@@ -351,6 +355,121 @@ pub(super) fn lower_name_ref(
         }
         _ => Err(LowerError::Unresolved),
     }
+}
+
+/// A resolved `t.X` field reference: everything both the read path
+/// ([`lower_udt_field_access`]) and the assignment-LHS store path
+/// (`lower_udt_field_store` in `lower::assign`) need to build the `0x60`
+/// reference node and the `Emitter`'s `SymbolContext`.
+pub(super) struct UdtFieldRef {
+    /// The records-heap context the resolver needs to classify the field
+    /// (built the same way a real `Type...End Type` field's declaration
+    /// would be — see `crate::decl::build_property_slot_scalar`).
+    pub sym: crate::emit::SymbolContext,
+    /// The field's combined absolute frame offset: the UDT local's own frame
+    /// base plus the field's byte offset within it (uniform-size fields
+    /// only — see `crate::bind::UdtLocal`). This is what reaches the
+    /// emitted bytecode (`resolver.rs::init_expr_descriptor`'s operand),
+    /// not the type size.
+    pub offset: i16,
+    /// The field's frame size — feeds the `0x60` node's size descriptor,
+    /// which only drives `init_expr_descriptor`'s kind selection.
+    pub field_size: i16,
+    /// The field's VBA6 type tag (`vba_type_to_node_tag`), e.g. `8` for Long.
+    pub type_tag: u16,
+}
+
+/// Resolve `base.member` to its combined frame offset and a `SymbolContext`
+/// classifying it, for a plain local `Type...End Type`-typed `base`.
+///
+/// Only a directly-resolved local UDT base is supported (module-level /
+/// nested / object-typed bases are out of scope for this milestone); anything
+/// else is `LowerError::UnsupportedNode`.
+pub(super) fn resolve_udt_field(
+    ctx: &LowerCtx,
+    base: NodeId,
+    member: u32,
+) -> Result<UdtFieldRef, LowerError> {
+    let local_idx = match ctx.module.resolutions.get(&base.0) {
+        Some(NameResolution::Local { local_idx, .. }) => *local_idx,
+        Some(_) => return Err(LowerError::UnsupportedNode),
+        None => return Err(LowerError::Unresolved),
+    };
+    let VbaType::UserDefined(type_sym) = ctx.local_type(local_idx) else {
+        return Err(LowerError::UnsupportedNode);
+    };
+    let decl = ctx
+        .module
+        .type_decls
+        .iter()
+        .find(|d| d.sym_id == *type_sym)
+        .ok_or(LowerError::Unresolved)?;
+    let field_index = decl
+        .members
+        .iter()
+        .position(|m| m.sym_id == member)
+        .ok_or(LowerError::Unresolved)?;
+    let type_tag = vba_type_to_node_tag(&decl.members[field_index].vba_type)
+        .ok_or(LowerError::UnsupportedType)?;
+
+    let udt = ctx.local_udt(local_idx).ok_or(LowerError::UnsupportedNode)?;
+    let offset = udt.field_offset(field_index);
+    let field_size = udt.field_size;
+
+    // Build the field's declaration-compiler record: a scratch method-bag
+    // "container" (never read back; it only exists so the field's
+    // property-bag record has somewhere real to link under) plus the
+    // field's own property-bag record, exactly as `Type...End Type`
+    // declaration lowering will build them once that front-end exists.
+    let mut heap = crate::heap::HeapContext::new(true, false);
+    let parent = heap
+        .allocate_method_bag()
+        .map_err(|_| LowerError::UnsupportedNode)?;
+    let mut tail = crate::heap::NIL;
+    let field_rec =
+        crate::decl::build_property_slot_scalar(&mut heap, type_tag, 0, parent, &mut tail)
+            .map_err(|_| LowerError::UnsupportedNode)?;
+
+    // The binder-supplied (kind, byref) fixed to the plain-scalar convention
+    // already proven (unit-tested in resolver_tests/emit_tests) to resolve a
+    // property-bag scalar record to a local-style (kind 1/2) descriptor.
+    let sym = crate::emit::SymbolContext {
+        heap: heap.mem,
+        member_off: field_rec as usize,
+        ctx_flag_c: 0,
+        binding: Some((4, 0)),
+    };
+
+    Ok(UdtFieldRef { sym, offset, field_size, type_tag })
+}
+
+/// Lower `t.X` (read position): a `0x60` reference node whose `word[7]`
+/// carries the field's combined resolved frame offset directly (this front
+/// end's own convention — see [`crate::resolver::init_expr_descriptor`]). No
+/// qualifier sub-node is built (`word[4]` stays 0): the offset is already
+/// fully resolved here, so nothing downstream needs to re-walk `t`.
+///
+/// Sets `ctx.member_symbol` so the statement-level caller can attach the
+/// resolved `SymbolContext` to its `Emitter` before calling `emit_expr`.
+pub(super) fn lower_udt_field_access(
+    ctx: &LowerCtx,
+    base: NodeId,
+    member: u32,
+    bang: bool,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    if bang {
+        // `!` (bang/default-member) access is a late-bound Object/Recordset
+        // path, not applicable to a plain UDT — out of scope.
+        return Err(LowerError::UnsupportedNode);
+    }
+    let field = resolve_udt_field(ctx, base, member)?;
+    ctx.member_symbol.replace(Some(field.sym));
+
+    let size_desc = arena.alloc(NodeArena::node(4, 0, field.field_size as u32, 0, 0, 0));
+    let mut n = NodeArena::node(0x60, field.type_tag, 0, 0, 0, field.offset as u32);
+    n.w[5] = size_desc.0;
+    Ok(arena.alloc(n))
 }
 
 /// Build a typed local/param load node (opcode 0x74 = ByVal, 0x75 = ByRef).

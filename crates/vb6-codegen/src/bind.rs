@@ -364,11 +364,21 @@ impl ProcFrame {
         if self.vars.contains_key(name) || self.udt_vars.contains_key(name) {
             return Err(DeclError::AlreadyDeclared);
         }
-        let layout = udt_uniform_layout(field_type_ctxs);
-        let base_offset = self.alloc_bytes(layout.total_size);
-        let var = UdtLocal { base_offset, field_size: layout.field_size };
+        let var = self.alloc_udt(field_type_ctxs);
         self.udt_vars.insert(name.to_string(), var);
         Ok(var)
+    }
+
+    /// Declare an unnamed UDT local (like [`Self::declare_anon`]), identified
+    /// by declaration index rather than by name.
+    pub fn declare_anon_udt(&mut self, field_type_ctxs: &[usize]) -> UdtLocal {
+        self.alloc_udt(field_type_ctxs)
+    }
+
+    fn alloc_udt(&mut self, field_type_ctxs: &[usize]) -> UdtLocal {
+        let layout = udt_uniform_layout(field_type_ctxs);
+        let base_offset = self.alloc_bytes(layout.total_size);
+        UdtLocal { base_offset, field_size: layout.field_size }
     }
 
     /// Resolve a declared UDT local name to its `UdtLocal`.

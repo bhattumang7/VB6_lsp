@@ -63,3 +63,37 @@ destination/source type tags.
 
 If a source form is found that does reach either path through the real
 pipeline, capture `expected.pcode` for it and this note can be dropped.
+
+`e2e_udt_field_scalar_access/input.bas` (`t.X = 1` then `y = t.X` for a
+`Type Point : X As Long : Y As Long : End Type` local): the first vertical
+member-access construct to reach the real resolver/value-emitter chain
+(`resolve_reference2`/`emit_reference`) through the front-end pipeline, not
+just hand-built unit tests. Needs a real VB6-compiler capture — no
+expected.pcode exists yet.
+
+What this fixture is meant to confirm, and what it currently produces (via
+`examples/emit_pcode`, our own pipeline only — NOT compiler-verified):
+- Frame layout: `t` (uniform-size 2-Long-field UDT) allocates first at base
+  offset -140 (0xff74); field X (index 0) sits at -140, field Y (index 1) at
+  -136 (relative offsets {0, 4} from the struct base). `y` follows at -144
+  (0xff70). If the real compiler's offsets differ from {0, 4}, that reveals
+  the general (mixed-size) packing/alignment rule was assumed wrong even in
+  this uniform-size case — stop and report the raw bytes rather than adjust
+  blindly.
+- `y = t.X` alone: `6c 74 ff` (load Long local at -140) `71 70 ff` (store y
+  at -144). No surprises on this path.
+- `t.X = 1` alone: `f5 01 00 00 00` (push Long literal 1) `71 74 ff` (store
+  at -140) then an EXTRA `6c 74 ff` (reload of the same offset). This reload
+  is not something this change introduced — it's the existing (prior-session,
+  unit-tested-only) `Emitter::emit_reference` nOp=4 / `f_flags & 0x40` remap
+  path (opcode-index 0x1f2 → byte 0x71, remapped to 0x1e2 → byte 0x6c),
+  reached by real source for the first time here. Whether VB6 genuinely emits
+  this reload for a resolver-based (`0x2c`) assignment, or this is a latent
+  bug in that pre-existing remap that no fixture had exercised yet, is
+  UNCONFIRMED — this is exactly what the oracle capture needs to settle.
+
+Once `expected.pcode` is captured: if it matches our current output including
+the reload, the `0x2c`/resolver-based assignment path (and the frame-offset
+fix in `resolver.rs::init_expr_descriptor`) is proven for this vertical. If it
+diverges (either in the frame offsets or in the reload), stop and report the
+diff — do not adjust the port to match without re-deriving from the decomp.

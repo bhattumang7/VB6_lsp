@@ -16,6 +16,14 @@ pub(super) fn lower_assign(
     if let ExprNode::Call { func, args } = expr_arena.get(target_id) {
         return lower_array_store(ctx, *func, *args, value_id, expr_arena, out);
     }
+    // UDT field store: `t.X = v` (target is a `MemberAccess`). This goes
+    // through the real resolver/value-emitter chain (a bound `0x2c` node),
+    // not the scalar bypass store this function otherwise builds — a UDT
+    // field has no frame slot of its own to feed `emit_var_store`.
+    if let ExprNode::MemberAccess { base, member, bang } = expr_arena.get(target_id) {
+        let (base, member, bang) = (*base, *member, *bang);
+        return lower_udt_field_store(ctx, base, member, bang, value_id, expr_arena, out);
+    }
     // Resolve the target first so its type can be used to coerce integer literals
     // in the value expression (e.g. `r = 1` where r is Long → Long literal).
     let resolution = ctx
@@ -313,6 +321,12 @@ pub(super) fn lower_assign(
     ) || matches!(arena.get(value_root).opcode(), 0x78 | 0x7c);
 
     let mut emitter = Emitter::new(&arena);
+    // A UDT field reference on the RHS (`y = t.X`) resolved through the
+    // real resolver chain and left its `SymbolContext` in this side channel
+    // (see `lower_udt_field_access`) — attach it before emitting.
+    if let Some(sym) = ctx.member_symbol.borrow_mut().take() {
+        emitter = emitter.with_symbol_context(sym);
+    }
     // The assigned value is an rvalue: emit it in value context (2). This is the
     // context that selects the typed floating-point push forms (Double/Date push
     // 0xfa, Single push 0xf9); context 0 would fall to the untyped push (0xf6/0xf5).
@@ -350,6 +364,48 @@ pub(super) fn lower_assign(
         _ => return Err(LowerError::Unresolved),
     }
 
+    out.extend(emitter.into_bytes());
+    Ok(())
+}
+
+/// Lower `t.X = v` (a UDT field assignment): build a real bound `0x2c`
+/// assignment-statement node — LHS a `0x60` field reference (offset baked
+/// into `word[7]`), RHS the coerced value — and emit it through the actual
+/// resolver/value-emitter chain (`Emitter::emit_expr`'s `0x2c` case), the same
+/// path a plain scalar assignment bypasses via the direct-store opcodes.
+fn lower_udt_field_store(
+    ctx: &LowerCtx,
+    base: NodeId,
+    member: u32,
+    bang: bool,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    if bang {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let field = resolve_udt_field(ctx, base, member)?;
+
+    let mut arena = NodeArena::new();
+    // LHS: the 0x60 member-reference node (offset in word[7]).
+    let size_desc = arena.alloc(NodeArena::node(4, 0, field.field_size as u32, 0, 0, 0));
+    let mut lhs_n = NodeArena::node(0x60, field.type_tag, 0, 0, 0, field.offset as u32);
+    lhs_n.w[5] = size_desc.0;
+    let lhs = arena.alloc(lhs_n);
+
+    // RHS: the assigned value, coerced to the field's type.
+    let rhs = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, Some(field.type_tag))?;
+
+    // 0x2c assignment statement node: w4 = LHS, w5 = RHS, region 0 (not the
+    // 0x20000 array/special-LHS region).
+    let mut asn = NodeArena::node(0x2c, 0, 0, 0, 0, 0);
+    asn.w[4] = lhs.0;
+    asn.w[5] = rhs.0;
+    let node = arena.alloc(asn);
+
+    let mut emitter = Emitter::new(&arena).with_symbol_context(field.sym);
+    emitter.emit_expr(node, 0);
     out.extend(emitter.into_bytes());
     Ok(())
 }

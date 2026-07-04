@@ -17,7 +17,7 @@ use vb6_sema::sema::{BoundModule, BoundProc, BuiltinCall, RtcArg, UnaryIntrinsic
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
-use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame};
+use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame, UdtLocal};
 use crate::bridge::{load_store_ctx, param_frame_from_types, type_ctx, UnsupportedType};
 use crate::emit::Emitter;
 use crate::node::{NodeArena, NodeRef};
@@ -260,6 +260,9 @@ fn lower_proc_pooled(
     // temps are declared on the same frame, after the user locals.
     let mut frame = ProcFrame::new();
     let mut local_slots: Vec<LocalVar> = Vec::with_capacity(proc.locals.len());
+    // A `Type...End Type`-typed local's UDT binding, parallel to `local_slots`
+    // (which carries an index-aligned placeholder for these, like Const/Static).
+    let mut local_udts: Vec<Option<UdtLocal>> = Vec::with_capacity(proc.locals.len());
     // Static locals live in a per-procedure static block (not the frame): each is
     // assigned a byte offset within that block, packed by type size in declaration
     // order. `static_offsets[i]` is meaningful only when `locals[i].is_static`.
@@ -271,16 +274,19 @@ fn lower_proc_pooled(
             static_cursor += static_var_size(&v.vba_type);
             // No frame slot: a placeholder keeps local_idx aligned.
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
+            local_udts.push(None);
             continue;
         }
         static_offsets.push(0);
         if v.is_const {
             local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
+            local_udts.push(None);
         } else if let Some(n) = v.fixed_string_len {
             // A fixed-length string (`As String * n`) holds an inline Unicode
             // buffer of `n` chars = 2*n bytes (oracle-confirmed for n=1,4,8,10,16,20).
             let size = 2 * (n as i16);
             local_slots.push(frame.declare_anon_bytes(size));
+            local_udts.push(None);
         } else if matches!(v.vba_type, VbaType::Array(_)) {
             match v.array_dims {
                 // A fixed array is a SAFEARRAY descriptor (size-independent of the
@@ -296,9 +302,29 @@ fn lower_proc_pooled(
                 // is allocated by `ReDim`.
                 None => local_slots.push(frame.declare_anon_bytes(4)),
             }
+            local_udts.push(None);
+        } else if let VbaType::UserDefined(type_sym) = &v.vba_type {
+            // A `Type...End Type`-typed local: lay out one frame slot sized for
+            // every declared field (uniform-size fields only — see
+            // `ProcFrame::declare_udt_local`). `local_slots` keeps an
+            // index-aligned placeholder; the real binding lives in `local_udts`.
+            let decl = module
+                .type_decls
+                .iter()
+                .find(|d| d.sym_id == *type_sym)
+                .ok_or(LowerError::Unresolved)?;
+            let field_ctxs: Vec<usize> = decl
+                .members
+                .iter()
+                .map(|m| type_ctx(&m.vba_type).ok_or(LowerError::UnsupportedType))
+                .collect::<Result<_, _>>()?;
+            let udt = frame.declare_anon_udt(&field_ctxs);
+            local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
+            local_udts.push(Some(udt));
         } else {
             let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
             local_slots.push(frame.declare_anon(tctx));
+            local_udts.push(None);
         }
     }
 
@@ -367,6 +393,7 @@ fn lower_proc_pooled(
         module,
         proc,
         local_slots,
+        local_udts,
         param_slots,
         global_slots,
         user_local_count,
@@ -390,6 +417,7 @@ fn lower_proc_pooled(
         static_offsets,
         line_tracking: proc_needs_line_tracking(NodeId(proc.body), expr_arena),
         line_markers: RefCell::new(Vec::new()),
+        member_symbol: RefCell::new(None),
     };
 
     let mut out = Vec::new();
@@ -439,6 +467,9 @@ struct LowerCtx<'m> {
     module: &'m BoundModule,
     proc: &'m BoundProc,
     local_slots: Vec<LocalVar>,
+    /// A `Type...End Type`-typed local's UDT binding, parallel to
+    /// `local_slots` (`None` for every non-UDT local).
+    local_udts: Vec<Option<UdtLocal>>,
     param_slots: Vec<ParamVar>,
     global_slots: Vec<GlobalVar>,
     /// Number of user-declared locals (hidden For-loop slots come after).
@@ -491,6 +522,14 @@ struct LowerCtx<'m> {
     /// Byte offsets of every emitted line-table marker (header, per-statement, and
     /// trailer), in emission (byte) order — backpatched into a forward-delta chain.
     line_markers: RefCell<Vec<usize>>,
+    /// Scratch side-channel: the `SymbolContext` a just-lowered UDT field
+    /// reference (`lower_udt_field_access`) needs its `Emitter` to carry.
+    /// Building the node and resolving its context happen in the same pass,
+    /// but the `Emitter` is constructed by the statement-level caller after
+    /// the whole tree is built — the caller takes this (via
+    /// `member_symbol.borrow_mut().take()`) and attaches it before emitting,
+    /// same pattern as this context's other `Cell`/`RefCell` scratch state.
+    member_symbol: RefCell<Option<crate::emit::SymbolContext>>,
 }
 
 impl LowerCtx<'_> {
@@ -508,6 +547,9 @@ impl LowerCtx<'_> {
 impl<'m> LowerCtx<'m> {
     fn local_type(&self, idx: usize) -> &VbaType {
         &self.proc.locals[idx].vba_type
+    }
+    fn local_udt(&self, idx: usize) -> Option<UdtLocal> {
+        self.local_udts[idx]
     }
     fn param_type(&self, idx: usize) -> &VbaType {
         &self.proc.params[idx].vba_type

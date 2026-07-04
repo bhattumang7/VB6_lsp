@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use vb6_sema::sema::{
-    BoundModule, BoundParam, BoundProc, BoundVar, NameResolution, ParamFlags, VbaType,
+    BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar, NameResolution,
+    ParamFlags, VbaType,
 };
-use vb6_syntax::frontend::ast::{BinOpKind, ExprArena, ExprNode, ProcKind};
+use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprArena, ExprNode, ProcKind};
 use vb6_syntax::frontend::token::{Span, TypeSuffix};
 use vb6_syntax::support::arena::NodeId;
 
@@ -21,6 +22,34 @@ fn long_var(sym_id: u32) -> BoundVar {
         fixed_string_len: None,
         array_dims: None,
         is_static: false,
+        is_public: false,
+        name_span: Span::default(),
+    }
+}
+
+fn udt_var(sym_id: u32, type_sym: u32) -> BoundVar {
+    BoundVar {
+        sym_id,
+        vba_type: VbaType::UserDefined(type_sym),
+        is_const: false,
+        const_value: None,
+        const_lit: None,
+        fixed_string_len: None,
+        array_dims: None,
+        is_static: false,
+        is_public: false,
+        name_span: Span::default(),
+    }
+}
+
+/// `Type Point : X As Long : Y As Long : End Type`, as a `BoundTypeDecl`.
+fn point_type_decl(type_sym: u32, x_sym: u32, y_sym: u32) -> BoundTypeDecl {
+    BoundTypeDecl {
+        sym_id: type_sym,
+        members: vec![
+            BoundTypeMember { sym_id: x_sym, vba_type: VbaType::Long, name_span: Span::default() },
+            BoundTypeMember { sym_id: y_sym, vba_type: VbaType::Long, name_span: Span::default() },
+        ],
         is_public: false,
         name_span: Span::default(),
     }
@@ -102,6 +131,14 @@ fn assign_node(ea: &mut ExprArena, target: NodeId, value: NodeId) -> NodeId {
 
 fn block_node(ea: &mut ExprArena, stmts: Vec<NodeId>) -> NodeId {
     ea.alloc(ExprNode::Block { stmts })
+}
+
+fn member_access_node(ea: &mut ExprArena, base: NodeId, member: u32) -> NodeId {
+    ea.alloc(ExprNode::MemberAccess { base, member, bang: false })
+}
+
+fn int_lit_node(ea: &mut ExprArena, v: i32) -> NodeId {
+    ea.alloc(ExprNode::Literal { lit: AstLit::Int(v) })
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -350,5 +387,90 @@ fn lower_two_sequential_assigns() {
             0x6c, 0x78, 0xff, 0x71, 0x74, 0xff,
             0x6c, 0x74, 0xff, 0x71, 0x78, 0xff,
         ]
+    );
+}
+
+// ── UDT (Type...End Type) field access ───────────────────────────────────────
+//
+// `Type Point : X As Long : Y As Long : End Type` — the milestone-1 fixture's
+// declaration. Frame: `t` (2 Long fields, uniform size 4) allocates first —
+// base -140 (0xff74), so X (field 0) is at -140, Y (field 1) at -136 — then
+// `y As Long` at -144 (0xff70).
+
+#[test]
+fn lower_udt_field_load_matches_isolated_probe() {
+    // `y = t.X` in isolation (no preceding store) — the byte sequence this
+    // produces via the real lower_proc/emit pipeline, confirmed by running the
+    // actual source through `examples/emit_pcode`: `6c 74 ff` (load t.X at
+    // -140) then `71 70 ff` (store y at -144). No resolver front-half
+    // surprises on this path — the reload-after-store question below is
+    // isolated to the store side.
+    let mut ea = ExprArena::new();
+    let t = name_ref(&mut ea, 0);
+    let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
+    let y = name_ref(&mut ea, 1);
+    let stmt = assign_node(&mut ea, y, field_x);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let mut resolutions = HashMap::new();
+    resolutions.insert(t.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
+    resolutions.insert(y.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
+
+    let mut types = HashMap::new();
+    types.insert(field_x.0, VbaType::Long);
+
+    let module = BoundModule {
+        procs: vec![make_proc(
+            vec![udt_var(0, /* type_sym */ 100), long_var(1)],
+            vec![],
+            body,
+        )],
+        type_decls: vec![point_type_decl(100, 10, 11)],
+        resolutions,
+        types,
+        ..BoundModule::default()
+    };
+
+    assert_eq!(
+        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
+        &[0x6c, 0x74, 0xff, 0x71, 0x70, 0xff]
+    );
+}
+
+#[test]
+fn lower_udt_field_store_matches_current_pipeline_output() {
+    // `t.X = 1` in isolation — goes through the real 0x2c/resolver chain (a
+    // UDT field has no bypass frame slot). Current output (confirmed by
+    // running the actual source through `examples/emit_pcode`):
+    // `f5 01 00 00 00` (push Long literal 1), `71 74 ff` (store t.X at -140),
+    // THEN an extra `6c 74 ff` (reload of the same offset).
+    //
+    // The reload is NOT something this change introduced — it's the existing
+    // (prior-session, unit-tested-only) `emit_reference` nOp=4/f_flags&0x40
+    // remap path (opcode-index 0x1f2 → byte 0x71, remapped to 0x1e2 → byte
+    // 0x6c), now reached by real source for the first time. Whether VB6
+    // genuinely emits this reload for a resolver-based assignment, or this is
+    // a latent bug the fixture exposes, is UNCONFIRMED — flagged for oracle
+    // capture (see tests/fixtures/e2e_udt_field_scalar_access/), not decided
+    // here. This test locks today's actual behavior so a future change to it
+    // is deliberate, not silent.
+    let mut ea = ExprArena::new();
+    let t = name_ref(&mut ea, 0);
+    let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
+    let one = int_lit_node(&mut ea, 1);
+    let stmt = assign_node(&mut ea, field_x, one);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
+        type_decls: vec![point_type_decl(100, 10, 11)],
+        resolutions: HashMap::from([(t.0, NameResolution::Local { proc_idx: 0, local_idx: 0 })]),
+        types: HashMap::from([(field_x.0, VbaType::Long)]),
+        ..BoundModule::default()
+    };
+
+    assert_eq!(
+        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
+        &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x74, 0xff, 0x6c, 0x74, 0xff]
     );
 }
