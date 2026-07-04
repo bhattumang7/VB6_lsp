@@ -198,6 +198,74 @@ pub enum DeclError {
     AlreadyDeclared,
 }
 
+/// A `Type...End Type` (UDT) local's frame binding: the struct's own base
+/// offset and the common per-field stride (uniform-size fields only — see
+/// [`ProcFrame::declare_udt_local`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct UdtLocal {
+    /// Signed frame offset of the struct's own base (its field-0 byte),
+    /// matching [`ProcFrame::declare_anon_bytes`]'s bottom-of-slot convention.
+    pub base_offset: i16,
+    /// Every field's frame size (confirmed uniform at declaration time).
+    pub field_size: i16,
+}
+
+impl UdtLocal {
+    /// The combined absolute frame offset of field `field_index` (0-based,
+    /// declaration order): `base_offset + field_index * field_size`.
+    pub fn field_offset(&self, field_index: usize) -> i16 {
+        self.base_offset + (field_index as i16) * self.field_size
+    }
+}
+
+/// The resolved layout of a uniform-size-field UDT: the common field size and
+/// the struct's total frame size.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct UdtUniformLayout {
+    pub field_size: i16,
+    pub total_size: i16,
+}
+
+/// Resolve a UDT's field layout under the ONE packing rule confirmed so far:
+/// every field has the identical frame size and alignment. `offset[i] = i *
+/// field_size` is then exact regardless of the still-unconfirmed general
+/// (mixed-size) packing/alignment rule, since every field starts already
+/// aligned to its own (and every other field's) requirement.
+///
+/// `unimplemented!()` — never a sum-of-sizes fallback — the moment two fields
+/// differ in size OR alignment; that general rule has not been reverse
+/// engineered.
+///
+/// # Panics
+/// Panics if `field_type_ctxs` is empty (a `Type` with no members is not a
+/// well-formed declaration).
+pub fn udt_uniform_layout(field_type_ctxs: &[usize]) -> UdtUniformLayout {
+    assert!(!field_type_ctxs.is_empty(), "UDT declaration with no fields");
+    let field_size = frame_size_of_ctx(field_type_ctxs[0]);
+    let field_align = frame_align_of_ctx(field_type_ctxs[0]);
+    for &ctx in &field_type_ctxs[1..] {
+        let size = frame_size_of_ctx(ctx);
+        let align = frame_align_of_ctx(ctx);
+        if size != field_size || align != field_align {
+            unimplemented!(
+                "mixed-size UDT field layout: field-offset/packing rule not yet \
+                 reverse-engineered"
+            );
+        }
+    }
+    UdtUniformLayout { field_size, total_size: field_size * field_type_ctxs.len() as i16 }
+}
+
+/// A type context's required frame alignment. Every currently-supported type
+/// context's alignment equals its own frame size (see [`frame_size_of_ctx`]'s
+/// table) — no confirmed type violates this, so the two are identical for
+/// now. Kept as a distinct function (rather than reusing `frame_size_of_ctx`
+/// directly) so [`udt_uniform_layout`]'s gate checks size and alignment as
+/// independent properties, not one masquerading as the other.
+fn frame_align_of_ctx(type_ctx: usize) -> i16 {
+    frame_size_of_ctx(type_ctx)
+}
+
 /// Runtime frame allocator for one procedure under compilation.
 ///
 /// Tracks the frame cursor and assigns frame offsets to declared locals.
@@ -218,6 +286,7 @@ pub enum DeclError {
 pub struct ProcFrame {
     cursor: i16,
     vars: HashMap<String, LocalVar>,
+    udt_vars: HashMap<String, UdtLocal>,
 }
 
 impl ProcFrame {
@@ -225,6 +294,7 @@ impl ProcFrame {
         Self {
             cursor: PROC_FRAME_BASE,
             vars: HashMap::new(),
+            udt_vars: HashMap::new(),
         }
     }
 
@@ -256,6 +326,14 @@ impl ProcFrame {
     /// larger than the 4-byte String pointer slot. The returned `frame_offset`
     /// is the bottom of the slot (the `LdAddr` target).
     pub fn declare_anon_bytes(&mut self, size: i16) -> LocalVar {
+        LocalVar { type_ctx: 5, frame_offset: self.alloc_bytes(size) }
+    }
+
+    /// Align the cursor down to a 4-byte boundary for sizes ≥ 4, then
+    /// decrement by `size`, returning the (now bottom-of-slot) cursor. Shared
+    /// by every "explicit byte size" allocator ([`Self::declare_anon_bytes`],
+    /// [`Self::declare_udt_local`]).
+    fn alloc_bytes(&mut self, size: i16) -> i16 {
         if size >= 4 {
             let rem = self.cursor.rem_euclid(4) as i16;
             if rem != 0 {
@@ -263,7 +341,39 @@ impl ProcFrame {
             }
         }
         self.cursor -= size;
-        LocalVar { type_ctx: 5, frame_offset: self.cursor }
+        self.cursor
+    }
+
+    /// Declare a `Type...End Type` (UDT) local whose fields are ALL the same
+    /// frame size and alignment — the one packing rule confirmed so far: with
+    /// uniform field sizes, `offset[i] = i * field_size` is exact under any
+    /// alignment rule (2/4/8-byte), so it needs no assumption about the
+    /// general (mixed-size) packing rule. The moment two fields differ in
+    /// size or alignment, `unimplemented!()` — never a sum-of-sizes guess.
+    ///
+    /// `field_type_ctxs` lists each field's type context in declaration order;
+    /// the returned [`UdtLocal`] gives the struct's frame base and per-field
+    /// stride, from which the combined offset of field `i` is
+    /// `base_offset + i * field_size` (ascending — field 0 sits at the
+    /// struct's own base, matching normal in-memory field order).
+    pub fn declare_udt_local(
+        &mut self,
+        name: &str,
+        field_type_ctxs: &[usize],
+    ) -> Result<UdtLocal, DeclError> {
+        if self.vars.contains_key(name) || self.udt_vars.contains_key(name) {
+            return Err(DeclError::AlreadyDeclared);
+        }
+        let layout = udt_uniform_layout(field_type_ctxs);
+        let base_offset = self.alloc_bytes(layout.total_size);
+        let var = UdtLocal { base_offset, field_size: layout.field_size };
+        self.udt_vars.insert(name.to_string(), var);
+        Ok(var)
+    }
+
+    /// Resolve a declared UDT local name to its `UdtLocal`.
+    pub fn resolve_udt(&self, name: &str) -> Option<UdtLocal> {
+        self.udt_vars.get(name).copied()
     }
 
     /// Move the frame cursor for one local of `type_ctx` (4-byte alignment for

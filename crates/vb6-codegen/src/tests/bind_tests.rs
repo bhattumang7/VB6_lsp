@@ -528,3 +528,62 @@ fn global_make_load_node_double_emits_global_opcode() {
     e.emit_expr(load, 0);
     assert_eq!(e.into_bytes(), &[0x97, 0x08, 0x00, 0x00, 0x00]);
 }
+
+// ── UDT (Type...End Type) local frame layout ────────────────────────────────
+
+#[test]
+fn udt_uniform_layout_two_longs_gives_offsets_0_and_4() {
+    // Point { X As Long, Y As Long } — the milestone-1 fixture's shape.
+    let layout = udt_uniform_layout(&[2, 2]);
+    assert_eq!(layout.field_size, 4);
+    assert_eq!(layout.total_size, 8);
+}
+
+#[test]
+fn udt_uniform_layout_rejects_mixed_size() {
+    // Long (4 bytes) next to Double (8 bytes): the general packing rule is
+    // not confirmed, so this must stay unimplemented, never sum-of-sizes.
+    let r = std::panic::catch_unwind(|| udt_uniform_layout(&[2, 4]));
+    assert!(r.is_err());
+}
+
+#[test]
+fn udt_uniform_layout_three_uniform_fields() {
+    // Three fields sharing both size and alignment must not gate.
+    let layout = udt_uniform_layout(&[2, 2, 2]);
+    assert_eq!(layout.field_size, 4);
+    assert_eq!(layout.total_size, 12);
+}
+
+#[test]
+fn declare_udt_local_allocates_below_prior_locals() {
+    let mut f = ProcFrame::new();
+    // A scalar Long declared first occupies the top-most slot.
+    let a = f.declare_local("a", 2).unwrap();
+    assert_eq!(a.frame_offset, -136);
+    // Point { X As Long, Y As Long } allocated next: 8 bytes, 4-byte aligned,
+    // immediately below `a`.
+    let t = f.declare_udt_local("t", &[2, 2]).unwrap();
+    assert_eq!(t.base_offset, -144);
+    assert_eq!(t.field_size, 4);
+    assert_eq!(t.field_offset(0), -144);
+    assert_eq!(t.field_offset(1), -140);
+}
+
+#[test]
+fn declare_udt_local_rejects_duplicate_name() {
+    let mut f = ProcFrame::new();
+    f.declare_udt_local("t", &[2, 2]).unwrap();
+    assert_eq!(f.declare_udt_local("t", &[2, 2]), Err(DeclError::AlreadyDeclared));
+    // Also rejects a name already used by a scalar local, and vice versa.
+    f.declare_local("s", 2).unwrap();
+    assert_eq!(f.declare_udt_local("s", &[2, 2]), Err(DeclError::AlreadyDeclared));
+}
+
+#[test]
+fn resolve_udt_returns_declared_binding() {
+    let mut f = ProcFrame::new();
+    let t = f.declare_udt_local("t", &[2, 2]).unwrap();
+    assert_eq!(f.resolve_udt("t"), Some(t));
+    assert_eq!(f.resolve_udt("missing"), None);
+}
