@@ -302,7 +302,38 @@ pub(super) fn lower_class_method_call(
         let root = coerce_assign_value(ctx, args[i], root, coerce, &mut arena);
         let mut emitter = Emitter::new(&arena);
         emitter.emit_expr(root, 2);
-        out.extend(emitter.into_bytes());
+        let shipped_bytes = emitter.into_bytes();
+
+        // Live cross-check against the `EbEmitArgCoerce` word-form port,
+        // Object-ByVal side (`local_18 == 9`): scoped exactly to a plain
+        // same-type variable source — the ONLY shape this session traced
+        // `EbCheckSetBinding`/`EbEmitPropertyExpr`/`EbNormalizeTypeReference`
+        // for (see `eb_normalize_type_reference_object_case_is_noop_for_
+        // plain_var`'s doc comment) — matching `class_method_arg_needs_
+        // staging`'s own unconditional `true` for `Object`, this branch is
+        // where a plain Object variable ByVal argument actually lands
+        // (staging always applies, so it never hits the fast-path branch
+        // above).
+        if cfg!(debug_assertions) && matches!(ty, VbaType::Object) && *by_val && is_plain_var {
+            let mut scratch = NodeArena::new();
+            let outcome = eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch);
+            match outcome {
+                Ok(ArgCoerceOutcome::Value(node)) => {
+                    let mut port_emitter = Emitter::new(&scratch);
+                    port_emitter.emit_expr(node, 2);
+                    let ported_bytes = port_emitter.into_bytes();
+                    debug_assert_eq!(
+                        ported_bytes, shipped_bytes,
+                        "eb_emit_arg_coerce's Object-ByVal output diverged from the shipped bytes"
+                    );
+                }
+                other => debug_assert!(
+                    false,
+                    "eb_emit_arg_coerce disagreed with the shipped Object-ByVal plain-variable path: {other:?}"
+                ),
+            }
+        }
+        out.extend(shipped_bytes);
 
         if !needs_staging[i] {
             // ByVal, non-addressable source, scalar type: push the computed
