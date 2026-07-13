@@ -191,6 +191,21 @@ pub(super) fn eb_emit_arg_coerce(
         return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty));
     }
 
+    // `local_18 == 9` (Object, ByVal): the full `EbCheckSetBinding` ->
+    // `EbEmitPropertyExpr` -> `EbNormalizeTypeReference` chain is now traced
+    // end-to-end for a plain Object-variable argument and confirmed a no-op
+    // at every step (see `eb_normalize_type_reference_object_case_is_noop_
+    // for_plain_var`'s doc comment for the full chain) — the SAME outcome
+    // already confirmed for Integer ByVal, so the same delegation applies.
+    // This is this port's node-coercion layer only; the separate byte-level
+    // `fd 9c` (`__vbaObjSet`) staging Object arguments require for refcount
+    // safety happens in a later pass this function does not touch.
+    if known_local18_for_grounded_case(param_ty, by_val) == Some(9)
+        && eb_normalize_type_reference_object_case_is_noop_for_plain_var()
+    {
+        return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty));
+    }
+
     // Every other param type/mode this port could plausibly classify
     // bottoms out at `ResolveTypeBinding2` (the `local_18 == 7` common
     // case, traced deep but not byte-complete — see the memory note) or a
@@ -338,6 +353,36 @@ pub(super) fn eb_property_expr_bvar2_for_plain_local(word7: i32) -> Option<bool>
 /// genuinely unported — this function documents ONLY the tail dispatch
 /// AFTER that call, confirmed to contribute nothing further once it runs.
 pub(super) fn eb_property_expr_object_bval_let_tail_is_noop() -> bool {
+    true
+}
+
+/// **VERIFIED via live TTD — closes the Object-ByVal chain.**
+/// `EbNormalizeTypeReference`'s `iVar7==0x16` guard
+/// (`vba6_part0001.c:48042`) is actually `iVar7==0x16 && EbIsValidType2(...)
+/// != 0` — a SECOND condition this port's earlier read of the function
+/// (see [`eb_normalize_type_reference_is_plain_noop`]) had not yet resolved,
+/// leaving Object gated as "does substantially more, unmodeled". Traced
+/// precisely (breakpoint at `EbEmitPropertyExpr`'s own call site into
+/// `EbNormalizeTypeReference`, `0fac0a78`, single-step `t` INTO that one
+/// specific call rather than a global breakpoint — `EbNormalizeTypeReference`
+/// fires for every node in the whole compile, so isolating exactly this
+/// invocation mattered; then one more targeted breakpoint at
+/// `EbIsValidType2`'s call site inside it, `0fab080d`): `EbIsValidType2`
+/// returned `0` for our node. That makes the WHOLE `iVar7==0x16` block a
+/// no-op for this case (the `&&` short-circuits) — falls straight to the
+/// shared `LAB_0fab07fa` tail (clear bit 0, return the SAME node pointer
+/// unchanged), the identical outcome already confirmed for Integer ByVal.
+///
+/// This closes the full Object-ByVal chain: `EbCheckSetBinding` (near-no-op)
+/// → `EbEmitPropertyExpr` (no-op past `EbGetTarget`/`EbGetTypeClass`, see
+/// [`eb_property_expr_object_bval_let_tail_is_noop`]) → `EbNormalizeType
+/// Reference` (no-op, THIS finding) → node returned completely unchanged.
+/// Scoped to the traced case only (a plain, non-aliased Object variable
+/// reference) — `EbIsValidType2`'s own logic (`vba6_part0002.c:5710`) can
+/// return nonzero for other node shapes (e.g. an intrinsic/COM-bound `0x60`
+/// node whose `EbGetTypeBit` flag is set, or a nested `0x69` wrapper), which
+/// remain genuinely untraced and must still gate.
+pub(super) fn eb_normalize_type_reference_object_case_is_noop_for_plain_var() -> bool {
     true
 }
 

@@ -95,6 +95,14 @@ fn eb_property_expr_object_bval_let_tail_is_noop_confirmed() {
 }
 
 #[test]
+fn eb_normalize_type_reference_object_case_confirmed_noop() {
+    // TTD-confirmed (argtype_probe/VB601.run: EbIsValidType2 returned 0 for
+    // our node at the precise call site inside EbNormalizeTypeReference,
+    // isolated via a single-step-into from EbEmitPropertyExpr's own call).
+    assert!(eb_normalize_type_reference_object_case_is_noop_for_plain_var());
+}
+
+#[test]
 fn known_local18_matches_the_four_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
