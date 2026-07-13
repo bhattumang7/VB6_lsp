@@ -11,72 +11,115 @@ Status legend:
 - **n/a** — not reachable for real source (degenerate decompiler artifact or
   internal error path); not counted against coverage.
 
-The list below is the bound-node opcode dispatch in `emit.rs::emit_expr`
-(opcodes `0x05..0x73`) plus the sub-dispatches and the front-half wiring.
+## COM-free single-procedure surface
+
+The full grammar-derived corpus (every literal form, operator × type,
+statement, array/string/Variant op) for a single COM-free procedure is
+byte-exact end-to-end, each cell backed by a committed exact-byte regression
+test. This includes: all scalar types (Integer/Long/Single/Double/Currency/
+Date/String/Boolean/Byte/Variant) load/store/coercion; all arithmetic/logical/
+comparison operators; string concat/compare/fixed-length/Mid/LSet; 1-D and
+multi-dim fixed and dynamic arrays with ReDim; Const folding; all control flow
+(If/While/Do/For/Select Case incl. ranges and multi-value, GoTo/labels, Exit
+For/Do, On Error GoTo); the statement line-number table; and per-procedure
+Static locals.
 
 ## Expression / statement node opcodes
 
 | op | what | status |
 |----|------|--------|
 | 0x0b–0x0e | unary/most expr leaves | emit |
-| 0x0f | name-ref classify | emit (class 0/2/3); **GAP** class 1 (symbol var-type), class 4 (in-place node mutation) |
+| 0x0f | name-ref classify | emit (class 0/2/3); GAP class 1 (typed name reference — front-end wiring, no new back-end work needed); GAP class 4 (in-place node-flag mutation — blocked on our own immutable emit representation, not a missing back-end routine) |
 | 0x10–0x15, 0x18, 0x1a | typed leaves/coercions | emit |
 | 0x24 | (group) | emit |
-| 0x2c | assignment statement | emit (common scalar: RHS + resolved store); **GAP** dispatch/compound-op/array/object/ByRef-init sub-paths |
-| 0x2d | assignment (0x10-child) | emit |
+| 0x2c | assignment statement | emit (common scalar: RHS + resolved store); GAP: dispatch-binding LHS, array/special LHS, object stack-arg pass-through, object-typed LHS, ByRef-init store, LHS member sub-expression |
+| 0x2d | assignment (0x10-child) | emit (scalar); GAP: object-typed child fallthrough |
 | 0x2f–0x3b | arithmetic/logical group | emit |
 | 0x3e, 0x3f | compare group | emit |
-| 0x41 | argument list | emit |
-| 0x42, 0x43 | dispatch type | emit (common); **GAP** dispatch-binding sub-path (object) |
+| 0x41 | argument list | emit; GAP op-class 3 (not yet confirmed reachable for real source) |
+| 0x42, 0x43 | dispatch type | emit (common + dispatch-binding sub-path) |
 | 0x44–0x50 | builtins / conversions | emit |
-| 0x51, 0x52 | operator classify | emit (class 0–5); **n/a** class 6/7 (degenerate) |
+| 0x51, 0x52 | operator classify | emit (class 0–5); n/a class 6/7 (degenerate) |
 | 0x53–0x59 | group | emit |
 | 0x5a | complex binary op | emit |
 | 0x5c | group | emit |
-| 0x5d | type-library-driven cast | **ext** |
+| 0x5d | type-library-driven cast | ext |
 | 0x5e, 0x5f | group | emit |
-| 0x60 | member-reference coercion | emit (common path via resolver+binder+value-emitter); **GAP** dispatch/late-bound sub-path + member sub-expr |
-| 0x61 | call | emit (by-ref common); **GAP** ByVal / dispatch / member numbering |
+| 0x60 | member-reference coercion | emit (common path); GAP dispatch/late-bound sub-path + member sub-expression |
+| 0x61 | call | emit (by-ref common); GAP: early-bound dispatch call, type-expression argument, ByRef coercion-sequence argument, ByVal (value-returning) call, Variant-result finalize |
 | 0x63, 0x65–0x67 | group | emit |
-| 0x68 | object child | emit (trailing word); **GAP** object-child attr path |
-| 0x69 | binary-operation setup | emit (operands + operator descriptor kinds 6/7/8/9/0xb, nOp 5/6); **GAP** kind-0xa + nOp 1-4 finalize (EbEmitExpressionOp opcode base; RE complete — full asm+decompile of the entire outer 11-entry / inner 6-entry dispatch captured in `re_lab/pcode_lab/emit_rip/{jumptable_bytes.txt, expr_emit2_kinds_5_6_7_8_10_decomp.c}`; kind 6/7/8/9/0xb opcode-base bodies now ported, kind-0xa base + the nOp 1-4 finalize re-entry still need the resolver-supplied context) |
+| 0x68 | object child | emit (trailing word); GAP object-child attribute path |
+| 0x69 | binary-operation setup | emit (common); GAP ByRef stack-init variant |
 | 0x6a–0x6e | instruction group | emit |
-| 0x72 | type-node builder | **GAP** (resolver / EbCreateTypeNode3) |
+| 0x72 | type-node builder | GAP (object/late-bound case only; a scalar/struct-only sub-port is a promising near-term target) |
 | 0x73 | group | emit |
-| 0x14(0x17), 0x5d | external type-lib paths | **ext** |
+| 0x14(0x17), 0x5d | external type-library paths | ext |
 
-## Reference / value-emitter sub-dispatch (`emit_reference`, `emit_value2` paths)
+## Reference / value-emitter sub-dispatch
 
 | path | status |
 |------|--------|
-| reference kinds 1/2/6/7 | emit |
-| reference kinds 3/4/5/0xa | **GAP** (resolver-supplied opcode base) |
+| reference kinds 1/2/3/5/6/7 | emit |
+| reference kind 0xa | emit (the sub-case reachable from the currently-wired descriptor builders); GAP: a second sub-case, not reachable from any wired builder today |
+| reference kind 4 | GAP — needs a descriptor field this sub-dispatch doesn't carry yet (now independently confirmed by two other routines) plus a finalize-emit mode variant; adding both safely (without risk to already-tested kinds) is a scoped follow-up, not yet done |
 | value-emitter kinds 8/9/0xb + typed store | emit |
-| value-emitter kind-3 resolver-base finalize | **GAP** |
+| value-emitter finalize / re-entry coercion tail | emit |
+| store-with-conversion outside the currently-modeled type-offset range | GAP — confirmed reachable for some real type combinations (not just a table-extent formality); needs further work, not yet a table poke |
+| binding-emit tail: type/expression coercion propagation | emit (as a standalone, buffer-verified routine) |
+| binding-emit tail: member-record binding-descriptor construction | emit (common + a COM-bypass edge case); GAP: the live slot-table path (COM) |
+| binding-emit tail: operator-descriptor construction for a resolved binding | emit (scratch-descriptor construction only); GAP: the final result-descriptor's fields, which depend on a side-table this pipeline has no model for |
 
-## Front-half wiring (the lever that unblocks most GAPs)
+## Front-half wiring
 
-Progress: the binder front-half (`binder.rs`) now resolves the common
-name-reference context (disc 1) → `(kind, byref)`, and resolver **category 4**
-emits its descriptor end-to-end via `call_conv_descriptor` when given that
-binding. Remaining binder work: disc 3/5/6 (document-context allocator), disc 4
-(COM `ITypeInfo` slot), resolver categories 0xd/0xe/0xf (binding-emit tail), and
-wiring `emit.rs` 0x60/0x2c/0x69 → `resolve_reference2` with the binder result.
+The binder resolves the common name-reference context and the resolver's
+member-access classification (category 4) end-to-end when a construct
+supplies it a resolved binding. Remaining GAPs in this area are a mix of (a)
+genuinely open back-end research (object/COM member resolution) and (b)
+front-end wiring where the back-end routine already exists but `lower.rs`
+doesn't yet call it for the relevant source construct — see the per-op notes
+above for which is which.
 
-The GAPs `0x2c / 0x60 / 0x69 / 0x72`, `0x0f` class 1/4, `0x42/0x43` dispatch,
-`0x61` ByVal/dispatch, `0x68` object-child, and reference kinds 3–9 all bottom out
-at the **resolver / declaration front-half**: `lower.rs` must build the symbol
-records + context (`pNode[5]`) the ported resolver reads, then `emit.rs` must call
-`resolve_reference2` → value-emitter. Ported so far (this work):
-`heap.rs` (allocator+bags), `typenode.rs`, `decl.rs` (member/slot records),
-`resolver.rs` (classifier + value cases + category-4 selection). Remaining:
-- `EbResolveExprNode` (bind-result resolution of the context node) OR have
-  `lower.rs` supply the resolved handle from `vb6-sema`.
-- resolver categories 0xd/0xe/0xf (binding-emit tail) + the method-binding path.
-- wire `emit.rs` 0x60/0x2c/0x69/0x72 → `resolve_reference2`.
+The binding-emit-tail routines above are similarly back-end-ready but not
+yet reachable end-to-end: the resolver's own member-access classification
+has categories that route through them, but wiring that dispatch requires an
+externally-supplied type descriptor the resolver's public entry point does
+not yet accept as a parameter — a front-end/API threading gap, not an
+unported back-end routine.
+
+## Constructs outside the currently audited surface
+
+These were never exercised by the COM-free single-procedure push and their
+status is presently **unaudited GAP**, not confirmed `n/a`:
+
+- Procedure calls beyond the by-ref common path (see 0x61 above), multi-
+  procedure modules.
+- User-defined types (`Type...End Type`): field access/assignment, arrays of
+  UDTs, UDTs as parameters.
+- Property Get/Let/Set declarations.
+- Objects: `Set`, `New`, `Is`/`IsNot`, `TypeOf...Is`, `With`, `For Each`,
+  member access (`.`/`!`), `Me`, `Nothing`, `AddressOf`.
+- `WithEvents`, `RaiseEvent`, event declarations.
+- `Declare` (DLL import) declarations.
+- Optional parameters with default values; `ParamArray`.
+- File I/O statements (`Open`/`Close`/`Print #`/`Input #`/`Get`/`Put`) and the
+  `Debug` object.
+- `RSet`; `MidB`/`MidB$` spellings; `ReDim Preserve`; multi-dimensional array
+  element load (store is covered); non-`Long` multi-dimensional element
+  store; module-level `Const` folding; name-form date literals.
+- `GoSub`/`Return`; `On...GoTo`/`On...GoSub` (list form); `Resume`/
+  `Resume Next`/`Resume <label>`; `Stop`; `End`; `Error n` as a statement;
+  `Exit For`/`Exit Do` (status not independently re-verified since the
+  original push).
+- Module directives with no proc-body opcodes (`Option Explicit/Base/Compare`,
+  `DefType`, `Attribute`).
 
 ## Already byte-exact end-to-end (source → p-code, verified vs the compiler)
 
-Scalar `Dim`/global/parameter load+store (Integer/Long/Double), arithmetic
-(`+ - * / And Or Xor`), comparisons (`= <> < > <= >=`), and control flow — 20
-`pipeline_e2e` + 21 `oracle_pcode` exact-byte tests.
+Scalar `Dim`/global/parameter load+store (all 10 scalar types), arithmetic
+(`+ - * / \ Mod ^`), logical (`And Or Xor Eqv Imp`), comparisons
+(`= <> < > <= >=`), string ops (concat/compare/fixed-length/`Mid`/`LSet`),
+1-D and multi-dim arrays (fixed + dynamic + `ReDim`), `Const` folding, Variant
+scalar assignment, and full control flow (`If`/`While`/`Do`/`For`/
+`Select Case`/`GoTo`/labels/`Exit For`/`Exit Do`/`On Error GoTo`) — backed by a
+grammar-derived exact-byte regression corpus in
+`crates/vb6-codegen/tests/pipeline_e2e.rs`.

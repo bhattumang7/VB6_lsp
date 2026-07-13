@@ -63,3 +63,92 @@ destination/source type tags.
 
 If a source form is found that does reach either path through the real
 pipeline, capture `expected.pcode` for it and this note can be dropped.
+
+---
+
+`Emitter::emit_reference` descriptor kinds 3, 5, and 0xa (the `word6`-bit-0-set
+sub-case), plus `Emitter::expr2_finalize_tail`'s recursive re-entry — no
+fixture-level (input.bas + expected.pcode) coverage is possible yet.
+
+Reason: none of these shapes are constructed by any currently-wired descriptor
+builder reachable from real source.
+
+- Kind 3 and kind 5 are never produced by `init_expr_descriptor`,
+  `call_conv_descriptor`, or `emit_setup_binary_operation` — the only
+  descriptor constructors currently wired to the front end. Kind 3 becomes
+  reachable only via `expr2_finalize_tail`'s own recursive re-entry (a fresh,
+  all-zero, kind-3 descriptor); kind 5 has no producer anywhere in the
+  codebase yet.
+- Kind 0xa's `word6`-bit-0-set sub-case is constructed by
+  `emit_setup_binary_operation`, but only inside a branch gated on the node's
+  own `word[1] & 0x8000` bit being set — and the caller (`emit_expr`'s `0x69`
+  case in `crates/vb6-codegen/src/emit/expr.rs`) already loud-gates that exact
+  bit before calling `emit_setup_binary_operation` at all (see the
+  "EbSetupBinaryOperation ByRef stack-init" gate). So with today's wiring the
+  bit is always clear by the time `emit_setup_binary_operation` runs, and its
+  kind-0xa branch's `word6 |= 1` line can never execute. This sub-case will
+  become reachable once that outer gate is closed.
+- `expr2_finalize_tail`'s recursion is exercised today only by kind 9 (and
+  8/0xb) — descriptor kinds themselves reachable via `emit_setup_binary_operation`
+  — but whether any *real source form* currently reaches `emit_setup_binary_operation`
+  with an nOp outside {5, 6-without-the-flag} (i.e. actually triggers the
+  recursion, not just the early return) was not established this pass.
+
+Coverage for all of the above is therefore unit-level only (see
+`crates/vb6-codegen/src/tests/emit_tests.rs`, the `emit_reference_kind3_*`,
+`emit_reference_kind5_*`, `emit_reference_kind_0xa_*`, and
+`expr2_finalize_tail_*` tests), constructing the descriptor directly and
+asserting on the emitted byte stream — verified against the assembly-level
+trace of the routine (register-precise), not fabricated.
+
+If a source form is found that does reach any of these shapes through the
+real pipeline, capture `expected.pcode` for it and drop the relevant part of
+this note.
+
+---
+
+`emit_expr`'s `0x42`/`0x43` dispatch-binding sub-path (`crates/vb6-codegen/src/emit/expr.rs`)
+— no fixture-level (input.bas [+ input.cls] + expected.pcode) coverage yet.
+
+Reason: `lower_module`/`lower_expr` never construct a `0x42` or `0x43` bound
+node for any source form today — those op codes are reached only by hand-built
+node shapes in `crates/vb6-codegen/src/tests/emit_tests.rs`
+(`case_0x42_dispatch_binding_emits_0x2ff`, `case_0x43_dispatch_binding_emits_0x3f6`,
+and the two fallback-path tests). Reaching this from real source needs an
+early-bound call/member reference on an object whose resolved binding classifies
+as an early-bound dispatch (module-symbol-heap member kind 4) — i.e. class
+member access, which the front end does not lower yet (see the object/class
+tier noted throughout `re_lab/pcode_lab/remaining_work_ledger.md`).
+
+If a source form is found that does reach this path through the real pipeline,
+capture `expected.pcode` for it and drop this note.
+
+---
+
+`Emitter::convert_expression_type`, `resolver::fill_binding_desc`, and
+`Emitter::emit_binary_op_code_temp_descriptor` (the binding-emit-tail cluster,
+2026-07-14 port) — no fixture-level (input.bas [+ input.cls] + expected.pcode)
+coverage yet.
+
+Reason: all three are reached, in the real compiler, only from the resolver's
+category 0xd/0xe/0xf dispatch (and the method/object-binding gate's
+has-a-slot sub-case) inside `resolve_ident_ref` — a dispatch this pipeline's
+`resolve_ident_ref` does not yet implement (it still loud-gates those
+categories; see the ledger). Reaching any of these three functions through
+real source additionally needs class/object member access, which the front
+end does not lower yet. Coverage is unit-level only (see
+`crates/vb6-codegen/src/tests/emit_tests.rs`'s `convert_expression_type_*`
+and `emit_binary_op_code_temp_descriptor_*` tests, and
+`crates/vb6-codegen/src/tests/resolver_tests.rs`'s `fill_binding_desc_*`
+tests), constructing the node/record shapes directly and asserting on the
+emitted bytes / returned descriptor — verified against the decompiled
+routines at the C level (not fabricated).
+
+`EbEmitBinaryOpCode`'s second half (building its final kind-8 output
+descriptor) is not ported at all — it depends on a side-table located via a
+module-heap pointer this pipeline has no model for; see the private citation
+note for the exact discriminant.
+
+If a source form is found that does reach any of these through the real
+pipeline, capture `expected.pcode` for it and drop the relevant part of this
+note.

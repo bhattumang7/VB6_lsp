@@ -547,3 +547,78 @@ fn type_library_descriptor_is_gated() {
     }));
     assert!(r.is_err());
 }
+
+// ── fill_binding_desc (2026-07-14 port) ──────────────────────────────────────
+
+#[test]
+fn fill_binding_desc_common_branch_yields_kind4() {
+    // binding_flag_5 bit1 clear, and rec0&7 != 2 (the "not a specific slot
+    // kind" leg of the OR) -> the common branch: kind 4, word3 = the member
+    // record's +8 word.
+    let mut heap = vec![0u8; 0x30];
+    heap[0x10] = 0x01; // rec0 & 7 == 1, != 2
+    heap[0x10 + 8] = 0x34;
+    heap[0x10 + 9] = 0x12; // +8 word = 0x1234
+    let result = fill_binding_desc(0, &heap, 0x10, 0);
+    assert_eq!(result, FillBindingDesc::Kind4 { word3: 0x1234 });
+}
+
+#[test]
+fn fill_binding_desc_common_branch_via_rec_0x10_bit0() {
+    // rec0&7 == 2 (fails the first OR leg) but rec_0x10&1 != 0 (second OR leg
+    // true) -> still the common branch.
+    let mut heap = vec![0u8; 0x30];
+    heap[0x10] = 0x02; // rec0 & 7 == 2
+    heap[0x10 + 0x10] = 0x01; // rec_0x10 & 1 != 0
+    heap[0x10 + 8] = 0x78;
+    heap[0x10 + 9] = 0x56;
+    let result = fill_binding_desc(0, &heap, 0x10, 0);
+    assert_eq!(result, FillBindingDesc::Kind4 { word3: 0x5678 });
+}
+
+#[test]
+fn fill_binding_desc_common_branch_via_rec_0x14_not_neg2() {
+    // rec0&7==2 and rec_0x10&1==0 (both OR legs so far false) but rec_0x14 !=
+    // -2 (third OR leg true) -> still the common branch.
+    let mut heap = vec![0u8; 0x30];
+    heap[0x10] = 0x02;
+    heap[0x10 + 0x14..0x10 + 0x18].copy_from_slice(&0i32.to_le_bytes()); // != -2
+    heap[0x10 + 8] = 0x11;
+    heap[0x10 + 9] = 0x00;
+    let result = fill_binding_desc(0, &heap, 0x10, 0);
+    assert_eq!(result, FillBindingDesc::Kind4 { word3: 0x0011 });
+}
+
+#[test]
+fn fill_binding_desc_binding_flag_forces_slot_table_branch() {
+    // binding_flag_5 bit1 set short-circuits the common branch even though
+    // the record shape would otherwise qualify -- with ctx_flag_c bit0 set,
+    // this lands on the COM-bypass edge case (kind 5, sentinel 0xffff).
+    let mut heap = vec![0u8; 0x30];
+    heap[0x10] = 0x01; // would qualify for the common branch on its own
+    let result = fill_binding_desc(2, &heap, 0x10, 1);
+    assert_eq!(result, FillBindingDesc::Kind5Bypass);
+}
+
+#[test]
+fn fill_binding_desc_slot_kind_with_flags_set_is_bypass() {
+    // rec0&7==2 AND rec_0x10&1==0 AND rec_0x14==-2 (all three OR legs false)
+    // -> the "is a specific slot kind" condition holds, common branch NOT
+    // taken; ctx_flag_c bit0 set bypasses the COM slot-table lookup.
+    let mut heap = vec![0u8; 0x30];
+    heap[0x10] = 0x02;
+    heap[0x10 + 0x14..0x10 + 0x18].copy_from_slice(&(-2i32).to_le_bytes());
+    let result = fill_binding_desc(0, &heap, 0x10, 1);
+    assert_eq!(result, FillBindingDesc::Kind5Bypass);
+}
+
+#[test]
+#[should_panic(expected = "EbFillBindingDesc slot-table path")]
+fn fill_binding_desc_slot_kind_without_bypass_is_gated() {
+    // Same record shape as the bypass test, but ctx_flag_c bit0 clear ->
+    // needs the live COM slot table (EbBuildSlotTable) -- must loud-gate.
+    let mut heap = vec![0u8; 0x30];
+    heap[0x10] = 0x02;
+    heap[0x10 + 0x14..0x10 + 0x18].copy_from_slice(&(-2i32).to_le_bytes());
+    let _ = fill_binding_desc(0, &heap, 0x10, 0);
+}

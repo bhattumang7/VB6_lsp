@@ -55,7 +55,8 @@ impl<'a> Emitter<'a> {
     ///
     /// Only descriptor kinds and sub-paths that do not reach not-yet-built
     /// machinery are implemented; the rest are `unimplemented!()`. The opcode
-    /// base by kind: local = `0x1e0`, argument = `0x210`, kind-7 = `0x240`.
+    /// base by kind: local = `0x1e0`, argument = `0x210`, kind-7 = `0x240`,
+    /// kind-6 = `0x3d0`, kind-3 = `0x270`, kind-5 = `0x2a0`, kind-0xa = `0x190`.
     pub fn emit_reference(&mut self, desc: &RefDescriptor, n_op_in: i32, f_flags: u32, n_type_in: i32) {
         let mut n_op = n_op_in;
         let n_type = n_type_in;
@@ -63,7 +64,11 @@ impl<'a> Emitter<'a> {
         // + trailing word, 0 = opcode only. The trailing-word path is only
         // reached via the deferred nType==0x17 chain, so it is always 1 here.
         let emit_mode: i16 = 1;
-        let operand_word: u16 = desc.operand;
+        // The operand word fed to the final emit. Kinds 1/2/6/7 (and the
+        // default fallback) use the descriptor's canonical `operand`; a few
+        // kinds source a different descriptor field instead — overridden
+        // per-kind in the `opcode_base` match below.
+        let mut operand_word: u16 = desc.operand;
 
         // Operator-reference descriptor kinds (8/9/0xb) emit their opcode
         // directly from the descriptor (no resolver-supplied base) and finish
@@ -124,21 +129,51 @@ impl<'a> Emitter<'a> {
             // by-reference counterpart of kind 7). Unconditional — no ByRef
             // promotion branch.
             6 => opcode_base = 0x3d0,
-            // kinds 3/4/5/0xa: the opcode base is supplied by the resolver's
-            // call chain, not available without the full module context.
-            3 | 4 | 5 | 0xa => unimplemented!(
-                "reference kind {}: needs the resolver-supplied opcode base from \
-                 the full module compilation context",
-                desc.kind
+            // kind 3: opcode base 0x270; the operand is the descriptor's `+6`
+            // field (not the canonical `+0xa` operand), unconditional.
+            3 => {
+                opcode_base = 0x270;
+                operand_word = desc.word6;
+            }
+            // kind 5: opcode base 0x2a0; same shape as kind 3 (operand from
+            // `+6`, unconditional), different template constant.
+            5 => {
+                opcode_base = 0x2a0;
+                operand_word = desc.word6;
+            }
+            // kind 0xa: opcode base 0x190. The `+6` field's low bit selects
+            // the operand source: set -> the descriptor's `+8` field. Clear
+            // -> a distinct fallback shape (the raw nType argument doubles as
+            // both the opcode base and the operand) whose downstream byte
+            // consumption was not captured in the available trace; gated
+            // rather than guessed.
+            0xa => {
+                opcode_base = 0x190;
+                if desc.word6 & 1 != 0 {
+                    operand_word = desc.word8;
+                } else {
+                    unimplemented!(
+                        "reference kind 0xa, +6 field bit 0 clear: the \
+                         nType-as-operand fallback shape is not captured on disk"
+                    );
+                }
+            }
+            // kind 4: needs a second stashed operand word the descriptor has
+            // no field for, plus a non-default finalize-emit mode whose
+            // downstream byte consumption was not captured in the available
+            // trace; gated rather than guessed.
+            4 => unimplemented!(
+                "reference kind 4: second operand word / finalize-emit mode \
+                 not captured on disk"
             ),
             // kinds 8/9/0xb handled above (operator-reference direct emission).
             8 | 9 | 0xb => unreachable!(),
-            // default: needs the resolver-supplied opcode base.
-            _ => unimplemented!(
-                "reference kind {} (default): needs the resolver-supplied opcode \
-                 base from the full module compilation context",
-                desc.kind
-            ),
+            // default (kind 0 / out of range): both the opcode base and the
+            // operand are the raw nType argument itself.
+            _ => {
+                opcode_base = n_type;
+                operand_word = n_type as u16;
+            }
         }
 
         // When nType==0x12 the usage-context flag may promote it to 0x17; that
@@ -273,13 +308,17 @@ impl<'a> Emitter<'a> {
                 } else if f_flags & 0x20 == 0 {
                     // Store with conversion: opcode = base + 0x10 +
                     // EXPR_STORE_CONV[type offset][sub], where sub combines the
-                    // inverted flag bits 0x1000 and 0x800. Reached only for type
-                    // offsets 2..=9 (the table's valid domain).
+                    // inverted flag bits 0x1000 and 0x800. The table's confirmed
+                    // exact extent is offsets 2..=9 (RT_TYPE_OFFSET's raw range
+                    // also includes 0/1/10/12/14, which real destination/source
+                    // type combinations CAN produce here — this is a genuine,
+                    // unresolved gap, not a dead default; needs its own
+                    // extraction, not guessed).
                     use crate::tables::EXPR_STORE_CONV;
                     if !(2..=9).contains(&off3) {
                         unimplemented!(
                             "store conversion (0x8000 path) for type offset {off3}: \
-                             outside the conversion table domain"
+                             outside the conversion table's confirmed 2..=9 extent"
                         );
                     }
                     let inv12 = 1 - ((f_flags >> 0xc) & 1) as i32;
@@ -354,11 +393,10 @@ impl<'a> Emitter<'a> {
     /// The shared finalize tail of the operator-reference value-emitter kinds
     /// (8/9/0xb). For a value/store operation (nOp not 5/6, or nOp 6 with the
     /// descriptor's `+4` bit `0x04` set) it re-enters the value emitter with a
-    /// freshly-built coercion descriptor — that recursion's opcode base is
-    /// supplied by the resolver's register state and is not reproducible without
-    /// the full module context, so it stays gated. nOp 5 (and nOp 6 without the
-    /// flag) finishes cleanly here.
-    pub(super) fn expr2_finalize_tail(&mut self, n_op: i32, _f_flags: u32, _n_type: i32, flags1: u8) {
+    /// freshly-built descriptor: kind 3, every other field zeroed, the same
+    /// `nOp`/`fFlags`/`nType` forwarded unchanged. nOp 5 (and nOp 6 without the
+    /// flag) finishes cleanly here without recursing.
+    pub(super) fn expr2_finalize_tail(&mut self, n_op: i32, f_flags: u32, n_type: i32, flags1: u8) {
         if n_op == 5 || n_op == 6 {
             if n_op != 6 {
                 return;
@@ -367,10 +405,232 @@ impl<'a> Emitter<'a> {
                 return;
             }
         }
-        unimplemented!(
-            "value-emitter finalize tail (EbBuildExprDescriptor): the re-entry \
-             coercion descriptor's opcode base is resolver-supplied; reached for \
-             nOp {n_op}"
-        );
+        let coercion_desc = RefDescriptor {
+            kind: 3,
+            ..RefDescriptor::default()
+        };
+        self.emit_reference(&coercion_desc, n_op, f_flags, n_type);
+    }
+
+    /// Port of `ConvertExpressionType`: propagates coercion flags/offsets
+    /// between a type-descriptor node and an expression-result node (both a
+    /// 4-word shape: `word0`=kind 1..=0xb, `word1` low16=flags, `word1`
+    /// high16=an accumulator field, `word2` high16=another accumulator
+    /// field, `word3`=an opaque payload word), re-entering the value emitter
+    /// (`emit_reference`, n_op 6) on several arms. `ctx_flag_c` is byte
+    /// `+0xc` of the compiler context — the same field [`resolve_ident_ref`]
+    /// already threads through; only bit 1 (`&2`) is read here.
+    pub(super) fn convert_expression_type(
+        &mut self,
+        type_desc: &mut RawNode,
+        expr_desc: &mut RawNode,
+        ctx_flag_c: u8,
+    ) {
+        match type_desc.w[0] as i32 {
+            // kind 1: bit 2 clear -> accumulate into word2-high, merge flag
+            // bits 0/2 from expr_desc, copy type_desc into expr_desc wholesale.
+            // Bit 2 set falls into the shared "settype4" block (kind 2/4's arm).
+            1 => {
+                if flags_lo(type_desc) as u8 >> 2 & 1 == 0 {
+                    let b = flags1_byte(expr_desc);
+                    let new_hi2 = hi2(type_desc).wrapping_add(hi1(expr_desc));
+                    set_hi2(type_desc, new_hi2);
+                    set_flags_lo(type_desc, merge_flag_bits(flags_lo(type_desc), b));
+                    copy_wholesale(expr_desc, type_desc);
+                    return;
+                }
+                self.convert_expr_type_settype4(type_desc, expr_desc, ctx_flag_c);
+            }
+            // kind 2/4: bit 2 set -> the shared direct-emit block (kind 6's
+            // "bit 2 set" arm); bit 2 clear -> the shared "settype4" block.
+            2 | 4 => {
+                if flags_lo(type_desc) as u8 >> 2 & 1 != 0 {
+                    self.convert_expr_type_direct_emit(type_desc, ctx_flag_c);
+                    return;
+                }
+                self.convert_expr_type_settype4(type_desc, expr_desc, ctx_flag_c);
+            }
+            // kind 3: its own accumulator field (word1-high, not word2-high).
+            3 => {
+                if flags_lo(type_desc) as u8 >> 2 & 1 == 0 {
+                    let b = flags1_byte(expr_desc);
+                    let new_hi1 = hi1(type_desc).wrapping_add(hi1(expr_desc));
+                    set_hi1(type_desc, new_hi1);
+                    set_flags_lo(type_desc, merge_flag_bits(flags_lo(type_desc), b));
+                    copy_wholesale(expr_desc, type_desc);
+                    return;
+                }
+                let desc = ref_descriptor_from_node(type_desc);
+                self.emit_reference(&desc, 6, 0, 0);
+            }
+            // kind 5/7: direct re-emit, then a triple-gated 0x408 marker.
+            5 | 7 => {
+                let desc = ref_descriptor_from_node(type_desc);
+                self.emit_reference(&desc, 6, 0, 0);
+                if flags_lo(type_desc) as u8 >> 2 & 1 == 0 {
+                    return;
+                }
+                if ctx_flag_c & 2 == 0 {
+                    return;
+                }
+                if flags_lo(type_desc) & 1 == 0 {
+                    return;
+                }
+                self.emit_value2(0x408);
+            }
+            // kind 6: same accumulator field as kind 1; bit 2 set falls to
+            // the shared direct-emit block.
+            6 => {
+                if flags_lo(type_desc) as u8 >> 2 & 1 == 0 {
+                    let b = flags1_byte(expr_desc);
+                    let new_hi2 = hi2(type_desc).wrapping_add(hi1(expr_desc));
+                    set_hi2(type_desc, new_hi2);
+                    set_flags_lo(type_desc, merge_flag_bits(flags_lo(type_desc), b));
+                    copy_wholesale(expr_desc, type_desc);
+                    return;
+                }
+                self.convert_expr_type_direct_emit(type_desc, ctx_flag_c);
+            }
+            // kinds 8/9/10/0xb: bare re-emit, no flag propagation.
+            8 | 9 | 10 | 0xb => {
+                let desc = ref_descriptor_from_node(type_desc);
+                self.emit_reference(&desc, 6, 0, 0);
+            }
+            // default (any other kind): bare return, no emit at all.
+            _ => {}
+        }
+    }
+
+    /// The shared "settype4" block (kind 1's bit-2-set arm and kind 2/4's
+    /// bit-2-clear arm): when `expr_desc` is itself kind 3 or has its `+4`
+    /// bit `0x08` set, recast `type_desc` to kind 4, fold `expr_desc`'s
+    /// word6 into `type_desc`'s word3 (low 16 bits), merge flag bits 0/2,
+    /// then copy `type_desc` into `expr_desc` wholesale. Otherwise falls
+    /// through to a bare re-emit (the switch's own `break` case).
+    fn convert_expr_type_settype4(&mut self, type_desc: &mut RawNode, expr_desc: &mut RawNode, _ctx_flag_c: u8) {
+        if expr_desc.w[0] as i32 == 3 || flags1_byte(expr_desc) & 8 != 0 {
+            let s = hi1(expr_desc);
+            type_desc.w[0] = 4;
+            let new_w3_lo = (type_desc.w[3] as u16 as i16).wrapping_add(s);
+            type_desc.w[3] = (type_desc.w[3] & 0xffff_0000) | (new_w3_lo as u16 as u32);
+            let b = flags1_byte(expr_desc);
+            set_flags_lo(type_desc, merge_flag_bits(flags_lo(type_desc), b));
+            copy_wholesale(expr_desc, type_desc);
+            return;
+        }
+        let desc = ref_descriptor_from_node(type_desc);
+        self.emit_reference(&desc, 6, 0, 0);
+    }
+
+    /// The shared direct-emit block (kind 2/4's bit-2-set arm and kind 6's
+    /// bit-2-set arm): re-emit `type_desc`, then emit `0x408` when both
+    /// `ctx_flag_c` bit 1 and `type_desc`'s own flags-byte bit 0 are set.
+    fn convert_expr_type_direct_emit(&mut self, type_desc: &RawNode, ctx_flag_c: u8) {
+        let desc = ref_descriptor_from_node(type_desc);
+        self.emit_reference(&desc, 6, 0, 0);
+        if ctx_flag_c & 2 != 0 && flags1_byte(type_desc) & 1 != 0 {
+            self.emit_value2(0x408);
+        }
+    }
+
+    /// Port of `EbEmitBinaryOpCode`'s scratch-descriptor construction and
+    /// its re-entry into the value emitter (`emit_reference`, n_op 6):
+    /// builds a kind-1 descriptor with the constant operand `8` when either
+    /// of `type_desc_word4`'s bits `0x100`/`0x200` is clear, else a kind-5
+    /// descriptor whose `word6` is either an interned type value (the
+    /// common case) or the constant sentinel `0xffff` (`ctx_flag_c` bit 0
+    /// set — a COM-bypass edge case, same convention as
+    /// [`crate::resolver::fill_binding_desc`]'s own bypass).
+    ///
+    /// This ports only the function's FIRST half. Its second half — building
+    /// the final kind-8 descriptor the caller consumes — reads a side-table
+    /// located via a pointer stored in the module heap (byte offset `0x1c`)
+    /// that this pipeline has no model for; that part is not ported (see
+    /// the private note), never guessed.
+    pub(super) fn emit_binary_op_code_temp_descriptor(
+        &mut self,
+        type_desc_word4: u16,
+        ctx_flag_c: u8,
+        type_value: u32,
+    ) {
+        if type_desc_word4 & 0x100 == 0 || type_desc_word4 & 0x200 == 0 {
+            let desc = RefDescriptor {
+                kind: 1,
+                operand: 8,
+                ..RefDescriptor::default()
+            };
+            self.emit_reference(&desc, 6, 0, 0);
+        } else {
+            let word6 = if ctx_flag_c & 1 == 0 {
+                self.type_pool.extract_type_value2(type_value)
+            } else {
+                0xffff
+            };
+            let desc = RefDescriptor {
+                kind: 5,
+                word6,
+                ..RefDescriptor::default()
+            };
+            self.emit_reference(&desc, 6, 0, 0);
+        }
+    }
+}
+
+// ── `ConvertExpressionType`'s 4-word node accessors ──────────────────────────
+// word0 = kind; word1 low16 = flags (byte `+4` = `flags1_byte`, the same
+// convention `RefDescriptor::flags1` uses); word1 high16 = the `+6`
+// accumulator field; word2 high16 = the `+0xa` accumulator field (also
+// `RefDescriptor::operand`'s convention); word3 = an opaque payload word.
+
+fn flags_lo(n: &RawNode) -> u16 {
+    (n.w[1] & 0xffff) as u16
+}
+
+fn flags1_byte(n: &RawNode) -> u8 {
+    (n.w[1] & 0xff) as u8
+}
+
+fn set_flags_lo(n: &mut RawNode, v: u16) {
+    n.w[1] = (n.w[1] & 0xffff_0000) | v as u32;
+}
+
+fn hi1(n: &RawNode) -> i16 {
+    (n.w[1] >> 16) as u16 as i16
+}
+
+fn hi2(n: &RawNode) -> i16 {
+    (n.w[2] >> 16) as u16 as i16
+}
+
+fn set_hi1(n: &mut RawNode, v: i16) {
+    n.w[1] = (n.w[1] & 0xffff) | ((v as u16 as u32) << 16);
+}
+
+fn set_hi2(n: &mut RawNode, v: i16) {
+    n.w[2] = (n.w[2] & 0xffff) | ((v as u16 as u32) << 16);
+}
+
+fn copy_wholesale(dst: &mut RawNode, src: &RawNode) {
+    dst.w[0] = src.w[0];
+    dst.w[1] = src.w[1];
+    dst.w[2] = src.w[2];
+    dst.w[3] = src.w[3];
+}
+
+/// Copy bits 0 and 2 from `b` into `a` (the repeated `(b^a)&mask ^ a` idiom).
+fn merge_flag_bits(a: u16, b: u8) -> u16 {
+    let a1 = (((b ^ (a as u8)) & 4) as u16) ^ a;
+    (((a1 as u8 ^ b) & 1) as u16) ^ a1
+}
+
+/// Build the [`RefDescriptor`] `emit_reference` expects from a 4-word node
+/// (the same field mapping `flags1_byte`/`hi1`/`hi2` document above).
+fn ref_descriptor_from_node(n: &RawNode) -> RefDescriptor {
+    RefDescriptor {
+        kind: n.w[0] as i32,
+        operand: (n.w[2] >> 16) as u16,
+        word6: (n.w[1] >> 16) as u16,
+        word8: (n.w[2] & 0xffff) as u16,
+        flags1: (n.w[1] & 0xff) as u8,
     }
 }

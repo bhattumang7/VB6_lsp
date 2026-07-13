@@ -822,6 +822,364 @@ fn emit_reference_store_conversion_uses_conv_table() {
     assert_eq!(bytes1, opc2(idx1, 0x0010));
 }
 
+// ── emit_reference kinds 3/5/0xa/default (2026-07-14 port) ──────────────────
+
+#[test]
+fn emit_reference_kind3_uses_0x270_base_and_word6_operand() {
+    // kind 3: opcode base 0x270; operand is the descriptor's `word6` field
+    // (not `operand`), unconditional — no ByRef-style branch.
+    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
+    let off = RT_TYPE_OFFSET[2] as i32;
+    let expected_idx = if off == 10 { 0x270 | 4 } else if off == 9 { 0x270 | 1 } else { 0x270 | off };
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    let desc = crate::emit::RefDescriptor { kind: 3, operand: 0x9999, word6: 0x0044, word8: 0, flags1: 0 };
+    let bytes = ref_bytes(&desc, 1, 0, 2);
+    // The `operand` field is deliberately set to a decoy (0x9999) to prove
+    // the emitted operand comes from `word6` (0x0044), not `operand`.
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x44, 0x00]);
+    } else {
+        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x44, 0x00]);
+    }
+}
+
+#[test]
+fn emit_reference_kind5_uses_0x2a0_base_and_word6_operand() {
+    // kind 5: same shape as kind 3 (operand from `word6`, unconditional),
+    // different template constant (0x2a0).
+    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
+    let off = RT_TYPE_OFFSET[2] as i32;
+    let expected_idx = if off == 10 { 0x2a0 | 4 } else if off == 9 { 0x2a0 | 1 } else { 0x2a0 | off };
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    let desc = crate::emit::RefDescriptor { kind: 5, operand: 0x9999, word6: 0x0055, word8: 0, flags1: 0 };
+    let bytes = ref_bytes(&desc, 1, 0, 2);
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x55, 0x00]);
+    } else {
+        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x55, 0x00]);
+    }
+}
+
+#[test]
+fn emit_reference_kind_0xa_word6_bit0_set_uses_word8_operand() {
+    // kind 0xa, `word6` bit 0 set: opcode base 0x190; operand is `word8`
+    // (matches emit_setup_binary_operation's kind-0xa construction, which
+    // always sets word6 bit 0).
+    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
+    let off = RT_TYPE_OFFSET[2] as i32;
+    let expected_idx = if off == 10 { 0x190 | 4 } else if off == 9 { 0x190 | 1 } else { 0x190 | off };
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    let desc = crate::emit::RefDescriptor { kind: 0xa, operand: 0x9999, word6: 1, word8: 0x0066, flags1: 0 };
+    let bytes = ref_bytes(&desc, 1, 0, 2);
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x66, 0x00]);
+    } else {
+        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x66, 0x00]);
+    }
+}
+
+#[test]
+#[should_panic(expected = "nType-as-operand fallback shape")]
+fn emit_reference_kind_0xa_word6_bit0_clear_is_loud_gated() {
+    // The bit-0-clear sub-case (a distinct nType-as-operand fallback) is not
+    // captured on disk — it must loud-gate, never guess.
+    let desc = crate::emit::RefDescriptor { kind: 0xa, operand: 0, word6: 0, word8: 0, flags1: 0 };
+    let _ = ref_bytes(&desc, 1, 0, 2);
+}
+
+#[test]
+#[should_panic(expected = "reference kind 4")]
+fn emit_reference_kind4_is_loud_gated() {
+    // kind 4 needs a second operand word the descriptor has no field for; it
+    // must loud-gate, never guess.
+    let desc = crate::emit::RefDescriptor { kind: 4, operand: 0, word6: 0, word8: 0, flags1: 0 };
+    let _ = ref_bytes(&desc, 1, 0, 2);
+}
+
+#[test]
+fn emit_reference_default_kind_uses_ntype_as_base_and_operand() {
+    // kind 0 (and any out-of-range kind): both the opcode base and the
+    // emitted operand are the raw nType argument itself. Use nOp 6 (a
+    // constant `opcode_base + 0xb` arm) to isolate this from RT_TYPE_OFFSET.
+    let n_type = 0x50;
+    let desc = crate::emit::RefDescriptor::default(); // kind == 0
+    let bytes = ref_bytes(&desc, 6, 0, n_type);
+    assert_eq!(bytes, opc2((n_type + 0xb) as usize, n_type as u16));
+}
+
+// ── expr2_finalize_tail recursive re-entry (2026-07-14 port) ─────────────────
+
+#[test]
+fn expr2_finalize_tail_recurses_with_zeroed_kind3_descriptor() {
+    // kind 9, nOp 1 (not 5/6) drives the finalize tail into its recursive
+    // re-entry: a fresh kind-3, all-other-fields-zero descriptor, same
+    // nOp/fFlags/nType forwarded — emitting kind 9's own bytes followed by
+    // kind 3's (with a zero operand, since the fresh descriptor's word6 is 0).
+    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
+    let desc = crate::emit::RefDescriptor { kind: 9, operand: 0, word6: 0x0044, word8: 0, flags1: 0 };
+    let bytes = ref_bytes(&desc, 1, 0, 2);
+
+    let mut want = opc2(0x18d, 0x0044); // kind 9, nOp != 5 → 0x18d, operand = word6.
+
+    let off = RT_TYPE_OFFSET[2] as i32;
+    let expected_idx = if off == 10 { 0x270 | 4 } else if off == 9 { 0x270 | 1 } else { 0x270 | off };
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    if expected_opcode < 0xfb {
+        want.extend_from_slice(&[expected_opcode, 0x00, 0x00]);
+    } else {
+        want.extend_from_slice(&[expected_opcode, (expected_idx & 0xff) as u8, 0x00, 0x00]);
+    }
+    assert_eq!(bytes, want);
+}
+
+#[test]
+fn expr2_finalize_tail_returns_cleanly_at_nop5() {
+    // nOp 5 finishes without recursing — only kind 9's own bytes are emitted.
+    let desc = crate::emit::RefDescriptor { kind: 9, operand: 0, word6: 0x0077, word8: 0, flags1: 0 };
+    let bytes = ref_bytes(&desc, 5, 0, 2);
+    assert_eq!(bytes, opc2(0x18e, 0x0077));
+}
+
+#[test]
+fn expr2_finalize_tail_returns_cleanly_at_nop6_without_flag() {
+    // nOp 6 with the descriptor's flags1 bit 0x04 clear finishes without
+    // recursing (mirrors the existing kind8_nop1 test's nOp-6 usage).
+    let desc = crate::emit::RefDescriptor { kind: 9, operand: 0, word6: 0x0088, word8: 0, flags1: 0 };
+    let bytes = ref_bytes(&desc, 6, 0, 2);
+    // nOp == 6 (!= 5) → opcode 0x18d, not 0x18e.
+    assert_eq!(bytes, opc2(0x18d, 0x0088));
+}
+
+#[test]
+fn expr2_finalize_tail_recurses_at_nop6_with_flag_set() {
+    // nOp 6 WITH the descriptor's flags1 bit 0x04 set recurses (the other
+    // half of the nOp-6 branch — an edge case, not just the common arm).
+    use crate::tables::RT_OPCODE_BYTE;
+    let desc = crate::emit::RefDescriptor { kind: 9, operand: 0, word6: 0x0099, word8: 0, flags1: 4 };
+    let bytes = ref_bytes(&desc, 6, 0, 2);
+
+    // kind 9, nOp == 6 (!= 5) → opcode 0x18d, operand = word6. The recursion
+    // forwards the SAME (mapped) nOp == 6, so the recursed kind-3 emit uses
+    // the nOp-6 arm (`opcode_base + 0xb`), not the nOp-1 RT_TYPE_OFFSET arm.
+    let mut want = opc2(0x18d, 0x0099);
+
+    let expected_idx = (0x270 + 0xb) as usize;
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx];
+    if expected_opcode < 0xfb {
+        want.extend_from_slice(&[expected_opcode, 0x00, 0x00]);
+    } else {
+        want.extend_from_slice(&[expected_opcode, (expected_idx & 0xff) as u8, 0x00, 0x00]);
+    }
+    assert_eq!(bytes, want);
+}
+
+// ── convert_expression_type (2026-07-14 port) ────────────────────────────────
+
+fn raw4(kind: u32, flags_lo: u16, hi1: i16, hi2_or_word8: u16, word3: u32) -> crate::node::RawNode {
+    let mut n = crate::node::RawNode::default();
+    n.w[0] = kind;
+    n.w[1] = flags_lo as u32 | ((hi1 as u16 as u32) << 16);
+    n.w[2] = hi2_or_word8 as u32; // low16 = word8-ish, high16 (operand) left 0 unless set by caller
+    n.w[3] = word3;
+    n
+}
+
+fn cvt_bytes(type_desc: &mut crate::node::RawNode, expr_desc: &mut crate::node::RawNode, ctx_flag_c: u8) -> Vec<u8> {
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.convert_expression_type(type_desc, expr_desc, ctx_flag_c);
+    e.into_bytes()
+}
+
+#[test]
+fn convert_expression_type_kind1_bit2_clear_merges_and_copies() {
+    // kind 1, bit2 of flags clear: hi2(type) += hi1(expr); flags bits 0/2
+    // merge from expr's flags1 byte; type_desc copied wholesale into expr_desc.
+    // flags_lo = 0 (bit2 clear); expr's flags1 byte = 0x05 (bits 0 and 2 set).
+    let mut type_desc = raw4(1, 0x0000, 0, 0, 0);
+    type_desc.w[2] = 0x0010_0000; // hi2 (operand-slot) = 0x10
+    let mut expr_desc = raw4(0, 0x05, 7, 0, 0); // hi1(expr) = 7, flags1 byte = 5
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+    // No emit on this path (pure descriptor mutation).
+    assert!(bytes.is_empty());
+    // hi2(type) = 0x10 + 7 = 0x17.
+    assert_eq!((type_desc.w[2] >> 16) as u16, 0x17);
+    // flags bits 0 and 2 copied from expr's flags1 byte (0x05 = bits 0+2).
+    assert_eq!(type_desc.w[1] & 0xffff, 0x05);
+    // expr_desc now holds a copy of type_desc's words 0..4.
+    assert_eq!(expr_desc.w[0], type_desc.w[0]);
+    assert_eq!(expr_desc.w[1], type_desc.w[1]);
+    assert_eq!(expr_desc.w[2], type_desc.w[2]);
+    assert_eq!(expr_desc.w[3], type_desc.w[3]);
+}
+
+#[test]
+fn convert_expression_type_kind1_bit2_set_falls_to_settype4_recast() {
+    // kind 1, bit2 SET: falls to the shared "settype4" block. expr_desc is
+    // itself kind 3 (qualifies) -> type_desc recast to kind 4, word3 low16
+    // += expr's hi1, flags merged, copied wholesale. No emit either.
+    let mut type_desc = raw4(1, 0x0004, 0, 0, 0x0000_0009); // bit2 set; word3 = 9
+    let mut expr_desc = raw4(3, 0x01, 2, 0, 0); // kind 3; hi1(expr)=2; flags1=1
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+    assert!(bytes.is_empty());
+    assert_eq!(type_desc.w[0], 4); // recast to kind 4
+    assert_eq!(type_desc.w[3] & 0xffff, 11); // 9 + 2
+    assert_eq!(expr_desc.w[0], 4);
+}
+
+#[test]
+fn convert_expression_type_settype4_else_branch_emits_via_kind1() {
+    // kind 2, bit2 clear -> settype4 block (reached from kind 2/4's own
+    // clear-bit2 arm; kind 2 chosen so the bare re-emit below hits an
+    // already-ported emit_reference kind, not the still-gated kind 4).
+    // expr_desc does NOT qualify (kind != 3, flags1 bit 0x08 clear) -> falls
+    // to a bare re-emit of type_desc via emit_reference.
+    let mut type_desc = raw4(2, 0x0000, 0, 0, 0);
+    type_desc.w[2] = 0x0021_0000; // operand (hi2) = 0x21
+    let mut expr_desc = raw4(0, 0x00, 0, 0, 0); // kind 0, flags1 bit8 clear
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+    // The re-emit always uses n_op 6 (`EbEmitExpression2(pTypeDesc,6,0,0,0)`),
+    // whose emit_reference arm is the constant `opcode_base + 0xb` -- no
+    // RT_TYPE_OFFSET involvement.
+    use crate::tables::RT_OPCODE_BYTE;
+    let expected_idx = 0x210 + 0xb;
+    let expected_opcode = RT_OPCODE_BYTE[expected_idx];
+    if expected_opcode < 0xfb {
+        assert_eq!(bytes, &[expected_opcode, 0x21, 0x00]);
+    } else {
+        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x21, 0x00]);
+    }
+}
+
+#[test]
+fn convert_expression_type_kind3_uses_hi1_accumulator() {
+    // kind 3, bit2 clear: accumulates into hi1 (not hi2, unlike kind 1/6).
+    let mut type_desc = raw4(3, 0x0000, 5, 0, 0);
+    let mut expr_desc = raw4(0, 0x00, 3, 0, 0); // hi1(expr) = 3
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+    assert!(bytes.is_empty());
+    assert_eq!((type_desc.w[1] >> 16) as u16 as i16, 8); // 5 + 3
+}
+
+#[test]
+fn convert_expression_type_kind3_bit2_set_bare_reemit() {
+    let mut type_desc = raw4(3, 0x0004, 0, 0, 0);
+    type_desc.w[2] = 0x0005_0000;
+    let mut expr_desc = crate::node::RawNode::default();
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+    assert!(!bytes.is_empty()); // a bare re-emit happens (kind 3 -> opcode base 0x270)
+}
+
+#[test]
+fn convert_expression_type_kind5_emits_then_gates_0x408_on_triple_flag() {
+    // kind 5/7: always re-emits; 0x408 marker requires bit2 set, ctx_flag_c
+    // bit1 set, AND flags bit0 set -- all three here.
+    let mut type_desc = raw4(5, 0x0005, 0, 0, 0); // bits 0 and 2 both set
+    let mut expr_desc = crate::node::RawNode::default();
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 2); // ctx_flag_c bit1 set
+    // Bytes = the kind-5 re-emit (opcode base 0x1e0 since kind maps... actually
+    // kind 5 isn't a valid emit_reference kind base directly here; kind field
+    // is passed straight through as desc.kind, which for value 5 hits
+    // emit_reference's own `5 => ...` n_op arm indirectly via desc.kind==5?
+    // No -- desc.kind here is 5, which IS one of emit_reference's OWN kinds
+    // (ported this session: base 0x2a0). Assert the trailing marker byte only,
+    // to stay independent of that base's own table lookup.
+    use crate::tables::RT_OPCODE_BYTE;
+    let marker = RT_OPCODE_BYTE[0x408];
+    if marker < 0xfb {
+        assert_eq!(*bytes.last().unwrap(), marker);
+    } else {
+        assert_eq!(bytes[bytes.len() - 2], marker);
+        assert_eq!(*bytes.last().unwrap(), (0x408u16 & 0xff) as u8);
+    }
+}
+
+#[test]
+fn convert_expression_type_kind5_no_emit_408_when_ctx_flag_clear() {
+    let mut type_desc = raw4(5, 0x0005, 0, 0, 0);
+    let mut expr_desc = crate::node::RawNode::default();
+    let bytes_with = cvt_bytes(&mut type_desc.clone(), &mut expr_desc, 2);
+    let bytes_without = cvt_bytes(&mut type_desc, &mut expr_desc, 0); // ctx_flag_c bit1 clear
+    assert!(bytes_without.len() < bytes_with.len());
+}
+
+#[test]
+fn convert_expression_type_kind8_bare_reemit_no_flag_logic() {
+    // kind 0xa (10) specifically needs its `word6` bit 0 set (matches
+    // emit_setup_binary_operation's own kind-0xa construction) to hit the
+    // already-ported sub-case, not the still-gated bit0-clear one.
+    for (kind, hi1_word6) in [(8u32, 0i16), (9, 0), (10, 1), (0xb, 0)] {
+        let mut type_desc = raw4(kind, 0, hi1_word6, 0, 0);
+        let mut expr_desc = crate::node::RawNode::default();
+        let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+        assert!(!bytes.is_empty(), "kind {kind} should re-emit");
+    }
+}
+
+#[test]
+fn convert_expression_type_default_kind_emits_nothing() {
+    let mut type_desc = raw4(0, 0, 0, 0, 0); // kind 0: not in 1..=0xb
+    let mut expr_desc = crate::node::RawNode::default();
+    let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
+    assert!(bytes.is_empty());
+}
+
+// ── EbEmitBinaryOpCode's temp-descriptor construction (2026-07-14 port) ──────
+
+#[test]
+fn emit_binary_op_code_temp_descriptor_kind1_when_flags_incomplete() {
+    // Either bit 0x100 or 0x200 clear on the type-desc's word4 -> kind-1
+    // scratch descriptor with the constant operand 8.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.emit_binary_op_code_temp_descriptor(0x100, 0, 0); // 0x200 clear
+    let bytes = e.into_bytes();
+    // n_op is always 6 here -> emit_reference's constant `opcode_base + 0xb` arm.
+    use crate::tables::RT_OPCODE_BYTE;
+    let idx = 0x1e0 + 0xb;
+    let op = RT_OPCODE_BYTE[idx];
+    if op < 0xfb {
+        assert_eq!(bytes, &[op, 0x08, 0x00]);
+    } else {
+        assert_eq!(bytes, &[op, (idx & 0xff) as u8, 0x08, 0x00]);
+    }
+}
+
+#[test]
+fn emit_binary_op_code_temp_descriptor_kind5_interns_type_value() {
+    // Both flag bits set, ctx_flag_c bit0 clear -> kind-5 descriptor whose
+    // word6 is the interned index of `type_value` (0 for the first intern).
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.emit_binary_op_code_temp_descriptor(0x300, 0, 0x1234);
+    let bytes = e.into_bytes();
+    use crate::tables::RT_OPCODE_BYTE;
+    let idx = 0x2a0usize; // kind 5 -> base 0x2a0, n_op=6 arm: base+0xb
+    let op = RT_OPCODE_BYTE[idx + 0xb];
+    if op < 0xfb {
+        assert_eq!(bytes, &[op, 0x00, 0x00]); // interned index 0
+    } else {
+        assert_eq!(bytes, &[op, ((idx + 0xb) & 0xff) as u8, 0x00, 0x00]);
+    }
+}
+
+#[test]
+fn emit_binary_op_code_temp_descriptor_kind5_bypass_uses_sentinel() {
+    // ctx_flag_c bit0 set -> word6 = the constant sentinel 0xffff, no intern.
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.emit_binary_op_code_temp_descriptor(0x300, 1, 0x1234);
+    let bytes = e.into_bytes();
+    use crate::tables::RT_OPCODE_BYTE;
+    let idx = 0x2a0usize + 0xb;
+    let op = RT_OPCODE_BYTE[idx];
+    if op < 0xfb {
+        assert_eq!(bytes, &[op, 0xff, 0xff]);
+    } else {
+        assert_eq!(bytes, &[op, (idx & 0xff) as u8, 0xff, 0xff]);
+    }
+}
+
 // ── emit_assign_op (case 0xe, op-kind 0) ─────────────────────────────────────
 //
 // These tests exercise case 0xe of emit_expr (the assignment dispatch) by
@@ -1909,6 +2267,99 @@ fn case_0x43_nondispatch_same_as_0x42_common_path() {
     let mut expected = v2(0x42a);
     expected.extend_from_slice(&[0x00, 0x00]);
     assert_eq!(emit(&a, n), expected.as_slice());
+}
+
+// ── 0x42/0x43 dispatch-binding path (2026-07-14 port) ────────────────────────
+
+/// Build the shared node shape for the dispatch-binding tests: `n` (op 0x42 or
+/// 0x43, type tag 2) -> w5 -> {w4 = a-value node (pooled type value), w5 =
+/// a 0x60 node whose own w5 is a context node (kind word + size word[4])}.
+/// `ctx_kind` is the context node's own word[0]; `member_byte1` is the heap
+/// byte at `member_off + 1` the dispatch-binding test reads.
+fn dispatch_binding_node(a: &mut NodeArena, op: u16, ctx_kind: u32, size: u32) -> NodeRef {
+    let ctx = a.alloc(NodeArena::node(ctx_kind as u16, (ctx_kind >> 16) as u16, size, 0, 0, 0));
+    let typed_child = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0)); // no-op, for the fallback path
+    let mut child60 = NodeArena::node(0x60, 8, typed_child.0, 0, 0, 0);
+    child60.w[5] = ctx.0;
+    let child60 = a.alloc(child60);
+    let avalue = a.alloc(NodeArena::node(0, 0, 0x77, 0, 0, 0)); // pooled type value 0x77
+    let w5 = a.alloc(NodeArena::node(0, 0, avalue.0, child60.0, 0, 0));
+    a.alloc(NodeArena::node(op, 2, 0, w5.0, 0, 0))
+}
+
+fn dispatch_binding_sym(member_byte1: u8) -> crate::emit::SymbolContext {
+    let mut heap = vec![0u8; 0x20];
+    heap[0x11] = member_byte1;
+    crate::emit::SymbolContext { heap, member_off: 0x10, ctx_flag_c: 0, binding: None }
+}
+
+#[test]
+fn case_0x42_dispatch_binding_emits_0x2ff() {
+    // fEmitOp == 0 (op 0x42) -> opcode base 0x2ff; operand = the context's
+    // size word[4] (here 0x20); trailing word = the pooled type value (index 0).
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let n = dispatch_binding_node(&mut a, 0x42, 4, 0x20);
+    let sym = dispatch_binding_sym(4); // rec1 & 7 == 4
+    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    e.emit_expr(n, 1);
+    let bytes = e.into_bytes();
+    let mut expected = opc2(0x2ff, 0x20);
+    expected.extend_from_slice(&[0x00, 0x00]); // pooled type value index 0
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn case_0x43_dispatch_binding_emits_0x3f6() {
+    // fEmitOp == 1 (op 0x43) -> opcode base 0x3f6 -- the only difference from
+    // the 0x42 case above.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let n = dispatch_binding_node(&mut a, 0x43, 4, 0x20);
+    let sym = dispatch_binding_sym(4);
+    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    e.emit_expr(n, 1);
+    let bytes = e.into_bytes();
+    let mut expected = opc2(0x3f6, 0x20);
+    expected.extend_from_slice(&[0x00, 0x00]);
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn case_0x42_context_kind_not_4_falls_through_to_common_path() {
+    // The context's own kind must be 4; a different kind falls through to the
+    // ordinary (non-dispatch-binding) common path instead.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let n = dispatch_binding_node(&mut a, 0x42, 5, 0x20);
+    let sym = dispatch_binding_sym(4);
+    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    e.emit_expr(n, 1);
+    let bytes = e.into_bytes();
+    // Common path: emit_typed_node(typed_child) [opcode 0x1b, no-op] then
+    // 0x42a + pooled type value, then emit_validate_type_operation(2, 0x17, 1)
+    // -- type_tag 2 + variant 0x17 emits an extra 0x18b byte.
+    let mut expected = v2(0x42a);
+    expected.extend_from_slice(&[0x00, 0x00]);
+    expected.extend(v2(0x18b));
+    assert_eq!(bytes, expected);
+}
+
+#[test]
+fn case_0x42_member_byte_not_dispatch_kind_falls_through_to_common_path() {
+    // Context kind is 4, but the resolved member record's byte+1 low 3 bits
+    // are not 4 -- also falls through to the common path.
+    let mut a = NodeArena::new();
+    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let n = dispatch_binding_node(&mut a, 0x42, 4, 0x20);
+    let sym = dispatch_binding_sym(3); // rec1 & 7 == 3, not 4
+    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    e.emit_expr(n, 1);
+    let bytes = e.into_bytes();
+    let mut expected = v2(0x42a);
+    expected.extend_from_slice(&[0x00, 0x00]);
+    expected.extend(v2(0x18b));
+    assert_eq!(bytes, expected);
 }
 
 // ── Operand-dispatch + pooled member-reference cases ─────────────────────────

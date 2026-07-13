@@ -679,10 +679,19 @@ impl<'a> Emitter<'a> {
                     }
                 }
                 if (self.arena.get(p6).w[0] & 0xffff) == 0x60 && ((n.w[0] as i32) >> 16) == 2 {
-                    unimplemented!(
-                        "dispatch-type resolution dispatch-binding path: reads a \
-                         compiled binding record from the module symbol heap; Phase 5"
+                    let ctx_kind = self.arena.get(NodeRef(self.arena.get(p6).w[5])).w[0] as i32;
+                    let sym = self.sym.as_ref().expect(
+                        "dispatch-binding path needs the module symbol context \
+                         (Emitter::with_symbol_context)",
                     );
+                    if crate::resolver::is_dispatch_binding(ctx_kind, &sym.heap, sym.member_off) {
+                        let size = self.emit_get_type_size3(self.arena.get(p6).w[5]);
+                        // case 0x42 -> fEmitOp 0 -> base 0x2ff; case 0x43 -> fEmitOp 1 -> base 0x3f6.
+                        let opcode = if op == 0x43 { 0x3f6 } else { 0x2ff };
+                        self.emit_opcode2(opcode, size as u16);
+                        self.emit_word2(type_value);
+                        return 0;
+                    }
                 }
                 let second = *self.arena.get(NodeRef(w5.w[5]));
                 self.emit_typed_node(NodeRef(second.w[4]), 5);

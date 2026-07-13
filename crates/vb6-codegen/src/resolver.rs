@@ -34,6 +34,17 @@ pub(crate) fn get_type_size3(arena: &NodeArena, type_desc: u32) -> u32 {
     }
 }
 
+/// Whether a context node is an early-bound dispatch binding: its own kind
+/// (word `0`) is `4`, and the resolved member record's byte `+1` low 3 bits
+/// equal `4` — the same method/object-member test [`resolve_ident_ref`]'s own
+/// method-binding gate uses (`rec1 & 7 == 4`), applied here to a *different*
+/// node's context/member. `member_off` is the module-records-heap byte offset
+/// of that member (supplied by the caller from its own resolved context, the
+/// same way [`resolve_ident_ref`] receives it).
+pub fn is_dispatch_binding(ctx_kind: i32, heap: &[u8], member_off: usize) -> bool {
+    ctx_kind == 4 && heap[member_off + 1] & 7 == 4
+}
+
 /// Build the value-emitter descriptor for a resolved reference (port of
 /// `EbInitExprDescriptor`).
 ///
@@ -445,6 +456,52 @@ pub fn call_conv_descriptor(
     let word = u16::from_le_bytes([record[wi], record[wi + 1]]);
     let by_ref = word & 0x4000 == 0;
     init_expr_descriptor(arena, node, by_ref, true)
+}
+
+/// The result of [`fill_binding_desc`]'s branch selection.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FillBindingDesc {
+    /// The common (non-slot-table) branch: descriptor kind 4, operand `8`,
+    /// and the extra payload word (the field `emit_reference`'s kind-4 arm
+    /// still has no place for — see its gate) read from the member record's
+    /// `+8` word.
+    Kind4 { word3: u16 },
+    /// The COM-bypass edge case (`ctx_flag_c` bit 0 set): descriptor kind 5,
+    /// `word6` the constant sentinel `0xffff` (no live slot table consulted).
+    Kind5Bypass,
+}
+
+/// Port of `EbFillBindingDesc`'s branch selection (the common path + the
+/// COM-bypass edge case only; the live slot-table path — `EbBuildSlotTable`,
+/// vtable calls into a resolved `ITypeInfo` — is a separate, already-gated
+/// COM subsystem and is not reproduced here).
+///
+/// `binding_flag_5` is byte `+5` of the binding-context parameter (only bit 1
+/// is read); `heap`/`member_off` are the resolved member record, same
+/// convention as [`resolve_ident_ref`]; `ctx_flag_c` is byte `+0xc` of the
+/// compiler context — the same field [`resolve_ident_ref`] threads through,
+/// but bit 0 is read here (a *different* bit of the same byte than
+/// [`resolve_ident_ref`]'s own bit-1 use).
+pub fn fill_binding_desc(binding_flag_5: u8, heap: &[u8], member_off: usize, ctx_flag_c: u8) -> FillBindingDesc {
+    let rec0 = heap[member_off];
+    let rec_0x10 = heap[member_off + 0x10];
+    let rec_0x14 = i32::from_le_bytes([
+        heap[member_off + 0x14],
+        heap[member_off + 0x15],
+        heap[member_off + 0x16],
+        heap[member_off + 0x17],
+    ]);
+    if binding_flag_5 & 2 == 0 && (rec0 & 7 != 2 || rec_0x10 & 1 != 0 || rec_0x14 != -2) {
+        let word3 = u16::from_le_bytes([heap[member_off + 8], heap[member_off + 9]]);
+        return FillBindingDesc::Kind4 { word3 };
+    }
+    if ctx_flag_c & 1 != 0 {
+        return FillBindingDesc::Kind5Bypass;
+    }
+    unimplemented!(
+        "EbFillBindingDesc slot-table path: needs EbBuildSlotTable (live ITypeInfo \
+         vtable calls); Phase 6"
+    );
 }
 
 /// Port of the `EbResolveReference2` dispatcher: route a reference node to its
