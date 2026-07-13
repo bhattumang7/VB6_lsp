@@ -26,10 +26,13 @@ pub(super) fn lower_call(
         ExprNode::ArgList { args } => args.clone(),
         _ => Vec::new(),
     };
-    // An omitted Optional argument must push the parameter's default value, which
-    // needs the default-value expression carried on the bound parameter (not yet
-    // modelled). Gate any call whose argument count doesn't match the parameter
-    // count rather than emit a short argument list.
+    // TODO(not implemented): an omitted Optional argument must push the
+    // parameter's default value, which needs the default-value expression
+    // carried on the bound parameter — this is a SEMA-LAYER gap (no such
+    // field exists on `BoundParam` anywhere in this codebase yet), not
+    // something this lowering pass alone can close. Gate any call whose
+    // argument count doesn't match the parameter count rather than emit a
+    // short argument list.
     if args.len() != ctx.module.procs[proc_idx].params.len() {
         return Err(LowerError::UnsupportedNode);
     }
@@ -85,7 +88,15 @@ pub(super) fn lower_call(
             // conversion is loaded as its own type and converted (the store-style
             // coercion). A Variant ByVal argument needs the variant-copy path.
             let pty = param.map(|p| p.vba_type.clone());
-            if matches!(pty, Some(VbaType::Variant)) {
+            // TODO(not implemented): UDT (`UserDefined`) and `Array` ByVal are NOT
+            // a fixed-size value load — a UDT's size depends on its fields, and an
+            // Array is a SAFEARRAY descriptor, neither of which `static_var_size`
+            // models (it silently falls back to `4`, which is WRONG for both — a
+            // real bug caught this session, not a hypothetical). No oracle capture
+            // exists yet for either shape's ByVal argument-passing convention.
+            // Gate explicitly here rather than let `static_var_size`'s fallback
+            // produce a silently wrong `6c <offset>` load.
+            if matches!(pty, Some(VbaType::Variant) | Some(VbaType::UserDefined(_)) | Some(VbaType::Array(_))) {
                 return Err(LowerError::UnsupportedNode);
             }
             let same_type = matches!(expr_arena.get(arg), ExprNode::NameRef { .. })
@@ -163,15 +174,22 @@ pub(super) fn lower_class_method_call(
         ExprNode::ArgList { args } => args.clone(),
         _ => Vec::new(),
     };
+    // TODO(not implemented): same Optional gap as `lower_call` — an omitted
+    // argument needs the parameter's default-value expression, which does
+    // not exist on `BoundParam` yet (a sema-layer prerequisite, not
+    // something this function can add on its own). Reject any arg-count
+    // mismatch rather than guess a short/padded argument list.
     if args.len() != params.len() {
         return Err(LowerError::UnsupportedNode);
     }
     if params.iter().any(|(ty, by_val)| !class_method_param_is_grounded(ty, *by_val)) {
         return Err(LowerError::UnsupportedNode);
     }
-    // A Variant parameter is only grounded for a plain same-type variable
-    // source (see `class_method_param_is_grounded`'s doc comment) — a
-    // literal/expression Variant argument's boxing sequence is unverified.
+    // TODO(not implemented): a Variant parameter is only grounded for a
+    // plain same-type variable source (see `class_method_param_is_grounded`'s
+    // doc comment) — a literal/expression Variant argument's boxing
+    // sequence has no oracle capture yet, so it stays gated here rather
+    // than guessed.
     for (i, (ty, _)) in params.iter().enumerate() {
         if matches!(ty, VbaType::Variant) {
             let is_plain_var = matches!(expr_arena.get(args[i]), ExprNode::NameRef { .. })

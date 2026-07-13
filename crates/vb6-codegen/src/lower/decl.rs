@@ -401,8 +401,14 @@ pub(super) fn class_method_arg_needs_staging(
 /// probe`) rather than assumed from `Double`'s pattern despite sharing its
 /// 8-byte size — ByVal emits `6d <offset>`, IDENTICAL to `Double`/
 /// `Currency`, confirming (not assuming) the same size-based scheme applies.
-/// `UDT`/`Array` remain gated: no addressability/staging convention has
-/// been captured for either at all.
+/// TODO(not implemented): `UDT`/`Array` remain gated (excluded from the
+/// `matches!` below, so `LowerError::UnsupportedNode`) — no addressability/
+/// staging convention has been captured for either. Closing this needs a
+/// dedicated oracle probe per shape (a UDT ByVal/ByRef pair, an Array ByVal/
+/// ByRef pair) the same way every scalar type above was closed this
+/// session, plus (for ByVal specifically) a real per-shape size/copy
+/// convention — `static_var_size`'s fixed-size model does not apply to
+/// either (see its own doc comment).
 pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> bool {
     matches!(
         ty,
@@ -580,7 +586,22 @@ pub(super) fn single_index(args_id: NodeId, expr_arena: &ExprArena) -> Option<No
 }
 
 /// Byte size of a Static local within its procedure's static block.
+/// TODO(not implemented): the `_ => 4` fallback below is WRONG for
+/// `VbaType::UserDefined` (a UDT's size depends on its fields; no oracle
+/// capture exists for the actual layout convention) and `VbaType::Array`
+/// (a SAFEARRAY descriptor, not a fixed 4 bytes either). Every
+/// argument-passing call site that can reach an arbitrary `VbaType` gates
+/// these two explicitly before calling this function (see `lower_call`'s
+/// and the `RtcNumeric` intrinsic's own `UserDefined`/`Array` checks in
+/// `intrinsics.rs`/`expr.rs`) — but this function itself has no `Result`
+/// to signal the gap, so a `debug_assert` catches any NEW call site that
+/// forgets to gate first, rather than staying silent.
 pub(super) fn static_var_size(ty: &VbaType) -> u16 {
+    debug_assert!(
+        !matches!(ty, VbaType::UserDefined(_) | VbaType::Array(_)),
+        "static_var_size called with an unsized type ({ty:?}) — the caller must gate \
+         UDT/Array before reaching here, not rely on this function's fallback"
+    );
     match ty {
         VbaType::Byte => 1,
         VbaType::Integer | VbaType::Boolean => 2,

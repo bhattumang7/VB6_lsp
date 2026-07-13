@@ -214,6 +214,13 @@ pub(super) fn lower_expr_coerced(
                     };
                     let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
                     let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedType)?;
+                    // TODO(not implemented): `static_var_size` silently returns `4`
+                    // for UDT/Array (its fallback arm), which is wrong for both —
+                    // gate explicitly rather than let a malformed/edge-case argument
+                    // (e.g. `Asc(someUdt)`) silently emit a wrong-sized load.
+                    if matches!(arg_ty, VbaType::UserDefined(_) | VbaType::Array(_)) {
+                        return Err(LowerError::UnsupportedNode);
+                    }
                     let mut bytes = Vec::new();
                     emit_sized_value_load(static_var_size(arg_ty), off, &mut bytes);
                     let r = ctx.call_next.get();
