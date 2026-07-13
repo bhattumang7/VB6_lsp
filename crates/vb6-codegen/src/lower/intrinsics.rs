@@ -117,17 +117,23 @@ pub(super) fn lower_call(
 }
 
 /// Lower a call to a class member's `Sub`/`Function` through the vtable
-/// (`o.Method args` or `r = o.Method(args)`): every argument — regardless of
-/// declared ByVal/ByRef — is pushed then staged into its own addressable temp
-/// (`0x59 <offset>`), in **declaration order**, at `class_member_base + i`;
-/// a `Function` used in value position (`is_value`) additionally `LdAddr`s a
-/// result temp at `class_member_base + arg_count` *before* the arguments, and
-/// loads the result back (leaving it on the stack for the caller to store)
-/// *after* the vtable call. Byte-exact against two independent oracle
-/// probes: `argcount_probe` (1-arg and 3-arg `Sub`, no result) and
-/// `funcarg_probe` (2-arg `Function`, with result) — see the
-/// `vb6-class-vtable-slot-rule` memory note. Only `Long` arguments/return are
-/// grounded (the only type these probes cover); anything else is gated.
+/// (`o.Method args` or `r = o.Method(args)`). Per-argument convention
+/// (oracle-confirmed this pass — `argtype_probe`, `argmix_probe`,
+/// `argbyval_lit_probe`, refining the original all-literal-only finding; see
+/// the `vb6-class-vtable-slot-rule` memory note and
+/// `class_method_arg_needs_staging`'s doc comment for the full derivation):
+/// a plain same-type local-variable argument needing no staging pushes its
+/// own address (ByRef) or loads its own value directly (ByVal, scalar) — NO
+/// copy; anything else (a literal/expression, or any `Object`-typed
+/// argument regardless of mode) is materialized into its own pool temp at
+/// `class_member_base + <declaration-order stage index>`, staged via `0x59`
+/// (scalar) or `fd 9c` (`Object`, refcount-safe). A `Function` in value
+/// position (`is_value`) additionally `LdAddr`s a result temp — at
+/// `class_member_base + <total staged count>`, i.e. right after every
+/// argument's own stage slot — *before* any argument is pushed, and loads
+/// the result back *after* the vtable call. Gated to the types whose
+/// convention is actually grounded (`class_method_param_is_grounded`) —
+/// `Integer`/`Long`/`Object` (both modes) and `String` (ByRef only).
 pub(super) fn lower_class_method_call(
     ctx: &LowerCtx,
     base: NodeId,
@@ -150,7 +156,7 @@ pub(super) fn lower_class_method_call(
         .get(&func_access_id.0)
         .ok_or(LowerError::Unresolved)?;
     let method_slot = resolved.method_slot.ok_or(LowerError::UnsupportedNode)?;
-    let params = &resolved.method_params;
+    let params = resolved.method_params.clone();
 
     let args: Vec<NodeId> = match expr_arena.get(args_id) {
         ExprNode::ArgList { args } => args.clone(),
@@ -159,18 +165,50 @@ pub(super) fn lower_class_method_call(
     if args.len() != params.len() {
         return Err(LowerError::UnsupportedNode);
     }
-    // Only Long is grounded — anything else (String/Object/UDT/other numeric)
-    // is unverified for this staging convention and gated rather than guessed.
-    if params.iter().any(|(ty, _)| !matches!(ty, VbaType::Long)) {
+    if params.iter().any(|(ty, by_val)| !class_method_param_is_grounded(ty, *by_val)) {
         return Err(LowerError::UnsupportedNode);
+    }
+    // A Variant parameter is only grounded for a plain same-type variable
+    // source (see `class_method_param_is_grounded`'s doc comment) — a
+    // literal/expression Variant argument's boxing sequence is unverified.
+    for (i, (ty, _)) in params.iter().enumerate() {
+        if matches!(ty, VbaType::Variant) {
+            let is_plain_var = matches!(expr_arena.get(args[i]), ExprNode::NameRef { .. })
+                && matches!(ctx.module.resolutions.get(&args[i].0), Some(NameResolution::Local { .. }))
+                && ctx.module.types.get(&args[i].0) == Some(ty);
+            if !is_plain_var {
+                return Err(LowerError::UnsupportedNode);
+            }
+        }
     }
     let ret_type = resolved.method_ret_type.clone();
     if is_value && !matches!(ret_type, Some(VbaType::Long)) {
         return Err(LowerError::UnsupportedNode);
     }
 
+    // Assign a declaration-order stage index to each argument that actually
+    // needs a pool temp; a plain-variable argument needing no staging costs
+    // no slot (and so is skipped when numbering the ones that do).
+    let needs_staging: Vec<bool> = args
+        .iter()
+        .zip(&params)
+        .map(|(&arg, (ty, by_val))| {
+            class_method_arg_needs_staging(ctx.module, arg, ty, *by_val, expr_arena)
+        })
+        .collect();
+    let mut stage_index: Vec<Option<usize>> = Vec::with_capacity(args.len());
+    let mut staged_count = 0usize;
+    for &needs in &needs_staging {
+        if needs {
+            stage_index.push(Some(staged_count));
+            staged_count += 1;
+        } else {
+            stage_index.push(None);
+        }
+    }
+
     let result_temp = if is_value {
-        let off = ctx.local_slots[ctx.class_member_base + args.len()].frame_offset;
+        let off = ctx.local_slots[ctx.class_member_base + staged_count].frame_offset;
         out.push(0x04);
         out.extend_from_slice(&off.to_le_bytes());
         Some(off)
@@ -178,12 +216,30 @@ pub(super) fn lower_class_method_call(
         None
     };
 
-    // Push each argument's value, right-to-left (VB6 evaluation order), but
-    // stage each into its OWN temp keyed by its declaration-order index (not
-    // push order) — oracle-confirmed (funcarg_probe: y pushed first/staged at
-    // the higher-index temp, x pushed second/staged at the lower-index temp).
+    // Push each argument, right-to-left (VB6 evaluation order) — matching
+    // the intra-module call convention's own push order. Three distinct
+    // shapes (a plain-variable source needs no staging AND no `lower_expr`
+    // call; a non-addressable source that needs staging computes its value
+    // then stages it; a non-addressable ByVal-scalar source computes its
+    // value and pushes it directly, no staging at all — a ByVal literal
+    // costs neither a variable's own offset nor a pool temp).
     for i in (0..args.len()).rev() {
-        let coerce = Some(8u16); // Long
+        let (ty, by_val) = &params[i];
+        let is_plain_var = matches!(expr_arena.get(args[i]), ExprNode::NameRef { .. })
+            && matches!(ctx.module.resolutions.get(&args[i].0), Some(NameResolution::Local { .. }))
+            && ctx.module.types.get(&args[i].0) == Some(ty);
+        if is_plain_var && !needs_staging[i] {
+            let off = arg_var_offset(ctx, args[i]).ok_or(LowerError::UnsupportedNode)?;
+            if *by_val {
+                emit_sized_value_load(static_var_size(ty), off, out);
+            } else {
+                out.push(0x04);
+                out.extend_from_slice(&off.to_le_bytes());
+            }
+            continue;
+        }
+
+        let coerce = vba_type_to_node_tag(ty);
         let mut arena = NodeArena::new();
         let root = lower_expr_coerced(ctx, args[i], expr_arena, &mut arena, coerce)?;
         let root = coerce_assign_value(ctx, args[i], root, coerce, &mut arena);
@@ -191,8 +247,19 @@ pub(super) fn lower_class_method_call(
         emitter.emit_expr(root, 2);
         out.extend(emitter.into_bytes());
 
-        let temp_off = ctx.local_slots[ctx.class_member_base + i].frame_offset;
-        out.push(0x59);
+        if !needs_staging[i] {
+            // ByVal, non-addressable source, scalar type: push the computed
+            // value directly — no staging (`argbyval_lit_probe`).
+            continue;
+        }
+        let idx = stage_index[i].expect("needs_staging[i] implies a stage index");
+        let temp_off = ctx.local_slots[ctx.class_member_base + idx].frame_offset;
+        if matches!(ty, VbaType::Object) {
+            out.push(0xfd);
+            out.push(0x9c);
+        } else {
+            out.push(0x59);
+        }
         out.extend_from_slice(&temp_off.to_le_bytes());
     }
 

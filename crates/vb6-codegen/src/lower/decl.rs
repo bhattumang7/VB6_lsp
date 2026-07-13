@@ -293,15 +293,90 @@ pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_
 /// addressable frame slot (`0x59 <offset>`) before the call — unlike a plain
 /// field store, which passes the value directly. Only triggers when the
 /// assignment TARGET's specific resolved class member (see
+/// Whether a class-method argument at `arg_id` needs materializing into a
+/// pool temp before the call, given its parameter's declared type/mode.
+/// Oracle-confirmed via three probes this pass (`argtype_probe`,
+/// `argmix_probe`, `argbyval_lit_probe` — see the `vb6-class-vtable-slot-
+/// rule` memory note), refining the earlier "every argument always stages"
+/// finding (which only ever tested all-literal calls):
+/// - ByRef + a plain same-type local variable → its own address is pushed
+///   directly (`04 <offset>`), no staging (`argtype_probe`'s `TakeInt`/
+///   `TakeStr`, `argmix_probe`'s first argument).
+/// - ByVal + a plain same-type local variable, scalar type → its own value
+///   is loaded directly (a sized value load), no staging (`argtype_probe`'s
+///   `TakeIntByVal`).
+/// - ByVal + a literal/expression, scalar type → the value is pushed
+///   directly, no staging (`argbyval_lit_probe`: a ByVal literal emits no
+///   `0x59` at all, unlike the ByRef-literal case).
+/// - ByRef + a literal/expression (not independently addressable) → staged
+///   (`0x59`) — the original `argcount_probe`/`funcarg_probe` finding, now
+///   understood to apply only to this narrower case.
+/// - `Object` type, ANY mode → ALWAYS staged (`fd 9c`, refcount safety) even
+///   when the source is a plain variable (`argtype_probe`'s `TakeObj(y)`,
+///   consistent with `Set`'s own always-stages behavior).
+pub(super) fn class_method_arg_needs_staging(
+    module: &BoundModule,
+    arg_id: NodeId,
+    param_ty: &VbaType,
+    by_val: bool,
+    expr_arena: &ExprArena,
+) -> bool {
+    if matches!(param_ty, VbaType::Object) {
+        return true;
+    }
+    let is_plain_same_type_var = matches!(expr_arena.get(arg_id), ExprNode::NameRef { .. })
+        && matches!(module.resolutions.get(&arg_id.0), Some(NameResolution::Local { .. }))
+        && module.types.get(&arg_id.0) == Some(param_ty);
+    if is_plain_same_type_var {
+        return false;
+    }
+    // A non-addressable source (literal/expression): ByRef needs a temp to
+    // point to; ByVal just pushes the value, no address needed at all.
+    !by_val
+}
+
+/// The set of class-method parameter types whose staging/addressing
+/// convention is actually grounded (see `class_method_arg_needs_staging`'s
+/// doc comment) — `Integer`/`Long` (both modes), `Object` (both modes,
+/// always-staged), and `String` ByRef only (`argtype_probe`'s `TakeStr`
+/// showed a plain address, no staging, matching the type-agnostic ByRef
+/// rule — but ByVal String is untested and, being refcounted like Object,
+/// is NOT assumed to follow the plain-scalar ByVal path). `Variant` ByRef is
+/// grounded ONLY for a plain-variable source (`argvariant_probe`'s `TakeVar
+/// v` — plain `LdAddr`, no staging, matching the type-agnostic ByRef rule);
+/// a non-addressable Variant argument (literal/expression) is NOT covered —
+/// VB6's Variant-boxing machinery for that case is unverified, so
+/// `lower_class_method_call` additionally requires a plain-variable source
+/// whenever a parameter is `Variant` (checked separately, since this
+/// function only sees the type/mode, not the argument expression). Variant
+/// ByVal is entirely gated: `argvariant_probe`'s `TakeVarByVal v` emits an
+/// unexplored 2-byte opcode (`fc ed`) whose semantics (presumably a proper
+/// Variant copy — VB6 Variants are refcounted/complex, like `Object` — but
+/// not confirmed) were not traced before this pass ran out of budget; ship
+/// nothing rather than guess. Anything else (Single/Double/Currency/Byte/
+/// Boolean/UDT/Array, ByVal String) is gated too: the addressability
+/// mechanism plausibly generalizes to the scalars, but is not oracle-
+/// confirmed, and `emit_sized_value_load`'s existing 8-byte case is itself
+/// known to be imprecise (hardcodes `0x6d`/Currency's opcode for ALL 8-byte
+/// types, including Double, which is actually `0x6f`) — extending onto that
+/// uncertainty would trade one gate for a hidden one.
+pub(super) fn class_method_param_is_grounded(ty: &VbaType, by_val: bool) -> bool {
+    match ty {
+        VbaType::Integer | VbaType::Long | VbaType::Object => true,
+        VbaType::String => !by_val,
+        VbaType::Variant => !by_val,
+        _ => false,
+    }
+}
+
 /// Whether `func_id` (a call target expression) is a class-member
 /// `Sub`/`Function` MemberAccess resolved for vtable dispatch, and if so, how
-/// many argument-staging temps the call at `args_id` needs. Every argument
-/// (regardless of declared ByVal/ByRef) is staged into its own addressable
-/// temp before the call, in declaration order — byte-exact against
-/// `argcount_probe` (1- and 3-arg `Sub`) and `funcarg_probe` (2-arg
-/// `Function`); see the `vb6-class-vtable-slot-rule` memory note. `is_value`
-/// adds one more temp for the result (an expression-position call's out-param
-/// temp) — a statement-position call (result discarded) needs none.
+/// many argument-staging temps the call at `args_id` needs — only arguments
+/// that actually need materializing (see `class_method_arg_needs_staging`)
+/// consume a pool slot; a plain-variable argument needing no staging costs
+/// nothing. `is_value` adds one more temp for the result (an expression-
+/// position call's out-param temp) — a statement-position call (result
+/// discarded) needs none.
 fn class_method_call_temps(
     module: &BoundModule,
     func_id: NodeId,
@@ -321,11 +396,21 @@ fn class_method_call_temps(
     if resolved.method_slot.is_none() {
         return 0;
     }
-    let arg_count = match expr_arena.get(args_id) {
-        ExprNode::ArgList { args } => args.len(),
-        _ => 0,
+    let args: Vec<NodeId> = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => Vec::new(),
     };
-    arg_count + is_value as usize
+    if args.len() != resolved.method_params.len() {
+        return 0;
+    }
+    let staged = args
+        .iter()
+        .zip(&resolved.method_params)
+        .filter(|(&arg, (ty, by_val))| {
+            class_method_arg_needs_staging(module, arg, ty, *by_val, expr_arena)
+        })
+        .count();
+    staged + is_value as usize
 }
 
 /// Max class-method-call argument-staging temps needed by any single call
