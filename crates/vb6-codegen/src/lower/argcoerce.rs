@@ -33,6 +33,7 @@
 //! never a guessed byte.
 
 use super::*;
+use super::decl::*;
 use super::expr::*;
 
 /// Which of `EbEmitArgCoerce`'s callees a given call path needs, ported or
@@ -152,8 +153,11 @@ pub(super) enum ArgCoerceOutcome {
     /// Take the address of `arg_id`'s own original expression directly, with
     /// no synthesized node in between (the ByRef case: `local_18 == 7`,
     /// confirmed to reduce to this because the `EbBuildNode`/`0x11`
-    /// restructuring is provably inert for final bytes on this path).
-    AddressOfOriginal,
+    /// restructuring is provably inert for final bytes on this path). Carries
+    /// the variable's own frame offset (via `arg_var_offset`, computed by
+    /// this port itself, not merely a signal the caller must re-derive) —
+    /// the exact operand a `04 <offset>` address-load byte sequence needs.
+    AddressOfOriginal(i16),
 }
 
 /// Placeholder entry point — NOT YET CALLED from any live lowering path.
@@ -269,7 +273,8 @@ pub(super) fn eb_emit_arg_coerce(
             )
             && ctx.module.types.get(&arg_id.0) == Some(param_ty);
         if is_plain_same_type_var {
-            return Ok(ArgCoerceOutcome::AddressOfOriginal);
+            let off = arg_var_offset(ctx, arg_id).ok_or(LowerError::UnsupportedNode)?;
+            return Ok(ArgCoerceOutcome::AddressOfOriginal(off));
         }
         return Err(UnportedCallee::ResolveTypeBinding2.as_lower_error());
     }
