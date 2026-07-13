@@ -232,40 +232,56 @@ pub(super) fn lower_class_method_call(
         if is_plain_var && !needs_staging[i] {
             let off = arg_var_offset(ctx, args[i]).ok_or(LowerError::UnsupportedNode)?;
             if *by_val {
-                // Live cross-check against the `EbEmitArgCoerce` word-form
-                // port, ByVal side: for every `(type, mode)` pair traced to
-                // a confirmed no-op this session (`local_18 == 4` —
-                // Integer/Variant ByVal), render the port's own `Value`
-                // node through the SAME `Emitter` used below and assert the
-                // resulting bytes are byte-IDENTICAL to what this line's
-                // already-shipped `emit_sized_value_load` produces — not
-                // just "the port didn't error," but "the port's own output
-                // bytes match production exactly." A mismatch here would be
-                // a real, actionable divergence between the two
-                // implementations, not a false alarm.
-                if cfg!(debug_assertions) && known_local18_for_grounded_case(ty, true) == Some(4) {
+                // `eb_emit_arg_coerce` (the `EbEmitArgCoerce` word-form
+                // port, `argcoerce.rs`) is now the ACTUAL byte source for
+                // every `(type, mode)` pair it has traced to a confirmed
+                // no-op this session (`local_18 == 4` — Integer ByVal; see
+                // its doc comment for the full chain), not merely a
+                // parallel validator: its `Value(node)` is rendered through
+                // the same `Emitter` and used DIRECTLY. `emit_sized_value_
+                // load` remains the implementation for every type this
+                // port has NOT traced (`Long` — `class_method_param_is_
+                // grounded` allows it at the sema layer, but this port has
+                // no `local_18` data point for it) — falling back keeps
+                // existing, independently oracle-verified behavior for
+                // those untouched by this port, exactly as before.
+                let ported = if known_local18_for_grounded_case(ty, true) == Some(4) {
                     let mut scratch = NodeArena::new();
-                    let outcome =
-                        eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch);
-                    match outcome {
+                    match eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch) {
                         Ok(ArgCoerceOutcome::Value(node)) => {
                             let mut emitter = Emitter::new(&scratch);
                             emitter.emit_expr(node, 2);
-                            let ported_bytes = emitter.into_bytes();
+                            Some(emitter.into_bytes())
+                        }
+                        other => {
+                            debug_assert!(
+                                false,
+                                "eb_emit_arg_coerce disagreed with the shipped ByVal plain-variable path: {other:?}"
+                            );
+                            None
+                        }
+                    }
+                } else {
+                    None
+                };
+                match ported {
+                    Some(bytes) => {
+                        // Still cross-checked against the independently
+                        // oracle-verified reference bytes in debug builds —
+                        // a divergence here means the port itself is wrong,
+                        // not merely unwired.
+                        if cfg!(debug_assertions) {
                             let mut shipped_bytes = Vec::new();
                             emit_sized_value_load(static_var_size(ty), off, &mut shipped_bytes);
                             debug_assert_eq!(
-                                ported_bytes, shipped_bytes,
-                                "eb_emit_arg_coerce's ByVal output diverged from the shipped bytes"
+                                bytes, shipped_bytes,
+                                "eb_emit_arg_coerce's ByVal output diverged from the oracle-verified reference"
                             );
                         }
-                        other => debug_assert!(
-                            false,
-                            "eb_emit_arg_coerce disagreed with the shipped ByVal plain-variable path: {other:?}"
-                        ),
+                        out.extend(bytes);
                     }
+                    None => emit_sized_value_load(static_var_size(ty), off, out),
                 }
-                emit_sized_value_load(static_var_size(ty), off, out);
             } else {
                 // Live cross-check against the `EbEmitArgCoerce` word-form
                 // port (`argcoerce.rs`): for every `(type, mode)` pair this
@@ -304,36 +320,55 @@ pub(super) fn lower_class_method_call(
         emitter.emit_expr(root, 2);
         let shipped_bytes = emitter.into_bytes();
 
-        // Live cross-check against the `EbEmitArgCoerce` word-form port,
-        // Object-ByVal side (`local_18 == 9`): scoped exactly to a plain
-        // same-type variable source — the ONLY shape this session traced
-        // `EbCheckSetBinding`/`EbEmitPropertyExpr`/`EbNormalizeTypeReference`
-        // for (see `eb_normalize_type_reference_object_case_is_noop_for_
-        // plain_var`'s doc comment) — matching `class_method_arg_needs_
-        // staging`'s own unconditional `true` for `Object`, this branch is
-        // where a plain Object variable ByVal argument actually lands
-        // (staging always applies, so it never hits the fast-path branch
-        // above).
-        if cfg!(debug_assertions) && matches!(ty, VbaType::Object) && *by_val && is_plain_var {
+        // `eb_emit_arg_coerce`, Object-ByVal side (`local_18 == 9`): scoped
+        // exactly to a plain same-type variable source — the ONLY shape
+        // this session traced `EbCheckSetBinding`/`EbEmitPropertyExpr`/
+        // `EbNormalizeTypeReference` for (see `eb_normalize_type_reference_
+        // object_case_is_noop_for_plain_var`'s doc comment) — matching
+        // `class_method_arg_needs_staging`'s own unconditional `true` for
+        // `Object`, this branch is where a plain Object variable ByVal
+        // argument actually lands (staging always applies, so it never
+        // hits the fast-path branch above). When grounded, its `Value`
+        // node IS the bytes used — not merely cross-checked — with a
+        // debug-only equality assertion against the independently oracle-
+        // verified `shipped_bytes` kept as a safety net (any divergence
+        // means the port itself regressed, not that it's simply unwired).
+        // Every other source shape (non-plain-variable, non-Object, or a
+        // literal/expression argument) keeps the existing `lower_expr_
+        // coerced`+`coerce_assign_value` pipeline unchanged — this port
+        // has not traced those shapes and must not silently substitute for
+        // them.
+        let ported_object_bytes = if matches!(ty, VbaType::Object) && *by_val && is_plain_var {
             let mut scratch = NodeArena::new();
-            let outcome = eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch);
-            match outcome {
+            match eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch) {
                 Ok(ArgCoerceOutcome::Value(node)) => {
                     let mut port_emitter = Emitter::new(&scratch);
                     port_emitter.emit_expr(node, 2);
-                    let ported_bytes = port_emitter.into_bytes();
+                    Some(port_emitter.into_bytes())
+                }
+                other => {
+                    debug_assert!(
+                        false,
+                        "eb_emit_arg_coerce disagreed with the shipped Object-ByVal plain-variable path: {other:?}"
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+        match ported_object_bytes {
+            Some(bytes) => {
+                if cfg!(debug_assertions) {
                     debug_assert_eq!(
-                        ported_bytes, shipped_bytes,
-                        "eb_emit_arg_coerce's Object-ByVal output diverged from the shipped bytes"
+                        bytes, shipped_bytes,
+                        "eb_emit_arg_coerce's Object-ByVal output diverged from the oracle-verified reference"
                     );
                 }
-                other => debug_assert!(
-                    false,
-                    "eb_emit_arg_coerce disagreed with the shipped Object-ByVal plain-variable path: {other:?}"
-                ),
+                out.extend(bytes);
             }
+            None => out.extend(shipped_bytes),
         }
-        out.extend(shipped_bytes);
 
         if !needs_staging[i] {
             // ByVal, non-addressable source, scalar type: push the computed
