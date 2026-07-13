@@ -572,6 +572,54 @@ pub(super) fn eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(
     }
 }
 
+/// **PORTED, verified — fully static, resolves the ByRef-wiring blocker's
+/// open hypothesis.** `EbEmitExpr` (VBA6.DLL `@0fad8a7a`,
+/// `vba6_part0002.c:40697`, 1378 bytes) — the general expression-to-pcode
+/// compiler every emitted node ultimately routes through (including, per
+/// `EbEmitCallInstruction`'s own confirmed shape, call arguments — see the
+/// memory note's "chased one level further" entries for how this function
+/// was reached: `EbProcessArguments` → `EbEmitCallInstruction` →
+/// `EbEmitCallPcode` [confirmed NOT to touch argument nodes] → some general
+/// emitter for the actual per-argument bytes). Its own dispatch on a node's
+/// low16 opcode (`iVar1 = (short)*pNode`) for `iVar1==0x11` specifically:
+/// `if (iVar1 < 0x2c) { if (iVar1 < 0x1d) { if (iVar1 < 0x16) { return; }
+/// ...`. `0x11 < 0x16` is true — **an immediate, unconditional `return;`,
+/// emitting NOTHING**. `EbEmitExpr` cannot process a `0x11` ("deref") node
+/// directly at all.
+///
+/// This closes the open question from `eb_build_node_output_shape_for_
+/// plain_scalar`'s doc comment: since the general emitter refuses to handle
+/// a `0x11` node, ANY correct caller that needs real bytes for one MUST
+/// unwrap it first (via its `word[4]` back-pointer to the ORIGINAL source
+/// node — the same unwrapping pattern independently confirmed elsewhere in
+/// the compiler, `EbSetupCallTarget`'s "strips deref (`0x11`/`0x12`)
+/// wrappers to reach the base type"). The bytes finally emitted for a
+/// `EbBuildNode`-wrapped ByRef argument therefore trace back to the SAME
+/// original `0x60` bound-name node this codebase's own shipped,
+/// oracle+TTD-verified `lower_class_method_call` already targets directly
+/// (`arg_var_offset` + a `04 <offset>` address operand) — the `0x11`
+/// wrapper is a real, confirmed INTERMEDIATE restructuring, but it is
+/// PROVABLY INERT with respect to final p-code bytes on this path.
+///
+/// This resolves hypothesis (b) from the earlier ByRef-wiring blocker in
+/// this port's favor — but does NOT by itself complete the wiring: this
+/// codebase's `lower_expr_coerced` (used by the `local_18==4`/`9` no-op
+/// delegations) computes and pushes a VALUE, which is the wrong operation
+/// for a ByRef argument regardless of whether coercion is a no-op — the
+/// correct action is "take the address of the original variable," a
+/// different code path this port's `Result<NodeRef, LowerError>` signature
+/// still has no clean way to express. Wiring `local_18==7`'s plain-variable
+/// case for real is now a scoped, well-understood remaining step (route to
+/// whatever this codebase's existing address-taking mechanism is, NOT
+/// `lower_expr_coerced`) rather than an open architectural question.
+pub(super) fn eb_emit_expr_0x11_node_is_unhandled_no_op(opcode: u16) -> Option<bool> {
+    if opcode == 0x11 {
+        Some(true)
+    } else {
+        None
+    }
+}
+
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
 /// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
 /// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one

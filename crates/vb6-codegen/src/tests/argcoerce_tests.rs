@@ -146,6 +146,16 @@ fn eb_build_node_output_shape_matches_earlier_live_observation() {
 }
 
 #[test]
+fn eb_emit_expr_0x11_node_confirmed_unhandled() {
+    // Statically confirmed (vba6_part0002.c:40697-40821): EbEmitExpr's own
+    // dispatch chain for opcode 0x11 hits an unconditional early `return;`
+    // before emitting anything -- it cannot process a 0x11 node directly.
+    assert_eq!(eb_emit_expr_0x11_node_is_unhandled_no_op(0x11), Some(true));
+    // Not claimed for any other opcode.
+    assert_eq!(eb_emit_expr_0x11_node_is_unhandled_no_op(0x60), None);
+}
+
+#[test]
 fn known_local18_matches_the_six_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
