@@ -303,6 +303,44 @@ pub(super) fn eb_property_expr_bvar2_for_plain_local(word7: i32) -> Option<bool>
     }
 }
 
+/// **VERIFIED via live TTD.** `EbEmitPropertyExpr`'s `accessMode==1` (Let)
+/// tail, for a plain Object-ByVal argument (`bVar2==false`, confirmed by
+/// [`eb_property_expr_bvar2_for_plain_local`]): `uVar3 = EbGetTarget();
+/// iVar5 = EbGetTypeClass(uVar3); if (iVar5==1) goto LAB_0fac0afe;` — a
+/// direct, unconditional return of the node UNCHANGED (`*ppCallCtx =
+/// local_8;`), skipping the `EbAllocateExprNode2`/`EbFindItemInContainer`
+/// block entirely.
+///
+/// `EbGetTarget` (`vba6_part0002.c:4880`) dispatches on a `this`-pointer
+/// context (`in_ECX`) that turned out to be resolvable WITHOUT tracing its
+/// caller chain: disassembling `EbEmitPropertyExpr` itself
+/// (`0fac0a8e`/`0fac0a91`) shows `EbGetTarget`'s own `in_ECX` is loaded as
+/// `local_8[2]` (`mov eax,[ebp-4]; mov ecx,[eax+8]`) — a NODE FIELD, not
+/// external compiler state as first assumed. Read live via TTD replay of
+/// `argtype_probe/VB601.run` (breakpoint at the `call EbGetTypeClass` site,
+/// `0fac0a97`, single relevant hit — a second hit's stack held unrelated
+/// `ntdll` addresses and was discarded as out-of-scope): `EbGetTypeClass`'s
+/// own argument was `0x0000ffff` — `EbGetTarget`'s early-return sentinel
+/// (`EbGetAttributeFlags(in_ECX[1])` returned nonzero), NOT the
+/// `in_ECX`-itself path this port had initially guessed as more likely.
+/// `EbGetTypeClass(0xffff)` (`vba6_part0002.c:11388`, a genuine 3-way
+/// literal-comparison leaf, no further tracing needed) returns `1` — hence
+/// `iVar5==1`, confirming the no-op return.
+///
+/// This does NOT make the whole Object-ByVal `EbEmitPropertyExpr` call a
+/// no-op: `EbNormalizeTypeReference(&local_8)` runs unconditionally BEFORE
+/// this dispatch, and for Object's own type tag (`0x16`, this codebase's
+/// `vba_type_to_node_tag`), [`eb_normalize_type_reference_is_plain_noop`]
+/// returns `None` — `iVar7==0x16` is explicitly one of the "does
+/// substantially more" sub-cases in that function's own unmodeled dispatch,
+/// not the confirmed-plain-no-op range. So the overall Object-ByVal path
+/// still bottoms out in `EbNormalizeTypeReference`'s `iVar7==0x16` branch,
+/// genuinely unported — this function documents ONLY the tail dispatch
+/// AFTER that call, confirmed to contribute nothing further once it runs.
+pub(super) fn eb_property_expr_object_bval_let_tail_is_noop() -> bool {
+    true
+}
+
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
 /// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
 /// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one

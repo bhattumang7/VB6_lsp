@@ -87,6 +87,14 @@ fn eb_property_expr_bvar2_false_for_plain_local() {
 }
 
 #[test]
+fn eb_property_expr_object_bval_let_tail_is_noop_confirmed() {
+    // TTD-confirmed (argtype_probe/VB601.run, EbGetTypeClass's own arg was
+    // 0xffff -> iVar5==1 -> immediate no-op return in EbEmitPropertyExpr's
+    // accessMode==1 branch).
+    assert!(eb_property_expr_object_bval_let_tail_is_noop());
+}
+
+#[test]
 fn known_local18_matches_the_four_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
