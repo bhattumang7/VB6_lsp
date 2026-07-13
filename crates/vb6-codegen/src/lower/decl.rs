@@ -396,9 +396,13 @@ pub(super) fn class_method_arg_needs_staging(
 /// argument-passing is purely SIZE-based (the callee's own parameter
 /// descriptor handles subtype interpretation), general expression loading
 /// is type-based (arithmetic needs the exact subtype) — and conflating them
-/// was the actual error, not a bug in `emit_sized_value_load`. `UDT`/`Array`
-/// remain gated: no addressability/staging convention has been captured for
-/// either at all.
+/// was the actual error, not a bug in `emit_sized_value_load`. `Date` (both
+/// modes, plain-variable source): oracle-captured directly (`argdate_
+/// probe`) rather than assumed from `Double`'s pattern despite sharing its
+/// 8-byte size — ByVal emits `6d <offset>`, IDENTICAL to `Double`/
+/// `Currency`, confirming (not assuming) the same size-based scheme applies.
+/// `UDT`/`Array` remain gated: no addressability/staging convention has
+/// been captured for either at all.
 pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> bool {
     matches!(
         ty,
@@ -412,6 +416,7 @@ pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> boo
             | VbaType::Single
             | VbaType::Double
             | VbaType::Currency
+            | VbaType::Date
     )
 }
 
