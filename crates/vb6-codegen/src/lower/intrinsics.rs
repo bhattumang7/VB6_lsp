@@ -232,6 +232,39 @@ pub(super) fn lower_class_method_call(
         if is_plain_var && !needs_staging[i] {
             let off = arg_var_offset(ctx, args[i]).ok_or(LowerError::UnsupportedNode)?;
             if *by_val {
+                // Live cross-check against the `EbEmitArgCoerce` word-form
+                // port, ByVal side: for every `(type, mode)` pair traced to
+                // a confirmed no-op this session (`local_18 == 4` —
+                // Integer/Variant ByVal), render the port's own `Value`
+                // node through the SAME `Emitter` used below and assert the
+                // resulting bytes are byte-IDENTICAL to what this line's
+                // already-shipped `emit_sized_value_load` produces — not
+                // just "the port didn't error," but "the port's own output
+                // bytes match production exactly." A mismatch here would be
+                // a real, actionable divergence between the two
+                // implementations, not a false alarm.
+                if cfg!(debug_assertions) && known_local18_for_grounded_case(ty, true) == Some(4) {
+                    let mut scratch = NodeArena::new();
+                    let outcome =
+                        eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch);
+                    match outcome {
+                        Ok(ArgCoerceOutcome::Value(node)) => {
+                            let mut emitter = Emitter::new(&scratch);
+                            emitter.emit_expr(node, 2);
+                            let ported_bytes = emitter.into_bytes();
+                            let mut shipped_bytes = Vec::new();
+                            emit_sized_value_load(static_var_size(ty), off, &mut shipped_bytes);
+                            debug_assert_eq!(
+                                ported_bytes, shipped_bytes,
+                                "eb_emit_arg_coerce's ByVal output diverged from the shipped bytes"
+                            );
+                        }
+                        other => debug_assert!(
+                            false,
+                            "eb_emit_arg_coerce disagreed with the shipped ByVal plain-variable path: {other:?}"
+                        ),
+                    }
+                }
                 emit_sized_value_load(static_var_size(ty), off, out);
             } else {
                 // Live cross-check against the `EbEmitArgCoerce` word-form
