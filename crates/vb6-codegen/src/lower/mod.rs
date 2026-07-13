@@ -27,6 +27,7 @@ use crate::emit::Emitter;
 use crate::node::{NodeArena, NodeRef};
 use crate::tables::RT_STORE_BY_CTX;
 
+mod argcoerce;
 mod assign;
 mod decl;
 mod expr;
