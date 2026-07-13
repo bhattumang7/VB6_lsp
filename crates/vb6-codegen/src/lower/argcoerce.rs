@@ -279,6 +279,44 @@ pub(super) fn eb_coerce_expression_type2_is_match(target_type: i32, node_type_ta
     }
 }
 
+/// **PORTED, verified for the traced case.** `EbProcessType2` (VBA6.DLL
+/// `@0fabcb2e`, `vba6_part0002.c:6434`, 73 bytes) — the branch
+/// `EbEmitExpression4` takes when `pBase[1] & 0x40 == 0` (confirmed for
+/// Integer ByVal above). Dispatches on the node's own opcode (low16 of
+/// `word[0]`) and a flag byte at the node's own offset 5 (`(word[1] >> 8) &
+/// 0xff` in this codebase's `word[1]`-holds-flags convention): calls
+/// `EbWrapExpressionNode` when `(opcode==0x60 && byte5&0x20!=0) ||
+/// (opcode==0x69 && byte5&0x80!=0) || opcode==0x5e`; otherwise
+/// `EbNormalizeTypeReference`. Traced live for Integer ByVal: opcode `0x60`,
+/// `word[1]=1` (so `byte5=0`) — the wrap condition is false, so
+/// `EbNormalizeTypeReference` is the confirmed next call (not
+/// `EbWrapExpressionNode`, which remains completely unported/untraced).
+pub(super) fn eb_process_type2_wraps(opcode: u16, word1: u32) -> bool {
+    let byte5 = ((word1 >> 8) & 0xff) as u8;
+    (opcode == 0x60 && byte5 & 0x20 != 0) || (opcode == 0x69 && byte5 & 0x80 != 0) || opcode == 0x5e
+}
+
+/// **PORTED, verified for the traced case only.** `EbNormalizeTypeReference`
+/// (VBA6.DLL `@0fab07b8`, `vba6_part0001.c:47969`, 452 bytes) — dispatches
+/// on `iVar7 = word[0] >> 0x10` (the node's own type-tag high word, i.e.
+/// this codebase's `vba_type_to_node_tag` value): `iVar7==2` reports an
+/// expression error (unmodeled); `iVar7>9` further dispatches into FIVE
+/// more sub-cases (`9<iVar7<0xd` sets a context flag only; `iVar7==0xf`,
+/// `0x11`, `0x16` each do substantially more — none traced/modeled yet).
+/// For every OTHER `iVar7` (neither `==2` nor `>9`) — confirmed the case
+/// for Integer's own type tag, `6` — NEITHER branch runs, and control falls
+/// straight to the shared tail (`LAB_0fab07fa`): clear bit 0 of `word[1]`,
+/// return the SAME node pointer unchanged otherwise. `Some(true)` for that
+/// confirmed-plain-no-op range; `None` (gate the caller) for `iVar7==2` or
+/// `iVar7>9`, where real (unported) work happens.
+pub(super) fn eb_normalize_type_reference_is_plain_noop(type_tag_high: i32) -> Option<bool> {
+    if type_tag_high == 2 || type_tag_high > 9 {
+        None
+    } else {
+        Some(true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -314,5 +352,27 @@ mod tests {
         // trace: cVar3 == 0x13, falls straight through to `*ppExprValue =
         // local_8`, unchanged).
         assert_eq!(eb_coerce_expression_type2_is_match(1, 6), Some(true));
+    }
+
+    #[test]
+    fn eb_process_type2_wraps_matches_traced_integer_case() {
+        // Integer ByVal's node: opcode 0x60, word[1] = 1 (byte@offset5 = 0).
+        // 0x60 with byte@offset5 & 0x20 == 0 -> the wrap condition is false
+        // -> EbNormalizeTypeReference is called next (confirmed: that IS
+        // what the live trace's control flow implies — EbProcessType2 was
+        // the branch taken, and EbWrapExpressionNode was never observed).
+        assert_eq!(eb_process_type2_wraps(0x60, 1), false);
+    }
+
+    #[test]
+    fn eb_normalize_type_reference_noop_for_integer_class() {
+        // iVar7 (type tag high) = 6 for our Integer node: not ==2, not >9,
+        // so neither special-case branch runs — falls straight to
+        // LAB_0fab07fa, clearing word[1] bit 0 and returning the same node.
+        assert_eq!(eb_normalize_type_reference_is_plain_noop(6), Some(true));
+        // iVar7==2 and iVar7>9 are NOT plain no-ops (error-report / multi-
+        // case dispatch) — not modeled, must gate.
+        assert_eq!(eb_normalize_type_reference_is_plain_noop(2), None);
+        assert_eq!(eb_normalize_type_reference_is_plain_noop(10), None);
     }
 }
