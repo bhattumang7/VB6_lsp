@@ -179,3 +179,40 @@ pub(super) fn eb_emit_arg_coerce(
     // gate; since the classification itself isn't ported, gate uniformly.
     Err(UnportedCallee::ResolveTypeBinding2.as_lower_error())
 }
+
+/// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
+/// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
+/// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one
+/// special case. Used inside `EbEmitArgCoerce` (`vba6_part0002.c:5997,
+/// 6012`) to map a resolved type-class index to a coercion type-code, and
+/// inside `EbResolveTypeBinding2` similarly — not yet CALLED from
+/// `eb_emit_arg_coerce` above (that requires `EbGetExpressionType2`'s
+/// call-argument-context classification to be traced first, to know what
+/// index to pass in), but this piece itself is complete and trustworthy.
+pub(super) fn eb_get_type_code2(index: u8) -> u8 {
+    if index == 0x13 {
+        0
+    } else {
+        crate::tables::RT_ARG_COERCE_TYPE_CODE[index as usize]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn eb_get_type_code2_special_case_0x13_returns_zero() {
+        // The table's own byte at index 0x13 is 0x14 — the special case
+        // must override it, not read through to the table.
+        assert_eq!(crate::tables::RT_ARG_COERCE_TYPE_CODE[0x13], 0x14);
+        assert_eq!(eb_get_type_code2(0x13), 0);
+    }
+
+    #[test]
+    fn eb_get_type_code2_table_passthrough() {
+        assert_eq!(eb_get_type_code2(0x00), 0x05);
+        assert_eq!(eb_get_type_code2(0x08), 0x16);
+        assert_eq!(eb_get_type_code2(0x1f), 0x07);
+    }
+}
