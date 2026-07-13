@@ -338,10 +338,17 @@ pub(super) fn class_method_arg_needs_staging(
 /// The set of class-method parameter types whose staging/addressing
 /// convention is actually grounded (see `class_method_arg_needs_staging`'s
 /// doc comment) — `Integer`/`Long` (both modes), `Object` (both modes,
-/// always-staged), and `String` ByRef only (`argtype_probe`'s `TakeStr`
-/// showed a plain address, no staging, matching the type-agnostic ByRef
-/// rule — but ByVal String is untested and, being refcounted like Object,
-/// is NOT assumed to follow the plain-scalar ByVal path). `Variant` ByRef is
+/// always-staged), and `String` (both modes: ByRef via `argtype_probe`'s
+/// `TakeStr`, a plain address, no staging, matching the type-agnostic ByRef
+/// rule; ByVal via a dedicated `argstrbyval_probe` oracle capture —
+/// `re_lab/pcode_lab/argstrbyval_probe/`, compiled directly with VB6.EXE and
+/// read via `capture_pcode.extract_pcode`, no TTD needed — showing `o.
+/// TakeStrByVal s` emits a PLAIN VALUE LOAD (`6c <offset>`, matching
+/// `emit_sized_value_load`'s existing 4-byte-size fallback exactly) with NO
+/// staging at all — overturning the earlier caution that String, being
+/// refcounted like `Object`, might need `Object`-style `fd 9c` staging; the
+/// real compiler does not do that for a plain-variable ByVal String
+/// argument). `Variant` ByRef is
 /// grounded ONLY for a plain-variable source (`argvariant_probe`'s `TakeVar
 /// v` — plain `LdAddr`, no staging, matching the type-agnostic ByRef rule);
 /// a non-addressable Variant argument (literal/expression) is NOT covered —
@@ -354,16 +361,15 @@ pub(super) fn class_method_arg_needs_staging(
 /// Variant copy — VB6 Variants are refcounted/complex, like `Object` — but
 /// not confirmed) were not traced before this pass ran out of budget; ship
 /// nothing rather than guess. Anything else (Single/Double/Currency/Byte/
-/// Boolean/UDT/Array, ByVal String) is gated too: the addressability
-/// mechanism plausibly generalizes to the scalars, but is not oracle-
-/// confirmed, and `emit_sized_value_load`'s existing 8-byte case is itself
+/// Boolean/UDT/Array) is gated too: the addressability mechanism plausibly
+/// generalizes to the scalars, but is not oracle-confirmed, and
+/// `emit_sized_value_load`'s existing 8-byte case is itself
 /// known to be imprecise (hardcodes `0x6d`/Currency's opcode for ALL 8-byte
 /// types, including Double, which is actually `0x6f`) — extending onto that
 /// uncertainty would trade one gate for a hidden one.
 pub(super) fn class_method_param_is_grounded(ty: &VbaType, by_val: bool) -> bool {
     match ty {
-        VbaType::Integer | VbaType::Long | VbaType::Object => true,
-        VbaType::String => !by_val,
+        VbaType::Integer | VbaType::Long | VbaType::Object | VbaType::String => true,
         VbaType::Variant => !by_val,
         _ => false,
     }
