@@ -131,6 +131,21 @@ fn eb_resolve_type_binding2_reaches_evaluate_expression3_for_traced_byref_cases(
 }
 
 #[test]
+fn eb_build_node_output_shape_matches_earlier_live_observation() {
+    // Cross-checks the fully static EbBuildNode/EbAllocateTyped/
+    // EbInitTypeMarker reading against the earlier live TTD observation
+    // (0x0380008c was the source's own word[2] value in that trace) — the
+    // static derivation and the live read must agree.
+    let (opcode, type_tag, word1_high16, aux, points_back) =
+        eb_build_node_output_shape_for_plain_scalar(0, 0x0380008c);
+    assert_eq!(opcode, 0x11);
+    assert_eq!(type_tag, 0x17);
+    assert_eq!(word1_high16, 0);
+    assert_eq!(aux, [3, 0x0380008c]);
+    assert!(points_back);
+}
+
+#[test]
 fn known_local18_matches_the_four_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));

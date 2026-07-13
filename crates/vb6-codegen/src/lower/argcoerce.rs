@@ -437,6 +437,75 @@ pub(super) fn eb_resolve_type_binding2_reaches_evaluate_expression3(
     }
 }
 
+/// **PORTED, verified — fully static, closes an earlier live-TTD-only
+/// finding.** `EbBuildNode` (VBA6.DLL `@0fabccb3`, `vba6_part0002.c:6584`,
+/// 129 bytes) — the function `EbEvaluateExpression3` calls (via its
+/// `LAB_0fabce7a`/`LAB_0fabcece` fallthrough tail, `vba6_part0002.c:
+/// 6803-6766`) for a plain bound-name node whose type tag isn't one of the
+/// function's special-cased values (`2`, `0xf`, `0x11`, `0x16`, `0x17` — an
+/// ordinary Integer/String node, tag `6`/`0x10`, falls through all of
+/// them). An earlier pass this session observed this transformation's
+/// OUTPUT live via TTD (new node, opcode `0x11`, type tag `0x17`, `word[2]`
+/// pointing at `[3, <original word[2] value>, 0, 0]`) but had not yet traced
+/// the function that PRODUCES it. Reading `EbBuildNode` (and the two tiny
+/// leaves it calls, `EbAllocateTyped`/`EbInitTypeMarker`,
+/// `vba6_part0002.c:6626,6643`) explains that shape completely:
+/// - Allocates a new 40-byte (`0x28`) node — this codebase's own `RawNode`
+///   size exactly.
+/// - New `word[0]` = opcode `0x11` (low16) `| 0x17<<16` (high16, set by
+///   `EbAllocateTyped`'s unconditional `*pNode = *pNode & 0xffff |
+///   0x170000`).
+/// - New `word[1]` high16 = copied verbatim from the SOURCE node's own byte-
+///   offset-6 field (its `word[1]` high16).
+/// - New `word[2]` = a pointer to a FRESH, separate 16-byte auxiliary
+///   struct (`EbGrowBufferIfNeeded(0x10)`, NOT the same allocation as the
+///   40-byte node) whose two dwords are unconditionally `[3, <source's own
+///   original word[2] value>]` — `EbInitTypeMarker`'s `*in_ECX = 3;
+///   in_ECX[1] = pTypeInfo;`, called with `pTypeInfo = pSource[2]`. The
+///   leading `3` is NOT data-dependent or a semantic discriminator (an
+///   earlier live observation had flagged it as an unidentified value,
+///   speculating it might match this codebase's own `BindKind::FuncCall =
+///   3` — that speculation is now ruled out: it is an unconditional
+///   constant this specific function always writes, unrelated to
+///   `BindKind`).
+/// - New `word[4]` = a pointer BACK to the original source node (since the
+///   source's own opcode is `0x60`, not the `0x31`-wrapper special case at
+///   `vba6_part0002.c:6601` — that alternate branch, walking a `0x31`-chain
+///   via `word[5]`, is NOT modeled here, out of scope for a plain bound-name
+///   node).
+///
+/// **This does NOT get wired into [`eb_emit_arg_coerce`]'s live dispatch**:
+/// unlike the `local_18==4`/`9` cases (which reduced to true no-ops,
+/// directly matching `lower_expr_coerced`'s existing plain-value-load
+/// behavior), this is a genuine node-level RESTRUCTURING with no byte-level
+/// analog in this codebase's `NodeRef`-returning coercion functions. This
+/// codebase's own already-shipped, oracle+TTD-verified equivalent for the
+/// SAME scenario (a plain-variable ByRef argument) is architecturally
+/// different: `lower_class_method_call` (`intrinsics.rs`) emits the
+/// variable's address directly as BYTES (`arg_var_offset` + a `04 <offset>`
+/// operand), never routing through any word-form node at all — the two
+/// representations aren't reconcilable through `eb_emit_arg_coerce`'s
+/// current `Result<NodeRef, LowerError>` signature, which has no bytes-only
+/// escape hatch. Wiring `local_18==7`'s plain-variable case for real would
+/// need either a byte-emission-capable variant of this port's dispatch, or
+/// confirmation that this word-form restructuring is fully inert by the
+/// time final p-code bytes are emitted (i.e. purely an internal VBA6
+/// bookkeeping step later passes ignore for this node shape) — neither is
+/// established yet, so this remains a documented, verified STRUCTURAL fact
+/// without a live caller, exactly like the rest of this file's discipline
+/// requires when a byte-level mapping isn't actually confirmed.
+pub(super) fn eb_build_node_output_shape_for_plain_scalar(
+    source_word1_high16: u16,
+    source_word2: u32,
+) -> (u16, u16, u16, [u32; 2], bool) {
+    let opcode = 0x11u16;
+    let type_tag = 0x17u16;
+    let word1_high16 = source_word1_high16;
+    let aux = [3u32, source_word2];
+    let word4_points_back_to_source = true;
+    (opcode, type_tag, word1_high16, aux, word4_points_back_to_source)
+}
+
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
 /// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
 /// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one
