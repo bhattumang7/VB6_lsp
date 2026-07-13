@@ -22,3 +22,6 @@ Make sure that the tests cover all the changes we are making. After every change
 # private sources
 Do not mention anything in the comments that could lead to thinking "where did they figure this out from?" - all the references need to remain private. i.e.  Direct port of `EbProcessLinkedList` or similar things are not acceptable. the material referenced (whether the code or docs or experiments) needs to remain private and should not be revealed about in this repo.
 
+# edge cases
+Edge cases are not low priority and are not to be dismissed or deprioritized as "rare" or "not relevant to real code." They are our bread and butter. Never characterize a branch, error path, or uncommon type/mode combination as not mattering just because it seems uncommon - that judgment is not mine to make. Trace and port edge cases with the same rigor as the common path, not as a "someday" backlog item.
+
