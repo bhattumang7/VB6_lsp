@@ -33,6 +33,7 @@
 //! never a guessed byte.
 
 use super::*;
+use super::expr::*;
 
 /// Which of `EbEmitArgCoerce`'s callees a given call path needs, ported or
 /// not. Kept as an explicit enum (rather than a bare string) so a future
@@ -138,6 +139,7 @@ pub(super) fn eb_emit_arg_coerce(
     ctx: &LowerCtx,
     arg_id: NodeId,
     param_ty: &VbaType,
+    by_val: bool,
     flags: u32,
     expr_arena: &ExprArena,
     arena: &mut NodeArena,
@@ -170,14 +172,59 @@ pub(super) fn eb_emit_arg_coerce(
     // existing analog is `vba_type_to_node_tag`/`load_store_ctx`'s type
     // classification, but neither is a faithful port of
     // `EbGetExpressionType2` itself (see `resolver.rs` for what IS ported of
-    // that family) — mapping `param_ty` to the exact `local_18` class
-    // (4/5/7/8/9/0xc/…) needs `EbGetExpressionType2` traced specifically for
-    // a CALL-ARGUMENT context (its behavior already differs by caller
-    // elsewhere in this codebase's grounding work this session). Every
-    // param type this port could plausibly classify bottoms out at
-    // `ResolveTypeBinding2` (the `local_18 == 7` common case) or a rarer
-    // gate; since the classification itself isn't ported, gate uniformly.
+    // that family) — mapping `param_ty` to the exact `local_18` class in
+    // general needs `EbGetExpressionType2` traced for the call-argument
+    // context, which has NOT been done generally (only observed for four
+    // specific `(type, mode)` pairs — see `known_local18_for_grounded_case`).
+    //
+    // For the ONE case fully traced end-to-end this session — Integer
+    // ByVal, `local_18 == 4` — the confirmed chain (`EbEmitExpression4` →
+    // `EbCoerceExpressionType2` [no-op, types already match] →
+    // `EbProcessType2` → `EbNormalizeTypeReference` [no-op, node unchanged]
+    // → `EbBuildBinaryOp` gate evaluates false either way) reduces to: the
+    // argument's value is loaded plainly, no coercion applied. That is
+    // EXACTLY what `lower_expr_coerced` already does for a plain Integer
+    // reference — not a coincidence to paper over, but the actual, verified
+    // content of this port's finding: delegate to it rather than re-derive
+    // byte emission this port has already shown produces the same result.
+    if known_local18_for_grounded_case(param_ty, by_val) == Some(4) {
+        return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty));
+    }
+
+    // Every other param type/mode this port could plausibly classify
+    // bottoms out at `ResolveTypeBinding2` (the `local_18 == 7` common
+    // case, traced deep but not byte-complete — see the memory note) or a
+    // rarer, entirely untraced gate; since the general classification
+    // itself isn't ported, gate uniformly rather than guess.
     Err(UnportedCallee::ResolveTypeBinding2.as_lower_error())
+}
+
+/// The `local_18` value (`EbGetExpressionType2`'s classification) for the
+/// specific `(param_ty, by_val)` pairs this session directly observed via
+/// TTD (disassemble `EbEmitArgCoerce` to find the exact call/return site,
+/// `0xfabc22f`→`0xfabc234`, then read `[ebp-0x14]` — breaking at
+/// `EbGetExpressionType2`'s own entry catches every OTHER caller across the
+/// whole compile too, a dead end this session hit first). This is NOT a
+/// general rule — it is four data points, not a formula:
+/// - `(Integer, ByRef)` → 7, `(String, ByRef)` → 7 — both `EbResolveType
+///   Binding2` (the common case).
+/// - `(Integer, ByVal)` → 4 — `EbEmitExpression4`, traced to a confirmed
+///   no-op (see `eb_emit_arg_coerce`'s doc comment).
+/// - `(Object, ByVal)` → 9 — `EbCheckSetBinding`/`EbEmitPropertyExpr`
+///   (`UnportedCallee::SetBindingAndPropertyExpr`), not traced.
+///
+/// Extrapolating (e.g. "ByRef always gives 7", "ByVal-scalar always gives
+/// 4") is EXPLICITLY NOT done here — that pattern is plausible but
+/// unverified for any type/mode pair outside these four, and guessing it
+/// would be exactly the kind of unverified byte this file's discipline
+/// exists to prevent. Returns `None` for anything else.
+pub(super) fn known_local18_for_grounded_case(param_ty: &VbaType, by_val: bool) -> Option<i32> {
+    match (param_ty, by_val) {
+        (VbaType::Integer, false) | (VbaType::String, false) => Some(7),
+        (VbaType::Integer, true) => Some(4),
+        (VbaType::Object, true) => Some(9),
+        _ => None,
+    }
 }
 
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled

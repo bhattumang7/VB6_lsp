@@ -54,3 +54,17 @@ fn eb_normalize_type_reference_noop_for_integer_class() {
     assert_eq!(eb_normalize_type_reference_is_plain_noop(2), None);
     assert_eq!(eb_normalize_type_reference_is_plain_noop(10), None);
 }
+
+#[test]
+fn known_local18_matches_the_four_ttd_observed_pairs() {
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
+    assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, true), Some(4));
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Object, true), Some(9));
+    // NOT extrapolated to untested pairs — e.g. String ByVal was never
+    // observed, so this must stay None rather than guess "4" by analogy
+    // with Integer ByVal.
+    assert_eq!(known_local18_for_grounded_case(&VbaType::String, true), None);
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Object, false), None);
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Long, false), None);
+}
