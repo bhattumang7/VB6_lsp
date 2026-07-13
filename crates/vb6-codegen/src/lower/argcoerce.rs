@@ -259,6 +259,50 @@ pub(super) fn eb_emit_property_expr_call_args_for_object_case(local_c: i32) -> O
     }
 }
 
+/// **PORTED, verified — fully static.** `EbCheckMemberType` (VBA6.DLL
+/// `@0fac0d34`, `vba6_part0002.c:11410`, 32 bytes) — the gate on
+/// `EbEmitPropertyExpr`'s `bVar2` (see [`eb_property_expr_bvar2_for_plain_local`]).
+/// `word[7]` (`pMember+0x1c`) `== 2` signals "this node is a bound type-
+/// library member reference" (a COM member slot) — the ONLY case where
+/// `EbIsValidMember` (itself dynamic: calls `EbGetContextPointer2`, live
+/// compiler state, `vba6_part0002.c:11429`) is even consulted. Every other
+/// `word[7]` value returns `0` unconditionally, no dynamic state involved.
+/// A plain local-variable NameRef node is never member-kind `2` (that tag is
+/// reserved for actual bound COM/type-library members, not ordinary `Dim`'d
+/// locals) — consistent with this codebase's own `0x60`-node convention
+/// (`expr.rs:474`, where `word[7]` holds a UDT FIELD OFFSET for member-access
+/// nodes, never the sentinel `2`).
+pub(super) fn eb_check_member_type_is_zero(word7: i32) -> Option<bool> {
+    if word7 == 2 {
+        None
+    } else {
+        Some(true)
+    }
+}
+
+/// **PORTED, verified for the plain-local-variable case.**
+/// `EbEmitPropertyExpr`'s `bVar2` (`vba6_part0002.c:388-393`): `true` only if
+/// the node is opcode `0x60` AND `EbCheckMemberType` is nonzero AND a vtable
+/// flag bit is set — i.e. "this is a bound COM dispinterface member accessed
+/// via early-bound vtable dispatch". The node's opcode being `0x60` for a
+/// plain variable reference is NOT itself the disqualifying fact (`0x60` is
+/// VBA6.DLL's general symbol/identifier-reference node kind — confirmed by
+/// `EbBindName`, `EbResolveIdentRef`, and `EbBuildIntrinsicLoadNode`'s own
+/// descriptions, all independently stating `0x60` is used for ordinary
+/// resolved-identifier nodes, not exclusively bound members). What
+/// disqualifies a plain local Object variable is its `word[7]` field: for an
+/// ordinary local, `word[7] != 2` (see [`eb_check_member_type_is_zero`]), so
+/// `EbCheckMemberType` returns `0` — the middle OR clause is true — and
+/// `bVar2 = false` UNCONDITIONALLY. The short-circuit means the third
+/// (vtable-flag) clause's read never has to happen for this case; that
+/// clause remains genuinely unmodeled/unneeded here.
+pub(super) fn eb_property_expr_bvar2_for_plain_local(word7: i32) -> Option<bool> {
+    match eb_check_member_type_is_zero(word7) {
+        Some(true) => Some(false),
+        _ => None,
+    }
+}
+
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
 /// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
 /// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one

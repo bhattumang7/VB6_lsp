@@ -69,6 +69,24 @@ fn eb_emit_property_expr_call_args_object_case() {
 }
 
 #[test]
+fn eb_check_member_type_is_zero_for_non_member_word7() {
+    // word[7] == 2 is the "bound type-library member" sentinel; anything
+    // else means EbIsValidMember (dynamic) is never consulted.
+    assert_eq!(eb_check_member_type_is_zero(2), None);
+    assert_eq!(eb_check_member_type_is_zero(0), Some(true));
+    assert_eq!(eb_check_member_type_is_zero(5), Some(true));
+}
+
+#[test]
+fn eb_property_expr_bvar2_false_for_plain_local() {
+    // A plain local Object variable's node is never member-kind 2, so
+    // EbCheckMemberType returns 0 and bVar2 is unconditionally false.
+    assert_eq!(eb_property_expr_bvar2_for_plain_local(0), Some(false));
+    // word7==2 requires the dynamic EbIsValidMember path — must gate.
+    assert_eq!(eb_property_expr_bvar2_for_plain_local(2), None);
+}
+
+#[test]
 fn known_local18_matches_the_four_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
