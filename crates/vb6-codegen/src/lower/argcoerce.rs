@@ -177,16 +177,22 @@ pub(super) fn eb_emit_arg_coerce(
     // context, which has NOT been done generally (only observed for four
     // specific `(type, mode)` pairs — see `known_local18_for_grounded_case`).
     //
-    // For the ONE case fully traced end-to-end this session — Integer
-    // ByVal, `local_18 == 4` — the confirmed chain (`EbEmitExpression4` →
-    // `EbCoerceExpressionType2` [no-op, types already match] →
-    // `EbProcessType2` → `EbNormalizeTypeReference` [no-op, node unchanged]
-    // → `EbBuildBinaryOp` gate evaluates false either way) reduces to: the
-    // argument's value is loaded plainly, no coercion applied. That is
-    // EXACTLY what `lower_expr_coerced` already does for a plain Integer
-    // reference — not a coincidence to paper over, but the actual, verified
-    // content of this port's finding: delegate to it rather than re-derive
-    // byte emission this port has already shown produces the same result.
+    // `local_18 == 4` — Integer ByVal AND Variant ByVal both traced
+    // end-to-end this session, reaching the IDENTICAL outcome despite
+    // taking structurally different branches inside `EbNormalizeType
+    // Reference` (Integer's type tag `6` skips its `9 < iVar7` dispatch
+    // entirely; Variant's type tag `0xf` enters it but its own inner `goto`
+    // condition still lands on the shared no-op tail — see
+    // `eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop`). Both
+    // confirmed chains (`EbEmitExpression4` → `EbCoerceExpressionType2`
+    // [no-op, types already match] → `EbProcessType2` →
+    // `EbNormalizeTypeReference` [no-op, node unchanged] → `EbBuildBinaryOp`
+    // gate evaluates false either way) reduce to: the argument's value is
+    // loaded plainly, no coercion applied. That is EXACTLY what
+    // `lower_expr_coerced` already does for a plain scalar reference — not a
+    // coincidence to paper over, but the actual, verified content of this
+    // port's finding: delegate to it rather than re-derive byte emission
+    // this port has already shown produces the same result.
     if known_local18_for_grounded_case(param_ty, by_val) == Some(4) {
         return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty));
     }
@@ -225,18 +231,27 @@ pub(super) fn eb_emit_arg_coerce(
 ///   Binding2` (the common case).
 /// - `(Integer, ByVal)` → 4 — `EbEmitExpression4`, traced to a confirmed
 ///   no-op (see `eb_emit_arg_coerce`'s doc comment).
-/// - `(Object, ByVal)` → 9 — `EbCheckSetBinding`/`EbEmitPropertyExpr`
-///   (`UnportedCallee::SetBindingAndPropertyExpr`), not traced.
+/// - `(Object, ByVal)` → 9 — `EbCheckSetBinding`/`EbEmitPropertyExpr`, now
+///   fully traced (see `eb_normalize_type_reference_object_case_is_noop_
+///   for_plain_var`) and wired.
+/// - `(Variant, ByRef)` → 7, `(Variant, ByVal)` → 4 — recorded from a
+///   dedicated `argvariant_probe` compile-time trace; ByVal's
+///   `EbEmitExpression4` chain is now fully traced too (see
+///   `eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop`) and
+///   wired; ByRef's `EbResolveTypeBinding2` chain is only classified, not
+///   traced (same as Integer/String ByRef).
 ///
 /// Extrapolating (e.g. "ByRef always gives 7", "ByVal-scalar always gives
 /// 4") is EXPLICITLY NOT done here — that pattern is plausible but
-/// unverified for any type/mode pair outside these four, and guessing it
+/// unverified for any type/mode pair outside these six, and guessing it
 /// would be exactly the kind of unverified byte this file's discipline
 /// exists to prevent. Returns `None` for anything else.
 pub(super) fn known_local18_for_grounded_case(param_ty: &VbaType, by_val: bool) -> Option<i32> {
     match (param_ty, by_val) {
-        (VbaType::Integer, false) | (VbaType::String, false) => Some(7),
-        (VbaType::Integer, true) => Some(4),
+        (VbaType::Integer, false) | (VbaType::String, false) | (VbaType::Variant, false) => {
+            Some(7)
+        }
+        (VbaType::Integer, true) | (VbaType::Variant, true) => Some(4),
         (VbaType::Object, true) => Some(9),
         _ => None,
     }
@@ -504,6 +519,57 @@ pub(super) fn eb_build_node_output_shape_for_plain_scalar(
     let aux = [3u32, source_word2];
     let word4_points_back_to_source = true;
     (opcode, type_tag, word1_high16, aux, word4_points_back_to_source)
+}
+
+/// **VERIFIED via live TTD + static reading — closes Variant ByVal.**
+/// `EbNormalizeTypeReference`'s `iVar7==0xf` sub-case
+/// (`vba6_part0001.c:48000-48014`) — reached for a Variant-typed node
+/// (`vba_type_to_node_tag(Variant) == 0xf`), unlike Integer's type tag `6`
+/// which skips the `9 < iVar7` dispatch entirely. Traced live (breakpoint at
+/// `EbEmitExpression4`'s entry, `0fabc60d`, `argvariant_probe/VB601.run`,
+/// `o.TakeVarByVal v` — the ONLY call in that probe reaching
+/// `EbEmitExpression4`, since ByRef routes through `local_18==7` instead):
+/// the node is `word[0]=0x000f0060` (opcode `0x60`, type tag `0xf`,
+/// confirming a plain bound-name node exactly like Integer's) and
+/// `word[1]=1` (byte5, `(word1>>8)&0xff`, `== 0` — identical to Integer
+/// ByVal's traced shape). Feeding `opcode=0x60`, `byte5=0` into
+/// `EbNormalizeTypeReference`'s `iVar7==0xf` branch (`vba6_part0001.c:
+/// 48010`): `uVar5(opcode)==0xf`? no. `==0x6b`/`0x6a`? no. Falls to the
+/// `else`: `((uVar5!=0x60) || (byte5&0x20==0)) && ((uVar5!=0x69) ||
+/// (byte5&0x80==0))` — `(false||true) && (true||..) == true` → `goto
+/// LAB_0fab07fa`, the SAME shared no-op tail (clear bit 0, return node
+/// unchanged) every other confirmed-no-op case in this file reaches. So
+/// despite entering a structurally different branch than Integer's
+/// (`iVar7==0xf`'s own dispatch vs. Integer's immediate fallthrough), the
+/// OUTPUT is identical: no-op.
+///
+/// Combined with the already-confirmed `EbCoerceExpressionType2` match
+/// (Variant ByVal's `class2` argument, `0xf`, equals the node's own type
+/// tag exactly — `RT_TYPE_OFFSET[0xf]==RT_TYPE_OFFSET[0xf]` trivially, no
+/// table value even needs inspecting) and the already-confirmed `pBase[1]&
+/// 0x40==0` (`pBase=0x0fab5b80`, `RT_CALL_CONV_RECORDS` record 2 offset 12,
+/// byte at offset 13 = `0x98`; `0x98 & 0x40 == 0`) → `EbProcessType2` →
+/// [`eb_process_type2_wraps`]`(0x60, 1) == false` → `EbNormalizeTypeReference`
+/// → THIS finding → no-op — Variant ByVal's entire `EbEmitExpression4`
+/// chain is now traced end-to-end, reaching the identical outcome as
+/// Integer ByVal.
+pub(super) fn eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(
+    opcode: u16,
+    byte5: u8,
+) -> Option<bool> {
+    if opcode == 0xf {
+        return None; // early `return;` in the source — a distinct outcome, unmodeled
+    }
+    if opcode == 0x6b || opcode == 0x6a {
+        return None; // EbFinalizeExpression(..., 1) path — unmodeled
+    }
+    let clause_a = opcode != 0x60 || byte5 & 0x20 == 0;
+    let clause_b = opcode != 0x69 || byte5 & 0x80 == 0;
+    if clause_a && clause_b {
+        Some(true)
+    } else {
+        None // EbFinalizeExpression(..., 0) path — unmodeled
+    }
 }
 
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled

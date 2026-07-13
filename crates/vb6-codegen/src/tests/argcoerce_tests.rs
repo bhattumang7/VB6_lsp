@@ -146,15 +146,38 @@ fn eb_build_node_output_shape_matches_earlier_live_observation() {
 }
 
 #[test]
-fn known_local18_matches_the_four_ttd_observed_pairs() {
+fn known_local18_matches_the_six_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, true), Some(4));
     assert_eq!(known_local18_for_grounded_case(&VbaType::Object, true), Some(9));
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Variant, false), Some(7));
+    assert_eq!(known_local18_for_grounded_case(&VbaType::Variant, true), Some(4));
     // NOT extrapolated to untested pairs — e.g. String ByVal was never
     // observed, so this must stay None rather than guess "4" by analogy
     // with Integer ByVal.
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, true), None);
     assert_eq!(known_local18_for_grounded_case(&VbaType::Object, false), None);
     assert_eq!(known_local18_for_grounded_case(&VbaType::Long, false), None);
+}
+
+#[test]
+fn eb_normalize_type_reference_variant_case_confirmed_noop() {
+    // TTD-confirmed (argvariant_probe/VB601.run: node word0=0x000f0060,
+    // word1=1 -> opcode=0x60, byte5=0 -> the iVar7==0xf branch's own inner
+    // goto condition is true -> shared no-op tail).
+    assert_eq!(
+        eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x60, 0),
+        Some(true)
+    );
+    // opcode==0xf is a distinct early-return outcome, not modeled.
+    assert_eq!(eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0xf, 0), None);
+    // opcode==0x6b/0x6a route through EbFinalizeExpression(...,1), not modeled.
+    assert_eq!(eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x6b, 0), None);
+    assert_eq!(eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x6a, 0), None);
+    // opcode==0x60 with byte5 bit 0x20 set fails clause_a -> EbFinalizeExpression(...,0), not modeled.
+    assert_eq!(
+        eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x60, 0x20),
+        None
+    );
 }
