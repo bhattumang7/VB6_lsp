@@ -126,6 +126,36 @@ enum ExprTypeClass {
     ObjectSlotC = 0xc,
 }
 
+/// The two shapes this port's coercion step can resolve to. `EbEmitArgCoerce`
+/// itself always returns a single word-form node either way (VBA6.DLL's
+/// pipeline is uniform: every argument becomes a node that flows into
+/// `EbProcessArguments`'s list, later read by the general emitter). This
+/// codebase, however, does NOT have a byte-emission-capable analog of "the
+/// general emitter reads a node and decides value-load vs address-load" —
+/// its ByRef argument-passing lives as inline BYTE emission directly inside
+/// `lower_class_method_call` (`intrinsics.rs`), never going through a
+/// `NodeRef`. Rather than force every traced outcome through the
+/// `NodeRef`-only shape (which would be wrong for ByRef — see
+/// `eb_emit_expr_0x11_node_is_unhandled_no_op`'s doc comment for why a
+/// value-producing node is never the correct output for a ByRef argument),
+/// this enum lets the port's dispatch report EITHER a computed value node
+/// (the ByVal cases) OR an explicit signal that the caller should take the
+/// address of the argument's own original expression directly (the ByRef
+/// case) — matching what `EbEmitExpr`'s own inability to process the `0x11`
+/// wrapper node proved: real ByRef bytes always trace back to the
+/// UNTRANSFORMED source expression, never to a synthesized value node.
+#[derive(Debug)]
+pub(super) enum ArgCoerceOutcome {
+    /// A computed value node, ready to be pushed/used as an rvalue (ByVal
+    /// cases: `local_18 == 4`/`9`, both confirmed no-ops this session).
+    Value(NodeRef),
+    /// Take the address of `arg_id`'s own original expression directly, with
+    /// no synthesized node in between (the ByRef case: `local_18 == 7`,
+    /// confirmed to reduce to this because the `EbBuildNode`/`0x11`
+    /// restructuring is provably inert for final bytes on this path).
+    AddressOfOriginal,
+}
+
 /// Placeholder entry point — NOT YET CALLED from any live lowering path.
 /// Ported so far: the function's overall shape and the literal-vs-wrapped-
 /// node discrimination at its head (`LAB_0fabc209` and earlier, `vba6_part
@@ -143,7 +173,7 @@ pub(super) fn eb_emit_arg_coerce(
     flags: u32,
     expr_arena: &ExprArena,
     arena: &mut NodeArena,
-) -> Result<NodeRef, LowerError> {
+) -> Result<ArgCoerceOutcome, LowerError> {
     // `pArgNode == 0` in the original: no already-evaluated node was handed
     // in, meaning this argument was OMITTED (a missing Optional) and must be
     // synthesized from its declared default value. This codebase has no
@@ -194,7 +224,8 @@ pub(super) fn eb_emit_arg_coerce(
     // port's finding: delegate to it rather than re-derive byte emission
     // this port has already shown produces the same result.
     if known_local18_for_grounded_case(param_ty, by_val) == Some(4) {
-        return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty));
+        return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty))
+            .map(ArgCoerceOutcome::Value);
     }
 
     // `local_18 == 9` (Object, ByVal): the full `EbCheckSetBinding` ->
@@ -209,14 +240,45 @@ pub(super) fn eb_emit_arg_coerce(
     if known_local18_for_grounded_case(param_ty, by_val) == Some(9)
         && eb_normalize_type_reference_object_case_is_noop_for_plain_var()
     {
-        return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty));
+        return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty))
+            .map(ArgCoerceOutcome::Value);
+    }
+
+    // `local_18 == 7` (Integer/String/Variant ByRef, the common case):
+    // `EbResolveTypeBinding2`'s traced match-case chain (see
+    // `eb_resolve_type_binding2_reaches_evaluate_expression3`) mutates the
+    // node via `EbEvaluateExpression3` -> `EbBuildNode` into a `0x11`-
+    // wrapped "deref" node (see `eb_build_node_output_shape_for_plain_
+    // scalar`) — but `EbEmitExpr` cannot process a `0x11` node directly at
+    // all (`eb_emit_expr_0x11_node_is_unhandled_no_op`), so any real byte
+    // emission for it MUST unwrap back to the ORIGINAL source node first.
+    // The correct outcome for this port's dispatch is therefore NOT a
+    // computed value node — it's a direct instruction to the caller: take
+    // the address of the argument's own original expression, exactly as
+    // this codebase's already-shipped `lower_class_method_call` already
+    // does for a plain-variable ByRef argument. Scoped to the traced shape
+    // only (a plain, same-type local variable — the ONLY source shape this
+    // session traced `EbResolveTypeBinding2`'s match case for; an
+    // expression/literal ByRef source is a DIFFERENT, untraced branch of
+    // that function and must still gate).
+    if known_local18_for_grounded_case(param_ty, by_val) == Some(7) {
+        let is_plain_same_type_var = matches!(expr_arena.get(arg_id), ExprNode::NameRef { .. })
+            && matches!(
+                ctx.module.resolutions.get(&arg_id.0),
+                Some(NameResolution::Local { .. })
+            )
+            && ctx.module.types.get(&arg_id.0) == Some(param_ty);
+        if is_plain_same_type_var {
+            return Ok(ArgCoerceOutcome::AddressOfOriginal);
+        }
+        return Err(UnportedCallee::ResolveTypeBinding2.as_lower_error());
     }
 
     // Every other param type/mode this port could plausibly classify
     // bottoms out at `ResolveTypeBinding2` (the `local_18 == 7` common
-    // case, traced deep but not byte-complete — see the memory note) or a
-    // rarer, entirely untraced gate; since the general classification
-    // itself isn't ported, gate uniformly rather than guess.
+    // case's non-plain-variable sources) or a rarer, entirely untraced
+    // gate; since the general classification itself isn't ported, gate
+    // uniformly rather than guess.
     Err(UnportedCallee::ResolveTypeBinding2.as_lower_error())
 }
 
