@@ -84,6 +84,10 @@ pub(super) fn lower_stmt(
             let (tgt, val) = (*target, *value);
             lower_assign(ctx, tgt, val, expr_arena, out)
         }
+        ExprNode::SetAssign { target, value } => {
+            let (tgt, val) = (*target, *value);
+            lower_set_assign(ctx, tgt, val, expr_arena, out)
+        }
         ExprNode::DimItem { .. } => Ok(()),
         ExprNode::Block { stmts } => {
             let ids: Vec<NodeId> = stmts.clone();
@@ -307,6 +311,14 @@ pub(super) fn lower_stmt(
                 ExprNode::Call { func, args: inner } => (*func, *inner),
                 _ => (*callee, *args),
             };
+            if let ExprNode::MemberAccess { base, .. } = expr_arena.get(callee_ref) {
+                let base = *base;
+                if member_access_base_is_class(ctx.module, base) {
+                    return lower_class_method_call(
+                        ctx, base, callee_ref, args_ref, false, expr_arena, out,
+                    );
+                }
+            }
             lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
         }
         // Implicit Sub call with parenthesised args as a statement: `Foo(5)`
@@ -315,6 +327,15 @@ pub(super) fn lower_stmt(
             if matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_))) =>
         {
             lower_call(ctx, *func, *args, false, expr_arena, out)
+        }
+        // A class-member `Sub`/`Function` called as a bare statement with
+        // parenthesised args: `o.Method(args)` (result discarded).
+        ExprNode::Call { func, args }
+            if matches!(expr_arena.get(*func), ExprNode::MemberAccess { base, .. }
+                if member_access_base_is_class(ctx.module, *base)) =>
+        {
+            let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) else { unreachable!() };
+            lower_class_method_call(ctx, *base, *func, *args, false, expr_arena, out)
         }
         // Bare implicit Sub call with no arguments as a statement: `Foo`
         // (parses to a bare `NameRef`). Passing the node itself as the arg list

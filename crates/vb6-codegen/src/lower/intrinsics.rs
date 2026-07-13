@@ -116,6 +116,100 @@ pub(super) fn lower_call(
     Ok(())
 }
 
+/// Lower a call to a class member's `Sub`/`Function` through the vtable
+/// (`o.Method args` or `r = o.Method(args)`): every argument — regardless of
+/// declared ByVal/ByRef — is pushed then staged into its own addressable temp
+/// (`0x59 <offset>`), in **declaration order**, at `class_member_base + i`;
+/// a `Function` used in value position (`is_value`) additionally `LdAddr`s a
+/// result temp at `class_member_base + arg_count` *before* the arguments, and
+/// loads the result back (leaving it on the stack for the caller to store)
+/// *after* the vtable call. Byte-exact against two independent oracle
+/// probes: `argcount_probe` (1-arg and 3-arg `Sub`, no result) and
+/// `funcarg_probe` (2-arg `Function`, with result) — see the
+/// `vb6-class-vtable-slot-rule` memory note. Only `Long` arguments/return are
+/// grounded (the only type these probes cover); anything else is gated.
+pub(super) fn lower_class_method_call(
+    ctx: &LowerCtx,
+    base: NodeId,
+    func_access_id: NodeId,
+    args_id: NodeId,
+    is_value: bool,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let local_idx = match ctx.module.resolutions.get(&base.0) {
+        Some(NameResolution::Local { local_idx, .. }) => *local_idx,
+        Some(_) => return Err(LowerError::UnsupportedNode),
+        None => return Err(LowerError::Unresolved),
+    };
+    ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
+    let obj_offset = ctx.local_slots[local_idx].frame_offset;
+    let resolved = ctx
+        .module
+        .class_member_slots
+        .get(&func_access_id.0)
+        .ok_or(LowerError::Unresolved)?;
+    let method_slot = resolved.method_slot.ok_or(LowerError::UnsupportedNode)?;
+    let params = &resolved.method_params;
+
+    let args: Vec<NodeId> = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => Vec::new(),
+    };
+    if args.len() != params.len() {
+        return Err(LowerError::UnsupportedNode);
+    }
+    // Only Long is grounded — anything else (String/Object/UDT/other numeric)
+    // is unverified for this staging convention and gated rather than guessed.
+    if params.iter().any(|(ty, _)| !matches!(ty, VbaType::Long)) {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let ret_type = resolved.method_ret_type.clone();
+    if is_value && !matches!(ret_type, Some(VbaType::Long)) {
+        return Err(LowerError::UnsupportedNode);
+    }
+
+    let result_temp = if is_value {
+        let off = ctx.local_slots[ctx.class_member_base + args.len()].frame_offset;
+        out.push(0x04);
+        out.extend_from_slice(&off.to_le_bytes());
+        Some(off)
+    } else {
+        None
+    };
+
+    // Push each argument's value, right-to-left (VB6 evaluation order), but
+    // stage each into its OWN temp keyed by its declaration-order index (not
+    // push order) — oracle-confirmed (funcarg_probe: y pushed first/staged at
+    // the higher-index temp, x pushed second/staged at the lower-index temp).
+    for i in (0..args.len()).rev() {
+        let coerce = Some(8u16); // Long
+        let mut arena = NodeArena::new();
+        let root = lower_expr_coerced(ctx, args[i], expr_arena, &mut arena, coerce)?;
+        let root = coerce_assign_value(ctx, args[i], root, coerce, &mut arena);
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(root, 2);
+        out.extend(emitter.into_bytes());
+
+        let temp_off = ctx.local_slots[ctx.class_member_base + i].frame_offset;
+        out.push(0x59);
+        out.extend_from_slice(&temp_off.to_le_bytes());
+    }
+
+    out.push(0x04);
+    out.extend_from_slice(&(obj_offset as u16).to_le_bytes());
+    out.extend_from_slice(&[0x24, 0x00, 0x00]);
+    out.push(0x0d);
+    out.extend_from_slice(&method_slot.to_le_bytes());
+    out.extend_from_slice(&[0x01, 0x00]);
+
+    if let Some(off) = result_temp {
+        out.push(0x6c);
+        out.extend_from_slice(&off.to_le_bytes());
+    }
+    Ok(())
+}
+
 /// Emit a String-returning runtime-library call, producing its result into a hidden
 /// 16-byte temp: the sequence `<args> 04<result> 0a<ref> <arg-bytes>`. Allocates the
 /// call's temps and emits; see [`emit_rtc_string_call_at`] for the pre-reserved form.

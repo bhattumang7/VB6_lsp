@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use vb6_sema::sema::{
-    BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar, ExternalClass,
-    NameResolution, ParamFlags, VbaType,
+    BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar, ClassMemberSlot,
+    ExternalClass, NameResolution, ParamFlags, ResolvedClassMember, VbaType,
 };
 use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprArena, ExprNode, ProcKind};
 use vb6_syntax::frontend::token::{Span, TypeSuffix};
@@ -484,7 +484,13 @@ fn class_instance_local_gets_a_plain_4byte_object_slot() {
     let mut class_field_info = HashMap::new();
     class_field_info.insert(
         100u32,
-        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
+        ExternalClass {
+            members: vec![ClassMemberSlot::Field {
+                name: "F".to_string(),
+                vba_type: VbaType::Long,
+                is_object: false,
+            }],
+        },
     );
 
     let module = BoundModule {
@@ -537,12 +543,31 @@ fn class_field_store_then_load_matches_oracle_recon() {
     let mut class_field_info = HashMap::new();
     class_field_info.insert(
         100u32,
-        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
+        ExternalClass {
+            members: vec![ClassMemberSlot::Field {
+                name: "F".to_string(),
+                vba_type: VbaType::Long,
+                is_object: false,
+            }],
+        },
     );
+    let mut class_member_slots = HashMap::new();
+    let resolved_f = ResolvedClassMember {
+        get_slot: Some(0x1c),
+        let_slot: Some(0x20),
+        set_slot: None,
+        method_slot: None,
+        method_ret_type: None,
+        method_params: Vec::new(),
+        is_property: false,
+    };
+    class_member_slots.insert(field_f_store.0, resolved_f.clone());
+    class_member_slots.insert(field_f_load.0, resolved_f);
 
     let module = BoundModule {
         procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
         class_field_info,
+        class_member_slots,
         resolutions,
         types,
         ..BoundModule::default()
@@ -560,12 +585,16 @@ fn class_field_store_then_load_matches_oracle_recon() {
     );
 }
 
+/// Two-field class: `Public F As Long` then `Public G As Long`. `G`'s Get
+/// must land at `F`'s Get(0x1c)+8 = 0x24 (F consumes Get=0x1c,Let=0x20; the
+/// second field starts right after) — the general multi-member slot rule,
+/// no longer gated. See the `vb6-class-vtable-slot-rule` memory note for the
+/// TTD-traced + decompiled-reference-code derivation.
 #[test]
-#[should_panic(expected = "general vtable slot-stride rule not yet RE'd")]
-fn class_field_access_with_two_fields_is_gated() {
+fn class_field_access_with_two_fields_computes_second_fields_offset_slot() {
     let mut ea = ExprArena::new();
     let o = name_ref(&mut ea, 0);
-    let field_access = member_access_node(&mut ea, o, 10);
+    let field_access = member_access_node(&mut ea, o, 10 /* sym for G */);
     let x = name_ref(&mut ea, 1);
     let stmt = assign_node(&mut ea, x, field_access);
     let body = block_node(&mut ea, vec![stmt]);
@@ -574,22 +603,51 @@ fn class_field_access_with_two_fields_is_gated() {
     resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
     resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
 
+    let mut types = HashMap::new();
+    types.insert(field_access.0, VbaType::Long);
+
     let mut class_field_info = HashMap::new();
     class_field_info.insert(
         100u32,
         ExternalClass {
-            fields: vec![("F".to_string(), VbaType::Long), ("G".to_string(), VbaType::Long)],
-            ..Default::default()
+            members: vec![
+                ClassMemberSlot::Field { name: "F".to_string(), vba_type: VbaType::Long, is_object: false },
+                ClassMemberSlot::Field { name: "G".to_string(), vba_type: VbaType::Long, is_object: false },
+            ],
+        },
+    );
+    let mut class_member_slots = HashMap::new();
+    class_member_slots.insert(
+        field_access.0,
+        ResolvedClassMember {
+            get_slot: Some(0x24),
+            let_slot: Some(0x28),
+            set_slot: None,
+            method_slot: None,
+            method_ret_type: None,
+            method_params: Vec::new(),
+            is_property: false,
         },
     );
 
     let module = BoundModule {
         procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
         class_field_info,
+        class_member_slots,
         resolutions,
+        types,
         ..BoundModule::default()
     };
 
     let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let _ = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes);
+    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    // Get-only read of G: LdAddr(temp), LdAddr(o), resolve-object, vtable-call
+    // at slot 0x24, load temp into x.
+    assert_eq!(
+        bytes,
+        &[
+            0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x24, 0x00, 0x01, 0x00,
+            0x6c, 0x70, 0xff, 0x71, 0x74, 0xff,
+        ]
+    );
 }

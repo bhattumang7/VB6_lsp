@@ -44,9 +44,11 @@ fn load_store_ctx_maps_numeric_primitives() {
 
 #[test]
 fn load_store_ctx_none_for_non_simple_types() {
-    // String uses ctx 8 (BSTR load/refcounted store); Object/Variant unconfirmed.
+    // String uses ctx 8 (BSTR load/refcounted store); Object uses ctx 0 (plain
+    // 4-byte pointer load, TTD-confirmed against `Set o.PG = y`); Variant is
+    // still unconfirmed.
     assert_eq!(load_store_ctx(&VbaType::String), Some(8));
-    assert_eq!(load_store_ctx(&VbaType::Object), None);
+    assert_eq!(load_store_ctx(&VbaType::Object), Some(0));
     assert_eq!(load_store_ctx(&VbaType::Variant), None);
 }
 
@@ -112,10 +114,19 @@ fn bridge_store_double() {
 
 #[test]
 fn bridge_load_unsupported_type_errors() {
-    // Object has no confirmed simple load/store opcode yet.
+    // Variant has no confirmed simple load/store opcode yet.
     let arena = NodeArena::new();
     let mut e = Emitter::new(&arena);
-    assert_eq!(emit_local_load(&mut e, &VbaType::Object, -4), Err(UnsupportedType));
+    assert_eq!(emit_local_load(&mut e, &VbaType::Variant, -4), Err(UnsupportedType));
+}
+
+#[test]
+fn bridge_object_load_matches_oracle() {
+    // `Set o.PG = y` (set_probe2): loading the Object local `y` at frame offset
+    // -140 (0xff74) emits the plain single-byte load `6c 74 ff` — confirmed via
+    // a live TTD trace of VBA6.DLL's EbEmitOpcode2(0x1e8, 0xff74) call, cross-
+    // checked against RT_OPCODE_BYTE[0x1e8] = 0x6c.
+    assert_eq!(load_bytes(&VbaType::Object, -140), &[0x6c, 0x74, 0xff]);
 }
 
 // ── End-to-end: ProcFrame (VB6-exact offsets) + bridge ──────────────────────

@@ -40,9 +40,9 @@ use crate::frontend::diagnostics::Diagnostics;
 use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
 use crate::sema::symbol::{
-    BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc, BoundTypeDecl,
-    BoundTypeMember, BoundVar, BuiltinCall, ExternalClass, NameResolution, ParamFlags, RtcArg,
-    UnaryIntrinsic,
+    AccessorKind, BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc,
+    BoundTypeDecl, BoundTypeMember, BoundVar, BuiltinCall, ClassMemberSlot, ExternalClass,
+    NameResolution, ParamFlags, ResolvedClassMember, RtcArg, UnaryIntrinsic,
 };
 use crate::sema::types::VbaType;
 
@@ -125,6 +125,11 @@ struct Binder<'a> {
     /// can recognize a `VbaType::UserDefined(sym)` local as a class instance
     /// by sym_id, without a name-text lookup.
     class_field_info: std::cell::RefCell<HashMap<u32, ExternalClass>>,
+    /// Resolved vtable dispatch slots per class-member `MemberAccess` node,
+    /// recorded as a side effect of `resolve_member_type` (interior
+    /// mutability for the same reason as `class_field_info`). See
+    /// `BoundModule::class_member_slots`.
+    class_member_slots: std::cell::RefCell<HashMap<u32, ResolvedClassMember>>,
 
     procs:       Vec<BoundProc>,
     /// Parameter `ArgList` node per proc (aligned with `procs`), kept so the
@@ -161,6 +166,7 @@ impl<'a> Binder<'a> {
             visibility,
             known_classes,
             class_field_info: std::cell::RefCell::new(HashMap::new()),
+            class_member_slots: std::cell::RefCell::new(HashMap::new()),
             procs:       Vec::new(),
             proc_param_nodes: Vec::new(),
             module_vars: Vec::new(),
@@ -187,6 +193,7 @@ impl<'a> Binder<'a> {
             diagnostics:     self.diagnostics,
             option_explicit: self.option_explicit,
             class_field_info: self.class_field_info.into_inner(),
+            class_member_slots: self.class_member_slots.into_inner(),
         }
     }
 
@@ -866,7 +873,7 @@ impl<'a> Binder<'a> {
             ExprNode::MemberAccess { base, member, .. } => {
                 let base_id = *base;
                 let member_sym = *member;
-                let ty = self.resolve_member_type(base_id, member_sym);
+                let ty = self.resolve_member_type(id, base_id, member_sym);
                 self.types.insert(id.0, ty);
             }
             // A function pointer is a Long-sized address in VB6.
@@ -1007,7 +1014,11 @@ impl<'a> Binder<'a> {
     /// Resolve the type of `base.member_sym` by looking up the UDT whose sym_id
     /// matches `base`'s resolved type. Returns `Variant` when the type or member
     /// is unknown (e.g. the base is `Object`, or the type isn't a local UDT).
-    fn resolve_member_type(&self, base: NodeId, member_sym: u32) -> VbaType {
+    ///
+    /// As a side effect, when `base` is a known external class instance, also
+    /// resolves this access SITE's (`node_id`'s) vtable dispatch slots into
+    /// `class_member_slots` — see `BoundModule::class_member_slots`.
+    fn resolve_member_type(&self, node_id: NodeId, base: NodeId, member_sym: u32) -> VbaType {
         let base_ty = self.types.get(&base.0).unwrap_or(&VbaType::Variant);
         let VbaType::UserDefined(type_sym) = base_ty else {
             return VbaType::Variant;
@@ -1032,19 +1043,121 @@ impl<'a> Binder<'a> {
         // aren't comparable — see `bind_with_classes`).
         let type_name = self.name_of(*type_sym);
         if let Some(class) = self.known_classes.get(&type_name) {
-            for (fname, fty) in &class.fields {
-                if fname.eq_ignore_ascii_case(&member_name) {
-                    return fty.clone();
-                }
+            if let Some(resolved) = resolve_class_member_slots(class, &member_name) {
+                self.class_member_slots
+                    .borrow_mut()
+                    .insert(node_id.0, resolved);
             }
-            for prop in &class.properties {
-                if prop.name.eq_ignore_ascii_case(&member_name) {
-                    return prop.vba_type.clone();
+            for member in &class.members {
+                match member {
+                    ClassMemberSlot::Field { name, vba_type, .. }
+                        if name.eq_ignore_ascii_case(&member_name) =>
+                    {
+                        return vba_type.clone();
+                    }
+                    ClassMemberSlot::PropertyAccessor { name, vba_type, .. }
+                        if name.eq_ignore_ascii_case(&member_name) =>
+                    {
+                        return vba_type.clone();
+                    }
+                    ClassMemberSlot::Method { name, ret_type, .. }
+                        if name.eq_ignore_ascii_case(&member_name) =>
+                    {
+                        return ret_type.clone();
+                    }
+                    _ => {}
                 }
             }
         }
         VbaType::Variant
     }
+}
+
+/// The class vtable's fixed IDispatch prefix width: 7 standard COM methods
+/// (QueryInterface, AddRef, Release, GetTypeInfoCount, GetTypeInfo,
+/// GetIDsOfNames, Invoke) × 4 bytes. A class's first member's own dispatch
+/// slots start here. Live-TTD-confirmed as the class-compile-context's
+/// vtable-slot counter's initial value (see the codegen memory note
+/// `vb6-class-vtable-slot-rule`) and oracle-confirmed against every mixed-
+/// member probe.
+const IDISPATCH_PREFIX: u16 = 0x1c;
+
+/// Resolve `member_name`'s vtable dispatch slots within `class`, by walking
+/// `class.members` in declaration order and summing each entry's slot width
+/// (base `0x1c`, stride 4 per slot — see `ExternalClass::members`'s ordering
+/// invariant and the `vb6-class-vtable-slot-rule` memory note for the full
+/// derivation). Returns `None` if no member of that name exists.
+fn resolve_class_member_slots(
+    class: &ExternalClass,
+    member_name: &str,
+) -> Option<ResolvedClassMember> {
+    let mut next = IDISPATCH_PREFIX;
+    let mut get_slot = None;
+    let mut let_slot = None;
+    let mut set_slot = None;
+    let mut method_slot = None;
+    let mut method_ret_type = None;
+    let mut method_params = Vec::new();
+    let mut is_property = false;
+    let mut found = false;
+    for member in &class.members {
+        match member {
+            ClassMemberSlot::Field {
+                name, is_object, ..
+            } => {
+                let g = next;
+                next += 4;
+                let l = next;
+                next += 4;
+                let s = if *is_object {
+                    let v = next;
+                    next += 4;
+                    Some(v)
+                } else {
+                    None
+                };
+                if name.eq_ignore_ascii_case(member_name) {
+                    get_slot = Some(g);
+                    let_slot = Some(l);
+                    set_slot = s;
+                    is_property = false;
+                    found = true;
+                }
+            }
+            ClassMemberSlot::PropertyAccessor { name, kind, .. } => {
+                let slot = next;
+                next += 4;
+                if name.eq_ignore_ascii_case(member_name) {
+                    match kind {
+                        AccessorKind::Get => get_slot = Some(slot),
+                        AccessorKind::Let => let_slot = Some(slot),
+                        AccessorKind::Set => set_slot = Some(slot),
+                    }
+                    is_property = true;
+                    found = true;
+                }
+            }
+            ClassMemberSlot::Method { name, ret_type, params } => {
+                let slot = next;
+                next += 4;
+                if name.eq_ignore_ascii_case(member_name) {
+                    method_slot = Some(slot);
+                    method_ret_type = Some(ret_type.clone());
+                    method_params = params.clone();
+                    found = true;
+                }
+            }
+        }
+    }
+    found.then_some(ResolvedClassMember {
+        get_slot,
+        let_slot,
+        set_slot,
+        method_slot,
+        method_ret_type,
+        method_params,
+        is_property,
+    })
 }
 
 // ── Type inference helpers ────────────────────────────────────────────────────

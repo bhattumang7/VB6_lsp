@@ -24,7 +24,7 @@ pub(super) fn lower_assign(
     if let ExprNode::MemberAccess { base, member, bang } = expr_arena.get(target_id) {
         let (base, member, bang) = (*base, *member, *bang);
         if member_access_base_is_class(ctx.module, base) {
-            return lower_class_field_store(ctx, base, bang, value_id, expr_arena, out);
+            return lower_class_field_store(ctx, base, target_id, bang, value_id, expr_arena, out);
         }
         return lower_udt_field_store(ctx, base, member, bang, value_id, expr_arena, out);
     }
@@ -206,6 +206,30 @@ pub(super) fn lower_assign(
         }
     }
 
+    // Class-member Function call as the RHS: `r = o.Method(args)` — emit the
+    // vtable-dispatch call with a result temp (`lower_class_method_call`,
+    // `is_value = true`), then store the loaded-back result into the target.
+    if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
+        if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) {
+            let (base, func, args) = (*base, *func, *args);
+            if member_access_base_is_class(ctx.module, base) {
+                lower_class_method_call(ctx, base, func, args, true, expr_arena, out)?;
+                match resolution {
+                    NameResolution::Local { local_idx, .. } => {
+                        let ty = ctx.local_type(*local_idx);
+                        let sctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+                        let arena = NodeArena::new();
+                        let mut em = Emitter::new(&arena);
+                        em.emit_var_store(sctx, ctx.local_slots[*local_idx].frame_offset);
+                        out.extend(em.into_bytes());
+                    }
+                    _ => return Err(LowerError::UnsupportedNode),
+                }
+                return Ok(());
+            }
+        }
+    }
+
     // Function call as the RHS: `r = F(args)` — emit the result-producing call
     // (0x5e, result left on the stack), then store the result into the target.
     if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
@@ -370,6 +394,26 @@ pub(super) fn lower_assign(
 
     out.extend(emitter.into_bytes());
     Ok(())
+}
+
+/// `Set o.P = v` (an explicit `Property Set` call). Unlike plain `Assign`,
+/// `Set`'s target is restricted here to a `MemberAccess` resolving to a class
+/// Property Set — `Set localVar = v` (assigning a bare object variable, no
+/// vtable call) is a distinct, unimplemented case gated below.
+pub(super) fn lower_set_assign(
+    ctx: &LowerCtx,
+    target_id: NodeId,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    if let ExprNode::MemberAccess { base, bang, .. } = expr_arena.get(target_id) {
+        let (base, bang) = (*base, *bang);
+        if member_access_base_is_class(ctx.module, base) {
+            return lower_class_field_set(ctx, base, target_id, bang, value_id, expr_arena, out);
+        }
+    }
+    Err(LowerError::UnsupportedNode)
 }
 
 /// Lower `t.X = v` (a UDT field assignment): build a real bound `0x2c`

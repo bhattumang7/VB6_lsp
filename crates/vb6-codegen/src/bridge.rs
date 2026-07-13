@@ -64,11 +64,15 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
 /// Integer→1, Long→2, Single→3, Double→4, Currency→6.
 ///
 /// Returns `None` for String/Byte (which assign via runtime-helper sequences,
-/// not a single load/store opcode) and for Boolean/Date/Object/Variant/UDT
-/// (not yet confirmed) — the bridge reports those as [`UnsupportedType`] rather
-/// than emit an unverified opcode.
+/// not a single load/store opcode) and for Boolean/Date/Variant/UDT (not yet
+/// confirmed) — the bridge reports those as [`UnsupportedType`] rather than
+/// emit an unverified opcode.
 pub fn load_store_ctx(t: &VbaType) -> Option<usize> {
     Some(match t {
+        // Object's load opcode (0x6c) is confirmed (see RT_LOAD_BY_CTX); its
+        // store is not — Object assignment always goes through the refcounted
+        // Set-staging path (`fd 9c`, __vbaObjSet), never a plain typed store.
+        VbaType::Object => 0,
         // Boolean is stored exactly as Integer (2-byte, Integer-class storage and
         // load/store opcodes — same node tag 6).
         VbaType::Integer | VbaType::Boolean => 1,

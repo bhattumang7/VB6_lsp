@@ -61,10 +61,14 @@ impl From<UnsupportedType> for LowerError {
 ///
 /// Node type tags (the high-16 of word[0]), grounded from VB6's kind->VARTYPE
 /// table (`DAT_0fa92778[kind] = VARTYPE`): Integer=6, Long=8, Single=0xa,
-/// Double=0xb, Date=0xc, Currency=0xd, Variant=0xf, String=0x10. A Boolean
-/// *value* is operated on as Integer (tag 6) — VB6 selects opcodes by the
-/// Integer class for Boolean — so it shares tag 6 here (its declaration kind 3
-/// is a separate namespace).
+/// Double=0xb, Date=0xc, Currency=0xd, Variant=0xf, String=0x10, Object=0x16.
+/// A Boolean *value* is operated on as Integer (tag 6) — VB6 selects opcodes
+/// by the Integer class for Boolean — so it shares tag 6 here (its
+/// declaration kind 3 is a separate namespace). Object's tag (22/0x16) is
+/// cross-confirmed two ways: a live TTD trace of `Set o.PG = y` shows
+/// VBA6.DLL's `EbEmitExpression2` called with `nType=0x16` for the `y`
+/// reference, and the already-extracted `RT_RESULT_TYPE[0x16] = 4` matches
+/// Object's 4-byte pointer size independently.
 fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
     match ty {
         VbaType::Integer | VbaType::Boolean => Some(6),
@@ -76,6 +80,7 @@ fn vba_type_to_node_tag(ty: &VbaType) -> Option<u16> {
         VbaType::Byte => Some(5),
         VbaType::String => Some(0x10),
         VbaType::Variant => Some(0xf),
+        VbaType::Object => Some(0x16),
         _ => None,
     }
 }
@@ -436,21 +441,22 @@ fn lower_proc_pooled(
     }
 
     // One shared hidden 4-byte Long temp for the proc's class-member vtable
-    // dispatch scratch use: a Property-Get access (`x = o.F`) writes its
-    // out-parameter through it, and a Property-Let call (`o.P = v`) stages
-    // its argument through it (`0x59 <offset>`) before the vtable call — a
-    // plain-field store needs no staging. Oracle-confirmed (a Get-then-Let
-    // sequence in one proc reuses the SAME slot for both, not one each — see
-    // `re_lab`'s Property recon): this is one scratch slot per proc, not one
-    // per access. Long-sized only: only single-field/single-Long-property
-    // classes are oracle-confirmed. Repeated same-kind accesses within one
-    // proc (e.g. two separate `x = o.F` reads) are untested; this model
-    // reuses the same slot for those too, the simplest rule consistent with
-    // every capture in hand.
+    // dispatch scratch use: a Get access (`x = o.F`) writes its out-parameter
+    // through it, and a Property-Let call (`o.P = v`) stages its argument
+    // through it (`0x59 <offset>`) before the vtable call — a plain-field
+    // store needs no staging. Oracle-confirmed for both a single Get/Let pair
+    // AND repeated/mixed-member accesses within one proc (multiple fields
+    // and properties in one class, each reusing the SAME slot in sequence —
+    // see the `e2e_class_multi_field_and_property`/`e2e_class_property_let_
+    // before_get` fixtures): this is one scratch slot per proc, not one per
+    // access or per member. Long-sized only: no String/Variant/object-typed
+    // class member has been oracle-confirmed through this temp yet.
     let class_member_base = local_slots.len();
     let needs_class_member_temp = count_class_get_temps(module, NodeId(proc.body), expr_arena) > 0
         || count_class_let_temps(module, NodeId(proc.body), expr_arena) > 0;
-    if needs_class_member_temp {
+    let class_member_temp_count = (needs_class_member_temp as usize)
+        .max(max_class_method_temps(module, NodeId(proc.body), expr_arena));
+    for _ in 0..class_member_temp_count {
         local_slots.push(frame.declare_anon(2));
     }
 

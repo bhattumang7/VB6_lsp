@@ -19,7 +19,7 @@ use vb6_codegen::lower_module_with_classes;
 use vb6_sema::frontend::ast::{ExprArena, ProcKind};
 use vb6_sema::frontend::parser::Parser;
 use vb6_sema::frontend::scanner::ScannerContext;
-use vb6_sema::sema::{bind, bind_with_classes, ExternalClass, ExternalProperty};
+use vb6_sema::sema::{bind, bind_with_classes, AccessorKind, ClassMemberSlot, ExternalClass, VbaType};
 
 const MODULE_DESC: u16 = 0x0008;
 
@@ -46,9 +46,20 @@ fn class_name_from_source(src: &str) -> String {
         .unwrap_or_else(|| panic!("class source has no `Attribute VB_Name = \"...\"` line"))
 }
 
+/// True for an object/reference-assignable type (or Variant) — these
+/// synthesize a `Set` accessor alongside `Get`/`Let` when used as a field.
+fn is_object_type(ty: &VbaType) -> bool {
+    matches!(ty, VbaType::Object | VbaType::Variant | VbaType::UserDefined(_))
+}
+
 /// Bind a `.cls` source (an ordinary module, front-end-wise — Public fields
-/// bind exactly like a Standard module's) into an `ExternalClass` field list,
-/// keyed by the class's declared name.
+/// bind exactly like a Standard module's) into an `ExternalClass`'s ordered
+/// member list (see `ExternalClass::members`), keyed by the class's declared
+/// name. Fields and procedures are merged into ONE list sorted by source
+/// position (`name_span.start`) — the vtable slot counter runs across the
+/// whole class's declaration sequence, not per-kind, so losing cross-kind
+/// order here would silently mis-layout slots for any class that interleaves
+/// fields and procedures.
 fn bind_class(src: &str) -> (String, ExternalClass) {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
@@ -59,40 +70,53 @@ fn bind_class(src: &str) -> (String, ExternalClass) {
     let vis = std::mem::take(&mut parser.decl_public);
     drop(parser);
     let module = bind(&ctx, &arena, &top, &spans, &vis);
-    let fields = module
-        .module_vars
-        .iter()
-        .filter(|v| v.is_public)
-        .map(|v| (ctx.symbol(v.sym_id as usize).name.clone(), v.vba_type.clone()))
-        .collect();
-    // Group Property Get/Let procs by name (declaration order, first-seen),
-    // recording which accessors each named property actually has — codegen
-    // numbers vtable slots over accessors present, so the Get/Let split (not
-    // just the type) matters.
-    let mut properties: Vec<ExternalProperty> = Vec::new();
+
+    let mut events: Vec<(u32, ClassMemberSlot)> = Vec::new();
+    for v in &module.module_vars {
+        if !v.is_public || v.is_const {
+            continue;
+        }
+        events.push((
+            v.name_span.start,
+            ClassMemberSlot::Field {
+                name: ctx.symbol(v.sym_id as usize).name.clone(),
+                vba_type: v.vba_type.clone(),
+                is_object: is_object_type(&v.vba_type),
+            },
+        ));
+    }
     for proc in &module.procs {
         if !proc.is_public {
             continue;
         }
-        let (is_get, is_let) = match proc.kind {
-            ProcKind::PropGet => (true, false),
-            ProcKind::PropLet => (false, true),
-            _ => continue,
-        };
         let name = ctx.symbol(proc.sym_id as usize).name.clone();
-        let ty = if is_get {
-            proc.ret_type.clone()
-        } else {
-            proc.params.first().map(|p| p.vba_type.clone()).unwrap_or_default()
+        let member = match proc.kind {
+            ProcKind::PropGet => ClassMemberSlot::PropertyAccessor {
+                name,
+                vba_type: proc.ret_type.clone(),
+                kind: AccessorKind::Get,
+            },
+            ProcKind::PropLet => ClassMemberSlot::PropertyAccessor {
+                name,
+                vba_type: proc.params.first().map(|p| p.vba_type.clone()).unwrap_or_default(),
+                kind: AccessorKind::Let,
+            },
+            ProcKind::PropSet => ClassMemberSlot::PropertyAccessor {
+                name,
+                vba_type: proc.params.first().map(|p| p.vba_type.clone()).unwrap_or_default(),
+                kind: AccessorKind::Set,
+            },
+            ProcKind::Sub | ProcKind::Function => ClassMemberSlot::Method {
+                name,
+                ret_type: proc.ret_type.clone(),
+                params: proc.params.iter().map(|p| (p.vba_type.clone(), p.flags.by_val)).collect(),
+            },
         };
-        if let Some(existing) = properties.iter_mut().find(|p| p.name.eq_ignore_ascii_case(&name)) {
-            existing.has_get |= is_get;
-            existing.has_let |= is_let;
-        } else {
-            properties.push(ExternalProperty { name, vba_type: ty, has_get: is_get, has_let: is_let });
-        }
+        events.push((proc.name_span.start, member));
     }
-    (class_name_from_source(src), ExternalClass { fields, properties })
+    events.sort_by_key(|(pos, _)| *pos);
+    let members = events.into_iter().map(|(_, m)| m).collect();
+    (class_name_from_source(src), ExternalClass { members })
 }
 
 fn compile_module_bytes(src: &str, class_src: Option<&str>) -> Vec<Vec<u8>> {

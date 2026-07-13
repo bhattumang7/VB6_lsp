@@ -262,13 +262,12 @@ pub(super) fn member_access_base_is_class(module: &BoundModule, base: NodeId) ->
     }
 }
 
-/// Count the hidden 4-byte temps a proc's class-member Property-Get accesses
-/// need (`x = o.F`): the vtable Get call writes its result through an
-/// out-parameter address into a temp, which is then loaded as the
-/// expression's value. Only the `Assign` RHS position is scanned — the
-/// single-Public-Long-field vertical this was built against never nests a
-/// class member access inside a larger expression (gated elsewhere if it
-/// does; see `resolve_class_field`).
+/// Count the hidden 4-byte temps a proc's class-member Get accesses need
+/// (`x = o.F`, field or property alike): the vtable Get call writes its
+/// result through an out-parameter address into a temp, which is then
+/// loaded as the expression's value. Only the `Assign` RHS position is
+/// scanned — a class member access nested inside a larger expression is
+/// gated elsewhere (see `resolve_class_field`).
 pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_class_get_temps(module, id, expr_arena);
     match expr_arena.get(node_id) {
@@ -293,25 +292,100 @@ pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_
 /// need (`o.P = v`): the vtable Let call's argument is staged into an
 /// addressable frame slot (`0x59 <offset>`) before the call — unlike a plain
 /// field store, which passes the value directly. Only triggers when the
-/// assignment target's class member is a `Property` (not a plain field): a
-/// gated class (per `resolve_class_field`'s single-member rule) has either
-/// fields or properties, never both, so checking `properties` is non-empty
-/// is enough to tell them apart here.
+/// assignment TARGET's specific resolved class member (see
+/// Whether `func_id` (a call target expression) is a class-member
+/// `Sub`/`Function` MemberAccess resolved for vtable dispatch, and if so, how
+/// many argument-staging temps the call at `args_id` needs. Every argument
+/// (regardless of declared ByVal/ByRef) is staged into its own addressable
+/// temp before the call, in declaration order — byte-exact against
+/// `argcount_probe` (1- and 3-arg `Sub`) and `funcarg_probe` (2-arg
+/// `Function`); see the `vb6-class-vtable-slot-rule` memory note. `is_value`
+/// adds one more temp for the result (an expression-position call's out-param
+/// temp) — a statement-position call (result discarded) needs none.
+fn class_method_call_temps(
+    module: &BoundModule,
+    func_id: NodeId,
+    args_id: NodeId,
+    expr_arena: &ExprArena,
+    is_value: bool,
+) -> usize {
+    let ExprNode::MemberAccess { base, .. } = expr_arena.get(func_id) else {
+        return 0;
+    };
+    if !member_access_base_is_class(module, *base) {
+        return 0;
+    }
+    let Some(resolved) = module.class_member_slots.get(&func_id.0) else {
+        return 0;
+    };
+    if resolved.method_slot.is_none() {
+        return 0;
+    }
+    let arg_count = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.len(),
+        _ => 0,
+    };
+    arg_count + is_value as usize
+}
+
+/// Max class-method-call argument-staging temps needed by any single call
+/// site in the proc (the pool is reused per call, not accumulated — see
+/// `class_member_base`), scanning both statement-position (`CallStmt`, no
+/// result temp) and expression-position (`Assign` RHS, needs a result temp)
+/// call shapes.
+pub(super) fn max_class_method_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
+    let m = |id: NodeId| max_class_method_temps(module, id, expr_arena);
+    match expr_arena.get(node_id) {
+        ExprNode::CallStmt { callee, args } => {
+            let (func_id, args_id) = match expr_arena.get(*callee) {
+                ExprNode::Call { func, args: inner } => (*func, *inner),
+                _ => (*callee, *args),
+            };
+            class_method_call_temps(module, func_id, args_id, expr_arena, false)
+        }
+        ExprNode::Assign { value, .. } => match expr_arena.get(*value) {
+            ExprNode::Call { func, args } => {
+                class_method_call_temps(module, *func, *args, expr_arena, true)
+            }
+            _ => 0,
+        },
+        ExprNode::Block { stmts } => stmts.iter().map(|&id| m(id)).max().unwrap_or(0),
+        ExprNode::If { then_body, else_body, .. } => {
+            m(*then_body).max(else_body.map(m).unwrap_or(0))
+        }
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+            m(*body)
+        }
+        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| m(id)).max().unwrap_or(0),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => m(*body),
+        _ => 0,
+    }
+}
+
 pub(super) fn count_class_let_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_class_let_temps(module, id, expr_arena);
-    let target_is_class_property = |base: NodeId| -> bool {
-        match module.types.get(&base.0) {
-            Some(VbaType::UserDefined(sym)) => module
-                .class_field_info
-                .get(sym)
-                .map(|class| !class.properties.is_empty())
-                .unwrap_or(false),
-            _ => false,
-        }
-    };
     match expr_arena.get(node_id) {
         ExprNode::Assign { target, .. } => match expr_arena.get(*target) {
-            ExprNode::MemberAccess { base, .. } => target_is_class_property(*base) as usize,
+            ExprNode::MemberAccess { base, .. } if member_access_base_is_class(module, *base) => {
+                module
+                    .class_member_slots
+                    .get(&target.0)
+                    .map(|r| r.is_property)
+                    .unwrap_or(false) as usize
+            }
+            _ => 0,
+        },
+        // `Set o.P = v`: the Property-Set call's argument is staged into the
+        // same reusable class-member temp as Let (`fd 9c <offset>` instead of
+        // `0x59 <offset>`) — needs the slot reserved just the same.
+        ExprNode::SetAssign { target, .. } => match expr_arena.get(*target) {
+            ExprNode::MemberAccess { base, .. } if member_access_base_is_class(module, *base) => {
+                module
+                    .class_member_slots
+                    .get(&target.0)
+                    .map(|r| r.set_slot.is_some())
+                    .unwrap_or(false) as usize
+            }
             _ => 0,
         },
         ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),

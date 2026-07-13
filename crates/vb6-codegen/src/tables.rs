@@ -83,7 +83,13 @@ pub const TYPE_CTX_BITS: [u8; 8] = [
 /// stream is: Integer(0x6b), Long(0x6c), Currency(0x6d), Single(0x6e),
 /// Double(0x6f) — not VT order.
 pub const RT_LOAD_BY_CTX: [u8; 8] = [
-    0x00, // 0: untyped/object — no plain load
+    // Object: plain 4-byte pointer load, same final byte as Long. Confirmed
+    // via VBA6.DLL's EbEmitExpression2 value-emitter dispatch — Object's
+    // node-opcode index (0x1e8) and Long's (0x1e1) are distinct entries that
+    // both resolve through RT_OPCODE_BYTE to 0x6c — cross-checked against a
+    // live TTD trace of `Set o.PG = y`, where `EbEmitOpcode2(0x1e8, 0xff74)`
+    // matches the oracle capture's `6c 74 ff` byte-for-byte.
+    0x6c, // 0: Object
     0x6b, // 1: Integer  (TYPE_CTX_BITS → VT_I2)
     0x6c, // 2: Long     (TYPE_CTX_BITS → VT_I4)
     0x6e, // 3: Single   (TYPE_CTX_BITS → VT_R4)

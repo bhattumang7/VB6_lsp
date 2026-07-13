@@ -7,7 +7,17 @@ use std::collections::HashMap;
 use vb6_sema::frontend::ast::{ExprArena, ExprNode, NodeId};
 use vb6_sema::frontend::parser::Parser;
 use vb6_sema::frontend::scanner::ScannerContext;
-use vb6_sema::sema::{bind_with_classes, ExternalClass, VbaType};
+use vb6_sema::sema::{bind_with_classes, ClassMemberSlot, ExternalClass, VbaType};
+
+fn long_field(name: &str) -> ExternalClass {
+    ExternalClass {
+        members: vec![ClassMemberSlot::Field {
+            name: name.to_string(),
+            vba_type: VbaType::Long,
+            is_object: false,
+        }],
+    }
+}
 
 fn bind_with(src: &str, classes: &HashMap<String, ExternalClass>) -> vb6_sema::sema::BoundModule {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
@@ -24,10 +34,7 @@ fn bind_with(src: &str, classes: &HashMap<String, ExternalClass>) -> vb6_sema::s
 #[test]
 fn member_access_on_known_class_resolves_field_type() {
     let mut classes = HashMap::new();
-    classes.insert(
-        "class1".to_string(),
-        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
-    );
+    classes.insert("class1".to_string(), long_field("F"));
 
     let src = "Attribute VB_Name = \"Module1\"\r\n\
                Sub Main()\r\n\
@@ -83,10 +90,7 @@ fn member_access_on_unknown_class_falls_back_to_variant() {
 #[test]
 fn class_field_info_records_the_matched_class_by_type_sym() {
     let mut classes = HashMap::new();
-    classes.insert(
-        "class1".to_string(),
-        ExternalClass { fields: vec![("F".to_string(), VbaType::Long)], ..Default::default() },
-    );
+    classes.insert("class1".to_string(), long_field("F"));
     let src = "Attribute VB_Name = \"Module1\"\r\n\
                Sub Main()\r\n\
                \x20   Dim o As New Class1\r\n\
@@ -94,5 +98,12 @@ fn class_field_info_records_the_matched_class_by_type_sym() {
     let m = bind_with(src, &classes);
     assert_eq!(m.class_field_info.len(), 1, "expected exactly one recorded class-typed sym");
     let recorded = m.class_field_info.values().next().unwrap();
-    assert_eq!(recorded.fields, vec![("F".to_string(), VbaType::Long)]);
+    match &recorded.members[..] {
+        [ClassMemberSlot::Field { name, vba_type, is_object }] => {
+            assert_eq!(name, "F");
+            assert_eq!(*vba_type, VbaType::Long);
+            assert!(!is_object);
+        }
+        other => panic!("expected exactly one Field member, got {other:?}"),
+    }
 }
