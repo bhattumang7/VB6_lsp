@@ -365,17 +365,38 @@ pub(super) fn class_method_arg_needs_staging(
 /// unverified, so `lower_class_method_call` additionally requires a plain-
 /// variable source whenever a parameter is `Variant` (checked separately,
 /// since this function only sees the type/mode, not the argument
-/// expression). Anything else (Single/Double/Currency/Byte/
-/// Boolean/UDT/Array) is gated too: the addressability mechanism plausibly
-/// generalizes to the scalars, but is not oracle-confirmed, and
-/// `emit_sized_value_load`'s existing 8-byte case is itself
-/// known to be imprecise (hardcodes `0x6d`/Currency's opcode for ALL 8-byte
-/// types, including Double, which is actually `0x6f`) — extending onto that
-/// uncertainty would trade one gate for a hidden one.
+/// expression). `Byte`/`Boolean`/`Single` (both modes, plain-variable source):
+/// oracle-captured directly, one dedicated 2-call probe per type
+/// (`re_lab/pcode_lab/argbyte_probe/`, `argbool_probe/`, `argsingle_probe/`
+/// — a SIX-call single probe was tried first and produced garbage, `00 14`;
+/// `capture_pcode.py`'s backward-scan window is a fixed 128 bytes from
+/// `ProcDsc`, too small for six calls' worth of body — splitting into
+/// 2-call probes, matching every prior successful capture's shape, fixed
+/// it). Each confirms the SAME already-established pattern with no new
+/// opcodes: ByRef is a plain `04 <offset>` address push; ByVal is exactly
+/// what `emit_sized_value_load(static_var_size(ty), ...)` already produces
+/// (`Byte`→`fc e0`, size 1; `Boolean`→`6b`, size 2, same opcode as
+/// `Integer`; `Single`→`6c`, size 4, same opcode as `Long`/`String`) — no
+/// staging in either mode. `Double`/`Currency` remain gated: unlike the
+/// three above, `emit_sized_value_load`'s existing 8-byte case is ALREADY
+/// KNOWN wrong for one of them (hardcodes `0x6d`/Currency's opcode for
+/// EVERY 8-byte type, including Double, which is actually `0x6f`) — a real,
+/// specific, already-identified bug, not merely an untested combination;
+/// fixing it (adding a genuine per-type 8-byte dispatch) is a prerequisite
+/// to grounding either, not just an oracle-capture exercise. `UDT`/`Array`
+/// remain gated: no addressability/staging convention has been captured
+/// for either at all.
 pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> bool {
     matches!(
         ty,
-        VbaType::Integer | VbaType::Long | VbaType::Object | VbaType::String | VbaType::Variant
+        VbaType::Integer
+            | VbaType::Long
+            | VbaType::Object
+            | VbaType::String
+            | VbaType::Variant
+            | VbaType::Byte
+            | VbaType::Boolean
+            | VbaType::Single
     )
 }
 
