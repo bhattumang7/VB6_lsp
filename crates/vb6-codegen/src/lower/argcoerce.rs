@@ -227,6 +227,38 @@ pub(super) fn known_local18_for_grounded_case(param_ty: &VbaType, by_val: bool) 
     }
 }
 
+/// **PORTED, verified — fully static, no `unaff_*` involved.**
+/// `EbEmitArgCoerce`'s own `local_18 == 9` dispatch (`vba6_part0002.c:
+/// 6063-6089`), the call-site logic that feeds `EbCheckSetBinding`/
+/// `EbEmitPropertyExpr` (`UnportedCallee::SetBindingAndPropertyExpr`). Unlike
+/// several other branches of this function, this slice never reads an
+/// `unaff_ESI`/`unaff_EBX` register — it is fully determined by `local_c`
+/// (`EbGetCurrentExpression()`'s type-class byte, already computed earlier in
+/// `EbEmitArgCoerce`, distinct from `local_18`), so no TTD trace was needed to
+/// ground it:
+/// - `local_c == 9` (Object): `accessMode = 1` ("Let", per `EbEmitPropertyExpr`'s
+///   own header comment), `flags = 0` (`uVar6=1; local_14=0;` at `LAB_0fabc4ae`).
+/// - `local_c == 0x1d`: `accessMode = 0` ("Get"), `flags =
+///   EbResolveNodeTypeDesc(...)` — NOT modeled here (a real, unbypassable
+///   callee); `None` is returned for this case.
+/// - otherwise: `accessMode = 2` ("Set"), `flags = 0` (same `LAB_0fabc4ae`
+///   tail as the `local_c==9` case, reached via the `uVar6=2` assignment at
+///   `vba6_part0002.c:6078`).
+///
+/// For this port's grounded Object-ByVal scenario (a plain Object variable
+/// argument), `local_c == 9` is the expected/only observed case — the
+/// argument's own current expression type IS Object. Returns `None` for the
+/// `0x1d` case since its `flags` value depends on an unported callee.
+pub(super) fn eb_emit_property_expr_call_args_for_object_case(local_c: i32) -> Option<(i32, u32)> {
+    if local_c == 9 {
+        Some((1, 0))
+    } else if local_c == 0x1d {
+        None
+    } else {
+        Some((2, 0))
+    }
+}
+
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
 /// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
 /// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one

@@ -56,6 +56,19 @@ fn eb_normalize_type_reference_noop_for_integer_class() {
 }
 
 #[test]
+fn eb_emit_property_expr_call_args_object_case() {
+    // local_c == 9 (Object): accessMode=1 (Let), flags=0 — fully static,
+    // no TTD needed (this slice of EbEmitArgCoerce reads no unaff_* regs).
+    assert_eq!(eb_emit_property_expr_call_args_for_object_case(9), Some((1, 0)));
+    // local_c == 0x1d: flags comes from EbResolveNodeTypeDesc, an unported
+    // callee — must gate, not guess flags=0.
+    assert_eq!(eb_emit_property_expr_call_args_for_object_case(0x1d), None);
+    // otherwise: accessMode=2 (Set), flags=0.
+    assert_eq!(eb_emit_property_expr_call_args_for_object_case(0), Some((2, 0)));
+    assert_eq!(eb_emit_property_expr_call_args_for_object_case(5), Some((2, 0)));
+}
+
+#[test]
 fn known_local18_matches_the_four_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
