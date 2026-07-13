@@ -197,6 +197,47 @@ pub(super) fn eb_get_type_code2(index: u8) -> u8 {
     }
 }
 
+/// **VERIFIED via live TTD, not (only) static reconstruction.** In the
+/// class-method-call context, `EbEmitArgCoerce`'s `pProcDesc` parameter is
+/// NOT a per-call structure — it's a *fixed address inside VBA6.DLL's own
+/// image*, confirmed identical (`0x0fab5b74`) across four different argument
+/// types/modes in one live trace (`argtype_probe`, breakpoint at
+/// `EbEmitArgCoerce`'s entry, `0fabc1b5`). That address is exactly
+/// `RT_CALL_CONV_RECORDS`'s record index 2 (`0x0fab5b74 - 0x0fab5b38 ==
+/// 2 * 0x1e`) — the SAME already-extracted call-convention dispatch table
+/// used by the intra-module call path, selected here because a class/vtable
+/// method call is `RT_CALL_KIND_CLASS` kind 8 → class 2.
+///
+/// `EbEmitArgCoerce`'s `uVar6` computation reads one byte from this record
+/// (`pProcDesc[RT_TYPE_OFFSET[iVar5] * 2] & 0x1f`) and feeds it through
+/// [`eb_get_type_code2`]. Statically, this looked like it could read out of
+/// the record's 30-byte bound for several relevant type tags (Integer=2,
+/// Object=9, Boolean=11 all map through `RT_TYPE_OFFSET`'s sentinel class,
+/// `19 * 2 == 38 > 30`) — genuinely ambiguous from the table alone. Directly
+/// observed instead (same trace, breakpoint at `EbGetTypeCode2`'s entry,
+/// `0faaf420`): for all four argument cases this session has grounded
+/// (Integer ByRef, Integer ByVal, `String`, `Object`), the SECOND
+/// `EbGetTypeCode2` call (this one) is invoked with argument `0x13` every
+/// time — landing on `EbGetTypeCode2`'s own special case, so `uVar6 == 0`
+/// for every one of them. This resolves the ambiguity empirically rather
+/// than by continuing to guess at which intermediate value is "really"
+/// reachable; the mechanism producing `0x13` specifically (rather than a
+/// literal `RT_TYPE_OFFSET`-driven byte read) is still not fully traced —
+/// `iVar5`'s own source (`EbGetTypeCode2((&DAT_0fab4b78)[local_c])`, then
+/// possibly overridden to `0x10`/`8`) needs `DAT_0fab4b78`
+/// (`OPERAND_TYPECLASS`) to be confirmed-extent (currently only a 40-byte
+/// prefix of an 88-byte manifest entry looks like genuine table data; the
+/// rest resembles code/pointers) before it can be ported rather than
+/// observed. Returns `Some(0)` for the four grounded cases; `None`
+/// (unverified) for anything else — do NOT extend this to other types
+/// without a matching live observation.
+pub(super) fn arg_coerce_type_code_for_grounded_case(param_ty: &VbaType) -> Option<u8> {
+    match param_ty {
+        VbaType::Integer | VbaType::String | VbaType::Object => Some(eb_get_type_code2(0x13)),
+        _ => None,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -214,5 +255,13 @@ mod tests {
         assert_eq!(eb_get_type_code2(0x00), 0x05);
         assert_eq!(eb_get_type_code2(0x08), 0x16);
         assert_eq!(eb_get_type_code2(0x1f), 0x07);
+    }
+
+    #[test]
+    fn arg_coerce_type_code_matches_ttd_observation() {
+        assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::Integer), Some(0));
+        assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::String), Some(0));
+        assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::Object), Some(0));
+        assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::Long), None);
     }
 }
