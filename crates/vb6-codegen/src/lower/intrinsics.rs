@@ -1,4 +1,5 @@
 use super::*;
+use super::argcoerce::{eb_emit_arg_coerce, known_local18_for_grounded_case, ArgCoerceOutcome};
 use super::decl::*;
 use super::expr::*;
 
@@ -233,6 +234,29 @@ pub(super) fn lower_class_method_call(
             if *by_val {
                 emit_sized_value_load(static_var_size(ty), off, out);
             } else {
+                // Live cross-check against the `EbEmitArgCoerce` word-form
+                // port (`argcoerce.rs`): for every `(type, mode)` pair this
+                // session traced end-to-end for the ByRef plain-variable
+                // case (`local_18 == 7` — Integer/String/Variant), the port
+                // must report `AddressOfOriginal`, matching exactly what
+                // this line already does (push the variable's own address,
+                // no synthesized node). This is the first real caller of
+                // `eb_emit_arg_coerce` — it runs on every ByRef plain-
+                // variable class-method-call argument compiled by this
+                // codebase, not a dead path — kept as a debug-only
+                // consistency check (not a behavior change: the actually
+                // emitted bytes are still the ones on the lines above,
+                // already independently oracle+TTD-verified) rather than a
+                // silent trust that the two implementations agree.
+                if cfg!(debug_assertions) && known_local18_for_grounded_case(ty, false) == Some(7) {
+                    let mut scratch = NodeArena::new();
+                    let outcome =
+                        eb_emit_arg_coerce(ctx, args[i], ty, false, 0x10, expr_arena, &mut scratch);
+                    debug_assert!(
+                        matches!(outcome, Ok(ArgCoerceOutcome::AddressOfOriginal)),
+                        "eb_emit_arg_coerce disagreed with the shipped ByRef plain-variable path: {outcome:?}"
+                    );
+                }
                 out.push(0x04);
                 out.extend_from_slice(&off.to_le_bytes());
             }
