@@ -238,6 +238,47 @@ pub(super) fn arg_coerce_type_code_for_grounded_case(param_ty: &VbaType) -> Opti
     }
 }
 
+/// **PORTED, verified for the match case only.** `EbCoerceExpressionType2`
+/// (VBA6.DLL `@0faba573`, `vba6_part0002.c:3812`, 392 bytes) — decides
+/// whether a value's current type already satisfies `target_type` and, if
+/// so, is a no-op (the original's `*ppExprValue` is left unchanged). Live-
+/// traced for Integer ByVal (`EbEmitArgCoerce` → `EbEmitExpression4` →
+/// here): the function's OWN entry args were captured directly (not hand-
+/// derived — an earlier hand-derivation attempt produced an implausible
+/// error-path result, later found to rest on a wrong assumption about
+/// `iVar5`'s value, corrected once TTD gave the real number): `nTargetType
+/// = 1`. The source node's own type tag is `6` (Integer, this codebase's
+/// `vba_type_to_node_tag` scheme, confirmed the same numbering VBA6.DLL
+/// itself uses via `RT_CALL_CONV_RECORDS`/`RT_TYPE_OFFSET` cross-checks
+/// throughout this session). `RT_TYPE_OFFSET[6] == 1 == nTargetType` — a
+/// match — so `cVar3` takes the source's `'\x13'` sentinel value, the
+/// `uVar4 != uVar5` follow-on check is false (they're equal), and control
+/// falls straight to `*ppExprValue = local_8` with no mutation.
+///
+/// Only this MATCH path is ported. The mismatch path (`cVar3` computed from
+/// `DAT_0fab4c10[nTargetType*0xc + class]`, a 132-byte conversion table not
+/// yet extracted this session) is NOT modeled — `None` means "outcome
+/// unknown, the caller must gate" rather than "no coercion needed".
+///
+/// `node_type_tag` is the node's RAW type tag (as `vba_type_to_node_tag`
+/// produces it) — this function does the `RT_TYPE_OFFSET` lookup itself
+/// (including the source's `0xe`→`7` special case), the caller does not
+/// pre-map it.
+pub(super) fn eb_coerce_expression_type2_is_match(target_type: i32, node_type_tag: i32) -> Option<bool> {
+    if !(0..28).contains(&node_type_tag) {
+        return None;
+    }
+    let mut class = crate::tables::RT_TYPE_OFFSET[node_type_tag as usize];
+    if class == 0xe {
+        class = 7;
+    }
+    if target_type == class {
+        Some(true)
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -263,5 +304,15 @@ mod tests {
         assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::String), Some(0));
         assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::Object), Some(0));
         assert_eq!(arg_coerce_type_code_for_grounded_case(&VbaType::Long), None);
+    }
+
+    #[test]
+    fn eb_coerce_expression_type2_is_noop_when_types_already_match() {
+        // Integer ByVal (TakeIntByVal(i)): node type tag 6, nTargetType 1 —
+        // RT_TYPE_OFFSET[6] == 1 == nTargetType, a match, so the ported
+        // function must report "no coercion needed" (matching the live
+        // trace: cVar3 == 0x13, falls straight through to `*ppExprValue =
+        // local_8`, unchanged).
+        assert_eq!(eb_coerce_expression_type2_is_match(1, 6), Some(true));
     }
 }
