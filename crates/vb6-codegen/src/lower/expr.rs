@@ -664,6 +664,17 @@ pub(super) fn lower_class_field_set(
     if !field.is_property {
         return Err(LowerError::UnsupportedNode);
     }
+    // `fd 9c` (__vbaObjSet, flag=0) is confirmed ONLY for an Object-typed
+    // Property Set parameter (tag 0x16) — traced to EbEmitExpression2's case
+    // 4 remap switch (`vba6_part0001.c:51360-51385`), which selects a
+    // DIFFERENT final opcode per parameter type (e.g. a Variant parameter
+    // remaps 0x1f6→0x263, i.e. runtime bytes `fd 63`, not `fd 9c` — verified
+    // via RT_OPCODE_BYTE, not guessed). A specific-class-typed or Variant-
+    // typed Set parameter would silently emit the WRONG bytes if allowed
+    // through here; gate loudly instead of assuming they share Object's path.
+    if field.type_tag != Some(0x16) {
+        return Err(LowerError::UnsupportedType);
+    }
 
     let mut arena = NodeArena::new();
     let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, field.type_tag)?;

@@ -48,8 +48,34 @@ fn class_name_from_source(src: &str) -> String {
 
 /// True for an object/reference-assignable type (or Variant) — these
 /// synthesize a `Set` accessor alongside `Get`/`Let` when used as a field.
+///
+/// The real compiler's discriminant (`EbCheckExpressionType2 @0faeb8eb`,
+/// `vba6_part0003.c:13927`) does NOT operate on a VBA type at all — it reads
+/// the field-type EXPRESSION's own p-code node-kind (`*node & 0x3f`) and
+/// branches on kinds 9, 0xc, 0x1a (recursive-type), 0x1b (struct/array),
+/// 0x1d (COM slot), each with distinct sub-logic (0x1b peeks a NESTED node;
+/// 0x1d extracts and range-checks a 4-bit sub-field, `(word>>10)&0xf`, not a
+/// flat "is this a class" test). Only `Object` (this session's `set_probe`/
+/// `set_probe2`) and `Variant` (an earlier session's `Vnt Get=0x1c Let=0x20
+/// Set=0x24` oracle capture) have actually been observed going through the
+/// 3-slot path — `UserDefined` (which conflates a `Type...End Type` UDT and
+/// an actual class-type reference; VB6's grammar can't tell them apart at
+/// the bare-identifier-type level, and neither can this front end without
+/// deeper binder context) has NEVER been oracle/TTD-tested. Silently
+/// guessing 2 vs 3 slots for it would risk mis-laying-out every class member
+/// declared after such a field. Gated loudly instead: no fixture may use a
+/// `UserDefined`-typed `Public` field until it's actually grounded.
 fn is_object_type(ty: &VbaType) -> bool {
-    matches!(ty, VbaType::Object | VbaType::Variant | VbaType::UserDefined(_))
+    match ty {
+        VbaType::Object | VbaType::Variant => true,
+        VbaType::UserDefined(_) => panic!(
+            "is_object_type: a UserDefined-typed Public class field is ungrounded — \
+             EbCheckExpressionType2's real node-kind discriminant (0x1a/0x1b/0x1d, each with \
+             distinct logic) has never been oracle/TTD-verified for a UDT- or class-typed \
+             field. Ground it (new oracle probe + TTD trace) before adding this fixture."
+        ),
+        _ => false,
+    }
 }
 
 /// Bind a `.cls` source (an ordinary module, front-end-wise — Public fields
