@@ -386,6 +386,57 @@ pub(super) fn eb_normalize_type_reference_object_case_is_noop_for_plain_var() ->
     true
 }
 
+/// **PORTED, verified via live TTD (traced for Integer-ByRef and
+/// String-ByRef, `argtype_probe`/`argtype_probe2`).** `EbResolveTypeBinding2`'s
+/// outer dispatch (VBA6.DLL `@0fabde33`, `vba6_part0002.c:8021`, 1044 bytes)
+/// — the `local_18==7` common-case resolver `EbEmitArgCoerce` calls for
+/// plain ByRef scalar/String arguments (`local_18 == 7`, see
+/// [`known_local18_for_grounded_case`]). Confirmed identical for BOTH
+/// grounded cases (`nFlags=0x10`; node's own type tag exactly equals the
+/// requested `nTypeClass` — `6` for Integer, `0x10` for String;
+/// `local_8[1]&1 != 0` for both, so `*pOutType` computes to `1`, not `0`):
+/// control takes the `else` branch (`vba6_part0002.c:8083`), finds `iVar6 ==
+/// nTypeClass` (the node already carries the exact requested type), skips
+/// the mismatch-handling body via `goto LAB_0fabdeba`. At `LAB_0fabdeba`,
+/// every subsequent gate (`nMode==0x1e`; `bVar3&1!=0` — moot, `nFlags=0x10`
+/// makes `bVar3=0xe`, bit0 clear; `nTypeClass==0x14`; `*pOutType==0` — false,
+/// it's `1`) evaluates false for both traced cases, so control falls through
+/// everything to the function's own final statement,
+/// `EbEvaluateExpression3(&local_8)`, then returns via `LAB_0fabdeed`.
+///
+/// Scoped exactly to the traced shape: node's own type tag equals the
+/// requested type class, `word[1]` bit 0 set, `nFlags=0x10` (this port's
+/// only confirmed `nFlags` value for the ByRef common case). Any other
+/// combination is unmodeled — `None`.
+///
+/// **Deliberately NOT wired into [`eb_emit_arg_coerce`]'s dispatch yet**,
+/// unlike the `local_18==4`/`9` cases: `EbEvaluateExpression3`'s live-traced
+/// net effect (`vba6_part0002.c` call graph, entry `0fabce1f`) genuinely
+/// MUTATES the node — replacing the bound-name node (opcode `0x60`) with a
+/// DIFFERENT node at a new address (opcode `0x11`, type tag `0x17`,
+/// identical shape for both Integer and String; `word[2]` points at the
+/// SAME underlying symbol/frame descriptor the original node carried). This
+/// is plausibly the same semantic step this codebase's own `lower_name_ref`
+/// already performs when it resolves a bound variable into a frame-load
+/// node — but that equivalence is NOT confirmed at the byte level (the
+/// `0x11` node's own sub-structure past `word[2]`'s first pointer hop was
+/// never fully decoded), so delegating to `lower_expr_coerced` here would be
+/// an unverified byte, not a grounded port. Gates via
+/// `UnportedCallee::ResolveTypeBinding2` until that equivalence is either
+/// confirmed or a genuine independent emitter is built.
+pub(super) fn eb_resolve_type_binding2_reaches_evaluate_expression3(
+    node_type_tag: i32,
+    requested_type_class: i32,
+    word1_bit0_set: bool,
+    n_flags: u32,
+) -> Option<bool> {
+    if node_type_tag == requested_type_class && word1_bit0_set && n_flags == 0x10 {
+        Some(true)
+    } else {
+        None
+    }
+}
+
 /// **PORTED, verified.** `EbGetTypeCode2` (VBA6.DLL `@0faaf420`, decompiled
 /// at `vba6_part0001.c:46418`, 23 bytes) — a genuine leaf: a 32-byte table
 /// lookup (`RT_ARG_COERCE_TYPE_CODE`, confirmed-extent, `tables.rs`) with one

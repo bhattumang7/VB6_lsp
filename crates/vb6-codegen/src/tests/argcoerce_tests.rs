@@ -103,6 +103,34 @@ fn eb_normalize_type_reference_object_case_confirmed_noop() {
 }
 
 #[test]
+fn eb_resolve_type_binding2_reaches_evaluate_expression3_for_traced_byref_cases() {
+    // Integer ByRef: node type tag 6 == requested nTypeClass 6.
+    assert_eq!(
+        eb_resolve_type_binding2_reaches_evaluate_expression3(6, 6, true, 0x10),
+        Some(true)
+    );
+    // String ByRef: node type tag 0x10 == requested nTypeClass 0x10.
+    assert_eq!(
+        eb_resolve_type_binding2_reaches_evaluate_expression3(0x10, 0x10, true, 0x10),
+        Some(true)
+    );
+    // Mismatched type tag, word1 bit0 clear, or a different nFlags are all
+    // outside the traced shape — must gate, not guess.
+    assert_eq!(
+        eb_resolve_type_binding2_reaches_evaluate_expression3(6, 0x10, true, 0x10),
+        None
+    );
+    assert_eq!(
+        eb_resolve_type_binding2_reaches_evaluate_expression3(6, 6, false, 0x10),
+        None
+    );
+    assert_eq!(
+        eb_resolve_type_binding2_reaches_evaluate_expression3(6, 6, true, 0),
+        None
+    );
+}
+
+#[test]
 fn known_local18_matches_the_four_ttd_observed_pairs() {
     assert_eq!(known_local18_for_grounded_case(&VbaType::Integer, false), Some(7));
     assert_eq!(known_local18_for_grounded_case(&VbaType::String, false), Some(7));
