@@ -234,18 +234,25 @@ pub(super) fn lower_class_method_call(
             if *by_val {
                 // `eb_emit_arg_coerce` (the `EbEmitArgCoerce` word-form
                 // port, `argcoerce.rs`) is now the ACTUAL byte source for
-                // every `(type, mode)` pair it has traced to a confirmed
-                // no-op this session (`local_18 == 4` — Integer ByVal; see
-                // its doc comment for the full chain), not merely a
-                // parallel validator: its `Value(node)` is rendered through
-                // the same `Emitter` and used DIRECTLY. `emit_sized_value_
-                // load` remains the implementation for every type this
-                // port has NOT traced (`Long` — `class_method_param_is_
-                // grounded` allows it at the sema layer, but this port has
-                // no `local_18` data point for it) — falling back keeps
-                // existing, independently oracle-verified behavior for
-                // those untouched by this port, exactly as before.
-                let ported = if known_local18_for_grounded_case(ty, true) == Some(4) {
+                // Integer ByVal (`local_18 == 4`, delegation verified at the
+                // byte level), not merely a parallel validator: its
+                // `Value(node)` is rendered through the same `Emitter` and
+                // used DIRECTLY. Scoped to `Integer` specifically, matching
+                // `eb_emit_arg_coerce`'s own gate — `Variant` shares the
+                // SAME `local_18 == 4` classification but does NOT share
+                // this delegation (`lower_expr_coerced` errors on a bare
+                // Variant reference; the real shipped bytes are `fc ed
+                // <offset>`, a dedicated opcode, see `emit_sized_value_
+                // load`'s `16 =>` arm) — this port's own doc comment on the
+                // `local_18==4` branch has the full story of catching that
+                // exact conflation live, via this cross-check. `emit_sized_
+                // value_load` remains the implementation for every type
+                // this port doesn't delegate for (`Long`, `Variant`) —
+                // falling back keeps existing, independently oracle-
+                // verified behavior for those.
+                let ported = if matches!(ty, VbaType::Integer)
+                    && known_local18_for_grounded_case(ty, true) == Some(4)
+                {
                     let mut scratch = NodeArena::new();
                     match eb_emit_arg_coerce(ctx, args[i], ty, true, 0x10, expr_arena, &mut scratch) {
                         Ok(ArgCoerceOutcome::Value(node)) => {

@@ -348,31 +348,35 @@ pub(super) fn class_method_arg_needs_staging(
 /// staging at all — overturning the earlier caution that String, being
 /// refcounted like `Object`, might need `Object`-style `fd 9c` staging; the
 /// real compiler does not do that for a plain-variable ByVal String
-/// argument). `Variant` ByRef is
-/// grounded ONLY for a plain-variable source (`argvariant_probe`'s `TakeVar
-/// v` — plain `LdAddr`, no staging, matching the type-agnostic ByRef rule);
-/// a non-addressable Variant argument (literal/expression) is NOT covered —
-/// VB6's Variant-boxing machinery for that case is unverified, so
-/// `lower_class_method_call` additionally requires a plain-variable source
-/// whenever a parameter is `Variant` (checked separately, since this
-/// function only sees the type/mode, not the argument expression). Variant
-/// ByVal is entirely gated: `argvariant_probe`'s `TakeVarByVal v` emits an
-/// unexplored 2-byte opcode (`fc ed`) whose semantics (presumably a proper
-/// Variant copy — VB6 Variants are refcounted/complex, like `Object` — but
-/// not confirmed) were not traced before this pass ran out of budget; ship
-/// nothing rather than guess. Anything else (Single/Double/Currency/Byte/
+/// argument). `Variant` (both modes, plain-variable source ONLY): ByRef via
+/// `argvariant_probe`'s `TakeVar v` — plain `LdAddr`, no staging, matching
+/// the type-agnostic ByRef rule; ByVal via the SAME probe's `TakeVarByVal
+/// v` capture, fully decoded (not merely observed) — the complete byte
+/// sequence is `fc ed <offset:i16 LE>`, exactly the same "opcode(s) + 2-byte
+/// offset" shape `emit_sized_value_load` already models for every other
+/// size, now with an explicit `16 =>` arm rather than silently falling
+/// through to the wrong `0x6c` default. What was previously described as an
+/// "unexplored opcode" turned out to have no further structure to explore —
+/// it's a complete, self-contained 4-byte sequence, not a prefix of
+/// something larger, confirmed by the next bytes in the same oracle capture
+/// being the START of the following call's own address-push. A non-
+/// addressable Variant argument (literal/expression) is still NOT covered
+/// for EITHER mode — VB6's Variant-boxing machinery for that case is
+/// unverified, so `lower_class_method_call` additionally requires a plain-
+/// variable source whenever a parameter is `Variant` (checked separately,
+/// since this function only sees the type/mode, not the argument
+/// expression). Anything else (Single/Double/Currency/Byte/
 /// Boolean/UDT/Array) is gated too: the addressability mechanism plausibly
 /// generalizes to the scalars, but is not oracle-confirmed, and
 /// `emit_sized_value_load`'s existing 8-byte case is itself
 /// known to be imprecise (hardcodes `0x6d`/Currency's opcode for ALL 8-byte
 /// types, including Double, which is actually `0x6f`) — extending onto that
 /// uncertainty would trade one gate for a hidden one.
-pub(super) fn class_method_param_is_grounded(ty: &VbaType, by_val: bool) -> bool {
-    match ty {
-        VbaType::Integer | VbaType::Long | VbaType::Object | VbaType::String => true,
-        VbaType::Variant => !by_val,
-        _ => false,
-    }
+pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> bool {
+    matches!(
+        ty,
+        VbaType::Integer | VbaType::Long | VbaType::Object | VbaType::String | VbaType::Variant
+    )
 }
 
 /// Whether `func_id` (a call target expression) is a class-member
@@ -611,12 +615,17 @@ pub(super) fn vba_type_to_vartype(ty: &VbaType) -> Option<u8> {
 }
 
 /// Emit a size-based value load (load `size` bytes from a frame offset), the form
-/// used to push a same-typed ByVal argument: 1→0xfc 0xe0, 2→0x6b, 4→0x6c, 8→0x6d.
+/// used to push a same-typed ByVal argument: 1→0xfc 0xe0, 2→0x6b, 4→0x6c, 8→0x6d,
+/// 16→0xfc 0xed (Variant — oracle-captured via `argvariant_probe`'s
+/// `TakeVarByVal v`, `re_lab/pcode_lab/argvariant_probe/`: the full byte
+/// sequence is `fc ed <offset:i16 LE>`, the same "opcode(s) + 2-byte offset"
+/// shape as every other case here, not a special form).
 pub(super) fn emit_sized_value_load(size: u16, off: i16, buf: &mut Vec<u8>) {
     match size {
         1 => buf.extend_from_slice(&[0xfc, 0xe0]),
         2 => buf.push(0x6b),
         8 => buf.push(0x6d),
+        16 => buf.extend_from_slice(&[0xfc, 0xed]),
         _ => buf.push(0x6c),
     }
     buf.extend_from_slice(&off.to_le_bytes());

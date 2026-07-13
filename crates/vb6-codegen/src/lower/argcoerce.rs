@@ -221,13 +221,29 @@ pub(super) fn eb_emit_arg_coerce(
     // confirmed chains (`EbEmitExpression4` → `EbCoerceExpressionType2`
     // [no-op, types already match] → `EbProcessType2` →
     // `EbNormalizeTypeReference` [no-op, node unchanged] → `EbBuildBinaryOp`
-    // gate evaluates false either way) reduce to: the argument's value is
-    // loaded plainly, no coercion applied. That is EXACTLY what
-    // `lower_expr_coerced` already does for a plain scalar reference — not a
-    // coincidence to paper over, but the actual, verified content of this
-    // port's finding: delegate to it rather than re-derive byte emission
-    // this port has already shown produces the same result.
-    if known_local18_for_grounded_case(param_ty, by_val) == Some(4) {
+    // gate evaluates false either way) reduce to the SAME word-form outcome:
+    // the argument's node is returned unchanged, no coercion applied at
+    // THAT layer. For Integer specifically, that is EXACTLY what
+    // `lower_expr_coerced` already produces for a plain reference, verified
+    // at the byte level (matches the shipped `6b <offset>` load) — a
+    // genuine, confirmed finding, not a coincidence to paper over.
+    //
+    // Variant does NOT share that delegation, despite sharing the word-form
+    // no-op: this was the ORIGINAL (wrong) assumption here, caught live by
+    // this port's own production cross-check (`intrinsics.rs`, the
+    // `local_18==4` debug-assert) once `Variant ByVal` became sema-
+    // reachable — `lower_expr_coerced` returns `Err(UnsupportedType)` for a
+    // bare Variant reference; it has no case that produces the actual
+    // shipped bytes (`fc ed <offset>`, oracle-captured via
+    // `argvarbyval_probe`, see `emit_sized_value_load`'s `16 =>` arm in
+    // `decl.rs`). The word-form node being unchanged does NOT imply this
+    // codebase's `lower_expr_coerced` can reproduce whatever VBA6.DLL's own
+    // downstream byte emitter does with that unchanged node — those are
+    // different layers, and conflating them was the actual bug. Scoped to
+    // `Integer` only until Variant's correct delegation (or a dedicated
+    // emission path matching `fc ed`) is built and verified the same way.
+    if matches!(param_ty, VbaType::Integer) && known_local18_for_grounded_case(param_ty, by_val) == Some(4)
+    {
         return lower_expr_coerced(ctx, arg_id, expr_arena, arena, vba_type_to_node_tag(param_ty))
             .map(ArgCoerceOutcome::Value);
     }
