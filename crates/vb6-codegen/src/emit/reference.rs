@@ -251,6 +251,24 @@ impl<'a> Emitter<'a> {
                         }
                     } else if f_flags & 0x800 != 0 {
                         v = 0x439;
+                    } else if off3 == 3 || off3 == 4 {
+                        // A field whose RAW (pre-remap) RT_TYPE_OFFSET class
+                        // is directly 3 or 4 needs +6 on the plain scalar-
+                        // store index — the same adjustment the sibling
+                        // nOp-2 branch above already applies. Gated on the
+                        // RAW `off3`, not the post-remap `base_off`: a field
+                        // whose raw class is 10 (remapped to base_off == 4)
+                        // must NOT get +6 — `ref_store_currency` oracle-
+                        // confirms that case stays at the unadjusted index
+                        // (byte `0x72`). A UDT Double field store (`t.C =
+                        // 3`), whose raw class is directly 4, oracle-
+                        // confirms it DOES need +6 (index `0x1fa`, byte
+                        // `0x74`, `RT_STORE_BY_CTX`'s own Double entry) — no
+                        // capture had exercised a raw-off3-4 field through
+                        // this branch until an 8-byte UDT field reached the
+                        // real pipeline (only Integer/Long UDT fields were
+                        // tested before).
+                        v += 6;
                     }
                 } else if f_flags & 0x20 == 0 {
                     // Store with conversion: opcode = base + 0x10 +

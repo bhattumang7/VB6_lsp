@@ -199,71 +199,88 @@ pub enum DeclError {
 }
 
 /// A `Type...End Type` (UDT) local's frame binding: the struct's own base
-/// offset and the common per-field stride (uniform-size fields only — see
-/// [`ProcFrame::declare_udt_local`]).
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// offset and each field's byte offset within it (see [`udt_layout`]).
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct UdtLocal {
     /// Signed frame offset of the struct's own base (its field-0 byte),
     /// matching [`ProcFrame::declare_anon_bytes`]'s bottom-of-slot convention.
     pub base_offset: i16,
-    /// Every field's frame size (confirmed uniform at declaration time).
-    pub field_size: i16,
+    /// Each field's byte offset relative to `base_offset`, declaration order.
+    field_offsets: Vec<i16>,
+    /// Each field's frame size, declaration order (parallel to `field_offsets`).
+    field_sizes: Vec<i16>,
 }
 
 impl UdtLocal {
-    /// The combined absolute frame offset of field `field_index` (0-based,
-    /// declaration order): `base_offset + field_index * field_size`.
+    /// The combined absolute frame offset of field `field_index`.
     pub fn field_offset(&self, field_index: usize) -> i16 {
-        self.base_offset + (field_index as i16) * self.field_size
+        self.base_offset + self.field_offsets[field_index]
+    }
+    /// `field_index`'s frame size.
+    pub fn field_size(&self, field_index: usize) -> i16 {
+        self.field_sizes[field_index]
     }
 }
 
-/// The resolved layout of a uniform-size-field UDT: the common field size and
-/// the struct's total frame size.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct UdtUniformLayout {
-    pub field_size: i16,
+/// The resolved layout of a UDT: each field's byte offset (relative to the
+/// struct's own base) and frame size, plus the struct's total frame size.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct UdtLayout {
+    pub field_offsets: Vec<i16>,
+    pub field_sizes: Vec<i16>,
     pub total_size: i16,
 }
 
-/// Resolve a UDT's field layout under the ONE packing rule confirmed so far:
-/// every field has the identical frame size and alignment. `offset[i] = i *
-/// field_size` is then exact regardless of the still-unconfirmed general
-/// (mixed-size) packing/alignment rule, since every field starts already
-/// aligned to its own (and every other field's) requirement.
+/// Resolve a UDT's field layout: natural alignment, packed sequentially in
+/// declaration order — `offset = round_up(running_offset, width(field));
+/// running_offset = offset + size(field)`, where `width(field) =
+/// min(size(field), 4)` (alignment never exceeds 4 bytes, even for an 8-byte
+/// Double/Currency/Date field) and `size(field)` is the field's own frame
+/// size. The struct's total size is the final running offset, rounded up to
+/// a 4-byte boundary (matching the frame allocator's own "≥4 bytes → 4-byte
+/// align" rule for the struct's OWN placement).
 ///
-/// `unimplemented!()` — never a sum-of-sizes fallback — the moment two fields
-/// differ in size OR alignment; that general rule has not been reverse
-/// engineered.
+/// Confirmed by live-debugging the real VBA6.DLL compiler (breakpoint on the
+/// align-and-accumulate routine while compiling `Type T: A As Integer: B As
+/// Long: C As Double: D As Integer: End Type`): the routine was called once
+/// per field, in declaration order, with exactly `(running_offset, width,
+/// size, round-up)` — `(0,2,2)→0`, `(2,4,4)→4`, `(8,4,8)→8` (Double's width
+/// argument was 4, NOT 8 — the alignment cap), `(16,2,2)→16`. Cross-checked
+/// against the compiled exe's actual `t.A`/`t.B`/`t.C`/`t.D` store operands
+/// (offsets 0/4/8/16 relative to the struct base) — exact match.
+///
+/// The struct's total frame RESERVATION is the final running offset rounded
+/// UP to a 4-byte boundary — oracle-confirmed (not just assumed): the same
+/// live-capture probe's `t` local sits at frame offset -152, i.e. the frame
+/// allocator carved 20 bytes for it, not the unpadded running total of 18.
+/// Field offsets themselves are unaffected (no field needs the padding); it
+/// only widens the struct's own slot so whatever is allocated next starts
+/// 4-byte aligned — the same "≥4 bytes → round to 4" rule
+/// [`ProcFrame::alloc_bytes`] already applies when CARVING the slot, here
+/// applied to the SIZE passed in.
 ///
 /// # Panics
 /// Panics if `field_type_ctxs` is empty (a `Type` with no members is not a
 /// well-formed declaration).
-pub fn udt_uniform_layout(field_type_ctxs: &[usize]) -> UdtUniformLayout {
+pub fn udt_layout(field_type_ctxs: &[usize]) -> UdtLayout {
     assert!(!field_type_ctxs.is_empty(), "UDT declaration with no fields");
-    let field_size = frame_size_of_ctx(field_type_ctxs[0]);
-    let field_align = frame_align_of_ctx(field_type_ctxs[0]);
-    for &ctx in &field_type_ctxs[1..] {
+    let mut field_offsets = Vec::with_capacity(field_type_ctxs.len());
+    let mut field_sizes = Vec::with_capacity(field_type_ctxs.len());
+    let mut running: i16 = 0;
+    for &ctx in field_type_ctxs {
         let size = frame_size_of_ctx(ctx);
-        let align = frame_align_of_ctx(ctx);
-        if size != field_size || align != field_align {
-            unimplemented!(
-                "mixed-size UDT field layout: field-offset/packing rule not yet \
-                 reverse-engineered"
-            );
+        let width = size.min(4);
+        let rem = running.rem_euclid(width);
+        if rem != 0 {
+            running += width - rem;
         }
+        field_offsets.push(running);
+        field_sizes.push(size);
+        running += size;
     }
-    UdtUniformLayout { field_size, total_size: field_size * field_type_ctxs.len() as i16 }
-}
-
-/// A type context's required frame alignment. Every currently-supported type
-/// context's alignment equals its own frame size (see [`frame_size_of_ctx`]'s
-/// table) — no confirmed type violates this, so the two are identical for
-/// now. Kept as a distinct function (rather than reusing `frame_size_of_ctx`
-/// directly) so [`udt_uniform_layout`]'s gate checks size and alignment as
-/// independent properties, not one masquerading as the other.
-fn frame_align_of_ctx(type_ctx: usize) -> i16 {
-    frame_size_of_ctx(type_ctx)
+    let pad = running.rem_euclid(4);
+    let total_size = if pad != 0 { running + (4 - pad) } else { running };
+    UdtLayout { field_offsets, field_sizes, total_size }
 }
 
 /// Runtime frame allocator for one procedure under compilation.
@@ -344,18 +361,14 @@ impl ProcFrame {
         self.cursor
     }
 
-    /// Declare a `Type...End Type` (UDT) local whose fields are ALL the same
-    /// frame size and alignment — the one packing rule confirmed so far: with
-    /// uniform field sizes, `offset[i] = i * field_size` is exact under any
-    /// alignment rule (2/4/8-byte), so it needs no assumption about the
-    /// general (mixed-size) packing rule. The moment two fields differ in
-    /// size or alignment, `unimplemented!()` — never a sum-of-sizes guess.
+    /// Declare a `Type...End Type` (UDT) local: lay out its fields via
+    /// [`udt_layout`] (natural alignment, capped at 4 bytes — see there for
+    /// the confirmed rule), then allocate one frame slot sized for the whole
+    /// struct.
     ///
-    /// `field_type_ctxs` lists each field's type context in declaration order;
-    /// the returned [`UdtLocal`] gives the struct's frame base and per-field
-    /// stride, from which the combined offset of field `i` is
-    /// `base_offset + i * field_size` (ascending — field 0 sits at the
-    /// struct's own base, matching normal in-memory field order).
+    /// `field_type_ctxs` lists each field's type context in declaration
+    /// order; the returned [`UdtLocal`] gives the struct's frame base and
+    /// each field's offset within it.
     pub fn declare_udt_local(
         &mut self,
         name: &str,
@@ -365,7 +378,7 @@ impl ProcFrame {
             return Err(DeclError::AlreadyDeclared);
         }
         let var = self.alloc_udt(field_type_ctxs);
-        self.udt_vars.insert(name.to_string(), var);
+        self.udt_vars.insert(name.to_string(), var.clone());
         Ok(var)
     }
 
@@ -376,14 +389,14 @@ impl ProcFrame {
     }
 
     fn alloc_udt(&mut self, field_type_ctxs: &[usize]) -> UdtLocal {
-        let layout = udt_uniform_layout(field_type_ctxs);
+        let layout = udt_layout(field_type_ctxs);
         let base_offset = self.alloc_bytes(layout.total_size);
-        UdtLocal { base_offset, field_size: layout.field_size }
+        UdtLocal { base_offset, field_offsets: layout.field_offsets, field_sizes: layout.field_sizes }
     }
 
     /// Resolve a declared UDT local name to its `UdtLocal`.
     pub fn resolve_udt(&self, name: &str) -> Option<UdtLocal> {
-        self.udt_vars.get(name).copied()
+        self.udt_vars.get(name).cloned()
     }
 
     /// Move the frame cursor for one local of `type_ctx` (4-byte alignment for

@@ -644,7 +644,7 @@ impl<'m> LowerCtx<'m> {
         &self.proc.locals[idx].vba_type
     }
     fn local_udt(&self, idx: usize) -> Option<UdtLocal> {
-        self.local_udts[idx]
+        self.local_udts[idx].clone()
     }
     fn local_class(&self, idx: usize) -> Option<&ExternalClass> {
         self.local_classes[idx].as_ref()

@@ -418,7 +418,7 @@ pub(super) fn resolve_udt_field(
 
     let udt = ctx.local_udt(local_idx).ok_or(LowerError::UnsupportedNode)?;
     let offset = udt.field_offset(field_index);
-    let field_size = udt.field_size;
+    let field_size = udt.field_size(field_index);
 
     // Build the field's declaration-compiler record: a scratch method-bag
     // "container" (never read back; it only exists so the field's

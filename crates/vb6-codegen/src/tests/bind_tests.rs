@@ -532,27 +532,35 @@ fn global_make_load_node_double_emits_global_opcode() {
 // ── UDT (Type...End Type) local frame layout ────────────────────────────────
 
 #[test]
-fn udt_uniform_layout_two_longs_gives_offsets_0_and_4() {
+fn udt_layout_two_longs_gives_offsets_0_and_4() {
     // Point { X As Long, Y As Long } — the milestone-1 fixture's shape.
-    let layout = udt_uniform_layout(&[2, 2]);
-    assert_eq!(layout.field_size, 4);
+    let layout = udt_layout(&[2, 2]);
+    assert_eq!(layout.field_offsets, vec![0, 4]);
+    assert_eq!(layout.field_sizes, vec![4, 4]);
     assert_eq!(layout.total_size, 8);
 }
 
 #[test]
-fn udt_uniform_layout_rejects_mixed_size() {
-    // Long (4 bytes) next to Double (8 bytes): the general packing rule is
-    // not confirmed, so this must stay unimplemented, never sum-of-sizes.
-    let r = std::panic::catch_unwind(|| udt_uniform_layout(&[2, 4]));
-    assert!(r.is_err());
+fn udt_layout_three_uniform_fields() {
+    let layout = udt_layout(&[2, 2, 2]);
+    assert_eq!(layout.field_offsets, vec![0, 4, 8]);
+    assert_eq!(layout.total_size, 12);
 }
 
 #[test]
-fn udt_uniform_layout_three_uniform_fields() {
-    // Three fields sharing both size and alignment must not gate.
-    let layout = udt_uniform_layout(&[2, 2, 2]);
-    assert_eq!(layout.field_size, 4);
-    assert_eq!(layout.total_size, 12);
+fn udt_layout_mixed_size_matches_live_debug_recon() {
+    // Type T: A As Integer: B As Long: C As Double: D As Integer: End Type —
+    // confirmed live against VBA6.DLL's align-and-accumulate routine (see
+    // `udt_layout`'s doc comment): offsets 0, 4, 8, 16. Double's alignment
+    // width is 4 (capped), not its own 8-byte size — the case that
+    // distinguishes this rule from naive natural-size alignment.
+    let layout = udt_layout(&[1 /* Integer */, 2 /* Long */, 4 /* Double */, 1 /* Integer */]);
+    assert_eq!(layout.field_offsets, vec![0, 4, 8, 16]);
+    assert_eq!(layout.field_sizes, vec![2, 4, 8, 2]);
+    // Running total is 18 (16 + Integer's 2 bytes); the frame RESERVATION
+    // rounds that up to 20 — oracle-confirmed (the live-debug probe's `t`
+    // local sits at frame offset -152, i.e. a 20-byte carve, not 18).
+    assert_eq!(layout.total_size, 20);
 }
 
 #[test]
@@ -565,7 +573,7 @@ fn declare_udt_local_allocates_below_prior_locals() {
     // immediately below `a`.
     let t = f.declare_udt_local("t", &[2, 2]).unwrap();
     assert_eq!(t.base_offset, -144);
-    assert_eq!(t.field_size, 4);
+    assert_eq!(t.field_size(0), 4);
     assert_eq!(t.field_offset(0), -144);
     assert_eq!(t.field_offset(1), -140);
 }

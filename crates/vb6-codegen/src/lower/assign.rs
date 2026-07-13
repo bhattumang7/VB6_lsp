@@ -398,8 +398,14 @@ fn lower_udt_field_store(
     lhs_n.w[5] = size_desc.0;
     let lhs = arena.alloc(lhs_n);
 
-    // RHS: the assigned value, coerced to the field's type.
+    // RHS: the value in its own natural type, then an explicit conversion
+    // node inserted when it differs from the field's type (same two-step
+    // pattern as every other store path — `coerce_assign_value` handles the
+    // literal-retype-in-place vs. explicit-conversion distinction; skipping
+    // it here was a bug: an Integer literal into a Double field must emit
+    // `eb` (Int->Double) before the store, not fold the literal in place).
     let rhs = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, Some(field.type_tag))?;
+    let rhs = coerce_assign_value(ctx, value_id, rhs, Some(field.type_tag), &mut arena);
 
     // 0x2c assignment statement node: w4 = LHS, w5 = RHS, region 0 (not the
     // 0x20000 array/special-LHS region).
