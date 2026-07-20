@@ -425,7 +425,33 @@ pub(super) fn lower_set_assign(
     if let Some((target_class, dest_off, _)) = plain_object_local(ctx, target_id, expr_arena) {
         return lower_set_plain_object_local(ctx, target_class, dest_off, value_id, expr_arena, out);
     }
+    // `Set x = o.P` where `x` is declared a plain `Object` (not a specific
+    // class type) — only the class-member-Get value shape is grounded for
+    // this target kind (see `lower_set_from_class_get`); every other RHS
+    // shape against an `Object`-typed target is ungrounded and gated there.
+    if let Some(dest_off) = object_typed_local(ctx, target_id, expr_arena) {
+        return lower_set_from_class_get(ctx, dest_off, value_id, expr_arena, out);
+    }
     Err(LowerError::UnsupportedNode)
+}
+
+/// A plain `Object`-typed local (`Dim x As Object`) — distinct from
+/// `plain_object_local`, which only matches a specific-class-typed
+/// (`UserDefined`) local.
+fn object_typed_local(ctx: &LowerCtx, node_id: NodeId, expr_arena: &ExprArena) -> Option<i16> {
+    let ExprNode::NameRef { .. } = expr_arena.get(node_id) else {
+        return None;
+    };
+    match ctx.module.resolutions.get(&node_id.0) {
+        Some(NameResolution::Local { local_idx, .. }) => {
+            let local = ctx.proc.locals.get(*local_idx)?;
+            if !matches!(local.vba_type, VbaType::Object) {
+                return None;
+            }
+            Some(ctx.local_slots[*local_idx].frame_offset)
+        }
+        _ => None,
+    }
 }
 
 /// `Set localVar = v` where `localVar` is a plain object-typed local (no
@@ -515,8 +541,44 @@ pub(super) fn lower_set_plain_object_local(
             out.extend_from_slice(&(dest_off as u16).to_le_bytes());
             Ok(())
         }
+        ExprNode::MemberAccess { .. } => lower_set_from_class_get(ctx, dest_off, value_id, expr_arena, out),
         _ => Err(LowerError::UnsupportedNode),
     }
+}
+
+/// `Set dest = o.P` where `o.P` is an Object-returning class-member Get: the
+/// same vtable-Get + temp-read-back sequence as any other Get-typed access
+/// (`lower_class_field_get`), landing here because the client spelling is
+/// `Set`, not a plain `Assign` — followed by the AddRef-store `0x19`, the
+/// same store used for `Set o = New`/`Set o = Nothing`
+/// (`lower_set_plain_object_local`). Shared by both a class-typed and a
+/// plain `Object`-typed `dest` local — the store itself doesn't distinguish
+/// them. Oracle-confirmed: `oracle_bank/c1_get_object`.
+fn lower_set_from_class_get(
+    ctx: &LowerCtx,
+    dest_off: i16,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let ExprNode::MemberAccess { base, bang, .. } = expr_arena.get(value_id) else {
+        return Err(LowerError::UnsupportedNode);
+    };
+    let (base, bang) = (*base, *bang);
+    if bang || !member_access_base_is_class(ctx.module, base) {
+        return Err(LowerError::UnsupportedNode);
+    }
+    if !matches!(ctx.module.types.get(&value_id.0), Some(VbaType::Object)) {
+        return Err(LowerError::UnsupportedType);
+    }
+    let mut arena = NodeArena::new();
+    let value_root = lower_class_field_get(ctx, base, value_id, bang, &mut arena)?;
+    let mut emitter = Emitter::new(&arena);
+    emitter.emit_expr(value_root, 2);
+    out.extend(emitter.into_bytes());
+    out.push(0x19);
+    out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+    Ok(())
 }
 
 /// Lower `t.X = v` (a UDT field assignment): build a real bound `0x2c`

@@ -192,17 +192,18 @@ get`, `e2e_class_property_set_object`, `e2e_class_field_private_skipped`,
 `e2e_class_field_five_access_order`, `e2e_class_field_source_order`,
 `e2e_class_object_field_between_scalars`, `e2e_class_method_mixed_members`,
 `e2e_class_property_get_double`, `e2e_class_property_get_string`,
-`e2e_class_property_let_double`, `e2e_class_property_let_string`, plus the
-method-argument fixtures (`e2e_class_method_*`).
+`e2e_class_property_get_object`, `e2e_class_property_let_double`,
+`e2e_class_property_let_string`, plus the method-argument fixtures
+(`e2e_class_method_*`).
 
 The class-member vtable-dispatch scratch temp (`class_member_base`) is sized
 to the actual VBA type read through a Get access (`class_get_temp_ctx`,
 `lower/decl.rs`) — oracle-confirmed distinct read-back opcodes per type
-(`Long`/`Object` read back with `0x6c`, `Double` with `0x6f`, both 
-oracle-confirmed; `oracle_bank/c1_get_double`). A proc mixing Get accesses of
-different sizes (e.g. a `Long` Get and a `Double` Get in the same proc) is
-gated (`UnsupportedType`) rather than guessed — no oracle capture shows how
-the real compiler sizes a shared temp across mixed Get types in one proc.
+(`Long` reads back with `0x6c`, `Double` with `0x6f`, both oracle-confirmed;
+`oracle_bank/c1_get_double`). A proc mixing Get accesses of different sizes
+(e.g. a `Long` Get and a `Double` Get in the same proc) is gated
+(`UnsupportedType`) rather than guessed — no oracle capture shows how the
+real compiler sizes a shared temp across mixed Get types in one proc.
 
 A `String`-returning Get (`oracle_bank/c1_get_string`) uses a STRUCTURALLY
 DIFFERENT mechanism, not just a different opcode: the temp is read back with
@@ -212,6 +213,23 @@ after), and the assignment that consumes it uses the move-store `0x31`
 (`ClassFieldRef::is_string`, `lower/expr.rs`; `value_is_class_get_string`,
 `lower/assign.rs`) rather than the refcounted copy-store `0x43` a plain
 string-variable source would get.
+
+An `Object`-returning Get (`oracle_bank/c1_get_object`) is a THIRD distinct
+temp read-back mechanism: opcode `0x51`, a plain 4-byte pointer read distinct
+from both `0x6c` (the `RT_LOAD_BY_CTX` load used for an ORDINARY Object
+*variable*, not a Get's out-temp) and String's steal-load `0x3e`
+(`ClassFieldRef::is_object`, `lower/expr.rs`). Its only grounded client
+spelling is `Set x = o.P` where `x` is a plain `Object`-typed local (`Dim x
+As Object`) — a whole new target path (`object_typed_local` in
+`lower/assign.rs`, distinct from `plain_object_local`'s specific-class-typed
+match) feeds a shared `lower_set_from_class_get` helper that emits the Get
+sequence then the refcounted AddRef-store `0x19`, the SAME store already
+grounded for `Set o = New`/`Set o = Nothing`. A `Set x = o.P` target
+declared as a SPECIFIC class type (`Dim x As Class1`, not plain `Object`) is
+gated (`UnsupportedNode`) — no oracle capture grounds that shape.
+`class_member_temp_ctx`/`count_class_get_temps` (`lower/decl.rs`) both scan
+`SetAssign` as well as `Assign` now, so a proc whose ONLY class-member access
+is a `Set`-spelled Get still reserves/sizes the shared temp correctly.
 
 A `Double`-typed Property Let (`oracle_bank/c2_let_double`) stages its
 argument with the FPU-aware store `0xfd 0xc9` (pop FPU-top, store as Double

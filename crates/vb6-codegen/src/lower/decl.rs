@@ -359,6 +359,18 @@ pub(super) fn class_member_temp_ctx(
                 }
                 Ok(())
             }
+            // `Set x = o.P`: same Get-temp sizing requirement as a plain
+            // `Assign` RHS — the vtable Get call writes through the same
+            // shared scratch temp regardless of whether the client spelling
+            // is `Set` or a plain `Assign`.
+            ExprNode::SetAssign { value, .. } => {
+                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*value) {
+                    if member_access_base_is_class(module, *base) {
+                        note_ty(module, *value, found)?;
+                    }
+                }
+                Ok(())
+            }
             ExprNode::Block { stmts } => {
                 for &id in stmts {
                     recurse(id, found)?;
@@ -391,15 +403,16 @@ pub(super) fn class_member_temp_ctx(
 }
 
 /// Count the hidden 4-byte temps a proc's class-member Get accesses need
-/// (`x = o.F`, field or property alike): the vtable Get call writes its
-/// result through an out-parameter address into a temp, which is then
-/// loaded as the expression's value. Only the `Assign` RHS position is
-/// scanned — a class member access nested inside a larger expression is
+/// (`x = o.F`/`Set x = o.P`, field or property alike): the vtable Get call
+/// writes its result through an out-parameter address into a temp, which is
+/// then loaded as the expression's value. Only the `Assign`/`SetAssign` RHS
+/// position is scanned — a class member access nested inside a larger
+/// expression is
 /// gated elsewhere (see `resolve_class_field`).
 pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_class_get_temps(module, id, expr_arena);
     match expr_arena.get(node_id) {
-        ExprNode::Assign { value, .. } => match expr_arena.get(*value) {
+        ExprNode::Assign { value, .. } | ExprNode::SetAssign { value, .. } => match expr_arena.get(*value) {
             ExprNode::MemberAccess { base, .. } => member_access_base_is_class(module, *base) as usize,
             _ => 0,
         },

@@ -503,8 +503,8 @@ pub(super) struct ClassFieldRef {
     /// Vtable byte offset of the Property Set accessor, when present.
     pub set_slot: Option<u16>,
     /// The field's/property's VBA6 type tag (`vba_type_to_node_tag`). `None`
-    /// for types with no confirmed node tag (e.g. Object) — fine for `Set`,
-    /// which never numerically coerces its value; Get/Let callers require it.
+    /// for types with no confirmed node tag — fine for `Set`, which never
+    /// numerically coerces its value; Get/Let callers require it.
     pub type_tag: Option<u16>,
     /// The field's/property's `load_store_ctx` — selects the Get-temp's
     /// read-back opcode from `RT_LOAD_BY_CTX` (oracle-confirmed distinct per
@@ -519,6 +519,14 @@ pub(super) struct ClassFieldRef {
     /// the assignment that consumes it must use the move-store `0x31`, not a
     /// refcounted copy-store. Oracle-confirmed: `oracle_bank/c1_get_string`.
     pub is_string: bool,
+    /// `true` for an `Object`-typed field/property — its Get-temp read-back
+    /// uses opcode `0x51` (a distinct plain 4-byte pointer read, NOT the
+    /// `0x6c` `RT_LOAD_BY_CTX[0]` entry used to load an ordinary Object
+    /// variable) and the assignment that consumes it is the refcounted
+    /// AddRef-store `0x19` (the same store already used for `Set o = New`/
+    /// `Set o = Nothing`), not a plain typed store. Oracle-confirmed:
+    /// `oracle_bank/c1_get_object`.
+    pub is_object: bool,
     /// `true` for a `Double`-typed field/property — its Property-Let staging
     /// uses the FPU-aware store `0xfd 0xc9` (pop the FPU-top Double, store it
     /// at the temp offset with an overflow check) instead of the plain
@@ -577,6 +585,7 @@ pub(super) fn resolve_class_field(
     let type_tag = vba_type_to_node_tag(member_ty);
     let load_ctx = crate::bridge::load_store_ctx(member_ty);
     let is_string = matches!(member_ty, VbaType::String);
+    let is_object = matches!(member_ty, VbaType::Object);
     let is_double = matches!(member_ty, VbaType::Double);
     Ok(ClassFieldRef {
         obj_offset,
@@ -587,6 +596,7 @@ pub(super) fn resolve_class_field(
         type_tag,
         load_ctx,
         is_string,
+        is_object,
         is_double,
         is_property: resolved.is_property,
     })
@@ -614,12 +624,14 @@ pub(super) fn lower_class_field_get(
     let field = resolve_class_field(ctx, base, access_id)?;
     let get_slot = field.get_slot.ok_or(LowerError::UnsupportedNode)?;
     let type_tag = field.type_tag.ok_or(LowerError::UnsupportedType)?;
-    // `0x3e` (String steal-load) has no `RT_LOAD_BY_CTX` entry — String's own
-    // table slot (ctx 8) is out of that array's bounds by design, since this
-    // is a structurally different opcode (see `ClassFieldRef::is_string`),
-    // not a missing table row.
+    // `0x3e` (String steal-load) and `0x51` (Object plain-pointer read) have
+    // no `RT_LOAD_BY_CTX` entry — each is a structurally distinct opcode from
+    // the type's ordinary variable load (see `ClassFieldRef::is_string`/
+    // `is_object`), not a missing table row.
     let load_opcode = if field.is_string {
         0x3e
+    } else if field.is_object {
+        0x51
     } else {
         let load_ctx = field.load_ctx.ok_or(LowerError::UnsupportedType)?;
         let op = *crate::tables::RT_LOAD_BY_CTX.get(load_ctx).ok_or(LowerError::UnsupportedType)?;

@@ -70,6 +70,11 @@ fn string_var(sym_id: u32) -> BoundVar {
     BoundVar { vba_type: VbaType::String, ..long_var(sym_id) }
 }
 
+/// `Dim <sym_id> As Object` — a plain object-typed local (no specific class).
+fn object_var(sym_id: u32) -> BoundVar {
+    BoundVar { vba_type: VbaType::Object, ..long_var(sym_id) }
+}
+
 fn integer_var(sym_id: u32) -> BoundVar {
     BoundVar {
         sym_id,
@@ -1021,6 +1026,77 @@ fn class_property_get_string_matches_oracle_bytes() {
         &[
             0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
             0x3e, 0x70, 0xff, 0x31, 0x74, 0xff, 0x14,
+        ]
+    );
+}
+
+// ── Property Get value type (Object) ─────────────────────────────────────────
+//
+// Oracle-captured (`c1_get_object`; see the `e2e_class_property_get_object`
+// fixture): `Set x = o.P` where `P` returns `Object`. The Get-temp read-back
+// uses `0x51` (a distinct plain 4-byte pointer read from the load-context
+// table's own `0x6c` a variable read would use), and — because the client
+// spelling is `Set`, not a plain `Assign` — the result is stored with the
+// refcounted AddRef-store `0x19`, the same store `Set o = New`/`Set o =
+// Nothing` use, not a typed variable store.
+
+#[test]
+fn class_property_get_object_matches_oracle_bytes() {
+    let mut ea = ExprArena::new();
+    let o = name_ref(&mut ea, 0);
+    let get_access = member_access_node(&mut ea, o, 10 /* sym for P */);
+    let x = name_ref(&mut ea, 1);
+    let stmt = set_assign_node(&mut ea, x, get_access);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let mut resolutions = HashMap::new();
+    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
+    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
+
+    let mut types = HashMap::new();
+    types.insert(get_access.0, VbaType::Object);
+
+    let mut class_field_info = HashMap::new();
+    class_field_info.insert(
+        100u32,
+        ExternalClass {
+            members: vec![ClassMemberSlot::PropertyAccessor {
+                name: "P".to_string(),
+                vba_type: VbaType::Object,
+                kind: vb6_sema::sema::AccessorKind::Get,
+            }],
+        },
+    );
+    let mut class_member_slots = HashMap::new();
+    class_member_slots.insert(
+        get_access.0,
+        ResolvedClassMember {
+            get_slot: Some(0x1c),
+            let_slot: None,
+            set_slot: None,
+            method_slot: None,
+            method_ret_type: None,
+            method_params: Vec::new(),
+            is_property: true,
+        },
+    );
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![udt_var(0, 100), object_var(1)], vec![], body)],
+        class_field_info,
+        class_member_slots,
+        resolutions,
+        types,
+        ..BoundModule::default()
+    };
+
+    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
+    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    assert_eq!(
+        bytes,
+        &[
+            0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
+            0x51, 0x70, 0xff, 0x19, 0x74, 0xff, 0x14,
         ]
     );
 }
