@@ -454,6 +454,32 @@ pub(super) fn lower_stmt(
             ctx.goto_patches.borrow_mut().push((*target, patch));
             Ok(())
         }
+        // `Close #n` (a SINGLE literal file number): `0xf4 <n>` (the file
+        // number as a direct 1-byte immediate operand, not a general stack
+        // push) then `0xfd 0x3d` (the Close runtime call), no further
+        // operand. Oracle-confirmed: `oracle_bank/c23_fileio_close`
+        // (`Close #1`) and `oracle_bank/c23_fileio_close_chan5` (`Close
+        // #5`, confirming the operand tracks the literal channel number,
+        // not some other fixed value). `Close #expr` (a non-literal channel
+        // expression) and `Close #a, #b` (2+ channels) are BOTH gated — no
+        // capture distinguishes either shape from this one, and a channel
+        // expression can't be a compile-time immediate operand the way a
+        // literal can, so the mechanism for that shape is presumably
+        // different, not merely "evaluate then use the same fixed form."
+        ExprNode::FileIoStmt { kind: FileIoKind::Close, args, .. } => {
+            if args.len() != 1 {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let n = match expr_arena.get(args[0]) {
+                ExprNode::Literal { lit: AstLit::Int(v) } if (0..=255).contains(v) => *v as u8,
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            out.push(0xf4);
+            out.push(n);
+            out.push(0xfd);
+            out.push(0x3d);
+            Ok(())
+        }
         // `Debug.Print`/`Debug.Assert`/any other `Debug.X` statement: the
         // real VB6 compiler strips the ENTIRE construct at compile time —
         // it emits ZERO p-code, not merely a no-op opcode — for BOTH native

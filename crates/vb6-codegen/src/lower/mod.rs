@@ -18,7 +18,7 @@ use vb6_sema::sema::{
     BoundModule, BoundProc, BuiltinCall, ExternalClass, RtcArg, UnaryIntrinsic, VbaType,
     NameResolution,
 };
-use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, LabelRef, OnErrorKind, ResumeTarget};
+use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, FileIoKind, LabelRef, OnErrorKind, ResumeTarget};
 use vb6_syntax::support::arena::NodeId;
 
 use crate::bind::{GlobalFrame, GlobalVar, LocalVar, ParamVar, ProcFrame, UdtLocal};

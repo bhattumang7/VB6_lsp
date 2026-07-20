@@ -629,3 +629,13 @@ are stripped ENTIRELY by the real compiler, even under `CompilationType=
 Oracle-confirmed by two captures. Fixed: a pure no-op `Ok(())`, no new
 opcode needed. Fixtures: `e2e_debug_print_stripped`, `e2e_debug_assert_
 stripped`.
+
+## File I/O: Close #n (literal channel) grounded (2026-07-20)
+
+First File I/O statement grounded: `Close #n` where `n` is an integer
+literal. `0xf4 <n>` (the channel as a direct 1-byte immediate operand) then
+`0xfd 0x3d` (the Close runtime call). Oracle-confirmed via two captures
+with different channel numbers. `Close #a, #b` (2+ channels) and `Close
+#someVariable` (non-literal channel) remain gated — no capture yet.
+`Open`/`Print #`/`Input #`/`Get`/`Put` remain fully open. Fixtures:
+`e2e_fileio_close`, `e2e_fileio_close_chan5`.
