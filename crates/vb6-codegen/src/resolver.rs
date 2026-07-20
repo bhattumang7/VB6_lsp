@@ -9,7 +9,7 @@
 //! are produced by VB6's own member-numbering machinery, ported separately.
 
 use crate::emit::RefDescriptor;
-use crate::node::{NodeArena, NodeRef};
+use crate::node::{NodeArena, NodeRef, RawNode};
 use crate::tables::{
     RT_CALL_CONV_RECORDS, RT_CALL_KIND_CLASS, RT_CALL_SPECIAL_RECORD, RT_RESOLVER_CLASS_FLAG,
     RT_RESOLVER_TYPE_MAP, RT_TYPE_OFFSET,
@@ -341,13 +341,27 @@ fn heap_dword(heap: &[u8], off: usize) -> u32 {
 /// * `member_off` — the member record's byte offset into `heap` (the
 ///   [`get_expr_context`] result).
 /// * `ctx_flag_c` — byte `+0xc` of the compiler context (`in_ECX`); only bit `2`
-///   is read, gating the attribute flag on the value cases.
+///   is read here, gating the attribute flag on the value cases (categories
+///   0xd/0xe/0xf and the method-binding gate read other bits of the same byte).
+/// * `type_desc` — the externally-supplied type-descriptor node. Its true
+///   source (traced from the caller, `EbResolveReference2`) is a LOCAL,
+///   zero-initialized 4-word scratch that is populated only when the
+///   reference node carries a member sub-expression (via
+///   `EbSimplifyMemberExpr`) — a case this pipeline's own `resolve_reference2`
+///   already gates separately. So every current call site passes
+///   `RawNode::default()` here; this is the grounded value for the
+///   already-supported (no member sub-expression) case, not an invented one.
 ///
 /// Gated (each `unimplemented!` rather than a guessed byte): the method/object
-/// binding path (record byte `+0` bit `0x80` with `+1 & 7 == 4`), category 4
-/// (`EbResolveExprNode`), and categories `0xd`/`0xe`/`0xf` (the binding-emit tail
-/// `EbFillBindingDesc` / `EbEmitBinaryOpCode`, which read the COM slot tables and
-/// emit into the stream).
+/// binding path's genuinely-COM zero-slot sub-path (record byte `+0` bit
+/// `0x80` with `+1 & 7 == 4`, and a "has a resolved slot" check on the record
+/// coming up empty), category 4 (`EbResolveExprNode`), and categories
+/// `0xd`/`0xe`/`0xf` (the binding-emit tail: its leaf routines
+/// `ConvertExpressionType`/`EbFillBindingDesc`-common/`EbEmitBinaryOpCode`-
+/// scratch-half are ported — see `crate::emit::Emitter` / `fill_binding_desc`
+/// — but wiring them here needs this function to conditionally re-enter the
+/// value emitter mid-resolution, which its current pure-descriptor-return
+/// shape does not support).
 pub fn resolve_ident_ref(
     arena: &NodeArena,
     node: NodeRef,
@@ -355,21 +369,40 @@ pub fn resolve_ident_ref(
     member_off: usize,
     ctx_flag_c: u8,
     binding: Option<(i32, i32)>,
+    type_desc: RawNode,
 ) -> RefDescriptor {
     let n = *arena.get(node);
     let type_offset = RT_TYPE_OFFSET[n.type_tag() as usize];
     let rec0 = heap[member_off];
     let rec1 = heap[member_off + 1];
 
-    // Method / object member binding: needs the COM method-binding subsystem.
-    if rec0 & 0x80 != 0 && rec1 & 7 == 4 {
-        unimplemented!(
-            "EbResolveIdentRef method/object binding (record +0 bit 0x80, +1&7==4): \
-             needs the method-binding / object-reference emit subsystem; Phase 6"
-        );
-    }
-
-    let category = expression_type2(heap, member_off).category;
+    // Method / object member binding. The record's OWN "has a resolved slot"
+    // check (`+1&0x50==0 && +0&8==0 && +0x10&4==0` gates a `(short@+10 + 1) &
+    // 0xfff` value) determines the sub-path: zero -> the genuinely-COM path
+    // (reads compiler-context-relative structures with no visible setup —
+    // stays gated); nonzero -> the category remaps to 0xd/0xe/0xf below and
+    // falls through to the (leaf-ported, not-yet-wired) binding-emit tail.
+    let category = if rec0 & 0x80 != 0 && rec1 & 7 == 4 {
+        let flags_allow = rec1 & 0x50 == 0 && rec0 & 8 == 0 && heap[member_off + 0x10] & 4 == 0;
+        let has_slot = flags_allow && {
+            let slot_id = i16::from_le_bytes([heap[member_off + 10], heap[member_off + 11]]);
+            (slot_id.wrapping_add(1) as u16 & 0xfff) != 0
+        };
+        if !has_slot {
+            unimplemented!(
+                "EbResolveIdentRef method/object binding, zero-slot sub-path: needs \
+                 the method-binding / object-reference emit subsystem; Phase 6"
+            );
+        }
+        match expression_type2(heap, member_off).category {
+            1 => 0xd,
+            2 => 0xe,
+            3 => 0xf,
+            other => other,
+        }
+    } else {
+        expression_type2(heap, member_off).category
+    };
     // The operand pointer the value cases inspect (un-skipped, unlike the
     // classifier's own copy). Null only on a malformed record.
     let operand_off = resolve_attribute_pointer(heap, member_off);
@@ -412,8 +445,15 @@ pub fn resolve_ident_ref(
             ),
         },
         0xd | 0xe | 0xf => unimplemented!(
-            "EbResolveIdentRef categories 0xd/0xe/0xf (binding-emit tail: \
-             EbFillBindingDesc / EbEmitBinaryOpCode); Phase 6"
+            "EbResolveIdentRef categories 0xd/0xe/0xf (binding-emit tail, \
+             type_desc.w[0]={}): the leaf routines are ported (see \
+             crate::emit::Emitter::convert_expression_type / \
+             crate::resolver::fill_binding_desc / \
+             crate::emit::Emitter::emit_binary_op_code_temp_descriptor) but \
+             wiring them here needs this function to conditionally re-enter \
+             the value emitter mid-resolution — a shape change from its \
+             current pure-descriptor-return signature; Phase 6",
+            type_desc.w[0]
         ),
         // Default: a zeroed descriptor (categories 5/6/0xa/0xb and out of range).
         _ => RefDescriptor::default(),
@@ -527,7 +567,11 @@ pub fn resolve_reference2(
                      (word[4] != 0) needs EbSimplifyMemberExpr; Phase 6"
                 );
             }
-            resolve_ident_ref(arena, node, heap, member_off, ctx_flag_c, binding)
+            // The type-descriptor scratch (`pTypeDesc`) is populated only when
+            // the node carries a member sub-expression — the `word[4] != 0`
+            // case just above, which this function already gates separately.
+            // On this path it is always the zero-initialized default.
+            resolve_ident_ref(arena, node, heap, member_off, ctx_flag_c, binding, RawNode::default())
         }
         0x69 => unimplemented!(
             "EbResolveReference2: 0x69 binary-operation setup \

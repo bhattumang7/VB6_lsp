@@ -80,11 +80,16 @@ doesn't yet call it for the relevant source construct — see the per-op notes
 above for which is which.
 
 The binding-emit-tail routines above are similarly back-end-ready but not
-yet reachable end-to-end: the resolver's own member-access classification
-has categories that route through them, but wiring that dispatch requires an
-externally-supplied type descriptor the resolver's public entry point does
-not yet accept as a parameter — a front-end/API threading gap, not an
-unported back-end routine.
+yet reachable end-to-end. The resolver now accepts the externally-supplied
+type descriptor its classification needs (closing the earlier parameter-
+threading gap) and its method/object-binding gate is narrowed to only the
+genuinely COM-dependent sub-case — but no currently-lowered VB6 construct
+ever reaches the categories that route through these routines: this
+pipeline's only wired member-record constructor (used by UDT field access)
+always builds a record shape that classifies elsewhere. Reaching them
+requires lowering a construct this project hasn't audited yet (Property
+declarations, class methods, or similar — see below), not further back-end
+work.
 
 ## Constructs outside the currently audited surface
 

@@ -365,7 +365,7 @@ fn resolve_ident_ref_category_7_value_load() {
     let mut a = NodeArena::new();
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 3, 0x02, 1);
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default());
     assert_eq!(
         desc,
         RefDescriptor { kind: 2, operand: 0x20, word6: 0, word8: 0, flags1: 0 }
@@ -379,7 +379,7 @@ fn resolve_ident_ref_category_0xc_non_optional() {
     let mut a = NodeArena::new();
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 3, 0x02, 5);
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default());
     assert_eq!(desc, RefDescriptor { kind: 2, operand: 0x20, word6: 0, word8: 0, flags1: 4 });
 }
 
@@ -389,7 +389,7 @@ fn resolve_ident_ref_category_9_by_reference() {
     let mut a = NodeArena::new();
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 3, 0x02, 4);
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default());
     assert_eq!(desc, RefDescriptor { kind: 1, operand: 0x20, word6: 0, word8: 0, flags1: 4 });
 }
 
@@ -400,10 +400,10 @@ fn resolve_ident_ref_category_1_sets_attribute_flag() {
     let mut a = NodeArena::new();
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 0x24, 0x02, 0);
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default());
     assert_eq!(desc, RefDescriptor { kind: 1, operand: 0x20, word6: 0, word8: 0, flags1: 2 });
     // ctx flag bit 2 set suppresses the attribute flag.
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 2, None);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 2, None, RawNode::default());
     assert_eq!(desc.flags1, 0);
 }
 
@@ -414,20 +414,51 @@ fn resolve_ident_ref_type_offset_0xe_sets_tail_flag() {
     let mut a = NodeArena::new();
     let n = ident_node(&mut a, 17, 0);
     let h = ident_heap(0x40, 3, 0x02, 5);
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default());
     assert_eq!(desc.flags1, 0x0c);
 }
 
 #[test]
-fn resolve_ident_ref_method_binding_gated() {
-    // record +0 bit 0x80 with +1 & 7 == 4 → the method/object path (gated).
+fn resolve_ident_ref_method_binding_zero_slot_gated() {
+    // record +0 bit 0x80 with +1 & 7 == 4, AND the record's own has-slot check
+    // comes up zero (slot_id = -1 -> (slot_id+1)&0xfff == 0) -> the genuinely
+    // COM-dependent zero-slot sub-path (gated).
     let mut a = NodeArena::new();
     let n = ident_node(&mut a, 5, 0);
-    let h = ident_heap(0xc0, 4, 0x02, 0);
+    let mut h = ident_heap(0xc0, 4, 0x02, 0);
+    h[0x10 + 10] = 0xff;
+    h[0x10 + 11] = 0xff; // slot_id = -1 -> has_slot == false
     let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        resolve_ident_ref(&a, n, &h, 0x10, 0, None)
+        resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default())
     }));
     assert!(r.is_err());
+}
+
+#[test]
+fn resolve_ident_ref_method_binding_nonzero_slot_remaps_to_0xd_e_f() {
+    // Same method-binding flags, but the has-slot check is NONZERO (slot_id =
+    // 0, the ident_heap default) -> the gate is narrowed: this does NOT hit
+    // the zero-slot COM path at all. The category remaps (1/2/3 -> 0xd/0xe/0xf)
+    // and falls through to the (leaf-ported, not-yet-wired) binding-emit
+    // tail, which still gates -- but with the NEW, more specific message
+    // (proving the narrowing actually took effect, not just re-gating the
+    // same way).
+    let mut a = NodeArena::new();
+    let n = ident_node(&mut a, 5, 0);
+    let h = ident_heap(0xc0, 4, 0x02, 0); // slot_id defaults to 0 -> has_slot == true
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default())
+    }));
+    let err = r.unwrap_err();
+    let msg = err
+        .downcast_ref::<String>()
+        .map(String::as_str)
+        .or_else(|| err.downcast_ref::<&str>().copied())
+        .unwrap_or("");
+    assert!(
+        msg.contains("0xd/0xe/0xf"),
+        "expected the binding-emit-tail gate, got: {msg}"
+    );
 }
 
 #[test]
@@ -437,7 +468,7 @@ fn resolve_ident_ref_category_4_gated() {
     let n = ident_node(&mut a, 5, 0);
     let h = ident_heap(0x40, 3, 0x02, 0);
     let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        resolve_ident_ref(&a, n, &h, 0x10, 0, None)
+        resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default())
     }));
     assert!(r.is_err());
 }
@@ -449,7 +480,7 @@ fn resolve_reference2_dispatches_0x60() {
     let n = ident_node(&mut a, 5, 0); // ref_node builds opcode 0x60
     let h = ident_heap(0x40, 3, 0x02, 1);
     let via_ref2 = resolve_reference2(&a, n, &h, 0x10, 0, None);
-    let direct = resolve_ident_ref(&a, n, &h, 0x10, 0, None);
+    let direct = resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default());
     assert_eq!(via_ref2, direct);
 }
 
@@ -526,12 +557,12 @@ fn category4_resolves_with_binder_binding() {
 
     // Without a binding the category-4 path is still gated.
     let gated = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        resolve_ident_ref(&a, n, &h, 0x10, 0, None)
+        resolve_ident_ref(&a, n, &h, 0x10, 0, None, RawNode::default())
     }));
     assert!(gated.is_err());
 
     // With the binder-resolved (kind 4, byref 0) it resolves to a descriptor.
-    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, Some((4, 0)));
+    let desc = resolve_ident_ref(&a, n, &h, 0x10, 0, Some((4, 0)), RawNode::default());
     assert_eq!(desc.kind, 1);
     assert_eq!(desc.operand, 0x20);
 }

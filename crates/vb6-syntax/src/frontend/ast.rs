@@ -345,7 +345,10 @@ pub enum ExprNode {
 
     /// Single variable/constant in a Dim/Const/Static statement.
     /// `bounds` = array-bounds ArgList (None = scalar); `type_node` = type-spec.
-    DimItem { name: u32, is_const: bool, is_static: bool, bounds: Option<NodeId>, type_node: Option<NodeId>, init: Option<NodeId> },
+    /// `is_new` = the `As New ClassName` form (auto-instantiate on first null
+    /// access), as opposed to a plain `As ClassName` — the two compile to
+    /// different p-code access patterns for the same declared type.
+    DimItem { name: u32, is_const: bool, is_static: bool, is_new: bool, bounds: Option<NodeId>, type_node: Option<NodeId>, init: Option<NodeId> },
     /// Single array variable in a ReDim statement.
     ReDimItem { preserve: bool, name: u32, bounds: Option<NodeId>, type_node: Option<NodeId> },
     /// Parameter definition in a procedure/event declaration.

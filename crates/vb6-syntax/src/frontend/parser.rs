@@ -1148,16 +1148,17 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
-        let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
-            Some(self.parse_type_spec(arena, array_suffix_ok))
+        let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
+            let is_new = self.eat(TokenKind::Kw(Kw::New));
+            (is_new, Some(self.parse_type_spec(arena, array_suffix_ok)))
         } else {
             // `Dim x%` ≡ `Dim x As Integer`
-            self.type_node_from_suffix(arena, name.type_suffix)
+            (false, self.type_node_from_suffix(arena, name.type_suffix))
         };
         let init = if is_const || self.peek().kind == TokenKind::Kw(Kw::Eq) {
             if self.eat(TokenKind::Kw(Kw::Eq)) { Some(self.parse_expr(arena, 0)) } else { None }
         } else { None };
-        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, bounds, type_node, init });
+        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, bounds, type_node, init });
         self.set_span(id, name.span);
         id
     }

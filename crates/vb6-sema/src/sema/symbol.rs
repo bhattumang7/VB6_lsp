@@ -73,6 +73,10 @@ pub struct BoundVar {
     pub is_static: bool,
     /// True if declared with `Public` or `Global`.
     pub is_public: bool,
+    /// True for the `As New ClassName` form (auto-instantiate on first null
+    /// access) — distinct from a plain `As ClassName` of the same type, which
+    /// reads via a different p-code access pattern (no lazy-create).
+    pub is_new: bool,
     /// Source span of the variable-name identifier (for LSP go-to-definition).
     pub name_span: Span,
 }
@@ -89,10 +93,11 @@ pub struct BoundVar {
 /// `members` MUST be in strict source-declaration order across every kind
 /// (fields, property accessors, procedures) — VB6's class vtable-slot
 /// numbering is a single running counter over the whole class's declaration
-/// sequence, not per-kind (confirmed live: a `Property Let` declared before
-/// its own `Property Get` gets the earlier slot; a Sub/Function declared
-/// between two fields still advances the counter positionally). See
-/// `resolve_class_field`'s slot-numbering rule.
+/// sequence, not per-kind (oracle-confirmed against the real VB6 compiler: a
+/// `Property Let` declared before its own `Property Get` gets the earlier
+/// slot; a Sub/Function declared between two fields still advances the counter
+/// positionally; a non-exposed `Private` member is absent from this list and
+/// advances nothing). See `resolve_class_field`'s slot-numbering rule.
 #[derive(Debug, Clone, Default)]
 pub struct ExternalClass {
     pub members: Vec<ClassMemberSlot>,

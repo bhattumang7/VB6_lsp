@@ -419,8 +419,8 @@ impl<'a> Binder<'a> {
                     self.collect_top_decl(sid);
                 }
             }
-            ExprNode::DimItem { name, is_const, bounds, type_node, .. } => {
-                self.collect_top_var(id, *name, *is_const, bounds.is_some(), *type_node);
+            ExprNode::DimItem { name, is_const, is_new, bounds, type_node, .. } => {
+                self.collect_top_var(id, *name, *is_const, *is_new, bounds.is_some(), *type_node);
             }
             ExprNode::TypeDecl { name, members } => {
                 let sym_id = *name;
@@ -491,6 +491,7 @@ impl<'a> Binder<'a> {
         id: NodeId,
         sym_id: u32,
         is_const: bool,
+        is_new: bool,
         has_bounds: bool,
         type_node: Option<NodeId>,
     ) {
@@ -504,6 +505,7 @@ impl<'a> Binder<'a> {
             array_dims: None,
             is_static: false,
             is_public: self.vis(id, false),
+            is_new,
             name_span: self.spans.get(id),
         };
         let var = if has_bounds {
@@ -660,6 +662,7 @@ impl<'a> Binder<'a> {
                 array_dims: None,
                 is_static: false,
                 is_public: false,
+                is_new: false,
                 name_span,
             });
         }
@@ -681,7 +684,7 @@ impl<'a> Binder<'a> {
     /// later) is collected, never silently resolved to the wrong scope. A proc
     /// body contains no nested procedure declarations, so a full descent is safe.
     fn collect_locals(&self, id: NodeId, out: &mut Vec<BoundVar>) {
-        if let ExprNode::DimItem { name, is_const, is_static, type_node, bounds, init } = self.arena.get(id) {
+        if let ExprNode::DimItem { name, is_const, is_static, is_new, type_node, bounds, init } = self.arena.get(id) {
             let t = self.extract_type(*type_node);
             let vba_type = if bounds.is_some() { VbaType::Array(Box::new(t)) } else { t };
             let const_value = if *is_const {
@@ -711,7 +714,7 @@ impl<'a> Binder<'a> {
             out.push(BoundVar {
                 sym_id: *name, vba_type,
                 is_const: *is_const, const_value, const_lit, fixed_string_len, array_dims,
-                is_static: *is_static, is_public: false,
+                is_static: *is_static, is_public: false, is_new: *is_new,
                 name_span: self.spans.get(id),
             });
         }
@@ -1076,17 +1079,24 @@ impl<'a> Binder<'a> {
 /// The class vtable's fixed IDispatch prefix width: 7 standard COM methods
 /// (QueryInterface, AddRef, Release, GetTypeInfoCount, GetTypeInfo,
 /// GetIDsOfNames, Invoke) × 4 bytes. A class's first member's own dispatch
-/// slots start here. Live-TTD-confirmed as the class-compile-context's
-/// vtable-slot counter's initial value (see the codegen memory note
-/// `vb6-class-vtable-slot-rule`) and oracle-confirmed against every mixed-
-/// member probe.
+/// slots start here. This is the observed base of the first member's slots in
+/// every class-member fixture, confirmed byte-for-byte against the real VB6
+/// compiler's output.
 const IDISPATCH_PREFIX: u16 = 0x1c;
 
 /// Resolve `member_name`'s vtable dispatch slots within `class`, by walking
-/// `class.members` in declaration order and summing each entry's slot width
-/// (base `0x1c`, stride 4 per slot — see `ExternalClass::members`'s ordering
-/// invariant and the `vb6-class-vtable-slot-rule` memory note for the full
-/// derivation). Returns `None` if no member of that name exists.
+/// `class.members` in declaration order and assigning each entry its slot
+/// width at stride 4 from the base `0x1c` (see `ExternalClass::members`'s
+/// ordering invariant): a scalar field takes a Get and a Let slot, an
+/// object-typed field additionally a Set slot, a single property accessor or
+/// a `Sub`/`Function` one slot each; non-exposed (`Private`) members are not
+/// in the list and consume no slot. This closed form reproduces the real VB6
+/// compiler's emitted `0x0d <slot>` operands byte-for-byte across every
+/// class-member fixture — scalar fields of mixed types, an object field
+/// interleaved between scalars, `Get`-only / `Let`-only / `Get`+`Let`+`Set`
+/// properties, interleaved `Sub`/`Function`/property members, a skipped
+/// `Private` field, and declaration-order permutations (access order does not
+/// affect the value). Returns `None` if no member of that name exists.
 fn resolve_class_member_slots(
     class: &ExternalClass,
     member_name: &str,
