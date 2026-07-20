@@ -453,10 +453,19 @@ via a DIFFERENT opcode from String's** — `0x29 <byte-len> <offsets…>`, not
 String's `0x32`, though the same declaration-order convention (reversed
 from push order). Oracle-confirmed: `oracle_bank/
 c14_two_object_args_release` (`e2e_class_method_two_object_args_release`),
-two `ByVal Object` arguments both sourced from `As New` locals. A
-`Function`-in-value-position combination with 2+ such releases remains
-gated (no evidence for release-vs-result-store ordering in that
-combination).
+two `ByVal Object` arguments both sourced from `As New` locals. A single
+Object-argument release combined with a `Function` in value position IS
+now grounded too — `oracle_bank/c15_func_with_obj_arg_release` confirms
+the byte order `call → result-load → caller's store → release`, identical
+in shape to the already-grounded String-argument-release deferral; required
+extending `lower_class_method_call`'s return type again to
+`(Vec<i16>, Vec<i16>, Option<i16>)` (String releases, Object releases,
+result temp) so `is_value` callers can defer Object releases the same way
+String releases already were, via a new `emit_object_temp_release_list`
+helper (same shape as the String one, dedicated `0x1a`/`0x29` opcodes). A
+`Function`-in-value-position combination with 2+ Object releases, or a call
+staging BOTH String and Object releases simultaneously, remain gated (no
+capture confirms either).
 
 ## `Set` assignment to a plain object local
 

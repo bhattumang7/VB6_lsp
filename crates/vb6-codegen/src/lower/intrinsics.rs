@@ -191,7 +191,7 @@ pub(super) fn lower_class_method_call(
     object_raw_load: bool,
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
-) -> Result<(Vec<i16>, Option<i16>), LowerError> {
+) -> Result<(Vec<i16>, Vec<i16>, Option<i16>), LowerError> {
     let local_idx = match ctx.module.resolutions.get(&base.0) {
         Some(NameResolution::Local { local_idx, .. }) => *local_idx,
         Some(_) => return Err(LowerError::UnsupportedNode),
@@ -608,35 +608,22 @@ pub(super) fn lower_class_method_call(
 
     // A staged `Object` argument's temp is released via `0x1a <offset>` for a
     // SINGLE temp — the same opcode already grounded for a Property Set's
-    // staged Object temp — emitted right after the call (matching the
-    // String release's placement for a `Sub` statement). TWO OR MORE temps
-    // share a bulk release instead — a DIFFERENT opcode from String's
-    // `0x32` (`0x29`), but the SAME PARAMETER-DECLARATION-order convention
-    // (reversed back from push order, same as `string_release_temps`):
-    // `0x29 <byte-len (n*2)> <offsets…>`. Oracle-confirmed: a fresh
-    // two-Object-argument capture this session, `oracle_bank/
-    // c14_two_object_args_release` (`Use2(ByVal x As Object, ByVal y As
-    // Object)`, both sourced from `As New` locals). Only the `is_value = false`
-    // (`Sub` statement) shape is oracle-confirmed; a `Function`-in-value-
-    // position combination (no evidence for release-vs-result-store
-    // ordering) is gated rather than guessed.
-    if !object_release_temps.is_empty() {
-        if is_value {
-            return Err(LowerError::UnsupportedNode);
-        }
-        match object_release_temps.len() {
-            1 => {
-                out.push(0x1a);
-                out.extend_from_slice(&object_release_temps[0].to_le_bytes());
-            }
-            n => {
-                out.push(0x29);
-                out.extend_from_slice(&((n * 2) as u16).to_le_bytes());
-                for t in &object_release_temps {
-                    out.extend_from_slice(&t.to_le_bytes());
-                }
-            }
-        }
+    // staged Object temp — or a bulk `0x29` for two or more (a DIFFERENT
+    // opcode from String's `0x32`, same declaration-order convention). For a
+    // `Sub` statement (`!is_value`) this is emitted right here, immediately
+    // after the call — matching the String release's placement. For a
+    // `Function` in value position, the release is DEFERRED to the caller
+    // instead, the same way `string_release_temps` already is: oracle-
+    // confirmed (`oracle_bank/c15_func_with_obj_arg_release`, a Long-
+    // returning Function with one `ByVal Object` argument needing release)
+    // that the byte order is `call → result-load → caller's own store →
+    // release`, identical in shape to the String case. Two-or-more Object
+    // releases in value position remain gated (no capture combines them).
+    if !object_release_temps.is_empty() && is_value && object_release_temps.len() > 1 {
+        return Err(LowerError::UnsupportedNode);
+    }
+    if !is_value {
+        emit_object_temp_release_list(&object_release_temps, out);
     }
 
     // A ByRef Object argument sourced from a specific-class-typed `As New`
@@ -706,6 +693,7 @@ pub(super) fn lower_class_method_call(
     }
     Ok((
         if is_value { string_release_temps } else { Vec::new() },
+        if is_value { object_release_temps } else { Vec::new() },
         if is_value { result_temp } else { None },
     ))
 }
@@ -725,6 +713,29 @@ pub(super) fn emit_temp_release_list(temps: &[i16], out: &mut Vec<u8>) {
         }
         n => {
             out.push(0x32);
+            out.extend_from_slice(&((n * 2) as u16).to_le_bytes());
+            for t in temps {
+                out.extend_from_slice(&t.to_le_bytes());
+            }
+        }
+    }
+}
+
+/// Release a set of staged `Object` argument temps: nothing for an empty
+/// list, a single `0x1a <offset>` for exactly one, or one bulk `0x29
+/// <byte-len> <offsets…>` for two or more — a DIFFERENT opcode from
+/// `emit_temp_release_list`'s String-oriented `0x2f`/`0x32` (same operand
+/// shape, dedicated opcode). Oracle-confirmed: `oracle_bank/
+/// c14_two_object_args_release`.
+pub(super) fn emit_object_temp_release_list(temps: &[i16], out: &mut Vec<u8>) {
+    match temps.len() {
+        0 => {}
+        1 => {
+            out.push(0x1a);
+            out.extend_from_slice(&temps[0].to_le_bytes());
+        }
+        n => {
+            out.push(0x29);
             out.extend_from_slice(&((n * 2) as u16).to_le_bytes());
             for t in temps {
                 out.extend_from_slice(&t.to_le_bytes());

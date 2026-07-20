@@ -233,7 +233,7 @@ pub(super) fn lower_assign(
                     return Err(LowerError::UnsupportedNode);
                 }
                 let is_string_result = matches!(target_ty, VbaType::String);
-                let (pending_releases, _) =
+                let (pending_releases, pending_object_releases, _) =
                     lower_class_method_call(ctx, base, func, args, true, false, expr_arena, out)?;
                 match resolution {
                     NameResolution::Local { local_idx, .. } => {
@@ -256,11 +256,19 @@ pub(super) fn lower_assign(
                     }
                     _ => return Err(LowerError::UnsupportedNode),
                 }
-                // The staged String argument temps' release comes AFTER the
-                // target store — see `lower_class_method_call`'s own doc
-                // comment on its returned `Vec`. Oracle-confirmed:
-                // `oracle_bank/c5_func_string`.
+                // The staged String/Object argument temps' release comes
+                // AFTER the target store — see `lower_class_method_call`'s
+                // own doc comment on its returned temps. Oracle-confirmed:
+                // `oracle_bank/c5_func_string` (String), `oracle_bank/
+                // c15_func_with_obj_arg_release` (Object). A call staging
+                // BOTH kinds at once has no capture to confirm their
+                // relative order, so that combination is gated rather than
+                // guessed.
+                if !pending_releases.is_empty() && !pending_object_releases.is_empty() {
+                    return Err(LowerError::UnsupportedNode);
+                }
                 emit_temp_release_list(&pending_releases, out);
+                emit_object_temp_release_list(&pending_object_releases, out);
                 return Ok(());
             }
         }
@@ -635,7 +643,7 @@ fn lower_set_class_get_to_specific_class_target(
                     VbaType::UserDefined(sym) => *sym,
                     _ => return Err(LowerError::UnsupportedNode),
                 };
-                let (pending_releases, result_temp) =
+                let (pending_releases, pending_object_releases, result_temp) =
                     lower_class_method_call(ctx, base, func, args, true, true, expr_arena, out)?;
                 let temp_off = result_temp.expect("is_value implies a result temp");
                 out.push(0x3d);
@@ -644,7 +652,11 @@ fn lower_set_class_get_to_specific_class_target(
                 out.extend_from_slice(&(dest_off as u16).to_le_bytes());
                 out.push(0x1a);
                 out.extend_from_slice(&temp_off.to_le_bytes());
+                if !pending_releases.is_empty() && !pending_object_releases.is_empty() {
+                    return Err(LowerError::UnsupportedNode);
+                }
                 emit_temp_release_list(&pending_releases, out);
+                emit_object_temp_release_list(&pending_object_releases, out);
                 return Ok(());
             }
         }
@@ -718,11 +730,15 @@ fn lower_set_from_class_get(
                 .get(&func.0)
                 .is_some_and(|r| matches!(r.method_ret_type, Some(VbaType::Object)));
             if member_access_base_is_class(ctx.module, base) && ret_is_object {
-                let (pending_releases, _) =
+                let (pending_releases, pending_object_releases, _) =
                     lower_class_method_call(ctx, base, func, args, true, false, expr_arena, out)?;
                 out.push(0x19);
                 out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+                if !pending_releases.is_empty() && !pending_object_releases.is_empty() {
+                    return Err(LowerError::UnsupportedNode);
+                }
                 emit_temp_release_list(&pending_releases, out);
+                emit_object_temp_release_list(&pending_object_releases, out);
                 return Ok(());
             }
         }
