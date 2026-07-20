@@ -549,3 +549,31 @@ UDT method arguments remain fully open (no capture, no C-trace done yet —
 genuinely different from Array, since a UDT is an inline fixed-size struct
 rather than a descriptor pointer, so this finding is not assumed to
 transfer).
+
+## Class-method call: UDT argument — n/a for this project's scope
+
+Investigated as the other half of the Array-argument work above. **A UDT
+can only be a Public class-method parameter if the UDT itself is Public and
+declared inside a "public object module"** — which requires an ActiveX
+DLL/EXE-server project (`Instancing = Public`). A Standard EXE project
+(`Type=Exe`, `CompilationType=-1` — this codebase's entire scope) cannot
+have a Public-instanced class at all; VB6 itself silently demotes any
+attempted `Public` class instancing to Private in an EXE project. Confirmed
+by testing all 3 other combinations VB6 offers, each rejected by the real
+compiler: a Private UDT with a Public method parameter; a Public UDT in a
+Private object module; (the Public-UDT-in-public-object-module combination
+itself is unreachable in an EXE project at all). Only a `Friend`-scoped
+method with a Private/module-local UDT parameter compiles — but that
+dispatches through a COMPLETELY DIFFERENT, unexplored mechanism (an escaped
+opcode `0xff 0x1e` with an intra-module-call-shaped `<callsite-idx><arg-
+bytes>` operand and what appears to be an implicit `Me` argument, NOT the
+`0x24`/`0x0d` IDispatch-vtable pattern every other class-method call in
+this port uses) — a substantial, standalone investigation (new opcode
+family, an implicit this-pointer convention, AND UDT staging within that
+convention, all three unknowns at once), not attempted this session.
+
+**Conclusion: a UDT argument to a class method dispatched via the standard
+Public/IDispatch vtable mechanism is UNREACHABLE for real Standard-EXE-
+project VB6 source — marked `n/a`, not `GAP`.** `Friend`/early-bound method
+dispatch remains a genuinely open, unstarted area if a future session
+chooses to take it on as its own project.
