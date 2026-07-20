@@ -505,6 +505,7 @@ fn lower_proc_pooled(
         owned_copy_next: Cell::new(0),
         class_member_bases,
         call_next: Cell::new(0),
+        redimmed_arrays: RefCell::new(std::collections::HashSet::new()),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
@@ -621,6 +622,17 @@ struct LowerCtx<'m> {
     /// Sequential index of the next call site within this procedure (each call's
     /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
     call_next: Cell<usize>,
+    /// Array-local indices that have already had a `ReDim` (Preserve or not)
+    /// lowered earlier in this procedure (textual/tree-walk order) — a
+    /// `ReDim Preserve` reaching this SAME local a second time pushes an
+    /// explicit lower-bound-0 literal for a bare upper bound; the FIRST
+    /// `ReDim`/`ReDim Preserve` of an array does not. Oracle-confirmed:
+    /// `oracle_bank/c20_redim_preserve_first_use` (a lone `ReDim Preserve`
+    /// omits the push, unlike every other captured ReDim shape, all of
+    /// which either already had a prior ReDim of that array or weren't
+    /// `Preserve`). Scoped to exactly this one grounded shape — the
+    /// generalization across branches/loops is NOT independently confirmed.
+    redimmed_arrays: RefCell<std::collections::HashSet<usize>>,
     /// Label definitions: `(label, byte offset)`, filled as labels are emitted.
     labels: RefCell<Vec<(LabelRef, u16)>>,
     /// Pending `GoTo` jumps: `(target label, patch offset)`, patched at proc end.

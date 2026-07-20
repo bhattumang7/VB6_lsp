@@ -132,9 +132,11 @@ status is presently **unaudited GAP**, not confirmed `n/a`:
 - Optional parameters with default values; `ParamArray`.
 - File I/O statements (`Open`/`Close`/`Print #`/`Input #`/`Get`/`Put`) and the
   `Debug` object.
-- `RSet`; `MidB`/`MidB$` spellings; `ReDim Preserve`; multi-dimensional array
-  element load (store is covered); non-`Long` multi-dimensional element
-  store; module-level `Const` folding; name-form date literals.
+- `RSet`; `MidB`/`MidB$` spellings; multi-dimensional array element load
+  (store is covered); non-`Long` multi-dimensional element store; module-
+  level `Const` folding; name-form date literals. (`ReDim Preserve` itself
+  is covered — see the dedicated note below for a 2026-07-20 edge-case fix
+  found while re-verifying it.)
 - `GoSub`/`Return`; `On...GoTo`/`On...GoSub` (list form); `Resume`/
   `Resume Next`/`Resume <label>`; `Stop`; `End`; `Error n` as a statement;
   `Exit For`/`Exit Do` (status not independently re-verified since the
@@ -577,3 +579,16 @@ Public/IDispatch vtable mechanism is UNREACHABLE for real Standard-EXE-
 project VB6 source — marked `n/a`, not `GAP`.** `Friend`/early-bound method
 dispatch remains a genuinely open, unstarted area if a future session
 chooses to take it on as its own project.
+
+## ReDim Preserve: first-use bare-bound edge case (2026-07-20)
+
+Re-verifying the work order's suspect `0xfe 0x8f` byte pair against a fresh
+capture (`oracle_bank/c20_redim_preserve_first_use`) confirmed the opcode
+pair itself is correct (real compiler output, not a shipped bug) but
+surfaced a real, separate bug: a lone/first `ReDim Preserve` of a dynamic
+array (no earlier `ReDim` of that array in the same proc) does NOT push an
+explicit lower-bound-0 literal before a bare upper bound — every other
+ReDim shape (a plain `ReDim`, or a `ReDim Preserve` following an earlier
+`ReDim` of the same array) DOES push it. The emitter previously pushed it
+unconditionally. Fixed via a new `LowerCtx::redimmed_arrays` per-proc
+tracking set. Fixture: `e2e_redim_preserve_first_use`.

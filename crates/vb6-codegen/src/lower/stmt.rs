@@ -234,15 +234,27 @@ pub(super) fn lower_stmt(
                 ExprNode::ArgList { args } => args.clone(),
                 _ => return Err(LowerError::UnsupportedNode),
             };
+            // The FIRST `ReDim`/`ReDim Preserve` of a given array (textual
+            // order) is tracked separately from every later one — see
+            // `LowerCtx::redimmed_arrays`'s own doc comment for the oracle
+            // evidence a lone `ReDim Preserve` (no earlier ReDim of that
+            // array in this proc) omits the bare-bound's explicit
+            // lower-bound-0 push that every other captured shape has.
+            let is_first_redim = ctx.redimmed_arrays.borrow_mut().insert(local_idx);
             for &d in &dim_ids {
                 match expr_arena.get(d) {
                     ExprNode::RangeTo { lo, hi } => {
                         out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *lo, expr_arena, Some(8))?);
                         out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *hi, expr_arena, Some(8))?);
                     }
-                    // bare upper bound — the lower bound defaults to 0.
+                    // Bare upper bound — the lower bound defaults to 0, pushed
+                    // explicitly EXCEPT for a `Preserve` that is this array's
+                    // very first `ReDim` in the proc (oracle-confirmed:
+                    // `oracle_bank/c20_redim_preserve_first_use`).
                     _ => {
-                        out.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+                        if !(*preserve && is_first_redim) {
+                            out.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+                        }
                         out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, d, expr_arena, Some(8))?);
                     }
                 }
