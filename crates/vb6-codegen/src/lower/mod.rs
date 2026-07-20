@@ -691,24 +691,32 @@ pub(super) enum ModuleConstEntry {
     /// INDEX still consumes a real pool slot unconditionally, so it must be
     /// interned like every other entry, not hardcoded.
     ///
-    /// NOT keyed by the callee member's type — an earlier pass of this port
+    /// NOT keyed by the callee member's TYPE — an earlier pass of this port
     /// assumed it was (deduped by `vba_type_to_node_tag`), which happened to
     /// match every fixture shipped at the time because none of them mixed
-    /// TWO DIFFERENT member types in one proc. A dedicated fresh capture
-    /// this session (`Get`-ing a `Double` property THEN calling a `Sub` with
-    /// no return value, in one proc) disproved it directly: both vtable
-    /// calls land on the SAME operand index despite one having a `Double`
-    /// return and the other none at all. A second capture (a `Long` field
-    /// `Get` then a `String` property `Get`, one proc) confirms it again —
-    /// two clearly different types, same shared index. So this is a SINGLE
-    /// per-module descriptor, lazily allocated the first time ANY vtable
-    /// call needs it and reused by every subsequent one — Get/Let/Set/Sub/
-    /// Function, any type, all share the one entry. (`c2_let_string`'s
-    /// index-2 landing, and `e2e_class_multi_field_and_property`'s six
-    /// same-typed accesses landing on index 1, are both still consistent
-    /// with this simpler rule — they just never had a second, DIFFERENTLY-
-    /// typed vtable call in the same proc to reveal the type-independence.)
-    MemberType,
+    /// TWO DIFFERENT member types in one proc against the SAME class. A
+    /// dedicated fresh capture (`Get`-ing a `Double` property THEN calling a
+    /// `Sub` with no return value, against ONE class instance, in one proc)
+    /// disproved the type-keyed hypothesis directly: both vtable calls land
+    /// on the SAME operand index despite one having a `Double` return and
+    /// the other none at all.
+    ///
+    /// IS KEYED BY THE CALLEE'S CLASS, though — a later pass (also assumed
+    /// module-global-shared, since every fixture up to that point only ever
+    /// involved ONE class) was disproved by a fresh two-class capture: `Sub
+    /// Main` creating a `Class1` instance and a `Class2` instance, each
+    /// calling its own `DoIt(x As Long)`, shows the FIRST call's operand at
+    /// index 1 and the SECOND call's operand at index 3 (not both at index
+    /// 1) — genuinely different indices for genuinely different classes.
+    /// Every prior "shared index" finding (the Double/Sub-call pair, the
+    /// Long-Get/String-Get pair, `c2_let_string`'s index-2 landing,
+    /// `e2e_class_multi_field_and_property`'s six same-typed accesses
+    /// landing on index 1) is STILL consistent with this corrected rule —
+    /// every one of those captures only ever involved ONE class instance,
+    /// so they never had a second, DIFFERENT class's vtable call in the same
+    /// proc to reveal the class-dependence. Deduped by `(kind, class_sym)`
+    /// like `Class`, not a bare unit value.
+    MemberType(u32),
 }
 
 impl LowerCtx<'_> {
@@ -739,17 +747,22 @@ impl LowerCtx<'_> {
         (pool.len() - 1) as u16
     }
 
-    /// Intern the module's ONE shared vtable-call member-type-descriptor
-    /// entry (the call opcode's own second operand) — returns the same
-    /// 16-bit index on every call within a module; allocated lazily the
-    /// first time any vtable call needs it. Shares the index space with
-    /// `Str`/`Class` entries. See `ModuleConstEntry::MemberType`.
-    pub(super) fn intern_member_type_const(&self) -> u16 {
+    /// Intern a vtable-call's member-type-descriptor entry (the call
+    /// opcode's own second operand) for the given callee class — deduped by
+    /// `(MemberType, class_sym)`, so every vtable call against the SAME
+    /// class shares one index (Get/Let/Set/method, any type, all share it),
+    /// but a DIFFERENT class gets its own. Allocated lazily the first time
+    /// any vtable call against that class needs it. Shares the index space
+    /// with `Str`/`Class` entries. See `ModuleConstEntry::MemberType`.
+    pub(super) fn intern_member_type_const(&self, class_sym: u32) -> u16 {
         let mut pool = self.const_pool.borrow_mut();
-        if let Some(i) = pool.iter().position(|p| matches!(p, ModuleConstEntry::MemberType)) {
+        if let Some(i) = pool
+            .iter()
+            .position(|p| matches!(p, ModuleConstEntry::MemberType(s) if *s == class_sym))
+        {
             return i as u16;
         }
-        pool.push(ModuleConstEntry::MemberType);
+        pool.push(ModuleConstEntry::MemberType(class_sym));
         (pool.len() - 1) as u16
     }
 }

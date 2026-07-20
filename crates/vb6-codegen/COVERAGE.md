@@ -387,6 +387,23 @@ point; do not extend the "member-type is class-independent" conclusion
 further, and do not resolve this quietly, until a two-distinct-class
 fixture exists to actually distinguish the hypotheses.
 
+**CORRECTION: the vtable-call's shared member-type-descriptor const-pool
+entry (`ModuleConstEntry::MemberType`) is keyed by the CALLEE'S CLASS, not
+module-global-shared as the #7/#9 slice concluded.** That conclusion was
+only ever tested against single-class fixtures; a fresh two-class capture
+(`oracle_bank/c9_two_classes_membertype_const`, `e2e_class_method_two_
+classes_membertype_const`) — one proc calling a method on a `Class1`
+instance then a `Class2` instance — shows the two calls land on DIFFERENT
+operand indices, not the same one. Fixed: `MemberType` now carries a
+`class_sym` payload, deduped by `(MemberType, class_sym)` like `Class`
+entries; every call site updated to pass the relevant class. This is a
+strict generalization — every existing single-class fixture's bytes are
+unchanged (confirmed by a full-workspace regression run before landing).
+Retroactively resolves slice #15's flagged "is this a coincidence" question:
+its write-back's coercion operand matched the call's own operand because
+the argument's class and the callee's class were the same class in that
+fixture, not because of an accidental index collision.
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /

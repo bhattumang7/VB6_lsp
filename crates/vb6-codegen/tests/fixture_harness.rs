@@ -145,14 +145,14 @@ fn bind_class(src: &str) -> (String, ExternalClass) {
     (class_name_from_source(src), ExternalClass { members })
 }
 
-fn compile_module_bytes(src: &str, class_src: Option<&str>) -> Vec<Vec<u8>> {
-    let known_classes: HashMap<String, ExternalClass> = match class_src {
-        Some(class_src) => {
+fn compile_module_bytes(src: &str, class_srcs: &[&str]) -> Vec<Vec<u8>> {
+    let known_classes: HashMap<String, ExternalClass> = class_srcs
+        .iter()
+        .map(|class_src| {
             let (name, class) = bind_class(class_src);
-            HashMap::from([(name.to_ascii_lowercase(), class)])
-        }
-        None => HashMap::new(),
-    };
+            (name.to_ascii_lowercase(), class)
+        })
+        .collect();
 
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
@@ -181,7 +181,15 @@ fn run_fixture(case_name: &str) {
     let dir = fixture_dir(case_name);
     let src = fs::read_to_string(dir.join("input.bas"))
         .unwrap_or_else(|e| panic!("{case_name}: cannot read input.bas: {e}"));
+    // Most fixtures reference at most one class module (`input.cls`); a
+    // fixture needing a SECOND, distinct class in the same compile (e.g. to
+    // exercise per-class const-pool dedup) adds `input2.cls` alongside it.
     let class_src = fs::read_to_string(dir.join("input.cls")).ok();
+    let class_src2 = fs::read_to_string(dir.join("input2.cls")).ok();
+    let class_srcs: Vec<&str> = [class_src.as_deref(), class_src2.as_deref()]
+        .into_iter()
+        .flatten()
+        .collect();
     let expected = fs::read(dir.join("expected.pcode"))
         .unwrap_or_else(|e| panic!("{case_name}: cannot read expected.pcode: {e}"));
     let proc_index: usize = match fs::read_to_string(dir.join("proc_index")) {
@@ -192,7 +200,7 @@ fn run_fixture(case_name: &str) {
         Err(_) => 0,
     };
 
-    let procs = compile_module_bytes(&src, class_src.as_deref());
+    let procs = compile_module_bytes(&src, &class_srcs);
     let actual = procs.get(proc_index).unwrap_or_else(|| {
         panic!(
             "{case_name}: proc index {proc_index} out of range (module lowered {} procs)",

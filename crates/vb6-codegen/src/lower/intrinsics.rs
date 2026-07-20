@@ -566,19 +566,16 @@ pub(super) fn lower_class_method_call(
     out.push(0x0d);
     out.extend_from_slice(&method_slot.to_le_bytes());
     // The vtable-call operand's own member-type-descriptor const-pool entry
-    // (`ModuleConstEntry::MemberType`) — the SAME single per-module shared
-    // entry already grounded for Property Get/Let/Set, extended here to
-    // method calls (`Sub` and `Function` alike, regardless of return type
-    // or argument shape) — oracle-confirmed via two fresh captures this
-    // session: a `Double`-returning Get then a no-return `Sub` call share
-    // one index despite differing types, and (earlier) two different `Sub`s
-    // in one proc share one index despite differing signatures. Was
-    // previously hardcoded `01 00`, which only ever coincidentally matched
-    // every single-call-site fixture shipped before this slice (`c4_sub_
+    // (`ModuleConstEntry::MemberType`) — keyed by the CALLEE'S CLASS (see its
+    // own doc comment for the full derivation, including the two-class
+    // capture that corrected the earlier "single per-module shared entry"
+    // model), extended here to method calls (`Sub` and `Function` alike,
+    // regardless of return type or argument shape). Was previously
+    // hardcoded `01 00`, which only ever coincidentally matched every
+    // single-call-site fixture shipped before the #7/#9 slice (`c4_sub_
     // 2arg_mixed_call`'s oracle capture shows index 2, not 1, proving the
-    // operand must be interned, not hardcoded, even under the old
-    // per-type-key hypothesis this session started from and then disproved).
-    out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
+    // operand must be interned, not hardcoded).
+    out.extend_from_slice(&ctx.intern_member_type_const(class_sym).to_le_bytes());
     string_release_temps.reverse();
 
     // A `Sub` statement call (no result to store) releases its staged String
@@ -625,19 +622,19 @@ pub(super) fn lower_class_method_call(
         if is_value || object_byref_writebacks.len() > 1 {
             return Err(LowerError::UnsupportedNode);
         }
-        let (temp_off, _class_sym, dest_off) = object_byref_writebacks[0];
+        let (temp_off, class_sym, dest_off) = object_byref_writebacks[0];
         out.push(0x6c);
         out.extend_from_slice(&temp_off.to_le_bytes());
-        // Reuses the SAME const-pool index as the call's own member-type
-        // operand (`intern_member_type_const`), not a fresh `ClassConstKind::
-        // TypeDesc` entry — oracle-confirmed: this capture's coercion operand
-        // is index 1, IDENTICAL to the call's own operand, not index 2 (what
-        // a separate, newly-interned `TypeDesc(Class1)` entry would produce).
-        // Whether this is because the two concepts are genuinely the same
-        // pool entry, or coincidentally share an index in every single-class
-        // scenario tested so far, is unresolved with one data point — but
-        // matching the observed index is what byte-exactness requires here.
-        let type_idx = ctx.intern_member_type_const();
+        // Reuses the SAME `MemberType`-const mechanism as the call's own
+        // operand (`intern_member_type_const`, now confirmed class-keyed —
+        // see its doc comment), keyed by the ARGUMENT's own class, not a
+        // fresh `ClassConstKind::TypeDesc` entry. In this capture the
+        // argument's class (`y As New Class1`) happens to equal the callee's
+        // own class (`Class1.Use`), so this dedups to the SAME index as the
+        // call's own operand — that's exactly why they matched, not a
+        // coincidence or an open question. Oracle-confirmed: `oracle_bank/
+        // c8_obj_byref_param`.
+        let type_idx = ctx.intern_member_type_const(class_sym);
         out.push(0x3d);
         out.extend_from_slice(&type_idx.to_le_bytes());
         out.push(0x19);

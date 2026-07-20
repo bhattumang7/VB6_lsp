@@ -661,7 +661,7 @@ pub(super) fn lower_class_field_get(
     bytes.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     bytes.push(0x0d);
     bytes.extend_from_slice(&get_slot.to_le_bytes());
-    bytes.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
+    bytes.extend_from_slice(&ctx.intern_member_type_const(field.class_sym).to_le_bytes());
     bytes.push(load_opcode);
     bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
 
@@ -736,7 +736,7 @@ pub(super) fn lower_class_field_store(
     out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&let_slot.to_le_bytes());
-    out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
+    out.extend_from_slice(&ctx.intern_member_type_const(field.class_sym).to_le_bytes());
 
     if field.is_string {
         if let Some(temp_offset) = staged_temp_offset {
@@ -816,7 +816,7 @@ pub(super) fn lower_class_field_set(
     out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&set_slot.to_le_bytes());
-    out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
+    out.extend_from_slice(&ctx.intern_member_type_const(field.class_sym).to_le_bytes());
 
     // The staged temp holds an owned reference (`fd 9c` calls the refcounted
     // `__vbaObjSet`), so unlike a plain pushed value it must be explicitly

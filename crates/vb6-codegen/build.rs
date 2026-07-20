@@ -40,6 +40,10 @@ fn main() {
             if cls.is_file() {
                 println!("cargo:rerun-if-changed={}", cls.display());
             }
+            let cls2 = dir.join("input2.cls");
+            if cls2.is_file() {
+                println!("cargo:rerun-if-changed={}", cls2.display());
+            }
             let case_name = dir.file_name().unwrap().to_string_lossy().to_string();
             let fn_name = sanitize(&case_name);
             count += 1;
