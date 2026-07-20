@@ -404,16 +404,24 @@ its write-back's coercion operand matched the call's own operand because
 the argument's class and the callee's class were the same class in that
 fixture, not because of an accidental index collision.
 
+**A bare 0-argument `Sub` statement call is now grounded** — `o.Ping` (no
+parens, no arguments, no `Call` keyword) was a pure front-end DISPATCH gap,
+not a wrong byte: the parser's `args.is_empty()` fast path returns the bare
+`MemberAccess` node directly for this one spelling, skipping the `CallStmt`
+wrapper every other spelling goes through, so it never reached any existing
+`lower_stmt` arm. Fixed with a new arm routing a bare class-member
+`MemberAccess` statement to the same `lower_class_method_call` every other
+spelling uses. Oracle-confirmed: `oracle_bank/c10_bare_0arg_method_call`
+(`e2e_class_method_bare_0arg_call`) — no new emitter logic needed, the
+existing zero-argument vtable-call path already produces the exact bytes.
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /
 `Set o.ObjField = y` return `UnsupportedNode`; only an explicit `Property Set`
-is grounded), a bare 0-argument `Sub` **statement** call (`o.Method` with
-the result discarded returns `UnsupportedNode`; a 0-arg `Function` in value
-position, `x = o.Method()`, does lower), and `Set x = o.P`/`Set x =
-o.Method()` against a SPECIFIC-class-typed target (`Dim x As Class1`, not
-plain `Object` — see the "`Set` assignment to a plain object local" section
-below).
+is grounded), and `Set x = o.P`/`Set x = o.Method()` against a
+SPECIFIC-class-typed target (`Dim x As Class1`, not plain `Object` — see the
+"`Set` assignment to a plain object local" section below).
 
 ## `Set` assignment to a plain object local
 

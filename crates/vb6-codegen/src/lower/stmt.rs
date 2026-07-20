@@ -346,6 +346,19 @@ pub(super) fn lower_stmt(
         {
             lower_call(ctx, node_id, node_id, false, expr_arena, out)
         }
+        // A class-member `Sub`/`Function` called as a bare statement with NO
+        // arguments and no parens: `o.Ping` (result discarded) — the parser
+        // returns the bare `MemberAccess` node directly for this shape
+        // (`parse_ident_stmt`'s `args.is_empty()` fast path skips wrapping in
+        // `CallStmt` entirely, unlike every other spelling above), so it
+        // never reaches the `CallStmt`/`Call` arms. Passing the node itself
+        // as the arg list (matching the bare-`Proc`-call convention just
+        // above it) yields no arguments, since it is not an `ArgList`.
+        // Oracle-confirmed: `oracle_bank/c10_bare_0arg_method_call`.
+        ExprNode::MemberAccess { base, .. } if member_access_base_is_class(ctx.module, *base) => {
+            let base = *base;
+            lower_class_method_call(ctx, base, node_id, node_id, false, expr_arena, out).map(|_| ())
+        }
         ExprNode::Stop => {
             out.extend_from_slice(&[0xfc, 0xc2]);
             Ok(())
