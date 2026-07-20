@@ -730,12 +730,14 @@ pub(super) fn lower_class_field_store(
 /// `__vbaObjSet`, flag=0/no-addref — confirmed identical for both `Nothing`
 /// and a real object-reference source value via two independent oracle
 /// captures, `set_probe`/`set_probe2`), then `LdAddr(o)`, resolve-object
-/// (`0x24`), vtable-call (`0x0d`) at the Set slot. Unlike Let, staging is
-/// unconditional here — a `Property Set` always takes its argument by
-/// address for the runtime AddRef bookkeeping, never a plain pushed value.
-/// Restricted to explicit `Property Set` members (`is_property`); a plain
-/// object/Variant field's own synthesized Set accessor is a separate,
-/// ungrounded case (no oracle capture yet shows whether it also stages).
+/// (`0x24`), vtable-call (`0x0d`) at the Set slot, then release the staged
+/// temp (`0x1a`, since `fd 9c` left it owning a reference). Unlike Let,
+/// staging is unconditional here — a `Property Set` always takes its
+/// argument by address for the runtime AddRef bookkeeping, never a plain
+/// pushed value. Restricted to explicit `Property Set` members
+/// (`is_property`); a plain object/Variant field's own synthesized Set
+/// accessor is a separate, ungrounded case (no oracle capture yet shows
+/// whether it also stages).
 pub(super) fn lower_class_field_set(
     ctx: &LowerCtx,
     base: NodeId,
@@ -782,7 +784,17 @@ pub(super) fn lower_class_field_set(
     out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&set_slot.to_le_bytes());
-    out.extend_from_slice(&[0x01, 0x00]);
+    out.extend_from_slice(&ctx.intern_member_type_const(field.type_tag.unwrap()).to_le_bytes());
+
+    // The staged temp holds an owned reference (`fd 9c` calls the refcounted
+    // `__vbaObjSet`), so unlike a plain pushed value it must be explicitly
+    // released after the vtable call returns — oracle-confirmed:
+    // `oracle_bank/c3_property_set` shows a trailing `1a <temp offset>` the
+    // committed fixture had been missing (a fixture-capture gap, not an
+    // emitter choice; c3_property_set's own source is byte-identical to this
+    // fixture's).
+    out.push(0x1a);
+    out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
     Ok(())
 }
 
