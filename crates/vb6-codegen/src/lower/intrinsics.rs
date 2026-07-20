@@ -613,15 +613,15 @@ pub(super) fn lower_class_method_call(
     // `Sub` statement (`!is_value`) this is emitted right here, immediately
     // after the call — matching the String release's placement. For a
     // `Function` in value position, the release is DEFERRED to the caller
-    // instead, the same way `string_release_temps` already is: oracle-
-    // confirmed (`oracle_bank/c15_func_with_obj_arg_release`, a Long-
-    // returning Function with one `ByVal Object` argument needing release)
-    // that the byte order is `call → result-load → caller's own store →
-    // release`, identical in shape to the String case. Two-or-more Object
-    // releases in value position remain gated (no capture combines them).
-    if !object_release_temps.is_empty() && is_value && object_release_temps.len() > 1 {
-        return Err(LowerError::UnsupportedNode);
-    }
+    // instead, the same way `string_release_temps` already is — oracle-
+    // confirmed for both a single Object release (`oracle_bank/
+    // c15_func_with_obj_arg_release`) and two (`oracle_bank/
+    // c17_two_obj_release_value`, a Long-returning `Function` with two
+    // `ByVal Object` arguments): the byte order is `call → result-load →
+    // caller's own store → release` either way, and the bulk-release form
+    // (`0x29`) and declaration-order convention are UNCHANGED in value
+    // position — the deferred release is byte-identical in shape to the
+    // `!is_value` case, just moved later in the stream.
     if !is_value {
         emit_object_temp_release_list(&object_release_temps, out);
     }

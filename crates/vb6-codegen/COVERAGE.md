@@ -481,9 +481,17 @@ extending `lower_class_method_call`'s return type again to
 result temp) so `is_value` callers can defer Object releases the same way
 String releases already were, via a new `emit_object_temp_release_list`
 helper (same shape as the String one, dedicated `0x1a`/`0x29` opcodes). A
-`Function`-in-value-position combination with 2+ Object releases, or a call
-staging BOTH String and Object releases simultaneously, remain gated (no
-capture confirms either).
+**Both follow-up combinations are now grounded too.** 2+ Object releases in
+value position (`oracle_bank/c17_two_obj_release_value`,
+`e2e_class_function_two_obj_arg_release`) use the SAME bulk-release form
+and declaration order as the Sub-statement case, just deferred later — the
+gate was simply removed, no new mechanism needed. A call staging BOTH
+String and Object releases (`oracle_bank/c18_mixed_str_obj_release`,
+`e2e_class_method_mixed_str_obj_release`, Sub-statement shape) shows NO
+combined form — String releases first, Object second, each independent,
+matching the emitter's pre-existing order exactly (no code change needed).
+The `is_value = true` variant of the mixed-release combination (a Function
+in value position needing BOTH kinds at once) remains gated — no capture.
 
 ## `Set` assignment to a plain object local
 
