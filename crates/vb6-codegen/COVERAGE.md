@@ -367,6 +367,26 @@ such release temps in one call (no bulk form confirmed for Object) and any
 `Function`-in-value-position combination (no evidence for release-vs-
 result-store ordering).
 
+**A ByRef `Object` argument sourced from a specific-class-typed `As New`
+local is a genuinely different mechanism from the ByVal case above, not a
+variant of it** — oracle-confirmed: `oracle_bank/c8_obj_byref_param`
+(`e2e_class_method_object_byref_param`, the LAST of the original 15-slice
+fan-out manifest). The lazy-fetch load is identical, but the loaded value is
+MOVE-STORED (`fc f8`, not `fd 9c`) into a temp, the temp's ADDRESS (not a
+staged value) is pushed as the argument, and — because the callee can
+reassign through a ByRef parameter — the temp's FINAL value is written BACK
+into the source local after the call (`6c` load, `3d <idx>` coerce, `19`
+AddRef-store) before the temp is released (`1a`, after the write-back here,
+not immediately after the call like the ByVal case). A flagged, UNRESOLVED
+open question from this capture: the write-back's `3d` coercion operand is
+IDENTICAL to the call's own shared member-type-descriptor operand
+(`intern_member_type_const`), not a fresh class-specific `TypeDesc` entry —
+whether the two concepts are genuinely the same pool entry or this is a
+coincidental single-class-fixture collision is undetermined with one data
+point; do not extend the "member-type is class-independent" conclusion
+further, and do not resolve this quietly, until a two-distinct-class
+fixture exists to actually distinguish the hypotheses.
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /

@@ -278,6 +278,14 @@ pub(super) fn lower_class_method_call(
     // call staging two or more is gated below rather than guessing a bulk
     // form or a release order.
     let mut object_release_temps: Vec<i16> = Vec::new();
+    // A ByRef `Object` argument sourced from a specific-class-typed `As New`
+    // local: `(temp_off, class_sym, dest_off)` — the temp's FINAL value
+    // (possibly reassigned by the callee through the ByRef parameter) is
+    // written back into the source local after the call, then the temp is
+    // released. Only a SINGLE such argument is oracle-confirmed
+    // (`oracle_bank/c8_obj_byref_param`); two or more in one call is gated
+    // (no confirmed relative order).
+    let mut object_byref_writebacks: Vec<(i16, u32, i16)> = Vec::new();
 
     // Push each argument, right-to-left (VB6 evaluation order) — matching
     // the intra-module call convention's own push order. Three distinct
@@ -398,10 +406,7 @@ pub(super) fn lower_class_method_call(
         // arm): `04 <src>` (LdAddr) then `56 <create-idx>` (construct-if-null,
         // already-owned push) — NOT the generic `lower_expr_coerced` pipeline,
         // which has no notion of coercing a `UserDefined`-typed variable into
-        // an `Object`-tagged node and would error `UnsupportedType`. The
-        // loaded value then feeds the SAME `fd 9c` staging store as any other
-        // Object argument (below) — only the VALUE computation differs, not
-        // the consumer. Oracle-confirmed: `oracle_bank/c8_obj_byval_param`.
+        // an `Object`-tagged node and would error `UnsupportedType`.
         if matches!(ty, VbaType::Object) {
             if let Some((src_class, src_off, true)) = plain_object_local(ctx, args[i], expr_arena) {
                 let idx = ctx.intern_class_const(ClassConstKind::Create, src_class);
@@ -411,10 +416,35 @@ pub(super) fn lower_class_method_call(
                 out.extend_from_slice(&idx.to_le_bytes());
                 let (arg_ctx, arg_idx) = stage_slot[i].expect("Object args always need staging");
                 let temp_off = ctx.class_member_slot(arg_ctx, arg_idx);
-                out.push(0xfd);
-                out.push(0x9c);
-                out.extend_from_slice(&temp_off.to_le_bytes());
-                object_release_temps.push(temp_off);
+                if *by_val {
+                    // The loaded value feeds the SAME `fd 9c` staging store as
+                    // any other ByVal Object argument (below) — only the
+                    // VALUE computation differs, not the consumer. Released
+                    // afterward (`0x1a`, tracked in `object_release_temps`).
+                    // Oracle-confirmed: `oracle_bank/c8_obj_byval_param`.
+                    out.push(0xfd);
+                    out.push(0x9c);
+                    out.extend_from_slice(&temp_off.to_le_bytes());
+                    object_release_temps.push(temp_off);
+                } else {
+                    // ByRef is a genuinely different shape: the lazy-fetched
+                    // value is MOVE-STORED (`fc f8`, no AddRef — the same
+                    // "steal" store already grounded for `Set o =
+                    // otherObjLocal`) into the temp, and the temp's ADDRESS
+                    // (not a staged value) is what's actually pushed as the
+                    // argument — the callee can reassign through a ByRef
+                    // parameter, so the temp's FINAL value must be written
+                    // BACK into the source local after the call (`object_
+                    // byref_writebacks`, emitted post-call below) rather than
+                    // simply released. Oracle-confirmed: `oracle_bank/
+                    // c8_obj_byref_param`.
+                    out.push(0xfc);
+                    out.push(0xf8);
+                    out.extend_from_slice(&temp_off.to_le_bytes());
+                    out.push(0x04);
+                    out.extend_from_slice(&temp_off.to_le_bytes());
+                    object_byref_writebacks.push((temp_off, src_class, src_off));
+                }
                 continue;
             }
         }
@@ -578,6 +608,42 @@ pub(super) fn lower_class_method_call(
         }
         out.push(0x1a);
         out.extend_from_slice(&object_release_temps[0].to_le_bytes());
+    }
+
+    // A ByRef Object argument sourced from a specific-class-typed `As New`
+    // local writes the temp's (possibly callee-reassigned) final value BACK
+    // into the source local: `6c <temp>` (plain 4-byte load), `3d
+    // <type-idx>` (coerce/type-check to the source's declared class — the
+    // SAME opcode already grounded for `Set o = Nothing`'s typed-Nothing
+    // coercion, here reused for a typed re-check instead), `19 <dest>`
+    // (AddRef-store into the source local), then `1a <temp>` (release the
+    // temp) — a different release point from the ByVal case (after the
+    // write-back, not immediately after the call). Only a SINGLE such
+    // argument, `is_value = false`, is oracle-confirmed: `oracle_bank/
+    // c8_obj_byref_param`.
+    if !object_byref_writebacks.is_empty() {
+        if is_value || object_byref_writebacks.len() > 1 {
+            return Err(LowerError::UnsupportedNode);
+        }
+        let (temp_off, _class_sym, dest_off) = object_byref_writebacks[0];
+        out.push(0x6c);
+        out.extend_from_slice(&temp_off.to_le_bytes());
+        // Reuses the SAME const-pool index as the call's own member-type
+        // operand (`intern_member_type_const`), not a fresh `ClassConstKind::
+        // TypeDesc` entry — oracle-confirmed: this capture's coercion operand
+        // is index 1, IDENTICAL to the call's own operand, not index 2 (what
+        // a separate, newly-interned `TypeDesc(Class1)` entry would produce).
+        // Whether this is because the two concepts are genuinely the same
+        // pool entry, or coincidentally share an index in every single-class
+        // scenario tested so far, is unresolved with one data point — but
+        // matching the observed index is what byte-exactness requires here.
+        let type_idx = ctx.intern_member_type_const();
+        out.push(0x3d);
+        out.extend_from_slice(&type_idx.to_le_bytes());
+        out.push(0x19);
+        out.extend_from_slice(&dest_off.to_le_bytes());
+        out.push(0x1a);
+        out.extend_from_slice(&temp_off.to_le_bytes());
     }
 
     if let Some(off) = result_temp {
