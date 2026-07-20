@@ -238,7 +238,7 @@ pub fn lower_module_with_classes(
     module_desc: u16,
     known_classes: &HashMap<String, ExternalClass>,
 ) -> Result<Vec<Vec<u8>>, LowerError> {
-    let mut pool: Vec<String> = Vec::new();
+    let mut pool: Vec<ModuleConstEntry> = Vec::new();
     let mut static_base: u16 = 0;
     let mut procs = Vec::with_capacity(module.procs.len());
     for idx in 0..module.procs.len() {
@@ -278,18 +278,20 @@ pub fn lower_proc_with_classes(
     Ok(bytes)
 }
 
-/// Lower one procedure, threading a module-global string pool in and out so that
-/// string-literal indices continue across procedures. `pool_in` carries the
-/// strings interned by earlier procedures; the returned pool adds this one's.
+/// Lower one procedure, threading the module-global constant/global-pointer
+/// pool (string literals AND class-constant entries, one shared index space
+/// — see `ModuleConstEntry`) in and out so its entries continue across
+/// procedures. `pool_in` carries the entries interned by earlier procedures;
+/// the returned pool adds this one's.
 fn lower_proc_pooled(
     module: &BoundModule,
     proc_idx: usize,
     expr_arena: &ExprArena,
     module_desc: u16,
-    pool_in: Vec<String>,
+    pool_in: Vec<ModuleConstEntry>,
     static_base: u16,
     known_classes: &HashMap<String, ExternalClass>,
-) -> Result<(Vec<u8>, Vec<String>, u16), LowerError> {
+) -> Result<(Vec<u8>, Vec<ModuleConstEntry>, u16), LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
     let user_local_count = proc.locals.len();
@@ -441,8 +443,8 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(5));
     }
 
-    // One shared hidden 4-byte Long temp for the proc's class-member vtable
-    // dispatch scratch use: a Get access (`x = o.F`) writes its out-parameter
+    // One shared hidden temp for the proc's class-member vtable dispatch
+    // scratch use: a Get access (`x = o.F`/`x = o.P`) writes its out-parameter
     // through it, and a Property-Let call (`o.P = v`) stages its argument
     // through it (`0x59 <offset>`) before the vtable call — a plain-field
     // store needs no staging. Oracle-confirmed for both a single Get/Let pair
@@ -450,15 +452,21 @@ fn lower_proc_pooled(
     // and properties in one class, each reusing the SAME slot in sequence —
     // see the `e2e_class_multi_field_and_property`/`e2e_class_property_let_
     // before_get` fixtures): this is one scratch slot per proc, not one per
-    // access or per member. Long-sized only: no String/Variant/object-typed
-    // class member has been oracle-confirmed through this temp yet.
+    // access or per member. Sized to the proc's Get-accessed/Let-staged type
+    // (`class_member_temp_ctx`, oracle-confirmed distinct for `Long`/`Double`
+    // — `oracle_bank/c1_get_double`/`c2_let_double`); falls back to the
+    // historical 4-byte `Long` sizing when the proc has no Get/Let access
+    // needing this temp (method-arg staging alone always uses that width) or
+    // gates loudly on a mix of distinctly-sized Get/Let types in one proc
+    // (ungrounded — see `class_member_temp_ctx`).
     let class_member_base = local_slots.len();
+    let class_member_ctx = class_member_temp_ctx(module, NodeId(proc.body), expr_arena)?.unwrap_or(2);
     let needs_class_member_temp = count_class_get_temps(module, NodeId(proc.body), expr_arena) > 0
         || count_class_let_temps(module, NodeId(proc.body), expr_arena) > 0;
     let class_member_temp_count = (needs_class_member_temp as usize)
         .max(max_class_method_temps(module, NodeId(proc.body), expr_arena));
     for _ in 0..class_member_temp_count {
-        local_slots.push(frame.declare_anon(2));
+        local_slots.push(frame.declare_anon(class_member_ctx));
     }
 
     // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
@@ -502,7 +510,7 @@ fn lower_proc_pooled(
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
         exit_stack: RefCell::new(Vec::new()),
-        string_pool: RefCell::new(pool_in),
+        const_pool: RefCell::new(pool_in),
         module_desc,
         static_offsets,
         line_tracking: proc_needs_line_tracking(NodeId(proc.body), expr_arena),
@@ -547,7 +555,19 @@ fn lower_proc_pooled(
         out[*patch..*patch + 2].copy_from_slice(&off.to_le_bytes());
     }
     drop(labels);
-    let pool_out = ctx.string_pool.into_inner();
+    // Every procedure's p-code ends with exactly one implicit-return opcode
+    // `0x14`, unconditionally — oracle-confirmed (six independent real VB6
+    // recaptures spanning a scalar assign, a class field access, a
+    // Property Get/Let, a class-method call, a `GoTo`/line-tracking body, and
+    // a `Function` return) to be appended by the compiler regardless of what
+    // the body's last statement was, with NO deduplication when that last
+    // statement is itself an explicit `Exit Sub`/`Exit Function` (which
+    // already emits its own `0x14` via `ExitStmt` in `lower/stmt.rs`): a bare
+    // `Sub Main() : Exit Sub : End Sub` compiles to `14 14`, two bytes, not
+    // one. So this append is unconditional, never a "last byte already 0x14"
+    // check.
+    out.push(0x14);
+    let pool_out = ctx.const_pool.into_inner();
     Ok((out, pool_out, static_cursor))
 }
 
@@ -608,9 +628,20 @@ struct LowerCtx<'m> {
     /// Stack of `Exit For`/`Exit Do` patch lists — one per active loop; each entry
     /// is a byte offset to backpatch with the loop-end offset.
     exit_stack: RefCell<Vec<Vec<usize>>>,
-    /// String-constant pool: literal text → pool index (assigned in first-seen
-    /// order, deduped by value). A `"..."` literal emits `0x1b <pool index>`.
-    string_pool: RefCell<Vec<String>>,
+    /// Module-wide constant/global-pointer table: string literals AND
+    /// class-constant entries (the operand the `New`/lazy-`As New`-fetch/
+    /// typed-`Nothing`/object-resolve opcodes consume) share ONE sequential
+    /// index space, in first-use emission order — oracle-confirmed
+    /// (`c2_let_string`: a string literal pushed BEFORE a class resolve in
+    /// the same statement gets index 0, and the class resolve gets index 1,
+    /// not a fresh 0 of its own; `e2e_module_global_string_pool__2` already
+    /// established separately that this table is MODULE-wide, not
+    /// per-procedure — a second procedure's first string literal continues
+    /// the index sequence rather than restarting). Deduped independently
+    /// within each entry kind (two identical string literals share a slot;
+    /// two class-const entries share a slot only when `(kind, class sym)`
+    /// match — see `intern_string`/`intern_class_const`).
+    const_pool: RefCell<Vec<ModuleConstEntry>>,
     /// Compiled module-object descriptor word (used to address module globals and
     /// per-procedure static storage).
     module_desc: u16,
@@ -634,14 +665,85 @@ struct LowerCtx<'m> {
     member_symbol: RefCell<Option<crate::emit::SymbolContext>>,
 }
 
+/// A class-constant-table entry kind — see `ModuleConstEntry::Class`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum ClassConstKind {
+    /// The `New ClassName` / lazy-`As New`-fetch create-descriptor entry
+    /// (opcodes `fd f4` and `56`) — ALSO the entry an object-resolve (`0x24`)
+    /// consumes for its own lazy-New fallback, oracle-confirmed sharing this
+    /// same slot (`c2_let_string`).
+    Create,
+    /// The typed-`Nothing` coercion entry (opcode `fc 63`).
+    TypeDesc,
+}
+
+/// One entry in the module-wide constant/global-pointer table — see
+/// `LowerCtx::const_pool`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(super) enum ModuleConstEntry {
+    Str(String),
+    Class(ClassConstKind, u32),
+    /// A vtable-call's own second operand (the 2-byte field right after the
+    /// Get/Let/Set/method slot) — a type-descriptor entry for the CALLEE'S
+    /// member type, keyed by the member's node type tag (`vba_type_to_node_
+    /// tag`; e.g. Long=8, Double=11, String=0x10), deduped independently of
+    /// which class/member it came from. Read only on the runtime's error
+    /// path (a type-mismatch message), per the `0x0d` handler's disassembly
+    /// (`6610a43b`: the operand is unused on the success path, only pushed
+    /// as a const-table lookup when the vtable call itself faults) — but its
+    /// INDEX still consumes a real pool slot unconditionally, so it must be
+    /// interned like every other entry, not hardcoded. Oracle-confirmed NOT
+    /// a fixed `1`: `c2_let_string` shows it at index 2 (after a string
+    /// literal claims 0 and the class-create claims 1), while every other
+    /// shipped slice's single-member, no-preceding-string proc happened to
+    /// land it at 1 by coincidence (class-create claims 0, so the FIRST
+    /// member-type entry is naturally next). `e2e_class_multi_field_and_
+    /// property`'s six same-typed (`Long`) accesses all reusing index 1
+    /// confirms the dedup-by-type (not per-call-site) behavior.
+    MemberType(u16),
+}
+
 impl LowerCtx<'_> {
-    /// Intern a string literal, returning its pool index (deduped by value).
+    /// Intern a string literal, returning its pool index (deduped by value
+    /// among `Str` entries; shares the index space with `Class` entries —
+    /// see `const_pool`'s field doc).
     fn intern_string(&self, s: &str) -> u16 {
-        let mut pool = self.string_pool.borrow_mut();
-        if let Some(i) = pool.iter().position(|p| p == s) {
+        let mut pool = self.const_pool.borrow_mut();
+        if let Some(i) = pool.iter().position(|p| matches!(p, ModuleConstEntry::Str(v) if v == s))
+        {
             return i as u16;
         }
-        pool.push(s.to_string());
+        pool.push(ModuleConstEntry::Str(s.to_string()));
+        (pool.len() - 1) as u16
+    }
+
+    /// Intern a class-constant-table entry, returning its 16-bit operand
+    /// index (deduped by `(kind, class_sym)` among `Class` entries; shares
+    /// the index space with `Str` entries — see `const_pool`'s field doc).
+    pub(super) fn intern_class_const(&self, kind: ClassConstKind, class_sym: u32) -> u16 {
+        let mut pool = self.const_pool.borrow_mut();
+        if let Some(i) = pool.iter().position(
+            |p| matches!(p, ModuleConstEntry::Class(k, s) if *k == kind && *s == class_sym),
+        ) {
+            return i as u16;
+        }
+        pool.push(ModuleConstEntry::Class(kind, class_sym));
+        (pool.len() - 1) as u16
+    }
+
+    /// Intern a vtable-call's member-type-descriptor entry (the call
+    /// opcode's own second operand), returning its 16-bit index — deduped by
+    /// `type_tag` among `MemberType` entries; shares the index space with
+    /// `Str`/`Class` entries. See `ModuleConstEntry::MemberType`.
+    pub(super) fn intern_member_type_const(&self, type_tag: u16) -> u16 {
+        let mut pool = self.const_pool.borrow_mut();
+        if let Some(i) = pool
+            .iter()
+            .position(|p| matches!(p, ModuleConstEntry::MemberType(t) if *t == type_tag))
+        {
+            return i as u16;
+        }
+        pool.push(ModuleConstEntry::MemberType(type_tag));
         (pool.len() - 1) as u16
     }
 }

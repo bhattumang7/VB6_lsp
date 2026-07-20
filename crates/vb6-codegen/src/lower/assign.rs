@@ -341,12 +341,21 @@ pub(super) fn lower_assign(
 
     // A String target receives a *move* store (0x31, ctx 9) when the value is a
     // freshly-produced temp — a `&` concatenation, a numeric→String coercion (0x78),
-    // or a `CStr` explicit conversion (0x7c) — and a *copy* store (0x43, ctx 8) when
-    // it is a plain string variable. The move avoids an extra BSTR allocation.
+    // a `CStr` explicit conversion (0x7c), or a class-member Property Get/field
+    // returning String (its own steal-load, `0x3e`, already zeroed the source
+    // temp — see `ClassFieldRef::is_string`) — and a *copy* store (0x43, ctx 8)
+    // when it is a plain string variable. The move avoids an extra BSTR
+    // allocation (and, for the class-Get case, is the ONLY correct store: the
+    // steal-load leaves nothing else owning the value to release later).
+    let value_is_class_get_string = matches!(
+        expr_arena.get(value_id),
+        ExprNode::MemberAccess { base, .. } if member_access_base_is_class(ctx.module, *base)
+    ) && matches!(ctx.module.types.get(&value_id.0), Some(VbaType::String));
     let value_is_fresh_string = matches!(
         expr_arena.get(value_id),
         ExprNode::BinOp { op: BinOpKind::Cat, .. }
-    ) || matches!(arena.get(value_root).opcode(), 0x78 | 0x7c);
+    ) || matches!(arena.get(value_root).opcode(), 0x78 | 0x7c)
+        || value_is_class_get_string;
 
     let mut emitter = Emitter::new(&arena);
     // A UDT field reference on the RHS (`y = t.X`) resolved through the
@@ -413,7 +422,101 @@ pub(super) fn lower_set_assign(
             return lower_class_field_set(ctx, base, target_id, bang, value_id, expr_arena, out);
         }
     }
+    if let Some((target_class, dest_off, _)) = plain_object_local(ctx, target_id, expr_arena) {
+        return lower_set_plain_object_local(ctx, target_class, dest_off, value_id, expr_arena, out);
+    }
     Err(LowerError::UnsupportedNode)
+}
+
+/// `Set localVar = v` where `localVar` is a plain object-typed local (no
+/// vtable dispatch — `o.Field`/`o.Property` route through
+/// `lower_class_field_set` instead). Three source forms are oracle-confirmed
+/// (`c7_set_new_reassign_nothing`, one `Sub Main` exercising all three in
+/// sequence against a single class):
+///
+/// - `Set o = New ClassName`: `fd f4 <create-idx>` (construct, unref'd —
+///   ownership is established by the store) then `19 <dest>` (pop, AddRef,
+///   release-old-and-store — flag `-1`/AddRef, confirmed from the runtime
+///   handler at table index 0x19: `push -1, push &dest, push TOS, call` the
+///   shared `__vbaObjSet`/`__vbaObjSetAddref` routine).
+/// - `Set o = otherObjLocal` where `otherObjLocal` was declared `As New`:
+///   `04 <src>` (LdAddr) then `56 <create-idx>` (the lazy-fetch opcode: read
+///   `*src`; if null, construct via the SAME create call as `New` and store
+///   back; push the result — already-owned, per the runtime handler sharing
+///   its post-construct tail with the non-null fast path) then `fc f8
+///   <dest>` (pop, release-old-and-store, flag `0`/no-AddRef — steals the
+///   reference `56` already owns, table index 0x2f8, confirmed sharing case
+///   0x19's tail with `EBX=0` instead of `-1`).
+/// - `Set o = Nothing`: `fc 63` (push literal 0, table index 0x263, no
+///   operand of its own) then `3d <type-idx>` (table index 0x3d — pops the 0,
+///   coerces it to `o`'s declared class via a SEPARATE `class_const_table`
+///   entry than the create-idx above: index 1, not a fresh 0, proving the two
+///   entry kinds share one table) then `19 <dest>` (AddRef-store; safe on a
+///   null pointer — the shared routine no-ops the AddRef when the value it's
+///   given is null, same call as the `New` case above).
+///
+/// A plain (non-`As New`) object local read as a `Set` source, a `New` of a
+/// class other than the target's declared type, and a mismatched-class
+/// var-to-var copy are all UNGROUNDED (no oracle capture distinguishes them
+/// from the shapes above) and gated rather than guessed.
+pub(super) fn lower_set_plain_object_local(
+    ctx: &LowerCtx,
+    target_class: u32,
+    dest_off: i16,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    match expr_arena.get(value_id) {
+        ExprNode::New { type_spec } => {
+            let ExprNode::UserType { name, .. } = expr_arena.get(*type_spec) else {
+                return Err(LowerError::UnsupportedNode);
+            };
+            if *name != target_class {
+                return Err(LowerError::UnsupportedType);
+            }
+            let idx = ctx.intern_class_const(ClassConstKind::Create, target_class);
+            out.push(0xfd);
+            out.push(0xf4);
+            out.extend_from_slice(&idx.to_le_bytes());
+            out.push(0x19);
+            out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+            Ok(())
+        }
+        ExprNode::Nothing => {
+            // `fc 63` (push literal 0, no operand of its own) then `3d
+            // <type-idx>` (the typed-value coercion opcode — pops the 0,
+            // reads the class's type-descriptor const-table entry, pushes a
+            // typed-Nothing value) then the AddRef-store.
+            let idx = ctx.intern_class_const(ClassConstKind::TypeDesc, target_class);
+            out.push(0xfc);
+            out.push(0x63);
+            out.push(0x3d);
+            out.extend_from_slice(&idx.to_le_bytes());
+            out.push(0x19);
+            out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+            Ok(())
+        }
+        ExprNode::NameRef { .. } => {
+            let Some((src_class, src_off, src_is_new)) = plain_object_local(ctx, value_id, expr_arena)
+            else {
+                return Err(LowerError::UnsupportedNode);
+            };
+            if !src_is_new || src_class != target_class {
+                return Err(LowerError::UnsupportedType);
+            }
+            let idx = ctx.intern_class_const(ClassConstKind::Create, src_class);
+            out.push(0x04);
+            out.extend_from_slice(&(src_off as u16).to_le_bytes());
+            out.push(0x56);
+            out.extend_from_slice(&idx.to_le_bytes());
+            out.push(0xfc);
+            out.push(0xf8);
+            out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+            Ok(())
+        }
+        _ => Err(LowerError::UnsupportedNode),
+    }
 }
 
 /// Lower `t.X = v` (a UDT field assignment): build a real bound `0x2c`

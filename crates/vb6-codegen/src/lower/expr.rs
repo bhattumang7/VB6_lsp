@@ -489,6 +489,13 @@ pub(super) struct ClassFieldRef {
     /// The class-instance local's own frame offset (its object-reference
     /// slot — LdAddr'd before every vtable call, per the oracle capture).
     pub obj_offset: i16,
+    /// The class-instance local's declared class symbol — the object-resolve
+    /// opcode (`0x24`) takes a class-const-table index (its own lazy-New
+    /// fallback, same mechanism as `New`/`0x56`; see `ClassConstKind::Create`)
+    /// as its operand, oracle-confirmed NOT always 0 (`c2_let_string`: a
+    /// string literal pushed earlier in the same statement already claimed
+    /// index 0, so the class resolve gets index 1) — never hardcode it.
+    pub class_sym: u32,
     /// Vtable byte offset of the Property Get accessor, when present.
     pub get_slot: Option<u16>,
     /// Vtable byte offset of the Property Let accessor, when present.
@@ -499,6 +506,25 @@ pub(super) struct ClassFieldRef {
     /// for types with no confirmed node tag (e.g. Object) — fine for `Set`,
     /// which never numerically coerces its value; Get/Let callers require it.
     pub type_tag: Option<u16>,
+    /// The field's/property's `load_store_ctx` — selects the Get-temp's
+    /// read-back opcode from `RT_LOAD_BY_CTX` (oracle-confirmed distinct per
+    /// type: `Long` reads its temp back with `0x6c`, `Double` with `0x6f` —
+    /// see `oracle_bank/c1_get_double`). `None` for a type with no confirmed
+    /// simple load (matches `crate::bridge::load_store_ctx`'s own gate).
+    pub load_ctx: Option<usize>,
+    /// `true` for a `String`-typed field/property — its Get-temp read-back
+    /// uses a DIFFERENT mechanism than every other type: opcode `0x3e`
+    /// (steal: push the temp's BSTR pointer AND zero the temp slot, so no
+    /// separate release is needed), not a plain `RT_LOAD_BY_CTX` load — and
+    /// the assignment that consumes it must use the move-store `0x31`, not a
+    /// refcounted copy-store. Oracle-confirmed: `oracle_bank/c1_get_string`.
+    pub is_string: bool,
+    /// `true` for a `Double`-typed field/property — its Property-Let staging
+    /// uses the FPU-aware store `0xfd 0xc9` (pop the FPU-top Double, store it
+    /// at the temp offset with an overflow check) instead of the plain
+    /// top-of-eval-stack store `0x59` every other grounded type uses.
+    /// Oracle-confirmed: `oracle_bank/c2_let_double`.
+    pub is_double: bool,
     /// `true` for an explicit `Property Get`/`Let` member; `false` for a
     /// plain Public field. A property's Let call stages its argument into a
     /// temp frame slot first (`0x59 <offset>`) — a field's store does not.
@@ -511,14 +537,15 @@ pub(super) struct ClassFieldRef {
 /// that name in source). Codegen has no scanner/interner to turn a sym_id
 /// back into text, so it never compares member names itself: sema resolves
 /// each access SITE individually (by walking the class's ordered member list
-/// and summing slot widths — ordinary name comparison, but done once, ahead
+/// and assigning slot widths — ordinary name comparison, but done once, ahead
 /// of time, where a scanner is available) and hands codegen the final byte
 /// offsets directly via `BoundModule::class_member_slots`, keyed by
-/// `access_id.0`. See `ResolvedClassMember` and the `vb6-class-vtable-slot-
-/// rule` memory note for the full derivation (live-TTD-traced against
-/// VBA6.DLL: a per-class-compile-context counter at a fixed struct offset,
-/// initialized to the IDispatch prefix 0x1c, advanced by 8/12/4 bytes per
-/// field/object-field/single-accessor-or-proc in source-declaration order).
+/// `access_id.0`. See `ResolvedClassMember` and `resolve_class_member_slots`
+/// for the assignment rule: from the IDispatch prefix base `0x1c` at stride 4,
+/// each scalar field takes 2 slots (Get/Let), an object field 3 (Get/Let/Set),
+/// and a single property accessor or `Sub`/`Function` 1 slot, in source-
+/// declaration order — a closed form confirmed byte-for-byte against the real
+/// VB6 compiler across every class-member fixture.
 pub(super) fn resolve_class_field(
     ctx: &LowerCtx,
     base: NodeId,
@@ -533,6 +560,10 @@ pub(super) fn resolve_class_field(
     // the resolved slots themselves come from `class_member_slots` below.
     ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
     let obj_offset = ctx.local_slots[local_idx].frame_offset;
+    let class_sym = match ctx.local_type(local_idx) {
+        VbaType::UserDefined(sym) => *sym,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
     let resolved = ctx
         .module
         .class_member_slots
@@ -544,12 +575,19 @@ pub(super) fn resolve_class_field(
         .get(&access_id.0)
         .ok_or(LowerError::Unresolved)?;
     let type_tag = vba_type_to_node_tag(member_ty);
+    let load_ctx = crate::bridge::load_store_ctx(member_ty);
+    let is_string = matches!(member_ty, VbaType::String);
+    let is_double = matches!(member_ty, VbaType::Double);
     Ok(ClassFieldRef {
         obj_offset,
+        class_sym,
         get_slot: resolved.get_slot,
         let_slot: resolved.let_slot,
         set_slot: resolved.set_slot,
         type_tag,
+        load_ctx,
+        is_string,
+        is_double,
         is_property: resolved.is_property,
     })
 }
@@ -576,6 +614,20 @@ pub(super) fn lower_class_field_get(
     let field = resolve_class_field(ctx, base, access_id)?;
     let get_slot = field.get_slot.ok_or(LowerError::UnsupportedNode)?;
     let type_tag = field.type_tag.ok_or(LowerError::UnsupportedType)?;
+    // `0x3e` (String steal-load) has no `RT_LOAD_BY_CTX` entry — String's own
+    // table slot (ctx 8) is out of that array's bounds by design, since this
+    // is a structurally different opcode (see `ClassFieldRef::is_string`),
+    // not a missing table row.
+    let load_opcode = if field.is_string {
+        0x3e
+    } else {
+        let load_ctx = field.load_ctx.ok_or(LowerError::UnsupportedType)?;
+        let op = *crate::tables::RT_LOAD_BY_CTX.get(load_ctx).ok_or(LowerError::UnsupportedType)?;
+        if op == 0 {
+            return Err(LowerError::UnsupportedType);
+        }
+        op
+    };
     let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
 
     let mut bytes = Vec::new();
@@ -583,11 +635,12 @@ pub(super) fn lower_class_field_get(
     bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
     bytes.push(0x04);
     bytes.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
-    bytes.extend_from_slice(&[0x24, 0x00, 0x00]);
+    bytes.push(0x24);
+    bytes.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     bytes.push(0x0d);
     bytes.extend_from_slice(&get_slot.to_le_bytes());
-    bytes.extend_from_slice(&[0x01, 0x00]);
-    bytes.push(0x6c);
+    bytes.extend_from_slice(&ctx.intern_member_type_const(type_tag).to_le_bytes());
+    bytes.push(load_opcode);
     bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
 
     let off = arena.alloc_blob(&bytes);
@@ -619,6 +672,7 @@ pub(super) fn lower_class_field_store(
     let field = resolve_class_field(ctx, base, access_id)?;
     let let_slot = field.let_slot.ok_or(LowerError::UnsupportedNode)?;
     let type_tag = field.type_tag.ok_or(LowerError::UnsupportedType)?;
+    let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
 
     let mut arena = NodeArena::new();
     let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, Some(type_tag))?;
@@ -628,17 +682,45 @@ pub(super) fn lower_class_field_store(
     out.extend(emitter.into_bytes());
 
     if field.is_property {
-        let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
-        out.push(0x59);
-        out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+        if field.is_string {
+            // A String Let argument is staged completely differently from
+            // every other grounded type: the pushed value is COPY-STORED
+            // (`0x43`, the same refcounted assign-store a plain `Dim s As
+            // String: s = v` would use) into the temp — properly owning/
+            // addref'ing the BSTR — and then the call passes the temp's
+            // ADDRESS (`0x04`), not a staged value. Oracle-confirmed:
+            // `oracle_bank/c2_let_string`.
+            out.push(0x43);
+            out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+            out.push(0x04);
+            out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+        } else if field.is_double {
+            out.push(0xfd);
+            out.push(0xc9);
+            out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+        } else {
+            out.push(0x59);
+            out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+        }
     }
 
     out.push(0x04);
     out.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
-    out.extend_from_slice(&[0x24, 0x00, 0x00]);
+    out.push(0x24);
+    out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&let_slot.to_le_bytes());
-    out.extend_from_slice(&[0x01, 0x00]);
+    out.extend_from_slice(&ctx.intern_member_type_const(type_tag).to_le_bytes());
+
+    if field.is_property && field.is_string {
+        // The temp copy staged above was only needed to pass the argument by
+        // address; the callee makes its own copy, so the caller's copy must
+        // be explicitly released afterward (the same `0x2f <offset>` single-
+        // temp-release opcode already used for concat-chain cleanup).
+        // Oracle-confirmed: `oracle_bank/c2_let_string`.
+        out.push(0x2f);
+        out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+    }
     Ok(())
 }
 
@@ -696,7 +778,8 @@ pub(super) fn lower_class_field_set(
 
     out.push(0x04);
     out.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
-    out.extend_from_slice(&[0x24, 0x00, 0x00]);
+    out.push(0x24);
+    out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&set_slot.to_le_bytes());
     out.extend_from_slice(&[0x01, 0x00]);

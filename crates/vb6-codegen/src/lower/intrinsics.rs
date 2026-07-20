@@ -162,6 +162,10 @@ pub(super) fn lower_class_method_call(
     };
     ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
     let obj_offset = ctx.local_slots[local_idx].frame_offset;
+    let class_sym = match ctx.local_type(local_idx) {
+        VbaType::UserDefined(sym) => *sym,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
     let resolved = ctx
         .module
         .class_member_slots
@@ -422,7 +426,8 @@ pub(super) fn lower_class_method_call(
 
     out.push(0x04);
     out.extend_from_slice(&(obj_offset as u16).to_le_bytes());
-    out.extend_from_slice(&[0x24, 0x00, 0x00]);
+    out.push(0x24);
+    out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&method_slot.to_le_bytes());
     out.extend_from_slice(&[0x01, 0x00]);

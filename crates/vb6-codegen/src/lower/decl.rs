@@ -262,6 +262,134 @@ pub(super) fn member_access_base_is_class(module: &BoundModule, base: NodeId) ->
     }
 }
 
+/// Resolve `node_id` (a `SetAssign` target or a bare-identifier value) to a
+/// plain object-typed local — a `Dim x As ClassName` / `Dim x As New
+/// ClassName` local referenced by its bare name, as opposed to `o.Field`
+/// (routed through `lower_class_field_set`/`_store` instead). Returns the
+/// local's class symbol, frame offset, and whether it was declared `As New`
+/// (which changes how a READ of it — as a `Set` source — must be lowered:
+/// see `lower_set_plain_object_local`'s `NameRef` arm).
+pub(super) fn plain_object_local(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+) -> Option<(u32, i16, bool)> {
+    let ExprNode::NameRef { .. } = expr_arena.get(node_id) else {
+        return None;
+    };
+    match ctx.module.resolutions.get(&node_id.0) {
+        Some(NameResolution::Local { local_idx, .. }) => {
+            let local = ctx.proc.locals.get(*local_idx)?;
+            let VbaType::UserDefined(sym) = &local.vba_type else {
+                return None;
+            };
+            if !ctx.module.class_field_info.contains_key(sym) {
+                return None;
+            }
+            Some((*sym, ctx.local_slots[*local_idx].frame_offset, local.is_new))
+        }
+        _ => None,
+    }
+}
+
+/// The frame type-context the proc's shared class-member scratch temp
+/// (`class_member_base`) needs, derived from the VBA type(s) actually read
+/// through a class-member Get access (`x = o.F`/`x = o.P`) in the proc body.
+/// The temp is a Get call's out-parameter target, so it must be sized for
+/// the property's real return type (oracle-confirmed: a `Double`-returning
+/// Get uses an 8-byte temp loaded back with `0x6f`, not the 4-byte `0x6c`
+/// a `Long` Get uses — see `oracle_bank/c1_get_double`; a `String`-returning
+/// Get uses a 4-byte BSTR-pointer temp — `oracle_bank/c1_get_string`). This
+/// is `crate::bridge::type_ctx`'s FRAME-sizing index space (fed straight into
+/// `ProcFrame::declare_anon`), not `load_store_ctx`'s opcode-selection index
+/// space — the two happen to coincide for every type except `String` (frame
+/// ctx 5 vs. load ctx 8), and `declare_anon` panics on an out-of-range ctx,
+/// so this distinction matters. Returns `Ok(None)` when no Get access
+/// appears (callers fall back to the historical 4-byte `Long` default, which
+/// also serves class-method argument staging). Also scans `Property Let`
+/// STAGING targets (`o.P = v`, when `is_property` — a plain field store
+/// doesn't stage through this temp at all): the staged value is written
+/// through the SAME shared temp, so its type constrains the sizing exactly
+/// like a Get's does (oracle-confirmed: `oracle_bank/c2_let_double` stages
+/// through an 8-byte temp via the FPU-aware `fd c9`, not the 4-byte `0x59`
+/// a `Long` Let uses). Returns `Err(UnsupportedType)` when more than one
+/// DISTINCT type-context is read/staged across the proc — sizing a single
+/// shared temp for a mix of differently-sized Get/Let types is not grounded
+/// (this is slice #12's "non-Long combo" scope, not this one's); never
+/// silently pick one and risk under-sizing the other.
+pub(super) fn class_member_temp_ctx(
+    module: &BoundModule,
+    node_id: NodeId,
+    expr_arena: &ExprArena,
+) -> Result<Option<usize>, LowerError> {
+    fn note_ty(
+        module: &BoundModule,
+        ty_node: NodeId,
+        found: &mut Option<usize>,
+    ) -> Result<(), LowerError> {
+        let ty = module.types.get(&ty_node.0).ok_or(LowerError::Unresolved)?;
+        let ctx = crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+        match *found {
+            None => *found = Some(ctx),
+            Some(prev) if prev == ctx => {}
+            Some(_) => return Err(LowerError::UnsupportedType),
+        }
+        Ok(())
+    }
+    fn walk(
+        module: &BoundModule,
+        node_id: NodeId,
+        expr_arena: &ExprArena,
+        found: &mut Option<usize>,
+    ) -> Result<(), LowerError> {
+        let mut recurse = |id: NodeId, found: &mut Option<usize>| walk(module, id, expr_arena, found);
+        match expr_arena.get(node_id) {
+            ExprNode::Assign { target, value } => {
+                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*value) {
+                    if member_access_base_is_class(module, *base) {
+                        note_ty(module, *value, found)?;
+                    }
+                }
+                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*target) {
+                    if member_access_base_is_class(module, *base)
+                        && module.class_member_slots.get(&target.0).map(|r| r.is_property).unwrap_or(false)
+                    {
+                        note_ty(module, *target, found)?;
+                    }
+                }
+                Ok(())
+            }
+            ExprNode::Block { stmts } => {
+                for &id in stmts {
+                    recurse(id, found)?;
+                }
+                Ok(())
+            }
+            ExprNode::If { then_body, else_body, .. } => {
+                recurse(*then_body, found)?;
+                if let Some(id) = else_body {
+                    recurse(*id, found)?;
+                }
+                Ok(())
+            }
+            ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+                recurse(*body, found)
+            }
+            ExprNode::SelectCase { cases, .. } => {
+                for &id in cases {
+                    recurse(id, found)?;
+                }
+                Ok(())
+            }
+            ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => recurse(*body, found),
+            _ => Ok(()),
+        }
+    }
+    let mut found = None;
+    walk(module, node_id, expr_arena, &mut found)?;
+    Ok(found)
+}
+
 /// Count the hidden 4-byte temps a proc's class-member Get accesses need
 /// (`x = o.F`, field or property alike): the vtable Get call writes its
 /// result through an out-parameter address into a temp, which is then
