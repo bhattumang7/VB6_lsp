@@ -593,6 +593,7 @@ pub(super) fn lower_class_method_call(
     // operand must be interned, not hardcoded).
     out.extend_from_slice(&ctx.intern_member_type_const(class_sym).to_le_bytes());
     string_release_temps.reverse();
+    object_release_temps.reverse();
 
     // A `Sub` statement call (no result to store) releases its staged String
     // argument temps immediately — there is nothing else to interleave them
@@ -605,22 +606,37 @@ pub(super) fn lower_class_method_call(
         emit_temp_release_list(&string_release_temps, out);
     }
 
-    // A staged `Object` argument's temp is released via `0x1a <offset>` — the
-    // same opcode already grounded for a Property Set's staged Object temp —
-    // one instruction per temp, emitted right after the call (matching the
-    // String release's placement for a `Sub` statement). Only a SINGLE
-    // staged Object argument, and only the `is_value = false` (`Sub`
-    // statement) shape, is oracle-confirmed (`oracle_bank/
-    // c8_obj_byval_param`): two-or-more temps (no bulk-release form
-    // confirmed for Object) and a `Function`-in-value-position combination
-    // (no evidence for the release's placement relative to the result store)
-    // are both gated rather than guessed.
+    // A staged `Object` argument's temp is released via `0x1a <offset>` for a
+    // SINGLE temp — the same opcode already grounded for a Property Set's
+    // staged Object temp — emitted right after the call (matching the
+    // String release's placement for a `Sub` statement). TWO OR MORE temps
+    // share a bulk release instead — a DIFFERENT opcode from String's
+    // `0x32` (`0x29`), but the SAME PARAMETER-DECLARATION-order convention
+    // (reversed back from push order, same as `string_release_temps`):
+    // `0x29 <byte-len (n*2)> <offsets…>`. Oracle-confirmed: a fresh
+    // two-Object-argument capture this session, `oracle_bank/
+    // c14_two_object_args_release` (`Use2(ByVal x As Object, ByVal y As
+    // Object)`, both sourced from `As New` locals). Only the `is_value = false`
+    // (`Sub` statement) shape is oracle-confirmed; a `Function`-in-value-
+    // position combination (no evidence for release-vs-result-store
+    // ordering) is gated rather than guessed.
     if !object_release_temps.is_empty() {
-        if is_value || object_release_temps.len() > 1 {
+        if is_value {
             return Err(LowerError::UnsupportedNode);
         }
-        out.push(0x1a);
-        out.extend_from_slice(&object_release_temps[0].to_le_bytes());
+        match object_release_temps.len() {
+            1 => {
+                out.push(0x1a);
+                out.extend_from_slice(&object_release_temps[0].to_le_bytes());
+            }
+            n => {
+                out.push(0x29);
+                out.extend_from_slice(&((n * 2) as u16).to_le_bytes());
+                for t in &object_release_temps {
+                    out.extend_from_slice(&t.to_le_bytes());
+                }
+            }
+        }
     }
 
     // A ByRef Object argument sourced from a specific-class-typed `As New`

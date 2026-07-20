@@ -448,6 +448,16 @@ field-vs-Property. A specific-class-typed `As New` source value for the Set
 direction (`oracle_bank/c12_object_field_set_new_source`) needed the same
 lazy-fetch load already grounded elsewhere for this source shape.
 
+**Two-or-more staged Object-argument release temps use a bulk release, but
+via a DIFFERENT opcode from String's** — `0x29 <byte-len> <offsets…>`, not
+String's `0x32`, though the same declaration-order convention (reversed
+from push order). Oracle-confirmed: `oracle_bank/
+c14_two_object_args_release` (`e2e_class_method_two_object_args_release`),
+two `ByVal Object` arguments both sourced from `As New` locals. A
+`Function`-in-value-position combination with 2+ such releases remains
+gated (no evidence for release-vs-result-store ordering in that
+combination).
+
 ## `Set` assignment to a plain object local
 
 `Set localVar = v` where `localVar` is a bare `Dim x As ClassName` /
