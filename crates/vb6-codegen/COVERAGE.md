@@ -592,3 +592,15 @@ ReDim shape (a plain `ReDim`, or a `ReDim Preserve` following an earlier
 `ReDim` of the same array) DOES push it. The emitter previously pushed it
 unconditionally. Fixed via a new `LowerCtx::redimmed_arrays` per-proc
 tracking set. Fixture: `e2e_redim_preserve_first_use`.
+
+## Module-level Const: found and fixed a real bug (2026-07-20)
+
+`Const K As Long = 42` at MODULE scope (not inside a procedure) was
+silently emitting WRONG bytes — treated as an ordinary global variable
+read (a bogus load through an unused frame slot) rather than folded to its
+literal value. Root cause was in `vb6-sema`: the module-level `Dim`/`Const`
+collector never evaluated the declaration's initializer at all, unlike the
+procedure-level local collector. Fixed on both sides (sema now folds the
+module-level initializer the same way; codegen's global-variable-reference
+path now checks const-ness first). Fixtures: `e2e_module_level_const`,
+`e2e_module_level_const_string` (the String-literal fold path).

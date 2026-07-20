@@ -419,8 +419,8 @@ impl<'a> Binder<'a> {
                     self.collect_top_decl(sid);
                 }
             }
-            ExprNode::DimItem { name, is_const, is_new, bounds, type_node, .. } => {
-                self.collect_top_var(id, *name, *is_const, *is_new, bounds.is_some(), *type_node);
+            ExprNode::DimItem { name, is_const, is_new, bounds, type_node, init, .. } => {
+                self.collect_top_var(id, *name, *is_const, *is_new, bounds.is_some(), *type_node, *init);
             }
             ExprNode::TypeDecl { name, members } => {
                 let sym_id = *name;
@@ -486,6 +486,17 @@ impl<'a> Binder<'a> {
 
     /// Collect a module-level variable (`Dim`/`Const` item). Module `Dim`/`Const`
     /// default to Private; array bounds wrap the element type in `Array`.
+    ///
+    /// A module-level `Const`'s value is folded here the SAME way a
+    /// procedure-level one is (`collect_locals`'s own `const_value`/
+    /// `const_lit` derivation) — this used to unconditionally leave both
+    /// `None` regardless of `is_const`, silently discarding the `init`
+    /// expression entirely (the old signature didn't even take one). The
+    /// code generator's `NameResolution::ModuleVar` path had no fallback for
+    /// this: it read a module-level `Const` back as an ordinary global
+    /// variable (a bogus load through an unused frame slot, wrong bytes) —
+    /// oracle-confirmed broken (`oracle_bank/c21_module_const`) before this
+    /// fix.
     fn collect_top_var(
         &mut self,
         id: NodeId,
@@ -494,13 +505,20 @@ impl<'a> Binder<'a> {
         is_new: bool,
         has_bounds: bool,
         type_node: Option<NodeId>,
+        init: Option<NodeId>,
     ) {
+        let const_value = if is_const { init.and_then(|i| self.eval_const_i64(i)) } else { None };
+        let const_lit = if is_const && const_value.is_none() {
+            init.and_then(|i| self.eval_const_lit(i))
+        } else {
+            None
+        };
         let var = BoundVar {
             sym_id,
             vba_type: self.extract_type(type_node),
             is_const,
-            const_value: None,
-            const_lit: None,
+            const_value,
+            const_lit,
             fixed_string_len: None,
             array_dims: None,
             is_static: false,

@@ -359,6 +359,29 @@ pub(super) fn lower_name_ref(
             Ok(build_frame_load_node(arena, opcode, tag, lctx, slot.frame_offset))
         }
         NameResolution::ModuleVar(idx) => {
+            // A module-level `Const` is folded to its literal value at the use
+            // site, exactly like a procedure-level `Const` (`NameResolution::
+            // Local`'s own `is_const` branch above) — it has no real storage,
+            // just a wasted (but harmless) global-frame slot from the generic
+            // module-var allocation, which does not distinguish const from
+            // non-const declarations. Without this check, a module-level
+            // `Const` was silently treated as an ordinary global variable and
+            // read back through a bogus load — a real bug, not a hypothetical
+            // (oracle-confirmed wrong: `oracle_bank/c21_module_const`).
+            let mv = &ctx.module.module_vars[*idx];
+            if mv.is_const {
+                if let Some(v) = mv.const_value {
+                    let tag = vba_type_to_node_tag(&mv.vba_type).ok_or(LowerError::UnsupportedType)?;
+                    return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+                }
+                let lit = mv.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
+                if let AstLit::Str(s) = lit {
+                    let idx = ctx.intern_string(s);
+                    ctx.call_next.set(ctx.call_next.get() + 1);
+                    return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
+                }
+                return lower_lit(lit, arena);
+            }
             let ty = ctx.global_type(*idx);
             let slot = &ctx.global_slots[*idx];
             let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
