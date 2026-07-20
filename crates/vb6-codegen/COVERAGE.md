@@ -51,7 +51,7 @@ Static locals.
 | op | what | status |
 |----|------|--------|
 | 0x0b–0x0e | unary/most expr leaves | emit |
-| 0x0f | name-ref classify | emit (class 0/2/3); GAP class 1 (typed name reference — front-end wiring, no new back-end work needed); GAP class 4 (in-place node-flag mutation — blocked on our own immutable emit representation, not a missing back-end routine) |
+| 0x0f | name-ref classify | **n/a — UNREACHABLE from any current lowering construct** (2026-07-20 reachability audit): zero real `NodeArena::node(0x0f, ...)` construction sites anywhere in `lower/*.rs`, for ANY op-class — even classes 0/2/3, previously marked "emit", are exercised only by hand-built nodes in `emit_tests.rs`, never by a real e2e fixture. Class 1 (typed name reference) and class 4 (in-place node-flag mutation) remain individually unimplemented in the emitter, but nothing in the front end ever reaches this opcode at all to exercise any class of it. |
 | 0x10–0x15, 0x18, 0x1a | typed leaves/coercions | emit |
 | 0x24 | (group) | emit |
 | 0x2c | assignment statement | emit (common scalar: RHS + resolved store); GAP: dispatch-binding LHS, array/special LHS, object stack-arg pass-through, object-typed LHS, ByRef-init store, LHS member sub-expression |
@@ -68,12 +68,12 @@ Static locals.
 | 0x5d | type-library-driven cast | ext |
 | 0x5e, 0x5f | group | emit |
 | 0x60 | member-reference coercion | emit (common path); GAP dispatch/late-bound sub-path + member sub-expression |
-| 0x61 | call | emit (by-ref common); GAP: early-bound dispatch call, type-expression argument, ByRef coercion-sequence argument, ByVal (value-returning) call, Variant-result finalize |
+| 0x61 | call | **n/a — UNREACHABLE from any current lowering construct** (2026-07-20 reachability audit): zero real `NodeArena::node(0x61, ...)` construction sites in `lower/*.rs`; the only ones in the crate are in `emit_tests.rs`. Every real call (intra-module via `lower_call`, class-method/vtable via `lower_class_method_call`) emits its bytes directly, never building a `0x61` node — `emit_call`'s "by-ref common" path and its 5 gated sub-paths (early-bound dispatch, type-expression argument, ByRef coercion-sequence argument, ByVal value-returning call, Variant-result finalize) are all dead code from an earlier architectural phase, not gaps blocking real source. |
 | 0x63, 0x65–0x67 | group | emit |
 | 0x68 | object child | emit (trailing word); GAP object-child attribute path |
 | 0x69 | binary-operation setup | emit (common); GAP ByRef stack-init variant |
 | 0x6a–0x6e | instruction group | emit |
-| 0x72 | type-node builder | GAP (object/late-bound case only; a scalar/struct-only sub-port is a promising near-term target) |
+| 0x72 | type-node builder | **n/a — UNREACHABLE from any current lowering construct** (2026-07-20 reachability audit): zero `NodeArena::node(0x72, ...)` construction sites anywhere in the crate, including tests — the most cleanly unreached opcode found this pass. |
 | 0x73 | group | emit |
 | 0x14(0x17), 0x5d | external type-library paths | ext |
 
@@ -83,10 +83,10 @@ Static locals.
 |------|--------|
 | reference kinds 1/2/3/5/6/7 | emit |
 | reference kind 0xa | emit (the sub-case reachable from the currently-wired descriptor builders); GAP: a second sub-case, not reachable from any wired builder today |
-| reference kind 4 | GAP — needs a descriptor field this sub-dispatch doesn't carry yet (now independently confirmed by two other routines) plus a finalize-emit mode variant; adding both safely (without risk to already-tested kinds) is a scoped follow-up, not yet done |
+| reference kind 4 | GAP — needs a descriptor field this sub-dispatch doesn't carry yet (now independently confirmed by two other routines) plus a finalize-emit mode variant; adding both safely (without risk to already-tested kinds) is a scoped follow-up, not yet done. NOT reclassified in the 2026-07-20 reachability audit (unlike 0x61/0x0f/0x72): `resolve_ident_ref`'s real UDT-field-access path hardcodes its OWN record classification to `rec1&7==3`, but `category` here comes from a separate call (`expression_type2`'s independent classification), so a quick reachability grep can't rule out `category==4` arising there — would need to actually trace that path, not assumed. |
 | value-emitter kinds 8/9/0xb + typed store | emit |
 | value-emitter finalize / re-entry coercion tail | emit |
-| store-with-conversion outside the currently-modeled type-offset range | GAP — confirmed reachable for some real type combinations (not just a table-extent formality); needs further work, not yet a table poke |
+| store-with-conversion outside the currently-modeled type-offset range | GAP — confirmed reachable for some real type combinations (not just a table-extent formality); needs further work, not yet a table poke. Re-confirmed still open in the 2026-07-20 reachability audit — this is the ONE item-2 row that pass left untouched as genuinely actionable. |
 | binding-emit tail: type/expression coercion propagation | emit (as a standalone, buffer-verified routine) |
 | binding-emit tail: member-record binding-descriptor construction | emit (common + a COM-bypass edge case); GAP: the live slot-table path (COM) |
 | binding-emit tail: operator-descriptor construction for a resolved binding | emit (scratch-descriptor construction only); GAP: the final result-descriptor's fields, which depend on a side-table this pipeline has no model for |
