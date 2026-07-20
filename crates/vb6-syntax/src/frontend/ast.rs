@@ -410,7 +410,21 @@ pub enum ExprNode {
     },
 
     /// File I/O statement (Open, Close, Print #, Write #, Input #, etc.)
-    FileIoStmt { kind: FileIoKind, channel: Option<NodeId>, args: Vec<NodeId> },
+    ///
+    /// `open_mode`/`open_flags` are only meaningful when `kind` is
+    /// [`FileIoKind::Open`] (0 for every other kind): `open_mode` is the
+    /// runtime's file-mode code (Input=1, Output=2, Random=4, Append=8,
+    /// Binary=0x20), and `open_flags` packs the optional Access/Lock
+    /// clauses as `(lock_code << 4) | access_code` (access: none=0, Read=1,
+    /// Write=2, ReadWrite=3; lock: none=0, `Lock Read Write`=1,
+    /// `Lock Write`=2, `Lock Read`=3, `Shared`=4).
+    FileIoStmt {
+        kind: FileIoKind,
+        channel: Option<NodeId>,
+        args: Vec<NodeId>,
+        open_mode: u8,
+        open_flags: u8,
+    },
 
     /// Line label definition at the start of a statement: a named label
     /// (`Foo:`) or a numeric line label (`100`). `target` carries the interned

@@ -130,7 +130,12 @@ status is presently **unaudited GAP**, not confirmed `n/a`:
 - `WithEvents`, `RaiseEvent`, event declarations.
 - `Declare` (DLL import) declarations.
 - Optional parameters with default values; `ParamArray`.
-- File I/O statements (`Open`/`Close`/`Print #`/`Input #`/`Get`/`Put`).
+- File I/O statements: `Print #`/`Input #`/`Get`/`Put` remain fully open.
+  `Close #n` (single literal channel) and `Open path For mode [Access]
+  [Lock|Shared] As #n` (literal path/channel, no `Len=` clause) are now
+  grounded — see the dedicated notes below. `Close #a, #b` (2+ channels),
+  `Close #expr` (non-literal channel), `Open`'s `Len=` clause, and `Open`
+  with a non-literal path/channel remain gated/ungrounded.
   (The `Debug` object is covered — see the dedicated note below: the real
   compiler strips it entirely, so the correct behavior is a pure no-op,
   not a new opcode.)
@@ -637,5 +642,43 @@ literal. `0xf4 <n>` (the channel as a direct 1-byte immediate operand) then
 `0xfd 0x3d` (the Close runtime call). Oracle-confirmed via two captures
 with different channel numbers. `Close #a, #b` (2+ channels) and `Close
 #someVariable` (non-literal channel) remain gated — no capture yet.
-`Open`/`Print #`/`Input #`/`Get`/`Put` remain fully open. Fixtures:
+`Print #`/`Input #`/`Get`/`Put` remain fully open. Fixtures:
 `e2e_fileio_close`, `e2e_fileio_close_chan5`.
+
+## File I/O: Open (literal path/channel, no Len=) grounded (2026-07-20)
+
+`Open path For mode [Access access] [Lock lock | Shared] As #n` where
+`path` is a string literal and `n` is an integer literal (0-255), with no
+`Len=` clause. Parser change first: `parse_file_open` previously threw
+away every token between the path and `As` — it now decodes the mode
+keyword and the optional Access/Lock/Shared clauses into two new AST
+fields on `FileIoStmt`, `open_mode` (u8) and `open_flags` (u8):
+- `open_mode`: Input=1, Output=2, Random=4 (the default when `For` is
+  omitted), Append=8, Binary=0x20.
+- `open_flags` = `(lock_code << 4) | access_code`. `access_code`: none=0,
+  Read=1, Write=2, ReadWrite=3. `lock_code`: none=0, `Lock Read Write`=1,
+  `Lock Write`=2, `Lock Read`=3, `Shared`=4. Bare `Lock` with neither
+  `Read` nor `Write` is not a grounded shape (no capture distinguishes it)
+  and is encoded as the sentinel `0xf`, which the codegen arm rejects with
+  `UnsupportedNode` rather than guessing a byte.
+
+Emitted bytes: `1b <pool idx, 2 bytes>` (the interned path string, same
+convention as any other string-literal push) `f4 <n>` (channel, direct
+1-byte immediate, same convention as `Close`) `f4 ff` (a fixed sentinel
+byte, invariant across every mode/access/lock combination captured — the
+`Len=` clause is a separate, ungrounded mechanism, so a statement with
+`Len=` present is gated off rather than guessing what this byte would
+become) `fe 5d <mode> <flags>` (the Open runtime call, operand = the
+`open_mode`/`open_flags` bytes verbatim) `14` (procedure terminator, not
+part of the statement itself).
+
+Oracle-confirmed across eleven headless captures: all five modes in
+isolation, all three Access combinations in isolation, all four Lock/
+Shared combinations in isolation, and one combined Access+Lock capture
+confirming the two nibbles combine independently (`Access Read` + `Lock
+Write` → `0x21`, matching `(2<<4)|1`) rather than colliding or requiring a
+distinct code. A non-literal path, a non-literal channel, and a `Len=`
+clause all remain gated/ungrounded — no capture distinguishes any of
+those shapes from this one. Fixtures: `e2e_fileio_open_output` (`For
+Output`, no Access/Lock), `e2e_fileio_open_combo` (`For Random Access
+Read Lock Write`).

@@ -466,6 +466,53 @@ pub(super) fn lower_stmt(
         // expression can't be a compile-time immediate operand the way a
         // literal can, so the mechanism for that shape is presumably
         // different, not merely "evaluate then use the same fixed form."
+        // `Open path For mode [Access access] [Lock lock | Shared] As #n`
+        // (a literal string path and a literal file number, no `Len=`
+        // clause): `1b <pool idx (2 bytes)>` pushes the interned path
+        // string, `f4 <n>` pushes the file number as a direct 1-byte
+        // immediate (same convention as Close), `f4 ff` pushes a fixed
+        // sentinel byte (invariant across every mode/access/lock
+        // combination captured; the `Len=` clause is a separate, ungrounded
+        // mechanism so is gated off rather than guessed), then `fe 5d
+        // <mode> <flags>` is the Open runtime call: `mode` is the file-mode
+        // byte and `flags` packs `(lock_code << 4) | access_code` exactly
+        // as `open_mode`/`open_flags` are encoded on the AST node.
+        // Oracle-confirmed across eleven captures spanning every mode
+        // (Input/Output/Random/Append/Binary), every Access combination
+        // (Read/Write/ReadWrite), and every Lock/Shared combination —
+        // `oracle_bank/c24_fileio_open_*`.
+        ExprNode::FileIoStmt {
+            kind: FileIoKind::Open,
+            channel: Some(channel),
+            args,
+            open_mode,
+            open_flags,
+        } => {
+            if args.len() != 1 || *open_flags == 0xf {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let path = match expr_arena.get(args[0]) {
+                ExprNode::Literal { lit: AstLit::Str(s) } => s.clone(),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let n = match expr_arena.get(*channel) {
+                ExprNode::Literal { lit: AstLit::Int(v) } if (0..=255).contains(v) => *v as u8,
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            let idx = ctx.intern_string(&path);
+            ctx.call_next.set(ctx.call_next.get() + 1);
+            out.push(0x1b);
+            out.extend_from_slice(&idx.to_le_bytes());
+            out.push(0xf4);
+            out.push(n);
+            out.push(0xf4);
+            out.push(0xff);
+            out.push(0xfe);
+            out.push(0x5d);
+            out.push(*open_mode);
+            out.push(*open_flags);
+            Ok(())
+        }
         ExprNode::FileIoStmt { kind: FileIoKind::Close, args, .. } => {
             if args.len() != 1 {
                 return Err(LowerError::UnsupportedNode);

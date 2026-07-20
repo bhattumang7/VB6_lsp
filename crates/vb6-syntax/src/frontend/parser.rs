@@ -676,6 +676,8 @@ impl<'src> Parser<'src> {
                 kind: FileIoKind::LineInput,
                 channel: Some(ch),
                 args: vec![var],
+                open_mode: 0,
+                open_flags: 0,
             })
         } else if self.peek().kind == TokenKind::Kw(Kw::LParen)
             || (self.peek().kind == TokenKind::Kw(Kw::Step)
@@ -761,6 +763,8 @@ impl<'src> Parser<'src> {
                 kind,
                 channel: Some(ch),
                 args: vec![val],
+                open_mode: 0,
+                open_flags: 0,
             })
         } else {
             self.parse_ident_stmt_with_tok(arena, t)
@@ -782,6 +786,8 @@ impl<'src> Parser<'src> {
                 kind: FileIoKind::Name,
                 channel: None,
                 args: vec![old_path, new_path],
+                open_mode: 0,
+                open_flags: 0,
             });
         }
         // Could be assignment: Name = expr
@@ -1097,7 +1103,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Print, channel, args })
+        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Print, channel, args, open_mode: 0, open_flags: 0 })
     }
 
     /// Materialise the declared type implied by a type-declaration suffix.
@@ -2006,16 +2012,59 @@ impl<'src> Parser<'src> {
 
     // ── File I/O statement parsers ──────────────────────────────────────────
 
-    /// `Open path For mode [Access access] [Lock lock] As [#]filenum [Len=n]`
+    /// `Open path [For mode] [Access access] [Lock lock | Shared] As [#]filenum [Len=n]`
+    ///
+    /// `mode` is packed into `open_mode` (Input=1, Output=2, Random=4,
+    /// Append=8, Binary=0x20; the runtime's default when `For` is omitted
+    /// is Random). `open_flags` packs `(lock_code << 4) | access_code`
+    /// (access: none=0, Read=1, Write=2, ReadWrite=3; lock: none=0,
+    /// `Lock Read Write`=1, `Lock Write`=2, `Lock Read`=3, `Shared`=4).
     fn parse_file_open(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // Open
         let path = self.parse_expr(arena, 0);
-        loop {
-            match self.peek().kind {
-                TokenKind::Kw(Kw::As) | TokenKind::Eol | TokenKind::Eof => break,
-                _ => { self.advance(); }
-            }
+
+        let mut open_mode: u8 = 4; // default: Random
+        if self.eat(TokenKind::Kw(Kw::For)) {
+            open_mode = match self.peek().kind {
+                TokenKind::Kw(Kw::Input) => { self.advance(); 1 }
+                TokenKind::Kw(Kw::Output) => { self.advance(); 2 }
+                TokenKind::Kw(Kw::Random) => { self.advance(); 4 }
+                TokenKind::Kw(Kw::Append) => { self.advance(); 8 }
+                TokenKind::Kw(Kw::Binary) => { self.advance(); 0x20 }
+                _ => open_mode,
+            };
         }
+
+        let mut access_code: u8 = 0;
+        if self.eat(TokenKind::Kw(Kw::Access)) {
+            let has_read = self.eat(TokenKind::Kw(Kw::Read));
+            let has_write = self.eat(TokenKind::Kw(Kw::Write));
+            access_code = match (has_read, has_write) {
+                (true, true) => 3,
+                (true, false) => 1,
+                (false, true) => 2,
+                (false, false) => 0,
+            };
+        }
+
+        let mut lock_code: u8 = 0;
+        if self.eat(TokenKind::Kw(Kw::Shared)) {
+            lock_code = 4;
+        } else if self.eat(TokenKind::Kw(Kw::Lock)) {
+            let has_read = self.eat(TokenKind::Kw(Kw::Read));
+            let has_write = self.eat(TokenKind::Kw(Kw::Write));
+            lock_code = match (has_read, has_write) {
+                (true, true) => 1,
+                (true, false) => 3,
+                (false, true) => 2,
+                // Bare `Lock` with neither `Read` nor `Write` is not a
+                // grounded shape (never captured); 0xf marks it so codegen
+                // rejects it loudly instead of guessing a byte.
+                (false, false) => 0xf,
+            };
+        }
+        let open_flags = (lock_code << 4) | access_code;
+
         self.eat(TokenKind::Kw(Kw::As));
         self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
@@ -2025,7 +2074,13 @@ impl<'src> Parser<'src> {
             args.push(self.parse_expr(arena, 0)); // `Len = <expr>` is a real use site
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Open, channel: Some(ch), args })
+        arena.alloc(ExprNode::FileIoStmt {
+            kind: FileIoKind::Open,
+            channel: Some(ch),
+            args,
+            open_mode,
+            open_flags,
+        })
     }
 
     /// `Close [[#]filenum, ...]`
@@ -2038,7 +2093,7 @@ impl<'src> Parser<'src> {
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs })
+        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, open_mode: 0, open_flags: 0 })
     }
 
     /// `Print #filenum, [args]` or `Write #filenum, [args]`.
@@ -2053,7 +2108,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args })
+        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
     }
 
     /// `Input #filenum, varlist`.
@@ -2068,7 +2123,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Input, channel: Some(ch), args: vars })
+        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Input, channel: Some(ch), args: vars, open_mode: 0, open_flags: 0 })
     }
 
     /// `Get #filenum, [recnum], var` or `Put #filenum, [recnum], val`.
@@ -2086,7 +2141,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args })
+        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
     }
 
     /// `Lock #filenum [, from [To to]]` or `Unlock ...`.
@@ -2101,7 +2156,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args })
+        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
     }
 
     /// Parse ident-statement starting from a token already consumed from the stream.
