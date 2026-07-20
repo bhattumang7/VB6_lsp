@@ -525,3 +525,27 @@ different, ungrounded opcode); a var-to-var copy across two different
 classes.
 
 Committed byte-exact fixture: `e2e_set_new_reassign_nothing`.
+
+## Class-method call: Array argument (ByRef)
+
+`o.Method arr` where the parameter is declared `arr() As SomeType` (ByRef —
+the only mode grounded; VB6 has no array literals, so ByVal is unreachable
+and stays gated) stages the array VARIABLE'S OWN ADDRESS (an ordinary
+`LdAddr`, `0x04 <src>`) into a scratch temp via the generic scalar store
+(`0x59`) — no dedicated array opcode. No further push follows the stage,
+matching every other non-`String` grounded argument type's shape.
+
+The scratch region is SHARED with `Long`'s (`type_ctx` 2), not a dedicated
+context — oracle-confirmed directly via a two-call capture (an unrelated
+`Long` argument and the `Array` argument in one proc land on the identical
+temp offset), not assumed from size alone.
+
+Oracle-confirmed: `oracle_bank/c19_array_arg_ref` (single Array argument),
+`oracle_bank/c19_array_arg_mixed_with_long` (the shared-region proof).
+Fixtures: `e2e_class_method_array_arg`, `e2e_class_method_array_arg_mixed_
+with_long`.
+
+UDT method arguments remain fully open (no capture, no C-trace done yet —
+genuinely different from Array, since a UDT is an inline fixed-size struct
+rather than a descriptor pointer, so this finding is not assumed to
+transfer).

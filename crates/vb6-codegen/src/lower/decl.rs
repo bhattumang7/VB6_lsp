@@ -571,7 +571,13 @@ pub(super) fn class_method_arg_needs_staging(
     by_val: bool,
     expr_arena: &ExprArena,
 ) -> bool {
-    if matches!(param_ty, VbaType::Object) {
+    // An `Array` argument is ALWAYS staged, even when it's a plain same-
+    // declared-type variable (the ONLY shape arrays can appear as — VB6 has
+    // no array literals) — matching `Object`'s own unconditional staging.
+    // Oracle-confirmed: `oracle_bank/c19_array_arg_ref`/`c19_array_arg_
+    // mixed_with_long` both stage the array-descriptor address into a temp
+    // rather than taking the plain-variable ByRef fast path.
+    if matches!(param_ty, VbaType::Object | VbaType::Array(_)) {
         return true;
     }
     let is_plain_same_type_var = matches!(expr_arena.get(arg_id), ExprNode::NameRef { .. })
@@ -651,15 +657,30 @@ pub(super) fn class_method_arg_needs_staging(
 /// probe`) rather than assumed from `Double`'s pattern despite sharing its
 /// 8-byte size — ByVal emits `6d <offset>`, IDENTICAL to `Double`/
 /// `Currency`, confirming (not assuming) the same size-based scheme applies.
-/// TODO(not implemented): `UDT`/`Array` remain gated (excluded from the
-/// `matches!` below, so `LowerError::UnsupportedNode`) — no addressability/
-/// staging convention has been captured for either. Closing this needs a
-/// dedicated oracle probe per shape (a UDT ByVal/ByRef pair, an Array ByVal/
-/// ByRef pair) the same way every scalar type above was closed this
-/// session, plus (for ByVal specifically) a real per-shape size/copy
-/// convention — `static_var_size`'s fixed-size model does not apply to
-/// either (see its own doc comment).
-pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> bool {
+/// `Array` (ByRef only — the only mode captured; VB6 has no array literals,
+/// so a ByVal array argument's shape, if legal at all, is unconfirmed):
+/// oracle-captured (`oracle_bank/c19_array_arg_ref`, `c19_array_arg_mixed_
+/// with_long`) — a plain array-variable argument stages the ARRAY
+/// VARIABLE'S OWN ADDRESS (its descriptor-pointer slot's address, i.e. a
+/// ByRef-style `LdAddr`) into the SAME type-context region as `Long` (both
+/// stage via the generic `0x59` store into a 4-byte-wide temp; the second
+/// capture proves this directly — a `Long` argument and an `Array`
+/// argument in one proc land on the EXACT SAME temp offset, sharing one
+/// region, not two separate ones). No further push follows the stage —
+/// same "stage only, no address re-push" shape as every non-`String`
+/// grounded type.
+///
+/// TODO(not implemented): `UDT` remains gated (excluded from the `matches!`
+/// below, so `LowerError::UnsupportedNode`) — no addressability/staging
+/// convention has been captured for it. Closing this needs a dedicated
+/// oracle probe (a UDT ByVal/ByRef pair) the same way every other type
+/// above was closed, plus (for ByVal specifically) a real per-shape size/
+/// copy convention — `static_var_size`'s fixed-size model does not apply
+/// (see its own doc comment).
+pub(super) fn class_method_param_is_grounded(ty: &VbaType, by_val: bool) -> bool {
+    if matches!(ty, VbaType::Array(_)) {
+        return !by_val;
+    }
     matches!(
         ty,
         VbaType::Integer

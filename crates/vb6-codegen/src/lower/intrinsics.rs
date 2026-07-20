@@ -414,6 +414,29 @@ pub(super) fn lower_class_method_call(
             continue;
         }
 
+        // An `Array` parameter's argument (always a plain array variable —
+        // VB6 has no array literals) stages the ARRAY VARIABLE'S OWN
+        // ADDRESS (`04 <src>`, the same `LdAddr` any ByRef argument's source
+        // uses) into its scratch temp via the generic scalar store (`0x59`,
+        // NOT a dedicated array opcode) — no further push follows, matching
+        // every other non-`String` grounded type. Oracle-confirmed:
+        // `oracle_bank/c19_array_arg_ref` (single Array argument) and
+        // `c19_array_arg_mixed_with_long` (an Array argument sharing its
+        // scratch region with an unrelated `Long` argument in the same
+        // proc — proves the shared `type_ctx` mapping, not just the byte
+        // shape). ByVal is ungrounded (no VB6 array-literal source exists
+        // to probe it with) — gated via `class_method_param_is_grounded`.
+        if let VbaType::Array(_) = ty {
+            let src_off = arg_var_offset(ctx, args[i]).ok_or(LowerError::UnsupportedNode)?;
+            out.push(0x04);
+            out.extend_from_slice(&src_off.to_le_bytes());
+            let (arg_ctx, arg_idx) = stage_slot[i].expect("Array args always need staging");
+            let temp_off = ctx.class_member_slot(arg_ctx, arg_idx);
+            out.push(0x59);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+            continue;
+        }
+
         // An `Object`-typed parameter whose argument is a SPECIFIC-class-typed
         // `As New` local (`Dim y As New Class1`, passed where the parameter
         // itself is declared plain `Object`) reads via the SAME lazy-fetch

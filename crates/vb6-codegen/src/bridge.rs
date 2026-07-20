@@ -53,7 +53,17 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
         // Variant is a 16-byte structure (ctx 10).
         VbaType::Variant => 10,
         VbaType::Decimal => return None,
-        VbaType::UserDefined(_) | VbaType::Array(_) => return None,
+        // A class-method call's Array argument stages its descriptor
+        // address into the SAME scratch region as `Long` — oracle-
+        // confirmed directly (not assumed from size alone): a `Long`
+        // argument and an `Array` argument in one proc land on the
+        // IDENTICAL temp offset (`oracle_bank/c19_array_arg_mixed_with_
+        // long`). Scoped to this class-member-scratch-region use only —
+        // `type_ctx` is never consulted for a plain array LOCAL's own
+        // frame allocation (that's `declare_anon`'s own `type_ctx: usize`
+        // parameter, set directly, not derived from this function).
+        VbaType::Array(_) => 2,
+        VbaType::UserDefined(_) => return None,
     })
 }
 
