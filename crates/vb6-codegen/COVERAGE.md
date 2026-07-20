@@ -347,6 +347,26 @@ preamble length (missing its leading 16 bytes, the argument's own
 push+stage sequence) — a real instance of "recapture MEDIUMs before
 landing" catching a genuinely wrong byte sequence, not a formality.
 
+**An `Object`-typed parameter's argument being a SPECIFIC-class-typed `As
+New` local** (`Dim y As New Class1` passed where the parameter is plain
+`Object`) is a DIFFERENT source shape from the plain-`Object`-variable case
+(`e2e_class_method_arg_variable`) — it reads via the SAME lazy-fetch
+sequence already grounded for `Set o = otherObjLocal` (`04 <src>` LdAddr
+then `56 <create-idx>`) rather than the generic coercion pipeline (which has
+no notion of coercing a `UserDefined`-typed variable into an `Object`-tagged
+node and would error `UnsupportedType`), then feeds the SAME `fd 9c
+<temp_off>` staging store every Object argument uses. Oracle-confirmed:
+`oracle_bank/c8_obj_byval_param` (`e2e_class_method_object_byval_param`).
+Surprising asymmetry, confirmed by two independent fixtures: the lazy-fetch
+temp IS released afterward (`0x1a <offset>`, the same opcode already
+grounded for a Property Set's staged Object temp) but the plain-Object-
+variable case's temp is NOT — releasing both unconditionally regressed the
+already-shipped `e2e_class_method_arg_variable` fixture immediately, caught
+by the full-workspace run before landing. Gated (not guessed): two-or-more
+such release temps in one call (no bulk form confirmed for Object) and any
+`Function`-in-value-position combination (no evidence for release-vs-
+result-store ordering).
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /

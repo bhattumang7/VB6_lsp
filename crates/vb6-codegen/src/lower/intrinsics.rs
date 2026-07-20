@@ -271,6 +271,13 @@ pub(super) fn lower_class_method_call(
     // c5_func_string`'s two-argument release (`x` released before `y`,
     // despite `y` having been staged first).
     let mut string_release_temps: Vec<i16> = Vec::new();
+    // Staged `Object` arguments' temps — released via `0x1a <offset>` (the
+    // same release opcode already grounded for a Property Set's staged
+    // Object temp), one instruction per temp; only a SINGLE staged Object
+    // argument is oracle-confirmed (`oracle_bank/c8_obj_byval_param`), so a
+    // call staging two or more is gated below rather than guessing a bulk
+    // form or a release order.
+    let mut object_release_temps: Vec<i16> = Vec::new();
 
     // Push each argument, right-to-left (VB6 evaluation order) — matching
     // the intra-module call convention's own push order. Three distinct
@@ -383,6 +390,35 @@ pub(super) fn lower_class_method_call(
             continue;
         }
 
+        // An `Object`-typed parameter whose argument is a SPECIFIC-class-typed
+        // `As New` local (`Dim y As New Class1`, passed where the parameter
+        // itself is declared plain `Object`) reads via the SAME lazy-fetch
+        // sequence already grounded for `Set o = otherObjLocal`
+        // (`plain_object_local`/`lower_set_plain_object_local`'s `NameRef`
+        // arm): `04 <src>` (LdAddr) then `56 <create-idx>` (construct-if-null,
+        // already-owned push) — NOT the generic `lower_expr_coerced` pipeline,
+        // which has no notion of coercing a `UserDefined`-typed variable into
+        // an `Object`-tagged node and would error `UnsupportedType`. The
+        // loaded value then feeds the SAME `fd 9c` staging store as any other
+        // Object argument (below) — only the VALUE computation differs, not
+        // the consumer. Oracle-confirmed: `oracle_bank/c8_obj_byval_param`.
+        if matches!(ty, VbaType::Object) {
+            if let Some((src_class, src_off, true)) = plain_object_local(ctx, args[i], expr_arena) {
+                let idx = ctx.intern_class_const(ClassConstKind::Create, src_class);
+                out.push(0x04);
+                out.extend_from_slice(&src_off.to_le_bytes());
+                out.push(0x56);
+                out.extend_from_slice(&idx.to_le_bytes());
+                let (arg_ctx, arg_idx) = stage_slot[i].expect("Object args always need staging");
+                let temp_off = ctx.class_member_slot(arg_ctx, arg_idx);
+                out.push(0xfd);
+                out.push(0x9c);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+                object_release_temps.push(temp_off);
+                continue;
+            }
+        }
+
         let coerce = vba_type_to_node_tag(ty);
         let mut arena = NodeArena::new();
         let root = lower_expr_coerced(ctx, args[i], expr_arena, &mut arena, coerce)?;
@@ -449,6 +485,10 @@ pub(super) fn lower_class_method_call(
         let (arg_ctx, arg_idx) = stage_slot[i].expect("needs_staging[i] implies a stage slot");
         let temp_off = ctx.class_member_slot(arg_ctx, arg_idx);
         if matches!(ty, VbaType::Object) {
+            // NO release afterward — unlike the `As New`-class-typed-source
+            // lazy-fetch shape above, a plain `Object`-typed variable's
+            // staged value needs no post-call cleanup. Oracle-confirmed:
+            // `e2e_class_method_arg_variable` (`o.TakeObj y`, `y As Object`).
             out.push(0xfd);
             out.push(0x9c);
             out.extend_from_slice(&temp_off.to_le_bytes());
@@ -520,6 +560,24 @@ pub(super) fn lower_class_method_call(
     // loaded-back result, which this function has no way to emit itself.
     if !is_value {
         emit_temp_release_list(&string_release_temps, out);
+    }
+
+    // A staged `Object` argument's temp is released via `0x1a <offset>` — the
+    // same opcode already grounded for a Property Set's staged Object temp —
+    // one instruction per temp, emitted right after the call (matching the
+    // String release's placement for a `Sub` statement). Only a SINGLE
+    // staged Object argument, and only the `is_value = false` (`Sub`
+    // statement) shape, is oracle-confirmed (`oracle_bank/
+    // c8_obj_byval_param`): two-or-more temps (no bulk-release form
+    // confirmed for Object) and a `Function`-in-value-position combination
+    // (no evidence for the release's placement relative to the result store)
+    // are both gated rather than guessed.
+    if !object_release_temps.is_empty() {
+        if is_value || object_release_temps.len() > 1 {
+            return Err(LowerError::UnsupportedNode);
+        }
+        out.push(0x1a);
+        out.extend_from_slice(&object_release_temps[0].to_le_bytes());
     }
 
     if let Some(off) = result_temp {
