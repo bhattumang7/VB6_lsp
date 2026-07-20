@@ -443,30 +443,28 @@ fn lower_proc_pooled(
         local_slots.push(frame.declare_anon(5));
     }
 
-    // One shared hidden temp for the proc's class-member vtable dispatch
-    // scratch use: a Get access (`x = o.F`/`x = o.P`) writes its out-parameter
-    // through it, and a Property-Let call (`o.P = v`) stages its argument
-    // through it (`0x59 <offset>`) before the vtable call — a plain-field
-    // store needs no staging. Oracle-confirmed for both a single Get/Let pair
-    // AND repeated/mixed-member accesses within one proc (multiple fields
-    // and properties in one class, each reusing the SAME slot in sequence —
-    // see the `e2e_class_multi_field_and_property`/`e2e_class_property_let_
-    // before_get` fixtures): this is one scratch slot per proc, not one per
-    // access or per member. Sized to the proc's Get-accessed/Let-staged type
-    // (`class_member_temp_ctx`, oracle-confirmed distinct for `Long`/`Double`
-    // — `oracle_bank/c1_get_double`/`c2_let_double`); falls back to the
-    // historical 4-byte `Long` sizing when the proc has no Get/Let access
-    // needing this temp (method-arg staging alone always uses that width) or
-    // gates loudly on a mix of distinctly-sized Get/Let types in one proc
-    // (ungrounded — see `class_member_temp_ctx`).
-    let class_member_base = local_slots.len();
-    let class_member_ctx = class_member_temp_ctx(module, NodeId(proc.body), expr_arena)?.unwrap_or(2);
-    let needs_class_member_temp = count_class_get_temps(module, NodeId(proc.body), expr_arena) > 0
-        || count_class_let_temps(module, NodeId(proc.body), expr_arena) > 0;
-    let class_member_temp_count = (needs_class_member_temp as usize)
-        .max(max_class_method_temps(module, NodeId(proc.body), expr_arena));
-    for _ in 0..class_member_temp_count {
-        local_slots.push(frame.declare_anon(class_member_ctx));
+    // Hidden scratch temps for the proc's class-member vtable dispatch use:
+    // a Get access (`x = o.F`/`x = o.P`) writes its out-parameter through
+    // one, a Property-Let call (`o.P = v`) stages its argument through one
+    // (`0x59 <offset>`) before the vtable call, a Property-Set call stages
+    // its argument through one (`fd 9c <offset>`), and a class-method call
+    // stages each of its own arguments (plus a Function's result, in value
+    // position) through one apiece — a plain-field store needs no staging.
+    // One REGION per distinct frame type-context (`ClassMemberRegion`), not
+    // one shared region for the whole proc: oracle-confirmed this session
+    // that a `Double` Get-temp region and an unrelated `Sub`-call-argument
+    // region (`Long`) are SEPARATE, non-overlapping frame areas, and
+    // likewise two DIFFERENT Get types (`Long`, `String`) never share one
+    // area either, even though same-typed repeated accesses within ONE
+    // region still correctly reuse its slots (`e2e_class_multi_field_and_
+    // property`/`e2e_class_property_let_before_get`) — see
+    // `decl::class_member_regions`'s doc comment for the full derivation.
+    let mut class_member_bases: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
+    for region in class_member_regions(module, NodeId(proc.body), expr_arena)? {
+        class_member_bases.insert(region.type_ctx, local_slots.len());
+        for _ in 0..region.slots {
+            local_slots.push(frame.declare_anon(region.type_ctx));
+        }
     }
 
     // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
@@ -505,7 +503,7 @@ fn lower_proc_pooled(
         string_rtc_next: Cell::new(0),
         owned_copy_base,
         owned_copy_next: Cell::new(0),
-        class_member_base,
+        class_member_bases,
         call_next: Cell::new(0),
         labels: RefCell::new(Vec::new()),
         goto_patches: RefCell::new(Vec::new()),
@@ -613,11 +611,13 @@ struct LowerCtx<'m> {
     owned_copy_base: usize,
     /// Which owned-copy temp slot the next runtime-string call argument should use.
     owned_copy_next: Cell<usize>,
-    /// Frame index of the shared class-member vtable-dispatch scratch temp
-    /// (used by both Property-Get reads and Property-Let writes — see the
-    /// allocation comment in `lower_proc`). Absent (never indexed) when the
-    /// proc has no class-member access.
-    class_member_base: usize,
+    /// Frame index of each class-member vtable-dispatch scratch REGION's
+    /// first slot, keyed by frame type-context (`crate::bridge::type_ctx`'s
+    /// index space) — see `decl::ClassMemberRegion` and the allocation
+    /// comment in `lower_proc`. One entry per distinct context the proc
+    /// actually needs; absent entirely when the proc has no class-member
+    /// access at all.
+    class_member_bases: std::collections::HashMap<usize, usize>,
     /// Sequential index of the next call site within this procedure (each call's
     /// 2-byte callee-reference operand is its emission-order index, 0,1,2,…).
     call_next: Cell<usize>,
@@ -684,23 +684,31 @@ pub(super) enum ModuleConstEntry {
     Str(String),
     Class(ClassConstKind, u32),
     /// A vtable-call's own second operand (the 2-byte field right after the
-    /// Get/Let/Set/method slot) — a type-descriptor entry for the CALLEE'S
-    /// member type, keyed by the member's node type tag (`vba_type_to_node_
-    /// tag`; e.g. Long=8, Double=11, String=0x10), deduped independently of
-    /// which class/member it came from. Read only on the runtime's error
-    /// path (a type-mismatch message), per the `0x0d` handler's disassembly
+    /// Get/Let/Set/method slot) — read only on the runtime's error path (a
+    /// type-mismatch message), per the `0x0d` handler's disassembly
     /// (`6610a43b`: the operand is unused on the success path, only pushed
     /// as a const-table lookup when the vtable call itself faults) — but its
     /// INDEX still consumes a real pool slot unconditionally, so it must be
-    /// interned like every other entry, not hardcoded. Oracle-confirmed NOT
-    /// a fixed `1`: `c2_let_string` shows it at index 2 (after a string
-    /// literal claims 0 and the class-create claims 1), while every other
-    /// shipped slice's single-member, no-preceding-string proc happened to
-    /// land it at 1 by coincidence (class-create claims 0, so the FIRST
-    /// member-type entry is naturally next). `e2e_class_multi_field_and_
-    /// property`'s six same-typed (`Long`) accesses all reusing index 1
-    /// confirms the dedup-by-type (not per-call-site) behavior.
-    MemberType(u16),
+    /// interned like every other entry, not hardcoded.
+    ///
+    /// NOT keyed by the callee member's type — an earlier pass of this port
+    /// assumed it was (deduped by `vba_type_to_node_tag`), which happened to
+    /// match every fixture shipped at the time because none of them mixed
+    /// TWO DIFFERENT member types in one proc. A dedicated fresh capture
+    /// this session (`Get`-ing a `Double` property THEN calling a `Sub` with
+    /// no return value, in one proc) disproved it directly: both vtable
+    /// calls land on the SAME operand index despite one having a `Double`
+    /// return and the other none at all. A second capture (a `Long` field
+    /// `Get` then a `String` property `Get`, one proc) confirms it again —
+    /// two clearly different types, same shared index. So this is a SINGLE
+    /// per-module descriptor, lazily allocated the first time ANY vtable
+    /// call needs it and reused by every subsequent one — Get/Let/Set/Sub/
+    /// Function, any type, all share the one entry. (`c2_let_string`'s
+    /// index-2 landing, and `e2e_class_multi_field_and_property`'s six
+    /// same-typed accesses landing on index 1, are both still consistent
+    /// with this simpler rule — they just never had a second, DIFFERENTLY-
+    /// typed vtable call in the same proc to reveal the type-independence.)
+    MemberType,
 }
 
 impl LowerCtx<'_> {
@@ -731,19 +739,17 @@ impl LowerCtx<'_> {
         (pool.len() - 1) as u16
     }
 
-    /// Intern a vtable-call's member-type-descriptor entry (the call
-    /// opcode's own second operand), returning its 16-bit index — deduped by
-    /// `type_tag` among `MemberType` entries; shares the index space with
+    /// Intern the module's ONE shared vtable-call member-type-descriptor
+    /// entry (the call opcode's own second operand) — returns the same
+    /// 16-bit index on every call within a module; allocated lazily the
+    /// first time any vtable call needs it. Shares the index space with
     /// `Str`/`Class` entries. See `ModuleConstEntry::MemberType`.
-    pub(super) fn intern_member_type_const(&self, type_tag: u16) -> u16 {
+    pub(super) fn intern_member_type_const(&self) -> u16 {
         let mut pool = self.const_pool.borrow_mut();
-        if let Some(i) = pool
-            .iter()
-            .position(|p| matches!(p, ModuleConstEntry::MemberType(t) if *t == type_tag))
-        {
+        if let Some(i) = pool.iter().position(|p| matches!(p, ModuleConstEntry::MemberType)) {
             return i as u16;
         }
-        pool.push(ModuleConstEntry::MemberType(type_tag));
+        pool.push(ModuleConstEntry::MemberType);
         (pool.len() - 1) as u16
     }
 }
@@ -763,6 +769,20 @@ impl<'m> LowerCtx<'m> {
     }
     fn global_type(&self, idx: usize) -> &VbaType {
         &self.module.module_vars[idx].vba_type
+    }
+    /// The frame offset of a class-member scratch region's FIRST slot for
+    /// the given frame type-context — see `class_member_bases`. Every call
+    /// site that reaches this has already had its own need for this exact
+    /// context counted by `decl::class_member_regions` during frame
+    /// construction, so the region is always present; a missing entry is an
+    /// internal inconsistency between the counting pass and the emission
+    /// pass, not a reachable user-facing error.
+    pub(super) fn class_member_slot(&self, type_ctx: usize, index: usize) -> i16 {
+        let base = *self
+            .class_member_bases
+            .get(&type_ctx)
+            .expect("class_member_regions did not reserve a region for a context an emitter needed");
+        self.local_slots[base + index].frame_offset
     }
 }
 

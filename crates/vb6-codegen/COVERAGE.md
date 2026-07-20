@@ -258,32 +258,64 @@ before this slice, which is why they passed undetected):
   literal claims index 0, pushing the class-create entry to index 1).
 - The vtable-call opcode's own second operand (`0x0d <slot> <idx>`) is NOT a
   fixed `1` either — it's a NEW pool-entry kind, `ModuleConstEntry::
-  MemberType(type_tag)`, deduped by the accessed member's type (not by class
-  or call site — `e2e_class_multi_field_and_property`'s six same-typed
-  `Long` accesses all correctly dedupe to one shared entry). Read only on
-  the vtable call's error path (a type-mismatch message), per the `0x0d`
-  handler's own disassembly, but its index is consumed unconditionally.
+  MemberType`. Read only on the vtable call's error path (a type-mismatch
+  message), per the `0x0d` handler's own disassembly, but its index is
+  consumed unconditionally.
 
 Both are now real pool interns (`intern_class_const`/
 `intern_member_type_const`, `lower/mod.rs`). The object-resolve fix
 (`0x24 <idx>`) was applied everywhere it appears, including
 `lower_class_method_call` (`intrinsics.rs`) — it's the SAME opcode/mechanism
 regardless of what kind of vtable call follows, so leaving it hardcoded
-there would have been an equally-wrong latent bug. The vtable-CALL operand
-fix (`0x0d <slot> <idx>`, `MemberType`) was applied to Get/Let only;
-`lower_class_method_call`'s analogous hardcoded `1` (`intrinsics.rs`) was
-left AS-IS — method calls are a later fan-out slice (#7+, not yet ported/
-oracle-verified this pass) and its correct dedup key (return type? each
-parameter? something else?) isn't grounded yet; flagged for the method-call
-slices to re-examine rather than guessed now.
+there would have been an equally-wrong latent bug.
+
+**`MemberType` was originally modeled as deduped by the accessed member's own
+type** (`e2e_class_multi_field_and_property`'s six same-typed `Long`
+accesses all landing on one shared entry seemed to confirm this) — and
+`lower_class_method_call`'s own hardcoded `01 00` was left unfixed pending a
+later slice. Slice #7/#9 (2026-07-20) DISPROVED the type-keyed model with two
+fresh real-compiler captures: a `Double` Get followed by a no-return `Sub`
+call, and a `Long` Get followed by a `String` Get, EACH in one proc — both
+pairs land on the SAME operand index despite differing types. `MemberType`
+is actually a SINGLE per-module shared descriptor, lazily allocated once and
+reused by every Get/Let/Set/Sub/Function vtable call regardless of type —
+now a unit-payload `ModuleConstEntry::MemberType`, and `lower_class_method_
+call`'s hardcode is fixed too.
+
+**The class-member scratch temp area is likewise NOT one shared slot for the
+whole proc** — the same two captures show the `Double` Get's temp and the
+`Sub` call's `Long`-argument stage temp at two SEPARATE, non-overlapping
+frame offsets (and the `Long`/`String` Get pair likewise), even though same-
+TYPE repeated accesses still correctly share one slot. Now modeled as one
+region PER DISTINCT frame type-context (`decl::ClassMemberRegion`,
+`class_member_regions`), each sized to the max CONCURRENT slots that context
+ever needs (a class-method call's own multiple same-type arguments, e.g.
+`Three(Long,Long,Long)`, still correctly need 3 concurrent slots within
+their one region). `LowerCtx::class_member_base: usize` became
+`class_member_bases: HashMap<usize, usize>` (context → region base), with a
+`class_member_slot(ctx, index)` accessor replacing the old flat indexing.
+
+**Class-method call argument staging** buckets each staged argument by its
+OWN type-context (`decl::bucket_method_call_slots`), in parameter
+DECLARATION order (bucket-creation order) — oracle-confirmed via
+`c4_sub_2arg_mixed_call`'s `DoIt(x As Long, s As String)`. A `Function`
+result temp (value position) claims a slot in ITS OWN return-type bucket,
+positioned after that bucket's own argument slots — confirmed via
+`c5_func_string`'s result+2-String-args all sharing one bucket. A staged
+`String` argument uses the SAME copy-store/by-address/post-call-release
+convention already grounded for Property Let's `String` staging (`0x43`/
+`0x04`.../`0x2f`), previously unhandled in the method-call staging path
+(would have emitted a plain `0x59`, wrong for `String`).
 
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /
 `Set o.ObjField = y` return `UnsupportedNode`; only an explicit `Property Set`
-is grounded), and a bare 0-argument `Sub` **statement** call (`o.Method` with
+is grounded), a bare 0-argument `Sub` **statement** call (`o.Method` with
 the result discarded returns `UnsupportedNode`; a 0-arg `Function` in value
-position, `x = o.Method()`, does lower).
+position, `x = o.Method()`, does lower), and `Set x = o.P` against a
+SPECIFIC-class-typed target (`Dim x As Class1`, not plain `Object` — see the
+"`Set` assignment to a plain object local" section below).
 
 ## `Set` assignment to a plain object local
 

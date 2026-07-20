@@ -292,47 +292,160 @@ pub(super) fn plain_object_local(
     }
 }
 
-/// The frame type-context the proc's shared class-member scratch temp
-/// (`class_member_base`) needs, derived from the VBA type(s) actually read
-/// through a class-member Get access (`x = o.F`/`x = o.P`) in the proc body.
-/// The temp is a Get call's out-parameter target, so it must be sized for
-/// the property's real return type (oracle-confirmed: a `Double`-returning
-/// Get uses an 8-byte temp loaded back with `0x6f`, not the 4-byte `0x6c`
-/// a `Long` Get uses — see `oracle_bank/c1_get_double`; a `String`-returning
-/// Get uses a 4-byte BSTR-pointer temp — `oracle_bank/c1_get_string`). This
-/// is `crate::bridge::type_ctx`'s FRAME-sizing index space (fed straight into
-/// `ProcFrame::declare_anon`), not `load_store_ctx`'s opcode-selection index
-/// space — the two happen to coincide for every type except `String` (frame
-/// ctx 5 vs. load ctx 8), and `declare_anon` panics on an out-of-range ctx,
-/// so this distinction matters. Returns `Ok(None)` when no Get access
-/// appears (callers fall back to the historical 4-byte `Long` default, which
-/// also serves class-method argument staging). Also scans `Property Let`
-/// STAGING targets (`o.P = v`, when `is_property` — a plain field store
-/// doesn't stage through this temp at all): the staged value is written
-/// through the SAME shared temp, so its type constrains the sizing exactly
-/// like a Get's does (oracle-confirmed: `oracle_bank/c2_let_double` stages
-/// through an 8-byte temp via the FPU-aware `fd c9`, not the 4-byte `0x59`
-/// a `Long` Let uses). Returns `Err(UnsupportedType)` when more than one
-/// DISTINCT type-context is read/staged across the proc — sizing a single
-/// shared temp for a mix of differently-sized Get/Let types is not grounded
-/// (this is slice #12's "non-Long combo" scope, not this one's); never
-/// silently pick one and risk under-sizing the other.
-pub(super) fn class_member_temp_ctx(
+/// One class-member scratch region — a reusable slot area for exactly one
+/// frame type-context (`crate::bridge::type_ctx`'s index space), sized to
+/// the maximum number of CONCURRENT slots of that context ever needed at
+/// once in this proc. Regions are allocated in FIRST-ENCOUNTERED order
+/// (source order).
+///
+/// An earlier pass of this port modeled this as a SINGLE shared temp for the
+/// whole proc, gating loudly the moment two distinct type-contexts appeared
+/// — that turned out to be wrong in general, not merely an unfinished
+/// generalization. Two fresh oracle captures this session directly disprove
+/// it: a `Double`-returning Property `Get` followed by a no-return `Sub`
+/// call (one proc) lands on TWO separate, non-overlapping frame offsets —
+/// not one shared slot; a `Long` field `Get` followed by a `String`
+/// property `Get` (one proc) ALSO lands on two separate offsets despite
+/// both being 4-byte-wide contexts, proving the split is genuinely per
+/// TYPE-CONTEXT, not per byte-width. `e2e_class_multi_field_and_property`'s
+/// six SAME-typed (`Long`) accesses still correctly share ONE slot — that
+/// finding stands, it just never had a second, DIFFERENTLY-typed access in
+/// the same proc to reveal the type-independence.
+pub(super) struct ClassMemberRegion {
+    pub type_ctx: usize,
+    pub slots: usize,
+}
+
+/// Assign each staged argument of one class-method call its own
+/// `(type_ctx, index-within-that-context's-bucket)`, in PARAMETER
+/// DECLARATION order (bucket-creation order — oracle-confirmed:
+/// `oracle_bank/c4_sub_2arg_mixed_call`'s `DoIt(x As Long, s As String)`
+/// creates the Long bucket before the String bucket, matching declaration
+/// order, not right-to-left push order). `result_ctx` (a `Function` call in
+/// value position) claims one more slot in ITS OWN return type's bucket,
+/// positioned AFTER that bucket's own argument slots — oracle-confirmed:
+/// `oracle_bank/c5_func_string`'s result temp and its two `String`
+/// arguments all share the one String bucket; the result's frame offset is
+/// SMALLER than either argument's (frame offsets decrement per allocation),
+/// meaning it was allocated LAST, i.e. after the args. Returns the
+/// per-argument assignment (`None` for an arg needing no staging), each
+/// bucket's final size in creation order, and the result's own assignment.
+pub(super) fn bucket_method_call_slots(
+    params: &[(VbaType, bool)],
+    needs_staging: &[bool],
+    result_ctx: Option<usize>,
+) -> Result<(Vec<Option<(usize, usize)>>, Vec<(usize, usize)>, Option<(usize, usize)>), LowerError> {
+    fn claim(ctx: usize, order: &mut Vec<usize>, counts: &mut Vec<usize>) -> usize {
+        let bucket = match order.iter().position(|&c| c == ctx) {
+            Some(i) => i,
+            None => {
+                order.push(ctx);
+                counts.push(0);
+                order.len() - 1
+            }
+        };
+        let idx = counts[bucket];
+        counts[bucket] += 1;
+        idx
+    }
+    let mut order: Vec<usize> = Vec::new();
+    let mut counts: Vec<usize> = Vec::new();
+    let mut assign = Vec::with_capacity(params.len());
+    for ((ty, _), &needs) in params.iter().zip(needs_staging) {
+        if !needs {
+            assign.push(None);
+            continue;
+        }
+        let ctx = crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+        assign.push(Some((ctx, claim(ctx, &mut order, &mut counts))));
+    }
+    let result = result_ctx.map(|ctx| (ctx, claim(ctx, &mut order, &mut counts)));
+    Ok((assign, order.into_iter().zip(counts).collect(), result))
+}
+
+/// Compute the proc's whole set of class-member scratch regions (see
+/// `ClassMemberRegion`) in one tree walk: a Get access (`x = o.F`/`x = o.P`/
+/// `Set x = o.P`), a Property-Let staging target, a Property-Set staging
+/// target (always the `Object` context — `crate::bridge::type_ctx`'s `0`),
+/// and every class-method call's own argument/result buckets
+/// (`bucket_method_call_slots`), each merged into the running per-context
+/// max (not summed — the same physical region is reused across every call
+/// site needing that context, exactly like the already-grounded same-type
+/// repeated-Get case).
+pub(super) fn class_member_regions(
     module: &BoundModule,
     node_id: NodeId,
     expr_arena: &ExprArena,
-) -> Result<Option<usize>, LowerError> {
-    fn note_ty(
+) -> Result<Vec<ClassMemberRegion>, LowerError> {
+    fn merge(order: &mut Vec<usize>, counts: &mut Vec<usize>, ctx: usize, need: usize) {
+        match order.iter().position(|&c| c == ctx) {
+            Some(i) => {
+                if need > counts[i] {
+                    counts[i] = need;
+                }
+            }
+            None => {
+                order.push(ctx);
+                counts.push(need);
+            }
+        }
+    }
+    fn note_single_slot(
         module: &BoundModule,
         ty_node: NodeId,
-        found: &mut Option<usize>,
+        order: &mut Vec<usize>,
+        counts: &mut Vec<usize>,
     ) -> Result<(), LowerError> {
         let ty = module.types.get(&ty_node.0).ok_or(LowerError::Unresolved)?;
         let ctx = crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?;
-        match *found {
-            None => *found = Some(ctx),
-            Some(prev) if prev == ctx => {}
-            Some(_) => return Err(LowerError::UnsupportedType),
+        merge(order, counts, ctx, 1);
+        Ok(())
+    }
+    fn note_call(
+        module: &BoundModule,
+        func_id: NodeId,
+        args_id: NodeId,
+        expr_arena: &ExprArena,
+        is_value: bool,
+        order: &mut Vec<usize>,
+        counts: &mut Vec<usize>,
+    ) -> Result<(), LowerError> {
+        let ExprNode::MemberAccess { base, .. } = expr_arena.get(func_id) else {
+            return Ok(());
+        };
+        if !member_access_base_is_class(module, *base) {
+            return Ok(());
+        }
+        let Some(resolved) = module.class_member_slots.get(&func_id.0) else {
+            return Ok(());
+        };
+        if resolved.method_slot.is_none() {
+            return Ok(());
+        }
+        let args: Vec<NodeId> = match expr_arena.get(args_id) {
+            ExprNode::ArgList { args } => args.clone(),
+            _ => Vec::new(),
+        };
+        if args.len() != resolved.method_params.len() {
+            return Ok(());
+        }
+        let needs_staging: Vec<bool> = args
+            .iter()
+            .zip(&resolved.method_params)
+            .map(|(&a, (ty, by_val))| class_method_arg_needs_staging(module, a, ty, *by_val, expr_arena))
+            .collect();
+        let result_ctx = if is_value {
+            match &resolved.method_ret_type {
+                Some(ty) => Some(crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?),
+                None => None,
+            }
+        } else {
+            None
+        };
+        let (_, buckets, _) =
+            bucket_method_call_slots(&resolved.method_params, &needs_staging, result_ctx)?;
+        for (ctx, count) in buckets {
+            merge(order, counts, ctx, count);
         }
         Ok(())
     }
@@ -340,100 +453,96 @@ pub(super) fn class_member_temp_ctx(
         module: &BoundModule,
         node_id: NodeId,
         expr_arena: &ExprArena,
-        found: &mut Option<usize>,
+        order: &mut Vec<usize>,
+        counts: &mut Vec<usize>,
     ) -> Result<(), LowerError> {
-        let mut recurse = |id: NodeId, found: &mut Option<usize>| walk(module, id, expr_arena, found);
+        let mut recurse =
+            |id: NodeId, order: &mut Vec<usize>, counts: &mut Vec<usize>| walk(module, id, expr_arena, order, counts);
         match expr_arena.get(node_id) {
             ExprNode::Assign { target, value } => {
                 if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*value) {
                     if member_access_base_is_class(module, *base) {
-                        note_ty(module, *value, found)?;
+                        note_single_slot(module, *value, order, counts)?;
                     }
+                }
+                if let ExprNode::Call { func, args } = expr_arena.get(*value) {
+                    note_call(module, *func, *args, expr_arena, true, order, counts)?;
                 }
                 if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*target) {
                     if member_access_base_is_class(module, *base)
                         && module.class_member_slots.get(&target.0).map(|r| r.is_property).unwrap_or(false)
                     {
-                        note_ty(module, *target, found)?;
+                        note_single_slot(module, *target, order, counts)?;
                     }
                 }
                 Ok(())
             }
-            // `Set x = o.P`: same Get-temp sizing requirement as a plain
-            // `Assign` RHS — the vtable Get call writes through the same
-            // shared scratch temp regardless of whether the client spelling
-            // is `Set` or a plain `Assign`.
-            ExprNode::SetAssign { value, .. } => {
+            // `Set x = o.P`/`Set x = o.Method()`: same Get-temp sizing
+            // requirement as a plain `Assign` RHS. `Set o.P = v`/
+            // `Set o.Field = v`: the Property-Set call always stages an
+            // `Object` (`fd 9c`), regardless of the target's own declared
+            // type — its context is unconditionally `0`.
+            ExprNode::SetAssign { target, value } => {
                 if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*value) {
                     if member_access_base_is_class(module, *base) {
-                        note_ty(module, *value, found)?;
+                        note_single_slot(module, *value, order, counts)?;
+                    }
+                }
+                if let ExprNode::Call { func, args } = expr_arena.get(*value) {
+                    note_call(module, *func, *args, expr_arena, true, order, counts)?;
+                }
+                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*target) {
+                    if member_access_base_is_class(module, *base)
+                        && module.class_member_slots.get(&target.0).map(|r| r.set_slot.is_some()).unwrap_or(false)
+                    {
+                        merge(order, counts, 0, 1);
                     }
                 }
                 Ok(())
+            }
+            ExprNode::CallStmt { callee, args } => {
+                let (func_id, args_id) = match expr_arena.get(*callee) {
+                    ExprNode::Call { func, args: inner } => (*func, *inner),
+                    _ => (*callee, *args),
+                };
+                note_call(module, func_id, args_id, expr_arena, false, order, counts)
             }
             ExprNode::Block { stmts } => {
                 for &id in stmts {
-                    recurse(id, found)?;
+                    recurse(id, order, counts)?;
                 }
                 Ok(())
             }
             ExprNode::If { then_body, else_body, .. } => {
-                recurse(*then_body, found)?;
+                recurse(*then_body, order, counts)?;
                 if let Some(id) = else_body {
-                    recurse(*id, found)?;
+                    recurse(*id, order, counts)?;
                 }
                 Ok(())
             }
             ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-                recurse(*body, found)
+                recurse(*body, order, counts)
             }
             ExprNode::SelectCase { cases, .. } => {
                 for &id in cases {
-                    recurse(id, found)?;
+                    recurse(id, order, counts)?;
                 }
                 Ok(())
             }
-            ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => recurse(*body, found),
+            ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => recurse(*body, order, counts),
             _ => Ok(()),
         }
     }
-    let mut found = None;
-    walk(module, node_id, expr_arena, &mut found)?;
-    Ok(found)
+    let mut order = Vec::new();
+    let mut counts = Vec::new();
+    walk(module, node_id, expr_arena, &mut order, &mut counts)?;
+    Ok(order
+        .into_iter()
+        .zip(counts)
+        .map(|(type_ctx, slots)| ClassMemberRegion { type_ctx, slots })
+        .collect())
 }
 
-/// Count the hidden 4-byte temps a proc's class-member Get accesses need
-/// (`x = o.F`/`Set x = o.P`, field or property alike): the vtable Get call
-/// writes its result through an out-parameter address into a temp, which is
-/// then loaded as the expression's value. Only the `Assign`/`SetAssign` RHS
-/// position is scanned — a class member access nested inside a larger
-/// expression is
-/// gated elsewhere (see `resolve_class_field`).
-pub(super) fn count_class_get_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
-    let c = |id: NodeId| count_class_get_temps(module, id, expr_arena);
-    match expr_arena.get(node_id) {
-        ExprNode::Assign { value, .. } | ExprNode::SetAssign { value, .. } => match expr_arena.get(*value) {
-            ExprNode::MemberAccess { base, .. } => member_access_base_is_class(module, *base) as usize,
-            _ => 0,
-        },
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
-        ExprNode::If { then_body, else_body, .. } => {
-            c(*then_body) + else_body.map(c).unwrap_or(0)
-        }
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-            c(*body)
-        }
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
-        _ => 0,
-    }
-}
-
-/// Count the hidden 4-byte temps a proc's class-member Property-Let writes
-/// need (`o.P = v`): the vtable Let call's argument is staged into an
-/// addressable frame slot (`0x59 <offset>`) before the call — unlike a plain
-/// field store, which passes the value directly. Only triggers when the
-/// assignment TARGET's specific resolved class member (see
 /// Whether a class-method argument at `arg_id` needs materializing into a
 /// pool temp before the call, given its parameter's declared type/mode.
 /// Oracle-confirmed via three probes this pass (`argtype_probe`,
@@ -565,123 +674,6 @@ pub(super) fn class_method_param_is_grounded(ty: &VbaType, _by_val: bool) -> boo
             | VbaType::Currency
             | VbaType::Date
     )
-}
-
-/// Whether `func_id` (a call target expression) is a class-member
-/// `Sub`/`Function` MemberAccess resolved for vtable dispatch, and if so, how
-/// many argument-staging temps the call at `args_id` needs — only arguments
-/// that actually need materializing (see `class_method_arg_needs_staging`)
-/// consume a pool slot; a plain-variable argument needing no staging costs
-/// nothing. `is_value` adds one more temp for the result (an expression-
-/// position call's out-param temp) — a statement-position call (result
-/// discarded) needs none.
-fn class_method_call_temps(
-    module: &BoundModule,
-    func_id: NodeId,
-    args_id: NodeId,
-    expr_arena: &ExprArena,
-    is_value: bool,
-) -> usize {
-    let ExprNode::MemberAccess { base, .. } = expr_arena.get(func_id) else {
-        return 0;
-    };
-    if !member_access_base_is_class(module, *base) {
-        return 0;
-    }
-    let Some(resolved) = module.class_member_slots.get(&func_id.0) else {
-        return 0;
-    };
-    if resolved.method_slot.is_none() {
-        return 0;
-    }
-    let args: Vec<NodeId> = match expr_arena.get(args_id) {
-        ExprNode::ArgList { args } => args.clone(),
-        _ => Vec::new(),
-    };
-    if args.len() != resolved.method_params.len() {
-        return 0;
-    }
-    let staged = args
-        .iter()
-        .zip(&resolved.method_params)
-        .filter(|(&arg, (ty, by_val))| {
-            class_method_arg_needs_staging(module, arg, ty, *by_val, expr_arena)
-        })
-        .count();
-    staged + is_value as usize
-}
-
-/// Max class-method-call argument-staging temps needed by any single call
-/// site in the proc (the pool is reused per call, not accumulated — see
-/// `class_member_base`), scanning both statement-position (`CallStmt`, no
-/// result temp) and expression-position (`Assign` RHS, needs a result temp)
-/// call shapes.
-pub(super) fn max_class_method_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
-    let m = |id: NodeId| max_class_method_temps(module, id, expr_arena);
-    match expr_arena.get(node_id) {
-        ExprNode::CallStmt { callee, args } => {
-            let (func_id, args_id) = match expr_arena.get(*callee) {
-                ExprNode::Call { func, args: inner } => (*func, *inner),
-                _ => (*callee, *args),
-            };
-            class_method_call_temps(module, func_id, args_id, expr_arena, false)
-        }
-        ExprNode::Assign { value, .. } => match expr_arena.get(*value) {
-            ExprNode::Call { func, args } => {
-                class_method_call_temps(module, *func, *args, expr_arena, true)
-            }
-            _ => 0,
-        },
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| m(id)).max().unwrap_or(0),
-        ExprNode::If { then_body, else_body, .. } => {
-            m(*then_body).max(else_body.map(m).unwrap_or(0))
-        }
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-            m(*body)
-        }
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| m(id)).max().unwrap_or(0),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => m(*body),
-        _ => 0,
-    }
-}
-
-pub(super) fn count_class_let_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
-    let c = |id: NodeId| count_class_let_temps(module, id, expr_arena);
-    match expr_arena.get(node_id) {
-        ExprNode::Assign { target, .. } => match expr_arena.get(*target) {
-            ExprNode::MemberAccess { base, .. } if member_access_base_is_class(module, *base) => {
-                module
-                    .class_member_slots
-                    .get(&target.0)
-                    .map(|r| r.is_property)
-                    .unwrap_or(false) as usize
-            }
-            _ => 0,
-        },
-        // `Set o.P = v`: the Property-Set call's argument is staged into the
-        // same reusable class-member temp as Let (`fd 9c <offset>` instead of
-        // `0x59 <offset>`) — needs the slot reserved just the same.
-        ExprNode::SetAssign { target, .. } => match expr_arena.get(*target) {
-            ExprNode::MemberAccess { base, .. } if member_access_base_is_class(module, *base) => {
-                module
-                    .class_member_slots
-                    .get(&target.0)
-                    .map(|r| r.set_slot.is_some())
-                    .unwrap_or(false) as usize
-            }
-            _ => 0,
-        },
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
-        ExprNode::If { then_body, else_body, .. } => {
-            c(*then_body) + else_body.map(c).unwrap_or(0)
-        }
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-            c(*body)
-        }
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
-        _ => 0,
-    }
 }
 
 pub(super) fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {

@@ -691,12 +691,18 @@ fn class_property_get_double_matches_oracle_bytes() {
 }
 
 #[test]
-fn class_property_get_mixed_types_in_one_proc_is_gated() {
-    // Two Get accesses of DIFFERENT sizes (Long then Double) sharing the
-    // same proc: the shared scratch temp can't be correctly sized for both
-    // at once, and no oracle capture shows how the real compiler handles
-    // this (that's slice #12's "non-Long combo" scope) — must gate, not
-    // silently pick one size and risk corrupting the other's read-back.
+fn class_property_get_mixed_types_in_one_proc_uses_separate_regions() {
+    // Two Get accesses of DIFFERENT type-contexts (Long then Double) sharing
+    // the same proc: an earlier pass of this port modeled the class-member
+    // scratch area as ONE shared temp for the whole proc and gated this
+    // shape as ungrounded. Two fresh oracle captures this session (slice
+    // #7's `e2e_class_mixed_double_get_and_method_call` and
+    // `e2e_class_mixed_long_and_string_get` — see `decl::ClassMemberRegion`)
+    // directly disproved the single-shared-temp model: each distinct
+    // type-context gets its OWN separate, non-overlapping frame region, not
+    // a fixed-size compromise. This test locks in that behavior for the
+    // Long+Double combination specifically (analogous to the captured
+    // Long+String case, same underlying mechanism) — no longer gated.
     let mut ea = ExprArena::new();
     let o = name_ref(&mut ea, 0);
     let get_long = member_access_node(&mut ea, o, 10);
@@ -770,8 +776,20 @@ fn class_property_get_mixed_types_in_one_proc_is_gated() {
     };
 
     let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let err = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap_err();
-    assert!(matches!(err, LowerError::UnsupportedType));
+    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    assert_eq!(
+        bytes,
+        &[
+            // Get(Long): its own region's temp, read back with 0x6c.
+            0x04, 0x68, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
+            0x6c, 0x68, 0xff, 0x71, 0x74, 0xff,
+            // Get(Double): a SEPARATE region/temp (offset 0x60, not 0x68),
+            // read back with 0x6f — the shared member-type-descriptor pool
+            // index (`01 00`) is reused, matching every other vtable call.
+            0x04, 0x60, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x20, 0x00, 0x01, 0x00,
+            0x6f, 0x60, 0xff, 0x74, 0x6c, 0xff, 0x14,
+        ]
+    );
 }
 
 /// Two-field class: `Public F As Long` then `Public G As Long`. `G`'s Get

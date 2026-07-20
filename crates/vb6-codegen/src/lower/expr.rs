@@ -512,6 +512,13 @@ pub(super) struct ClassFieldRef {
     /// see `oracle_bank/c1_get_double`). `None` for a type with no confirmed
     /// simple load (matches `crate::bridge::load_store_ctx`'s own gate).
     pub load_ctx: Option<usize>,
+    /// The field's/property's FRAME type-context (`crate::bridge::type_ctx`)
+    /// — selects which class-member scratch REGION (`decl::ClassMemberRegion`)
+    /// this access's temp lives in. NOT the same index space as `load_ctx`
+    /// (they coincide for every type except `String`: frame ctx 5 vs. load
+    /// ctx 8) — see `ClassMemberRegion`'s doc comment for why a region is
+    /// per-type-context, not a single proc-wide shared slot.
+    pub frame_ctx: Option<usize>,
     /// `true` for a `String`-typed field/property — its Get-temp read-back
     /// uses a DIFFERENT mechanism than every other type: opcode `0x3e`
     /// (steal: push the temp's BSTR pointer AND zero the temp slot, so no
@@ -584,6 +591,7 @@ pub(super) fn resolve_class_field(
         .ok_or(LowerError::Unresolved)?;
     let type_tag = vba_type_to_node_tag(member_ty);
     let load_ctx = crate::bridge::load_store_ctx(member_ty);
+    let frame_ctx = crate::bridge::type_ctx(member_ty);
     let is_string = matches!(member_ty, VbaType::String);
     let is_object = matches!(member_ty, VbaType::Object);
     let is_double = matches!(member_ty, VbaType::Double);
@@ -595,6 +603,7 @@ pub(super) fn resolve_class_field(
         set_slot: resolved.set_slot,
         type_tag,
         load_ctx,
+        frame_ctx,
         is_string,
         is_object,
         is_double,
@@ -640,7 +649,8 @@ pub(super) fn lower_class_field_get(
         }
         op
     };
-    let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
+    let frame_ctx = field.frame_ctx.ok_or(LowerError::UnsupportedType)?;
+    let temp_offset = ctx.class_member_slot(frame_ctx, 0);
 
     let mut bytes = Vec::new();
     bytes.push(0x04);
@@ -651,7 +661,7 @@ pub(super) fn lower_class_field_get(
     bytes.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     bytes.push(0x0d);
     bytes.extend_from_slice(&get_slot.to_le_bytes());
-    bytes.extend_from_slice(&ctx.intern_member_type_const(type_tag).to_le_bytes());
+    bytes.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
     bytes.push(load_opcode);
     bytes.extend_from_slice(&(temp_offset as u16).to_le_bytes());
 
@@ -684,7 +694,6 @@ pub(super) fn lower_class_field_store(
     let field = resolve_class_field(ctx, base, access_id)?;
     let let_slot = field.let_slot.ok_or(LowerError::UnsupportedNode)?;
     let type_tag = field.type_tag.ok_or(LowerError::UnsupportedType)?;
-    let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
 
     let mut arena = NodeArena::new();
     let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, Some(type_tag))?;
@@ -693,7 +702,9 @@ pub(super) fn lower_class_field_store(
     emitter.emit_expr(root, 2);
     out.extend(emitter.into_bytes());
 
-    if field.is_property {
+    let staged_temp_offset = if field.is_property {
+        let frame_ctx = field.frame_ctx.ok_or(LowerError::UnsupportedType)?;
+        let temp_offset = ctx.class_member_slot(frame_ctx, 0);
         if field.is_string {
             // A String Let argument is staged completely differently from
             // every other grounded type: the pushed value is COPY-STORED
@@ -714,7 +725,10 @@ pub(super) fn lower_class_field_store(
             out.push(0x59);
             out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
         }
-    }
+        Some(temp_offset)
+    } else {
+        None
+    };
 
     out.push(0x04);
     out.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
@@ -722,16 +736,19 @@ pub(super) fn lower_class_field_store(
     out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&let_slot.to_le_bytes());
-    out.extend_from_slice(&ctx.intern_member_type_const(type_tag).to_le_bytes());
+    out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
 
-    if field.is_property && field.is_string {
-        // The temp copy staged above was only needed to pass the argument by
-        // address; the callee makes its own copy, so the caller's copy must
-        // be explicitly released afterward (the same `0x2f <offset>` single-
-        // temp-release opcode already used for concat-chain cleanup).
-        // Oracle-confirmed: `oracle_bank/c2_let_string`.
-        out.push(0x2f);
-        out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+    if field.is_string {
+        if let Some(temp_offset) = staged_temp_offset {
+            // The temp copy staged above was only needed to pass the argument
+            // by address; the callee makes its own copy, so the caller's
+            // copy must be explicitly released afterward (the same `0x2f
+            // <offset>` single-temp-release opcode already used for
+            // concat-chain cleanup). Oracle-confirmed: `oracle_bank/
+            // c2_let_string`.
+            out.push(0x2f);
+            out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
+        }
     }
     Ok(())
 }
@@ -785,7 +802,10 @@ pub(super) fn lower_class_field_set(
     emitter.emit_expr(root, 2);
     out.extend(emitter.into_bytes());
 
-    let temp_offset = ctx.local_slots[ctx.class_member_base].frame_offset;
+    // A Property Set argument is unconditionally `Object`-typed (checked
+    // above), so its scratch region is always the `Object` frame context.
+    let frame_ctx = field.frame_ctx.ok_or(LowerError::UnsupportedType)?;
+    let temp_offset = ctx.class_member_slot(frame_ctx, 0);
     out.push(0xfd);
     out.push(0x9c);
     out.extend_from_slice(&(temp_offset as u16).to_le_bytes());
@@ -796,7 +816,7 @@ pub(super) fn lower_class_field_set(
     out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&set_slot.to_le_bytes());
-    out.extend_from_slice(&ctx.intern_member_type_const(field.type_tag.unwrap()).to_le_bytes());
+    out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
 
     // The staged temp holds an owned reference (`fd 9c` calls the refcounted
     // `__vbaObjSet`), so unlike a plain pushed value it must be explicitly

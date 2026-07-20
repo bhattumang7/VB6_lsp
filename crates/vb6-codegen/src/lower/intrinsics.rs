@@ -209,9 +209,11 @@ pub(super) fn lower_class_method_call(
         return Err(LowerError::UnsupportedNode);
     }
 
-    // Assign a declaration-order stage index to each argument that actually
-    // needs a pool temp; a plain-variable argument needing no staging costs
-    // no slot (and so is skipped when numbering the ones that do).
+    // Assign each argument that actually needs a pool temp its own
+    // `(type_ctx, index-within-that-context's-bucket)` — a plain-variable
+    // argument needing no staging costs no slot. See `bucket_method_call_
+    // slots`'s doc comment for the oracle evidence this per-context
+    // bucketing (not one flat proc-wide numbered pool) is grounded on.
     let needs_staging: Vec<bool> = args
         .iter()
         .zip(&params)
@@ -219,25 +221,26 @@ pub(super) fn lower_class_method_call(
             class_method_arg_needs_staging(ctx.module, arg, ty, *by_val, expr_arena)
         })
         .collect();
-    let mut stage_index: Vec<Option<usize>> = Vec::with_capacity(args.len());
-    let mut staged_count = 0usize;
-    for &needs in &needs_staging {
-        if needs {
-            stage_index.push(Some(staged_count));
-            staged_count += 1;
-        } else {
-            stage_index.push(None);
-        }
-    }
+    let result_ctx = if is_value {
+        let ty = ret_type.as_ref().expect("is_value implies a return type (checked above)");
+        Some(crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?)
+    } else {
+        None
+    };
+    let (stage_slot, _buckets, result_slot) =
+        bucket_method_call_slots(&params, &needs_staging, result_ctx)?;
 
-    let result_temp = if is_value {
-        let off = ctx.local_slots[ctx.class_member_base + staged_count].frame_offset;
+    let result_temp = if let Some((ctx_, idx)) = result_slot {
+        let off = ctx.class_member_slot(ctx_, idx);
         out.push(0x04);
         out.extend_from_slice(&off.to_le_bytes());
         Some(off)
     } else {
         None
     };
+    // Staged String arguments' temps, released (`0x2f`) after the vtable
+    // call — see the staging loop below.
+    let mut string_release_temps: Vec<i16> = Vec::new();
 
     // Push each argument, right-to-left (VB6 evaluation order) — matching
     // the intra-module call convention's own push order. Three distinct
@@ -413,15 +416,31 @@ pub(super) fn lower_class_method_call(
             // value directly — no staging (`argbyval_lit_probe`).
             continue;
         }
-        let idx = stage_index[i].expect("needs_staging[i] implies a stage index");
-        let temp_off = ctx.local_slots[ctx.class_member_base + idx].frame_offset;
+        let (arg_ctx, arg_idx) = stage_slot[i].expect("needs_staging[i] implies a stage slot");
+        let temp_off = ctx.class_member_slot(arg_ctx, arg_idx);
         if matches!(ty, VbaType::Object) {
             out.push(0xfd);
             out.push(0x9c);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+        } else if matches!(ty, VbaType::String) {
+            // A staged String argument uses the SAME copy-store-then-by-
+            // address convention already grounded for a Property Let's
+            // String staging (`lower_class_field_store`'s `is_string`
+            // branch): the value is COPY-STORED (`0x43`, properly owning/
+            // addref'ing the BSTR) into the temp, and the temp's OWN
+            // ADDRESS (`0x04`) is what's actually pushed as the argument —
+            // not a staged value like every other type. The temp is
+            // released after the call (`0x2f`, see below). Oracle-confirmed:
+            // `oracle_bank/c4_sub_2arg_mixed_call`.
+            out.push(0x43);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+            out.push(0x04);
+            out.extend_from_slice(&temp_off.to_le_bytes());
+            string_release_temps.push(temp_off);
         } else {
             out.push(0x59);
+            out.extend_from_slice(&temp_off.to_le_bytes());
         }
-        out.extend_from_slice(&temp_off.to_le_bytes());
     }
 
     out.push(0x04);
@@ -430,7 +449,31 @@ pub(super) fn lower_class_method_call(
     out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, class_sym).to_le_bytes());
     out.push(0x0d);
     out.extend_from_slice(&method_slot.to_le_bytes());
-    out.extend_from_slice(&[0x01, 0x00]);
+    // The vtable-call operand's own member-type-descriptor const-pool entry
+    // (`ModuleConstEntry::MemberType`) — the SAME single per-module shared
+    // entry already grounded for Property Get/Let/Set, extended here to
+    // method calls (`Sub` and `Function` alike, regardless of return type
+    // or argument shape) — oracle-confirmed via two fresh captures this
+    // session: a `Double`-returning Get then a no-return `Sub` call share
+    // one index despite differing types, and (earlier) two different `Sub`s
+    // in one proc share one index despite differing signatures. Was
+    // previously hardcoded `01 00`, which only ever coincidentally matched
+    // every single-call-site fixture shipped before this slice (`c4_sub_
+    // 2arg_mixed_call`'s oracle capture shows index 2, not 1, proving the
+    // operand must be interned, not hardcoded, even under the old
+    // per-type-key hypothesis this session started from and then disproved).
+    out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
+
+    // The staged copy backing each String argument's by-address pass is only
+    // needed for the call itself; the callee makes its own copy, so the
+    // caller's copy is explicitly released afterward (`0x2f`, the same
+    // single-temp-release opcode `lower_class_field_store`'s Property-Let
+    // String staging already uses). Oracle-confirmed: `oracle_bank/
+    // c4_sub_2arg_mixed_call`.
+    for temp_off in &string_release_temps {
+        out.push(0x2f);
+        out.extend_from_slice(&temp_off.to_le_bytes());
+    }
 
     if let Some(off) = result_temp {
         out.push(0x6c);
