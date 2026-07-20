@@ -454,6 +454,18 @@ pub(super) fn lower_stmt(
             ctx.goto_patches.borrow_mut().push((*target, patch));
             Ok(())
         }
+        // `Debug.Print`/`Debug.Assert`/any other `Debug.X` statement: the
+        // real VB6 compiler strips the ENTIRE construct at compile time —
+        // it emits ZERO p-code, not merely a no-op opcode — for BOTH native
+        // and p-code (`CompilationType=-1`) output alike. Oracle-confirmed:
+        // `oracle_bank/c22_debug_print_stripped` (a `Debug.Print`-only body
+        // compiles to just the procedure terminator) and `oracle_bank/
+        // c22_debug_assert_stripped` (a `Debug.Assert` + a second `Debug.
+        // Print`, both surrounding a real assignment, leave only the
+        // assignment's own bytes — neither Debug statement contributes
+        // anything, including their own argument expressions, even ones
+        // with side effects visible to the type system).
+        ExprNode::DebugPrint { .. } => Ok(()),
         _ => Err(LowerError::UnsupportedNode),
     }
 }

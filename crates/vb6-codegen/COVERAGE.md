@@ -130,8 +130,10 @@ status is presently **unaudited GAP**, not confirmed `n/a`:
 - `WithEvents`, `RaiseEvent`, event declarations.
 - `Declare` (DLL import) declarations.
 - Optional parameters with default values; `ParamArray`.
-- File I/O statements (`Open`/`Close`/`Print #`/`Input #`/`Get`/`Put`) and the
-  `Debug` object.
+- File I/O statements (`Open`/`Close`/`Print #`/`Input #`/`Get`/`Put`).
+  (The `Debug` object is covered — see the dedicated note below: the real
+  compiler strips it entirely, so the correct behavior is a pure no-op,
+  not a new opcode.)
 - `RSet`; `MidB`/`MidB$` spellings; multi-dimensional array element load
   (store is covered); non-`Long` multi-dimensional element store; module-
   level `Const` folding; name-form date literals. (`ReDim Preserve` itself
@@ -617,3 +619,13 @@ callsite index applies to an external DLL entry point); now explicitly
 gated (`UnsupportedNode`) instead of emitting plausible-but-ungrounded
 bytes. The real DLL-call p-code convention itself remains fully unported —
 needs its own C-trace + oracle capture, a genuinely new mechanism.
+
+## Debug object statements: confirmed fully stripped (2026-07-20)
+
+`Debug.Print`/`Debug.Assert` (and by extension the whole `Debug.X`
+family — the parser doesn't distinguish which `Debug` member is called)
+are stripped ENTIRELY by the real compiler, even under `CompilationType=
+-1` (p-code): zero bytes, not even for the argument expressions.
+Oracle-confirmed by two captures. Fixed: a pure no-op `Ok(())`, no new
+opcode needed. Fixtures: `e2e_debug_print_stripped`, `e2e_debug_assert_
+stripped`.
