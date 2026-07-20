@@ -437,6 +437,24 @@ up with its own `0x3d` coercion) and changing its return type to also hand
 back the result temp's own offset, so the caller can emit the matching
 `0x1a` release after that tail.
 
+**CORRECTED: the `0x3d` coercion after a `Set`-to-specific-class-target
+vtable call is keyed by the TARGET/DESTINATION's own class, not the
+callee's** — both prior data points (the two paragraphs above, and slice
+#15's ByRef write-back) had target class == callee class, unable to
+distinguish. A fresh two-DISTINCT-class capture (`oracle_bank/
+c16_two_class_set_coercion`: `o As Class1` calling a method returning a
+`New Class2`, `Set x = o.GetOther()` where `x As Class2`) shows the
+coercion operand is a FRESH index, different from the call's own
+Class1-keyed member-type operand — proving it's keyed by `Class2` (the
+target), not `Class1` (the callee). Fixed: `lower_set_class_get_to_
+specific_class_target` now takes `target_class` explicitly and uses it for
+both its `0x3d` sites (previously passed the callee's class instead —
+invisible in every single-class fixture, wrong in general). Confirmed a
+strict correctness fix by full-workspace regression (every existing
+fixture's bytes are unchanged). Slice #15's write-back needed no change —
+it already used the destination's own class by construction. `Set o =
+Nothing`'s independent `ClassConstKind::TypeDesc` mechanism is unaffected.
+
 **Object-typed field Get/Set outside an explicit Property is now grounded.**
 `Set y = o.Fld` (`Fld` a plain `Public Fld As Object` field) was ALREADY
 byte-correct — `oracle_bank/c12_object_field_get` shows it's byte-identical

@@ -586,7 +586,14 @@ pub(super) fn lower_set_plain_object_local(
             Ok(())
         }
         ExprNode::MemberAccess { .. } | ExprNode::Call { .. } => {
-            lower_set_class_get_to_specific_class_target(ctx, dest_off, value_id, expr_arena, out)
+            lower_set_class_get_to_specific_class_target(
+                ctx,
+                target_class,
+                dest_off,
+                value_id,
+                expr_arena,
+                out,
+            )
         }
         _ => Err(LowerError::UnsupportedNode),
     }
@@ -599,22 +606,28 @@ pub(super) fn lower_set_plain_object_local(
 /// read + `0x19` store, no coercion) — assigning into a specific class needs
 /// an explicit type coercion/check first: the Get's result is read back with
 /// a PLAIN generic load (`0x6c`, not `0x51`) into a temp, then `0x3d
-/// <type-idx>` coerces/verifies it against the target's class, THEN the
+/// <type-idx>` coerces/verifies it against the TARGET's class, THEN the
 /// AddRef-store (`0x19`) and a release (`0x1a`) — the same four-opcode tail
-/// already grounded for slice #15's ByRef-argument write-back. The `0x3d`
-/// operand reuses the SAME `intern_member_type_const` entry the Get's own
-/// vtable call just interned (not a fresh `ClassConstKind::TypeDesc` entry)
-/// — this is now TWO independent captures (this one and slice #15's
-/// write-back) showing a `0x3d` immediately following a vtable call reuses
-/// that call's own member-type entry, rather than allocating its own
-/// (`Set o = Nothing`'s independently-grounded `TypeDesc` entry has no
-/// preceding vtable call in its own proc, so it isn't in conflict — it's a
-/// different context, not necessarily a different rule). Oracle-confirmed:
-/// a fresh capture this session, `o` and `x` both `Class1` (does not
-/// distinguish target-class-keying from callee-class-keying, since they're
-/// the same class here — same open-question shape as #15).
+/// already grounded for slice #15's ByRef-argument write-back.
+///
+/// **RESOLVED this session** (previously flagged as an open question): the
+/// `0x3d` operand is `intern_member_type_const(dest's OWN declared class)`,
+/// NOT the callee's class — a fresh two-DISTINCT-class capture
+/// (`oracle_bank/c16_two_class_set_coercion`, `o As Class1` calling a method
+/// that returns a `Class2` instance, `x As Class2`) shows the coercion
+/// operand is a FRESH index, DIFFERENT from the call's own member-type
+/// operand (which is keyed by `Class1`, the callee) — proving the two are
+/// independently keyed, by DIFFERENT classes, not aliased. Every prior
+/// single-class capture (this function's own `c11`/`c13`, and slice #15's
+/// write-back) is STILL consistent with this corrected rule, since the
+/// target/destination and the callee were the SAME class in all of them —
+/// they just never had a second, DIFFERENT class to reveal the distinction.
+/// `Set o = Nothing`'s own `ClassConstKind::TypeDesc(target_class)` (a
+/// genuinely separate mechanism, no vtable call in that context at all)
+/// remains unaffected and uncontradicted by this finding.
 fn lower_set_class_get_to_specific_class_target(
     ctx: &LowerCtx,
+    target_class: u32,
     dest_off: i16,
     value_id: NodeId,
     expr_arena: &ExprArena,
@@ -635,19 +648,11 @@ fn lower_set_class_get_to_specific_class_target(
                 .get(&func.0)
                 .is_some_and(|r| matches!(r.method_ret_type, Some(VbaType::Object)));
             if member_access_base_is_class(ctx.module, base) && ret_is_object {
-                let base_local_idx = match ctx.module.resolutions.get(&base.0) {
-                    Some(NameResolution::Local { local_idx, .. }) => *local_idx,
-                    _ => return Err(LowerError::UnsupportedNode),
-                };
-                let class_sym = match ctx.local_type(base_local_idx) {
-                    VbaType::UserDefined(sym) => *sym,
-                    _ => return Err(LowerError::UnsupportedNode),
-                };
                 let (pending_releases, pending_object_releases, result_temp) =
                     lower_class_method_call(ctx, base, func, args, true, true, expr_arena, out)?;
                 let temp_off = result_temp.expect("is_value implies a result temp");
                 out.push(0x3d);
-                out.extend_from_slice(&ctx.intern_member_type_const(class_sym).to_le_bytes());
+                out.extend_from_slice(&ctx.intern_member_type_const(target_class).to_le_bytes());
                 out.push(0x19);
                 out.extend_from_slice(&(dest_off as u16).to_le_bytes());
                 out.push(0x1a);
@@ -688,7 +693,7 @@ fn lower_set_class_get_to_specific_class_target(
     out.push(0x6c);
     out.extend_from_slice(&temp_off.to_le_bytes());
     out.push(0x3d);
-    out.extend_from_slice(&ctx.intern_member_type_const(field.class_sym).to_le_bytes());
+    out.extend_from_slice(&ctx.intern_member_type_const(target_class).to_le_bytes());
     out.push(0x19);
     out.extend_from_slice(&(dest_off as u16).to_le_bytes());
     out.push(0x1a);
