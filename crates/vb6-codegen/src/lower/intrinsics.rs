@@ -143,9 +143,30 @@ pub(super) fn lower_call(
 /// position (`is_value`) additionally `LdAddr`s a result temp — at
 /// `class_member_base + <total staged count>`, i.e. right after every
 /// argument's own stage slot — *before* any argument is pushed, and loads
-/// the result back *after* the vtable call. Gated to the types whose
-/// convention is actually grounded (`class_method_param_is_grounded`) —
-/// `Integer`/`Long`/`Object` (both modes) and `String` (ByRef only).
+/// the result back *after* the vtable call — via `0x6c` (`Long`), `0x3e`
+/// (`String`, a steal-load) or `0x51` (`Object`, a plain pointer read),
+/// matching the per-type split already grounded for a class-member Get.
+/// Gated to the types whose convention is actually grounded
+/// (`class_method_param_is_grounded`) — `Integer`/`Long`/`Object` (both
+/// modes) and `String` (ByRef only); a `Function` return in value position is
+/// additionally gated to `Long`/`String`/`Object` (oracle-confirmed:
+/// `oracle_bank/c5_func_string`, `oracle_bank/c5_func_object`).
+///
+/// Returns the staged String argument temps still awaiting release, in
+/// PARAMETER DECLARATION order — NOT emitted here when `is_value` is `true`.
+/// `oracle_bank/c5_func_string` (two `String` args, `String` result, all
+/// sharing one region) shows the release must come AFTER the caller's own
+/// store of the loaded-back result (`call → result-load(0x3e) → caller's
+/// move-store(0x31) → release`), which this function cannot emit itself
+/// since the store belongs to the assignment lowering that calls it. When
+/// `is_value` is `false` (a `Sub` statement, no result to store) the
+/// caller emits the returned releases immediately after this call returns,
+/// which is byte-identical to emitting them here (oracle-confirmed:
+/// `oracle_bank/c4_sub_2arg_mixed_call`, a single release right after the
+/// call). Two or more temps share ONE bulk release (`0x32 <byte-len>
+/// <offsets…>`, the same opcode already grounded for multi-temp concat
+/// cleanup) rather than one `0x2f` apiece — oracle-confirmed:
+/// `oracle_bank/c5_func_string`'s two-argument release.
 pub(super) fn lower_class_method_call(
     ctx: &LowerCtx,
     base: NodeId,
@@ -154,7 +175,7 @@ pub(super) fn lower_class_method_call(
     is_value: bool,
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
-) -> Result<(), LowerError> {
+) -> Result<Vec<i16>, LowerError> {
     let local_idx = match ctx.module.resolutions.get(&base.0) {
         Some(NameResolution::Local { local_idx, .. }) => *local_idx,
         Some(_) => return Err(LowerError::UnsupportedNode),
@@ -205,7 +226,12 @@ pub(super) fn lower_class_method_call(
         }
     }
     let ret_type = resolved.method_ret_type.clone();
-    if is_value && !matches!(ret_type, Some(VbaType::Long)) {
+    if is_value
+        && !matches!(
+            ret_type,
+            Some(VbaType::Long) | Some(VbaType::String) | Some(VbaType::Object)
+        )
+    {
         return Err(LowerError::UnsupportedNode);
     }
 
@@ -238,8 +264,12 @@ pub(super) fn lower_class_method_call(
     } else {
         None
     };
-    // Staged String arguments' temps, released (`0x2f`) after the vtable
-    // call — see the staging loop below.
+    // Staged String arguments' temps, released after the vtable call — see
+    // the staging loop below. Collected in PUSH order (right-to-left, the
+    // last parameter first); reversed after the loop back to declaration
+    // order, matching the release order oracle-confirmed by `oracle_bank/
+    // c5_func_string`'s two-argument release (`x` released before `y`,
+    // despite `y` having been staged first).
     let mut string_release_temps: Vec<i16> = Vec::new();
 
     // Push each argument, right-to-left (VB6 evaluation order) — matching
@@ -463,23 +493,60 @@ pub(super) fn lower_class_method_call(
     // operand must be interned, not hardcoded, even under the old
     // per-type-key hypothesis this session started from and then disproved).
     out.extend_from_slice(&ctx.intern_member_type_const().to_le_bytes());
+    string_release_temps.reverse();
 
-    // The staged copy backing each String argument's by-address pass is only
-    // needed for the call itself; the callee makes its own copy, so the
-    // caller's copy is explicitly released afterward (`0x2f`, the same
-    // single-temp-release opcode `lower_class_field_store`'s Property-Let
-    // String staging already uses). Oracle-confirmed: `oracle_bank/
-    // c4_sub_2arg_mixed_call`.
-    for temp_off in &string_release_temps {
-        out.push(0x2f);
-        out.extend_from_slice(&temp_off.to_le_bytes());
+    // A `Sub` statement call (no result to store) releases its staged String
+    // argument temps immediately — there is nothing else to interleave them
+    // with, so emitting here is byte-identical to the caller doing it right
+    // after this call returns. A `Function` call in value position (`is_value`)
+    // defers release to its caller instead (see the returned `Vec`'s own doc
+    // comment above) — the release must come AFTER the caller's store of the
+    // loaded-back result, which this function has no way to emit itself.
+    if !is_value {
+        emit_temp_release_list(&string_release_temps, out);
     }
 
     if let Some(off) = result_temp {
-        out.push(0x6c);
+        // The result temp's read-back opcode follows the same per-type split
+        // already grounded for a class-member Get (`ClassFieldRef::is_string`/
+        // `is_object`): `String` steals the temp's BSTR pointer (`0x3e`, no
+        // separate release — the temp is left zeroed) and `Object` reads a
+        // plain 4-byte pointer (`0x51`); every other grounded return type
+        // (`Long`) uses the ordinary `RT_LOAD_BY_CTX`-style load (`0x6c`).
+        // Oracle-confirmed: `oracle_bank/c5_func_string`, `oracle_bank/
+        // c5_func_object` (both recaptured this session, HIGH confidence).
+        let load_op = match ret_type {
+            Some(VbaType::String) => 0x3e,
+            Some(VbaType::Object) => 0x51,
+            _ => 0x6c,
+        };
+        out.push(load_op);
         out.extend_from_slice(&off.to_le_bytes());
     }
-    Ok(())
+    Ok(if is_value { string_release_temps } else { Vec::new() })
+}
+
+/// Release a set of scratch temps: nothing for an empty list, a single
+/// `0x2f <offset>` for exactly one, or one bulk `0x32 <byte-len> <offsets…>`
+/// for two or more — the same convention already grounded for multi-temp
+/// concat cleanup (`lower_concat`'s own release code). Oracle-confirmed for
+/// the class-method-call case: `oracle_bank/c5_func_string`'s two-argument
+/// release.
+pub(super) fn emit_temp_release_list(temps: &[i16], out: &mut Vec<u8>) {
+    match temps.len() {
+        0 => {}
+        1 => {
+            out.push(0x2f);
+            out.extend_from_slice(&temps[0].to_le_bytes());
+        }
+        n => {
+            out.push(0x32);
+            out.extend_from_slice(&((n * 2) as u16).to_le_bytes());
+            for t in temps {
+                out.extend_from_slice(&t.to_le_bytes());
+            }
+        }
+    }
 }
 
 /// Emit a String-returning runtime-library call, producing its result into a hidden

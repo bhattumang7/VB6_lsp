@@ -307,15 +307,41 @@ convention already grounded for Property Let's `String` staging (`0x43`/
 `0x04`.../`0x2f`), previously unhandled in the method-call staging path
 (would have emitted a plain `0x59`, wrong for `String`).
 
+**A class-method `Function` call in value position is grounded for `Long`,
+`String`, and `Object` return types** (`e2e_class_function_string_return`,
+`e2e_class_function_object_return`, plus the pre-existing `Long` coverage) —
+`c5_func_string`/`c5_func_object` recompiled and re-extracted fresh this
+session, byte-identical to the previously-banked capture, promoting both
+from MEDIUM to HIGH confidence. The result temp's read-back opcode follows
+the same per-type split already grounded for a class-member Get: `0x6c`
+(`Long`), `0x3e` (`String`, a steal-load — no separate release, the temp is
+left zeroed), `0x51` (`Object`, a plain pointer read). A `String` result is
+consumed by the caller's move-store (ctx 9, `0x31`), the same rule already
+used for a class-member Get returning String; an `Object` result requires
+the `Set` spelling (`Set r = o.Method(...)`) and is consumed by the
+AddRef-store `0x19` — a plain `Assign` to an `Object`-typed target from a
+class-method call is rejected rather than guessed (real VB6 requires `Set`
+for that shape). Two or more staged String argument temps needing release
+share ONE bulk release (`0x32 <byte-len> <offsets…>`, the same opcode
+already grounded for multi-temp concat cleanup) instead of one `0x2f`
+apiece — oracle-confirmed by `c5_func_string`'s two-argument release, which
+also proved release order is PARAMETER DECLARATION order, not push order.
+For a `Function` call in value position, that release can't be emitted
+inside `lower_class_method_call` itself — the byte order is `call →
+result-load → caller's own store of the result → release` — so
+`lower_class_method_call` returns the pending release list and the caller
+(the plain-`Assign`/`Set`-assign lowering) emits it after its own store.
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /
 `Set o.ObjField = y` return `UnsupportedNode`; only an explicit `Property Set`
 is grounded), a bare 0-argument `Sub` **statement** call (`o.Method` with
 the result discarded returns `UnsupportedNode`; a 0-arg `Function` in value
-position, `x = o.Method()`, does lower), and `Set x = o.P` against a
-SPECIFIC-class-typed target (`Dim x As Class1`, not plain `Object` — see the
-"`Set` assignment to a plain object local" section below).
+position, `x = o.Method()`, does lower), and `Set x = o.P`/`Set x =
+o.Method()` against a SPECIFIC-class-typed target (`Dim x As Class1`, not
+plain `Object` — see the "`Set` assignment to a plain object local" section
+below).
 
 ## `Set` assignment to a plain object local
 

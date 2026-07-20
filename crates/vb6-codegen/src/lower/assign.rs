@@ -209,15 +209,45 @@ pub(super) fn lower_assign(
     // Class-member Function call as the RHS: `r = o.Method(args)` — emit the
     // vtable-dispatch call with a result temp (`lower_class_method_call`,
     // `is_value = true`), then store the loaded-back result into the target.
+    // An `Object`-returning method belongs to the `Set` spelling (real VB6
+    // requires `Set r = o.Method(...)` for an Object result) — that shape is
+    // handled by `lower_set_assign`/`lower_set_from_class_method_call`
+    // instead, so it's excluded here rather than guessed.
     if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
         if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) {
             let (base, func, args) = (*base, *func, *args);
             if member_access_base_is_class(ctx.module, base) {
-                lower_class_method_call(ctx, base, func, args, true, expr_arena, out)?;
+                // Target type drives the store — real VB6 requires the
+                // target's declared type to match the function's return type,
+                // so a plain-`Assign` `Object`-typed target here means the
+                // source wrote it (`r = o.Method()` with `r As Object`),
+                // which is invalid VB6 (`Set` is required); reject rather
+                // than guess. `module.types` has no entry for a `Call` node
+                // (the binder never records one), so the RHS's type is read
+                // off the resolved TARGET local instead.
+                let target_ty = match resolution {
+                    NameResolution::Local { local_idx, .. } => ctx.local_type(*local_idx).clone(),
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                if matches!(target_ty, VbaType::Object) {
+                    return Err(LowerError::UnsupportedNode);
+                }
+                let is_string_result = matches!(target_ty, VbaType::String);
+                let pending_releases = lower_class_method_call(ctx, base, func, args, true, expr_arena, out)?;
                 match resolution {
                     NameResolution::Local { local_idx, .. } => {
                         let ty = ctx.local_type(*local_idx);
-                        let sctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+                        // A String result's temp is read back via the `0x3e`
+                        // steal-load (see `lower_class_method_call`) — it must be
+                        // consumed with the move-store (ctx 9), the same rule
+                        // already grounded for a class-member Get returning
+                        // String (`value_is_class_get_string` below). Oracle-
+                        // confirmed: `oracle_bank/c5_func_string`.
+                        let sctx = if is_string_result {
+                            9
+                        } else {
+                            load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?
+                        };
                         let arena = NodeArena::new();
                         let mut em = Emitter::new(&arena);
                         em.emit_var_store(sctx, ctx.local_slots[*local_idx].frame_offset);
@@ -225,6 +255,11 @@ pub(super) fn lower_assign(
                     }
                     _ => return Err(LowerError::UnsupportedNode),
                 }
+                // The staged String argument temps' release comes AFTER the
+                // target store — see `lower_class_method_call`'s own doc
+                // comment on its returned `Vec`. Oracle-confirmed:
+                // `oracle_bank/c5_func_string`.
+                emit_temp_release_list(&pending_releases, out);
                 return Ok(());
             }
         }
@@ -554,6 +589,13 @@ pub(super) fn lower_set_plain_object_local(
 /// (`lower_set_plain_object_local`). Shared by both a class-typed and a
 /// plain `Object`-typed `dest` local — the store itself doesn't distinguish
 /// them. Oracle-confirmed: `oracle_bank/c1_get_object`.
+///
+/// Also handles `Set dest = o.Method(args)`, an Object-returning class
+/// method CALL (not a bare Get) — `lower_class_method_call` (`is_value =
+/// true`) already reads the result temp back via the same `0x51` opcode
+/// (see its own doc comment), so only the trailing AddRef-store needs
+/// adding here, same as the Get case. Oracle-confirmed (recaptured this
+/// session, HIGH confidence): `oracle_bank/c5_func_object`.
 fn lower_set_from_class_get(
     ctx: &LowerCtx,
     dest_off: i16,
@@ -561,6 +603,26 @@ fn lower_set_from_class_get(
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<(), LowerError> {
+    if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
+        if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) {
+            let (base, func, args) = (*base, *func, *args);
+            // `module.types` has no entry for a `Call` node (the binder never
+            // records one) — the method's return type comes from the
+            // resolved class-member slot instead.
+            let ret_is_object = ctx
+                .module
+                .class_member_slots
+                .get(&func.0)
+                .is_some_and(|r| matches!(r.method_ret_type, Some(VbaType::Object)));
+            if member_access_base_is_class(ctx.module, base) && ret_is_object {
+                let pending_releases = lower_class_method_call(ctx, base, func, args, true, expr_arena, out)?;
+                out.push(0x19);
+                out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+                emit_temp_release_list(&pending_releases, out);
+                return Ok(());
+            }
+        }
+    }
     let ExprNode::MemberAccess { base, bang, .. } = expr_arena.get(value_id) else {
         return Err(LowerError::UnsupportedNode);
     };

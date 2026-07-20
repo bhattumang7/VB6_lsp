@@ -316,7 +316,8 @@ pub(super) fn lower_stmt(
                 if member_access_base_is_class(ctx.module, base) {
                     return lower_class_method_call(
                         ctx, base, callee_ref, args_ref, false, expr_arena, out,
-                    );
+                    )
+                    .map(|_| ());
                 }
             }
             lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
@@ -335,7 +336,7 @@ pub(super) fn lower_stmt(
                 if member_access_base_is_class(ctx.module, *base)) =>
         {
             let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) else { unreachable!() };
-            lower_class_method_call(ctx, *base, *func, *args, false, expr_arena, out)
+            lower_class_method_call(ctx, *base, *func, *args, false, expr_arena, out).map(|_| ())
         }
         // Bare implicit Sub call with no arguments as a statement: `Foo`
         // (parses to a bare `NameRef`). Passing the node itself as the arg list
