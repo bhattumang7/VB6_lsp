@@ -428,7 +428,14 @@ release — byte-identical in shape to slice #15's ByRef-argument write-back
 tail, a second independent data point for the "a `0x3d` following a vtable
 call reuses that call's own member-type entry" pattern. `Set x =
 o.Method()` (a Call, not a bare Get) against the same specific-class-typed
-target kind remains gated — no oracle capture yet.
+target kind is ALSO now grounded — `oracle_bank/
+c13_set_call_to_specific_class_target` shows it's byte-identical to the
+bare-Get case above. Required threading a new `object_raw_load` capability
+through `lower_class_method_call` (this shape's Object-return read-back is
+`0x6c`, not the plain-Object-target case's `0x51`, since the caller follows
+up with its own `0x3d` coercion) and changing its return type to also hand
+back the result temp's own offset, so the caller can emit the matching
+`0x1a` release after that tail.
 
 **Object-typed field Get/Set outside an explicit Property is now grounded.**
 `Set y = o.Fld` (`Fld` a plain `Public Fld As Object` field) was ALREADY

@@ -315,7 +315,7 @@ pub(super) fn lower_stmt(
                 let base = *base;
                 if member_access_base_is_class(ctx.module, base) {
                     return lower_class_method_call(
-                        ctx, base, callee_ref, args_ref, false, expr_arena, out,
+                        ctx, base, callee_ref, args_ref, false, false, expr_arena, out,
                     )
                     .map(|_| ());
                 }
@@ -336,7 +336,7 @@ pub(super) fn lower_stmt(
                 if member_access_base_is_class(ctx.module, *base)) =>
         {
             let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) else { unreachable!() };
-            lower_class_method_call(ctx, *base, *func, *args, false, expr_arena, out).map(|_| ())
+            lower_class_method_call(ctx, *base, *func, *args, false, false, expr_arena, out).map(|_| ())
         }
         // Bare implicit Sub call with no arguments as a statement: `Foo`
         // (parses to a bare `NameRef`). Passing the node itself as the arg list
@@ -357,7 +357,7 @@ pub(super) fn lower_stmt(
         // Oracle-confirmed: `oracle_bank/c10_bare_0arg_method_call`.
         ExprNode::MemberAccess { base, .. } if member_access_base_is_class(ctx.module, *base) => {
             let base = *base;
-            lower_class_method_call(ctx, base, node_id, node_id, false, expr_arena, out).map(|_| ())
+            lower_class_method_call(ctx, base, node_id, node_id, false, false, expr_arena, out).map(|_| ())
         }
         ExprNode::Stop => {
             out.extend_from_slice(&[0xfc, 0xc2]);

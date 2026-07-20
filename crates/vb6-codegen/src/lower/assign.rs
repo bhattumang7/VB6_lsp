@@ -233,7 +233,8 @@ pub(super) fn lower_assign(
                     return Err(LowerError::UnsupportedNode);
                 }
                 let is_string_result = matches!(target_ty, VbaType::String);
-                let pending_releases = lower_class_method_call(ctx, base, func, args, true, expr_arena, out)?;
+                let (pending_releases, _) =
+                    lower_class_method_call(ctx, base, func, args, true, false, expr_arena, out)?;
                 match resolution {
                     NameResolution::Local { local_idx, .. } => {
                         let ty = ctx.local_type(*local_idx);
@@ -576,7 +577,7 @@ pub(super) fn lower_set_plain_object_local(
             out.extend_from_slice(&(dest_off as u16).to_le_bytes());
             Ok(())
         }
-        ExprNode::MemberAccess { .. } => {
+        ExprNode::MemberAccess { .. } | ExprNode::Call { .. } => {
             lower_set_class_get_to_specific_class_target(ctx, dest_off, value_id, expr_arena, out)
         }
         _ => Err(LowerError::UnsupportedNode),
@@ -611,6 +612,43 @@ fn lower_set_class_get_to_specific_class_target(
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<(), LowerError> {
+    // `Set x = o.Method()` (a Call, not a bare Get) against the same
+    // SPECIFIC-class-typed target kind — byte-IDENTICAL to the bare-Get case
+    // below (same `0x6c`/`0x3d`/`0x19`/`0x1a` tail after the call), proving
+    // this Set-target convention depends only on the TARGET's type, not on
+    // whether the source is a Get or a method call. Oracle-confirmed:
+    // `oracle_bank/c13_set_call_to_specific_class_target`.
+    if let ExprNode::Call { func, args } = expr_arena.get(value_id) {
+        if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) {
+            let (base, func, args) = (*base, *func, *args);
+            let ret_is_object = ctx
+                .module
+                .class_member_slots
+                .get(&func.0)
+                .is_some_and(|r| matches!(r.method_ret_type, Some(VbaType::Object)));
+            if member_access_base_is_class(ctx.module, base) && ret_is_object {
+                let base_local_idx = match ctx.module.resolutions.get(&base.0) {
+                    Some(NameResolution::Local { local_idx, .. }) => *local_idx,
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                let class_sym = match ctx.local_type(base_local_idx) {
+                    VbaType::UserDefined(sym) => *sym,
+                    _ => return Err(LowerError::UnsupportedNode),
+                };
+                let (pending_releases, result_temp) =
+                    lower_class_method_call(ctx, base, func, args, true, true, expr_arena, out)?;
+                let temp_off = result_temp.expect("is_value implies a result temp");
+                out.push(0x3d);
+                out.extend_from_slice(&ctx.intern_member_type_const(class_sym).to_le_bytes());
+                out.push(0x19);
+                out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+                out.push(0x1a);
+                out.extend_from_slice(&temp_off.to_le_bytes());
+                emit_temp_release_list(&pending_releases, out);
+                return Ok(());
+            }
+        }
+    }
     let ExprNode::MemberAccess { base, bang, .. } = expr_arena.get(value_id) else {
         return Err(LowerError::UnsupportedNode);
     };
@@ -680,7 +718,8 @@ fn lower_set_from_class_get(
                 .get(&func.0)
                 .is_some_and(|r| matches!(r.method_ret_type, Some(VbaType::Object)));
             if member_access_base_is_class(ctx.module, base) && ret_is_object {
-                let pending_releases = lower_class_method_call(ctx, base, func, args, true, expr_arena, out)?;
+                let (pending_releases, _) =
+                    lower_class_method_call(ctx, base, func, args, true, false, expr_arena, out)?;
                 out.push(0x19);
                 out.extend_from_slice(&(dest_off as u16).to_le_bytes());
                 emit_temp_release_list(&pending_releases, out);

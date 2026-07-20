@@ -152,7 +152,12 @@ pub(super) fn lower_call(
 /// additionally gated to `Long`/`String`/`Object` (oracle-confirmed:
 /// `oracle_bank/c5_func_string`, `oracle_bank/c5_func_object`).
 ///
-/// Returns the staged String argument temps still awaiting release, in
+/// Returns `(pending_string_releases, result_temp_offset)` — both `None`/
+/// empty when `is_value` is `false`. `result_temp_offset` lets a caller doing
+/// its own post-call coercion (`lower_set_class_get_to_specific_class_target`'s
+/// `0x3d`-coercion tail) release the SAME temp this function loaded the
+/// result from, without re-deriving its bucket assignment. The string
+/// releases are the staged String argument temps still awaiting release, in
 /// PARAMETER DECLARATION order — NOT emitted here when `is_value` is `true`.
 /// `oracle_bank/c5_func_string` (two `String` args, `String` result, all
 /// sharing one region) shows the release must come AFTER the caller's own
@@ -167,15 +172,26 @@ pub(super) fn lower_call(
 /// <offsets…>`, the same opcode already grounded for multi-temp concat
 /// cleanup) rather than one `0x2f` apiece — oracle-confirmed:
 /// `oracle_bank/c5_func_string`'s two-argument release.
+/// `object_raw_load` selects the Object-return read-back opcode: `false`
+/// (every existing caller) is the plain-pointer read `0x51` already grounded
+/// for a plain-`Object`-typed consuming target (`oracle_bank/
+/// c5_func_object`); `true` is the generic 4-byte load `0x6c`, needed ONLY
+/// when the caller itself follows up with the `0x3d`-coercion tail for a
+/// SPECIFIC-class-typed consuming target (`oracle_bank/
+/// c13_set_call_to_specific_class_target` — byte-identical to the bare-Get
+/// analogue, `c11_set_get_to_specific_class_target`, proving a `Set`
+/// target's read-back convention depends on the TARGET's type, not on
+/// whether the source is a Get or a method call).
 pub(super) fn lower_class_method_call(
     ctx: &LowerCtx,
     base: NodeId,
     func_access_id: NodeId,
     args_id: NodeId,
     is_value: bool,
+    object_raw_load: bool,
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
-) -> Result<Vec<i16>, LowerError> {
+) -> Result<(Vec<i16>, Option<i16>), LowerError> {
     let local_idx = match ctx.module.resolutions.get(&base.0) {
         Some(NameResolution::Local { local_idx, .. }) => *local_idx,
         Some(_) => return Err(LowerError::UnsupportedNode),
@@ -657,6 +673,7 @@ pub(super) fn lower_class_method_call(
         // capture truncated).
         let load_op = match ret_type {
             Some(VbaType::String) => 0x3e,
+            Some(VbaType::Object) if object_raw_load => 0x6c,
             Some(VbaType::Object) => 0x51,
             Some(ref ty) => {
                 let load_ctx = crate::bridge::load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
@@ -671,7 +688,10 @@ pub(super) fn lower_class_method_call(
         out.push(load_op);
         out.extend_from_slice(&off.to_le_bytes());
     }
-    Ok(if is_value { string_release_temps } else { Vec::new() })
+    Ok((
+        if is_value { string_release_temps } else { Vec::new() },
+        if is_value { result_temp } else { None },
+    ))
 }
 
 /// Release a set of scratch temps: nothing for an empty list, a single
