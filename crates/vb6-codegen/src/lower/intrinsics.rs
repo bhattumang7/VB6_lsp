@@ -229,7 +229,7 @@ pub(super) fn lower_class_method_call(
     if is_value
         && !matches!(
             ret_type,
-            Some(VbaType::Long) | Some(VbaType::String) | Some(VbaType::Object)
+            Some(VbaType::Long) | Some(VbaType::String) | Some(VbaType::Object) | Some(VbaType::Double)
         )
     {
         return Err(LowerError::UnsupportedNode);
@@ -467,6 +467,22 @@ pub(super) fn lower_class_method_call(
             out.push(0x04);
             out.extend_from_slice(&temp_off.to_le_bytes());
             string_release_temps.push(temp_off);
+        } else if matches!(ty, VbaType::Double) {
+            // A staged Double argument uses the SAME FPU-aware store already
+            // grounded for a Property Let's Double staging
+            // (`lower_class_field_store`'s `is_double` branch, `0xfd 0xc9`) —
+            // and, like that branch, pushes NO separate address afterward
+            // (unlike `String`'s explicit `0x04` follow-up push): the vtable
+            // call's own instruction stream never references the temp's
+            // address again, matching Property Let's identical no-follow-up
+            // shape byte-for-byte. Oracle-confirmed: `oracle_bank/
+            // c6_nonlong_arg_and_return` (recompiled and re-extracted fresh
+            // this session after finding the originally-banked capture was
+            // truncated by a wrong preamble length — see its own `notes.md`
+            // for the corrected 34-byte capture).
+            out.push(0xfd);
+            out.push(0xc9);
+            out.extend_from_slice(&temp_off.to_le_bytes());
         } else {
             out.push(0x59);
             out.extend_from_slice(&temp_off.to_le_bytes());
@@ -512,13 +528,24 @@ pub(super) fn lower_class_method_call(
         // `is_object`): `String` steals the temp's BSTR pointer (`0x3e`, no
         // separate release — the temp is left zeroed) and `Object` reads a
         // plain 4-byte pointer (`0x51`); every other grounded return type
-        // (`Long`) uses the ordinary `RT_LOAD_BY_CTX`-style load (`0x6c`).
-        // Oracle-confirmed: `oracle_bank/c5_func_string`, `oracle_bank/
-        // c5_func_object` (both recaptured this session, HIGH confidence).
+        // (`Long`'s `0x6c`, `Double`'s `0x6f`) uses the ordinary
+        // `RT_LOAD_BY_CTX`-style load. Oracle-confirmed: `oracle_bank/
+        // c5_func_string`, `oracle_bank/c5_func_object` (both recaptured this
+        // session, HIGH confidence), `oracle_bank/c6_nonlong_arg_and_return`
+        // (Double, also recaptured this session after finding the banked
+        // capture truncated).
         let load_op = match ret_type {
             Some(VbaType::String) => 0x3e,
             Some(VbaType::Object) => 0x51,
-            _ => 0x6c,
+            Some(ref ty) => {
+                let load_ctx = crate::bridge::load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+                let op = *crate::tables::RT_LOAD_BY_CTX.get(load_ctx).ok_or(LowerError::UnsupportedType)?;
+                if op == 0 {
+                    return Err(LowerError::UnsupportedType);
+                }
+                op
+            }
+            None => return Err(LowerError::UnsupportedNode),
         };
         out.push(load_op);
         out.extend_from_slice(&off.to_le_bytes());

@@ -332,6 +332,21 @@ result-load → caller's own store of the result → release` — so
 `lower_class_method_call` returns the pending release list and the caller
 (the plain-`Assign`/`Set`-assign lowering) emits it after its own store.
 
+**A class-method `Double` parameter (VB6's default ByRef, no keyword needed)
+passed a non-addressable source stages via the SAME FPU-aware store already
+grounded for Property Let's Double staging** (`0xfd 0xc9 <offset>`), with no
+follow-up address push (unlike `String`'s explicit `0x04` re-push) —
+oracle-confirmed via `oracle_bank/c6_nonlong_arg_and_return`
+(`e2e_class_function_nonlong_arg_and_return`), which ALSO combines this with
+a `Double` return type in value position (result read-back generalized from
+a hardcoded 3-way match to a proper `RT_LOAD_BY_CTX` table lookup, resolving
+`Double` to `0x6f`; the consuming store needed no special-casing, unlike
+`String`'s move-store carve-out — `load_store_ctx(Double)` already maps to
+the correct `0x74`). This capture was originally banked at the wrong
+preamble length (missing its leading 16 bytes, the argument's own
+push+stage sequence) — a real instance of "recapture MEDIUMs before
+landing" catching a genuinely wrong byte sequence, not a formality.
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /
