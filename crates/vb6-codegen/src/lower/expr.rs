@@ -781,9 +781,14 @@ pub(super) fn lower_class_field_set(
     }
     let field = resolve_class_field(ctx, base, access_id)?;
     let set_slot = field.set_slot.ok_or(LowerError::UnsupportedNode)?;
-    if !field.is_property {
-        return Err(LowerError::UnsupportedNode);
-    }
+    // A plain Public `Object`-typed FIELD's `Set` uses this SAME mechanism,
+    // byte-identical apart from its own vtable slot (already correctly
+    // resolved via `set_slot` — a field's Get/Let/Set trio is laid out the
+    // same 3-slot way as a Property's, see `resolve_class_member_slots`) —
+    // `field.is_property` no longer gates this function. Oracle-confirmed:
+    // `oracle_bank/c12_object_field_set` (`Set o.Fld = y`, `Fld` a plain
+    // `Public Fld As Object` field, not a `Property Set`).
+    //
     // `fd 9c` (__vbaObjSet, flag=0) is confirmed ONLY for an Object-typed
     // Property Set parameter (tag 0x16) — traced to EbEmitExpression2's case
     // 4 remap switch (`vba6_part0001.c:51360-51385`), which selects a
@@ -796,11 +801,26 @@ pub(super) fn lower_class_field_set(
         return Err(LowerError::UnsupportedType);
     }
 
-    let mut arena = NodeArena::new();
-    let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, field.type_tag)?;
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(root, 2);
-    out.extend(emitter.into_bytes());
+    // A specific-class-typed `As New` source (`Dim y As New Class1`, not
+    // plain `Object`) reads via the SAME lazy-fetch sequence already
+    // grounded for `Set o = otherObjLocal`/a class-typed `ByVal` method
+    // argument (`04 <src>` LdAddr, `56 <create-idx>` construct-if-null) —
+    // NOT the generic `lower_expr_coerced` pipeline, which cannot coerce a
+    // `UserDefined`-typed variable into an `Object`-tagged node. Oracle-
+    // confirmed: `oracle_bank/c12_object_field_set_new_source`.
+    if let Some((src_class, src_off, true)) = plain_object_local(ctx, value_id, expr_arena) {
+        let idx = ctx.intern_class_const(ClassConstKind::Create, src_class);
+        out.push(0x04);
+        out.extend_from_slice(&src_off.to_le_bytes());
+        out.push(0x56);
+        out.extend_from_slice(&idx.to_le_bytes());
+    } else {
+        let mut arena = NodeArena::new();
+        let root = lower_expr_coerced(ctx, value_id, expr_arena, &mut arena, field.type_tag)?;
+        let mut emitter = Emitter::new(&arena);
+        emitter.emit_expr(root, 2);
+        out.extend(emitter.into_bytes());
+    }
 
     // A Property Set argument is unconditionally `Object`-typed (checked
     // above), so its scratch region is always the `Object` frame context.

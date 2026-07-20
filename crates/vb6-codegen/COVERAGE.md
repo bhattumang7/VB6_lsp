@@ -430,11 +430,16 @@ call reuses that call's own member-type entry" pattern. `Set x =
 o.Method()` (a Call, not a bare Get) against the same specific-class-typed
 target kind remains gated — no oracle capture yet.
 
-Codegen surface still gated (slot rule confirmed by capture, but the
-surrounding load/store not yet lowerable, so no byte-exact fixture drives
-them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /
-`Set o.ObjField = y` return `UnsupportedNode`; only an explicit `Property Set`
-is grounded).
+**Object-typed field Get/Set outside an explicit Property is now grounded.**
+`Set y = o.Fld` (`Fld` a plain `Public Fld As Object` field) was ALREADY
+byte-correct — `oracle_bank/c12_object_field_get` shows it's byte-identical
+to a Property Get's shape, just needed a fixture. `Set o.Fld = y` had a real
+gate (`lower_class_field_set`'s `!field.is_property` check unconditionally
+rejected a plain field), removed after `oracle_bank/c12_object_field_set`
+confirmed the mechanism is byte-identical to `c3_property_set` regardless of
+field-vs-Property. A specific-class-typed `As New` source value for the Set
+direction (`oracle_bank/c12_object_field_set_new_source`) needed the same
+lazy-fetch load already grounded elsewhere for this source shape.
 
 ## `Set` assignment to a plain object local
 
