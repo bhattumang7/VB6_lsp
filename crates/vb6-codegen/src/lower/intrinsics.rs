@@ -22,6 +22,18 @@ pub(super) fn lower_call(
         Some(NameResolution::Proc(pi)) => *pi,
         _ => return Err(LowerError::UnsupportedNode),
     };
+    // A `Declare`d external DLL function resolves to `NameResolution::Proc`
+    // exactly like an ordinary same-module Sub/Function (both are collected
+    // into `module.procs` — see `collect_top_decl`'s `DeclareDecl` arm), but
+    // it has a WHOLLY DIFFERENT, unported calling convention (no same-
+    // module callsite index applies to an external DLL entry point) —
+    // gated rather than silently falling through to the intra-module `0x0a`/
+    // `0x5e` convention, which would emit plausible-looking but ungrounded
+    // bytes. `body == u32::MAX` is the same "no body" sentinel `collect_
+    // top_decl` uses to mark a Declare.
+    if ctx.module.procs[proc_idx].body == u32::MAX {
+        return Err(LowerError::UnsupportedNode);
+    }
     let args: Vec<NodeId> = match expr_arena.get(args_id) {
         ExprNode::ArgList { args } => args.clone(),
         _ => Vec::new(),

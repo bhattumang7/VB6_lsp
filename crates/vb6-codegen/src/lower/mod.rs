@@ -242,6 +242,20 @@ pub fn lower_module_with_classes(
     let mut static_base: u16 = 0;
     let mut procs = Vec::with_capacity(module.procs.len());
     for idx in 0..module.procs.len() {
+        // A `Declare` (external DLL function) is collected as a callable
+        // procedure with no body (`body == u32::MAX`, so calls to it
+        // resolve instead of falsely erroring "not defined") — but it has
+        // no p-code of its own to lower; it's metadata only. Skipping it
+        // preserves every OTHER proc's index (this Vec is indexed the same
+        // way `NameResolution::Proc(idx)` is), rather than crashing trying
+        // to read a body that doesn't exist. A real DLL call SITE (`r =
+        // GetTickCount()`) still needs its own, entirely different p-code
+        // convention — not yet ported; this fix only stops the crash on
+        // the DECLARATION itself.
+        if module.procs[idx].body == u32::MAX {
+            procs.push(Vec::new());
+            continue;
+        }
         let (bytes, next_pool, next_static) = lower_proc_pooled(
             module, idx, expr_arena, module_desc, pool, static_base, known_classes,
         )?;

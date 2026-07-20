@@ -604,3 +604,16 @@ procedure-level local collector. Fixed on both sides (sema now folds the
 module-level initializer the same way; codegen's global-variable-reference
 path now checks const-ness first). Fixtures: `e2e_module_level_const`,
 `e2e_module_level_const_string` (the String-literal fold path).
+
+## Declare (DLL import): crash fixed, real gap still open (2026-07-20)
+
+`Declare Function ... Lib "..." (...) As T` used to CRASH the whole
+lowering pass (an out-of-bounds arena index) — the module-level lowering
+loop iterated every proc including a Declare's body-less entry and tried
+to lower a body that doesn't exist. Fixed to skip it (preserving proc
+indices). Separately, calling a Declared function was silently falling
+through to the intra-module calling convention (wrong — no same-module
+callsite index applies to an external DLL entry point); now explicitly
+gated (`UnsupportedNode`) instead of emitting plausible-but-ungrounded
+bytes. The real DLL-call p-code convention itself remains fully unported —
+needs its own C-trace + oracle capture, a genuinely new mechanism.
