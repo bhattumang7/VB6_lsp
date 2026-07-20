@@ -415,13 +415,26 @@ spelling uses. Oracle-confirmed: `oracle_bank/c10_bare_0arg_method_call`
 (`e2e_class_method_bare_0arg_call`) — no new emitter logic needed, the
 existing zero-argument vtable-call path already produces the exact bytes.
 
+**`Set x = o.P` against a SPECIFIC-class-typed target (`Dim x As Class1`,
+not plain `Object`) is now grounded for a bare Get** — this was previously
+producing WRONG bytes silently (a real bug, not merely unverified: it
+unconditionally delegated to the plain-`Object`-target function). A fresh
+capture (`oracle_bank/c11_set_get_to_specific_class_target`,
+`e2e_class_set_get_object_to_specific_class_target`) shows a genuinely
+different sequence: the Get's result reads back via the plain generic load
+(`0x6c`, not the Object Get-temp's usual `0x51`), then `0x3d <type-idx>`
+coerces/checks it against the target's class, THEN the AddRef-store and a
+release — byte-identical in shape to slice #15's ByRef-argument write-back
+tail, a second independent data point for the "a `0x3d` following a vtable
+call reuses that call's own member-type entry" pattern. `Set x =
+o.Method()` (a Call, not a bare Get) against the same specific-class-typed
+target kind remains gated — no oracle capture yet.
+
 Codegen surface still gated (slot rule confirmed by capture, but the
 surrounding load/store not yet lowerable, so no byte-exact fixture drives
 them from this path): object-typed **field** Get/Set (`Set y = o.ObjField` /
 `Set o.ObjField = y` return `UnsupportedNode`; only an explicit `Property Set`
-is grounded), and `Set x = o.P`/`Set x = o.Method()` against a
-SPECIFIC-class-typed target (`Dim x As Class1`, not plain `Object` — see the
-"`Set` assignment to a plain object local" section below).
+is grounded).
 
 ## `Set` assignment to a plain object local
 

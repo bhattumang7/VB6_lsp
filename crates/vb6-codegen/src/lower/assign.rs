@@ -576,9 +576,74 @@ pub(super) fn lower_set_plain_object_local(
             out.extend_from_slice(&(dest_off as u16).to_le_bytes());
             Ok(())
         }
-        ExprNode::MemberAccess { .. } => lower_set_from_class_get(ctx, dest_off, value_id, expr_arena, out),
+        ExprNode::MemberAccess { .. } => {
+            lower_set_class_get_to_specific_class_target(ctx, dest_off, value_id, expr_arena, out)
+        }
         _ => Err(LowerError::UnsupportedNode),
     }
+}
+
+/// `Set dest = o.P` where `dest` is a SPECIFIC-class-typed local (`Dim x As
+/// Class1`, not plain `Object`) and `o.P` is an Object-returning class-member
+/// Get. A DIFFERENT byte sequence from the plain-`Object`-typed-target case
+/// (`lower_set_from_class_get`, `oracle_bank/c1_get_object`'s direct `0x51`
+/// read + `0x19` store, no coercion) — assigning into a specific class needs
+/// an explicit type coercion/check first: the Get's result is read back with
+/// a PLAIN generic load (`0x6c`, not `0x51`) into a temp, then `0x3d
+/// <type-idx>` coerces/verifies it against the target's class, THEN the
+/// AddRef-store (`0x19`) and a release (`0x1a`) — the same four-opcode tail
+/// already grounded for slice #15's ByRef-argument write-back. The `0x3d`
+/// operand reuses the SAME `intern_member_type_const` entry the Get's own
+/// vtable call just interned (not a fresh `ClassConstKind::TypeDesc` entry)
+/// — this is now TWO independent captures (this one and slice #15's
+/// write-back) showing a `0x3d` immediately following a vtable call reuses
+/// that call's own member-type entry, rather than allocating its own
+/// (`Set o = Nothing`'s independently-grounded `TypeDesc` entry has no
+/// preceding vtable call in its own proc, so it isn't in conflict — it's a
+/// different context, not necessarily a different rule). Oracle-confirmed:
+/// a fresh capture this session, `o` and `x` both `Class1` (does not
+/// distinguish target-class-keying from callee-class-keying, since they're
+/// the same class here — same open-question shape as #15).
+fn lower_set_class_get_to_specific_class_target(
+    ctx: &LowerCtx,
+    dest_off: i16,
+    value_id: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let ExprNode::MemberAccess { base, bang, .. } = expr_arena.get(value_id) else {
+        return Err(LowerError::UnsupportedNode);
+    };
+    let (base, bang) = (*base, *bang);
+    if bang || !member_access_base_is_class(ctx.module, base) {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let field = resolve_class_field(ctx, base, value_id)?;
+    if !field.is_object {
+        return Err(LowerError::UnsupportedType);
+    }
+    let get_slot = field.get_slot.ok_or(LowerError::UnsupportedNode)?;
+    let frame_ctx = field.frame_ctx.ok_or(LowerError::UnsupportedType)?;
+    let temp_off = ctx.class_member_slot(frame_ctx, 0);
+
+    out.push(0x04);
+    out.extend_from_slice(&temp_off.to_le_bytes());
+    out.push(0x04);
+    out.extend_from_slice(&(field.obj_offset as u16).to_le_bytes());
+    out.push(0x24);
+    out.extend_from_slice(&ctx.intern_class_const(ClassConstKind::Create, field.class_sym).to_le_bytes());
+    out.push(0x0d);
+    out.extend_from_slice(&get_slot.to_le_bytes());
+    out.extend_from_slice(&ctx.intern_member_type_const(field.class_sym).to_le_bytes());
+    out.push(0x6c);
+    out.extend_from_slice(&temp_off.to_le_bytes());
+    out.push(0x3d);
+    out.extend_from_slice(&ctx.intern_member_type_const(field.class_sym).to_le_bytes());
+    out.push(0x19);
+    out.extend_from_slice(&(dest_off as u16).to_le_bytes());
+    out.push(0x1a);
+    out.extend_from_slice(&temp_off.to_le_bytes());
+    Ok(())
 }
 
 /// `Set dest = o.P` where `o.P` is an Object-returning class-member Get: the
