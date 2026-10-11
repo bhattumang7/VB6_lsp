@@ -9,6 +9,11 @@ use rmcp::{handler::server::wrapper::Parameters, schemars, tool, tool_router, Se
 use rmcp::transport::stdio;
 use serde::Deserialize;
 use serde_json::json;
+use std::collections::HashMap;
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::SystemTime;
+use vb6_lsp::workspace::VbpFile;
 use vb6_engine::session::{Session, Position as EngPos};
 use vb6_lsp::workspace::{
     parse_string_table, read_res_file, write_res_file, ResourceEntry, ResourceId, ResourceType,
@@ -67,14 +72,105 @@ struct StringTableParams {
 #[derive(Clone)]
 struct Vb6McpServer;
 
-fn load_session(file_path: &str) -> Result<(Session, usize), String> {
+// ---- Project-aware session loading -------------------------------------------
+//
+// Each tool call names one file, but VB6 code calls across modules, forms and
+// classes. So we locate the .vbp that lists the file, analyze every member
+// together, and cache the session per .vbp until any member (or the .vbp)
+// changes on disk. Files that belong to no .vbp fall back to single-file mode.
+
+struct CachedProject {
+    stamp: Vec<(PathBuf, Option<SystemTime>)>,
+    session: Arc<Session>,
+}
+
+static PROJECT_CACHE: OnceLock<Mutex<HashMap<PathBuf, CachedProject>>> = OnceLock::new();
+
+/// Canonical, case-insensitive key for comparing Windows paths.
+fn path_key(p: &Path) -> String {
+    let p = std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
+    p.to_string_lossy().replace('/', "\\").to_lowercase()
+}
+
+/// Find the .vbp (in the file's folder or up to three parents) that lists `file`.
+fn find_project(file: &Path) -> Option<(PathBuf, VbpFile)> {
+    let target = path_key(file);
+    let mut dir = file.parent();
+    for _ in 0..4 {
+        let d = dir?;
+        if let Ok(rd) = std::fs::read_dir(d) {
+            let mut vbps: Vec<PathBuf> = rd
+                .filter_map(|e| e.ok())
+                .map(|e| e.path())
+                .filter(|p| p.extension().map_or(false, |x| x.eq_ignore_ascii_case("vbp")))
+                .collect();
+            vbps.sort();
+            for vbp_path in vbps {
+                if let Ok(vbp) = VbpFile::parse(&vbp_path) {
+                    if vbp.all_source_files().any(|m| path_key(&m.absolute_path) == target) {
+                        return Some((vbp_path, vbp));
+                    }
+                }
+            }
+        }
+        dir = d.parent();
+    }
+    None
+}
+
+fn mtime(p: &Path) -> Option<SystemTime> {
+    std::fs::metadata(p).and_then(|m| m.modified()).ok()
+}
+
+fn load_project_session(vbp_path: &Path, vbp: &VbpFile) -> Arc<Session> {
+    let members: Vec<PathBuf> = vbp
+        .all_source_files()
+        .map(|m| m.absolute_path.clone())
+        .filter(|p| p.exists())
+        .collect();
+    let mut stamp: Vec<(PathBuf, Option<SystemTime>)> =
+        members.iter().map(|p| (p.clone(), mtime(p))).collect();
+    stamp.push((vbp_path.to_path_buf(), mtime(vbp_path)));
+
+    // Held for the whole build so concurrent calls don't analyze the project twice.
+    let mut cache = PROJECT_CACHE.get_or_init(Default::default).lock().unwrap();
+    if let Some(c) = cache.get(vbp_path) {
+        if c.stamp == stamp {
+            return c.session.clone();
+        }
+    }
+
+    let files: Vec<(String, Vec<u8>)> = members
+        .iter()
+        .filter_map(|p| std::fs::read(p).ok().map(|b| (p.to_string_lossy().into_owned(), b)))
+        .collect();
+    tracing::info!("Analyzing project {} ({} files)", vbp_path.display(), files.len());
+    let session = Arc::new(Session::from_sources(files));
+    cache.insert(vbp_path.to_path_buf(), CachedProject { stamp, session: session.clone() });
+    session
+}
+
+fn load_session(file_path: &str) -> Result<(Arc<Session>, usize), String> {
+    let file = Path::new(file_path);
+    if let Some((vbp_path, vbp)) = find_project(file) {
+        let session = load_project_session(&vbp_path, &vbp);
+        let target = path_key(file);
+        let m = (0..session.module_count()).find(|&i| {
+            session.module_path(i).map_or(false, |p| path_key(Path::new(p)) == target)
+        });
+        if let Some(m) = m {
+            return Ok((session, m));
+        }
+    }
+
+    // Not part of any .vbp: analyze the file on its own.
     let bytes = std::fs::read(file_path)
         .map_err(|e| format!("Cannot read {}: {}", file_path, e))?;
     let session = Session::from_sources(vec![(file_path.to_string(), bytes)]);
     let m = session
         .module_of(file_path)
         .ok_or_else(|| format!("Not a recognized VB6 file: {}", file_path))?;
-    Ok((session, m))
+    Ok((Arc::new(session), m))
 }
 
 fn pos_to_offset(session: &Session, m: usize, line: u32, column: u32) -> Option<u32> {
