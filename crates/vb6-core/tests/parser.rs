@@ -947,6 +947,26 @@ fn if_not_is_nothing_single_line_no_error() {
     assert!(!errors);
 }
 
+#[test]
+fn line_continuation_with_crlf() {
+    // VB6 source files use CRLF; `_` + CRLF must continue the logical line.
+    let src = b"Sub T(a As Long, _\r\n      b As Long)\r\n x = a + _\r\n     b\r\nEnd Sub\r\n";
+    let (_, _, errors) = parse_module(src);
+    assert!(!errors);
+}
+
+#[test]
+fn crlf_continuation_keeps_expression_intact() {
+    let (a, v) = assign_value("a & _\r\n b & _\r\n c");
+    let (lhs, _) = expect_binop(&a, v, BinOpKind::Cat);
+    expect_binop(&a, lhs, BinOpKind::Cat);
+}
+
+#[test]
+fn tab_is_whitespace() {
+    let (_, _, errors) = parse_stmts(b"x =\t1 +\t2");
+    assert!(!errors);
+}
 
 // ── Additional statement forms ────────────────────────────────────────────────
 //

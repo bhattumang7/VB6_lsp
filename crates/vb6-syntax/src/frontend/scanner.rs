@@ -587,7 +587,22 @@ impl<'a> Scanner<'a> {
             };
             let cls = CHAR_CLASSES[b as usize];
             match cls {
-                0x00 => return Token::eol(start as u32),
+                0x00 => {
+                    match b {
+                        // Tab is whitespace between tokens, not a line break.
+                        b'\t' => continue,
+                        // CRLF is ONE line break. Consuming the LF here keeps
+                        // `_` + CRLF a single continuation (eat_line_cont eats
+                        // exactly one Eol); otherwise the LF ends the statement.
+                        b'\r' => {
+                            if self.src.get(self.pos) == Some(&b'\n') {
+                                self.pos += 1;
+                            }
+                        }
+                        _ => {}
+                    }
+                    return Token::eol(start as u32);
+                }
 
                 0x01..=0x04 => { /* skip */ }
 
