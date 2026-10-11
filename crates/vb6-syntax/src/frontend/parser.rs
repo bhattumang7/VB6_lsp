@@ -2650,23 +2650,25 @@ impl<'src> Parser<'src> {
 
     /// Handle an `Is` / `Is Not` operator at the current position. Returns
     /// `Some(new_lhs)` to continue the infix loop, or `None` to break it.
+    ///
+    /// `Is` is a comparison operator, at the same level as `=` (left bp 12,
+    /// right bp 13). When the current level binds tighter â€” e.g. inside the
+    /// operand of `Not` (bp 11 < 12 is fine) or of `&` (bp 15) â€” we leave the
+    /// token for an outer level, exactly like any other infix operator.
     fn parse_is_operator(
         &mut self,
         arena: &mut ExprArena,
         min_bp: u8,
         lhs: NodeId,
     ) -> Option<NodeId> {
-        let is_tok = self.advance();
-        if self.eat(TokenKind::Kw(Kw::Not)) {
-            let rhs = self.parse_expr(arena, 9);
-            return Some(arena.alloc(ExprNode::BinOp { op: BinOpKind::IsNot, lhs, rhs }));
+        if 12 <= min_bp {
+            return None;
         }
-        if min_bp < 8 {
-            let rhs = self.parse_expr(arena, 9);
-            return Some(arena.alloc(ExprNode::BinOp { op: BinOpKind::Is, lhs, rhs }));
-        }
-        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, is_tok.span);
-        None
+        self.advance(); // consume Is
+        let op = if self.eat(TokenKind::Kw(Kw::Not)) { BinOpKind::IsNot } else { BinOpKind::Is };
+        self.skip_line_conts();
+        let rhs = self.parse_expr(arena, 13);
+        Some(arena.alloc(ExprNode::BinOp { op, lhs, rhs }))
     }
 
     fn try_parse_expr(&mut self, arena: &mut ExprArena) -> Option<NodeId> {

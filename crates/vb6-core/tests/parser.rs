@@ -921,6 +921,33 @@ fn not_binds_looser_than_comparison() {
     }
 }
 
+#[test]
+fn not_binds_looser_than_is() {
+    // `Not x Is Nothing` == `Not (x Is Nothing)` â€” the standard VB6 object check.
+    let (a, v) = assign_value("Not x Is Nothing");
+    match a.get(v) {
+        ExprNode::UnOp { op: UnOpKind::Not, operand } => {
+            expect_binop(&a, *operand, BinOpKind::Is);
+        }
+        _ => panic!("expected UnOp(Not)"),
+    }
+}
+
+#[test]
+fn is_binds_tighter_than_and() {
+    // `x Is Nothing And y` == `(x Is Nothing) And y`
+    let (a, v) = assign_value("x Is Nothing And y");
+    let (lhs, _) = expect_binop(&a, v, BinOpKind::And);
+    expect_binop(&a, lhs, BinOpKind::Is);
+}
+
+#[test]
+fn if_not_is_nothing_single_line_no_error() {
+    let (_, _, errors) = parse_stmts(b"If Not rs Is Nothing Then rs.Close");
+    assert!(!errors);
+}
+
+
 // ── Additional statement forms ────────────────────────────────────────────────
 //
 // Each construct below is accepted by VB6 and must parse without errors.
