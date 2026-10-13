@@ -539,7 +539,43 @@ impl ProjectModel {
         MemberHit { resolution: NameResolution::Module(module), sem, callable: None }
     }
 
+    /// Member `name` of the global names library `lib` provides, as the
+    /// library name qualifies them (`VBA.IsError`, `VBA.vbCrLf`).
+    fn library_member_global(&self, lib: usize, name: &str) -> Option<MemberHit> {
+        let l = &self.libraries[lib];
+        match l.globals.get(name)? {
+            LibGlobal::Object(ty) => Some(MemberHit {
+                resolution: NameResolution::LibraryType { lib, ty: *ty },
+                sem: SemType::Lib { lib, ty: *ty },
+                callable: None,
+            }),
+            LibGlobal::Member { ty, member } => {
+                let m = &l.types[*ty].members[*member];
+                Some(MemberHit {
+                    resolution: NameResolution::LibraryMember { lib, ty: *ty, member: *member },
+                    sem: match l.types[*ty].kind {
+                        LibraryTypeKind::Enum => SemType::Value(VbaType::Long),
+                        _ => self.lib_return_sem(lib, &m.return_type),
+                    },
+                    callable: lib_callable(m),
+                })
+            }
+        }
+    }
+
     fn library_global(&self, name: &str) -> Option<MemberHit> {
+        // An enum's name qualifies its members.
+        for (l, lib) in self.libraries.iter().enumerate() {
+            if let Some(&ty) = lib.type_by_name.get(name) {
+                if lib.types[ty].kind == LibraryTypeKind::Enum && !lib.globals.contains_key(name) {
+                    return Some(MemberHit {
+                        resolution: NameResolution::LibraryType { lib: l, ty },
+                        sem: SemType::Namespace(Qualifier::LibraryEnum { lib: l, ty }),
+                        callable: None,
+                    });
+                }
+            }
+        }
         for (l, lib) in self.libraries.iter().enumerate() {
             match lib.globals.get(name) {
                 Some(LibGlobal::Object(ty)) => {
@@ -934,9 +970,26 @@ impl ProjectScope for ProjectModel {
                     Some(&ty) => MemberLookup::Found(MemberHit {
                         resolution: NameResolution::LibraryType { lib: *lib, ty },
                         sem: match self.libraries[*lib].types[ty].kind {
-                            LibraryTypeKind::Enum => SemType::Namespace(Qualifier::Library(*lib)),
+                            LibraryTypeKind::Enum => {
+                                SemType::Namespace(Qualifier::LibraryEnum { lib: *lib, ty })
+                            }
                             _ => SemType::Lib { lib: *lib, ty },
                         },
+                        callable: None,
+                    }),
+                    // A global member of the library, qualified by its name.
+                    None => match self.library_member_global(*lib, name) {
+                        Some(hit) => MemberLookup::Found(hit),
+                        None => MemberLookup::NoSuchMember,
+                    },
+                }
+            }
+            SemType::Namespace(Qualifier::LibraryEnum { lib, ty }) => {
+                let t = &self.libraries[*lib].types[*ty];
+                match t.members.iter().position(|m| m.name == name) {
+                    Some(mi) => MemberLookup::Found(MemberHit {
+                        resolution: NameResolution::LibraryMember { lib: *lib, ty: *ty, member: mi },
+                        sem: SemType::Value(VbaType::Long),
                         callable: None,
                     }),
                     None => MemberLookup::NoSuchMember,

@@ -7,11 +7,8 @@ use common::{at, session, session_with};
 use vb6_core::sema::MemberStatus;
 use vb6_core::session::{Library, SessionConfig, SemTokenKind};
 
-fn uses(s: &vb6_core::session::Session, src: &str, member: &str) -> Vec<u32> {
-    s.external_member_references("VBA", "Strings", member).iter().map(|l| {
-        let _ = src;
-        l.span.start
-    }).collect()
+fn uses(s: &vb6_core::session::Session, member: &str) -> Vec<u32> {
+    s.external_member_references("VBA", "Strings", member).iter().map(|l| l.span.start).collect()
 }
 
 #[test]
@@ -19,8 +16,8 @@ fn string_functions_resolve_to_the_library_and_the_dollar_form_to_its_string_var
     let src = "Option Explicit\nSub Run()\n    Dim s As String\n    s = Left(s, 1)\n    s = Left$(s, 1)\nEnd Sub\n";
     let s = session(&[("modMain.bas", src)]);
     assert_eq!(s.diagnostics(0), vec![]);
-    assert_eq!(uses(&s, src, "_B_var_Left"), vec![at(src, "= Left(s", "Left")]);
-    assert_eq!(uses(&s, src, "_B_str_Left"), vec![at(src, "Left$(s", "Left")]);
+    assert_eq!(uses(&s, "_B_var_Left"), vec![at(src, "= Left(s", "Left")]);
+    assert_eq!(uses(&s, "_B_str_Left"), vec![at(src, "Left$(s", "Left")]);
 }
 
 #[test]
@@ -89,4 +86,29 @@ fn no_libraries_means_the_names_are_unknown() {
     let s = session_with(&[("modMain.bas", src)], none);
     assert_eq!(s.diagnostics(0).len(), 1);
     assert_eq!(Library::bundled().len(), 2);
+}
+
+#[test]
+fn library_name_qualifies_its_functions_and_enums() {
+    let src = "Option Explicit\nSub Run()\n    Dim b As Boolean\n    Dim n As Long\n    b = VBA.IsError(n)\n\
+               \x20   n = VBRUN.CheckBoxConstants.vbChecked\n    n = CheckBoxConstants.vbUnchecked\n    n = VBA.vbCrLf\nEnd Sub\n";
+    let s = session(&[("modMain.bas", src)]);
+    assert_eq!(s.diagnostics(0), vec![]);
+    for (ctx, member) in [
+        ("VBA.IsError", "IsError"),
+        ("VBRUN.CheckBoxConstants.vbChecked", "vbChecked"),
+        ("CheckBoxConstants.vbUnchecked", "vbUnchecked"),
+        ("VBA.vbCrLf", "vbCrLf"),
+    ] {
+        assert_eq!(s.member_status_at(0, at(src, ctx, member)), Some(MemberStatus::Resolved), "{ctx}");
+    }
+    assert_eq!(s.external_member_references("VBRUN", "CheckBoxConstants", "vbChecked").len(), 1);
+}
+
+#[test]
+fn unknown_member_of_a_library_is_reported() {
+    let src = "Sub Run()\n    x = VBA.NoSuchFunction(1)\n    n = Err.Desc\nEnd Sub\n";
+    let s = session(&[("modMain.bas", src)]);
+    assert_eq!(s.member_status_at(0, at(src, "VBA.NoSuchFunction", "NoSuchFunction")), Some(MemberStatus::NoSuchMember));
+    assert_eq!(s.member_status_at(0, at(src, "Err.Desc", "Desc")), Some(MemberStatus::NoSuchMember));
 }

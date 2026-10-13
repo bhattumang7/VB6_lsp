@@ -38,6 +38,8 @@ pub enum Qualifier {
     Library(usize),
     /// An enum type name: `Color.Red`.
     Enum { module: usize, idx: usize },
+    /// An enum of an external library: `VBRUN.CheckBoxConstants.vbChecked`.
+    LibraryEnum { lib: usize, ty: usize },
 }
 
 /// The static type of an expression, as far as the project can tell.
