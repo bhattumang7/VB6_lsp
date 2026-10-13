@@ -449,7 +449,9 @@ impl<'src> Parser<'src> {
                     nodes.push(n);
                 }
                 // Declaration modifiers that precede Sub/Function/Property/Declare
+                // or a variable/constant list. `Global` is `Public`.
                 TokenKind::Kw(Kw::Public)
+                | TokenKind::Kw(Kw::Global)
                 | TokenKind::Kw(Kw::Private)
                 | TokenKind::Kw(Kw::Friend)
                 | TokenKind::Kw(Kw::Static) => {
@@ -497,8 +499,7 @@ impl<'src> Parser<'src> {
                 // Module-level Dim / Const / ReDim
                 TokenKind::Kw(Kw::Dim)
                 | TokenKind::Kw(Kw::Const)
-                | TokenKind::Kw(Kw::ReDim)
-                | TokenKind::Kw(Kw::Global) => {
+                | TokenKind::Kw(Kw::ReDim) => {
                     if let Some(n) = self.parse_stmt(arena) {
                         nodes.push(n);
                     }
@@ -1720,6 +1721,7 @@ impl<'src> Parser<'src> {
                 TokenKind::Kw(Kw::Event)    => stmts.push(self.parse_event_decl(arena)),
                 TokenKind::Kw(Kw::Implements) => stmts.push(self.parse_implements_stmt(arena)),
                 TokenKind::Kw(Kw::Public)
+                | TokenKind::Kw(Kw::Global)
                 | TokenKind::Kw(Kw::Private)
                 | TokenKind::Kw(Kw::Friend)
                 | TokenKind::Kw(Kw::Static) => stmts.push(self.parse_access_decl(arena)),
