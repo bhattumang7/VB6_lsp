@@ -234,6 +234,19 @@ pub enum NameResolution {
     /// layer), not by single-module [`bind`](crate::sema::bind), which leaves
     /// such names [`Unresolved`](NameResolution::Unresolved).
     External { module: usize, decl: ExternalDecl },
+    /// A name that stands for a module of the project (`modUtil.DoThing`).
+    Module(usize),
+    /// A name that stands for the project itself (`Project1.modUtil`).
+    Project,
+    /// A name that stands for a loaded external library (`ADODB.Connection`);
+    /// the index is into the host's library table.
+    Library(usize),
+    /// A library's global object (`App`, `Screen`) or a library type named in
+    /// a type position: type `ty` of library `lib`.
+    LibraryType { lib: usize, ty: usize },
+    /// Member `member` of type `ty` of library `lib` (indices into the host's
+    /// library table, so the identity stays small and copyable).
+    LibraryMember { lib: usize, ty: usize, member: usize },
     /// Could not be resolved (unresolved forward reference or external name).
     Unresolved,
 }
@@ -252,6 +265,11 @@ pub enum ExternalDecl {
     Enum(usize),
     /// A member of a public enum (enum members are project-scoped constants).
     EnumMember { enum_idx: usize, member_idx: usize },
+    /// Field `member_idx` of the type declaration at `type_idx`.
+    TypeMember { type_idx: usize, member_idx: usize },
+    /// Control `idx` of a form or other designer module (control arrays are one
+    /// control).
+    Control(usize),
 }
 
 /// A single-argument intrinsic emitted as a dedicated, argument-type-indexed
@@ -387,6 +405,13 @@ pub struct BoundModule {
     /// Lowercase name of the member marked `VB_UserMemId = 0` /
     /// `VB_VarUserMemId = 0`: the class's default member.
     pub default_member: Option<String>,
+    /// Static type of each expression node, keyed by `NodeId.0`. Filled only by
+    /// [`bind_in_project`](crate::sema::bind_in_project).
+    pub sem_types: std::collections::HashMap<u32, crate::sema::project::SemType>,
+    /// Why each `MemberAccess` node (and each `ReDim` of a member array) is or
+    /// is not resolved, keyed by `NodeId.0`. Filled only by
+    /// [`bind_in_project`](crate::sema::bind_in_project).
+    pub member_status: std::collections::HashMap<u32, crate::sema::project::MemberStatus>,
 }
 
 /// Fully-resolved class-member vtable dispatch info for one `MemberAccess`

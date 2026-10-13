@@ -9,7 +9,7 @@
 //!     a human-readable hover string using the [`crate::frx`] deserializers.
 
 use crate::frm::parse_frm;
-use crate::frm::parser::BeginBlock;
+use crate::frm::parser::{BeginBlock, PropValue};
 use crate::frontend::ast::Span;
 use crate::frx::records::{FrxRecord, RecordKind};
 use crate::frx::{parse_frx_reference, kind_for_property, FrxReader, PropKind};
@@ -23,8 +23,11 @@ pub struct FormControl {
     pub control_type: String,
     /// Nesting depth (0 = the form/usercontrol itself).
     pub depth: u32,
-    /// Byte span of the control name in the source (best-effort).
+    /// Byte span of the control name on its `Begin` line, or [`Span::DUMMY`]
+    /// when the line does not spell the name.
     pub span: Span,
+    /// The control's `Index` property: `Some` for an element of a control array.
+    pub index: Option<i32>,
 }
 
 /// Parse a designer file's source and return its controls (the root form and
@@ -33,41 +36,78 @@ pub struct FormControl {
 /// Returns an empty list for `.cls`-style files with no designer block or on a
 /// designer parse error (the code side is still handled by the normal binder).
 pub fn form_controls(src: &str) -> Vec<FormControl> {
-    let Ok(frm) = parse_frm(src) else {
+    controls_of(src, src.as_bytes())
+}
+
+/// Like [`form_controls`], from a file's raw (Windows-1252) bytes; spans are
+/// byte offsets into `raw`.
+pub fn form_controls_from_bytes(raw: &[u8]) -> Vec<FormControl> {
+    let text: String = raw.iter().map(|&b| b as char).collect();
+    controls_of(&text, raw)
+}
+
+/// `text` is what the designer parser reads; `raw` is the same file as the
+/// bytes the returned spans index into (the two have the same lines).
+fn controls_of(text: &str, raw: &[u8]) -> Vec<FormControl> {
+    let Ok(frm) = parse_frm(text) else {
         return Vec::new();
     };
     let mut out = Vec::new();
     if let Some(root) = frm.root.as_ref() {
-        walk(root, 0, src, &mut out);
+        let lines = line_starts(raw);
+        walk(root, 0, raw, &lines, &mut out);
     }
     out
 }
 
-fn walk(block: &BeginBlock, depth: u32, src: &str, out: &mut Vec<FormControl>) {
+/// Byte offset of the start of each line (index 0 = line 1).
+fn line_starts(raw: &[u8]) -> Vec<usize> {
+    let mut starts = vec![0];
+    starts.extend(raw.iter().enumerate().filter(|(_, &b)| b == b'\n').map(|(i, _)| i + 1));
+    starts
+}
+
+fn walk(block: &BeginBlock, depth: u32, raw: &[u8], lines: &[usize], out: &mut Vec<FormControl>) {
     out.push(FormControl {
         name: block.name.clone(),
         control_type: block.control_type.clone(),
         depth,
-        span: name_span(src, &block.control_type, &block.name),
+        span: name_span(raw, lines, block),
+        index: index_of(block),
     });
     for child in &block.children {
-        walk(child, depth + 1, src, out);
+        walk(child, depth + 1, raw, lines, out);
     }
 }
 
-/// Best-effort byte span of a control's name on its `Begin <type> <name>` line.
-fn name_span(src: &str, control_type: &str, name: &str) -> Span {
-    // Prefer the `<type> <name>` pairing to disambiguate; fall back to a bare
-    // search for the name.
-    let pat = format!("{control_type} {name}");
-    let start = if let Some(p) = src.find(&pat) {
-        p + control_type.len() + 1
-    } else if let Some(p) = src.find(name) {
-        p
-    } else {
+/// The value of a control's `Index` property, when it has one.
+fn index_of(block: &BeginBlock) -> Option<i32> {
+    block.properties.iter().find_map(|p| match (&p.value, p.name.eq_ignore_ascii_case("Index")) {
+        (PropValue::Scalar(v), true) => v.split_whitespace().next()?.parse().ok(),
+        _ => None,
+    })
+}
+
+/// Byte span of a control's name on its own `Begin <type> <name>` line.
+fn name_span(raw: &[u8], lines: &[usize], block: &BeginBlock) -> Span {
+    let Some(&start) = block.line.checked_sub(1).and_then(|i| lines.get(i)) else {
         return Span::DUMMY;
     };
-    Span { start: start as u32, len: name.len() as u32 }
+    let end = lines.get(block.line).copied().unwrap_or(raw.len());
+    let line = &raw[start..end];
+    let find = |hay: &[u8], needle: &[u8]| hay.windows(needle.len()).position(|w| w == needle);
+    // The name is the word after the type on the `Begin` line.
+    let Some(type_at) = find(line, block.control_type.as_bytes()) else {
+        return Span::DUMMY;
+    };
+    let after = type_at + block.control_type.len();
+    let skipped = line[after..].iter().take_while(|b| b.is_ascii_whitespace()).count();
+    let name_at = after + skipped;
+    if line[name_at..].starts_with(block.name.as_bytes()) {
+        Span { start: (start + name_at) as u32, len: block.name.len() as u32 }
+    } else {
+        Span::DUMMY
+    }
 }
 
 /// Decode a designer FRX reference (`prop = "form.frx":NNNN`) into hover text,

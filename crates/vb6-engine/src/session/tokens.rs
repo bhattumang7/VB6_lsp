@@ -44,7 +44,14 @@ pub(crate) fn kind_of_resolution(res: &NameResolution) -> Option<SemTokenKind> {
             ExternalDecl::Var(_) => SemTokenKind::Variable,
             ExternalDecl::Type(_) | ExternalDecl::Enum(_) => SemTokenKind::Type,
             ExternalDecl::EnumMember { .. } => SemTokenKind::EnumMember,
+            ExternalDecl::TypeMember { .. } | ExternalDecl::Control(_) => SemTokenKind::Variable,
         },
-        NameResolution::Unresolved => return None,
+        NameResolution::Module(_)
+        | NameResolution::Project
+        | NameResolution::Library(_)
+        | NameResolution::LibraryType { .. } => SemTokenKind::Type,
+        // A library member may be a method or a property; without the library
+        // model's kind the token is left to the client's base grammar.
+        NameResolution::LibraryMember { .. } | NameResolution::Unresolved => return None,
     })
 }

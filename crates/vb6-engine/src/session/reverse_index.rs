@@ -27,7 +27,17 @@ pub enum DeclId {
     Type { module: usize, idx: usize },
     Enum { module: usize, idx: usize },
     EnumMember { module: usize, enum_idx: usize, member_idx: usize },
+    /// A field of a user-defined type.
+    TypeMember { module: usize, type_idx: usize, member_idx: usize },
+    /// A control of a form or other designer module.
+    Control { module: usize, idx: usize },
+    /// A module of the project, as a name (`modUtil`, a class name).
+    Module { module: usize },
 }
+
+/// Identity of a member of an external library: `(library, type, member)`, as
+/// indices into the session's library table.
+pub type LibraryKey = (usize, usize, usize);
 
 /// A single use site: the `NameRef` node `node` (a `NodeId.0`) in module `module`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,7 +73,18 @@ pub fn decl_id_of(cur_module: usize, res: &NameResolution) -> Option<DeclId> {
             ExternalDecl::EnumMember { enum_idx, member_idx } => {
                 DeclId::EnumMember { module: *module, enum_idx: *enum_idx, member_idx: *member_idx }
             }
+            ExternalDecl::TypeMember { type_idx, member_idx } => {
+                DeclId::TypeMember { module: *module, type_idx: *type_idx, member_idx: *member_idx }
+            }
+            ExternalDecl::Control(i) => DeclId::Control { module: *module, idx: *i },
         },
+        NameResolution::Module(m) => DeclId::Module { module: *m },
+        // A project name, a library, a library type and a library member name
+        // something outside the project's own declarations.
+        NameResolution::Project
+        | NameResolution::Library(_)
+        | NameResolution::LibraryType { .. }
+        | NameResolution::LibraryMember { .. } => return None,
         NameResolution::Builtin | NameResolution::Unresolved => return None,
     })
 }
@@ -72,11 +93,12 @@ pub fn decl_id_of(cur_module: usize, res: &NameResolution) -> Option<DeclId> {
 #[derive(Debug, Default, Clone)]
 pub struct ReferenceIndex {
     map: HashMap<DeclId, Vec<RefSite>>,
+    library: HashMap<LibraryKey, Vec<RefSite>>,
 }
 
 impl ReferenceIndex {
     pub fn new() -> Self {
-        Self { map: HashMap::new() }
+        Self { map: HashMap::new(), library: HashMap::new() }
     }
 
     /// Fold one module's forward resolution map into the reverse index.
@@ -91,8 +113,20 @@ impl ReferenceIndex {
         for (&node, res) in resolutions {
             if let Some(id) = decl_id_of(module_idx, res) {
                 self.map.entry(id).or_default().push(RefSite { module: module_idx, node });
+            } else if let NameResolution::LibraryMember { lib, ty, member } = res {
+                self.library
+                    .entry((*lib, *ty, *member))
+                    .or_default()
+                    .push(RefSite { module: module_idx, node });
             }
         }
+    }
+
+    /// All recorded use sites of a library member, in deterministic order.
+    pub fn library_references(&self, key: LibraryKey) -> Vec<RefSite> {
+        let mut sites = self.library.get(&key).cloned().unwrap_or_default();
+        sites.sort_by_key(|s| (s.module, s.node));
+        sites
     }
 
     /// All recorded use sites for a declaration, in deterministic order

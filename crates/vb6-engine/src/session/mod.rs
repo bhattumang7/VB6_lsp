@@ -23,6 +23,8 @@ mod call_hierarchy;
 mod completion;
 mod folding;
 mod format;
+mod library;
+mod project_model;
 mod signature;
 pub mod forms;
 pub mod hover;
@@ -34,10 +36,13 @@ pub mod tokens;
 pub use call_hierarchy::{CallHierarchyDecl, IncomingCall, OutgoingCall};
 pub use completion::{CompletionEntry, CompletionKind};
 pub use folding::FoldRange;
-pub use forms::{describe_frx_reference, form_controls, FormControl};
+pub use forms::{describe_frx_reference, form_controls, form_controls_from_bytes, FormControl};
+pub use library::{
+    Library, LibraryMember, LibraryMemberKind, LibraryType, LibraryTypeKind, SessionConfig,
+};
 pub use line_index::{LineIndex, Position, Range};
 pub use module_index::{ExternalRef, ModuleIndex};
-pub use reverse_index::{DeclId, ReferenceIndex, RefSite};
+pub use reverse_index::{DeclId, LibraryKey, ReferenceIndex, RefSite};
 pub use signature::SigHelp;
 pub use tokens::{SemToken, SemTokenKind};
 
@@ -51,7 +56,12 @@ use crate::frontend::scanner::{Scanner, ScannerContext};
 use crate::frontend::token::{Kw, Token, TokenKind};
 use crate::sema::binder::{ERR_SUB_OR_FUNCTION_NOT_DEFINED, ERR_VARIABLE_NOT_DEFINED};
 use crate::sema::builtins::is_builtin;
-use crate::sema::{bind, BoundEnumDecl, BoundModule, BoundProc, NameResolution};
+use crate::sema::project::MemberStatus;
+use crate::sema::symbol::TypeName;
+use crate::sema::{
+    bind, bind_in_project, unaccounted_member_accesses, BoundEnumDecl, BoundModule, BoundProc,
+    NameResolution,
+};
 
 use reverse_index::decl_id_of;
 
@@ -94,6 +104,29 @@ pub struct SymbolInfo {
 pub struct Hover {
     pub text: String,
     pub span: Span,
+}
+
+/// How the member accesses of a project resolved, by outcome. The sum of all
+/// fields is the number of member accesses (and `ReDim` of member arrays).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct MemberAccessSummary {
+    pub resolved: usize,
+    /// Base is `Variant`, `Object` or untyped.
+    pub late_bound: usize,
+    /// `base!key`.
+    pub bang: usize,
+    /// Base is a value type or an array.
+    pub not_an_object: usize,
+    /// Base's declared type is not a type of the project and not qualified.
+    pub unknown_type: usize,
+    /// Base's type, or the member's, belongs to a library that is not loaded.
+    pub library_not_loaded: usize,
+    /// Base's class is known and has no reachable member of that name.
+    pub no_such_member: usize,
+    /// The member exists, not as the accessor the use needs.
+    pub missing_accessor: usize,
+    /// Base expression itself did not resolve.
+    pub base_unresolved: usize,
 }
 
 /// A single text edit: replace `span` in `module` with `new_text`. A
@@ -144,6 +177,33 @@ struct ModuleData {
     /// check, since an undefined call is "Sub or Function not defined" (a
     /// different error), not "Variable not defined".
     callee_nodes: HashSet<u32>,
+    /// Top-level AST nodes and the parser's visibility table, kept so the
+    /// module can be bound again once the project is known.
+    top: Vec<NodeId>,
+    visibility: HashMap<u32, bool>,
+    /// The module's name: `Attribute VB_Name`, else the file's base name.
+    module_name: String,
+    /// A `.bas` standard module (a namespace), not a class or designer.
+    standard: bool,
+    /// The module's name is also a default instance (forms, and classes marked
+    /// `VB_PredeclaredId`).
+    predeclared: bool,
+    /// For a designer, the library type it extends (`VB.Form`).
+    base_type: Option<TypeName>,
+    /// Controls of a designer, grouped (a control array is one control).
+    controls: Vec<ControlDecl>,
+    /// Span of the `VB_Name` attribute's value: where the module name is
+    /// declared.
+    vb_name_span: Option<Span>,
+}
+
+/// A control declared in a designer, with one span per element.
+struct ControlDecl {
+    name: String,
+    control_type: String,
+    is_array: bool,
+    /// Name span of each declaration of the control (several for an array).
+    spans: Vec<Span>,
 }
 
 /// Cursor resolution target.
@@ -160,8 +220,8 @@ enum CursorTarget {
 pub struct Session {
     modules: Vec<ModuleData>,
     path_to_module: HashMap<String, usize>,
-    index: ModuleIndex,
     refs: ReferenceIndex,
+    config: SessionConfig,
 }
 
 impl Session {
@@ -170,6 +230,13 @@ impl Session {
     /// `raw_bytes` is the file's on-disk content (Windows-1252); the scanner is
     /// byte-oriented, so no transcoding is required.
     pub fn from_sources(files: Vec<(String, Vec<u8>)>) -> Self {
+        Self::with_config(files, SessionConfig::default())
+    }
+
+    /// Like [`from_sources`](Self::from_sources), with what the host knows
+    /// about the project beyond its files: the project's name and the external
+    /// libraries it references (see [`Library`]).
+    pub fn with_config(files: Vec<(String, Vec<u8>)>, config: SessionConfig) -> Self {
         let modules: Vec<ModuleData> = files
             .into_iter()
             .map(|(path, source)| analyze_module(path, source))
@@ -178,8 +245,8 @@ impl Session {
         let mut s = Session {
             modules,
             path_to_module: HashMap::new(),
-            index: ModuleIndex::new(),
             refs: ReferenceIndex::new(),
+            config,
         };
         s.rebuild_path_index();
         s.relink();
@@ -223,54 +290,22 @@ impl Session {
         }
     }
 
-    /// Recompute all project-level state from each module's raw snapshot:
-    /// reset working bounds, rebuild the public-symbol index, re-resolve
-    /// cross-module references, rebuild the reverse index, and re-emit
-    /// project-scoped diagnostics. Idempotent — safe to call after any edit.
+    /// Recompute all project-level state from each module's parsed form: build
+    /// the project model (every module's declarations plus the external
+    /// libraries), bind every module against it, rebuild the reverse index, and
+    /// re-emit project-scoped diagnostics. Idempotent — safe to call after any
+    /// edit.
     fn relink(&mut self) {
-        for m in &mut self.modules {
-            m.bound = m.raw_bound.clone();
+        let model = project_model::ProjectModel::build(
+            &self.modules,
+            self.config.project_name.as_deref(),
+            &self.config.libraries,
+        );
+        for (i, m) in self.modules.iter_mut().enumerate() {
+            m.bound = bind_in_project(&m.ctx, &m.arena, &m.top, &m.spans, &m.visibility, i, &model);
         }
-        self.build_index();
-        self.resolve_cross_module();
         self.build_references();
         self.check_undeclared();
-    }
-
-    fn build_index(&mut self) {
-        let mut index = ModuleIndex::new();
-        for (i, m) in self.modules.iter().enumerate() {
-            index.add_module(i, &m.bound, |sym| {
-                m.ctx.symbol(sym as usize).name.to_ascii_lowercase()
-            });
-        }
-        self.index = index;
-    }
-
-    /// Upgrade each module's `Unresolved` `NameRef`s to `External` when the name
-    /// matches a public declaration in another module.
-    fn resolve_cross_module(&mut self) {
-        let index = &self.index;
-        for m in &mut self.modules {
-            let upgrades: Vec<(u32, NameResolution)> = m
-                .bound
-                .resolutions
-                .iter()
-                .filter(|(_, r)| **r == NameResolution::Unresolved)
-                .filter_map(|(&node, _)| {
-                    let ExprNode::NameRef { sym, .. } = m.arena.get(NodeId(node)) else {
-                        return None;
-                    };
-                    let name = m.ctx.symbol(*sym as usize).name.to_ascii_lowercase();
-                    index
-                        .lookup(&name)
-                        .map(|r| (node, NameResolution::External { module: r.module, decl: r.decl }))
-                })
-                .collect();
-            for (node, res) in upgrades {
-                m.bound.resolutions.insert(node, res);
-            }
-        }
     }
 
     fn build_references(&mut self) {
@@ -339,6 +374,52 @@ impl Session {
             return None;
         }
         Some(m.spans.get(NodeId(node)))
+    }
+
+    // ── Member-access accounting ────────────────────────────────────────────────
+
+    /// How every member access in the project resolved, by outcome.
+    pub fn member_access_summary(&self) -> MemberAccessSummary {
+        let mut out = MemberAccessSummary::default();
+        for m in &self.modules {
+            for status in m.bound.member_status.values() {
+                match status {
+                    MemberStatus::Resolved => out.resolved += 1,
+                    MemberStatus::LateBound => out.late_bound += 1,
+                    MemberStatus::Bang => out.bang += 1,
+                    MemberStatus::NotAnObject => out.not_an_object += 1,
+                    MemberStatus::UnknownType(_) => out.unknown_type += 1,
+                    MemberStatus::LibraryNotLoaded(_) => out.library_not_loaded += 1,
+                    MemberStatus::NoSuchMember => out.no_such_member += 1,
+                    MemberStatus::MissingAccessor(_) => out.missing_accessor += 1,
+                    MemberStatus::BaseUnresolved => out.base_unresolved += 1,
+                }
+            }
+        }
+        out
+    }
+
+    /// The status of the member access whose member name covers `offset`.
+    pub fn member_status_at(&self, module: usize, offset: u32) -> Option<MemberStatus> {
+        let m = self.modules.get(module)?;
+        m.bound
+            .member_status
+            .iter()
+            .find(|(node, _)| span_contains(m.spans.get(NodeId(**node)), offset))
+            .map(|(_, status)| status.clone())
+    }
+
+    /// Spans of member accesses in `module` that have no status. Always empty
+    /// for a well-formed module: every member access either resolves or is
+    /// reported with a reason.
+    pub fn unaccounted_member_accesses(&self, module: usize) -> Vec<Span> {
+        let Some(m) = self.modules.get(module) else {
+            return Vec::new();
+        };
+        unaccounted_member_accesses(&m.arena, &m.bound.member_status)
+            .into_iter()
+            .map(|n| m.spans.get(n))
+            .collect()
     }
 
     // ── Project introspection ───────────────────────────────────────────────────
@@ -492,13 +573,38 @@ impl Session {
 
     /// All references to the symbol at `offset`. With `include_decl`, the
     /// declaration's own name is included.
+    ///
+    /// The accessors of a property (`Get` / `Let` / `Set`) are one symbol: a
+    /// reference to any of them is a reference to the property. A member of an
+    /// external library has no declaration in the project, so its sites are
+    /// those with the same `(library, type, member)`.
     pub fn references(&self, module: usize, offset: u32, include_decl: bool) -> Vec<Location> {
+        if let Some(key) = self.library_key_at(module, offset) {
+            return self.site_locations(self.refs.library_references(key));
+        }
         let Some(id) = self.decl_at_cursor(module, offset) else {
             return Vec::new();
         };
-        let mut out: Vec<Location> = self
-            .refs
-            .references(id)
+        let group = self.decl_group(id);
+        let mut sites: Vec<RefSite> =
+            group.iter().flat_map(|g| self.refs.references(*g)).collect();
+        sites.sort_by_key(|s| (s.module, s.node));
+        let mut out = self.site_locations(sites);
+        if include_decl {
+            for g in &group {
+                if let Some(loc) = self.decl_location(*g) {
+                    if !out.contains(&loc) {
+                        out.push(loc);
+                    }
+                }
+            }
+        }
+        out.sort_by_key(|l| (l.module, l.span.start));
+        out
+    }
+
+    fn site_locations(&self, sites: Vec<RefSite>) -> Vec<Location> {
+        sites
             .into_iter()
             .filter_map(|s| {
                 self.modules.get(s.module).map(|m| Location {
@@ -506,16 +612,52 @@ impl Session {
                     span: m.spans.get(NodeId(s.node)),
                 })
             })
-            .collect();
-        if include_decl {
-            if let Some(loc) = self.decl_location(id) {
-                if !out.contains(&loc) {
-                    out.push(loc);
-                }
+            .collect()
+    }
+
+    /// The library member the cursor sits on, if it is a use of one.
+    fn library_key_at(&self, module: usize, offset: u32) -> Option<LibraryKey> {
+        match self.target_at(module, offset)? {
+            CursorTarget::Use { res: NameResolution::LibraryMember { lib, ty, member }, .. } => {
+                Some((lib, ty, member))
             }
+            _ => None,
         }
-        out.sort_by_key(|l| (l.module, l.span.start));
-        out
+    }
+
+    /// The declarations that are the same symbol as `id`: all accessors of a
+    /// property declared in a module, otherwise `id` alone.
+    fn decl_group(&self, id: DeclId) -> Vec<DeclId> {
+        let DeclId::Proc { module, idx } = id else {
+            return vec![id];
+        };
+        let Some(m) = self.modules.get(module) else {
+            return vec![id];
+        };
+        let Some(p) = m.bound.procs.get(idx) else {
+            return vec![id];
+        };
+        let is_property = |k: ProcKind| matches!(k, ProcKind::PropGet | ProcKind::PropLet | ProcKind::PropSet);
+        if !is_property(p.kind) {
+            return vec![id];
+        }
+        let name = m.ctx.symbol(p.sym_id as usize).name.to_ascii_lowercase();
+        m.bound
+            .procs
+            .iter()
+            .enumerate()
+            .filter(|(_, q)| {
+                is_property(q.kind) && m.ctx.symbol(q.sym_id as usize).name.to_ascii_lowercase() == name
+            })
+            .map(|(i, _)| DeclId::Proc { module, idx: i })
+            .collect()
+    }
+
+    /// The declaration the symbol at `offset` refers to: for a use, the
+    /// declaration it resolved to; for a declaration's own name, itself.
+    /// `None` for builtins, library members, unresolved names and whitespace.
+    pub fn declaration_at(&self, module: usize, offset: u32) -> Option<DeclId> {
+        self.decl_at_cursor(module, offset)
     }
 
     /// Hover text for the symbol at `offset`.
@@ -533,7 +675,7 @@ impl Session {
                             return None;
                         }
                     }
-                    None => return None,
+                    None => self.external_hover_text(&res)?,
                 };
                 Some(Hover { text, span })
             }
@@ -542,6 +684,37 @@ impl Session {
                 span: self.decl_location(id)?.span,
             }),
         }
+    }
+
+    /// Hover text for a name that stands for the project or a library, or a
+    /// member of a library.
+    fn external_hover_text(&self, res: &NameResolution) -> Option<String> {
+        let libs = &self.config.libraries;
+        Some(match res {
+            NameResolution::Project => format!("Project {}", self.config.project_name.as_deref()?),
+            NameResolution::Library(l) => format!("Library {}", libs.get(*l)?.name),
+            NameResolution::LibraryType { lib, ty } => {
+                let l = libs.get(*lib)?;
+                format!("{}.{}", l.name, l.types.get(*ty)?.name)
+            }
+            NameResolution::LibraryMember { lib, ty, member } => {
+                let l = libs.get(*lib)?;
+                let t = l.types.get(*ty)?;
+                let m = t.members.get(*member)?;
+                let kind = match m.kind {
+                    LibraryMemberKind::Method if m.return_type.is_some() => "Function",
+                    LibraryMemberKind::Method => "Sub",
+                    LibraryMemberKind::PropertyGet => "Property Get",
+                    LibraryMemberKind::PropertyLet => "Property Let",
+                    LibraryMemberKind::PropertySet => "Property Set",
+                    LibraryMemberKind::Field => "Field",
+                    LibraryMemberKind::Constant => "Const",
+                };
+                let ret = m.return_type.as_ref().map(|r| format!(" As {r}")).unwrap_or_default();
+                format!("{kind} {}.{}.{}{ret}", l.name, t.name, m.name)
+            }
+            _ => return None,
+        })
     }
 
     /// All declared symbols in a module (outline).
@@ -608,31 +781,58 @@ impl Session {
     /// All spans of the symbol at `offset` within the same module (document
     /// highlights). Includes the declaration's name span.
     pub fn document_highlights(&self, module: usize, offset: u32) -> Vec<Span> {
-        let Some(id) = self.decl_at_cursor(module, offset) else {
-            return Vec::new();
-        };
         let m = &self.modules[module];
-        let mut spans: Vec<Span> = self
-            .refs
-            .references(id)
-            .into_iter()
-            .filter(|s| s.module == module)
-            .map(|s| m.spans.get(NodeId(s.node)))
-            .filter(|sp| sp.len > 0)
-            .collect();
-        // Include the declaration if it lives in this module.
-        if let Some(loc) = self.decl_location(id) {
-            if loc.module == module && !spans.contains(&loc.span) {
-                spans.push(loc.span);
+        let mut spans: Vec<Span> = Vec::new();
+        if let Some(key) = self.library_key_at(module, offset) {
+            spans.extend(
+                self.refs
+                    .library_references(key)
+                    .into_iter()
+                    .filter(|s| s.module == module)
+                    .map(|s| m.spans.get(NodeId(s.node)))
+                    .filter(|sp| sp.len > 0),
+            );
+        } else if let Some(id) = self.decl_at_cursor(module, offset) {
+            for g in self.decl_group(id) {
+                spans.extend(
+                    self.refs
+                        .references(g)
+                        .into_iter()
+                        .filter(|s| s.module == module)
+                        .map(|s| m.spans.get(NodeId(s.node)))
+                        .filter(|sp| sp.len > 0),
+                );
+                // Include the declaration if it lives in this module.
+                if let Some(loc) = self.decl_location(g) {
+                    if loc.module == module && loc.span.len > 0 && !spans.contains(&loc.span) {
+                        spans.push(loc.span);
+                    }
+                }
             }
         }
         spans.sort_by_key(|s| s.start);
+        spans.dedup();
         spans
     }
 
     /// Rename the symbol at `offset` to `new_name`, returning edits across all
     /// modules (including the declaration).
+    ///
+    /// Nothing is renamed for a symbol the project does not own: a member of an
+    /// external library, a library or project name, or a module (its name is
+    /// also its file name and its `.vbp` entry, which are outside the source).
     pub fn rename(&self, module: usize, offset: u32, new_name: &str) -> Vec<TextEdit> {
+        match self.decl_at_cursor(module, offset) {
+            Some(DeclId::Module { .. }) => return Vec::new(),
+            Some(_) => {}
+            None => {
+                // Not a project declaration: library members and names have
+                // nothing to rename, and an unresolved name has no sites.
+                if self.library_key_at(module, offset).is_some() {
+                    return Vec::new();
+                }
+            }
+        }
         self.references(module, offset, true)
             .into_iter()
             .map(|loc| TextEdit {
@@ -688,6 +888,21 @@ impl Session {
                 return Some(id);
             }
         }
+        for (ti, t) in m.bound.type_decls.iter().enumerate() {
+            for (mi, member) in t.members.iter().enumerate() {
+                if span_contains(member.name_span, offset) {
+                    return Some(DeclId::TypeMember { module, type_idx: ti, member_idx: mi });
+                }
+            }
+        }
+        for (ci, c) in m.controls.iter().enumerate() {
+            if c.spans.iter().any(|s| span_contains(*s, offset)) {
+                return Some(DeclId::Control { module, idx: ci });
+            }
+        }
+        if m.vb_name_span.map_or(false, |s| span_contains(s, offset)) {
+            return Some(DeclId::Module { module });
+        }
         None
     }
 
@@ -704,6 +919,13 @@ impl Session {
             DeclId::EnumMember { enum_idx, member_idx, .. } => {
                 m.bound.enum_decls.get(enum_idx)?.members.get(member_idx)?.name_span
             }
+            DeclId::TypeMember { type_idx, member_idx, .. } => {
+                m.bound.type_decls.get(type_idx)?.members.get(member_idx)?.name_span
+            }
+            DeclId::Control { idx, .. } => *m.controls.get(idx)?.spans.first()?,
+            // A module is declared where its name is written; a module without
+            // a `VB_Name` attribute is named by its file and has no such place.
+            DeclId::Module { .. } => m.vb_name_span?,
         };
         Some(Location { module, span })
     }
@@ -731,6 +953,22 @@ impl Session {
                 let e = m.bound.enum_decls.get(enum_idx)?;
                 hover::enum_member_signature(src, e, e.members.get(member_idx)?)
             }
+            DeclId::TypeMember { type_idx, member_idx, .. } => {
+                let t = m.bound.type_decls.get(type_idx)?;
+                let mem = t.members.get(member_idx)?;
+                format!(
+                    "{}.{} As {}",
+                    hover::name_at(src, t.name_span),
+                    hover::name_at(src, mem.name_span),
+                    hover::type_str(ctx, &mem.vba_type)
+                )
+            }
+            DeclId::Control { idx, .. } => {
+                let c = m.controls.get(idx)?;
+                let array = if c.is_array { "()" } else { "" };
+                format!("{}{array} As {}", c.name, c.control_type)
+            }
+            DeclId::Module { .. } => format!("Module {}", m.module_name),
         })
     }
 }
@@ -780,7 +1018,10 @@ fn decl_module(id: DeclId) -> usize {
         | DeclId::Param { module, .. }
         | DeclId::Type { module, .. }
         | DeclId::Enum { module, .. }
-        | DeclId::EnumMember { module, .. } => module,
+        | DeclId::EnumMember { module, .. }
+        | DeclId::TypeMember { module, .. }
+        | DeclId::Control { module, .. }
+        | DeclId::Module { module } => module,
     }
 }
 
@@ -837,21 +1078,50 @@ pub fn module_kind_for_path(path: &str) -> ModuleKind {
 }
 
 /// Scan + parse + bind one module into [`ModuleData`].
-fn analyze_module(path: String, source: Vec<u8>) -> ModuleData {
-    let source = strip_designer_header(&path, source);
+fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
+    // The designer section is read from the original bytes; the code parser
+    // sees it blanked.
+    let designer_controls = if is_designer_path(&path) {
+        form_controls_from_bytes(&raw)
+    } else {
+        Vec::new()
+    };
+    let source = strip_designer_header(&path, raw);
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let mut parser = Parser::with_module_kind(&mut ctx, &source, module_kind_for_path(&path));
-    let _top = parser.parse_module(&mut arena);
+    let kind = module_kind_for_path(&path);
+    let mut parser = Parser::with_module_kind(&mut ctx, &source, kind);
+    let top = parser.parse_module(&mut arena);
     let spans = std::mem::take(&mut parser.node_spans);
     let visibility = std::mem::take(&mut parser.decl_public);
     let parse_diags = std::mem::take(&mut parser.diagnostics).into_items();
     drop(parser);
-    let raw_bound = bind(&ctx, &arena, &_top, &spans, &visibility);
+    let raw_bound = bind(&ctx, &arena, &top, &spans, &visibility);
     let bound = raw_bound.clone(); // overwritten by relink once the project is known
     let line_index = LineIndex::new(&source);
     let callee_nodes = collect_callees(&arena);
+
+    let module_name = raw_bound
+        .vb_name
+        .clone()
+        .unwrap_or_else(|| file_stem(&path).to_string());
+    let base_type = designer_controls.first().and_then(|root| {
+        let ty = root.control_type.to_ascii_lowercase();
+        match ty.split_once('.') {
+            Some((q, n)) => Some(TypeName { qualifier: Some(q.to_string()), name: n.to_string() }),
+            None if ty.is_empty() => None,
+            None => Some(TypeName { qualifier: None, name: ty }),
+        }
+    });
+    let vb_name_span = (0..arena.len() as u32).find_map(|i| match arena.get(NodeId(i)) {
+        ExprNode::Attribute { target: None, name, .. }
+            if ctx.symbol(*name as usize).name.eq_ignore_ascii_case("vb_name") =>
+        {
+            Some(spans.get(NodeId(i))).filter(|s| s.len > 0)
+        }
+        _ => None,
+    });
 
     ModuleData {
         path,
@@ -860,11 +1130,53 @@ fn analyze_module(path: String, source: Vec<u8>) -> ModuleData {
         arena,
         spans,
         line_index,
+        standard: kind == ModuleKind::Standard,
+        predeclared: raw_bound.predeclared_id || kind == ModuleKind::Form && base_type.as_ref().map_or(false, |t| t.name == "form" || t.name == "mdiform"),
         raw_bound,
         bound,
         parse_diags,
         callee_nodes,
+        top,
+        visibility,
+        module_name,
+        base_type,
+        controls: group_controls(&designer_controls),
+        vb_name_span,
     }
+}
+
+/// The control declarations of a designer: the root form is the module itself
+/// and is skipped; elements sharing a name (a control array) are one control.
+fn group_controls(flat: &[FormControl]) -> Vec<ControlDecl> {
+    let mut out: Vec<ControlDecl> = Vec::new();
+    for c in flat.iter().filter(|c| c.depth > 0) {
+        match out.iter_mut().find(|d| d.name.eq_ignore_ascii_case(&c.name)) {
+            Some(d) => {
+                d.is_array |= c.index.is_some();
+                d.spans.push(c.span);
+            }
+            None => out.push(ControlDecl {
+                name: c.name.clone(),
+                control_type: c.control_type.clone(),
+                is_array: c.index.is_some(),
+                spans: vec![c.span],
+            }),
+        }
+    }
+    out
+}
+
+/// A path's file name without directory or extension (either separator).
+fn file_stem(path: &str) -> &str {
+    let name = path.rsplit(['/', '\\']).next().unwrap_or(path);
+    name.rsplit_once('.').map_or(name, |(stem, _)| stem)
+}
+
+fn is_designer_path(path: &str) -> bool {
+    matches!(
+        path.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str(),
+        "frm" | "ctl" | "pag" | "dob" | "dsr"
+    )
 }
 
 /// Collect `NameRef` nodes that occupy a call-target position.

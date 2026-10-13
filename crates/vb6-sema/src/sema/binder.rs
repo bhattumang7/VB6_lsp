@@ -35,15 +35,25 @@ pub const ERR_DUPLICATE_DECLARATION: u16 = 0x9c9f;
 /// of `Option Explicit`.
 pub const ERR_SUB_OR_FUNCTION_NOT_DEFINED: u16 = 0x23;
 
-use crate::frontend::ast::{ExprArena, ExprNode, NodeId, NodeSpans, ProcKind, Span};
+/// `461` = "Method or data member not found"
+///
+/// Emitted for `obj.Member` when the static type of `obj` is a class (or
+/// user-defined type) of the project and it has no member of that name
+/// reachable from the use site.
+pub const ERR_METHOD_OR_DATA_MEMBER_NOT_FOUND: u16 = 461;
+
+use crate::frontend::ast::{ExprArena, ExprNode, FileIoKind, NodeId, NodeSpans, ProcKind, Span};
 use crate::frontend::diagnostics::Diagnostics;
 use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
+use crate::sema::project::{
+    Access, Arity, MemberHit, MemberLookup, MemberStatus, ProjectScope, Qualifier, SemType,
+};
 use crate::sema::symbol::{
     AccessorKind, BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc,
     BoundTypeDecl, BoundTypeMember, BoundVar, BuiltinCall, ClassMemberSlot, DeclTypeNames,
-    ExternalClass, NameResolution, ParamFlags, ResolvedClassMember, RtcArg, TypeName,
-    UnaryIntrinsic,
+    ExternalClass, ExternalDecl, NameResolution, ParamFlags, ResolvedClassMember, RtcArg,
+    TypeName, UnaryIntrinsic,
 };
 use crate::sema::types::VbaType;
 
@@ -85,9 +95,49 @@ pub fn bind_with_classes(
     visibility: &HashMap<u32, bool>,
     classes: &HashMap<String, ExternalClass>,
 ) -> BoundModule {
-    let mut b = Binder::new(ctx, arena, spans, visibility, classes);
+    let mut b = Binder::new(ctx, arena, spans, visibility, classes, None);
     b.bind_top_level(top_nodes);
     b.finish()
+}
+
+/// Like [`bind`], but with the project around the module: `module` is this
+/// module's index in the host's project and `scope` answers for every other
+/// module and any external library. Beyond what [`bind`] records, this
+/// resolves project-wide names and member accesses (`obj.Member`) against the
+/// declared type of the base, records the static type of every expression in
+/// `sem_types`, and accounts for each member access in `member_status`.
+pub fn bind_in_project(
+    ctx: &ScannerContext,
+    arena: &ExprArena,
+    top_nodes: &[NodeId],
+    spans: &NodeSpans,
+    visibility: &HashMap<u32, bool>,
+    module: usize,
+    scope: &dyn ProjectScope,
+) -> BoundModule {
+    let empty = HashMap::new();
+    let mut b = Binder::new(ctx, arena, spans, visibility, &empty, Some((scope, module)));
+    b.bind_top_level(top_nodes);
+    b.finish()
+}
+
+/// Member-access coverage invariant for [`bind_in_project`]: every
+/// `MemberAccess` node (and every `ReDim` of a member array) in `arena` must
+/// have a status in `member_status`: resolved, or unresolved for a stated
+/// reason. Returns the node ids that have none (empty = invariant holds).
+pub fn unaccounted_member_accesses(
+    arena: &ExprArena,
+    member_status: &HashMap<u32, MemberStatus>,
+) -> Vec<NodeId> {
+    (0..arena.len() as u32)
+        .filter(|i| match arena.get(NodeId(*i)) {
+            ExprNode::MemberAccess { .. } => true,
+            ExprNode::ReDimItem { base, .. } => base.is_some(),
+            _ => false,
+        })
+        .filter(|i| !member_status.contains_key(i))
+        .map(NodeId)
+        .collect()
 }
 
 /// Resolution-coverage invariant: every `NameRef` node allocated in `arena` must
@@ -146,6 +196,9 @@ struct Binder<'a> {
     /// body pass can bind `Optional` default-value expressions, which live in the
     /// parameter list rather than the body block.
     proc_param_nodes: Vec<Option<NodeId>>,
+    /// Return type-spec node per proc (aligned with `procs`), bound with the
+    /// parameters so a named return type is a use of that type.
+    proc_ret_nodes: Vec<Option<NodeId>>,
     module_vars: Vec<BoundVar>,
     type_decls:  Vec<BoundTypeDecl>,
     enum_decls:  Vec<BoundEnumDecl>,
@@ -165,6 +218,25 @@ struct Binder<'a> {
     predeclared_id: bool,
     global_namespace: bool,
     default_member: Option<String>,
+
+    /// The project and this module's index in it; `None` for a plain [`bind`].
+    project: Option<(&'a dyn ProjectScope, usize)>,
+    sem_types: HashMap<u32, SemType>,
+    member_status: HashMap<u32, MemberStatus>,
+    /// Accessor a member use needs, keyed by the `MemberAccess` / `NameRef`
+    /// node: set from the enclosing statement before the node is bound.
+    access_ctx: HashMap<u32, Access>,
+    /// Nodes that resolved to a procedure, with its declared parameter count.
+    callable: HashMap<u32, Arity>,
+    /// Static types of the `With` objects in force, innermost last.
+    with_stack: Vec<SemType>,
+    /// Declared type names of each procedure's parameters, aligned with `procs`.
+    param_names: Vec<Vec<Option<TypeName>>>,
+    /// Static types of declarations (project mode only).
+    var_sem: Vec<SemType>,
+    ret_sem: Vec<SemType>,
+    param_sem: Vec<Vec<SemType>>,
+    local_sem: Vec<Vec<SemType>>,
 }
 
 impl<'a> Binder<'a> {
@@ -174,6 +246,7 @@ impl<'a> Binder<'a> {
         spans: &'a NodeSpans,
         visibility: &'a HashMap<u32, bool>,
         known_classes: &'a HashMap<String, ExternalClass>,
+        project: Option<(&'a dyn ProjectScope, usize)>,
     ) -> Self {
         Self {
             ctx,
@@ -185,6 +258,7 @@ impl<'a> Binder<'a> {
             class_member_slots: std::cell::RefCell::new(HashMap::new()),
             procs:       Vec::new(),
             proc_param_nodes: Vec::new(),
+            proc_ret_nodes: Vec::new(),
             module_vars: Vec::new(),
             type_decls:  Vec::new(),
             enum_decls:  Vec::new(),
@@ -199,6 +273,17 @@ impl<'a> Binder<'a> {
             predeclared_id: false,
             global_namespace: false,
             default_member: None,
+            project,
+            sem_types: HashMap::new(),
+            member_status: HashMap::new(),
+            access_ctx: HashMap::new(),
+            callable: HashMap::new(),
+            with_stack: Vec::new(),
+            param_names: Vec::new(),
+            var_sem: Vec::new(),
+            ret_sem: Vec::new(),
+            param_sem: Vec::new(),
+            local_sem: Vec::new(),
         }
     }
 
@@ -220,6 +305,8 @@ impl<'a> Binder<'a> {
             predeclared_id: self.predeclared_id,
             global_namespace: self.global_namespace,
             default_member: self.default_member,
+            sem_types: self.sem_types,
+            member_status: self.member_status,
         }
     }
 
@@ -333,6 +420,10 @@ impl<'a> Binder<'a> {
             self.collect_top_decl(id);
         }
 
+        if self.project.is_some() {
+            self.compute_declaration_types();
+        }
+
         // Pass 2: bind module-level declaration expressions in module scope —
         // array bounds (`Dim a(1 To MAX)`), `Const`/enum values, and type-member
         // bounds. These live outside any procedure body, so the body pass below
@@ -348,6 +439,9 @@ impl<'a> Binder<'a> {
             // Parameter defaults bind in proc scope even for body-less `Declare`s.
             if let Some(params) = self.proc_param_nodes[proc_idx] {
                 self.bind_node(Some(proc_idx), params);
+            }
+            if let Some(ret) = self.proc_ret_nodes[proc_idx] {
+                self.bind_node(Some(proc_idx), ret);
             }
             let body = self.procs[proc_idx].body;
             if body != u32::MAX {
@@ -549,8 +643,11 @@ impl<'a> Binder<'a> {
             self.collect_proc(sym_id, kind, params_id, ret_type_id, body_id, name_span, is_public);
         let ret_name = self.type_name_of(ret_type_id);
         self.decl_types.proc_rets.push(ret_name);
+        let names = self.param_type_names(params_id);
+        self.param_names.push(names);
         self.procs.push(proc);
         self.proc_param_nodes.push(params_id);
+        self.proc_ret_nodes.push(ret_type_id);
     }
 
     /// Collect a module-level variable (`Dim`/`Const` item). Module `Dim`/`Const`
@@ -640,6 +737,20 @@ impl<'a> Binder<'a> {
             }
             _ => Vec::new(),
         }
+    }
+
+    /// The declared type name of each parameter, aligned with
+    /// [`collect_params`](Self::collect_params).
+    fn param_type_names(&self, params_id: Option<NodeId>) -> Vec<Option<TypeName>> {
+        let Some(ExprNode::ArgList { args }) = params_id.map(|p| self.arena.get(p)) else {
+            return Vec::new();
+        };
+        args.iter()
+            .map(|&a| match self.arena.get(a) {
+                ExprNode::ParamDef { type_node, .. } => self.type_name_of(*type_node),
+                _ => None,
+            })
+            .collect()
     }
 
     fn collect_param(&self, id: NodeId) -> BoundParam {
@@ -736,6 +847,7 @@ impl<'a> Binder<'a> {
         // it as local index 0 makes `F = …` / reads of `F` resolve as a normal
         // local (and the code generator allocates the return slot before the
         // user locals, matching the compiler's frame layout).
+        let mut local_names: Vec<Option<TypeName>> = Vec::new();
         let (kind, ret_type, sym_id, name_span) = {
             let p = &self.procs[proc_idx];
             (p.kind, p.ret_type.clone(), p.sym_id, p.name_span)
@@ -754,8 +866,17 @@ impl<'a> Binder<'a> {
                 is_new: false,
                 name_span,
             });
+            local_names.push(self.decl_types.proc_rets.get(proc_idx).cloned().flatten());
         }
-        self.collect_locals(body_id, &mut locals);
+        self.collect_locals(body_id, &mut locals, &mut local_names);
+        if self.project.is_some() {
+            let sems = locals
+                .iter()
+                .zip(&local_names)
+                .map(|(l, n)| self.sem_of_declared(&l.vba_type, n.as_ref()))
+                .collect();
+            self.local_sem[proc_idx] = sems;
+        }
         self.procs[proc_idx].locals = locals;
 
         // Bind all name references in the body. (`Optional` parameter defaults
@@ -772,7 +893,12 @@ impl<'a> Binder<'a> {
     /// uses — so a local declared inside any statement form (even one added
     /// later) is collected, never silently resolved to the wrong scope. A proc
     /// body contains no nested procedure declarations, so a full descent is safe.
-    fn collect_locals(&self, id: NodeId, out: &mut Vec<BoundVar>) {
+    fn collect_locals(
+        &self,
+        id: NodeId,
+        out: &mut Vec<BoundVar>,
+        names: &mut Vec<Option<TypeName>>,
+    ) {
         if let ExprNode::DimItem { name, is_const, is_static, is_new, type_node, bounds, init, .. } = self.arena.get(id) {
             let t = self.extract_type(*type_node);
             let vba_type = if bounds.is_some() { VbaType::Array(Box::new(t)) } else { t };
@@ -806,11 +932,12 @@ impl<'a> Binder<'a> {
                 is_static: *is_static, is_public: false, is_new: *is_new,
                 name_span: self.spans.get(id),
             });
+            names.push(self.type_name_of(*type_node));
         }
         let mut kids: Vec<NodeId> = Vec::new();
         self.arena.get(id).for_each_child(&mut |c| kids.push(c));
         for c in kids {
-            self.collect_locals(c, out);
+            self.collect_locals(c, out, names);
         }
     }
 
@@ -832,7 +959,11 @@ impl<'a> Binder<'a> {
     fn bind_node(&mut self, scope: Option<usize>, id: NodeId) {
         // A type name is not a value use: its qualified tail is never bound as
         // a variable.
-        if matches!(self.arena.get(id), ExprNode::UserType { .. }) {
+        if let ExprNode::UserType { name, child } = self.arena.get(id) {
+            let (name, child) = (*name, *child);
+            if self.project.is_some() {
+                self.resolve_type_position(id, name, child);
+            }
             return;
         }
         // ForRange stores its sub-nodes as raw u32 (not NodeId), so the derive-generated
@@ -845,12 +976,76 @@ impl<'a> Binder<'a> {
             self.bind_local(scope, id);
             return;
         }
+        if self.project.is_some() {
+            // `With obj`: the object is bound first, then it is the base of
+            // every leading-dot member in the body.
+            if let ExprNode::With { obj, body } = self.arena.get(id) {
+                let (obj, body) = (*obj, *body);
+                self.bind_node(scope, obj);
+                let sem = self.sem_of_node(obj);
+                self.with_stack.push(sem);
+                self.bind_node(scope, body);
+                self.with_stack.pop();
+                self.bind_local(scope, id);
+                return;
+            }
+        }
+        self.mark_assignment_targets(id);
         let mut kids: Vec<NodeId> = Vec::new();
         self.arena.get(id).for_each_child(&mut |c| kids.push(c));
         for c in kids {
             self.bind_node(scope, c);
         }
         self.bind_local(scope, id);
+    }
+
+    /// Record, before the children of an assigning statement are bound, which
+    /// accessor each assigned member needs: `Let` for a value assignment,
+    /// `Set` for `Set … =`. Only the outermost member of a target is marked
+    /// (`a.b.c = 1` assigns `c`; `a` and `b` are read), and an indexed
+    /// property target (`o.Item(1) = x`) marks the member being indexed.
+    fn mark_assignment_targets(&mut self, id: NodeId) {
+        let mut mark: Vec<(NodeId, Access)> = Vec::new();
+        match self.arena.get(id) {
+            ExprNode::Assign { target, .. } | ExprNode::RangeAssign { target, .. } => {
+                mark.push((*target, Access::Let));
+            }
+            ExprNode::SetAssign { target, .. } => mark.push((*target, Access::Set)),
+            ExprNode::MidAssign { args, .. } => {
+                if let ExprNode::ArgList { args } = self.arena.get(*args) {
+                    if let Some(first) = args.first() {
+                        mark.push((*first, Access::Let));
+                    }
+                }
+            }
+            ExprNode::For { var, .. } | ExprNode::ForEach { var, .. } => {
+                mark.push((*var, Access::Let));
+            }
+            ExprNode::FileIoStmt { kind, args, .. } => match kind {
+                FileIoKind::Input | FileIoKind::LineInput => {
+                    mark.extend(args.iter().map(|a| (*a, Access::Let)));
+                }
+                FileIoKind::Get => {
+                    if let Some(last) = args.last() {
+                        mark.push((*last, Access::Let));
+                    }
+                }
+                _ => {}
+            },
+            _ => {}
+        }
+        for (target, access) in mark {
+            let mut node = target;
+            if let ExprNode::Call { func, .. } = self.arena.get(node) {
+                node = *func;
+            }
+            if matches!(
+                self.arena.get(node),
+                ExprNode::MemberAccess { .. } | ExprNode::NameRef { .. }
+            ) {
+                self.access_ctx.insert(node.0, access);
+            }
+        }
     }
 
     /// Node-local binding for `id`, assuming its children are already bound.
@@ -864,13 +1059,34 @@ impl<'a> Binder<'a> {
             }
             ExprNode::Me | ExprNode::Nothing => {
                 self.types.insert(id.0, VbaType::Object);
+                if let (Some((project, module)), ExprNode::Me) = (self.project, self.arena.get(id)) {
+                    self.sem_types.insert(id.0, project.self_type(module));
+                }
+            }
+            ExprNode::WithContext => {
+                if self.project.is_some() {
+                    let sem = self.with_stack.last().cloned().unwrap_or(SemType::Unresolved);
+                    self.sem_types.insert(id.0, sem);
+                }
             }
 
             // Name reference — the core of the binder.
             ExprNode::NameRef { sym, .. } => {
                 let sym_id = *sym;
-                let res = self.resolve(scope, sym_id);
+                let (res, sem) = if self.project.is_some() {
+                    let access = self.access_ctx.get(&id.0).copied().unwrap_or(Access::Get);
+                    let (res, sem, params) = self.resolve_in_project(scope, sym_id, access);
+                    if let Some(arity) = params {
+                        self.callable.insert(id.0, arity);
+                    }
+                    (res, Some(sem))
+                } else {
+                    (self.resolve(scope, sym_id), None)
+                };
                 let mut ty = self.type_of_resolution(scope, &res);
+                if let Some(SemType::Value(v)) = &sem {
+                    ty = v.clone();
+                }
                 // Apply DefType letter-range inference: if the name has no explicit
                 // type (resolves to Variant), look up its first letter in the map.
                 if ty == VbaType::Variant {
@@ -883,11 +1099,18 @@ impl<'a> Binder<'a> {
                 }
                 self.resolutions.insert(id.0, res);
                 self.types.insert(id.0, ty);
+                if let Some(sem) = sem {
+                    self.sem_types.insert(id.0, sem);
+                }
             }
 
             ExprNode::Paren { inner } => {
                 let t = self.types.get(&inner.0).cloned().unwrap_or_default();
                 self.types.insert(id.0, t);
+                if self.project.is_some() {
+                    let sem = self.sem_of_node(*inner);
+                    self.sem_types.insert(id.0, sem);
+                }
             }
             ExprNode::BinOp { op, lhs, rhs } => {
                 let t = binop_type(
@@ -965,18 +1188,44 @@ impl<'a> Binder<'a> {
                 } else {
                     VbaType::Variant
                 };
+                if self.project.is_some() {
+                    let sem = self.call_sem(id, &ret);
+                    self.sem_types.insert(id.0, sem);
+                }
                 self.types.insert(id.0, ret);
             }
             ExprNode::MemberAccess { base, member, bang } => {
                 let base_id = *base;
                 let member_sym = *member;
-                if !*bang && matches!(self.arena.get(base_id), ExprNode::Me) {
-                    if let Some(res) = self.resolve_me_member(member_sym) {
+                if self.project.is_some() {
+                    let access = self.access_ctx.get(&id.0).copied().unwrap_or(Access::Get);
+                    self.resolve_member_site(id, base_id, member_sym, *bang, access);
+                } else if !*bang && matches!(self.arena.get(base_id), ExprNode::Me) {
+                    let access = self.access_ctx.get(&id.0).copied().unwrap_or(Access::Get);
+                    if let Some(res) = self.resolve_me_member(member_sym, access) {
                         self.resolutions.insert(id.0, res);
                     }
                 }
                 let ty = self.resolve_member_type(id, base_id, member_sym);
                 self.types.insert(id.0, ty);
+            }
+            ExprNode::ReDimItem { base, name, .. } => {
+                if self.project.is_some() {
+                    match *base {
+                        // `ReDim a(n)`: a use of the array variable.
+                        None => {
+                            let (res, sem, _) = self.resolve_in_project(scope, *name, Access::Let);
+                            if res != NameResolution::Unresolved {
+                                self.resolutions.insert(id.0, res);
+                            }
+                            self.sem_types.insert(id.0, sem);
+                        }
+                        // `ReDim o.Items(n)`: a member of the base object.
+                        Some(b) => {
+                            self.resolve_member_site(id, b, *name, false, Access::Let);
+                        }
+                    }
+                }
             }
             // A function pointer is a Long-sized address in VB6.
             ExprNode::AddressOf { .. } => {
@@ -988,9 +1237,25 @@ impl<'a> Binder<'a> {
             ExprNode::New { type_spec } => {
                 let t = self.extract_type(Some(*type_spec));
                 self.types.insert(id.0, t);
+                if self.project.is_some() {
+                    let sem = self.sem_of_type_node(Some(*type_spec));
+                    self.sem_types.insert(id.0, sem);
+                }
             }
             ExprNode::RangeTo { .. } | ExprNode::Generic { .. } => {
                 self.types.insert(id.0, VbaType::Variant);
+            }
+            ExprNode::Implements { library, name } => {
+                if let Some((project, module)) = self.project {
+                    let tn = TypeName {
+                        qualifier: library.map(|l| self.name_of(l)),
+                        name: self.name_of(*name),
+                    };
+                    let res = project.resolve_type_decl(module, &tn);
+                    if res != NameResolution::Unresolved {
+                        self.resolutions.insert(id.0, res);
+                    }
+                }
             }
             ExprNode::Attribute { target, name, values } => {
                 let (target, name, first) = (*target, *name, values.first().copied());
@@ -1084,7 +1349,7 @@ impl<'a> Binder<'a> {
     /// `Me.member`: a member of this module's own public interface (public or
     /// Friend variables and procedures). Private members are not reachable
     /// through `Me`.
-    fn resolve_me_member(&self, member_sym: u32) -> Option<NameResolution> {
+    fn resolve_me_member(&self, member_sym: u32, access: Access) -> Option<NameResolution> {
         let name = self.name_of(member_sym);
         if name.is_empty() {
             return None;
@@ -1093,12 +1358,32 @@ impl<'a> Binder<'a> {
             .iter()
             .position(|v| v.is_public && self.name_of(v.sym_id) == name)
             .map(NameResolution::ModuleVar)
-            .or_else(|| {
-                self.procs
-                    .iter()
-                    .position(|p| p.is_public && self.name_of(p.sym_id) == name)
-                    .map(NameResolution::Proc)
-            })
+            .or_else(|| self.pick_proc(&name, access, true).map(NameResolution::Proc))
+    }
+
+    /// The procedure named `name` that serves `access`: among the accessors of
+    /// a property, `Get` for a read, `Let` / `Set` for an assignment. A
+    /// `Function` or `Sub` serves a read. With no accessor of the wanted kind,
+    /// the first declaration of that name is returned, so a bare use still
+    /// resolves; `public_only` restricts to public / Friend members.
+    fn pick_proc(&self, name: &str, access: Access, public_only: bool) -> Option<usize> {
+        let named: Vec<usize> = self
+            .procs
+            .iter()
+            .enumerate()
+            .filter(|(_, p)| (!public_only || p.is_public) && self.name_of(p.sym_id) == name)
+            .map(|(i, _)| i)
+            .collect();
+        let wanted = |k: ProcKind| match access {
+            Access::Get => matches!(k, ProcKind::Sub | ProcKind::Function | ProcKind::PropGet),
+            Access::Let => k == ProcKind::PropLet,
+            Access::Set => k == ProcKind::PropSet,
+        };
+        named
+            .iter()
+            .copied()
+            .find(|&i| wanted(self.procs[i].kind))
+            .or_else(|| named.first().copied())
     }
 
     /// 5. Other procs in this module.
@@ -1124,6 +1409,285 @@ impl<'a> Binder<'a> {
     /// 7. Known built-ins.
     fn resolve_builtin(&self, name: &str) -> Option<NameResolution> {
         is_builtin(name).then_some(NameResolution::Builtin)
+    }
+
+    // ── Project-mode typing and resolution ────────────────────────────────────
+
+    /// Static type of a declared type: `vba_type` is the declared `VbaType`,
+    /// `name` the named type behind it (if any).
+    fn sem_of_declared(&self, vba_type: &VbaType, name: Option<&TypeName>) -> SemType {
+        match vba_type {
+            VbaType::Array(inner) => SemType::Array(Box::new(self.sem_of_declared(inner, name))),
+            VbaType::Variant | VbaType::Object | VbaType::Any => SemType::LateBound,
+            VbaType::UserDefined(sym) => match (self.project, name) {
+                (Some((project, module)), Some(tn)) => project.sem_of_type_name(module, tn),
+                _ => SemType::Unknown(self.name_of(*sym)),
+            },
+            other => SemType::Value(other.clone()),
+        }
+    }
+
+    /// Static type named by a type-spec node (`New T`, `TypeOf … Is T`).
+    fn sem_of_type_node(&self, type_node: Option<NodeId>) -> SemType {
+        let ty = self.extract_type(type_node);
+        let name = self.type_name_of(type_node);
+        self.sem_of_declared(&ty, name.as_ref())
+    }
+
+    /// Record what a type name in a declaration (`As Foo`, `As Proj.Foo`,
+    /// `New Foo`) refers to, so that the type's uses are references: the
+    /// `UserType` node (spanning the first name) takes the type, or the
+    /// qualifier when qualified, and the qualified tail takes the type.
+    fn resolve_type_position(&mut self, id: NodeId, name_sym: u32, child: Option<NodeId>) {
+        let Some((project, module)) = self.project else { return };
+        let first = self.name_of(name_sym);
+        if first.is_empty() {
+            return;
+        }
+        let tail = child.and_then(|c| match self.arena.get(c) {
+            ExprNode::NameRef { sym, .. } => Some((c, self.name_of(*sym))),
+            _ => None,
+        });
+        match tail {
+            Some((tail_id, last)) => {
+                let q = project.resolve_qualifier(module, &first);
+                if q != NameResolution::Unresolved {
+                    self.resolutions.insert(id.0, q);
+                }
+                if !last.is_empty() {
+                    let tn = TypeName { qualifier: Some(first), name: last };
+                    let r = project.resolve_type_decl(module, &tn);
+                    if r != NameResolution::Unresolved {
+                        self.resolutions.insert(tail_id.0, r);
+                    }
+                }
+            }
+            None => {
+                let r = project.resolve_type_decl(module, &TypeName { qualifier: None, name: first });
+                if r != NameResolution::Unresolved {
+                    self.resolutions.insert(id.0, r);
+                }
+            }
+        }
+    }
+
+    /// Compute the static type of every module-level declaration, once the
+    /// module's declarations are collected.
+    fn compute_declaration_types(&mut self) {
+        let var_sem = self
+            .module_vars
+            .iter()
+            .enumerate()
+            .map(|(i, v)| {
+                self.sem_of_declared(&v.vba_type, self.decl_types.module_vars.get(i).and_then(|n| n.as_ref()))
+            })
+            .collect();
+        let ret_sem = self
+            .procs
+            .iter()
+            .enumerate()
+            .map(|(i, p)| {
+                self.sem_of_declared(&p.ret_type, self.decl_types.proc_rets.get(i).and_then(|n| n.as_ref()))
+            })
+            .collect();
+        let param_sem = self
+            .procs
+            .iter()
+            .enumerate()
+            .map(|(i, p)| {
+                p.params
+                    .iter()
+                    .enumerate()
+                    .map(|(j, prm)| {
+                        let name = self.param_names.get(i).and_then(|n| n.get(j)).and_then(|n| n.as_ref());
+                        self.sem_of_declared(&prm.vba_type, name)
+                    })
+                    .collect()
+            })
+            .collect();
+        self.var_sem = var_sem;
+        self.ret_sem = ret_sem;
+        self.param_sem = param_sem;
+        self.local_sem = vec![Vec::new(); self.procs.len()];
+    }
+
+    /// The static type recorded for `id`, falling back to the value type the
+    /// untyped table carries (literals, operators).
+    fn sem_of_node(&self, id: NodeId) -> SemType {
+        if let Some(sem) = self.sem_types.get(&id.0) {
+            return sem.clone();
+        }
+        match self.types.get(&id.0) {
+            Some(VbaType::Variant | VbaType::Object | VbaType::Any) | None => SemType::LateBound,
+            Some(VbaType::UserDefined(_)) => SemType::Unresolved,
+            Some(VbaType::Array(_)) => SemType::Unresolved,
+            Some(other) => SemType::Value(other.clone()),
+        }
+    }
+
+    /// Resolve a bare name in project mode. Returns the resolution, the static
+    /// type of the name and, when it is a procedure, its parameter count.
+    ///
+    /// Scope chain, innermost first: locals, parameters, the procedure's own
+    /// name, module variables, procedures, the module's own scope (controls),
+    /// enum members, enum names, project-wide names, then built-ins.
+    fn resolve_in_project(
+        &self,
+        scope: Option<usize>,
+        sym_id: u32,
+        access: Access,
+    ) -> (NameResolution, SemType, Option<Arity>) {
+        let unresolved = (NameResolution::Unresolved, SemType::Unresolved, None);
+        let name = self.name_of(sym_id);
+        let Some((project, module)) = self.project else { return unresolved };
+        if name.is_empty() {
+            return unresolved;
+        }
+        if let Some(proc_idx) = scope {
+            let proc = &self.procs[proc_idx];
+            for (li, local) in proc.locals.iter().enumerate() {
+                if self.name_of(local.sym_id) == name {
+                    let sem = self.local_sem[proc_idx].get(li).cloned().unwrap_or(SemType::LateBound);
+                    return (NameResolution::Local { proc_idx, local_idx: li }, sem, None);
+                }
+            }
+            for (pi, param) in proc.params.iter().enumerate() {
+                if self.name_of(param.sym_id) == name {
+                    let sem = self.param_sem[proc_idx].get(pi).cloned().unwrap_or(SemType::LateBound);
+                    return (NameResolution::Param { proc_idx, param_idx: pi }, sem, None);
+                }
+            }
+            if self.name_of(proc.sym_id) == name {
+                let arity = Arity::Known(proc.params.len());
+                return (NameResolution::Proc(proc_idx), self.ret_sem[proc_idx].clone(), Some(arity));
+            }
+        }
+        if let Some(vi) = self.module_vars.iter().position(|v| self.name_of(v.sym_id) == name) {
+            return (NameResolution::ModuleVar(vi), self.var_sem[vi].clone(), None);
+        }
+        if let Some(pi) = self.pick_proc(&name, access, false) {
+            let arity = Arity::Known(self.procs[pi].params.len());
+            return (NameResolution::Proc(pi), self.ret_sem[pi].clone(), Some(arity));
+        }
+        if let Some(hit) = project.lookup_module_scope(module, &name) {
+            return (hit.resolution, hit.sem, hit.callable);
+        }
+        if let Some(res) = self.resolve_enum_member(&name) {
+            return (res, SemType::Value(VbaType::Long), None);
+        }
+        if let Some(idx) = self.enum_decls.iter().position(|e| self.name_of(e.sym_id) == name) {
+            return (
+                NameResolution::External { module, decl: ExternalDecl::Enum(idx) },
+                SemType::Namespace(Qualifier::Enum { module, idx }),
+                None,
+            );
+        }
+        if let Some(hit) = project.lookup_global(module, &name) {
+            return (hit.resolution, hit.sem, hit.callable);
+        }
+        if is_builtin(&name) {
+            return (NameResolution::Builtin, SemType::LibraryNotLoaded("VBA".to_string()), None);
+        }
+        unresolved
+    }
+
+    /// Resolve `base.member` (or `base!member`, or `ReDim base.member(…)`) at
+    /// `site`: record the declaration it names, its static type, and a status
+    /// that accounts for the site either way. Reports "Method or data member
+    /// not found" when the base's class is known and has no such member.
+    fn resolve_member_site(
+        &mut self,
+        site: NodeId,
+        base: NodeId,
+        member_sym: u32,
+        bang: bool,
+        access: Access,
+    ) {
+        let Some((project, module)) = self.project else { return };
+        let name = self.name_of(member_sym);
+        let base_sem = self.sem_of_node(base);
+        let mut result = SemType::Unresolved;
+        let status = if bang {
+            result = SemType::LateBound;
+            MemberStatus::Bang
+        } else if name.is_empty() {
+            MemberStatus::BaseUnresolved
+        } else {
+            match base_sem {
+                SemType::LateBound => {
+                    result = SemType::LateBound;
+                    MemberStatus::LateBound
+                }
+                SemType::Unresolved => MemberStatus::BaseUnresolved,
+                SemType::Unknown(n) => MemberStatus::UnknownType(n),
+                SemType::LibraryNotLoaded(n) => MemberStatus::LibraryNotLoaded(n),
+                SemType::Value(_) | SemType::Array(_) => MemberStatus::NotAnObject,
+                ref ty @ (SemType::Udt { .. }
+                | SemType::Class { .. }
+                | SemType::Lib { .. }
+                | SemType::Namespace(_)) => match project.lookup_member(module, ty, &name, access) {
+                    MemberLookup::Found(MemberHit { resolution, sem, callable }) => {
+                        if let Some(arity) = callable {
+                            self.callable.insert(site.0, arity);
+                        }
+                        self.resolutions.insert(site.0, resolution);
+                        result = sem;
+                        MemberStatus::Resolved
+                    }
+                    MemberLookup::NoSuchMember => {
+                        let span = self.spans.get(site);
+                        self.diagnostics.push(ERR_METHOD_OR_DATA_MEMBER_NOT_FOUND as u32, span);
+                        MemberStatus::NoSuchMember
+                    }
+                    MemberLookup::MissingAccessor(a) => MemberStatus::MissingAccessor(a),
+                    MemberLookup::LibraryNotLoaded(n) => MemberStatus::LibraryNotLoaded(n),
+                },
+            }
+        };
+        self.member_status.insert(site.0, status);
+        self.sem_types.insert(site.0, result);
+    }
+
+    /// Static type of the call or index expression `id`. `builtin_ret` is the
+    /// value type already derived for a built-in callee.
+    fn call_sem(&self, id: NodeId, builtin_ret: &VbaType) -> SemType {
+        let ExprNode::Call { func, args } = self.arena.get(id) else { return SemType::Unresolved };
+        let arg_count = match self.arena.get(*args) {
+            ExprNode::ArgList { args } => args.len(),
+            _ => 0,
+        };
+        if matches!(self.resolutions.get(&func.0), Some(NameResolution::Builtin)) {
+            return match builtin_ret {
+                VbaType::Variant | VbaType::Object | VbaType::Any => SemType::LateBound,
+                other => SemType::Value(other.clone()),
+            };
+        }
+        let callee = self.sem_of_node(*func);
+        let default_member = |ty: &SemType| -> SemType {
+            let Some((project, module)) = self.project else { return SemType::Unresolved };
+            match ty {
+                SemType::Class { .. } | SemType::Lib { .. } => project
+                    .default_member(module, ty)
+                    .map(|hit| hit.sem)
+                    .unwrap_or(SemType::Unresolved),
+                SemType::LateBound => SemType::LateBound,
+                _ => SemType::Unresolved,
+            }
+        };
+        match self.callable.get(&func.0) {
+            // A procedure: the call's value is its declared result. A
+            // procedure without parameters that returns an array (or an
+            // object with a default member) is indexed by the arguments.
+            Some(Arity::Known(0)) if arg_count > 0 => match callee {
+                SemType::Array(elem) => *elem,
+                other => default_member(&other),
+            },
+            Some(_) => callee,
+            None => match callee {
+                SemType::Array(elem) => *elem,
+                other => default_member(&other),
+            },
+        }
     }
 
     fn type_of_resolution(&self, _scope: Option<usize>, res: &NameResolution) -> VbaType {
@@ -1155,6 +1719,11 @@ impl<'a> Binder<'a> {
             // never by single-module bind; its type is computed there.
             NameResolution::Builtin
             | NameResolution::External { .. }
+            | NameResolution::Module(_)
+            | NameResolution::Project
+            | NameResolution::Library(_)
+            | NameResolution::LibraryType { .. }
+            | NameResolution::LibraryMember { .. }
             | NameResolution::Unresolved => VbaType::Variant,
         }
     }

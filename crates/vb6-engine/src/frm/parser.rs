@@ -72,6 +72,8 @@ pub struct BeginBlock {
     pub control_type: String,
     /// Control instance name, e.g. `Form1`, `cmdOK`.
     pub name: String,
+    /// 1-based source line of the `Begin` line that opens this block.
+    pub line: usize,
     /// Properties set on this control.
     pub properties: Vec<Property>,
     /// Nested child controls (each has its own `Begin...End` block).
@@ -381,7 +383,6 @@ fn parse_begin_block<'src>(
         Some(Token::Word(s)) => s.to_string(),
         _ => String::new(),
     };
-    let _ = begin_ln; // suppress unused warning
 
     let mut properties: Vec<Property> = Vec::new();
     let mut children: Vec<BeginBlock> = Vec::new();
@@ -396,7 +397,7 @@ fn parse_begin_block<'src>(
         }
     }
 
-    Ok(BeginBlock { control_type, name, properties, children })
+    Ok(BeginBlock { control_type, name, line: begin_ln, properties, children })
 }
 
 /// Handle one line inside a `Begin` block, appending to `properties`/`children`.

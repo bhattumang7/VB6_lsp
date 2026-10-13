@@ -47,20 +47,26 @@ impl ModuleIndex {
     /// `name_of` resolves a `sym_id` to its source name (the caller supplies the
     /// module's scanner context). Names are stored lowercased (VB6 is
     /// case-insensitive). The first declaration of a given name wins.
+    ///
+    /// `members_global` says whether the module's procedures and variables are
+    /// project-wide names. They are for a standard module; a class's members are
+    /// reached through an instance, so they are indexed only for a class marked
+    /// `VB_GlobalNameSpace`. Types and enums are project-wide either way.
     pub fn add_module(
         &mut self,
         module_idx: usize,
         module: &BoundModule,
         name_of: impl Fn(u32) -> String,
+        members_global: bool,
     ) {
         // Only public declarations are visible to other modules in the project.
         for (i, p) in module.procs.iter().enumerate() {
-            if p.is_public {
+            if members_global && p.is_public {
                 self.insert(name_of(p.sym_id), module_idx, ExternalDecl::Proc(i));
             }
         }
         for (i, v) in module.module_vars.iter().enumerate() {
-            if v.is_public {
+            if members_global && v.is_public {
                 self.insert(name_of(v.sym_id), module_idx, ExternalDecl::Var(i));
             }
         }
@@ -138,7 +144,7 @@ mod tests {
             "Public gConfig As Long\nPublic Sub DoThing()\nEnd Sub\nFunction Calc() As Long\nEnd Function\n",
         );
         let mut idx = ModuleIndex::new();
-        idx.add_module(0, &m, |s| ctx.symbol(s as usize).name.to_ascii_lowercase());
+        idx.add_module(0, &m, |s| ctx.symbol(s as usize).name.to_ascii_lowercase(), true);
 
         // Case-insensitive lookup.
         assert_eq!(idx.lookup("dothing").map(|r| r.decl), Some(ExternalDecl::Proc(0)));
@@ -153,7 +159,7 @@ mod tests {
             "Public Enum Color\n    Red\n    Green\n    Blue\nEnd Enum\n",
         );
         let mut idx = ModuleIndex::new();
-        idx.add_module(2, &m, |s| ctx.symbol(s as usize).name.to_ascii_lowercase());
+        idx.add_module(2, &m, |s| ctx.symbol(s as usize).name.to_ascii_lowercase(), true);
 
         assert_eq!(idx.lookup("color").map(|r| r.decl), Some(ExternalDecl::Enum(0)));
         assert_eq!(
@@ -169,8 +175,8 @@ mod tests {
         let (m0, c0) = bind_module("Public Sub Shared()\nEnd Sub\n");
         let (m1, c1) = bind_module("Public Sub Shared()\nEnd Sub\n");
         let mut idx = ModuleIndex::new();
-        idx.add_module(0, &m0, |s| c0.symbol(s as usize).name.to_ascii_lowercase());
-        idx.add_module(1, &m1, |s| c1.symbol(s as usize).name.to_ascii_lowercase());
+        idx.add_module(0, &m0, |s| c0.symbol(s as usize).name.to_ascii_lowercase(), true);
+        idx.add_module(1, &m1, |s| c1.symbol(s as usize).name.to_ascii_lowercase(), true);
         assert_eq!(idx.lookup("shared").map(|r| r.module), Some(0));
     }
 }

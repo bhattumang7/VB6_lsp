@@ -2034,14 +2034,17 @@ impl<'src> Parser<'src> {
         self.advance(); // consume Implements
         let first = self.expect_ident();
         let first_id = first.sym.map(|s| s as u32).unwrap_or(0);
-        let (library, nid) = if self.eat(TokenKind::Kw(Kw::Dot)) {
+        // The node spans the interface name (after any `Library.` qualifier).
+        let (library, nid, name_span) = if self.eat(TokenKind::Kw(Kw::Dot)) {
             let name = self.expect_ident();
-            (Some(first_id), name.sym.map(|s| s as u32).unwrap_or(0))
+            (Some(first_id), name.sym.map(|s| s as u32).unwrap_or(0), name.span)
         } else {
-            (None, first_id)
+            (None, first_id, first.span)
         };
         self.eat_eol();
-        arena.alloc(ExprNode::Implements { library, name: nid })
+        let id = arena.alloc(ExprNode::Implements { library, name: nid });
+        self.set_span(id, name_span);
+        id
     }
 
     /// `Def<Type> letter[-letter][, letter[-letter]]…`
@@ -2081,6 +2084,9 @@ impl<'src> Parser<'src> {
         }
         let name = key.sym.map(|s| s as u32).unwrap_or(0);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
+        // The node spans its first value: for `VB_Name` that is where the
+        // module name is written.
+        let value_span = self.current_span();
         let mut values = Vec::new();
         loop {
             values.push(self.parse_expr(arena, 0));
@@ -2089,7 +2095,9 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::Attribute { target, name, values })
+        let id = arena.alloc(ExprNode::Attribute { target, name, values });
+        self.set_span(id, value_span);
+        id
     }
 
     // ── File I/O statement parsers ──────────────────────────────────────────
