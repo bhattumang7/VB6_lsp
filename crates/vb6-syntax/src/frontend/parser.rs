@@ -1963,10 +1963,16 @@ impl<'src> Parser<'src> {
     fn parse_implements_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.reject_in_standard_module();
         self.advance(); // consume Implements
-        let name = self.expect_ident();
-        let nid = name.sym.map(|s| s as u32).unwrap_or(0);
+        let first = self.expect_ident();
+        let first_id = first.sym.map(|s| s as u32).unwrap_or(0);
+        let (library, nid) = if self.eat(TokenKind::Kw(Kw::Dot)) {
+            let name = self.expect_ident();
+            (Some(first_id), name.sym.map(|s| s as u32).unwrap_or(0))
+        } else {
+            (None, first_id)
+        };
         self.eat_eol();
-        arena.alloc(ExprNode::Implements { name: nid })
+        arena.alloc(ExprNode::Implements { library, name: nid })
     }
 
     /// `Def<Type> letter[-letter][, letter[-letter]]…`

@@ -362,8 +362,9 @@ pub enum ExprNode {
     EnumDecl { name: u32, members: Vec<NodeId> },
     /// `Event name(params)` declaration.
     EventDecl { name: u32, params: NodeId },
-    /// `Implements InterfaceName`
-    Implements { name: u32 },
+    /// `Implements [Library.]InterfaceName`; `library` is the type library
+    /// qualifier when present.
+    Implements { library: Option<u32>, name: u32 },
 
     // ── Type-specifier nodes (parser-level; distinct from sema TypeSpec/UdtTypeSpec) ──
 
