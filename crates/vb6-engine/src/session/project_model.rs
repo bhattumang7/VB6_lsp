@@ -164,6 +164,33 @@ fn lib_serves(kind: LibraryMemberKind, access: Access) -> bool {
 }
 
 impl ProjectModel {
+    /// The identities `(library, declaring type, member)` that a member named
+    /// `member` of type `type_name` of library `library` can resolve to: the
+    /// member as declared by the type itself or by any interface it exposes.
+    pub(super) fn library_member_keys(
+        &self,
+        library: &str,
+        type_name: &str,
+        member: &str,
+    ) -> Vec<(usize, usize, usize)> {
+        let Some(&lib) = self.library_by_name.get(&lc(library)) else {
+            return Vec::new();
+        };
+        let Some(&ty) = self.libraries[lib].type_by_name.get(&lc(type_name)) else {
+            return Vec::new();
+        };
+        let member = lc(member);
+        let mut out = Vec::new();
+        for (l, t) in self.lib_chain(lib, ty) {
+            for (mi, m) in self.libraries[l].types[t].members.iter().enumerate() {
+                if m.name == member {
+                    out.push((l, t, mi));
+                }
+            }
+        }
+        out
+    }
+
     pub(super) fn build(
         modules: &[ModuleData],
         project_name: Option<&str>,
@@ -457,6 +484,28 @@ impl ProjectModel {
             sem: SemType::Namespace(Qualifier::Enum { module, idx }),
             callable: None,
         })
+    }
+
+    /// A member of a public enum of `module`, named through the module
+    /// (`modUtil.Red`, `clsTrip.Done`).
+    fn enum_member(&self, module: usize, name: &str) -> Option<MemberHit> {
+        let m = &self.modules[module];
+        m.enums.iter().enumerate().filter(|(_, e)| e.is_public).find_map(|(ei, e)| {
+            let mi = e.members.iter().position(|n| n == name)?;
+            Some(MemberHit {
+                resolution: NameResolution::External {
+                    module,
+                    decl: ExternalDecl::EnumMember { enum_idx: ei, member_idx: mi },
+                },
+                sem: SemType::Value(VbaType::Long),
+                callable: None,
+            })
+        })
+    }
+
+    /// A public enum, or a member of one, of `module`.
+    fn enum_namespace_or_member(&self, module: usize, name: &str) -> Option<MemberHit> {
+        self.enum_namespace(module, name).or_else(|| self.enum_member(module, name))
     }
 
     fn module_name_hit(&self, module: usize) -> MemberHit {
@@ -767,7 +816,7 @@ impl ProjectScope for ProjectModel {
                     MemberLookup::NoSuchMember => {}
                     other => return other,
                 }
-                if let Some(hit) = self.enum_namespace(*module, name) {
+                if let Some(hit) = self.enum_namespace_or_member(*module, name) {
                     return MemberLookup::Found(hit);
                 }
                 match &m.base_type {
@@ -792,7 +841,7 @@ impl ProjectScope for ProjectModel {
                         other => return other,
                     }
                 }
-                match self.enum_namespace(*module, name) {
+                match self.enum_namespace_or_member(*module, name) {
                     Some(hit) => MemberLookup::Found(hit),
                     None => MemberLookup::NoSuchMember,
                 }
@@ -808,7 +857,7 @@ impl ProjectScope for ProjectModel {
                             other => return other,
                         }
                     }
-                    if let Some(hit) = self.enum_namespace(i, name) {
+                    if let Some(hit) = self.enum_namespace_or_member(i, name) {
                         return MemberLookup::Found(hit);
                     }
                 }

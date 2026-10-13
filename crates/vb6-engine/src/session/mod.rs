@@ -132,7 +132,7 @@ pub struct MemberAccessSummary {
 /// A single text edit: replace `span` in `module` with `new_text`. A
 /// zero-length `span` is an insertion at `span.start`. Used by rename,
 /// formatting, and code actions.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TextEdit {
     pub module: usize,
     pub span: Span,
@@ -207,6 +207,8 @@ struct ControlDecl {
     is_array: bool,
     /// Name span of each declaration of the control (several for an array).
     spans: Vec<Span>,
+    /// Span of the control type on each declaration's `Begin` line.
+    type_spans: Vec<Span>,
 }
 
 /// Cursor resolution target.
@@ -224,6 +226,12 @@ pub struct Session {
     modules: Vec<ModuleData>,
     path_to_module: HashMap<String, usize>,
     refs: ReferenceIndex,
+    /// Uses that are not AST nodes: the control types written on the `Begin`
+    /// lines of a designer, by the declaration they name.
+    designer_uses: HashMap<DeclId, Vec<Location>>,
+    /// The project as the binder saw it at the last relink; answers questions
+    /// about library members.
+    model: Option<project_model::ProjectModel>,
     config: SessionConfig,
 }
 
@@ -249,6 +257,8 @@ impl Session {
             modules,
             path_to_module: HashMap::new(),
             refs: ReferenceIndex::new(),
+            designer_uses: HashMap::new(),
+            model: None,
             config,
         };
         s.rebuild_path_index();
@@ -308,6 +318,8 @@ impl Session {
             m.bound = bind_in_project(&m.ctx, &m.arena, &m.top, &m.spans, &m.visibility, i, &model);
         }
         self.build_references();
+        self.designer_uses = designer_type_uses(&self.modules, &model);
+        self.model = Some(model);
         self.check_undeclared();
     }
 
@@ -399,6 +411,22 @@ impl Session {
                 }
             }
         }
+        out
+    }
+
+    /// Every member access of `module` with its status, as the span of the
+    /// member name and why it did or did not resolve, in source order.
+    pub fn member_accesses(&self, module: usize) -> Vec<(Span, MemberStatus)> {
+        let Some(m) = self.modules.get(module) else {
+            return Vec::new();
+        };
+        let mut out: Vec<(Span, MemberStatus)> = m
+            .bound
+            .member_status
+            .iter()
+            .map(|(node, status)| (m.spans.get(NodeId(*node)), status.clone()))
+            .collect();
+        out.sort_by_key(|(span, _)| span.start);
         out
     }
 
@@ -593,6 +621,9 @@ impl Session {
             group.iter().flat_map(|g| self.refs.references(*g)).collect();
         sites.sort_by_key(|s| (s.module, s.node));
         let mut out = self.site_locations(sites);
+        for g in &group {
+            out.extend(self.designer_uses.get(g).into_iter().flatten().copied());
+        }
         if include_decl {
             for g in &group {
                 if let Some(loc) = self.decl_location(*g) {
@@ -616,6 +647,29 @@ impl Session {
                 })
             })
             .collect()
+    }
+
+    /// Every use of member `member` of type `type_name` of the external
+    /// library `library`, by name (case-insensitive): the member as declared by
+    /// the type or by any interface it exposes. Empty when the library, type or
+    /// member is not in the session's libraries.
+    pub fn external_member_references(
+        &self,
+        library: &str,
+        type_name: &str,
+        member: &str,
+    ) -> Vec<Location> {
+        let Some(model) = &self.model else {
+            return Vec::new();
+        };
+        let mut sites: Vec<RefSite> = model
+            .library_member_keys(library, type_name, member)
+            .into_iter()
+            .flat_map(|key| self.refs.library_references(key))
+            .collect();
+        sites.sort_by_key(|s| (s.module, s.node));
+        sites.dedup();
+        self.site_locations(sites)
     }
 
     /// The library member the cursor sits on, if it is a use of one.
@@ -798,6 +852,14 @@ impl Session {
         } else if let Some(id) = self.decl_at_cursor(module, offset) {
             for g in self.decl_group(id) {
                 spans.extend(
+                    self.designer_uses
+                        .get(&g)
+                        .into_iter()
+                        .flatten()
+                        .filter(|l| l.module == module)
+                        .map(|l| l.span),
+                );
+                spans.extend(
                     self.refs
                         .references(g)
                         .into_iter()
@@ -906,7 +968,11 @@ impl Session {
         if m.vb_name_span.map_or(false, |s| span_contains(s, offset)) {
             return Some(DeclId::Module { module });
         }
-        None
+        // A control type written on a designer's `Begin` line.
+        self.designer_uses
+            .iter()
+            .find(|(_, uses)| uses.iter().any(|l| l.module == module && span_contains(l.span, offset)))
+            .map(|(id, _)| *id)
     }
 
     fn decl_location(&self, id: DeclId) -> Option<Location> {
@@ -1164,13 +1230,40 @@ fn group_controls(flat: &[FormControl]) -> Vec<ControlDecl> {
             Some(d) => {
                 d.is_array |= c.index.is_some();
                 d.spans.push(c.span);
+                d.type_spans.push(c.type_span);
             }
             None => out.push(ControlDecl {
                 name: c.name.clone(),
                 control_type: c.control_type.clone(),
                 is_array: c.index.is_some(),
                 spans: vec![c.span],
+                type_spans: vec![c.type_span],
             }),
+        }
+    }
+    out
+}
+
+/// The uses of a declaration that are written on a designer's `Begin` lines:
+/// a control typed by a class or UserControl of the project is a use of it.
+fn designer_type_uses(
+    modules: &[ModuleData],
+    model: &project_model::ProjectModel,
+) -> HashMap<DeclId, Vec<Location>> {
+    use crate::sema::project::ProjectScope;
+    let mut out: HashMap<DeclId, Vec<Location>> = HashMap::new();
+    for (module, m) in modules.iter().enumerate() {
+        for c in &m.controls {
+            let ty = c.control_type.to_ascii_lowercase();
+            let tn = match ty.split_once('.') {
+                Some((q, n)) => TypeName { qualifier: Some(q.to_string()), name: n.to_string() },
+                None => TypeName { qualifier: None, name: ty },
+            };
+            let res = model.resolve_type_decl(module, &tn);
+            let Some(id) = decl_id_of(module, &res) else { continue };
+            for span in c.type_spans.iter().filter(|s| s.len > 0) {
+                out.entry(id).or_default().push(Location { module, span: *span });
+            }
         }
     }
     out

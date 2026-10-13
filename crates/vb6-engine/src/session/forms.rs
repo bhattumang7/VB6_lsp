@@ -28,6 +28,8 @@ pub struct FormControl {
     pub span: Span,
     /// The control's `Index` property: `Some` for an element of a control array.
     pub index: Option<i32>,
+    /// Byte span of the control type on the `Begin` line, or [`Span::DUMMY`].
+    pub type_span: Span,
 }
 
 /// Parse a designer file's source and return its controls (the root form and
@@ -74,6 +76,7 @@ fn walk(block: &BeginBlock, depth: u32, raw: &[u8], lines: &[usize], out: &mut V
         depth,
         span: name_span(raw, lines, block),
         index: index_of(block),
+        type_span: type_span(raw, lines, block),
     });
     for child in &block.children {
         walk(child, depth + 1, raw, lines, out);
@@ -86,6 +89,21 @@ fn index_of(block: &BeginBlock) -> Option<i32> {
         (PropValue::Scalar(v), true) => v.split_whitespace().next()?.parse().ok(),
         _ => None,
     })
+}
+
+/// Byte span of a control's type on its own `Begin <type> <name>` line.
+fn type_span(raw: &[u8], lines: &[usize], block: &BeginBlock) -> Span {
+    let Some(&start) = block.line.checked_sub(1).and_then(|i| lines.get(i)) else {
+        return Span::DUMMY;
+    };
+    let end = lines.get(block.line).copied().unwrap_or(raw.len());
+    let needle = block.control_type.as_bytes();
+    match raw[start..end].windows(needle.len().max(1)).position(|w| w == needle) {
+        Some(at) if !needle.is_empty() => {
+            Span { start: (start + at) as u32, len: needle.len() as u32 }
+        }
+        _ => Span::DUMMY,
+    }
 }
 
 /// Byte span of a control's name on its own `Begin <type> <name>` line.

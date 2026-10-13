@@ -1626,8 +1626,17 @@ impl<'a> Binder<'a> {
                     MemberStatus::LateBound
                 }
                 SemType::Unresolved => MemberStatus::BaseUnresolved,
-                SemType::Unknown(n) => MemberStatus::UnknownType(n),
-                SemType::LibraryNotLoaded(n) => MemberStatus::LibraryNotLoaded(n),
+                // A member of a value whose type is not in the project is a
+                // value of unknown type for the same reason, so a chain
+                // reports where the knowledge ran out.
+                SemType::Unknown(n) => {
+                    result = SemType::Unknown(n.clone());
+                    MemberStatus::UnknownType(n)
+                }
+                SemType::LibraryNotLoaded(n) => {
+                    result = SemType::LibraryNotLoaded(n.clone());
+                    MemberStatus::LibraryNotLoaded(n)
+                }
                 SemType::Value(_) | SemType::Array(_) => MemberStatus::NotAnObject,
                 ref ty @ (SemType::Udt { .. }
                 | SemType::Class { .. }
@@ -1677,7 +1686,9 @@ impl<'a> Binder<'a> {
                     .default_member(module, ty)
                     .map(|hit| hit.sem)
                     .unwrap_or(SemType::Unresolved),
-                SemType::LateBound => SemType::LateBound,
+                // Indexing or calling a value of a type outside the project
+                // yields a value of that same unknown kind.
+                SemType::LateBound | SemType::Unknown(_) | SemType::LibraryNotLoaded(_) => ty.clone(),
                 _ => SemType::Unresolved,
             }
         };
