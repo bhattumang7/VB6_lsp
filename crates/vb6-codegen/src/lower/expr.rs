@@ -387,7 +387,30 @@ pub(super) fn lower_name_ref(
             let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
             Ok(build_global_load_node(arena, lctx, slot.module_desc, slot.field_offset))
         }
+        // A name that resolves to a project-level entity (a module, the
+        // project, a library or a library member, a control or a type field)
+        // has no lowering here.
+        res if is_project_level(res) => Err(LowerError::UnsupportedNode),
         _ => Err(LowerError::Unresolved),
+    }
+}
+
+/// True for the resolution kinds that name something outside the module's own
+/// locals, parameters, variables and procedures: a project module, the
+/// project, an external library or one of its members, a control, or a field
+/// of a user-defined type in another module.
+pub(super) fn is_project_level(res: &NameResolution) -> bool {
+    use vb6_sema::sema::ExternalDecl;
+    match res {
+        NameResolution::Module(_)
+        | NameResolution::Project
+        | NameResolution::Library(_)
+        | NameResolution::LibraryType { .. }
+        | NameResolution::LibraryMember { .. } => true,
+        NameResolution::External { decl, .. } => {
+            matches!(decl, ExternalDecl::TypeMember { .. } | ExternalDecl::Control(_))
+        }
+        _ => false,
     }
 }
 

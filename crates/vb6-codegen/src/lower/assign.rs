@@ -442,6 +442,7 @@ pub(super) fn lower_assign(
             let sctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
             emitter.emit_global_store(sctx, slot.module_desc, slot.field_offset);
         }
+        res if super::expr::is_project_level(res) => return Err(LowerError::UnsupportedNode),
         _ => return Err(LowerError::Unresolved),
     }
 

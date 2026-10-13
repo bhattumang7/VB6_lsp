@@ -1269,3 +1269,61 @@ fn class_property_let_string_matches_oracle_bytes() {
         ]
     );
 }
+
+// ── Project-level resolutions are not lowered ─────────────────────────────────
+
+/// `r = a` and `a = 1` where `a` resolves to `res`, with `r` an ordinary Long.
+fn lower_with_project_level(res: NameResolution) -> (Result<Vec<u8>, LowerError>, Result<Vec<u8>, LowerError>) {
+    let mut results = Vec::new();
+    for read in [true, false] {
+        let mut ea = ExprArena::new();
+        let a = name_ref(&mut ea, 0);
+        let r = name_ref(&mut ea, 1);
+        let one = int_lit_node(&mut ea, 1);
+        let stmt = if read { assign_node(&mut ea, r, a) } else { assign_node(&mut ea, a, one) };
+        let body = block_node(&mut ea, vec![stmt]);
+        let mut resolutions = HashMap::new();
+        resolutions.insert(a.0, res.clone());
+        resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
+        let module = BoundModule {
+            procs: vec![make_proc(vec![long_var(1)], vec![], body)],
+            resolutions,
+            ..BoundModule::default()
+        };
+        results.push(lower_proc(&module, 0, &ea, 0x0008));
+    }
+    let write = results.pop().unwrap();
+    let read = results.pop().unwrap();
+    (read, write)
+}
+
+#[test]
+fn project_level_resolutions_are_unsupported_nodes() {
+    use vb6_sema::sema::ExternalDecl;
+    let kinds = [
+        NameResolution::Module(0),
+        NameResolution::Project,
+        NameResolution::Library(0),
+        NameResolution::LibraryType { lib: 0, ty: 0 },
+        NameResolution::LibraryMember { lib: 0, ty: 0, member: 0 },
+        NameResolution::External { module: 0, decl: ExternalDecl::Control(0) },
+        NameResolution::External { module: 0, decl: ExternalDecl::TypeMember { type_idx: 0, member_idx: 0 } },
+    ];
+    for res in kinds {
+        let (read, write) = lower_with_project_level(res.clone());
+        assert_eq!(read, Err(LowerError::UnsupportedNode), "read of {res:?}");
+        assert_eq!(write, Err(LowerError::UnsupportedNode), "write of {res:?}");
+    }
+}
+
+#[test]
+fn unresolved_and_cross_module_variable_stay_unresolved() {
+    use vb6_sema::sema::ExternalDecl;
+    let (read, write) = lower_with_project_level(NameResolution::Unresolved);
+    assert_eq!(read, Err(LowerError::Unresolved));
+    assert_eq!(write, Err(LowerError::Unresolved));
+    let (read, write) =
+        lower_with_project_level(NameResolution::External { module: 1, decl: ExternalDecl::Var(0) });
+    assert_eq!(read, Err(LowerError::Unresolved));
+    assert_eq!(write, Err(LowerError::Unresolved));
+}
