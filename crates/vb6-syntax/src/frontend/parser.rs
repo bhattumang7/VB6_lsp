@@ -2976,9 +2976,22 @@ impl<'src> Parser<'src> {
     /// goto-parameter) — never as a `NameRef` use that would otherwise resolve in
     /// the caller's scope or be flagged undeclared.
     fn try_parse_named_arg(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
-        if self.peek().kind != TokenKind::Ident
-            || self.peek2().kind != TokenKind::Kw(Kw::ColonEq)
-        {
+        // Any word names a parameter before `:=` - including words that are
+        // keywords elsewhere (`Text`, `Name`, `Key`, `Type`).
+        let is_word = match self.peek().kind {
+            TokenKind::Ident => true,
+            TokenKind::Kw(_) => match self.peek().sym {
+                Some(sym) => self
+                    .scanner
+                    .sym_name(sym as u32)
+                    .chars()
+                    .next()
+                    .map_or(false, |c| c.is_alphabetic() || c == '_'),
+                None => false,
+            },
+            _ => false,
+        };
+        if !is_word || self.peek2().kind != TokenKind::Kw(Kw::ColonEq) {
             return None;
         }
         let name_tok = self.advance(); // parameter name

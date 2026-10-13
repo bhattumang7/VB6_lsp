@@ -875,7 +875,7 @@ impl<'a> Binder<'a> {
             });
             local_names.push(self.decl_types.proc_rets.get(proc_idx).cloned().flatten());
         }
-        self.collect_locals(body_id, &mut locals, &mut local_names);
+        self.collect_locals(proc_idx, body_id, &mut locals, &mut local_names);
         if self.project.is_some() {
             let sems = locals
                 .iter()
@@ -892,6 +892,36 @@ impl<'a> Binder<'a> {
         self.bind_node(Some(proc_idx), body_id);
     }
 
+    /// Whether `name` is already a declaration visible to a `ReDim` in
+    /// procedure `proc_idx`: a local collected so far, a parameter, the
+    /// procedure's own name, a module-level variable, or (in a project) a
+    /// public variable of another module.
+    fn is_declared_for_redim(&self, proc_idx: usize, name: u32, collected: &[BoundVar]) -> bool {
+        let text = self.name_of(name);
+        if text.is_empty() {
+            return true;
+        }
+        let same = |sym: u32| self.name_of(sym) == text;
+        let proc = &self.procs[proc_idx];
+        if collected.iter().any(|l| same(l.sym_id))
+            || proc.params.iter().any(|p| same(p.sym_id))
+            || same(proc.sym_id)
+            || self.module_vars.iter().any(|v| same(v.sym_id))
+        {
+            return true;
+        }
+        match self.project {
+            Some((project, module)) => matches!(
+                project.lookup_global(module, &text),
+                Some(MemberHit {
+                    resolution: NameResolution::External { decl: ExternalDecl::Var(_), .. },
+                    ..
+                })
+            ),
+            None => false,
+        }
+    }
+
     /// Collect every `DimItem` in a procedure body subtree as a local variable.
     ///
     /// VB6 locals are procedure-scoped regardless of nesting (no block scope), so
@@ -902,10 +932,36 @@ impl<'a> Binder<'a> {
     /// body contains no nested procedure declarations, so a full descent is safe.
     fn collect_locals(
         &self,
+        proc_idx: usize,
         id: NodeId,
         out: &mut Vec<BoundVar>,
         names: &mut Vec<Option<TypeName>>,
     ) {
+        // `ReDim a(n)` of a name that is not declared at procedure or module
+        // level declares a local dynamic array at that statement.
+        if let ExprNode::ReDimItem { base: None, name, bounds, type_node, .. } = self.arena.get(id) {
+            if !self.is_declared_for_redim(proc_idx, *name, out) {
+                let elem = self.extract_type(*type_node);
+                let dims = (*bounds).and_then(|b| match self.arena.get(b) {
+                    ExprNode::ArgList { args } if !args.is_empty() => Some(args.len() as u16),
+                    _ => None,
+                });
+                out.push(BoundVar {
+                    sym_id: *name,
+                    vba_type: as_array(elem),
+                    is_const: false,
+                    const_value: None,
+                    const_lit: None,
+                    fixed_string_len: None,
+                    array_dims: dims,
+                    is_static: false,
+                    is_public: false,
+                    is_new: false,
+                    name_span: self.spans.get(id),
+                });
+                names.push(self.type_name_of(*type_node));
+            }
+        }
         if let ExprNode::DimItem { name, is_const, is_static, is_new, type_node, bounds, init, .. } = self.arena.get(id) {
             let t = self.extract_type(*type_node);
             let vba_type = if bounds.is_some() { as_array(t) } else { t };
@@ -944,7 +1000,7 @@ impl<'a> Binder<'a> {
         let mut kids: Vec<NodeId> = Vec::new();
         self.arena.get(id).for_each_child(&mut |c| kids.push(c));
         for c in kids {
-            self.collect_locals(c, out, names);
+            self.collect_locals(proc_idx, c, out, names);
         }
     }
 
@@ -1222,7 +1278,15 @@ impl<'a> Binder<'a> {
                         // `ReDim a(n)`: a use of the array variable.
                         None => {
                             let (res, sem, _) = self.resolve_in_project(scope, *name, Access::Let);
-                            if res != NameResolution::Unresolved {
+                            // The `ReDim` that declares the array is the
+                            // declaration, not a use of it.
+                            let declares = matches!(
+                                (&res, scope),
+                                (NameResolution::Local { proc_idx, local_idx }, Some(_))
+                                    if self.procs[*proc_idx].locals[*local_idx].name_span
+                                        == self.spans.get(id)
+                            );
+                            if res != NameResolution::Unresolved && !declares {
                                 self.resolutions.insert(id.0, res);
                             }
                             self.sem_types.insert(id.0, sem);
