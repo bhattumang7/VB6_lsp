@@ -266,6 +266,13 @@ impl Session {
         s
     }
 
+    /// Replace what the session knows about the project beyond its files (see
+    /// [`SessionConfig`]) and re-analyze.
+    pub fn set_config(&mut self, config: SessionConfig) {
+        self.config = config;
+        self.relink();
+    }
+
     /// Add or replace a file's content and re-analyze the project.
     ///
     /// Only the named module is re-parsed/re-bound; the project-level indexes
@@ -412,6 +419,19 @@ impl Session {
             }
         }
         out
+    }
+
+    /// Spans of name references in `module` that the binder never reached: a
+    /// resolution-coverage backstop that is empty for well-formed source (see
+    /// [`unbound_namerefs`](crate::sema::unbound_namerefs)).
+    pub fn unbound_namerefs(&self, module: usize) -> Vec<Span> {
+        let Some(m) = self.modules.get(module) else {
+            return Vec::new();
+        };
+        crate::sema::unbound_namerefs(&m.arena, &m.bound.resolutions)
+            .into_iter()
+            .map(|n| m.spans.get(n))
+            .collect()
     }
 
     /// Every member access of `module` with its status, as the span of the
