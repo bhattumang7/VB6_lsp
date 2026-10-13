@@ -211,7 +211,9 @@ pub(super) fn lower_stmt(
         // `ReDim a(bounds)`: push each dimension's lower and upper bound (Long),
         // LdAddr the array pointer, then the ReDim opcode (0xfe 0x8e) followed by
         // dim-count, element VARTYPE, element size, and flags.
-        ExprNode::ReDimItem { name, bounds, preserve, .. } => {
+        // A member array (`ReDim udt.Field(n)`) has no lowering yet.
+        ExprNode::ReDimItem { base: Some(_), .. } => Err(LowerError::UnsupportedNode),
+        ExprNode::ReDimItem { name, bounds, preserve, base: None, .. } => {
             let local_idx = ctx
                 .proc
                 .locals

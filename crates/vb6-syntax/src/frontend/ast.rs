@@ -351,8 +351,10 @@ pub enum ExprNode {
     /// `with_events` = declared `WithEvents` (object-module-only; the variable
     /// sources events handled by `<name>_<event>` procedures).
     DimItem { name: u32, is_const: bool, is_static: bool, is_new: bool, with_events: bool, bounds: Option<NodeId>, type_node: Option<NodeId>, init: Option<NodeId> },
-    /// Single array variable in a ReDim statement.
-    ReDimItem { preserve: bool, name: u32, bounds: Option<NodeId>, type_node: Option<NodeId> },
+    /// Single array in a ReDim statement. `name` is the array; for a member
+    /// array (`ReDim udt.Field(n)`) `base` is the object or variable it
+    /// belongs to (a `NameRef` or `MemberAccess` chain) and `name` the member.
+    ReDimItem { preserve: bool, base: Option<NodeId>, name: u32, bounds: Option<NodeId>, type_node: Option<NodeId> },
     /// Parameter definition in a procedure/event declaration.
     /// `default` is the `Optional` default-value expression, if any.
     ParamDef { flags: u16, name: u32, type_node: Option<NodeId>, default: Option<NodeId> },

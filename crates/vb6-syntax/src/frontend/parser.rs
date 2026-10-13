@@ -1255,7 +1255,20 @@ impl<'src> Parser<'src> {
         let preserve = self.eat(TokenKind::Kw(Kw::Preserve));
         let mut stmts = Vec::new();
         loop {
-            let name = self.expect_ident();
+            // `a(...)` or a member array `a.b.c(...)`: everything before the
+            // last name is the base it belongs to.
+            let mut name = self.expect_ident();
+            let mut base: Option<NodeId> = None;
+            while self.eat(TokenKind::Kw(Kw::Dot)) {
+                let sym = name.sym.map(|s| s as u32).unwrap_or(0);
+                let node = match base {
+                    None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
+                    Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false }),
+                };
+                self.set_span(node, name.span);
+                base = Some(node);
+                name = self.expect_ident();
+            }
             let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
             self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
             let bounds = self.parse_array_bounds(arena);
@@ -1263,7 +1276,7 @@ impl<'src> Parser<'src> {
             let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
                 Some(self.parse_type_spec(arena, false))
             } else { None };
-            stmts.push(arena.alloc(ExprNode::ReDimItem { preserve, name: name_id, bounds, type_node }));
+            stmts.push(arena.alloc(ExprNode::ReDimItem { preserve, base, name: name_id, bounds, type_node }));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
         self.eat_eol();
