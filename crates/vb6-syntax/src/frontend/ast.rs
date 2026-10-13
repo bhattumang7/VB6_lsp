@@ -43,7 +43,7 @@ pub enum AstLit {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BinOpKind {
     Add, Sub, Mul, Div, IDiv, Mod, Pow, Cat,
-    Eq, Ne, Lt, Gt, Le, Ge, Like, Is, IsNot,
+    Eq, Ne, Lt, Gt, Le, Ge, Like, Is,
     And, Or, Xor, Eqv, Imp,
     /// `.member` access (infix form, used when base is a non-Ident primary like `Me`).
     Dot,

@@ -1289,7 +1289,7 @@ fn binop_type(
     match op {
         // Comparison ops always return Boolean.
         B::Eq | B::Ne | B::Lt | B::Gt | B::Le | B::Ge
-        | B::Like | B::Is | B::IsNot
+        | B::Like | B::Is
             => VbaType::Boolean,
         // And/Or/Xor/Eqv/Imp are bitwise: the back-end (EbEmitBinaryOperation2
         // @0fab2e1e) selects their opcode from the bound node's *own* type tag on

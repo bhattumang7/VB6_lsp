@@ -2615,14 +2615,6 @@ impl<'src> Parser<'src> {
             self.skip_line_conts();
 
             let kind = self.peek().kind.clone();
-            // Check for Is / Is Not (two-token operator) separately from the bp table.
-            if kind == TokenKind::Kw(Kw::Is) {
-                match self.parse_is_operator(arena, min_bp, lhs) {
-                    Some(node) => { lhs = node; continue; }
-                    None => break,
-                }
-            }
-
             let Some((l_bp, r_bp, bin_op)) = infix_bp(&kind) else { break };
             if l_bp <= min_bp { break; }
             self.advance(); // consume operator
@@ -2648,27 +2640,6 @@ impl<'src> Parser<'src> {
         } else {
             self.parse_primary(arena)
         }
-    }
-
-    /// Handle an `Is` / `Is Not` operator at the current position. Returns
-    /// `Some(new_lhs)` to continue the infix loop, or `None` to break it.
-    fn parse_is_operator(
-        &mut self,
-        arena: &mut ExprArena,
-        min_bp: u8,
-        lhs: NodeId,
-    ) -> Option<NodeId> {
-        let is_tok = self.advance();
-        if self.eat(TokenKind::Kw(Kw::Not)) {
-            let rhs = self.parse_expr(arena, 9);
-            return Some(arena.alloc(ExprNode::BinOp { op: BinOpKind::IsNot, lhs, rhs }));
-        }
-        if min_bp < 8 {
-            let rhs = self.parse_expr(arena, 9);
-            return Some(arena.alloc(ExprNode::BinOp { op: BinOpKind::Is, lhs, rhs }));
-        }
-        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, is_tok.span);
-        None
     }
 
     fn try_parse_expr(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
