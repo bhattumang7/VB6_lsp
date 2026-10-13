@@ -470,19 +470,11 @@ impl<'src> Parser<'src> {
                 }
                 // Event declarations — class-module-only
                 TokenKind::Kw(Kw::Event) => {
-                    let span = self.current_span();
-                    if self.module_kind == ModuleKind::Standard {
-                        self.diagnostics.push(ERR_OBJECT_MODULE_ONLY, span);
-                    }
                     let n = self.parse_event_decl(arena);
                     nodes.push(n);
                 }
                 // Implements — class-module-only
                 TokenKind::Kw(Kw::Implements) => {
-                    let span = self.current_span();
-                    if self.module_kind == ModuleKind::Standard {
-                        self.diagnostics.push(ERR_OBJECT_MODULE_ONLY, span);
-                    }
                     let n = self.parse_implements_stmt(arena);
                     nodes.push(n);
                 }
@@ -1142,9 +1134,15 @@ impl<'src> Parser<'src> {
         self.parse_dim_list(arena, true)
     }
 
-    /// Single variable: `name [As type]` or `name(dims) [As type]` or `name = expr`.
+    /// Single variable: `[WithEvents] name [As type]` or `name(dims) [As type]` or `name = expr`.
+    /// `WithEvents` may precede each variable of a list (not a constant).
     /// `array_suffix_ok` permits a trailing `As Type()` array marker.
     fn parse_dim_item(&mut self, arena: &mut ExprArena, is_const: bool, is_static: bool, array_suffix_ok: bool) -> NodeId {
+        let with_events = !is_const && self.peek().kind == TokenKind::Kw(Kw::WithEvents);
+        if with_events {
+            self.reject_in_standard_module();
+            self.advance();
+        }
         let name = self.expect_ident();
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         let bounds = if self.eat(TokenKind::Kw(Kw::LParen)) {
@@ -1164,7 +1162,7 @@ impl<'src> Parser<'src> {
         let init = if is_const || self.peek().kind == TokenKind::Kw(Kw::Eq) {
             if self.eat(TokenKind::Kw(Kw::Eq)) { Some(self.parse_expr(arena, 0)) } else { None }
         } else { None };
-        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, bounds, type_node, init });
+        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, with_events, bounds, type_node, init });
         self.set_span(id, name.span);
         id
     }
@@ -1959,6 +1957,7 @@ impl<'src> Parser<'src> {
     // ── Implements ───────────────────────────────────────────────────────────
 
     fn parse_implements_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        self.reject_in_standard_module();
         self.advance(); // consume Implements
         let name = self.expect_ident();
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -2232,20 +2231,12 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Const) => {
                 self.advance(); self.parse_const_list(arena)
             }
-            // Public/Private/Static variable declaration
-            TokenKind::Ident | TokenKind::Kw(Kw::Dim) => {
+            // Public/Private/Static variable declaration; a leading `WithEvents`
+            // belongs to the first variable and is handled per item.
+            TokenKind::Ident | TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::WithEvents) => {
                 if self.peek().kind == TokenKind::Kw(Kw::Dim) { self.advance(); }
                 let is_static = matches!(access_tok, TokenKind::Kw(Kw::Static));
                 self.parse_dim_list_static(arena, false, is_static)
-            }
-            // WithEvents — class-module-only syntax
-            TokenKind::Kw(Kw::WithEvents) => {
-                let span = self.current_span();
-                if self.module_kind == ModuleKind::Standard {
-                    self.diagnostics.push(ERR_OBJECT_MODULE_ONLY, span);
-                }
-                self.advance();
-                self.parse_dim_list(arena, false)
             }
             _ => {
                 let span = self.current_span();
@@ -2360,7 +2351,18 @@ impl<'src> Parser<'src> {
     }
 
     /// Parses an Event declaration.
+    /// Report "Only valid in object module" at the current token when parsing
+    /// a standard module. Called on the keyword of every class-only statement,
+    /// whichever path (bare, access-modified, inside `#If`) reached it.
+    fn reject_in_standard_module(&mut self) {
+        if self.module_kind == ModuleKind::Standard {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_OBJECT_MODULE_ONLY, span);
+        }
+    }
+
     fn parse_event_decl(&mut self, arena: &mut ExprArena) -> NodeId {
+        self.reject_in_standard_module();
         self.advance(); // consume Event
         let name = self.expect_ident();
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);

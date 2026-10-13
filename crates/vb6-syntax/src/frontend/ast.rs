@@ -348,7 +348,9 @@ pub enum ExprNode {
     /// `is_new` = the `As New ClassName` form (auto-instantiate on first null
     /// access), as opposed to a plain `As ClassName` — the two compile to
     /// different p-code access patterns for the same declared type.
-    DimItem { name: u32, is_const: bool, is_static: bool, is_new: bool, bounds: Option<NodeId>, type_node: Option<NodeId>, init: Option<NodeId> },
+    /// `with_events` = declared `WithEvents` (object-module-only; the variable
+    /// sources events handled by `<name>_<event>` procedures).
+    DimItem { name: u32, is_const: bool, is_static: bool, is_new: bool, with_events: bool, bounds: Option<NodeId>, type_node: Option<NodeId>, init: Option<NodeId> },
     /// Single array variable in a ReDim statement.
     ReDimItem { preserve: bool, name: u32, bounds: Option<NodeId>, type_node: Option<NodeId> },
     /// Parameter definition in a procedure/event declaration.

@@ -46,7 +46,7 @@ use std::collections::{HashMap, HashSet};
 use crate::frm::parse_frm;
 use crate::frontend::ast::{ExprArena, ExprNode, NodeId, NodeSpans, ProcKind, Span};
 use crate::frontend::diagnostics::Diagnostic;
-use crate::frontend::parser::Parser;
+use crate::frontend::parser::{ModuleKind, Parser};
 use crate::frontend::scanner::{Scanner, ScannerContext};
 use crate::frontend::token::{Kw, Token, TokenKind};
 use crate::sema::binder::{ERR_SUB_OR_FUNCTION_NOT_DEFINED, ERR_VARIABLE_NOT_DEFINED};
@@ -824,13 +824,25 @@ fn strip_designer_header(path: &str, mut source: Vec<u8>) -> Vec<u8> {
     source
 }
 
+/// The module kind a file's extension implies. Only `.bas` is a standard
+/// module; class modules and every designer (form, UserControl, PropertyPage,
+/// UserDocument, designer `.dsr`) are object modules, where `Implements`,
+/// `Event` and `WithEvents` are legal.
+pub fn module_kind_for_path(path: &str) -> ModuleKind {
+    match path.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str() {
+        "cls" => ModuleKind::Class,
+        "frm" | "ctl" | "pag" | "dob" | "dsr" => ModuleKind::Form,
+        _ => ModuleKind::Standard,
+    }
+}
+
 /// Scan + parse + bind one module into [`ModuleData`].
 fn analyze_module(path: String, source: Vec<u8>) -> ModuleData {
     let source = strip_designer_header(&path, source);
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let mut parser = Parser::new(&mut ctx, &source);
+    let mut parser = Parser::with_module_kind(&mut ctx, &source, module_kind_for_path(&path));
     let _top = parser.parse_module(&mut arena);
     let spans = std::mem::take(&mut parser.node_spans);
     let visibility = std::mem::take(&mut parser.decl_public);
