@@ -47,6 +47,7 @@ WELL_KNOWN = {
 
 TKIND_ENUM, TKIND_RECORD, TKIND_MODULE, TKIND_INTERFACE, TKIND_DISPATCH, TKIND_COCLASS = range(6)
 TYPEFLAG_APPOBJECT = 0x1
+TYPEFLAG_DUAL, TYPEFLAG_NONEXTENSIBLE, TYPEFLAG_DISPATCHABLE = 0x40, 0x80, 0x1000
 FUNCFLAG_RESTRICTED = 0x1
 PARAMFLAG_LCID, PARAMFLAG_RETVAL = 0x4, 0x8
 IMPLTYPE_DEFAULT, IMPLTYPE_SOURCE = 0x1, 0x2
@@ -206,10 +207,12 @@ def engine_type(t):
         extends = [n for n, _ in t["impl"] if n not in IGNORED_BASES]
         if extends:
             out["extends"] = extends
-        # A dispatch interface that declares nothing (and extends nothing) is a
-        # generic object type: any member is looked up when the program runs.
-        if kind == TKIND_DISPATCH and not t["funcs"] and not t["vars"] and not extends:
-            out["late_bound"] = True
+        # An interface that is dispatchable, neither dual nor marked
+        # non-extensible, gains members at run time: an unknown member is
+        # looked up when the program runs, not rejected.
+        flags = t["flags"]
+        if flags & TYPEFLAG_DISPATCHABLE and not flags & (TYPEFLAG_NONEXTENSIBLE | TYPEFLAG_DUAL):
+            out["extensible"] = True
         members = [{"name": v["name"], "kind": "field"} for v in t["vars"]]
     elif kind == TKIND_COCLASS:
         out["kind"] = "coclass"

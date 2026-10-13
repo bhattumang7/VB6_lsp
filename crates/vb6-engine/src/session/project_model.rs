@@ -101,7 +101,7 @@ struct LibMember {
 
 struct LibType {
     kind: LibraryTypeKind,
-    late_bound: bool,
+    extensible: bool,
     default_interface: Option<String>,
     interfaces: Vec<String>,
     extends: Vec<String>,
@@ -420,7 +420,6 @@ impl ProjectModel {
         match self.lib_type_ref(lib, &name) {
             Some((l, t)) => match self.libraries[l].types[t].kind {
                 LibraryTypeKind::Enum => SemType::Value(VbaType::Long),
-                _ if self.libraries[l].types[t].late_bound => SemType::LateBound,
                 _ => SemType::Lib { lib: l, ty: t },
             },
             None => SemType::Unknown(name),
@@ -449,6 +448,12 @@ impl ProjectModel {
         }
         if named_somewhere {
             MemberLookup::MissingAccessor(access)
+        } else if self
+            .lib_chain(lib, ty)
+            .iter()
+            .any(|&(l, t)| self.libraries[l].types[t].extensible)
+        {
+            MemberLookup::LateBound
         } else {
             MemberLookup::NoSuchMember
         }
@@ -771,7 +776,7 @@ fn global_keys(member: &str) -> Vec<String> {
 fn summarize_lib_type(t: &LibraryType) -> LibType {
     LibType {
         kind: t.kind,
-        late_bound: t.late_bound,
+        extensible: t.extensible,
         default_interface: t.default_interface.as_deref().map(lc),
         interfaces: t.interfaces.iter().map(|s| lc(s)).collect(),
         extends: t.extends.iter().map(|s| lc(s)).collect(),
@@ -795,7 +800,6 @@ impl ProjectScope for ProjectModel {
             TypeRef::Udt { module, idx } => SemType::Udt { module, idx },
             TypeRef::Enum { .. } | TypeRef::LibEnum { .. } => SemType::Value(VbaType::Long),
             TypeRef::Class { module } => SemType::Class { module },
-            TypeRef::Lib { lib, ty } if self.libraries[lib].types[ty].late_bound => SemType::LateBound,
             TypeRef::Lib { lib, ty } => SemType::Lib { lib, ty },
             TypeRef::Unknown(n) => SemType::Unknown(n),
             TypeRef::NotLoaded(q) => SemType::LibraryNotLoaded(q),
@@ -978,7 +982,13 @@ impl ProjectScope for ProjectModel {
                     // A designer's own members were searched; the rest come from
                     // the library type it extends (`VB.Form`).
                     Some(base) => match self.sem_of_type_name(*module, base) {
-                        SemType::Lib { lib, ty } => self.lib_member(lib, ty, name, access),
+                        // The module's own class is closed: only a variable
+                        // declared with the generic library type (`As Form`)
+                        // looks members up at run time.
+                        SemType::Lib { lib, ty } => match self.lib_member(lib, ty, name, access) {
+                            MemberLookup::LateBound => MemberLookup::NoSuchMember,
+                            other => other,
+                        },
                         _ => MemberLookup::LibraryNotLoaded(match &base.qualifier {
                             Some(q) => format!("{q}.{}", base.name),
                             None => base.name.clone(),

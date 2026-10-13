@@ -7897,6 +7897,7 @@
    {
     "name": "_Form",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "_Default",
@@ -10942,6 +10943,7 @@
    {
     "name": "_MDIForm",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "_Default",
@@ -14011,6 +14013,7 @@
    {
     "name": "_UserControl",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "_Default",
@@ -14944,6 +14947,7 @@
    {
     "name": "_PropertyPage",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "_Default",
@@ -15662,6 +15666,7 @@
    {
     "name": "_UserDocument",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "_Default",
@@ -16563,7 +16568,7 @@
    {
     "name": "Control",
     "kind": "interface",
-    "late_bound": true,
+    "extensible": true,
     "members": []
    },
    {
@@ -16668,6 +16673,7 @@
    {
     "name": "_VBControlExtender",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "SetFocus",

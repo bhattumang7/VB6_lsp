@@ -1999,6 +1999,10 @@ impl<'a> Binder<'a> {
                     }
                     MemberLookup::MissingAccessor(a) => MemberStatus::MissingAccessor(a),
                     MemberLookup::LibraryNotLoaded(n) => MemberStatus::LibraryNotLoaded(n),
+                    MemberLookup::LateBound => {
+                        result = SemType::LateBound;
+                        MemberStatus::LateBound
+                    }
                 },
             }
         };

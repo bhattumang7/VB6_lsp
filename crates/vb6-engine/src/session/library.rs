@@ -58,10 +58,11 @@ pub struct LibraryType {
     /// names (`App`, `Screen`, `LoadPicture`), as the members of a module are.
     #[serde(default)]
     pub is_global: bool,
-    /// A generic object type: a value declared of this type has members that
-    /// are only looked up when the program runs, as with `Object`.
+    /// The type gains members at run time (a form with its controls and
+    /// public procedures): a member the library does not describe is looked
+    /// up when the program runs instead of being rejected.
     #[serde(default)]
-    pub late_bound: bool,
+    pub extensible: bool,
     #[serde(default)]
     pub members: Vec<LibraryMember>,
 }

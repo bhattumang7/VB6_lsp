@@ -140,6 +140,9 @@ pub enum MemberLookup {
     MissingAccessor(Access),
     /// The base type's library is not loaded, so its members are unknown.
     LibraryNotLoaded(String),
+    /// The type gains members at run time and does not describe this one:
+    /// it is looked up when the program runs.
+    LateBound,
 }
 
 /// The host's view of the project: every module's declarations and any loaded

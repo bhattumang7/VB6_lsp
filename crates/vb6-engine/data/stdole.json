@@ -184,6 +184,7 @@
    {
     "name": "Font",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "Name",
@@ -320,6 +321,7 @@
    {
     "name": "Picture",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "Render",
@@ -399,6 +401,7 @@
    {
     "name": "FontEvents",
     "kind": "interface",
+    "extensible": true,
     "members": [
      {
       "name": "FontChanged",

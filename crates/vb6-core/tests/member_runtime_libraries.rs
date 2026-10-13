@@ -187,10 +187,22 @@ fn a_user_control_seen_from_a_form_has_the_container_members() {
 }
 
 #[test]
-fn control_is_a_generic_late_bound_type() {
+fn control_is_a_generic_extensible_type() {
     let src = "Sub Run(oCtrl As Control, oForm As Form)\n    oCtrl.Visible = False\n    oCtrl.Whatever\nEnd Sub\n";
     let s = session(&[("modMain.bas", src)]);
     assert_eq!(s.member_status_at(0, at(src, "oCtrl.Visible", "Visible")), Some(MemberStatus::LateBound));
     assert_eq!(s.member_status_at(0, at(src, "oCtrl.Whatever", "Whatever")), Some(MemberStatus::LateBound));
     assert_eq!(s.diagnostics(0), vec![]);
+}
+
+#[test]
+fn generic_form_type_looks_unknown_members_up_at_run_time() {
+    let src = "Option Explicit\nSub Run(f As Form, c As Collection)\n    f.SetStatusBarText \"x\"\n    f.Caption = \"c\"\n    c.NoSuch\nEnd Sub\n";
+    let s = session(&[("modMain.bas", src)]);
+    // `Form` is extensible: a public procedure of the real form is found late.
+    assert_eq!(s.member_status_at(0, at(src, "f.SetStatusBarText", "SetStatusBarText")), Some(MemberStatus::LateBound));
+    assert_eq!(s.member_status_at(0, at(src, "f.Caption", "Caption")), Some(MemberStatus::Resolved));
+    // `Collection` is a closed dual interface: an unknown member is an error.
+    assert_eq!(s.member_status_at(0, at(src, "c.NoSuch", "NoSuch")), Some(MemberStatus::NoSuchMember));
+    assert_eq!(s.diagnostics(0).len(), 1);
 }
