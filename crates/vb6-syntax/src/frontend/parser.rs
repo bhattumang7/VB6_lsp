@@ -390,6 +390,23 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// End of a complete statement: the line's terminator, or the `:` that
+    /// begins the next statement, or the `Else` that continues a single-line
+    /// `If`. Anything else is an error: the rest of the line is skipped so
+    /// parsing resumes at the next statement.
+    fn end_stmt(&mut self) {
+        if self.peek().is_stmt_end() {
+            self.advance();
+        } else if !matches!(
+            self.peek().kind,
+            TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)
+        ) {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(0x9c6f, span, "end of statement");
+            self.skip_line();
+        }
+    }
+
     fn at_block_end(&mut self) -> bool {
         matches!(
             self.peek().kind,
@@ -680,7 +697,7 @@ impl<'src> Parser<'src> {
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
             let var = self.parse_expr(arena, 0);
-            self.eat_eol();
+            self.end_stmt();
             arena.alloc(ExprNode::FileIoStmt {
                 kind: FileIoKind::LineInput,
                 channel: Some(ch),
@@ -729,7 +746,7 @@ impl<'src> Parser<'src> {
                 }
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         let arg_list = arena.alloc(ExprNode::ArgList { args });
         arena.alloc(ExprNode::Block { stmts: vec![arg_list] })
     }
@@ -767,7 +784,7 @@ impl<'src> Parser<'src> {
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
             let val = self.parse_expr(arena, 0);
-            self.eat_eol();
+            self.end_stmt();
             arena.alloc(ExprNode::FileIoStmt {
                 kind,
                 channel: Some(ch),
@@ -783,14 +800,21 @@ impl<'src> Parser<'src> {
     /// `Name "old" As "new"`; or a `Name`-identifier assignment / call fallback.
     fn parse_name_keyword_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let t = self.advance();
-        if self.peek().is_stmt_end() {
+        // `Name` used as an identifier: alone, assigned (`Name = x`), or with a
+        // member (`Name.Length`).
+        if self.peek().is_stmt_end()
+            || matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Eq) | TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang)
+            )
+        {
             return self.parse_ident_stmt_with_tok(arena, t);
         }
         // Name "old" As "new"
         let old_path = self.parse_expr(arena, 0);
         if self.eat(TokenKind::Kw(Kw::As)) {
             let new_path = self.parse_expr(arena, 0);
-            self.eat_eol();
+            self.end_stmt();
             return arena.alloc(ExprNode::FileIoStmt {
                 kind: FileIoKind::Name,
                 channel: None,
@@ -802,13 +826,13 @@ impl<'src> Parser<'src> {
         // Could be assignment: Name = expr
         if self.eat(TokenKind::Kw(Kw::Eq)) {
             let value = self.parse_expr(arena, 0);
-            self.eat_eol();
+            self.end_stmt();
             let sym = t.sym.map(|s| s as u32).unwrap_or(0);
             let lhs = arena.alloc(ExprNode::NameRef { sym, suffix: t.type_suffix });
             self.set_span(lhs, t.span);
             return arena.alloc(ExprNode::Assign { target: lhs, value });
         }
-        self.eat_eol();
+        self.end_stmt();
         old_path
     }
 
@@ -819,12 +843,12 @@ impl<'src> Parser<'src> {
         // End Sub / End Function etc. are handled in their parent.
         self.advance();
         if self.peek().is_stmt_end() {
-            self.eat_eol();
+            self.end_stmt();
             return Some(arena.alloc(ExprNode::EndStmt));
         }
         // End If / End With / End Select / End Type / End Enum
         self.advance(); // consume the sub-keyword
-        self.eat_eol();
+        self.end_stmt();
         None // structural: consumed by the block parser
     }
 
@@ -835,7 +859,7 @@ impl<'src> Parser<'src> {
         let target = self.parse_target_expr(arena);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::RangeAssign { right_justify, target, value })
     }
 
@@ -881,7 +905,7 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Exit)   => self.parse_exit_stmt(arena),
             TokenKind::Kw(Kw::Return) => {
                 self.advance();
-                self.eat_eol();
+                self.end_stmt();
                 arena.alloc(ExprNode::ReturnStmt)
             }
             TokenKind::Kw(Kw::GoTo)   => self.parse_goto_stmt(arena, false),
@@ -895,12 +919,12 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Error) => {
                 self.advance();
                 let expr = self.parse_expr(arena, 0);
-                self.eat_eol();
+                self.end_stmt();
                 arena.alloc(ExprNode::ErrorStmt { expr })
             }
             // Misc
             TokenKind::Kw(Kw::Stop) => {
-                self.advance(); self.eat_eol();
+                self.advance(); self.end_stmt();
                 arena.alloc(ExprNode::Stop)
             }
             TokenKind::Kw(Kw::End) => return self.parse_end_stmt(arena),
@@ -1024,12 +1048,12 @@ impl<'src> Parser<'src> {
     fn finish_ident_stmt(&mut self, arena: &mut ExprArena, lhs: NodeId) -> NodeId {
         if self.eat(TokenKind::Kw(Kw::Eq)) {
             let value = self.parse_expr(arena, 0);
-            self.eat_eol();
+            self.end_stmt();
             arena.alloc(ExprNode::Assign { target: lhs, value })
         } else if self.eat(TokenKind::Kw(Kw::ColonEq)) {
             // Named argument in a call — parse rest as expression
             let value = self.parse_expr(arena, 0);
-            self.eat_eol();
+            self.end_stmt();
             arena.alloc(ExprNode::Assign { target: lhs, value })
         } else if let Some((callee, arg)) = self.paren_first_argument(arena, lhs) {
             // `Foo (a) - (b), c` / `Foo (a), b`: in a call statement the
@@ -1041,7 +1065,7 @@ impl<'src> Parser<'src> {
             if self.eat(TokenKind::Kw(Kw::Comma)) {
                 args.extend(self.parse_stmt_arg_list(arena));
             }
-            self.eat_eol();
+            self.end_stmt();
             let args = arena.alloc(ExprNode::ArgList { args });
             arena.alloc(ExprNode::CallStmt { callee, args })
         } else if self.peek().kind == TokenKind::Kw(Kw::Minus)
@@ -1063,7 +1087,7 @@ impl<'src> Parser<'src> {
                     }
                 }
             }
-            self.eat_eol();
+            self.end_stmt();
             let args = arena.alloc(ExprNode::ArgList { args: extra });
             arena.alloc(ExprNode::CallStmt { callee: lhs, args })
         } else {
@@ -1074,7 +1098,7 @@ impl<'src> Parser<'src> {
                 self.eat(TokenKind::Kw(Kw::Comma));
             }
             let args = self.parse_stmt_arg_list(arena);
-            self.eat_eol();
+            self.end_stmt();
             if args.is_empty() {
                 lhs
             } else {
@@ -1106,7 +1130,7 @@ impl<'src> Parser<'src> {
         let target = self.parse_target_expr(arena);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::Assign { target, value })
     }
 
@@ -1116,7 +1140,7 @@ impl<'src> Parser<'src> {
         let target = self.parse_target_expr(arena);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::SetAssign { target, value })
     }
 
@@ -1138,7 +1162,7 @@ impl<'src> Parser<'src> {
         self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::MidAssign { byte_oriented, dollar, args, value })
     }
 
@@ -1151,7 +1175,7 @@ impl<'src> Parser<'src> {
                 break;
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Print, channel, args, open_mode: 0, open_flags: 0 })
     }
 
@@ -1182,7 +1206,7 @@ impl<'src> Parser<'src> {
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::Block { stmts })
     }
 
@@ -1255,24 +1279,47 @@ impl<'src> Parser<'src> {
         let preserve = self.eat(TokenKind::Kw(Kw::Preserve));
         let mut stmts = Vec::new();
         loop {
-            // `a(...)` or a member array `a.b.c(...)`: everything before the
-            // last name is the base it belongs to.
+            // `a(...)`, a member array `a.b.c(...)`, or an element's member
+            // array `a(i).b(...)`: everything before the last name is the base
+            // it belongs to. A parenthesised list followed by `.` indexes the
+            // base; the last list holds the bounds.
             let mut name = self.expect_ident();
             let mut base: Option<NodeId> = None;
-            while self.eat(TokenKind::Kw(Kw::Dot)) {
+            let mut bounds: Option<NodeId> = None;
+            loop {
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
-                let node = match base {
-                    None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
-                    Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false }),
-                };
-                self.set_span(node, name.span);
-                base = Some(node);
-                name = self.expect_ident();
+                if self.peek().kind == TokenKind::Kw(Kw::LParen) {
+                    self.advance();
+                    let list = self.parse_array_bounds(arena);
+                    self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
+                    if self.peek().kind != TokenKind::Kw(Kw::Dot) {
+                        bounds = list;
+                        break;
+                    }
+                    // An index into the element named so far.
+                    let element = match base {
+                        None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
+                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false }),
+                    };
+                    self.set_span(element, name.span);
+                    let args = list.unwrap_or_else(|| arena.alloc(ExprNode::ArgList { args: vec![] }));
+                    base = Some(arena.alloc(ExprNode::Call { func: element, args }));
+                    self.advance(); // `.`
+                    name = self.expect_ident();
+                } else if self.eat(TokenKind::Kw(Kw::Dot)) {
+                    let node = match base {
+                        None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
+                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false }),
+                    };
+                    self.set_span(node, name.span);
+                    base = Some(node);
+                    name = self.expect_ident();
+                } else {
+                    self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
+                    break;
+                }
             }
             let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
-            self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
-            let bounds = self.parse_array_bounds(arena);
-            self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
                 Some(self.parse_type_spec(arena, false))
             } else { None };
@@ -1281,7 +1328,7 @@ impl<'src> Parser<'src> {
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::Block { stmts })
     }
 
@@ -1550,7 +1597,7 @@ impl<'src> Parser<'src> {
             let args = self.parse_stmt_arg_list(arena);
             arena.alloc(ExprNode::ArgList { args })
         };
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::CallStmt { callee, args })
     }
 
@@ -1568,7 +1615,7 @@ impl<'src> Parser<'src> {
                 ExitKind::Sub
             }
         };
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::ExitStmt { kind })
     }
 
@@ -1590,7 +1637,7 @@ impl<'src> Parser<'src> {
         } else {
             LabelRef::Name(self.expect_ident().sym.map(|s| s as u32).unwrap_or(0))
         };
-        self.eat_eol();
+        self.end_stmt();
         if is_gosub {
             arena.alloc(ExprNode::GoSub { target })
         } else {
@@ -1614,7 +1661,7 @@ impl<'src> Parser<'src> {
         } else {
             ResumeTarget::Retry
         };
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::Resume { target })
     }
 
@@ -1627,14 +1674,14 @@ impl<'src> Parser<'src> {
         if self.eat(TokenKind::Kw(Kw::Error)) {
             if self.eat(TokenKind::Kw(Kw::Resume)) {
                 self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
-                self.eat_eol();
+                self.end_stmt();
                 return arena.alloc(ExprNode::OnError { kind: OnErrorKind::ResumeNext });
             }
             if self.eat(TokenKind::Kw(Kw::GoTo)) {
                 if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
                     let tok = self.advance();
                     let line = line_label_value(&tok.lit);
-                    self.eat_eol();
+                    self.end_stmt();
                     // Only `On Error GoTo 0` disables the handler; any nonzero
                     // line number installs a handler at that numeric line label.
                     let kind = if line == 0 {
@@ -1646,7 +1693,7 @@ impl<'src> Parser<'src> {
                 }
                 let lbl = self.expect_ident();
                 let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
-                self.eat_eol();
+                self.end_stmt();
                 return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Goto(LabelRef::Name(lid)) });
             }
         }
@@ -1680,7 +1727,7 @@ impl<'src> Parser<'src> {
             labels.push(lref);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::OnGo { is_gosub, expr, labels })
     }
 
@@ -1691,7 +1738,7 @@ impl<'src> Parser<'src> {
             vars.push(self.parse_target_expr(arena));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::Erase { vars })
     }
 
@@ -1706,7 +1753,7 @@ impl<'src> Parser<'src> {
         } else {
             arena.alloc(ExprNode::ArgList { args: vec![] })
         };
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::RaiseEvent { name: nid, args })
     }
 
@@ -1723,7 +1770,7 @@ impl<'src> Parser<'src> {
                 break;
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::DebugPrint { args })
     }
 
@@ -1987,7 +2034,7 @@ impl<'src> Parser<'src> {
         match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Explicit) => {
                 self.advance();
-                self.eat_eol();
+                self.end_stmt();
                 arena.alloc(ExprNode::OptionExplicit)
             }
             TokenKind::Kw(Kw::Base) => {
@@ -2001,7 +2048,7 @@ impl<'src> Parser<'src> {
                     }
                     _ => { self.advance(); 0 }
                 };
-                self.eat_eol();
+                self.end_stmt();
                 arena.alloc(ExprNode::OptionBase { value })
             }
             TokenKind::Kw(Kw::Compare) => {
@@ -2016,12 +2063,12 @@ impl<'src> Parser<'src> {
                     }
                     _ => 0,
                 };
-                self.eat_eol();
+                self.end_stmt();
                 arena.alloc(ExprNode::OptionCompare { mode })
             }
             _ => {
                 self.skip_to_stmt_end();
-                self.eat_eol();
+                self.end_stmt();
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
         }
@@ -2041,7 +2088,7 @@ impl<'src> Parser<'src> {
         } else {
             (None, first_id, first.span)
         };
-        self.eat_eol();
+        self.end_stmt();
         let id = arena.alloc(ExprNode::Implements { library, name: nid });
         self.set_span(id, name_span);
         id
@@ -2067,7 +2114,7 @@ impl<'src> Parser<'src> {
                 break;
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::DefType { type_kw, ranges })
     }
 
@@ -2094,7 +2141,7 @@ impl<'src> Parser<'src> {
                 break;
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         let id = arena.alloc(ExprNode::Attribute { target, name, values });
         self.set_span(id, value_span);
         id
@@ -2163,7 +2210,7 @@ impl<'src> Parser<'src> {
             self.eat(TokenKind::Kw(Kw::Eq));
             args.push(self.parse_expr(arena, 0)); // `Len = <expr>` is a real use site
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt {
             kind: FileIoKind::Open,
             channel: Some(ch),
@@ -2182,7 +2229,7 @@ impl<'src> Parser<'src> {
             chs.push(self.parse_expr(arena, 0));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, open_mode: 0, open_flags: 0 })
     }
 
@@ -2197,7 +2244,7 @@ impl<'src> Parser<'src> {
                 if !self.eat(TokenKind::Kw(Kw::Comma)) && !self.eat(TokenKind::Kw(Kw::Semi)) { break; }
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
     }
 
@@ -2212,7 +2259,7 @@ impl<'src> Parser<'src> {
                 if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Input, channel: Some(ch), args: vars, open_mode: 0, open_flags: 0 })
     }
 
@@ -2230,7 +2277,7 @@ impl<'src> Parser<'src> {
                 args.push(self.parse_expr(arena, 0));
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
     }
 
@@ -2245,7 +2292,7 @@ impl<'src> Parser<'src> {
                 args.push(self.parse_expr(arena, 0));
             }
         }
-        self.eat_eol();
+        self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
     }
 
@@ -2429,7 +2476,7 @@ impl<'src> Parser<'src> {
         } else {
             arena.alloc(ExprNode::ArgList { args: vec![] })
         };
-        self.eat_eol();
+        self.end_stmt();
         let id = arena.alloc(ExprNode::EventDecl { name: nid, params });
         self.set_span(id, name.span);
         id
@@ -2445,7 +2492,7 @@ impl<'src> Parser<'src> {
                 let span = self.current_span();
                 self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
                 self.skip_to_stmt_end();
-                self.eat_eol();
+                self.end_stmt();
                 return arena.alloc(ExprNode::Block { stmts: vec![] });
             }
         };
@@ -2480,7 +2527,7 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
-        self.eat_eol();
+        self.end_stmt();
         let id = arena.alloc(ExprNode::DeclareDecl { kind, name, lib, alias, params, ret_type });
         self.set_span(id, name_tok.span);
         id
@@ -2656,7 +2703,7 @@ impl<'src> Parser<'src> {
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
-            match self.peek().kind {
+            match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::End) => {
                     self.advance();
                     self.expect(TokenKind::Kw(Kw::Enum), ERR_UNEXPECTED_TOKEN);
@@ -2664,12 +2711,28 @@ impl<'src> Parser<'src> {
                     break;
                 }
                 TokenKind::Eof => break,
+                // A comment line between members is a blank line, and `:`
+                // separates members written on one line.
+                TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => {
+                    self.advance();
+                }
                 TokenKind::Ident => {
                     let m = self.parse_dim_item(arena, true, false, false);
-                    self.eat_eol();
+                    self.end_stmt();
                     members.push(m);
                 }
-                _ => { self.advance(); }
+                // A non-reserved keyword (`Text`, `Key`) can name a member.
+                TokenKind::Kw(_) if self.at_contextual_keyword() => {
+                    let m = self.parse_dim_item(arena, true, false, false);
+                    self.end_stmt();
+                    members.push(m);
+                }
+                _ => {
+                    // Not a member: report it and resume on the next line.
+                    let span = self.current_span();
+                    self.diagnostics.push_labeled(0x9c6f, span, "identifier");
+                    self.skip_line();
+                }
             }
         }
         let id = arena.alloc(ExprNode::EnumDecl { name: nid, members });
@@ -2959,10 +3022,15 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::MissingArg)
             } else if let Some(named) = self.try_parse_named_arg(arena) {
                 named
-            } else if let Some(expr) = self.try_parse_expr(arena) {
-                expr
             } else {
-                break;
+                // A call-site `ByVal`/`ByRef` qualifies the argument that follows.
+                let _ = self.eat(TokenKind::Kw(Kw::ByVal))
+                    || self.eat(TokenKind::Kw(Kw::ByRef));
+                if let Some(expr) = self.try_parse_expr(arena) {
+                    expr
+                } else {
+                    break;
+                }
             };
             args.push(a);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }

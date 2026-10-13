@@ -78,3 +78,43 @@ fn the_base_variable_is_a_reference() {
     let sites: Vec<u32> = s.references(0, decl, false).iter().map(|l| l.span.start).collect();
     assert_eq!(sites, vec![src.rfind("oAction").unwrap() as u32]);
 }
+
+// ── An element's member array: `ReDim a(i).b(n)` ─────────────────────────────
+
+#[test]
+fn redim_of_an_array_elements_member_array() {
+    use vb6_core::frontend::ast::{ExprArena, ExprNode};
+    use vb6_core::frontend::parser::{ModuleKind, Parser};
+    use vb6_core::frontend::scanner::ScannerContext;
+    let src = "Sub T()\n    ReDim Preserve a(i).Counters(0)\n    ReDim a(1).b(2).c(3, 4)\nEnd Sub\n";
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), ModuleKind::Standard);
+    let top = parser.parse_module(&mut arena);
+    assert_eq!(parser.diagnostics.items().len(), 0);
+    drop(parser);
+    let name = |s: u32| ctx.symbol(s as usize).name.clone();
+    let ExprNode::ProcDecl { body, .. } = arena.get(top[0]) else { panic!("ProcDecl") };
+    let ExprNode::Block { stmts } = arena.get(*body) else { panic!("Block") };
+    // First statement: base is the call `a(i)`, member array `Counters` with one bound.
+    let ExprNode::Block { stmts: first } = arena.get(stmts[0]) else { panic!("Block") };
+    let ExprNode::ReDimItem { preserve, base, name: n, bounds, .. } = arena.get(first[0]) else { panic!("item") };
+    assert!(*preserve);
+    assert_eq!(name(*n), "Counters");
+    let ExprNode::Call { func, args } = arena.get(base.unwrap()) else { panic!("call") };
+    assert!(matches!(arena.get(*func), ExprNode::NameRef { sym, .. } if name(*sym).eq_ignore_ascii_case("a")));
+    let ExprNode::ArgList { args } = arena.get(*args) else { panic!("args") };
+    assert_eq!(args.len(), 1);
+    let ExprNode::ArgList { args: b } = arena.get(bounds.unwrap()) else { panic!("bounds") };
+    assert_eq!(b.len(), 1);
+    // Second: `a(1).b(2).c(3, 4)` - two indexed links, two bounds.
+    let ExprNode::Block { stmts: second } = arena.get(stmts[1]) else { panic!("Block") };
+    let ExprNode::ReDimItem { preserve, base, name: n, bounds, .. } = arena.get(second[0]) else { panic!("item") };
+    assert!(!*preserve);
+    assert!(name(*n).eq_ignore_ascii_case("c"));
+    let ExprNode::Call { func, .. } = arena.get(base.unwrap()) else { panic!("call") };
+    assert!(matches!(arena.get(*func), ExprNode::MemberAccess { member, .. } if name(*member).eq_ignore_ascii_case("b")));
+    let ExprNode::ArgList { args: b } = arena.get(bounds.unwrap()) else { panic!("bounds") };
+    assert_eq!(b.len(), 2);
+}
