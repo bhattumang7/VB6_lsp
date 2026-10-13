@@ -168,6 +168,26 @@ pub fn unbound_namerefs(
         .collect()
 }
 
+/// What a pre-pass over a procedure body found out about its candidate locals.
+#[derive(Default)]
+struct InferenceScan {
+    /// Values `Set` into each local.
+    sets: HashMap<usize, Vec<NodeId>>,
+    /// Values `Let` into each local.
+    lets: HashMap<usize, Vec<NodeId>>,
+    /// Locals something else may store into.
+    blocked: std::collections::HashSet<usize>,
+}
+
+/// What the `Set` statements of a procedure say about a `Variant`/`Object` local.
+#[derive(Debug, Clone, PartialEq)]
+enum Inference {
+    /// Every `Set` assigns an object of this one type.
+    Single(SemType),
+    /// The `Set`s assign objects of these different types, in order first seen.
+    Ambiguous(Vec<SemType>),
+}
+
 // ── Internal binder state ─────────────────────────────────────────────────────
 
 struct Binder<'a> {
@@ -219,6 +239,9 @@ struct Binder<'a> {
     global_namespace: bool,
     default_member: Option<String>,
 
+    /// Diagnostics held when the body being bound was started: a second pass
+    /// over the body drops what the first one reported.
+    proc_diag_mark: usize,
     /// The project and this module's index in it; `None` for a plain [`bind`].
     project: Option<(&'a dyn ProjectScope, usize)>,
     sem_types: HashMap<u32, SemType>,
@@ -232,6 +255,14 @@ struct Binder<'a> {
     with_stack: Vec<SemType>,
     /// Declared type names of each procedure's parameters, aligned with `procs`.
     param_names: Vec<Vec<Option<TypeName>>>,
+    /// The inferred type of procedure locals of the procedure being bound,
+    /// by local index (project mode, second pass of a procedure only).
+    inference: HashMap<usize, Inference>,
+    /// Nodes whose static type came from an inferred local, directly or
+    /// through members of it.
+    inferred_nodes: std::collections::HashSet<u32>,
+    /// Reads of an ambiguous local, with the candidate type names.
+    ambiguous_nodes: HashMap<u32, Vec<String>>,
     /// Static types of declarations (project mode only).
     var_sem: Vec<SemType>,
     ret_sem: Vec<SemType>,
@@ -273,6 +304,7 @@ impl<'a> Binder<'a> {
             predeclared_id: false,
             global_namespace: false,
             default_member: None,
+            proc_diag_mark: 0,
             project,
             sem_types: HashMap::new(),
             member_status: HashMap::new(),
@@ -280,6 +312,9 @@ impl<'a> Binder<'a> {
             callable: HashMap::new(),
             with_stack: Vec::new(),
             param_names: Vec::new(),
+            inference: HashMap::new(),
+            inferred_nodes: std::collections::HashSet::new(),
+            ambiguous_nodes: HashMap::new(),
             var_sem: Vec::new(),
             ret_sem: Vec::new(),
             param_sem: Vec::new(),
@@ -875,6 +910,7 @@ impl<'a> Binder<'a> {
             });
             local_names.push(self.decl_types.proc_rets.get(proc_idx).cloned().flatten());
         }
+        self.proc_diag_mark = self.diagnostics.len();
         self.collect_locals(proc_idx, body_id, &mut locals, &mut local_names);
         if self.project.is_some() {
             let sems = locals
@@ -890,6 +926,209 @@ impl<'a> Binder<'a> {
         // are bound separately by the caller, since they live in the parameter
         // list rather than the body block.)
         self.bind_node(Some(proc_idx), body_id);
+        if self.project.is_some() {
+            self.infer_and_rebind(proc_idx, body_id);
+        }
+    }
+
+    /// Procedure-local object-type inference. For each local of type `Variant`
+    /// or `Object` that is only ever set by `Set` statements and never stored
+    /// into or passed by reference otherwise, the types assigned by those
+    /// `Set`s are the local's type: one type is an inference, several are an
+    /// ambiguity. The body is bound again with that knowledge, so member
+    /// accesses on the local resolve (or are reported ambiguous).
+    fn infer_and_rebind(&mut self, proc_idx: usize, body_id: NodeId) {
+        let procs_locals = &self.procs[proc_idx].locals;
+        // Candidates by lowercase name. The implicit return slot is excluded.
+        let proc_name = self.name_of(self.procs[proc_idx].sym_id);
+        let mut candidates: HashMap<String, usize> = HashMap::new();
+        for (i, l) in procs_locals.iter().enumerate() {
+            let n = self.name_of(l.sym_id);
+            let loose = matches!(l.vba_type, VbaType::Variant | VbaType::Object);
+            if loose && !l.is_const && n != proc_name {
+                candidates.entry(n).or_insert(i);
+            }
+        }
+        if candidates.is_empty() {
+            return;
+        }
+        let mut scan = InferenceScan::default();
+        self.scan_for_inference(body_id, &candidates, &mut scan);
+        let mut table: HashMap<usize, Inference> = HashMap::new();
+        for (&local, values) in &scan.sets {
+            if scan.blocked.contains(&local) || values.is_empty() {
+                continue;
+            }
+            // A value-typed `Let` is harmless; a `Let` of anything else may
+            // copy an object in.
+            let lets_unknown = scan.lets.get(&local).map_or(false, |vs| {
+                vs.iter().any(|v| !matches!(self.sem_of_node(*v), SemType::Value(_)))
+            });
+            if lets_unknown {
+                continue;
+            }
+            let mut types: Vec<SemType> = Vec::new();
+            let mut known = true;
+            for v in values {
+                match self.sem_of_node(*v) {
+                    t @ (SemType::Class { .. } | SemType::Lib { .. }) => {
+                        if !types.contains(&t) {
+                            types.push(t);
+                        }
+                    }
+                    _ => known = false,
+                }
+            }
+            if !known || types.is_empty() {
+                continue;
+            }
+            let entry = if types.len() == 1 {
+                Inference::Single(types.remove(0))
+            } else {
+                Inference::Ambiguous(types)
+            };
+            table.insert(local, entry);
+        }
+        if table.is_empty() {
+            return;
+        }
+        // Forget everything the first pass recorded for this body and bind it
+        // again with the inferred types in force.
+        let mut ids: Vec<u32> = Vec::new();
+        self.collect_ids(body_id, &mut ids);
+        for id in &ids {
+            self.resolutions.remove(id);
+            self.types.remove(id);
+            self.builtins.remove(id);
+            self.sem_types.remove(id);
+            self.member_status.remove(id);
+            self.callable.remove(id);
+            self.class_member_slots.borrow_mut().remove(id);
+        }
+        self.diagnostics.truncate(self.proc_diag_mark);
+        self.inference = table;
+        self.bind_node(Some(proc_idx), body_id);
+        self.inference.clear();
+    }
+
+    fn collect_ids(&self, id: NodeId, out: &mut Vec<u32>) {
+        out.push(id.0);
+        if let ExprNode::ForRange { loop_var, range, step } = self.arena.get(id) {
+            for raw in [*loop_var, *range, *step] {
+                if raw != 0 {
+                    self.collect_ids(NodeId(raw), out);
+                }
+            }
+            return;
+        }
+        let mut kids: Vec<NodeId> = Vec::new();
+        self.arena.get(id).for_each_child(&mut |c| kids.push(c));
+        for c in kids {
+            self.collect_ids(c, out);
+        }
+    }
+
+    /// Record, for every candidate local, the values `Set` into it and
+    /// whether anything else could change what it holds.
+    fn scan_for_inference(
+        &self,
+        id: NodeId,
+        candidates: &HashMap<String, usize>,
+        scan: &mut InferenceScan,
+    ) {
+        let candidate = |n: NodeId| -> Option<usize> {
+            match self.arena.get(n) {
+                ExprNode::NameRef { sym, .. } => candidates.get(&self.name_of(*sym)).copied(),
+                _ => None,
+            }
+        };
+        match self.arena.get(id) {
+            ExprNode::SetAssign { target, value } => {
+                if let Some(l) = candidate(*target) {
+                    // `Set x = Nothing` says nothing about the type.
+                    if !matches!(self.arena.get(*value), ExprNode::Nothing) {
+                        scan.sets.entry(l).or_default().push(*value);
+                    }
+                }
+            }
+            ExprNode::Assign { target, value } => {
+                if let Some(l) = candidate(*target) {
+                    scan.lets.entry(l).or_default().push(*value);
+                }
+            }
+            ExprNode::ForEach { var, .. } => {
+                if let Some(l) = candidate(*var) {
+                    scan.blocked.insert(l);
+                }
+            }
+            ExprNode::FileIoStmt { kind, args, .. } => {
+                if matches!(kind, FileIoKind::Input | FileIoKind::LineInput | FileIoKind::Get) {
+                    for a in args {
+                        if let Some(l) = candidate(*a) {
+                            scan.blocked.insert(l);
+                        }
+                    }
+                }
+            }
+            ExprNode::ReDimItem { base: None, name, .. } => {
+                if let Some(l) = candidates.get(&self.name_of(*name)) {
+                    scan.blocked.insert(*l);
+                }
+            }
+            ExprNode::Call { func, args } | ExprNode::CallStmt { callee: func, args } => {
+                self.scan_call_arguments(*func, *args, candidates, scan);
+            }
+            ExprNode::RaiseEvent { args, .. } => {
+                self.scan_call_arguments(id, *args, candidates, scan);
+            }
+            _ => {}
+        }
+        let mut kids: Vec<NodeId> = Vec::new();
+        self.arena.get(id).for_each_child(&mut |c| kids.push(c));
+        for c in kids {
+            self.scan_for_inference(c, candidates, scan);
+        }
+    }
+
+    /// A candidate local handed to a procedure as a bare argument may be
+    /// reassigned through the reference, unless the callee is a built-in or a
+    /// procedure of this module whose parameter is `ByVal`.
+    fn scan_call_arguments(
+        &self,
+        func: NodeId,
+        args: NodeId,
+        candidates: &HashMap<String, usize>,
+        scan: &mut InferenceScan,
+    ) {
+        let ExprNode::ArgList { args } = self.arena.get(args) else { return };
+        let callee_name = match self.arena.get(func) {
+            ExprNode::NameRef { sym, .. } => Some(self.name_of(*sym)),
+            _ => None,
+        };
+        let own = callee_name.as_ref().and_then(|n| {
+            self.procs.iter().find(|p| self.name_of(p.sym_id) == *n)
+        });
+        let builtin = match (&callee_name, own) {
+            (Some(n), None) => {
+                is_builtin(n)
+                    && !self.module_vars.iter().any(|v| self.name_of(v.sym_id) == *n)
+            }
+            _ => false,
+        };
+        for (i, a) in args.iter().enumerate() {
+            let mut node = *a;
+            if let ExprNode::NamedArg { value, .. } = self.arena.get(node) {
+                node = *value;
+            }
+            let ExprNode::NameRef { sym, .. } = self.arena.get(node) else { continue };
+            let Some(&l) = candidates.get(&self.name_of(*sym)) else { continue };
+            let by_val = own
+                .and_then(|p| p.params.get(i))
+                .map_or(false, |prm| prm.flags.by_val);
+            if !(builtin || by_val) {
+                scan.blocked.insert(l);
+            }
+        }
     }
 
     /// Whether `name` is already a declaration visible to a `ReDim` in
@@ -1138,9 +1377,23 @@ impl<'a> Binder<'a> {
                 let sym_id = *sym;
                 let (res, sem) = if self.project.is_some() {
                     let access = self.access_ctx.get(&id.0).copied().unwrap_or(Access::Get);
-                    let (res, sem, params) = self.resolve_in_project(scope, sym_id, access);
+                    let (res, mut sem, params) = self.resolve_in_project(scope, sym_id, access);
                     if let Some(arity) = params {
                         self.callable.insert(id.0, arity);
+                    }
+                    // A `Variant`/`Object` local with an inferred type.
+                    if let NameResolution::Local { local_idx, .. } = &res {
+                        match self.inference.get(local_idx) {
+                            Some(Inference::Single(t)) if access == Access::Get => {
+                                sem = t.clone();
+                                self.inferred_nodes.insert(id.0);
+                            }
+                            Some(Inference::Ambiguous(cands)) if access == Access::Get => {
+                                let names = cands.iter().map(|c| self.type_name_of_sem(c)).collect();
+                                self.ambiguous_nodes.insert(id.0, names);
+                            }
+                            _ => {}
+                        }
                     }
                     (res, Some(sem))
                 } else {
@@ -1254,6 +1507,11 @@ impl<'a> Binder<'a> {
                 if self.project.is_some() {
                     let sem = self.call_sem(id, &ret);
                     self.sem_types.insert(id.0, sem);
+                    if let ExprNode::Call { func, .. } = self.arena.get(id) {
+                        if self.inferred_nodes.contains(&func.0) {
+                            self.inferred_nodes.insert(id.0);
+                        }
+                    }
                 }
                 self.types.insert(id.0, ret);
             }
@@ -1678,7 +1936,12 @@ impl<'a> Binder<'a> {
         let name = self.name_of(member_sym);
         let base_sem = self.sem_of_node(base);
         let mut result = SemType::Unresolved;
-        let status = if bang {
+        let base_inferred = self.inferred_nodes.contains(&base.0);
+        let ambiguous = self.ambiguous_nodes.get(&base.0).cloned();
+        let status = if let (false, Some(cands)) = (bang, ambiguous) {
+            result = SemType::LateBound;
+            MemberStatus::Ambiguous(cands)
+        } else if bang {
             result = SemType::LateBound;
             MemberStatus::Bang
         } else if name.is_empty() {
@@ -1712,7 +1975,12 @@ impl<'a> Binder<'a> {
                         }
                         self.resolutions.insert(site.0, resolution);
                         result = sem;
-                        MemberStatus::Resolved
+                        if base_inferred {
+                            self.inferred_nodes.insert(site.0);
+                            MemberStatus::Inferred
+                        } else {
+                            MemberStatus::Resolved
+                        }
                     }
                     MemberLookup::NoSuchMember => {
                         let span = self.spans.get(site);
@@ -1726,6 +1994,14 @@ impl<'a> Binder<'a> {
         };
         self.member_status.insert(site.0, status);
         self.sem_types.insert(site.0, result);
+    }
+
+    /// How the project writes the type `ty`.
+    fn type_name_of_sem(&self, ty: &SemType) -> String {
+        match self.project {
+            Some((project, _)) => project.type_name(ty),
+            None => String::new(),
+        }
     }
 
     /// Static type of the call or index expression `id`. `builtin_ret` is the

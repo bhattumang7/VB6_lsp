@@ -127,6 +127,10 @@ pub struct MemberAccessSummary {
     pub missing_accessor: usize,
     /// Base expression itself did not resolve.
     pub base_unresolved: usize,
+    /// Resolved against the type inferred for a `Variant`/`Object` local.
+    pub inferred: usize,
+    /// The base is such a local assigned objects of different types.
+    pub ambiguous: usize,
 }
 
 /// A single text edit: replace `span` in `module` with `new_text`. A
@@ -453,6 +457,8 @@ impl Session {
                     MemberStatus::NoSuchMember => out.no_such_member += 1,
                     MemberStatus::MissingAccessor(_) => out.missing_accessor += 1,
                     MemberStatus::BaseUnresolved => out.base_unresolved += 1,
+                    MemberStatus::Inferred => out.inferred += 1,
+                    MemberStatus::Ambiguous(_) => out.ambiguous += 1,
                 }
             }
         }

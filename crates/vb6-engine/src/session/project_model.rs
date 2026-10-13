@@ -73,6 +73,8 @@ pub(super) struct ControlSummary {
 struct ModuleSummary {
     /// Lowercase module name.
     name: String,
+    /// The module name as written.
+    display: String,
     /// A `.bas` standard module (a namespace), as opposed to a class, form or
     /// other designer (a type).
     standard: bool,
@@ -114,6 +116,8 @@ enum LibGlobal {
 
 struct LibSummary {
     name: String,
+    /// Type names as the library spells them, aligned with `types`.
+    type_names: Vec<String>,
     types: Vec<LibType>,
     type_by_name: HashMap<String, usize>,
     globals: HashMap<String, LibGlobal>,
@@ -579,6 +583,7 @@ fn summarize(m: &ModuleData) -> ModuleSummary {
     };
     ModuleSummary {
         name: m.module_name.to_ascii_lowercase(),
+        display: m.module_name.clone(),
         standard: m.standard,
         predeclared: m.predeclared,
         global_namespace: b.global_namespace,
@@ -664,7 +669,8 @@ fn summarize_library(l: &Library) -> LibSummary {
             }
         }
     }
-    LibSummary { name: lc(&l.name), types, type_by_name, globals }
+    let type_names = l.types.iter().map(|t| t.name.clone()).collect();
+    LibSummary { name: lc(&l.name), type_names, types, type_by_name, globals }
 }
 
 fn summarize_lib_type(t: &LibraryType) -> LibType {
@@ -724,6 +730,23 @@ impl ProjectScope for ProjectModel {
             NameResolution::Library(l)
         } else {
             NameResolution::Unresolved
+        }
+    }
+
+    fn type_name(&self, ty: &SemType) -> String {
+        match ty {
+            SemType::Class { module } => self.modules[*module].display.clone(),
+            SemType::Udt { module, idx } => self.modules[*module].types[*idx].name.clone(),
+            SemType::Lib { lib, ty } => format!(
+                "{}.{}",
+                self.libraries[*lib].name,
+                self.libraries[*lib].type_names[*ty]
+            ),
+            SemType::Value(v) => format!("{v:?}"),
+            SemType::Array(inner) => format!("{}()", self.type_name(inner)),
+            SemType::Unknown(n) | SemType::LibraryNotLoaded(n) => n.clone(),
+            SemType::LateBound => "Variant".to_string(),
+            SemType::Namespace(_) | SemType::Unresolved => String::new(),
         }
     }
 

@@ -96,6 +96,15 @@ pub enum MemberStatus {
     MissingAccessor(Access),
     /// The base expression itself did not resolve.
     BaseUnresolved,
+    /// The member resolved against a type inferred for the base: a procedure
+    /// local of type `Variant`/`Object` that every `Set` in the procedure
+    /// assigns an object of one and the same type, and that nothing else
+    /// stores into or hands out by reference.
+    Inferred,
+    /// The base is such a local, but its `Set`s assign objects of different
+    /// types: the member is not resolved. The candidates are the type names,
+    /// in the order first assigned.
+    Ambiguous(Vec<String>),
 }
 
 /// The parameter list of a procedure a name resolved to.
@@ -144,6 +153,9 @@ pub trait ProjectScope {
     /// What the qualifier of a qualified type name (`Project.Class`,
     /// `Module.Type`, `Library.Type`) names; `Unresolved` when it names none.
     fn resolve_qualifier(&self, from: usize, qualifier: &str) -> NameResolution;
+
+    /// How a type is written in source (`clsTrip`, `ADODB.Connection`).
+    fn type_name(&self, ty: &SemType) -> String;
 
     /// The static type of `Me` in module `from`.
     fn self_type(&self, from: usize) -> SemType;

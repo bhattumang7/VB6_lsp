@@ -86,6 +86,20 @@ impl Diagnostics {
         self.items.push(Diagnostic::with_label(code, span, label));
     }
 
+    /// Number of diagnostics recorded so far.
+    pub fn len(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
+    /// Drop every diagnostic after the first `len`.
+    pub fn truncate(&mut self, len: usize) {
+        self.items.truncate(len);
+    }
+
     pub fn has_errors(&self) -> bool {
         !self.items.is_empty()
     }
