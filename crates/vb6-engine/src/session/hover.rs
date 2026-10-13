@@ -42,6 +42,7 @@ pub fn type_str(ctx: &ScannerContext, t: &VbaType) -> String {
         VbaType::Boolean => "Boolean".into(),
         VbaType::Decimal => "Decimal".into(),
         VbaType::Byte => "Byte".into(),
+        VbaType::Any => "Any".into(),
         VbaType::UserDefined(sym) => {
             let n = if *sym == 0 { String::new() } else { ctx.symbol(*sym as usize).name.clone() };
             if n.is_empty() { "Object".into() } else { n }

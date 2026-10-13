@@ -374,6 +374,8 @@ pub enum ExprNode {
     StringType { fixed_len: Option<NodeId> },
     /// User-defined or qualified type name: `TypeName` or `Module.TypeName`.
     UserType { name: u32, child: Option<NodeId> },
+    /// `As Any` — legal only on a `Declare` parameter.
+    AnyType,
 
     // ── Additional expression nodes ───────────────────────────────────────────
 

@@ -587,7 +587,13 @@ impl<'a> Scanner<'a> {
             };
             let cls = CHAR_CLASSES[b as usize];
             match cls {
-                0x00 => return Token::eol(start as u32),
+                0x00 => {
+                    // CR LF is one line break, so it is one end-of-line token.
+                    if b == b'\r' && self.peek() == Some(b'\n') {
+                        self.pos += 1;
+                    }
+                    return Token::eol(start as u32);
+                }
 
                 0x01..=0x04 => { /* skip */ }
 

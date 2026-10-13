@@ -94,6 +94,7 @@ fn kind_name(n: &ExprNode) -> &'static str {
         BuiltinType { .. } => "BuiltinType",
         StringType { .. } => "StringType",
         UserType { .. } => "UserType",
+        AnyType => "AnyType",
         RangeTo { .. } => "RangeTo",
         TypeOf { .. } => "TypeOf",
         New { .. } => "New",

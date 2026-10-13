@@ -197,6 +197,9 @@ pub struct Parser<'src> {
     peeked:      Option<Token>,
     /// Second lookahead slot (for `peek2`), filled lazily after `peeked`.
     peeked2:     Option<Token>,
+    /// Token read past a `_` to check whether it ended the line; returned by
+    /// the next [`Parser::next_logical`] call.
+    after_line_cont: Option<Token>,
     pub diagnostics: Diagnostics,
     /// Source-span side table for symbol-naming nodes (`NameRef` uses and
     /// declaration-name identifiers).  Consumed by the binder and LSP layer.
@@ -219,6 +222,7 @@ impl<'src> Parser<'src> {
             scanner:     Scanner::new(ctx, src),
             peeked:      None,
             peeked2:     None,
+            after_line_cont: None,
             diagnostics: Diagnostics::new(),
             node_spans:  NodeSpans::new(),
             decl_public: std::collections::HashMap::new(),
@@ -245,7 +249,7 @@ impl<'src> Parser<'src> {
     fn peek(&mut self) -> &Token {
         if self.peeked.is_none() {
             self.peeked = Some(
-                self.peeked2.take().unwrap_or_else(|| self.scanner.next_token()),
+                self.peeked2.take().unwrap_or_else(|| self.next_logical()),
             );
         }
         self.peeked.as_ref().unwrap()
@@ -256,7 +260,7 @@ impl<'src> Parser<'src> {
     fn peek2(&mut self) -> &Token {
         self.peek(); // ensure `peeked` is filled first
         if self.peeked2.is_none() {
-            self.peeked2 = Some(self.scanner.next_token());
+            self.peeked2 = Some(self.next_logical());
         }
         self.peeked2.as_ref().unwrap()
     }
@@ -264,7 +268,7 @@ impl<'src> Parser<'src> {
     fn advance(&mut self) -> Token {
         match self.peeked.take() {
             Some(t) => t,
-            None    => self.peeked2.take().unwrap_or_else(|| self.scanner.next_token()),
+            None    => self.peeked2.take().unwrap_or_else(|| self.next_logical()),
         }
     }
 
@@ -288,25 +292,23 @@ impl<'src> Parser<'src> {
         }
     }
 
-    /// Consume a line-continuation sequence (`_` followed by an end-of-line).
-    ///
-    /// VB6 allows `_` at the end of a physical line to join it with the next.
-    /// The scanner emits a `LineCont` token for the `_` and a separate `Eol`
-    /// for the newline.  This helper eats both so callers can treat the logical
-    /// line as unbroken.  Returns `true` if a `LineCont` was consumed.
-    fn eat_line_cont(&mut self) -> bool {
-        if self.peek().kind == TokenKind::Kw(Kw::LineCont) {
-            self.advance();          // consume _
-            self.eat(TokenKind::Eol); // consume the following newline if present
-            true
-        } else {
-            false
+    /// The next token of the logical line. A line continuation (`_` followed
+    /// by the end of the physical line) joins two physical lines and is
+    /// whitespace to the grammar, so the `_` and its end-of-line are dropped
+    /// here, wherever they occur. A `_` that is not followed by an end of line
+    /// is returned as a `LineCont` token for the grammar to reject.
+    fn next_logical(&mut self) -> Token {
+        loop {
+            let tok = self.after_line_cont.take().unwrap_or_else(|| self.scanner.next_token());
+            if tok.kind == TokenKind::Kw(Kw::LineCont) {
+                let next = self.scanner.next_token();
+                if next.kind == TokenKind::Eol {
+                    continue;
+                }
+                self.after_line_cont = Some(next);
+            }
+            return tok;
         }
-    }
-
-    /// Skip all consecutive line-continuation sequences at the current position.
-    fn skip_line_conts(&mut self) {
-        while self.eat_line_cont() {}
     }
 
     /// Consume and return the next token if it matches `expected`; otherwise
@@ -2396,7 +2398,6 @@ impl<'src> Parser<'src> {
         let name_tok = self.expect_ident();
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
         // Lib "libname"
-        self.skip_line_conts();
         let lib = if self.eat(TokenKind::Kw(Kw::Lib)) {
             let s = self.parse_expr(arena, 0);
             s
@@ -2406,23 +2407,20 @@ impl<'src> Parser<'src> {
             arena.alloc(ExprNode::Literal { lit: crate::frontend::ast::AstLit::Str("".into()) })
         };
         // Optional Alias "aliasname"
-        self.skip_line_conts();
         let alias = if self.eat(TokenKind::Kw(Kw::Alias)) {
             Some(self.parse_expr(arena, 0))
         } else {
             None
         };
         // Optional parameter list
-        self.skip_line_conts();
         let params = if self.eat(TokenKind::Kw(Kw::LParen)) {
-            let p = self.parse_param_list(arena);
+            let p = self.parse_declare_param_list(arena);
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             Some(p)
         } else {
             None
         };
         // Optional return type.
-        self.skip_line_conts();
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
             Some(self.parse_type_spec(arena, false))
         } else {
@@ -2436,22 +2434,28 @@ impl<'src> Parser<'src> {
 
     /// Parses a procedure parameter list.
     fn parse_param_list(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.skip_line_conts();
+        self.parse_param_list_of(arena, false)
+    }
+
+    /// Parses a `Declare` parameter list, where `As Any` is also legal.
+    fn parse_declare_param_list(&mut self, arena: &mut ExprArena) -> NodeId {
+        self.parse_param_list_of(arena, true)
+    }
+
+    fn parse_param_list_of(&mut self, arena: &mut ExprArena, in_declare: bool) -> NodeId {
         if self.peek().kind == TokenKind::Kw(Kw::RParen) {
             return arena.alloc(ExprNode::ArgList { args: vec![] });
         }
         let mut args = Vec::new();
         loop {
-            args.push(self.parse_param(arena));
+            args.push(self.parse_param(arena, in_declare));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
-            self.skip_line_conts();
             if self.peek().kind == TokenKind::Kw(Kw::RParen) { break; }
         }
         arena.alloc(ExprNode::ArgList { args })
     }
 
-    fn parse_param(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.skip_line_conts();
+    fn parse_param(&mut self, arena: &mut ExprArena, in_declare: bool) -> NodeId {
         let mut flags: u16 = 0;
         if self.eat(TokenKind::Kw(Kw::Optional)) { flags |= 0x01; }
         // ParamArray must precede the parameter name; mutually exclusive with ByVal/ByRef.
@@ -2472,7 +2476,11 @@ impl<'src> Parser<'src> {
         }
         let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
             if self.eat(TokenKind::Kw(Kw::New)) { flags |= 0x10; }
-            Some(self.parse_type_spec(arena, false))
+            if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
+                Some(arena.alloc(ExprNode::AnyType))
+            } else {
+                Some(self.parse_type_spec(arena, false))
+            }
         } else {
             // `Sub F(count%)` ≡ `count As Integer`
             self.type_node_from_suffix(arena, name.type_suffix)
@@ -2610,15 +2618,11 @@ impl<'src> Parser<'src> {
 
         // Infix loop
         loop {
-            // A line-continuation sequence (`_ \n`) may appear before an infix
-            // operator or before the RHS operand — skip it transparently.
-            self.skip_line_conts();
 
             let kind = self.peek().kind.clone();
             let Some((l_bp, r_bp, bin_op)) = infix_bp(&kind) else { break };
             if l_bp <= min_bp { break; }
             self.advance(); // consume operator
-            self.skip_line_conts(); // continuation may follow the operator itself
             let rhs = self.parse_expr(arena, r_bp);
             lhs = arena.alloc(ExprNode::BinOp { op: bin_op, lhs, rhs });
         }
@@ -2628,7 +2632,6 @@ impl<'src> Parser<'src> {
     /// Parse the prefix/primary portion of an expression: a unary operator,
     /// `TypeOf`, `New`, or a plain primary.
     fn parse_expr_prefix(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.skip_line_conts(); // continuation may precede the first operand
         if let Some((bp, uop)) = prefix_bp(&self.peek().kind.clone()) {
             self.advance();
             let operand = self.parse_expr(arena, bp);

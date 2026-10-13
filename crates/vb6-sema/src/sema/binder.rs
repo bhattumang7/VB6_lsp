@@ -226,6 +226,7 @@ impl<'a> Binder<'a> {
         match self.arena.get(type_node_id) {
             ExprNode::BuiltinType { kind } => VbaType::from_kind(*kind),
             ExprNode::StringType { .. }   => VbaType::String,
+            ExprNode::AnyType             => VbaType::Any,
             ExprNode::UserType { name, .. } => {
                 // If `name` matches a known external class (not a same-module
                 // `Type` declaration — those stay resolved via `type_decls`),

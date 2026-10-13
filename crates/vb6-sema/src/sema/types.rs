@@ -19,6 +19,9 @@ pub enum VbaType {
     Boolean,
     Decimal,
     Byte,
+    /// `As Any`: a `Declare` parameter whose argument is passed without type
+    /// checking.
+    Any,
     /// User-defined type name (sym_id into the scanner's symbol table).
     UserDefined(u32),
     /// Array of some element type (e.g. `String()`, `Long()`).

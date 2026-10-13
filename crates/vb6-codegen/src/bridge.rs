@@ -53,6 +53,8 @@ pub fn type_ctx(t: &VbaType) -> Option<usize> {
         // Variant is a 16-byte structure (ctx 10).
         VbaType::Variant => 10,
         VbaType::Decimal => return None,
+        // `As Any` exists only on Declare parameters, never as a frame slot.
+        VbaType::Any => return None,
         // A class-method call's Array argument stages its descriptor
         // address into the SAME scratch region as `Long` — oracle-
         // confirmed directly (not assumed from size alone): a `Long`
