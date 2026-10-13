@@ -213,3 +213,14 @@ fn print_is_a_method_of_drawing_surfaces() {
     let s = session(&[("clsA.cls", src)]);
     assert_eq!(s.member_status_at(0, at(src, ".Print \"a\"", "Print")), Some(MemberStatus::Resolved));
 }
+
+#[test]
+fn user_control_name_is_the_controls_own_object() {
+    let ctl = "VERSION 5.00\r\nBegin VB.UserControl ctlA\r\nEnd\r\nAttribute VB_Name = \"ctlA\"\r\nOption Explicit\r\n\
+               Private Sub Go()\r\n    Dim n As Long\r\n    n = UserControl.Width\r\n    UserControl.BackColor = 0\r\n    n = UserControl.Ambient.UserMode\r\nEnd Sub\r\n";
+    let s = session(&[("ctlA.ctl", ctl)]);
+    assert_eq!(s.diagnostics(0), vec![]);
+    for (ctx, member) in [("UserControl.Width", "Width"), ("UserControl.BackColor", "BackColor"), ("UserControl.Ambient.UserMode", "Ambient")] {
+        assert_eq!(s.member_status_at(0, at(ctl, ctx, member)), Some(MemberStatus::Resolved), "{ctx}");
+    }
+}

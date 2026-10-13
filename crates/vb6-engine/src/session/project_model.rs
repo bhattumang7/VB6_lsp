@@ -862,8 +862,22 @@ impl ProjectScope for ProjectModel {
     fn lookup_module_scope(&self, from: usize, name: &str, access: Access) -> Option<MemberHit> {
         let m = &self.modules[from];
         let Some(idx) = m.controls.iter().position(|c| c.name == name) else {
-            // Not a control: a member of the library type a designer extends.
+            // Not a control: the designer's own intrinsic object, or a member
+            // of the library type a designer extends.
             let base = m.base_type.as_ref()?;
+            // Inside a UserControl, PropertyPage or UserDocument module, the
+            // type's name stands for the module's own object (`UserControl.Ambient`).
+            if matches!(base.name.as_str(), "usercontrol" | "propertypage" | "userdocument")
+                && name == base.name
+            {
+                if let TypeRef::Lib { lib, ty } = self.type_ref(from, base) {
+                    return Some(MemberHit {
+                        resolution: NameResolution::LibraryType { lib, ty },
+                        sem: SemType::Lib { lib, ty },
+                        callable: None,
+                    });
+                }
+            }
             return match self.sem_of_type_name(from, base) {
                 SemType::Lib { lib, ty } => match self.lib_member(lib, ty, name, access) {
                     MemberLookup::Found(hit) => Some(hit),
