@@ -550,7 +550,7 @@ impl Session {
         };
 
         // Offset → kind for every classified identifier (uses + declarations).
-        let by_offset = Self::classified_identifier_offsets(m);
+        let by_offset = Self::classified_identifier_offsets(m, &self.config.libraries);
 
         // Re-scan the source (a fresh context — we only need spans + kinds) and
         // emit one classified token at a time, in order.
@@ -572,10 +572,27 @@ impl Session {
 
     /// Build the offset → kind map for every classified identifier (resolved
     /// name uses plus all declaration-name sites).
-    fn classified_identifier_offsets(m: &ModuleData) -> HashMap<u32, SemTokenKind> {
+    fn classified_identifier_offsets(
+        m: &ModuleData,
+        libraries: &[Library],
+    ) -> HashMap<u32, SemTokenKind> {
         let mut by_offset: HashMap<u32, SemTokenKind> = HashMap::new();
         for (&node, res) in m.bound.resolutions.iter() {
-            if let Some(k) = tokens::kind_of_resolution(res) {
+            let kind = tokens::kind_of_resolution(res).or_else(|| match res {
+                // A library member is a procedure, a property or a constant,
+                // as the library describes it.
+                NameResolution::LibraryMember { lib, ty, member } => libraries
+                    .get(*lib)
+                    .and_then(|l| l.types.get(*ty))
+                    .and_then(|t| t.members.get(*member))
+                    .map(|mem| match mem.kind {
+                        LibraryMemberKind::Method => SemTokenKind::Function,
+                        LibraryMemberKind::Constant => SemTokenKind::EnumMember,
+                        _ => SemTokenKind::Variable,
+                    }),
+                _ => None,
+            });
+            if let Some(k) = kind {
                 let sp = m.spans.get(NodeId(node));
                 if sp.len > 0 {
                     by_offset.insert(sp.start, k);

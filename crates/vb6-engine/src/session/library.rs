@@ -54,6 +54,10 @@ pub struct LibraryType {
     /// `Screen`, `Err`).
     #[serde(default)]
     pub is_app_object: bool,
+    /// The type is the library's global object: its members are project-wide
+    /// names (`App`, `Screen`, `LoadPicture`), as the members of a module are.
+    #[serde(default)]
+    pub is_global: bool,
     #[serde(default)]
     pub members: Vec<LibraryMember>,
 }
@@ -94,7 +98,24 @@ pub struct LibraryMember {
     pub param_count: Option<usize>,
 }
 
+/// The runtime libraries every VB6 project sees, described by the engine.
+const VBA_JSON: &str = include_str!("../../data/vba.json");
+const VBRUN_JSON: &str = include_str!("../../data/vbrun.json");
+
 impl Library {
+    /// The libraries the engine describes itself: the VBA runtime library
+    /// (strings, conversion, math, date and file functions, constants, `Err`,
+    /// `Collection`) and the runtime object library (`PropertyBag`,
+    /// `AmbientProperties`, the control constants).
+    pub fn bundled() -> Vec<Library> {
+        [VBA_JSON, VBRUN_JSON]
+            .iter()
+            .flat_map(|text| {
+                Library::from_json(text).expect("bundled library data is valid JSON")
+            })
+            .collect()
+    }
+
     /// Parse one library, or an array of libraries, from JSON.
     pub fn from_json(text: &str) -> Result<Vec<Library>, serde_json::Error> {
         let value: serde_json::Value = serde_json::from_str(text)?;
@@ -112,7 +133,11 @@ impl Library {
 }
 
 /// What a session is told about its surroundings beyond the source files.
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+///
+/// The default describes a project that references only the runtime libraries
+/// the engine bundles (see [`Library::bundled`]); name no libraries at all
+/// with `libraries: Vec::new()`.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SessionConfig {
     /// The project's name (`Project1`), which qualifies its classes and
     /// modules (`Project1.clsTrip`).
@@ -121,4 +146,10 @@ pub struct SessionConfig {
     /// The libraries the project references.
     #[serde(default)]
     pub libraries: Vec<Library>,
+}
+
+impl Default for SessionConfig {
+    fn default() -> Self {
+        SessionConfig { project_name: None, libraries: Library::bundled() }
+    }
 }

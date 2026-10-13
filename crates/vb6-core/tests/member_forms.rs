@@ -200,3 +200,34 @@ fn control_hover_shows_name_and_type() {
     let arr = s.hover(0, at(FRM, "txtDate(0).Text", "txtDate")).unwrap();
     assert_eq!(arr.text, "txtDate() As VB.TextBox");
 }
+
+#[test]
+fn unqualified_names_in_a_designer_reach_the_members_it_inherits() {
+    let lib = r#"[{"name":"VB","types":[
+        {"name":"Form","kind":"class","members":[
+          {"name":"Hide","kind":"method","param_count":0},
+          {"name":"ScaleX","kind":"method","return_type":"Single","param_count":3},
+          {"name":"PopupMenu","kind":"method","param_count":1},
+          {"name":"Caption","kind":"field","return_type":"String"}]},
+        {"name":"TextBox","kind":"class","members":[{"name":"Text","kind":"field","return_type":"String"}]}]}]"#;
+    let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\n   Begin VB.TextBox Caption\r\n   End\r\nEnd\r\nAttribute VB_Name = \"frmA\"\r\n\
+               Option Explicit\r\nPrivate Sub Go()\r\n    Hide\r\n    x = ScaleX(1, 2, 3)\r\n    PopupMenu mnuFile\r\nEnd Sub\r\n";
+    let libs = Library::from_json(lib).unwrap();
+    let s = session_with(&[("frmA.frm", frm)], SessionConfig { project_name: None, libraries: libs });
+    let one = |m: &str| s.external_member_references("VB", "Form", m);
+    assert_eq!(one("Hide").iter().map(|l| l.span.start).collect::<Vec<_>>(), vec![at(frm, "    Hide", "Hide")]);
+    assert_eq!(one("ScaleX").iter().map(|l| l.span.start).collect::<Vec<_>>(), vec![at(frm, "ScaleX(1", "ScaleX")]);
+    assert_eq!(one("PopupMenu").iter().map(|l| l.span.start).collect::<Vec<_>>(), vec![at(frm, "PopupMenu mnuFile", "PopupMenu")]);
+    // A control of the same name as an inherited member is the control.
+    assert_eq!(one("Caption"), vec![]);
+    // The names that are not inherited remain undeclared (`x`, `mnuFile`).
+    let undeclared: Vec<u32> = s.diagnostics(0).iter().map(|d| d.span.start).collect();
+    assert_eq!(undeclared, vec![at(frm, "x = ScaleX", "x"), at(frm, "mnuFile", "mnuFile")]);
+}
+
+#[test]
+fn inherited_members_are_unknown_when_the_designer_library_is_not_supplied() {
+    let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\nEnd\r\nAttribute VB_Name = \"frmA\"\r\nOption Explicit\r\nPrivate Sub Go()\r\n    Hide\r\nEnd Sub\r\n";
+    let s = session(&[("frmA.frm", frm)]);
+    assert_eq!(s.diagnostics(0).len(), 1);
+}

@@ -663,14 +663,31 @@ fn summarize_library(l: &Library) -> LibSummary {
         }
     }
     for (ti, t) in l.types.iter().enumerate() {
-        if matches!(t.kind, LibraryTypeKind::Module | LibraryTypeKind::Enum) {
+        let global = matches!(t.kind, LibraryTypeKind::Module | LibraryTypeKind::Enum) || t.is_global;
+        if global {
             for (mi, m) in t.members.iter().enumerate() {
-                globals.entry(lc(&m.name)).or_insert(LibGlobal::Member { ty: ti, member: mi });
+                for key in global_keys(&m.name) {
+                    globals.entry(key).or_insert(LibGlobal::Member { ty: ti, member: mi });
+                }
             }
         }
     }
     let type_names = l.types.iter().map(|t| t.name.clone()).collect();
     LibSummary { name: lc(&l.name), type_names, types, type_by_name, globals }
+}
+
+/// The names a library procedure answers to in source. The runtime library
+/// spells the `Variant` and `String` forms of a function `_B_var_Name` and
+/// `_B_str_Name`; source writes them `Name` and `Name$`.
+fn global_keys(member: &str) -> Vec<String> {
+    let l = lc(member);
+    if let Some(rest) = l.strip_prefix("_b_var_") {
+        vec![rest.to_string()]
+    } else if let Some(rest) = l.strip_prefix("_b_str_") {
+        vec![format!("{rest}$")]
+    } else {
+        vec![l]
+    }
 }
 
 fn summarize_lib_type(t: &LibraryType) -> LibType {
@@ -758,9 +775,19 @@ impl ProjectScope for ProjectModel {
         }
     }
 
-    fn lookup_module_scope(&self, from: usize, name: &str) -> Option<MemberHit> {
+    fn lookup_module_scope(&self, from: usize, name: &str, access: Access) -> Option<MemberHit> {
         let m = &self.modules[from];
-        let idx = m.controls.iter().position(|c| c.name == name)?;
+        let Some(idx) = m.controls.iter().position(|c| c.name == name) else {
+            // Not a control: a member of the library type a designer extends.
+            let base = m.base_type.as_ref()?;
+            return match self.sem_of_type_name(from, base) {
+                SemType::Lib { lib, ty } => match self.lib_member(lib, ty, name, access) {
+                    MemberLookup::Found(hit) => Some(hit),
+                    _ => None,
+                },
+                _ => None,
+            };
+        };
         let c = &m.controls[idx];
         let (q, n) = match c.control_type.split_once('.') {
             Some((q, n)) => (Some(lc(q)), lc(n)),
@@ -845,7 +872,9 @@ impl ProjectScope for ProjectModel {
             SemType::Class { module } => {
                 let m = &self.modules[*module];
                 if let Some(ci) = m.controls.iter().position(|c| c.name == name) {
-                    if let Some(hit) = self.lookup_module_scope(*module, &m.controls[ci].name) {
+                    if let Some(hit) =
+                        self.lookup_module_scope(*module, &m.controls[ci].name, access)
+                    {
                         return MemberLookup::Found(hit);
                     }
                 }

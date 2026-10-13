@@ -1,0 +1,3764 @@
+[
+ {
+  "name": "VBRUN",
+  "types": [
+   {
+    "name": "PaletteModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbPaletteModeHalftone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPaletteModeUseZOrder",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPaletteModeCustom",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPaletteModeContainer",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPaletteModeNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPaletteModeObject",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "AsyncTypeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbAsyncTypePicture",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncTypeFile",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncTypeByteArray",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "AsyncReadConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbAsyncReadSynchronousDownload",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncReadOfflineOperation",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncReadForceUpdate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncReadResynchronize",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncReadGetFromCacheIfNetFail",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "AsyncStatusCodeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbAsyncStatusCodeError",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeFindingResource",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeConnecting",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeRedirecting",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeBeginDownloadData",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeDownloadingData",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeEndDownloadData",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeUsingCachedCopy",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeSendingRequest",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeMIMETypeAvailable",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeCacheFileNameAvailable",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeBeginSyncOperation",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAsyncStatusCodeEndSyncOperation",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LogEventTypeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLogEventTypeError",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogEventTypeWarning",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogEventTypeInformation",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "QueryUnloadConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbFormControlMenu",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFormCode",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAppWindows",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAppTaskManager",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFormMDIForm",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFormOwner",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ZOrderConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbBringToFront",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSendToBack",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ShiftConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbShiftMask",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCtrlMask",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAltMask",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "MouseButtonConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLeftButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRightButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMiddleButton",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ApplicationStartConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbSModeStandalone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSModeAutomation",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ScrollBarConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbSBNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHorizontal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVertical",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBoth",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ShapeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbShapeRectangle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShapeSquare",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShapeOval",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShapeCircle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShapeRoundedRectangle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShapeRoundedSquare",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "PictureTypeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbPicTypeNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPicTypeBitmap",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPicTypeMetafile",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPicTypeIcon",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPicTypeEMetafile",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ComboBoxConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbComboDropdown",
+      "kind": "constant"
+     },
+     {
+      "name": "vbComboSimple",
+      "kind": "constant"
+     },
+     {
+      "name": "vbComboDropdownList",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "MultiSelectConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbMultiSelectNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMultiSelectSimple",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMultiSelectExtended",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DataErrorConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbDataErrContinue",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataErrDisplay",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DataValidateConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbDataActionCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionMoveFirst",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionMovePrevious",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionMoveNext",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionMoveLast",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionAddNew",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionUpdate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionDelete",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionFind",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionBookmark",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionClose",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataActionUnload",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DataBOFconstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbMoveFirst",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBOF",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DataEOFConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbMoveLast",
+      "kind": "constant"
+     },
+     {
+      "name": "vbEOF",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAddNew",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "RecordsetTypeConstants",
+    "kind": "module",
+    "members": [
+     {
+      "name": "vbRSTypeTable",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRSTypeDynaset",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRSTypeSnapShot",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DefaultCursorTypeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUseDefaultCursor",
+      "kind": "constant"
+     },
+     {
+      "name": "vbUseODBCCursor",
+      "kind": "constant"
+     },
+     {
+      "name": "vbUseServersideCursor",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VariantTypeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbVEmpty",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVNull",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVInteger",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVLong",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVSingle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVDouble",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVCurrency",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVDate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVString",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LinkErrorConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbWrongFormat",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDDESourceClosed",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTooManyLinks",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataTransferFailed",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LinkModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLinkNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLinkSource",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLinkAutomatic",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLinkManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLinkNotify",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "OldLinkModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbHot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbServer",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCold",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ClipBoardConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbCFLink",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFBitmap",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFMetafile",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFDIB",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFPalette",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFEMetafile",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFFiles",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCFRTF",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DragOverConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbEnter",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLeave",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOver",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DragConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBeginDrag",
+      "kind": "constant"
+     },
+     {
+      "name": "vbEndDrag",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DragModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAutomatic",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "OLEDropEffectConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbDropEffectNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDropEffectCopy",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDropEffectMove",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDropEffectScroll",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "OLEDragConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbOLEDragManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEDragAutomatic",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "OLEDropConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbOLEDropNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEDropManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEDropAutomatic",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "FormShowConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbModeless",
+      "kind": "constant"
+     },
+     {
+      "name": "vbModal",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "FormArrangeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbCascade",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTileHorizontal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTileVertical",
+      "kind": "constant"
+     },
+     {
+      "name": "vbArrangeIcons",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "FormWindowStateConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbNormal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMinimized",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMaximized",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "KeyCodeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbKeyLButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyRButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyMButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyBack",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyTab",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyClear",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyReturn",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyShift",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyControl",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyMenu",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyPause",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyCapital",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyEscape",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeySpace",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyPageUp",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyPageDown",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyEnd",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyHome",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyLeft",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyUp",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyRight",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyDown",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeySelect",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyPrint",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyExecute",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeySnapshot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyInsert",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyDelete",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyHelp",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumlock",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyScrollLock",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyA",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyB",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyC",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyD",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyE",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyG",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyH",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyI",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyJ",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyK",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyL",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyM",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyN",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyO",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyP",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyQ",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyR",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyS",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyT",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyU",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyV",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyW",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyX",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyY",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyZ",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey0",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKey9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad0",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyNumpad9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyMultiply",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyAdd",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeySeparator",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeySubtract",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyDecimal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyDivide",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF10",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF11",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF12",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF13",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF14",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF15",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKeyF16",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "MenuAccelConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbMenuAccelCtrlA",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlB",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlC",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlD",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlE",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlG",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlH",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlI",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlJ",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlK",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlL",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlM",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlN",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlO",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlP",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlQ",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlR",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlS",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlT",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlU",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlV",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlW",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlX",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlY",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlZ",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF11",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelF12",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF11",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlF12",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShfitF2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF11",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftF12",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF7",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF8",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF11",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftCtrlF12",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelCtrlIns",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftIns",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelDel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelShiftDel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuAccelAltBksp",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ColorConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbBlack",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRed",
+      "kind": "constant"
+     },
+     {
+      "name": "vbGreen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbYellow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBlue",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMagenta",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCyan",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWhite",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "SystemColorConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbScrollBars",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDesktop",
+      "kind": "constant"
+     },
+     {
+      "name": "vbActiveTitleBar",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInactiveTitleBar",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuBar",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWindowBackground",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWindowFrame",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMenuText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWindowText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTitleBarText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbActiveBorder",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInactiveBorder",
+      "kind": "constant"
+     },
+     {
+      "name": "vbApplicationWorkspace",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHighlight",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHighlightText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbButtonFace",
+      "kind": "constant"
+     },
+     {
+      "name": "vbButtonShadow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbGrayText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbButtonText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbActiveTitleBarText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInactiveTitleBarText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInactiveCaptionText",
+      "kind": "constant"
+     },
+     {
+      "name": "vb3DHighlight",
+      "kind": "constant"
+     },
+     {
+      "name": "vb3DFace",
+      "kind": "constant"
+     },
+     {
+      "name": "vb3DShadow",
+      "kind": "constant"
+     },
+     {
+      "name": "vb3DDKShadow",
+      "kind": "constant"
+     },
+     {
+      "name": "vb3DLight",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInfoText",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInfoBackground",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "AlignConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbAlignNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAlignTop",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAlignBottom",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAlignLeft",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAlignRight",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "AlignmentConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLeftJustify",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRightJustify",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCenter",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "FormBorderStyleConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbBSNone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFixedSingle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizable",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFixedDouble",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFixedDialog",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFixedToolWindow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizableToolWindow",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "BorderStyleConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbTransparent",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBSSolid",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBSDash",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBSDot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBSDashDot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBSDashDotDot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBSInsideSolid",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "MousePointerConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbDefault",
+      "kind": "constant"
+     },
+     {
+      "name": "vbArrow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCrosshair",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIbeam",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIconPointer",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizePointer",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizeNESW",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizeNS",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizeNWSE",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizeWE",
+      "kind": "constant"
+     },
+     {
+      "name": "vbUpArrow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHourglass",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNoDrop",
+      "kind": "constant"
+     },
+     {
+      "name": "vbArrowHourglass",
+      "kind": "constant"
+     },
+     {
+      "name": "vbArrowQuestion",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSizeAll",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCustom",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DrawModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbBlackness",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNotMergePen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMaskNotPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNotCopyPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMaskPenNot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInvert",
+      "kind": "constant"
+     },
+     {
+      "name": "vbXorPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNotMaskPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMaskPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNotXorPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNop",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMergeNotPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCopyPen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMergePenNot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMergePen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWhiteness",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "StartUpPositionConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbStartUpManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbStartUpOwner",
+      "kind": "constant"
+     },
+     {
+      "name": "vbStartUpScreen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbStartUpWindowsDefault",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "DrawStyleConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbSolid",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDash",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDashDot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDashDotDot",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInvisible",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInsideSolid",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "FillStyleConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbFSSolid",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFSTransparent",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHorizontalLine",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVerticalLine",
+      "kind": "constant"
+     },
+     {
+      "name": "vbUpwardDiagonal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDownwardDiagonal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCross",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDiagonalCross",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ScaleModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUser",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTwips",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPoints",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPixels",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCharacters",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInches",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMillimeters",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCentimeters",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHimetric",
+      "kind": "constant"
+     },
+     {
+      "name": "vbContainerPosition",
+      "kind": "constant"
+     },
+     {
+      "name": "vbContainerSize",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "OLEContainerConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbOLELinked",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEEmbedded",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLENone",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEEither",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEAutomatic",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEFrozen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEActivateManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEActivateGetFocus",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEActivateDoubleclick",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEActivateAuto",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLESizeClip",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLESizeStretch",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLESizeAutoSize",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLESizeZoom",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEDisplayContent",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEDisplayIcon",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEChanged",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLESaved",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEClosed",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLERenamed",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEPrimary",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEShow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEOpen",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEHide",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEUIActivate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEInPlaceActivate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEDiscardUndoState",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEFlagGrayed",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEFlagDisabled",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEFlagChecked",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEFlagSeparator",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEMiscFlagMemStorage",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOLEMiscFlagDisableInPlace",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "MenuControlConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbPopupMenuLeftAlign",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPopupMenuCenterAlign",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPopupMenuRightAlign",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPopupMenuLeftButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPopupMenuRightButton",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "PrinterObjectConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbPRCMMonochrome",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRCMColor",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRDPSimplex",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRDPHorizontal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRDPVertical",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRORPortrait",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRORLandscape",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPQDraft",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPQLow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPQMedium",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPQHigh",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNUpper",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNLower",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNMiddle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNEnvelope",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNEnvManual",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNAuto",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNTractor",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNSmallFmt",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNLargeFmt",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNLargeCapacity",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRBNCassette",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSLetter",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSLetterSmall",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSTabloid",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSLedger",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSLegal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSStatement",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSExecutive",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSA3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSA4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSA4Small",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSA5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSB4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSB5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSFolio",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSQuarto",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPS10x14",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPS11x17",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSNote",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnv9",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnv10",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnv11",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnv12",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnv14",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSCSheet",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSDSheet",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSESheet",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvDL",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvC3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvC4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvC5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvC6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvC65",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvB4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvB5",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvB6",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvItaly",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvMonarch",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSEnvPersonal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSFanfoldUS",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSFanfoldStdGerman",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSFanfoldLglGerman",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPRPSUser",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "RasterOpConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbDstInvert",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMergeCopy",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMergePaint",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNotSrcCopy",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNotSrcErase",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSrcAnd",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSrcCopy",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSrcErase",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSrcInvert",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSrcPaint",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPatCopy",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPatPaint",
+      "kind": "constant"
+     },
+     {
+      "name": "vbPatInvert",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "CheckBoxConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUnchecked",
+      "kind": "constant"
+     },
+     {
+      "name": "vbChecked",
+      "kind": "constant"
+     },
+     {
+      "name": "vbGrayed",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LoadResConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbResBitmap",
+      "kind": "constant"
+     },
+     {
+      "name": "vbResIcon",
+      "kind": "constant"
+     },
+     {
+      "name": "vbResCursor",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ButtonConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbButtonStandard",
+      "kind": "constant"
+     },
+     {
+      "name": "vbButtonGraphical",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ListBoxConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbListBoxStandard",
+      "kind": "constant"
+     },
+     {
+      "name": "vbListBoxCheckbox",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "ParentControlsType",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbNoExtender",
+      "kind": "constant"
+     },
+     {
+      "name": "vbExtender",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LoadPictureSizeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLPSmall",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPLarge",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPSmallShell",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPLargeShell",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPCustom",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LoadPictureColorConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLPDefault",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPMonochrome",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPVGAColor",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLPColor",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "HitResultConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbHitResultOutside",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHitResultTransparent",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHitResultClose",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHitResultHit",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "LogModeConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbLogAuto",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogOff",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogToFile",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogToNT",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogOverwrite",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLogThreadID",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "PropertyBag_VB5",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "ReadProperty",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "WriteProperty",
+      "kind": "method",
+      "param_count": 3
+     }
+    ]
+   },
+   {
+    "name": "_PropertyBag",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "ReadProperty",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "WriteProperty",
+      "kind": "method",
+      "param_count": 3
+     },
+     {
+      "name": "Contents",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "Contents",
+      "kind": "propertylet",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "PropertyBag",
+    "kind": "coclass",
+    "default_interface": "_PropertyBag",
+    "members": []
+   },
+   {
+    "name": "DataObjectFiles",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Add",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "Clear",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Remove",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "DataObject",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Clear",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "SetData",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "GetData",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "GetFormat",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "Files",
+      "kind": "propertyget",
+      "return_type": "DataObjectFiles",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "AmbientProperties",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "BackColor",
+      "kind": "propertyget",
+      "return_type": "{66504301-BE0F-101A-8BBB-00AA00300CAB}",
+      "param_count": 0
+     },
+     {
+      "name": "DisplayName",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "Font",
+      "kind": "propertyget",
+      "return_type": "{A00007B3-0AC9-82EA-0000-0000FFFFFFFF}",
+      "param_count": 0
+     },
+     {
+      "name": "ForeColor",
+      "kind": "propertyget",
+      "return_type": "{66504301-BE0F-101A-8BBB-00AA00300CAB}",
+      "param_count": 0
+     },
+     {
+      "name": "LocaleID",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "MessageReflect",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "ScaleUnits",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "TextAlign",
+      "kind": "propertyget",
+      "return_type": "Integer",
+      "param_count": 0
+     },
+     {
+      "name": "UserMode",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "UIDead",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "ShowGrabHandles",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "ShowHatching",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "DisplayAsDefault",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "SupportsMnemonics",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "Palette",
+      "kind": "propertyget",
+      "return_type": "{82EA0AC9-0000-0000-FFFF-FFFF20902335}",
+      "param_count": 0
+     },
+     {
+      "name": "RightToLeft",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "SelectedControls",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "Object",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "ParentControls",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "Object",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     },
+     {
+      "name": "ParentControlsType",
+      "kind": "propertyget",
+      "return_type": "ParentControlsType",
+      "param_count": 0
+     },
+     {
+      "name": "ParentControlsType",
+      "kind": "propertylet",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "ContainedControls",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "Object",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "DataBindings",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "Object",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "DataBinding",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "PropertyName",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "DataField",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0,
+      "is_default": true
+     },
+     {
+      "name": "DataField",
+      "kind": "propertylet",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "DataChanged",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "DataChanged",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "DataSourceName",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "DataSourceName",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "IsDataSource",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "IsBindable",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "DataMember",
+      "kind": "propertyget",
+      "return_type": "{7C0FFAB1-CD84-11D0-949A-00A0C91110ED}",
+      "param_count": 0
+     },
+     {
+      "name": "DataMember",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "DataFormat",
+      "kind": "propertyget",
+      "return_type": "{C9A000E4-EA0A-FE82-FFFF-FFFFFFFFFF40}",
+      "param_count": 0
+     },
+     {
+      "name": "DataFormat",
+      "kind": "propertyset",
+      "param_count": 1
+     },
+     {
+      "name": "DataSource",
+      "kind": "propertyget",
+      "return_type": "{7C0FFAB3-CD84-11D0-949A-00A0C91110ED}",
+      "param_count": 0
+     },
+     {
+      "name": "DataSource",
+      "kind": "propertyset",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "EventParameter",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Value",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0,
+      "is_default": true
+     },
+     {
+      "name": "Value",
+      "kind": "propertylet",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Name",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "EventParameters",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "EventParameter",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "EventInfo",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Name",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0,
+      "is_default": true
+     },
+     {
+      "name": "EventParameters",
+      "kind": "propertyget",
+      "return_type": "EventParameters",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "Hyperlink",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "GoForward",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "GoBack",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "NavigateTo",
+      "kind": "method",
+      "param_count": 3
+     }
+    ]
+   },
+   {
+    "name": "AsyncProperty_VB5",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Value",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "AsyncType",
+      "kind": "propertyget",
+      "return_type": "AsyncTypeConstants",
+      "param_count": 0
+     },
+     {
+      "name": "PropertyName",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "AsyncProperty",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Value",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "AsyncType",
+      "kind": "propertyget",
+      "return_type": "AsyncTypeConstants",
+      "param_count": 0
+     },
+     {
+      "name": "PropertyName",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "Target",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "BytesRead",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "BytesMax",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Status",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "StatusCode",
+      "kind": "propertyget",
+      "return_type": "AsyncStatusCodeConstants",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "DataMembers",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "{7C0FFAB1-CD84-11D0-949A-00A0C91110ED}",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Add",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "Clear",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Remove",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "IClassModuleEvt",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Initialize",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Terminate",
+      "kind": "method",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "IDataSourceClassEvt",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Initialize",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Terminate",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "GetDataMember",
+      "kind": "method",
+      "param_count": 2,
+      "is_default": true
+     }
+    ]
+   },
+   {
+    "name": "IPersistableClassEvt",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Initialize",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Terminate",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "InitProperties",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "ReadProperties",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "WriteProperties",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "IPersistableDataSourceClassEvt",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Initialize",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Terminate",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "GetDataMember",
+      "kind": "method",
+      "param_count": 2,
+      "is_default": true
+     },
+     {
+      "name": "InitProperties",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "ReadProperties",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "WriteProperties",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "IDataProviderClassEvt",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Initialize",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Terminate",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "GetDataMember",
+      "kind": "method",
+      "param_count": 2,
+      "is_default": true
+     },
+     {
+      "name": "DataConnection",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "IPersistableDataProviderClassEvt",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Initialize",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Terminate",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "GetDataMember",
+      "kind": "method",
+      "param_count": 2,
+      "is_default": true
+     },
+     {
+      "name": "DataConnection",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "InitProperties",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "ReadProperties",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "WriteProperties",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "_DClass",
+    "kind": "interface",
+    "members": []
+   },
+   {
+    "name": "_DDataBoundClass",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "PropertyChanged",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "CanPropertyChange",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "_DDataSourceClass",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "DataMemberChanged",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "DataMembers",
+      "kind": "propertyget",
+      "return_type": "DataMembers",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "_DDataBoundAndDataSourceClass",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "PropertyChanged",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "CanPropertyChange",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "DataMemberChanged",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "DataMembers",
+      "kind": "propertyget",
+      "return_type": "DataMembers",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "_DPersistableClass",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "PropertyChanged",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "_DPersistableDataSourceClass",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "PropertyChanged",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "DataMemberChanged",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "DataMembers",
+      "kind": "propertyget",
+      "return_type": "DataMembers",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "LicenseInfo",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "ProgId",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0,
+      "is_default": true
+     },
+     {
+      "name": "LicenseKey",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "Licenses",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Item",
+      "kind": "propertyget",
+      "return_type": "LicenseInfo",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Count",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Add",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "Clear",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Remove",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "IProjectControl",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "RetainProject",
+      "kind": "method",
+      "param_count": 0,
+      "is_default": true
+     },
+     {
+      "name": "UnloadProject",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "IsRetained",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "IsPermanent",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "IVbeRuntimeHost",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "get_AppObject",
+      "kind": "method",
+      "param_count": 2
+     }
+    ]
+   }
+  ]
+ }
+]

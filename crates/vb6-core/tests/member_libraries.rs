@@ -30,6 +30,7 @@ fn ado() -> Library {
                 interfaces: vec![],
                 extends: vec!["_ADO".into()],
                 is_app_object: false,
+                is_global: false,
                 members: vec![
                     member("Open", LibraryMemberKind::Method, None),
                     member("Execute", LibraryMemberKind::Method, Some("Recordset")),
@@ -45,6 +46,7 @@ fn ado() -> Library {
                 interfaces: vec![],
                 extends: vec![],
                 is_app_object: false,
+                is_global: false,
                 members: vec![member("Properties", LibraryMemberKind::PropertyGet, Some("Object"))],
             },
             LibraryType {
@@ -54,6 +56,7 @@ fn ado() -> Library {
                 interfaces: vec![],
                 extends: vec![],
                 is_app_object: false,
+                is_global: false,
                 members: vec![],
             },
             LibraryType {
@@ -63,6 +66,7 @@ fn ado() -> Library {
                 interfaces: vec![],
                 extends: vec![],
                 is_app_object: false,
+                is_global: false,
                 members: vec![
                     member("EOF", LibraryMemberKind::PropertyGet, Some("Boolean")),
                     member("MoveNext", LibraryMemberKind::Method, None),
@@ -76,6 +80,7 @@ fn ado() -> Library {
                 interfaces: vec![],
                 extends: vec![],
                 is_app_object: false,
+                is_global: false,
                 members: vec![member("Value", LibraryMemberKind::Field, Some("Variant"))],
             },
         ],
@@ -92,6 +97,7 @@ fn app() -> Library {
             interfaces: vec![],
             extends: vec![],
             is_app_object: true,
+            is_global: false,
             members: vec![member("Path", LibraryMemberKind::PropertyGet, Some("String"))],
         }],
     }

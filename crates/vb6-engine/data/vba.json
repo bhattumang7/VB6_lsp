@@ -1,0 +1,1962 @@
+[
+ {
+  "name": "VBA",
+  "types": [
+   {
+    "name": "VbVarType",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbEmpty",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNull",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInteger",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLong",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSingle",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDouble",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCurrency",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbString",
+      "kind": "constant"
+     },
+     {
+      "name": "vbObject",
+      "kind": "constant"
+     },
+     {
+      "name": "vbError",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBoolean",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVariant",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDataObject",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDecimal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbByte",
+      "kind": "constant"
+     },
+     {
+      "name": "vbUserDefinedType",
+      "kind": "constant"
+     },
+     {
+      "name": "vbArray",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbMsgBoxStyle",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbOKOnly",
+      "kind": "constant"
+     },
+     {
+      "name": "vbOKCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAbortRetryIgnore",
+      "kind": "constant"
+     },
+     {
+      "name": "vbYesNoCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbYesNo",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRetryCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCritical",
+      "kind": "constant"
+     },
+     {
+      "name": "vbQuestion",
+      "kind": "constant"
+     },
+     {
+      "name": "vbExclamation",
+      "kind": "constant"
+     },
+     {
+      "name": "vbInformation",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDefaultButton1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDefaultButton2",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDefaultButton3",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDefaultButton4",
+      "kind": "constant"
+     },
+     {
+      "name": "vbApplicationModal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSystemModal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMsgBoxHelpButton",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMsgBoxRight",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMsgBoxRtlReading",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMsgBoxSetForeground",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbMsgBoxResult",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbOK",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCancel",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAbort",
+      "kind": "constant"
+     },
+     {
+      "name": "vbRetry",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIgnore",
+      "kind": "constant"
+     },
+     {
+      "name": "vbYes",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNo",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbFileAttribute",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbNormal",
+      "kind": "constant"
+     },
+     {
+      "name": "vbReadOnly",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHidden",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSystem",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVolume",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDirectory",
+      "kind": "constant"
+     },
+     {
+      "name": "vbArchive",
+      "kind": "constant"
+     },
+     {
+      "name": "vbAlias",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbStrConv",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUpperCase",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLowerCase",
+      "kind": "constant"
+     },
+     {
+      "name": "vbProperCase",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWide",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNarrow",
+      "kind": "constant"
+     },
+     {
+      "name": "vbKatakana",
+      "kind": "constant"
+     },
+     {
+      "name": "vbHiragana",
+      "kind": "constant"
+     },
+     {
+      "name": "vbUnicode",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFromUnicode",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbDayOfWeek",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUseSystemDayOfWeek",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSunday",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMonday",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTuesday",
+      "kind": "constant"
+     },
+     {
+      "name": "vbWednesday",
+      "kind": "constant"
+     },
+     {
+      "name": "vbThursday",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFriday",
+      "kind": "constant"
+     },
+     {
+      "name": "vbSaturday",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbFirstWeekOfYear",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUseSystem",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFirstJan1",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFirstFourDays",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFirstFullWeek",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbIMEStatus",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbIMENoOp",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeNoControl",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEOn",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeOn",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEOff",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeOff",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEDisable",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeDisable",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEHiragana",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeHiragana",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEKatakanaDbl",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeKatakana",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEKatakanaSng",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeKatakanaHalf",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEAlphaDbl",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeAlphaFull",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEAlphaSng",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeAlpha",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeHangulFull",
+      "kind": "constant"
+     },
+     {
+      "name": "vbIMEModeHangul",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbAppWinStyle",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbHide",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNormalFocus",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMinimizedFocus",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMaximizedFocus",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNormalNoFocus",
+      "kind": "constant"
+     },
+     {
+      "name": "vbMinimizedNoFocus",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbCompareMethod",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbBinaryCompare",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTextCompare",
+      "kind": "constant"
+     },
+     {
+      "name": "vbDatabaseCompare",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbCalendar",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbCalGreg",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCalHijri",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbDateTimeFormat",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbGeneralDate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLongDate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShortDate",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLongTime",
+      "kind": "constant"
+     },
+     {
+      "name": "vbShortTime",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbTriState",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "vbUseDefault",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTrue",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFalse",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "VbCallType",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "VbMethod",
+      "kind": "constant"
+     },
+     {
+      "name": "VbGet",
+      "kind": "constant"
+     },
+     {
+      "name": "VbLet",
+      "kind": "constant"
+     },
+     {
+      "name": "VbSet",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "Constants",
+    "kind": "module",
+    "members": [
+     {
+      "name": "vbObjectError",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNullString",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNullChar",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCrLf",
+      "kind": "constant"
+     },
+     {
+      "name": "vbNewLine",
+      "kind": "constant"
+     },
+     {
+      "name": "vbCr",
+      "kind": "constant"
+     },
+     {
+      "name": "vbLf",
+      "kind": "constant"
+     },
+     {
+      "name": "vbBack",
+      "kind": "constant"
+     },
+     {
+      "name": "vbFormFeed",
+      "kind": "constant"
+     },
+     {
+      "name": "vbTab",
+      "kind": "constant"
+     },
+     {
+      "name": "vbVerticalTab",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "Strings",
+    "kind": "module",
+    "members": [
+     {
+      "name": "Asc",
+      "kind": "method",
+      "return_type": "Integer",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Chr",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Chr",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_LCase",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_LCase",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Mid",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 3
+     },
+     {
+      "name": "_B_var_Mid",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "_B_str_MidB",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 3
+     },
+     {
+      "name": "_B_var_MidB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "InStr",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     },
+     {
+      "name": "InStrB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     },
+     {
+      "name": "_B_str_Left",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_Left",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_LeftB",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_LeftB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_LTrim",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_LTrim",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_RightB",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_RightB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_Right",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_Right",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_RTrim",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_RTrim",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Space",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Space",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_StrConv",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "_B_str_String",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_String",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_Trim",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Trim",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_UCase",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_UCase",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "StrComp",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "_B_str_Format",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 4
+     },
+     {
+      "name": "_B_var_Format",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     },
+     {
+      "name": "Len",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "LenB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "AscB",
+      "kind": "method",
+      "return_type": "Byte",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_ChrB",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_ChrB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "AscW",
+      "kind": "method",
+      "return_type": "Integer",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_ChrW",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_ChrW",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "FormatDateTime",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "FormatNumber",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 5
+     },
+     {
+      "name": "FormatPercent",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 5
+     },
+     {
+      "name": "FormatCurrency",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 5
+     },
+     {
+      "name": "WeekdayName",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 3
+     },
+     {
+      "name": "MonthName",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "Replace",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 6
+     },
+     {
+      "name": "StrReverse",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "Join",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "Filter",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     },
+     {
+      "name": "InStrRev",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 4
+     },
+     {
+      "name": "Split",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     }
+    ]
+   },
+   {
+    "name": "Conversion",
+    "kind": "module",
+    "members": [
+     {
+      "name": "_B_str_Hex",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Hex",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Oct",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Oct",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "MacID",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Str",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Str",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Val",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "CStr",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "CByte",
+      "kind": "method",
+      "return_type": "Byte",
+      "param_count": 1
+     },
+     {
+      "name": "CBool",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "CCur",
+      "kind": "method",
+      "return_type": "Currency",
+      "param_count": 1
+     },
+     {
+      "name": "CDate",
+      "kind": "method",
+      "return_type": "Date",
+      "param_count": 1
+     },
+     {
+      "name": "CVDate",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "CInt",
+      "kind": "method",
+      "return_type": "Integer",
+      "param_count": 1
+     },
+     {
+      "name": "CLng",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "CSng",
+      "kind": "method",
+      "return_type": "Single",
+      "param_count": 1
+     },
+     {
+      "name": "CDbl",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "CVar",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "CVErr",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Error",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Error",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Fix",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Int",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "CDec",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "FileSystem",
+    "kind": "module",
+    "members": [
+     {
+      "name": "ChDir",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "ChDrive",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "EOF",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "FileAttr",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 2
+     },
+     {
+      "name": "FileCopy",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "FileDateTime",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "FileLen",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "GetAttr",
+      "kind": "method",
+      "return_type": "VbFileAttribute",
+      "param_count": 1
+     },
+     {
+      "name": "Kill",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "Loc",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "LOF",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "MkDir",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "Reset",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "RmDir",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "Seek",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "SetAttr",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_CurDir",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_CurDir",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "FreeFile",
+      "kind": "method",
+      "return_type": "Integer",
+      "param_count": 1
+     },
+     {
+      "name": "Dir",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     }
+    ]
+   },
+   {
+    "name": "DateTime",
+    "kind": "module",
+    "members": [
+     {
+      "name": "_B_var_Date",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "_B_str_Date",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Date",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Date",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "DateSerial",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "DateValue",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Day",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Hour",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Minute",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Month",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Now",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "Second",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Time",
+      "kind": "propertyget",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "_B_str_Time",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Time",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Time",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "Timer",
+      "kind": "propertyget",
+      "return_type": "Single",
+      "param_count": 0
+     },
+     {
+      "name": "TimeSerial",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "TimeValue",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Weekday",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "Year",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "DateAdd",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "DateDiff",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 5
+     },
+     {
+      "name": "DatePart",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     },
+     {
+      "name": "Calendar",
+      "kind": "propertyget",
+      "return_type": "VbCalendar",
+      "param_count": 0
+     },
+     {
+      "name": "Calendar",
+      "kind": "propertylet",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "Information",
+    "kind": "module",
+    "members": [
+     {
+      "name": "Erl",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Err",
+      "kind": "method",
+      "return_type": "ErrObject",
+      "param_count": 0
+     },
+     {
+      "name": "IMEStatus",
+      "kind": "method",
+      "return_type": "VbIMEStatus",
+      "param_count": 0
+     },
+     {
+      "name": "IsArray",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsDate",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsEmpty",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsError",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsMissing",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsNull",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsNumeric",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "IsObject",
+      "kind": "method",
+      "return_type": "Boolean",
+      "param_count": 1
+     },
+     {
+      "name": "TypeName",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "VarType",
+      "kind": "method",
+      "return_type": "VbVarType",
+      "param_count": 1
+     },
+     {
+      "name": "QBColor",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "RGB",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 3
+     }
+    ]
+   },
+   {
+    "name": "Interaction",
+    "kind": "module",
+    "members": [
+     {
+      "name": "AppActivate",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "Beep",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "CreateObject",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "DoEvents",
+      "kind": "method",
+      "return_type": "Integer",
+      "param_count": 0
+     },
+     {
+      "name": "GetObject",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "InputBox",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 7
+     },
+     {
+      "name": "MacScript",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "MsgBox",
+      "kind": "method",
+      "return_type": "VbMsgBoxResult",
+      "param_count": 5
+     },
+     {
+      "name": "SendKeys",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "Shell",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 2
+     },
+     {
+      "name": "Partition",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     },
+     {
+      "name": "Choose",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_Environ",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_Environ",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 1
+     },
+     {
+      "name": "Switch",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_var_Command",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 0
+     },
+     {
+      "name": "_B_str_Command",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "IIf",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 3
+     },
+     {
+      "name": "GetSetting",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 4
+     },
+     {
+      "name": "SaveSetting",
+      "kind": "method",
+      "param_count": 4
+     },
+     {
+      "name": "DeleteSetting",
+      "kind": "method",
+      "param_count": 3
+     },
+     {
+      "name": "GetAllSettings",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "CallByName",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 4
+     }
+    ]
+   },
+   {
+    "name": "Math",
+    "kind": "module",
+    "members": [
+     {
+      "name": "Abs",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Atn",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Cos",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Exp",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Log",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Randomize",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "Rnd",
+      "kind": "method",
+      "return_type": "Single",
+      "param_count": 1
+     },
+     {
+      "name": "Sin",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Sqr",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Tan",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 1
+     },
+     {
+      "name": "Sgn",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "Round",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     }
+    ]
+   },
+   {
+    "name": "Financial",
+    "kind": "module",
+    "members": [
+     {
+      "name": "SLN",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 3
+     },
+     {
+      "name": "SYD",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 4
+     },
+     {
+      "name": "DDB",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 5
+     },
+     {
+      "name": "IPmt",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 6
+     },
+     {
+      "name": "PPmt",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 6
+     },
+     {
+      "name": "Pmt",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 5
+     },
+     {
+      "name": "PV",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 5
+     },
+     {
+      "name": "FV",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 5
+     },
+     {
+      "name": "NPer",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 5
+     },
+     {
+      "name": "Rate",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 6
+     },
+     {
+      "name": "IRR",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 2
+     },
+     {
+      "name": "MIRR",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 3
+     },
+     {
+      "name": "NPV",
+      "kind": "method",
+      "return_type": "Double",
+      "param_count": 2
+     }
+    ]
+   },
+   {
+    "name": "_HiddenModule",
+    "kind": "module",
+    "members": [
+     {
+      "name": "Array",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1
+     },
+     {
+      "name": "_B_str_InputB",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_InputB",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "_B_str_Input",
+      "kind": "method",
+      "return_type": "String",
+      "param_count": 2
+     },
+     {
+      "name": "_B_var_Input",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 2
+     },
+     {
+      "name": "Width",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "VarPtr",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "StrPtr",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     },
+     {
+      "name": "ObjPtr",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "_HiddenInterface",
+    "kind": "interface",
+    "members": []
+   },
+   {
+    "name": "_ErrObject",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Number",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0,
+      "is_default": true
+     },
+     {
+      "name": "Number",
+      "kind": "propertylet",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Source",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "Source",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Description",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "Description",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "HelpFile",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "HelpFile",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "HelpContext",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "HelpContext",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Raise",
+      "kind": "method",
+      "param_count": 5
+     },
+     {
+      "name": "Clear",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "LastDllError",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "ErrObject",
+    "kind": "coclass",
+    "default_interface": "_ErrObject",
+    "members": []
+   },
+   {
+    "name": "_Collection",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Item",
+      "kind": "method",
+      "return_type": "Variant",
+      "param_count": 1,
+      "is_default": true
+     },
+     {
+      "name": "Add",
+      "kind": "method",
+      "param_count": 4
+     },
+     {
+      "name": "Count",
+      "kind": "method",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "Remove",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "_NewEnum",
+      "kind": "method",
+      "return_type": "IUnknown",
+      "param_count": 0
+     }
+    ]
+   },
+   {
+    "name": "Collection",
+    "kind": "coclass",
+    "default_interface": "_Collection",
+    "members": []
+   }
+  ]
+ }
+]

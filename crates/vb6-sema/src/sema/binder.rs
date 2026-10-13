@@ -1373,11 +1373,13 @@ impl<'a> Binder<'a> {
             }
 
             // Name reference — the core of the binder.
-            ExprNode::NameRef { sym, .. } => {
+            ExprNode::NameRef { sym, suffix } => {
                 let sym_id = *sym;
+                let dollar = *suffix == crate::frontend::token::TypeSuffix::String;
                 let (res, sem) = if self.project.is_some() {
                     let access = self.access_ctx.get(&id.0).copied().unwrap_or(Access::Get);
-                    let (res, mut sem, params) = self.resolve_in_project(scope, sym_id, access);
+                    let (res, mut sem, params) =
+                        self.resolve_in_project(scope, sym_id, access, dollar);
                     if let Some(arity) = params {
                         self.callable.insert(id.0, arity);
                     }
@@ -1535,7 +1537,8 @@ impl<'a> Binder<'a> {
                     match *base {
                         // `ReDim a(n)`: a use of the array variable.
                         None => {
-                            let (res, sem, _) = self.resolve_in_project(scope, *name, Access::Let);
+                            let (res, sem, _) =
+                                self.resolve_in_project(scope, *name, Access::Let, false);
                             // The `ReDim` that declares the array is the
                             // declaration, not a use of it.
                             let declares = matches!(
@@ -1865,6 +1868,7 @@ impl<'a> Binder<'a> {
         scope: Option<usize>,
         sym_id: u32,
         access: Access,
+        dollar: bool,
     ) -> (NameResolution, SemType, Option<Arity>) {
         let unresolved = (NameResolution::Unresolved, SemType::Unresolved, None);
         let name = self.name_of(sym_id);
@@ -1898,7 +1902,7 @@ impl<'a> Binder<'a> {
             let arity = Arity::Known(self.procs[pi].params.len());
             return (NameResolution::Proc(pi), self.ret_sem[pi].clone(), Some(arity));
         }
-        if let Some(hit) = project.lookup_module_scope(module, &name) {
+        if let Some(hit) = project.lookup_module_scope(module, &name, access) {
             return (hit.resolution, hit.sem, hit.callable);
         }
         if let Some(res) = self.resolve_enum_member(&name) {
@@ -1910,6 +1914,12 @@ impl<'a> Binder<'a> {
                 SemType::Namespace(Qualifier::Enum { module, idx }),
                 None,
             );
+        }
+        // `Left$(…)` is the `String` form of `Left`.
+        if dollar {
+            if let Some(hit) = project.lookup_global(module, &format!("{name}$")) {
+                return (hit.resolution, hit.sem, hit.callable);
+            }
         }
         if let Some(hit) = project.lookup_global(module, &name) {
             return (hit.resolution, hit.sem, hit.callable);

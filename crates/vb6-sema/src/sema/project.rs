@@ -161,8 +161,9 @@ pub trait ProjectScope {
     fn self_type(&self, from: usize) -> SemType;
 
     /// A name that belongs to module `from`'s own scope but not to its parsed
-    /// declarations (the controls of a form).
-    fn lookup_module_scope(&self, from: usize, name: &str) -> Option<MemberHit>;
+    /// declarations: the controls of a form, and the members a designer
+    /// inherits from the library type it extends (`Hide`, `ScaleX`).
+    fn lookup_module_scope(&self, from: usize, name: &str, access: Access) -> Option<MemberHit>;
 
     /// A project-wide name: a public declaration of another module, a module
     /// name, the project name, or a library's global object.
