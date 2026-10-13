@@ -2753,12 +2753,18 @@ impl<'src> Parser<'src> {
                 self.parse_postfix(arena, access)
             }
             // Keyword that can start a primary (e.g. built-in functions)
-            TokenKind::Kw(_) => {
+            TokenKind::Kw(k) => {
                 let tok = self.advance();
                 let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
                 let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
                 self.set_span(base, tok.span);
-                self.parse_postfix(arena, base)
+                let is_input_fn = matches!(k, Kw::Input | Kw::InputS | Kw::InputB | Kw::InputBS);
+                if is_input_fn && self.peek().kind == TokenKind::Kw(Kw::LParen) {
+                    let call = self.parse_input_fn_call(arena, base);
+                    self.parse_postfix(arena, call)
+                } else {
+                    self.parse_postfix(arena, base)
+                }
             }
             // Unexpected — emit error, return placeholder
             _ => {
@@ -2767,6 +2773,20 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
             }
         }
+    }
+
+    /// `Input(count, [#]filenumber)` and its `InputB`/`$` forms: the file
+    /// number may carry a `#`, which does not change its meaning, so the
+    /// result is the same `Call` as without it.
+    fn parse_input_fn_call(&mut self, arena: &mut ExprArena, func: NodeId) -> NodeId {
+        self.advance(); // consume (
+        let count = self.parse_expr(arena, 0);
+        self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
+        self.eat(TokenKind::Kw(Kw::Hash));
+        let file = self.parse_expr(arena, 0);
+        self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
+        let args = arena.alloc(ExprNode::ArgList { args: vec![count, file] });
+        arena.alloc(ExprNode::Call { func, args })
     }
 
     /// Postfix: member access and call/index.
