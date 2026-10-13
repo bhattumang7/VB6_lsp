@@ -585,6 +585,10 @@ impl<'a> Scanner<'a> {
                 None => return Token::eof(),
                 Some(b) => b,
             };
+            // A tab in a source file is whitespace between tokens.
+            if b == b'\t' {
+                continue;
+            }
             let cls = CHAR_CLASSES[b as usize];
             match cls {
                 0x00 => {
@@ -662,16 +666,42 @@ impl<'a> Scanner<'a> {
         }
     }
 
-    /// Consume the rest of the physical line as comment text.
+    /// Consume the rest of the line as comment text. Tabs are part of the
+    /// text. A comment whose last non-blank character is a line-continuation
+    /// `_` (one not ending a word) continues on the next physical line.
     fn consume_comment(&mut self, start: usize) -> Token {
-        while let Some(b) = self.peek() {
-            let cls = CHAR_CLASSES[b as usize];
-            if cls == 0x00 || cls == 0x01 {
+        loop {
+            let line_start = self.pos;
+            while let Some(b) = self.peek() {
+                let cls = CHAR_CLASSES[b as usize];
+                if b != b'\t' && (cls == 0x00 || cls == 0x01) {
+                    break;
+                }
+                self.pos += 1;
+            }
+            if !Self::ends_with_line_cont(&self.src[line_start..self.pos]) {
                 break;
             }
-            self.pos += 1;
+            match (self.peek(), self.src.get(self.pos + 1).copied()) {
+                (Some(b'\r'), Some(b'\n')) => self.pos += 2,
+                (Some(b'\r') | Some(b'\n'), _) => self.pos += 1,
+                _ => break,
+            }
         }
         Token::op(Kw::Apos, self.span(start))
+    }
+
+    /// True if `text` ends (ignoring trailing spaces and tabs) with a `_` that
+    /// is not the last character of a word.
+    fn ends_with_line_cont(text: &[u8]) -> bool {
+        let trimmed = match text.iter().rposition(|&b| b != b' ' && b != b'\t') {
+            Some(i) => &text[..=i],
+            None => return false,
+        };
+        match trimmed.split_last() {
+            Some((b'_', before)) => before.last().map_or(true, |&b| !is_ident_continue(b)),
+            _ => false,
+        }
     }
 
     /// Scan a string literal.
