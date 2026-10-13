@@ -246,6 +246,12 @@ def engine_type(t):
         if f["memid"] == 0:
             m["is_default"] = True
         funcs.append(m)
+    # `Print` is a method the language provides to every object with a drawing
+    # surface; the library describes `PSet`, `Line`, `Circle` and the rest but
+    # not `Print`. A type that declares `PSet` has it.
+    names = {m["name"].lower() for m in funcs}
+    if "pset" in names and "print" not in names:
+        funcs.append({"name": "Print", "kind": "method"})
     out["members"] = funcs + members
     return out
 

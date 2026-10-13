@@ -206,3 +206,10 @@ fn generic_form_type_looks_unknown_members_up_at_run_time() {
     assert_eq!(s.member_status_at(0, at(src, "c.NoSuch", "NoSuch")), Some(MemberStatus::NoSuchMember));
     assert_eq!(s.diagnostics(0).len(), 1);
 }
+
+#[test]
+fn print_is_a_method_of_drawing_surfaces() {
+    let src = "Sub Run()\n    Printer.Print \"a\"\n    Me.Print \"b\"\nEnd Sub\n";
+    let s = session(&[("clsA.cls", src)]);
+    assert_eq!(s.member_status_at(0, at(src, ".Print \"a\"", "Print")), Some(MemberStatus::Resolved));
+}

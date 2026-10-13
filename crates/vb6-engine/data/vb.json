@@ -851,6 +851,10 @@
       "name": "OLEDrag",
       "kind": "method",
       "param_count": 0
+     },
+     {
+      "name": "Print",
+      "kind": "method"
      }
     ]
    },
@@ -7880,6 +7884,10 @@
       "kind": "method",
       "return_type": "Single",
       "param_count": 1
+     },
+     {
+      "name": "Print",
+      "kind": "method"
      }
     ]
    },
@@ -8659,6 +8667,10 @@
       "name": "OLEDrag",
       "kind": "method",
       "param_count": 0
+     },
+     {
+      "name": "Print",
+      "kind": "method"
      }
     ]
    },
@@ -14754,6 +14766,10 @@
       "name": "CancelAsyncRead",
       "kind": "method",
       "param_count": 1
+     },
+     {
+      "name": "Print",
+      "kind": "method"
      }
     ]
    },
@@ -15528,6 +15544,10 @@
       "name": "OLEDrag",
       "kind": "method",
       "param_count": 0
+     },
+     {
+      "name": "Print",
+      "kind": "method"
      }
     ]
    },
@@ -16355,6 +16375,10 @@
       "name": "CancelAsyncRead",
       "kind": "method",
       "param_count": 1
+     },
+     {
+      "name": "Print",
+      "kind": "method"
      }
     ]
    },
