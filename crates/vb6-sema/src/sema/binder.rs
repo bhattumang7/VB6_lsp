@@ -892,9 +892,14 @@ impl<'a> Binder<'a> {
                 };
                 self.types.insert(id.0, ret);
             }
-            ExprNode::MemberAccess { base, member, .. } => {
+            ExprNode::MemberAccess { base, member, bang } => {
                 let base_id = *base;
                 let member_sym = *member;
+                if !*bang && matches!(self.arena.get(base_id), ExprNode::Me) {
+                    if let Some(res) = self.resolve_me_member(member_sym) {
+                        self.resolutions.insert(id.0, res);
+                    }
+                }
                 let ty = self.resolve_member_type(id, base_id, member_sym);
                 self.types.insert(id.0, ty);
             }
@@ -973,6 +978,26 @@ impl<'a> Binder<'a> {
             .iter()
             .position(|var| self.name_of(var.sym_id) == name)
             .map(NameResolution::ModuleVar)
+    }
+
+    /// `Me.member`: a member of this module's own public interface (public or
+    /// Friend variables and procedures). Private members are not reachable
+    /// through `Me`.
+    fn resolve_me_member(&self, member_sym: u32) -> Option<NameResolution> {
+        let name = self.name_of(member_sym);
+        if name.is_empty() {
+            return None;
+        }
+        self.module_vars
+            .iter()
+            .position(|v| v.is_public && self.name_of(v.sym_id) == name)
+            .map(NameResolution::ModuleVar)
+            .or_else(|| {
+                self.procs
+                    .iter()
+                    .position(|p| p.is_public && self.name_of(p.sym_id) == name)
+                    .map(NameResolution::Proc)
+            })
     }
 
     /// 5. Other procs in this module.

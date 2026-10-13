@@ -2737,9 +2737,11 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Nothing)
             }
             // Me
+            // `Me` takes member access and calls like any other object.
             TokenKind::Kw(Kw::Me) => {
                 self.advance();
-                arena.alloc(ExprNode::Me)
+                let base = arena.alloc(ExprNode::Me);
+                self.parse_postfix(arena, base)
             }
             // Empty / Null
             TokenKind::Kw(Kw::Empty) => {
@@ -2818,12 +2820,14 @@ impl<'src> Parser<'src> {
                     let member = self.expect_ident();
                     let mid = member.sym.map(|s| s as u32).unwrap_or(0);
                     base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false });
+                    self.set_span(base, member.span);
                 }
                 TokenKind::Kw(Kw::Bang) => {
                     self.advance();
                     let member = self.expect_ident();
                     let mid = member.sym.map(|s| s as u32).unwrap_or(0);
                     base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: true });
+                    self.set_span(base, member.span);
                 }
                 TokenKind::Kw(Kw::LParen) => {
                     self.advance();
