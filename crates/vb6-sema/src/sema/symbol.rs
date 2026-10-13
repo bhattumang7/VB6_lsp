@@ -346,6 +346,8 @@ pub struct DeclTypeNames {
     pub module_vars: Vec<Option<TypeName>>,
     /// Return type of each procedure (`Property Get` / `Function`).
     pub proc_rets: Vec<Option<TypeName>>,
+    /// Per procedure, the type name of each parameter.
+    pub proc_params: Vec<Vec<Option<TypeName>>>,
     /// Per type declaration, the type name of each member.
     pub type_members: Vec<Vec<Option<TypeName>>>,
 }

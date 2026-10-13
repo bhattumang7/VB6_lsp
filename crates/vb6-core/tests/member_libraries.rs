@@ -16,6 +16,10 @@ fn member(name: &str, kind: LibraryMemberKind, ret: Option<&str>) -> LibraryMemb
         return_type: ret.map(String::from),
         is_default: false,
         param_count: None,
+        params: vec![],
+        dispid: None,
+        member_flags: None,
+        value: None,
     }
 }
 
@@ -32,6 +36,7 @@ fn ado() -> Library {
                 is_app_object: false,
                 is_global: false,
             extensible: false,
+            instancing: None,
                 members: vec![
                     member("Open", LibraryMemberKind::Method, None),
                     member("Execute", LibraryMemberKind::Method, Some("Recordset")),
@@ -49,6 +54,7 @@ fn ado() -> Library {
                 is_app_object: false,
                 is_global: false,
             extensible: false,
+            instancing: None,
                 members: vec![member("Properties", LibraryMemberKind::PropertyGet, Some("Object"))],
             },
             LibraryType {
@@ -60,6 +66,7 @@ fn ado() -> Library {
                 is_app_object: false,
                 is_global: false,
             extensible: false,
+            instancing: None,
                 members: vec![],
             },
             LibraryType {
@@ -71,6 +78,7 @@ fn ado() -> Library {
                 is_app_object: false,
                 is_global: false,
             extensible: false,
+            instancing: None,
                 members: vec![
                     member("EOF", LibraryMemberKind::PropertyGet, Some("Boolean")),
                     member("MoveNext", LibraryMemberKind::Method, None),
@@ -86,6 +94,7 @@ fn ado() -> Library {
                 is_app_object: false,
                 is_global: false,
             extensible: false,
+            instancing: None,
                 members: vec![member("Value", LibraryMemberKind::Field, Some("Variant"))],
             },
         ],
@@ -104,6 +113,7 @@ fn app() -> Library {
             is_app_object: true,
             is_global: false,
             extensible: false,
+            instancing: None,
             members: vec![member("Path", LibraryMemberKind::PropertyGet, Some("String"))],
         }],
     }

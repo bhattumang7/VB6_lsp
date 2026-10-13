@@ -686,6 +686,7 @@ impl<'a> Binder<'a> {
         let ret_name = self.type_name_of(ret_type_id);
         self.decl_types.proc_rets.push(ret_name);
         let names = self.param_type_names(params_id);
+        self.decl_types.proc_params.push(names.clone());
         self.param_names.push(names);
         self.procs.push(proc);
         self.proc_param_nodes.push(params_id);

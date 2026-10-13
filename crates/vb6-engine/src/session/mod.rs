@@ -21,6 +21,7 @@
 mod actions;
 mod call_hierarchy;
 mod completion;
+mod export;
 mod folding;
 mod format;
 mod library;
@@ -38,7 +39,8 @@ pub use completion::{CompletionEntry, CompletionKind};
 pub use folding::FoldRange;
 pub use forms::{describe_frx_reference, form_controls, form_controls_from_bytes, FormControl};
 pub use library::{
-    Library, LibraryMember, LibraryMemberKind, LibraryType, LibraryTypeKind, SessionConfig,
+    Instancing, Library, LibraryMember, LibraryMemberKind, LibraryParam, LibraryType,
+    LibraryTypeKind, ProjectKind, SessionConfig,
 };
 pub use line_index::{LineIndex, Position, Range};
 pub use module_index::{ExternalRef, ModuleIndex};
@@ -188,6 +190,11 @@ struct ModuleData {
     /// module can be bound again once the project is known.
     top: Vec<NodeId>,
     visibility: HashMap<u32, bool>,
+    /// Declarations written with `Friend` (see `Parser::decl_friend`).
+    friend: HashSet<u32>,
+    /// For a class module, the `MultiUse` value of its header block: whether
+    /// one copy of the component serves every instance.
+    multi_use: Option<bool>,
     /// The module's name: `Attribute VB_Name`, else the file's base name.
     module_name: String,
     /// A `.bas` standard module (a namespace), not a class or designer.
@@ -850,6 +857,7 @@ impl Session {
                     LibraryMemberKind::PropertySet => "Property Set",
                     LibraryMemberKind::Field => "Field",
                     LibraryMemberKind::Constant => "Const",
+                    LibraryMemberKind::Event => "Event",
                 };
                 let ret = m.return_type.as_ref().map(|r| format!(" As {r}")).unwrap_or_default();
                 format!("{kind} {}.{}.{}{ret}", l.name, t.name, m.name)
@@ -1198,6 +1206,23 @@ fn proc_symbol_kind(kind: ProcKind) -> SymbolKind {
     }
 }
 
+/// The `MultiUse` property of a class module's header block (`-1` true, `0`
+/// false); `None` for other files or when the header does not set it.
+fn class_multi_use(path: &str, raw: &[u8]) -> Option<bool> {
+    if !path.to_ascii_lowercase().ends_with(".cls") {
+        return None;
+    }
+    let frm = parse_frm(&String::from_utf8_lossy(raw)).ok()?;
+    let prop = frm.root?.properties.into_iter().find(|p| p.name.eq_ignore_ascii_case("MultiUse"))?;
+    match prop.value {
+        crate::frm::PropValue::Scalar(v) => {
+            let n: i64 = v.split_whitespace().next()?.parse().ok()?;
+            Some(n != 0)
+        }
+        _ => None,
+    }
+}
+
 /// For .frm / .cls / .ctl / .dob / .pag files, replace the designer-section
 /// bytes (VERSION + Object lines + root Begin/End block) with spaces so the
 /// VB parser sees only whitespace there. Newlines are preserved so that all
@@ -1249,6 +1274,7 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
     } else {
         Vec::new()
     };
+    let multi_use = class_multi_use(&path, &raw);
     let source = strip_designer_header(&path, raw);
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
@@ -1258,6 +1284,7 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
     let top = parser.parse_module(&mut arena);
     let spans = std::mem::take(&mut parser.node_spans);
     let visibility = std::mem::take(&mut parser.decl_public);
+    let friend = std::mem::take(&mut parser.decl_friend);
     let parse_diags = std::mem::take(&mut parser.diagnostics).into_items();
     drop(parser);
     let raw_bound = bind(&ctx, &arena, &top, &spans, &visibility);
@@ -1308,6 +1335,8 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
         address_of_nodes,
         top,
         visibility,
+        friend,
+        multi_use,
         module_name,
         base_type,
         controls: group_controls(&designer_controls),

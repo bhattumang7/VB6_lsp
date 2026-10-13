@@ -21,10 +21,11 @@ pub struct Library {
 }
 
 /// The kind of a library type.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LibraryTypeKind {
     /// A creatable class or a plain object type.
+    #[default]
     Class,
     Interface,
     /// A coclass: its members come from `default_interface` and `interfaces`.
@@ -33,10 +34,55 @@ pub enum LibraryTypeKind {
     Module,
     /// An enumeration: its members are global constants.
     Enum,
+    /// A user-defined type (a record): its members are its fields.
+    Record,
 }
 
-/// A class, interface, coclass, module or enumeration of a library.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+/// How a class of an ActiveX project is exposed, as VB6's `Instancing`
+/// property sets it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum Instancing {
+    /// Public, but only the component creates instances.
+    PublicNotCreatable,
+    /// Creatable; each instance comes from a new copy of the component.
+    SingleUse,
+    /// As `SingleUse`, and the members are global names of the client.
+    GlobalSingleUse,
+    /// Creatable; one copy of the component serves every instance.
+    MultiUse,
+    /// As `MultiUse`, and the members are global names of the client.
+    GlobalMultiUse,
+}
+
+/// The kind of project a `.vbp` builds (its `Type=` line).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ProjectKind {
+    /// A Standard EXE: nothing of it is visible to other projects.
+    Exe,
+    /// An ActiveX DLL.
+    OleDll,
+    /// An ActiveX EXE.
+    OleExe,
+    /// An ActiveX control (OCX).
+    Control,
+}
+
+impl ProjectKind {
+    /// The kind a `.vbp` `Type=` value names (`Exe`, `OleDll`, `OleExe`,
+    /// `Control`), case-insensitively.
+    pub fn from_vbp_type(value: &str) -> Option<Self> {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "exe" => Some(ProjectKind::Exe),
+            "oledll" => Some(ProjectKind::OleDll),
+            "oleexe" => Some(ProjectKind::OleExe),
+            "control" => Some(ProjectKind::Control),
+            _ => None,
+        }
+    }
+}
+
+/// A class, interface, coclass, module, enumeration or record of a library.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct LibraryType {
     pub name: String,
     pub kind: LibraryTypeKind,
@@ -63,15 +109,20 @@ pub struct LibraryType {
     /// up when the program runs instead of being rejected.
     #[serde(default)]
     pub extensible: bool,
+    /// For a class of an ActiveX project, how it is exposed (`None` when the
+    /// library does not say).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub instancing: Option<Instancing>,
     #[serde(default)]
     pub members: Vec<LibraryMember>,
 }
 
 /// The kind of a library member.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum LibraryMemberKind {
     /// A `Sub` or `Function`.
+    #[default]
     Method,
     PropertyGet,
     PropertyLet,
@@ -80,10 +131,34 @@ pub enum LibraryMemberKind {
     Field,
     /// A constant (an enum member or a module constant).
     Constant,
+    /// An event the type raises: not a member a client calls, but one it
+    /// handles (`WithEvents`).
+    Event,
+}
+
+/// A parameter of a library member.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct LibraryParam {
+    pub name: String,
+    /// The declared type, as [`LibraryMember::return_type`] spells types;
+    /// `None` when undeclared (a Variant).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub type_name: Option<String>,
+    /// Passed by reference.
+    #[serde(default)]
+    pub by_ref: bool,
+    #[serde(default)]
+    pub optional: bool,
+    /// The default value of an optional parameter, as VB source text.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub default: Option<String>,
+    /// A `ParamArray`.
+    #[serde(default)]
+    pub param_array: bool,
 }
 
 /// A member of a library type.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct LibraryMember {
     pub name: String,
     pub kind: LibraryMemberKind,
@@ -101,6 +176,21 @@ pub struct LibraryMember {
     /// taken to index the result.
     #[serde(default)]
     pub param_count: Option<usize>,
+    /// The parameters, when the host describes them; `param_count` is then
+    /// their number.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub params: Vec<LibraryParam>,
+    /// The member's dispatch id when the library assigns one explicitly
+    /// (`0` for the default member).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dispid: Option<i32>,
+    /// Type-library member flags (hidden, restricted, ...), as the library
+    /// sets them.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub member_flags: Option<u32>,
+    /// The value of a constant (an enum member), when the library gives it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value: Option<i64>,
 }
 
 /// The runtime libraries every VB6 project sees, described by the engine.

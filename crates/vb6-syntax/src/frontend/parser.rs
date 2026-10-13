@@ -208,6 +208,10 @@ pub struct Parser<'src> {
     /// when an access modifier (`Public`/`Private`/`Friend`/`Global`) is present.
     /// Declarations with no modifier are absent; the binder applies VB6 defaults.
     pub decl_public: std::collections::HashMap<u32, bool>,
+    /// Declaration nodes written with `Friend`: public inside the project
+    /// (they are also in `decl_public` as public) but not part of the class's
+    /// interface to other projects.
+    pub decl_friend: std::collections::HashSet<u32>,
     /// Module kind — controls accept/reject for class-only syntax.
     pub module_kind: ModuleKind,
     /// True while a procedure body is being parsed.
@@ -228,6 +232,7 @@ impl<'src> Parser<'src> {
             diagnostics: Diagnostics::new(),
             node_spans:  NodeSpans::new(),
             decl_public: std::collections::HashMap::new(),
+            decl_friend: std::collections::HashSet::new(),
             in_procedure: false,
             module_kind: ModuleKind::Standard,
             cc_defs: vec![
@@ -2359,6 +2364,9 @@ impl<'src> Parser<'src> {
         };
         if let Some(is_public) = vis {
             self.mark_decl_visibility(arena, node, is_public);
+        }
+        if access_tok == TokenKind::Kw(Kw::Friend) {
+            self.decl_friend.insert(node.0);
         }
         node
     }

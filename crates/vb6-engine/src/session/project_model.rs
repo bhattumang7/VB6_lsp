@@ -156,7 +156,7 @@ fn lib_callable(m: &LibMember) -> Option<Arity> {
             Some(n) => Arity::Known(n),
             None => Arity::Unknown,
         }),
-        LibraryMemberKind::Field | LibraryMemberKind::Constant => None,
+        LibraryMemberKind::Field | LibraryMemberKind::Constant | LibraryMemberKind::Event => None,
     }
 }
 
@@ -194,7 +194,8 @@ impl ProjectModel {
         let mut out = Vec::new();
         for (l, t) in self.lib_chain(lib, ty) {
             for (mi, m) in self.libraries[l].types[t].members.iter().enumerate() {
-                if m.name == member {
+                // An event is handled, not called: no use of the name reaches it.
+                if m.name == member && m.kind != LibraryMemberKind::Event {
                     out.push((l, t, mi));
                 }
             }
@@ -354,6 +355,16 @@ impl ProjectModel {
         }
     }
 
+    /// The library whose type an unqualified type name written in `from`
+    /// denotes, by VB6's search order; `None` when it denotes a type of the
+    /// project or nothing.
+    pub(super) fn library_of_type(&self, from: usize, tn: &TypeName) -> Option<usize> {
+        match self.type_ref(from, tn) {
+            TypeRef::Lib { lib, .. } | TypeRef::LibEnum { lib, .. } => Some(lib),
+            _ => None,
+        }
+    }
+
     // ── Library member lookup ───────────────────────────────────────────────
 
     /// Resolve a library type name written in `lib` (same library, or
@@ -432,7 +443,7 @@ impl ProjectModel {
             let ty_data = &self.libraries[l].types[t];
             let mut named: Vec<usize> = Vec::new();
             for (mi, m) in ty_data.members.iter().enumerate() {
-                if m.name == name {
+                if m.name == name && m.kind != LibraryMemberKind::Event {
                     named.push(mi);
                     named_somewhere = true;
                 }
@@ -727,6 +738,9 @@ fn summarize_library(l: &Library) -> LibSummary {
         // exposes; each is recorded under the type that declares it.
         for owner in interface_closure(l, &type_by_name, ti) {
             for (mi, m) in l.types[owner].members.iter().enumerate() {
+                if m.kind == LibraryMemberKind::Event {
+                    continue;
+                }
                 for key in global_keys(&m.name) {
                     globals.entry(key).or_insert(LibGlobal::Member { ty: owner, member: mi });
                 }
