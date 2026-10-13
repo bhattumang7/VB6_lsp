@@ -10,7 +10,8 @@ pub mod types;
 pub use binder::{bind, bind_with_classes, unbound_namerefs};
 pub use symbol::{
     AccessorKind, BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc,
-    BoundTypeDecl, BoundTypeMember, BoundVar, BuiltinCall, ClassMemberSlot, ExternalClass,
-    ExternalDecl, NameResolution, ParamFlags, ResolvedClassMember, RtcArg, UnaryIntrinsic,
+    BoundTypeDecl, BoundTypeMember, BoundVar, BuiltinCall, ClassMemberSlot, DeclTypeNames,
+    ExternalClass, ExternalDecl, NameResolution, ParamFlags, ResolvedClassMember, RtcArg, TypeName,
+    UnaryIntrinsic,
 };
 pub use types::VbaType;

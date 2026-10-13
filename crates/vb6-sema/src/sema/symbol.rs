@@ -310,6 +310,28 @@ pub enum BuiltinCall {
     Instr { three_arg: bool },
 }
 
+/// A declared type name as written in source, lowercased: `As Foo` is
+/// `{ qualifier: None, name: "foo" }`, `As Proj.Foo` is
+/// `{ qualifier: Some("proj"), name: "foo" }`. It is module-independent, so a
+/// project can resolve it from the declaring module's point of view.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TypeName {
+    pub qualifier: Option<String>,
+    pub name: String,
+}
+
+/// The type names behind a module's declarations that other modules can reach,
+/// index-aligned with `BoundModule::{module_vars, procs, type_decls}`. An entry
+/// is `None` when the declared type is not a named (user) type.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct DeclTypeNames {
+    pub module_vars: Vec<Option<TypeName>>,
+    /// Return type of each procedure (`Property Get` / `Function`).
+    pub proc_rets: Vec<Option<TypeName>>,
+    /// Per type declaration, the type name of each member.
+    pub type_members: Vec<Vec<Option<TypeName>>>,
+}
+
 /// The fully-bound representation of one VBA module.
 #[derive(Debug, Default, Clone)]
 pub struct BoundModule {
@@ -352,6 +374,19 @@ pub struct BoundModule {
     /// individually here (by walking the matched `ExternalClass::members` in
     /// declaration order and summing slot widths — see [`ResolvedClassMember`]).
     pub class_member_slots: std::collections::HashMap<u32, ResolvedClassMember>,
+    /// Named types behind the module's declarations (see [`DeclTypeNames`]).
+    pub decl_types: DeclTypeNames,
+    /// `Attribute VB_Name = "…"`, as written.
+    pub vb_name: Option<String>,
+    /// `Attribute VB_PredeclaredId = True`: the class name is also a default
+    /// instance (always set for forms and other designers).
+    pub predeclared_id: bool,
+    /// `Attribute VB_GlobalNameSpace = True`: the class's public members are
+    /// project-global names.
+    pub global_namespace: bool,
+    /// Lowercase name of the member marked `VB_UserMemId = 0` /
+    /// `VB_VarUserMemId = 0`: the class's default member.
+    pub default_member: Option<String>,
 }
 
 /// Fully-resolved class-member vtable dispatch info for one `MemberAccess`

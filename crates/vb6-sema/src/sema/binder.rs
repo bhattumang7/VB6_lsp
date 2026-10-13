@@ -41,8 +41,9 @@ use crate::frontend::scanner::ScannerContext;
 use crate::sema::builtins::is_builtin;
 use crate::sema::symbol::{
     AccessorKind, BoundEnumDecl, BoundEnumMember, BoundModule, BoundParam, BoundProc,
-    BoundTypeDecl, BoundTypeMember, BoundVar, BuiltinCall, ClassMemberSlot, ExternalClass,
-    NameResolution, ParamFlags, ResolvedClassMember, RtcArg, UnaryIntrinsic,
+    BoundTypeDecl, BoundTypeMember, BoundVar, BuiltinCall, ClassMemberSlot, DeclTypeNames,
+    ExternalClass, NameResolution, ParamFlags, ResolvedClassMember, RtcArg, TypeName,
+    UnaryIntrinsic,
 };
 use crate::sema::types::VbaType;
 
@@ -101,8 +102,17 @@ pub fn unbound_namerefs(
     arena: &ExprArena,
     resolutions: &HashMap<u32, NameResolution>,
 ) -> Vec<NodeId> {
+    // The qualified tail of a type name (`Proj.Class`) is a type-position name,
+    // not a value use: it is not bound as a variable.
+    let type_tails: std::collections::HashSet<u32> = (0..arena.len() as u32)
+        .filter_map(|i| match arena.get(NodeId(i)) {
+            ExprNode::UserType { child: Some(c), .. } => Some(c.0),
+            _ => None,
+        })
+        .collect();
     (0..arena.len() as u32)
         .filter(|i| matches!(arena.get(NodeId(*i)), ExprNode::NameRef { .. }))
+        .filter(|i| !type_tails.contains(i))
         .filter(|i| !resolutions.contains_key(i))
         .map(NodeId)
         .collect()
@@ -149,6 +159,12 @@ struct Binder<'a> {
 
     diagnostics:     Diagnostics,
     option_explicit: bool,
+
+    decl_types: DeclTypeNames,
+    vb_name: Option<String>,
+    predeclared_id: bool,
+    global_namespace: bool,
+    default_member: Option<String>,
 }
 
 impl<'a> Binder<'a> {
@@ -178,6 +194,11 @@ impl<'a> Binder<'a> {
             deftype_map: HashMap::new(),
             diagnostics:     Diagnostics::new(),
             option_explicit: false,
+            decl_types: DeclTypeNames::default(),
+            vb_name: None,
+            predeclared_id: false,
+            global_namespace: false,
+            default_member: None,
         }
     }
 
@@ -194,6 +215,11 @@ impl<'a> Binder<'a> {
             option_explicit: self.option_explicit,
             class_field_info: self.class_field_info.into_inner(),
             class_member_slots: self.class_member_slots.into_inner(),
+            decl_types: self.decl_types,
+            vb_name: self.vb_name,
+            predeclared_id: self.predeclared_id,
+            global_namespace: self.global_namespace,
+            default_member: self.default_member,
         }
     }
 
@@ -227,7 +253,14 @@ impl<'a> Binder<'a> {
             ExprNode::BuiltinType { kind } => VbaType::from_kind(*kind),
             ExprNode::StringType { .. }   => VbaType::String,
             ExprNode::AnyType             => VbaType::Any,
-            ExprNode::UserType { name, .. } => {
+            ExprNode::UserType { name, child } => {
+                // A qualified name (`Project.Class`, `Module.Type`) names the
+                // type by its last part; the qualifier only selects where to
+                // look.
+                let name = match child.map(|c| self.arena.get(c)) {
+                    Some(ExprNode::NameRef { sym, .. }) => sym,
+                    _ => name,
+                };
                 // If `name` matches a known external class (not a same-module
                 // `Type` declaration — those stay resolved via `type_decls`),
                 // record its field list keyed by this type sym so codegen
@@ -259,6 +292,37 @@ impl<'a> Binder<'a> {
             ExprNode::UdtTypeSpec { .. } => VbaType::Variant,
             _ => VbaType::Variant,
         }
+    }
+
+    /// The named (user) type a type-spec node declares, lowercased, or `None`
+    /// for a built-in type or no type.
+    fn type_name_of(&self, type_node: Option<NodeId>) -> Option<TypeName> {
+        let ExprNode::UserType { name, child } = self.arena.get(type_node?) else {
+            return None;
+        };
+        let first = self.name_of(*name);
+        if first.is_empty() {
+            return None;
+        }
+        match child.map(|c| self.arena.get(c)) {
+            Some(ExprNode::NameRef { sym, .. }) => {
+                let last = self.name_of(*sym);
+                (!last.is_empty()).then(|| TypeName { qualifier: Some(first), name: last })
+            }
+            _ => Some(TypeName { qualifier: None, name: first }),
+        }
+    }
+
+    /// The type names of a `Type` block's members, aligned with
+    /// [`collect_type_decl`](Self::collect_type_decl)'s member list.
+    fn type_member_names(&self, member_nodes: &[NodeId]) -> Vec<Option<TypeName>> {
+        member_nodes
+            .iter()
+            .filter_map(|&id| match self.arena.get(id) {
+                ExprNode::DimItem { type_node, .. } => Some(self.type_name_of(*type_node)),
+                _ => None,
+            })
+            .collect()
     }
 
     // ── Top-level pass ────────────────────────────────────────────────────────
@@ -429,6 +493,8 @@ impl<'a> Binder<'a> {
                 let name_span = self.spans.get(id);
                 let is_public = self.vis(id, true); // types default Public
                 let decl = self.collect_type_decl(sym_id, &members_clone, name_span, is_public);
+                let names = self.type_member_names(&members_clone);
+                self.decl_types.type_members.push(names);
                 self.type_decls.push(decl);
             }
             ExprNode::EnumDecl { name, members } => {
@@ -481,6 +547,8 @@ impl<'a> Binder<'a> {
         let is_public = self.vis(id, true);
         let proc =
             self.collect_proc(sym_id, kind, params_id, ret_type_id, body_id, name_span, is_public);
+        let ret_name = self.type_name_of(ret_type_id);
+        self.decl_types.proc_rets.push(ret_name);
         self.procs.push(proc);
         self.proc_param_nodes.push(params_id);
     }
@@ -532,6 +600,8 @@ impl<'a> Binder<'a> {
         } else {
             var
         };
+        let type_name = self.type_name_of(type_node);
+        self.decl_types.module_vars.push(type_name);
         self.module_vars.push(var);
     }
 
@@ -760,6 +830,11 @@ impl<'a> Binder<'a> {
     // (e.g. `Call` return type, `BinOp` operand types) see them ready.
 
     fn bind_node(&mut self, scope: Option<usize>, id: NodeId) {
+        // A type name is not a value use: its qualified tail is never bound as
+        // a variable.
+        if matches!(self.arena.get(id), ExprNode::UserType { .. }) {
+            return;
+        }
         // ForRange stores its sub-nodes as raw u32 (not NodeId), so the derive-generated
         // for_each_child doesn't visit them. Descend manually before bind_local.
         if let ExprNode::ForRange { loop_var, range, step } = self.arena.get(id) {
@@ -917,9 +992,35 @@ impl<'a> Binder<'a> {
             ExprNode::RangeTo { .. } | ExprNode::Generic { .. } => {
                 self.types.insert(id.0, VbaType::Variant);
             }
+            ExprNode::Attribute { target, name, values } => {
+                let (target, name, first) = (*target, *name, values.first().copied());
+                self.record_attribute(target, name, first);
+            }
 
             // Everything else carries no node-local type/resolution work; its
             // children (if any) were already bound by the generic descent.
+            _ => {}
+        }
+    }
+
+    /// Record the module facts a metadata line carries: the module name, the
+    /// default-instance and global-namespace flags, and the default member.
+    fn record_attribute(&mut self, target: Option<u32>, name: u32, first: Option<NodeId>) {
+        let lit = first.and_then(|v| match self.arena.get(v) {
+            ExprNode::Literal { lit } => Some(lit.clone()),
+            _ => None,
+        });
+        use crate::frontend::ast::AstLit;
+        match (self.name_of(name).as_str(), target, lit) {
+            ("vb_name", None, Some(AstLit::Str(s))) => self.vb_name = Some(s.to_string()),
+            ("vb_predeclaredid", None, Some(AstLit::Bool(b))) => self.predeclared_id = b,
+            ("vb_globalnamespace", None, Some(AstLit::Bool(b))) => self.global_namespace = b,
+            ("vb_usermemid" | "vb_varusermemid", Some(t), Some(AstLit::Int(0) | AstLit::Long(0))) => {
+                let member = self.name_of(t);
+                if !member.is_empty() {
+                    self.default_member = Some(member);
+                }
+            }
             _ => {}
         }
     }
