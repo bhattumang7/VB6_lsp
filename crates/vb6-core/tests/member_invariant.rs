@@ -115,10 +115,10 @@ fn fixture_dirs() -> Vec<std::path::PathBuf> {
     dirs
 }
 
-/// Each fixture is a complete program that the original compiler accepts, so
-/// no member access in it may be reported as missing, and none may be dropped.
+/// Each fixture is a complete, valid program, so no member access in it may be
+/// reported as missing, and none may be dropped.
 #[test]
-fn compiler_accepted_programs_have_no_missing_members() {
+fn valid_programs_have_no_missing_members() {
     let mut programs = 0usize;
     let mut resolved = 0usize;
     for dir in fixture_dirs() {

@@ -232,6 +232,7 @@ pub struct Session {
     /// The project as the binder saw it at the last relink; answers questions
     /// about library members.
     model: Option<project_model::ProjectModel>,
+    bind_count: usize,
     config: SessionConfig,
 }
 
@@ -259,6 +260,7 @@ impl Session {
             refs: ReferenceIndex::new(),
             designer_uses: HashMap::new(),
             model: None,
+            bind_count: 0,
             config,
         };
         s.rebuild_path_index();
@@ -279,14 +281,33 @@ impl Session {
     /// and cross-module diagnostics are then recomputed from every module's raw
     /// snapshot. Use for editor open/change (and for didClose, by reloading the
     /// on-disk content). `source` is the file's Windows-1252 bytes.
+    ///
+    /// When the edit leaves the module's interface as it was (the same
+    /// declarations, types and visibility - the usual edit inside a procedure
+    /// body), only that module is bound again: nothing another module's
+    /// resolution depends on has changed.
     pub fn update_file(&mut self, path: &str, source: Vec<u8>) {
         let md = analyze_module(path.to_string(), source);
         match self.path_to_module.get(path).copied() {
-            Some(i) => self.modules[i] = md,
+            Some(i) => {
+                let same_interface =
+                    self.model.as_ref().map_or(false, |m| m.module_interface_is(i, &md));
+                self.modules[i] = md;
+                if same_interface {
+                    self.relink_module(i);
+                    return;
+                }
+            }
             None => self.modules.push(md),
         }
         self.rebuild_path_index();
         self.relink();
+    }
+
+    /// Number of module binds the session has performed against the project
+    /// (one per module per full relink, one per interface-preserving edit).
+    pub fn bind_count(&self) -> usize {
+        self.bind_count
     }
 
     /// Remove a file from the project and re-analyze. Returns whether it existed.
@@ -324,10 +345,27 @@ impl Session {
         for (i, m) in self.modules.iter_mut().enumerate() {
             m.bound = bind_in_project(&m.ctx, &m.arena, &m.top, &m.spans, &m.visibility, i, &model);
         }
+        self.bind_count += self.modules.len();
         self.build_references();
         self.designer_uses = designer_type_uses(&self.modules, &model);
         self.model = Some(model);
         self.check_undeclared();
+    }
+
+    /// Bind module `idx` again against the project model already built. Valid
+    /// only when the module's interface is unchanged since that model was built.
+    fn relink_module(&mut self, idx: usize) {
+        let Some(model) = self.model.take() else {
+            return self.relink();
+        };
+        let m = &mut self.modules[idx];
+        m.bound =
+            bind_in_project(&m.ctx, &m.arena, &m.top, &m.spans, &m.visibility, idx, &model);
+        self.bind_count += 1;
+        Self::check_undeclared_module(&mut self.modules[idx]);
+        self.build_references();
+        self.designer_uses = designer_type_uses(&self.modules, &model);
+        self.model = Some(model);
     }
 
     fn build_references(&mut self) {
@@ -1057,7 +1095,17 @@ impl Session {
                 let array = if c.is_array { "()" } else { "" };
                 format!("{}{array} As {}", c.name, c.control_type)
             }
-            DeclId::Module { .. } => format!("Module {}", m.module_name),
+            DeclId::Module { .. } => {
+                let kind = match m.path.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str() {
+                    "cls" => "Class",
+                    "frm" => "Form",
+                    "ctl" => "UserControl",
+                    "pag" => "PropertyPage",
+                    "dob" => "UserDocument",
+                    _ => "Module",
+                };
+                format!("{kind} {}", m.module_name)
+            }
         })
     }
 }

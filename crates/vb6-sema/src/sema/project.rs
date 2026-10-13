@@ -12,6 +12,13 @@ use crate::sema::types::VbaType;
 
 /// Which accessor a member use needs: `Get` when read (or called), `Let` when
 /// the target of `=`, `Set` when the target of `Set … =`.
+///
+/// `Let` is every statement that stores into the member: `=`, `LSet`, `RSet`,
+/// the string target of `Mid(…) =`, the variable of `For` and `For Each`, and
+/// the targets of `Input #`, `Line Input #` and `Get #`. A member passed as an
+/// argument is `Get`: the site reads it, whether or not a `ByRef` callee later
+/// writes through the reference. Only the outermost member of a target is
+/// stored into (`a.b.c = 1` stores into `c` and reads `a` and `b`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Access {
     Get,

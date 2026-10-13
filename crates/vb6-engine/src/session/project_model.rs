@@ -27,12 +27,13 @@ enum TypeRef {
 }
 
 /// A declared type: the `VbaType` plus the named type behind it, if any.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 struct Declared {
     vba: VbaType,
     name: Option<TypeName>,
 }
 
+#[derive(PartialEq, Eq)]
 struct ProcSummary {
     name: String,
     kind: ProcKind,
@@ -41,29 +42,34 @@ struct ProcSummary {
     ret: Declared,
 }
 
+#[derive(PartialEq, Eq)]
 struct VarSummary {
     name: String,
     is_public: bool,
     ty: Declared,
 }
 
+#[derive(PartialEq, Eq)]
 struct TypeSummary {
     name: String,
     members: Vec<(String, Declared)>,
 }
 
+#[derive(PartialEq, Eq)]
 struct EnumSummary {
     name: String,
     is_public: bool,
     members: Vec<String>,
 }
 
+#[derive(PartialEq, Eq)]
 pub(super) struct ControlSummary {
     pub name: String,
     pub control_type: String,
     pub is_array: bool,
 }
 
+#[derive(PartialEq, Eq)]
 struct ModuleSummary {
     /// Lowercase module name.
     name: String,
@@ -189,6 +195,14 @@ impl ProjectModel {
             }
         }
         out
+    }
+
+    /// Whether module `idx`, as the model saw it, has the same interface as
+    /// `module` now: the same declarations, in the same order, with the same
+    /// visibility and types, and the same name, kind and controls. When it
+    /// does, nothing another module's binding depends on has changed.
+    pub(super) fn module_interface_is(&self, idx: usize, module: &ModuleData) -> bool {
+        self.modules.get(idx).map_or(false, |s| *s == summarize(module))
     }
 
     pub(super) fn build(

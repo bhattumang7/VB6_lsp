@@ -174,3 +174,22 @@ fn module_name_qualifies_enum_members() {
         Some(DeclId::EnumMember { module: 0, enum_idx: 0, member_idx: 1 })
     );
 }
+
+#[test]
+fn implements_names_the_interface_class() {
+    let iface = "Attribute VB_Name = \"IShape\"\nPublic Sub Draw()\nEnd Sub\n";
+    let impl_ = "Implements IShape\nPrivate Sub IShape_Draw()\nEnd Sub\n";
+    let s = session(&[("IShape.cls", iface), ("clsSquare.cls", impl_)]);
+    assert_eq!(s.declaration_at(1, at(impl_, "Implements IShape", "IShape")), Some(DeclId::Module { module: 0 }));
+    let refs = s.references(0, at(iface, "\"IShape\"", "\"IShape\""), false);
+    assert_eq!(refs.len(), 1);
+    assert_eq!((refs[0].module, refs[0].span.start), (1, at(impl_, "Implements IShape", "IShape")));
+}
+
+#[test]
+fn module_hover_names_its_kind() {
+    let cls = "Attribute VB_Name = \"clsTrip\"\n";
+    let main = "Dim o As clsTrip\n";
+    let s = session(&[("clsTrip.cls", cls), ("modMain.bas", main)]);
+    assert_eq!(s.hover(1, at(main, "As clsTrip", "clsTrip")).unwrap().text, "Class clsTrip");
+}
