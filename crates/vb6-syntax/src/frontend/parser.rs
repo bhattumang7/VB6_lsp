@@ -1276,7 +1276,9 @@ impl<'src> Parser<'src> {
             let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
                 Some(self.parse_type_spec(arena, false))
             } else { None };
-            stmts.push(arena.alloc(ExprNode::ReDimItem { preserve, base, name: name_id, bounds, type_node }));
+            let item = arena.alloc(ExprNode::ReDimItem { preserve, base, name: name_id, bounds, type_node });
+            self.set_span(item, name.span);
+            stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
         self.eat_eol();
@@ -2069,11 +2071,15 @@ impl<'src> Parser<'src> {
     /// `Attribute name = value[, value…]` metadata line.
     fn parse_attribute_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Attribute
-        let key = self.expect_ident();
-        let name = key.sym.map(|s| s as u32).unwrap_or(0);
+        // `Attribute VB_Name = …` or `Attribute Member.VB_UserMemId = …`: the
+        // attribute is the last name; a preceding name is the member it applies to.
+        let mut key = self.expect_ident();
+        let mut target: Option<u32> = None;
         while self.eat(TokenKind::Kw(Kw::Dot)) {
-            let _ = self.expect_ident();
+            target = Some(key.sym.map(|s| s as u32).unwrap_or(0));
+            key = self.expect_ident();
         }
+        let name = key.sym.map(|s| s as u32).unwrap_or(0);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let mut values = Vec::new();
         loop {
@@ -2083,7 +2089,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::Attribute { name, values })
+        arena.alloc(ExprNode::Attribute { target, name, values })
     }
 
     // ── File I/O statement parsers ──────────────────────────────────────────
@@ -2536,6 +2542,25 @@ impl<'src> Parser<'src> {
         id
     }
 
+    /// Build a `UserType` from its already-consumed first name token, taking an
+    /// optional `.Name` qualifier tail (`Project.Class`, `Module.Type`). The node
+    /// spans the first name; the tail is a `NameRef` with its own span.
+    fn finish_user_type(&mut self, arena: &mut ExprArena, name: Token) -> NodeId {
+        let nid = name.sym.map(|s| s as u32).unwrap_or(0);
+        let child = if self.eat(TokenKind::Kw(Kw::Dot)) {
+            let sub = self.expect_ident();
+            let sid = sub.sym.map(|s| s as u32).unwrap_or(0);
+            let cref = arena.alloc(ExprNode::NameRef { sym: sid, suffix: TypeSuffix::None });
+            self.set_span(cref, sub.span);
+            Some(cref)
+        } else {
+            None
+        };
+        let id = arena.alloc(ExprNode::UserType { name: nid, child });
+        self.set_span(id, name.span);
+        id
+    }
+
     /// Parse a type specifier.  `allow_array_suffix` controls whether a trailing
     /// `()` array marker is consumed.
     fn parse_type_spec(&mut self, arena: &mut ExprArena, allow_array_suffix: bool) -> NodeId {
@@ -2561,21 +2586,12 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::New) => {
                 self.advance();
                 let name = self.expect_ident();
-                let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-                arena.alloc(ExprNode::UserType { name: nid, child: None })
+                self.finish_user_type(arena, name)
             }
             // A user type name; a contextual keyword (`Error`, `Line`) can be one.
             TokenKind::Ident | TokenKind::Kw(_) if self.at_contextual_keyword() || self.peek().kind == TokenKind::Ident => {
                 let name = self.advance();
-                let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-                let child = if self.eat(TokenKind::Kw(Kw::Dot)) {
-                    let sub = self.expect_ident();
-                    let sid = sub.sym.map(|s| s as u32).unwrap_or(0);
-                    let cref = arena.alloc(ExprNode::NameRef { sym: sid, suffix: TypeSuffix::None });
-                    self.set_span(cref, sub.span);
-                    Some(cref)
-                } else { None };
-                arena.alloc(ExprNode::UserType { name: nid, child })
+                self.finish_user_type(arena, name)
             }
             _ => {
                 let span = self.current_span();

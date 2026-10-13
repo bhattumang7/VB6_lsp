@@ -448,8 +448,10 @@ pub enum ExprNode {
 
     /// `Attribute name = value[, …]` metadata line.  Hosts embed these in
     /// module text (`Attribute VB_Name = "Module1"`).  `name` is the interned
-    /// attribute-key symbol; `values` are the literal value expressions.
-    Attribute { name: u32, values: Vec<NodeId> },
+    /// attribute-key symbol; `target` is the member the attribute applies to in
+    /// the `Attribute Member.VB_UserMemId = 0` form (`None` for module-level
+    /// attributes); `values` are the literal value expressions.
+    Attribute { target: Option<u32>, name: u32, values: Vec<NodeId> },
 }
 
 /// Kind of file I/O statement for [`ExprNode::FileIoStmt`].
