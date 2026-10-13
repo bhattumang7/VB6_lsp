@@ -3,10 +3,9 @@
 use std::collections::HashMap;
 
 use super::hover;
-use super::reverse_index::{DeclId, RefSite};
+use super::reverse_index::{decl_id_of, DeclId, RefSite};
 use super::{Location, Session};
 use crate::frontend::ast::NodeId;
-use crate::sema::symbol::{ExternalDecl, NameResolution};
 
 /// A procedure node in the call hierarchy tree.
 #[derive(Debug, Clone)]
@@ -48,32 +47,67 @@ impl Session {
         None
     }
 
-    /// All callers of the named procedure.
-    pub fn incoming_calls(&self, proc_name: &str) -> Vec<IncomingCall> {
-        let Some((target_module, target_idx)) = self.find_proc_by_name(proc_name) else {
-            return Vec::new();
-        };
-        let id = DeclId::Proc { module: target_module, idx: target_idx };
-        let sites = self.refs.references(id);
+    /// The `(module, procedure index)` whose name span contains `offset`.
+    fn proc_at(&self, module: usize, offset: u32) -> Option<usize> {
+        let m = self.modules.get(module)?;
+        m.bound.procs.iter().position(|p| super::span_contains(p.name_span, offset))
+    }
 
-        // Group call-site locations by (caller_module, caller_proc_idx).
+    /// Callers of the procedure whose name is at `offset` in `module` — the
+    /// declaration itself, so procedures sharing a name in different modules
+    /// are not confused.
+    pub fn incoming_calls_at(&self, module: usize, offset: u32) -> Vec<IncomingCall> {
+        match self.proc_at(module, offset) {
+            Some(idx) => self.incoming_calls_to(module, idx),
+            None => Vec::new(),
+        }
+    }
+
+    /// Callees of the procedure whose name is at `offset` in `module`.
+    pub fn outgoing_calls_at(&self, module: usize, offset: u32) -> Vec<OutgoingCall> {
+        match self.proc_at(module, offset) {
+            Some(idx) => self.outgoing_calls_from(module, idx),
+            None => Vec::new(),
+        }
+    }
+
+    /// All callers of the named procedure (the first procedure of that name in
+    /// project order; use [`incoming_calls_to`](Self::incoming_calls_to) when
+    /// several share a name).
+    pub fn incoming_calls(&self, proc_name: &str) -> Vec<IncomingCall> {
+        match self.find_proc_by_name(proc_name) {
+            Some((module, idx)) => self.incoming_calls_to(module, idx),
+            None => Vec::new(),
+        }
+    }
+
+    /// All callers of procedure `proc_idx` of `module`: every use of it, other
+    /// than as the operand of `AddressOf`, grouped by the procedure that
+    /// contains it. Uses outside any procedure are not calls.
+    pub fn incoming_calls_to(&self, module: usize, proc_idx: usize) -> Vec<IncomingCall> {
+        if self.modules.get(module).and_then(|m| m.bound.procs.get(proc_idx)).is_none() {
+            return Vec::new();
+        }
+        let id = DeclId::Proc { module, idx: proc_idx };
         let mut by_caller: HashMap<(usize, usize), Vec<Location>> = HashMap::new();
 
-        for site in sites {
-            let site_span = match self.ref_site_location(&site) {
-                Some(loc) => loc,
-                None => continue,
-            };
+        for site in self.refs.references(id) {
             let m = &self.modules[site.module];
-            let site_offset = m.spans.get(NodeId(site.node)).start;
-            if let Some(cidx) = proc_containing_offset(&m.bound.procs, site_offset) {
+            if m.address_of_nodes.contains(&site.node) {
+                continue;
+            }
+            let Some(site_span) = self.ref_site_location(&site) else { continue };
+            if let Some(cidx) = proc_containing_offset(&m.bound.procs, site_span.span.start) {
                 by_caller.entry((site.module, cidx)).or_default().push(site_span);
             }
         }
 
-        by_caller
+        let mut callers: Vec<_> = by_caller.into_iter().collect();
+        callers.sort_by_key(|(k, _)| *k);
+        callers
             .into_iter()
-            .filter_map(|((mod_idx, cidx), call_sites)| {
+            .filter_map(|((mod_idx, cidx), mut call_sites)| {
+                call_sites.sort_by_key(|l| l.span.start);
                 let p = &self.modules[mod_idx].bound.procs[cidx];
                 let name = hover::name_at(&self.modules[mod_idx].source, p.name_span);
                 let location = self.decl_location(DeclId::Proc { module: mod_idx, idx: cidx })?;
@@ -85,43 +119,54 @@ impl Session {
             .collect()
     }
 
-    /// All callees of the named procedure.
+    /// All callees of the named procedure (see
+    /// [`outgoing_calls_from`](Self::outgoing_calls_from)).
     pub fn outgoing_calls(&self, proc_name: &str) -> Vec<OutgoingCall> {
-        let Some((mod_idx, proc_idx)) = self.find_proc_by_name(proc_name) else {
+        match self.find_proc_by_name(proc_name) {
+            Some((module, idx)) => self.outgoing_calls_from(module, idx),
+            None => Vec::new(),
+        }
+    }
+
+    /// All callees of procedure `proc_idx` of `module`: every use inside its
+    /// body that resolves to a procedure of the project, other than as the
+    /// operand of `AddressOf`. That covers calls by bare name, through an
+    /// object (`o.Save`), and property reads and writes (`x = o.Title`).
+    pub fn outgoing_calls_from(&self, module: usize, proc_idx: usize) -> Vec<OutgoingCall> {
+        let Some(m) = self.modules.get(module) else {
             return Vec::new();
         };
-        let m = &self.modules[mod_idx];
-        let procs = &m.bound.procs;
-        let proc_start = procs[proc_idx].name_span.start;
-        let proc_end = procs.get(proc_idx + 1)
-            .map(|next| next.name_span.start)
-            .unwrap_or(m.source.len() as u32);
-
-        // Collect call-site locations, grouped by callee DeclId.
-        let mut by_callee: HashMap<DeclId, Vec<Location>> = HashMap::new();
-
-        for (&node_id, res) in &m.bound.resolutions {
-            if !m.callee_nodes.contains(&node_id) { continue; }
-            let span = m.spans.get(NodeId(node_id));
-            if span.start < proc_start || span.start >= proc_end { continue; }
-
-            let callee_id = match res {
-                NameResolution::Proc(i) => DeclId::Proc { module: mod_idx, idx: *i },
-                NameResolution::External { module, decl: ExternalDecl::Proc(i) } => {
-                    DeclId::Proc { module: *module, idx: *i }
-                }
-                _ => continue,
-            };
-            let site_loc = Location { module: mod_idx, span };
-            by_callee.entry(callee_id).or_default().push(site_loc);
+        if m.bound.procs.get(proc_idx).is_none() {
+            return Vec::new();
         }
 
-        by_callee
+        let mut by_callee: HashMap<DeclId, Vec<Location>> = HashMap::new();
+        for (&node_id, res) in &m.bound.resolutions {
+            let Some(callee_id @ DeclId::Proc { .. }) = decl_id_of(module, res) else {
+                continue;
+            };
+            if m.address_of_nodes.contains(&node_id) {
+                continue;
+            }
+            let span = m.spans.get(NodeId(node_id));
+            if span.len == 0 || proc_containing_offset(&m.bound.procs, span.start) != Some(proc_idx) {
+                continue;
+            }
+            by_callee.entry(callee_id).or_default().push(Location { module, span });
+        }
+
+        let mut callees: Vec<_> = by_callee.into_iter().collect();
+        callees.sort_by_key(|(id, _)| match id {
+            DeclId::Proc { module, idx } => (*module, *idx),
+            _ => (usize::MAX, usize::MAX),
+        });
+        callees
             .into_iter()
-            .filter_map(|(callee_id, call_sites)| {
+            .filter_map(|(callee_id, mut call_sites)| {
                 let DeclId::Proc { module: tmod, idx: tidx } = callee_id else {
                     return None;
                 };
+                call_sites.sort_by_key(|l| l.span.start);
                 let tp = &self.modules[tmod].bound.procs[tidx];
                 let name = hover::name_at(&self.modules[tmod].source, tp.name_span);
                 let location = self.decl_location(callee_id)?;

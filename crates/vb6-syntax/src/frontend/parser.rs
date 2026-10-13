@@ -2607,10 +2607,11 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::BuiltinType { kind: 0 })
             }
         };
-        // Consume the optional array marker `()`.
+        // The optional array marker `()` makes the type an array of it.
         if allow_array_suffix && self.peek().kind == TokenKind::Kw(Kw::LParen) {
             self.advance();
             self.eat(TokenKind::Kw(Kw::RParen));
+            return arena.alloc(ExprNode::ArrayType { elem: node });
         }
         node
     }

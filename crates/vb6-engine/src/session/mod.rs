@@ -177,6 +177,9 @@ struct ModuleData {
     /// check, since an undefined call is "Sub or Function not defined" (a
     /// different error), not "Variable not defined".
     callee_nodes: HashSet<u32>,
+    /// Operands of `AddressOf`: a procedure named there is passed by address,
+    /// not called.
+    address_of_nodes: HashSet<u32>,
     /// Top-level AST nodes and the parser's visibility table, kept so the
     /// module can be bound again once the project is known.
     top: Vec<NodeId>,
@@ -1101,6 +1104,12 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
     let bound = raw_bound.clone(); // overwritten by relink once the project is known
     let line_index = LineIndex::new(&source);
     let callee_nodes = collect_callees(&arena);
+    let address_of_nodes: HashSet<u32> = (0..arena.len() as u32)
+        .filter_map(|i| match arena.get(NodeId(i)) {
+            ExprNode::AddressOf { operand } => Some(operand.0),
+            _ => None,
+        })
+        .collect();
 
     let module_name = raw_bound
         .vb_name
@@ -1136,6 +1145,7 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
         bound,
         parse_diags,
         callee_nodes,
+        address_of_nodes,
         top,
         visibility,
         module_name,

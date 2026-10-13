@@ -328,18 +328,25 @@ pub fn prepare_call_hierarchy(
     }
 }
 
-/// `callHierarchy/incomingCalls` — extract the proc name from the item's `data`
-/// field, then ask the engine for callers and convert to LSP.
+/// The module and byte offset an item's selection range names: the
+/// declaration the item stands for.
+fn item_cursor(session: &Session, item: &lsp::CallHierarchyItem) -> Option<(usize, u32)> {
+    let module = session.module_of(&doc_key(&item.uri))?;
+    let offset = offset_at(session, module, item.selection_range.start)?;
+    Some((module, offset))
+}
+
+/// `callHierarchy/incomingCalls` — the callers of the declaration the item
+/// stands for, converted to LSP.
 pub fn incoming_calls(
     session: &Session,
     item: &lsp::CallHierarchyItem,
 ) -> Vec<lsp::CallHierarchyIncomingCall> {
-    let name = match &item.data {
-        Some(serde_json::Value::String(s)) => s.as_str(),
-        _ => item.name.as_str(),
+    let Some((module, offset)) = item_cursor(session, item) else {
+        return Vec::new();
     };
     session
-        .incoming_calls(name)
+        .incoming_calls_at(module, offset)
         .into_iter()
         .filter_map(|ic| {
             let from = call_hierarchy_item(session, ic.caller)?;
@@ -358,12 +365,11 @@ pub fn outgoing_calls(
     session: &Session,
     item: &lsp::CallHierarchyItem,
 ) -> Vec<lsp::CallHierarchyOutgoingCall> {
-    let name = match &item.data {
-        Some(serde_json::Value::String(s)) => s.as_str(),
-        _ => item.name.as_str(),
+    let Some((module, offset)) = item_cursor(session, item) else {
+        return Vec::new();
     };
     session
-        .outgoing_calls(name)
+        .outgoing_calls_at(module, offset)
         .into_iter()
         .filter_map(|oc| {
             let to = call_hierarchy_item(session, oc.callee)?;

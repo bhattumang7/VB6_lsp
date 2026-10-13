@@ -340,6 +340,9 @@ impl<'a> Binder<'a> {
             ExprNode::BuiltinType { kind } => VbaType::from_kind(*kind),
             ExprNode::StringType { .. }   => VbaType::String,
             ExprNode::AnyType             => VbaType::Any,
+            ExprNode::ArrayType { elem } => {
+                VbaType::Array(Box::new(self.extract_type(Some(*elem))))
+            }
             ExprNode::UserType { name, child } => {
                 // A qualified name (`Project.Class`, `Module.Type`) names the
                 // type by its last part; the qualifier only selects where to
@@ -384,7 +387,11 @@ impl<'a> Binder<'a> {
     /// The named (user) type a type-spec node declares, lowercased, or `None`
     /// for a built-in type or no type.
     fn type_name_of(&self, type_node: Option<NodeId>) -> Option<TypeName> {
-        let ExprNode::UserType { name, child } = self.arena.get(type_node?) else {
+        let mut node = type_node?;
+        while let ExprNode::ArrayType { elem } = self.arena.get(node) {
+            node = *elem;
+        }
+        let ExprNode::UserType { name, child } = self.arena.get(node) else {
             return None;
         };
         let first = self.name_of(*name);
@@ -693,7 +700,7 @@ impl<'a> Binder<'a> {
             name_span: self.spans.get(id),
         };
         let var = if has_bounds {
-            BoundVar { vba_type: VbaType::Array(Box::new(var.vba_type)), ..var }
+            BoundVar { vba_type: as_array(var.vba_type), ..var }
         } else {
             var
         };
@@ -781,7 +788,7 @@ impl<'a> Binder<'a> {
                     sym_id:   *name,
                     vba_type: {
                         let t = self.extract_type(*type_node);
-                        if bounds.is_some() { VbaType::Array(Box::new(t)) } else { t }
+                        if bounds.is_some() { as_array(t) } else { t }
                     },
                     name_span: self.spans.get(id),
                 }),
@@ -901,7 +908,7 @@ impl<'a> Binder<'a> {
     ) {
         if let ExprNode::DimItem { name, is_const, is_static, is_new, type_node, bounds, init, .. } = self.arena.get(id) {
             let t = self.extract_type(*type_node);
-            let vba_type = if bounds.is_some() { VbaType::Array(Box::new(t)) } else { t };
+            let vba_type = if bounds.is_some() { as_array(t) } else { t };
             let const_value = if *is_const {
                 (*init).and_then(|i| self.eval_const_i64(i))
             } else {
@@ -1885,6 +1892,15 @@ fn resolve_class_member_slots(
 }
 
 // ── Type inference helpers ────────────────────────────────────────────────────
+
+/// `t` as the type of a declaration with array bounds: an array of `t`, unless
+/// the declared type is already an array (`Dim a(3) As Long()` is one array).
+fn as_array(t: VbaType) -> VbaType {
+    match t {
+        VbaType::Array(_) => t,
+        other => VbaType::Array(Box::new(other)),
+    }
+}
 
 fn lit_type(lit: &crate::frontend::ast::AstLit) -> VbaType {
     use crate::frontend::ast::AstLit::*;
