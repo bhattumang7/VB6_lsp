@@ -210,6 +210,8 @@ pub struct Parser<'src> {
     pub decl_public: std::collections::HashMap<u32, bool>,
     /// Module kind — controls accept/reject for class-only syntax.
     pub module_kind: ModuleKind,
+    /// True while a procedure body is being parsed.
+    in_procedure: bool,
     /// Conditional-compilation constant table: `(lowercase_name, value)`.
     /// Pre-seeded with VB6 predefined constants.
     cc_defs: Vec<(String, i32)>,
@@ -226,6 +228,7 @@ impl<'src> Parser<'src> {
             diagnostics: Diagnostics::new(),
             node_spans:  NodeSpans::new(),
             decl_public: std::collections::HashMap::new(),
+            in_procedure: false,
             module_kind: ModuleKind::Standard,
             cc_defs: vec![
                 ("win32".into(), -1),
@@ -443,6 +446,7 @@ impl<'src> Parser<'src> {
     /// splits an If/Else block) are consumed as statements rather than halting
     /// block parsing early.
     fn parse_block_proc(&mut self, arena: &mut ExprArena) -> NodeId {
+        let was_in_procedure = std::mem::replace(&mut self.in_procedure, true);
         let mut stmts: Vec<NodeId> = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
@@ -451,6 +455,7 @@ impl<'src> Parser<'src> {
                 stmts.push(n);
             }
         }
+        self.in_procedure = was_in_procedure;
         arena.alloc(ExprNode::Block { stmts })
     }
 
@@ -1222,6 +1227,10 @@ impl<'src> Parser<'src> {
         let with_events = !is_const && self.peek().kind == TokenKind::Kw(Kw::WithEvents);
         if with_events {
             self.reject_in_standard_module();
+            if self.in_procedure {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
+            }
             self.advance();
         }
         let name = self.expect_ident();
@@ -2730,7 +2739,7 @@ impl<'src> Parser<'src> {
                 _ => {
                     // Not a member: report it and resume on the next line.
                     let span = self.current_span();
-                    self.diagnostics.push_labeled(0x9c6f, span, "identifier");
+                    self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
                     self.skip_line();
                 }
             }
@@ -3093,6 +3102,10 @@ const ERR_EXPECTED_EXPR:        u32 = 0x9c6f;
 const ERR_EXPECTED_IDENT:       u32 = 0x9c6f;
 const ERR_OBJECT_MODULE_ONLY:   u32 = 0xdee1;
 const ERR_UNEXPECTED_TOKEN:     u32 = 0x9c6f;
+/// "Invalid inside procedure".
+const ERR_INVALID_IN_PROCEDURE: u32 = 0x9c74;
+/// "Invalid inside Enum".
+const ERR_INVALID_IN_ENUM:      u32 = 0xdeff;
 const ERR_EXPECTED_EQ:          u32 = 0x9c6f;
 const ERR_EXPECTED_RPAREN:      u32 = 0x9c6f;
 const ERR_EXPECTED_LPAREN:      u32 = 0x9c6f;

@@ -85,7 +85,8 @@ fn no_libraries_means_the_names_are_unknown() {
     let none = SessionConfig { project_name: None, libraries: Vec::new() };
     let s = session_with(&[("modMain.bas", src)], none);
     assert_eq!(s.diagnostics(0).len(), 1);
-    assert_eq!(Library::bundled().len(), 2);
+    let names: Vec<String> = Library::bundled().into_iter().map(|l| l.name).collect();
+    assert_eq!(names, vec!["VBA", "VB", "VBRUN", "stdole"]);
 }
 
 #[test]
@@ -111,4 +112,85 @@ fn unknown_member_of_a_library_is_reported() {
     let s = session(&[("modMain.bas", src)]);
     assert_eq!(s.member_status_at(0, at(src, "VBA.NoSuchFunction", "NoSuchFunction")), Some(MemberStatus::NoSuchMember));
     assert_eq!(s.member_status_at(0, at(src, "Err.Desc", "Desc")), Some(MemberStatus::NoSuchMember));
+}
+
+#[test]
+fn global_procedures_and_objects_of_the_vb_library_resolve() {
+    let src = "Option Explicit\nSub Run()\n    Dim p As Object\n    Dim s As String\n    s = LoadResString(101)\n\
+               \x20   Set p = LoadPicture(\"a.bmp\")\n    s = App.Path\n    Screen.MousePointer = 11\n    s = Clipboard.GetText\nEnd Sub\n";
+    let s = session(&[("modMain.bas", src)]);
+    assert_eq!(s.diagnostics(0), vec![]);
+    for (ctx, member) in [
+        ("App.Path", "Path"),
+        ("Screen.MousePointer", "MousePointer"),
+        ("Clipboard.GetText", "GetText"),
+    ] {
+        assert_eq!(s.member_status_at(0, at(src, ctx, member)), Some(MemberStatus::Resolved), "{ctx}");
+    }
+    assert_eq!(s.external_member_references("VB", "VBGlobal", "LoadResString").len(), 1);
+    assert_eq!(s.external_member_references("VB", "VBGlobal", "LoadPicture").len(), 1);
+}
+
+#[test]
+fn form_members_are_reached_by_bare_name_in_a_form_and_a_user_control() {
+    let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\nEnd\r\nAttribute VB_Name = \"frmA\"\r\nOption Explicit\r\n\
+               Private Sub Go()\r\n    Dim x As Single\r\n    Hide\r\n    x = ScaleX(1, 1, 3)\r\n    PopupMenu mnuA\r\n    Caption = \"c\"\r\nEnd Sub\r\n";
+    let ctl = "VERSION 5.00\r\nBegin VB.UserControl ctlA\r\nEnd\r\nAttribute VB_Name = \"ctlA\"\r\nOption Explicit\r\n\
+               Private Sub Go()\r\n    Dim w As Single\r\n    PropertyChanged \"Value\"\r\n    w = TextWidth(\"abc\")\r\nEnd Sub\r\n";
+    let s = session(&[("frmA.frm", frm), ("ctlA.ctl", ctl)]);
+    let lines = |file: usize| -> Vec<u32> { s.diagnostics(file).iter().map(|d| d.span.start).collect() };
+    // Only `mnuA` (a menu that is not declared) is undefined in the form.
+    assert_eq!(lines(0), vec![at(frm, "PopupMenu mnuA", "mnuA")]);
+    assert_eq!(lines(1), Vec::<u32>::new());
+    for m in ["Hide", "ScaleX", "PopupMenu", "Caption"] {
+        assert_eq!(s.external_member_references("VB", "Form", m).len(), 1, "{m}");
+    }
+    for m in ["PropertyChanged", "TextWidth"] {
+        assert_eq!(s.external_member_references("VB", "UserControl", m).len(), 1, "{m}");
+    }
+}
+
+#[test]
+fn control_types_of_the_vb_library_type_the_controls() {
+    let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\n   Begin VB.TextBox txtA\r\n   End\r\n   Begin VB.ListBox lstA\r\n   End\r\nEnd\r\n\
+               Attribute VB_Name = \"frmA\"\r\nOption Explicit\r\nPrivate Sub Go()\r\n    txtA.Text = \"a\"\r\n    lstA.AddItem \"b\"\r\n    n = lstA.ListCount\r\nEnd Sub\r\n";
+    let s = session(&[("frmA.frm", frm)]);
+    for (ctx, member) in [("txtA.Text", "Text"), ("lstA.AddItem", "AddItem"), ("lstA.ListCount", "ListCount")] {
+        assert_eq!(s.member_status_at(0, at(frm, ctx, member)), Some(MemberStatus::Resolved), "{ctx}");
+    }
+}
+
+#[test]
+fn font_and_picture_properties_resolve_through_stdole() {
+    let src = "Sub Run(t As TextBox)\n    t.Font.Bold = True\n    t.Font.Name = \"Arial\"\nEnd Sub\n";
+    let s = session(&[("clsA.cls", src)]);
+    assert_eq!(s.member_status_at(0, at(src, "t.Font.Bold", "Font")), Some(MemberStatus::Resolved));
+    assert_eq!(s.member_status_at(0, at(src, "t.Font.Bold", "Bold")), Some(MemberStatus::Resolved));
+}
+
+#[test]
+fn a_user_control_seen_from_a_form_has_the_container_members() {
+    let ctl = "VERSION 5.00\r\nBegin VB.UserControl ctlA\r\nEnd\r\nAttribute VB_Name = \"ctlA\"\r\nPublic Sub Reload()\r\nEnd Sub\r\n";
+    let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\n   Begin Project1.ctlA ctlMain\r\n   End\r\nEnd\r\nAttribute VB_Name = \"frmA\"\r\n\
+               Option Explicit\r\nPrivate Sub Go()\r\n    ctlMain.Reload\r\n    ctlMain.Visible = True\r\n    ctlMain.Left = 5\r\n    ctlMain.Move 1, 2\r\n    ctlMain.Nope\r\nEnd Sub\r\n";
+    let cfg = SessionConfig { project_name: Some("Project1".into()), ..SessionConfig::default() };
+    let s = session_with(&[("ctlA.ctl", ctl), ("frmA.frm", frm)], cfg);
+    for (ctx, member) in [
+        ("ctlMain.Reload", "Reload"),
+        ("ctlMain.Visible", "Visible"),
+        ("ctlMain.Left", "Left"),
+        ("ctlMain.Move", "Move"),
+    ] {
+        assert_eq!(s.member_status_at(1, at(frm, ctx, member)), Some(MemberStatus::Resolved), "{ctx}");
+    }
+    assert_eq!(s.member_status_at(1, at(frm, "ctlMain.Nope", "Nope")), Some(MemberStatus::NoSuchMember));
+}
+
+#[test]
+fn control_is_a_generic_late_bound_type() {
+    let src = "Sub Run(oCtrl As Control, oForm As Form)\n    oCtrl.Visible = False\n    oCtrl.Whatever\nEnd Sub\n";
+    let s = session(&[("modMain.bas", src)]);
+    assert_eq!(s.member_status_at(0, at(src, "oCtrl.Visible", "Visible")), Some(MemberStatus::LateBound));
+    assert_eq!(s.member_status_at(0, at(src, "oCtrl.Whatever", "Whatever")), Some(MemberStatus::LateBound));
+    assert_eq!(s.diagnostics(0), vec![]);
 }

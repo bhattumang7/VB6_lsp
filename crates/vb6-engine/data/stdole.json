@@ -1,0 +1,412 @@
+[
+ {
+  "name": "stdole",
+  "types": [
+   {
+    "name": "IUnknown",
+    "kind": "interface",
+    "members": []
+   },
+   {
+    "name": "IDispatch",
+    "kind": "interface",
+    "members": []
+   },
+   {
+    "name": "IEnumVARIANT",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Next",
+      "kind": "method",
+      "param_count": 3
+     },
+     {
+      "name": "Skip",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "Reset",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "Clone",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "OLE_TRISTATE",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "Unchecked",
+      "kind": "constant"
+     },
+     {
+      "name": "Checked",
+      "kind": "constant"
+     },
+     {
+      "name": "Gray",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "IFont",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Name",
+      "kind": "propertyget",
+      "return_type": "String",
+      "param_count": 0
+     },
+     {
+      "name": "Name",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Size",
+      "kind": "propertyget",
+      "return_type": "Currency",
+      "param_count": 0
+     },
+     {
+      "name": "Size",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Bold",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "Bold",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Italic",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "Italic",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Underline",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "Underline",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Strikethrough",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "Strikethrough",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Weight",
+      "kind": "propertyget",
+      "return_type": "Integer",
+      "param_count": 0
+     },
+     {
+      "name": "Weight",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "Charset",
+      "kind": "propertyget",
+      "return_type": "Integer",
+      "param_count": 0
+     },
+     {
+      "name": "Charset",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "hFont",
+      "kind": "propertyget",
+      "return_type": "OLE_HANDLE",
+      "param_count": 0
+     },
+     {
+      "name": "Clone",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "IsEqual",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "SetRatio",
+      "kind": "method",
+      "param_count": 2
+     },
+     {
+      "name": "AddRefHfont",
+      "kind": "method",
+      "param_count": 1
+     },
+     {
+      "name": "ReleaseHfont",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "Font",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Name",
+      "kind": "field"
+     },
+     {
+      "name": "Size",
+      "kind": "field"
+     },
+     {
+      "name": "Bold",
+      "kind": "field"
+     },
+     {
+      "name": "Italic",
+      "kind": "field"
+     },
+     {
+      "name": "Underline",
+      "kind": "field"
+     },
+     {
+      "name": "Strikethrough",
+      "kind": "field"
+     },
+     {
+      "name": "Weight",
+      "kind": "field"
+     },
+     {
+      "name": "Charset",
+      "kind": "field"
+     }
+    ]
+   },
+   {
+    "name": "StdFont",
+    "kind": "coclass",
+    "default_interface": "Font",
+    "interfaces": [
+     "IFont"
+    ],
+    "members": []
+   },
+   {
+    "name": "IPicture",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Handle",
+      "kind": "propertyget",
+      "return_type": "OLE_HANDLE",
+      "param_count": 0
+     },
+     {
+      "name": "hPal",
+      "kind": "propertyget",
+      "return_type": "OLE_HANDLE",
+      "param_count": 0
+     },
+     {
+      "name": "Type",
+      "kind": "propertyget",
+      "return_type": "Integer",
+      "param_count": 0
+     },
+     {
+      "name": "Width",
+      "kind": "propertyget",
+      "return_type": "OLE_XSIZE_HIMETRIC",
+      "param_count": 0
+     },
+     {
+      "name": "Height",
+      "kind": "propertyget",
+      "return_type": "OLE_YSIZE_HIMETRIC",
+      "param_count": 0
+     },
+     {
+      "name": "Render",
+      "kind": "method",
+      "param_count": 10
+     },
+     {
+      "name": "hPal",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "CurDC",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "SelectPicture",
+      "kind": "method",
+      "param_count": 3
+     },
+     {
+      "name": "KeepOriginalFormat",
+      "kind": "propertyget",
+      "return_type": "Boolean",
+      "param_count": 0
+     },
+     {
+      "name": "KeepOriginalFormat",
+      "kind": "propertylet",
+      "param_count": 1
+     },
+     {
+      "name": "PictureChanged",
+      "kind": "method",
+      "param_count": 0
+     },
+     {
+      "name": "SaveAsFile",
+      "kind": "method",
+      "param_count": 3
+     },
+     {
+      "name": "Attributes",
+      "kind": "propertyget",
+      "return_type": "Long",
+      "param_count": 0
+     },
+     {
+      "name": "SetHdc",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   },
+   {
+    "name": "Picture",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "Render",
+      "kind": "method",
+      "param_count": 10
+     },
+     {
+      "name": "Handle",
+      "kind": "field"
+     },
+     {
+      "name": "hPal",
+      "kind": "field"
+     },
+     {
+      "name": "Type",
+      "kind": "field"
+     },
+     {
+      "name": "Width",
+      "kind": "field"
+     },
+     {
+      "name": "Height",
+      "kind": "field"
+     }
+    ]
+   },
+   {
+    "name": "StdPicture",
+    "kind": "coclass",
+    "default_interface": "Picture",
+    "interfaces": [
+     "IPicture"
+    ],
+    "members": []
+   },
+   {
+    "name": "LoadPictureConstants",
+    "kind": "enum",
+    "members": [
+     {
+      "name": "Default",
+      "kind": "constant"
+     },
+     {
+      "name": "Monochrome",
+      "kind": "constant"
+     },
+     {
+      "name": "VgaColor",
+      "kind": "constant"
+     },
+     {
+      "name": "Color",
+      "kind": "constant"
+     }
+    ]
+   },
+   {
+    "name": "StdFunctions",
+    "kind": "module",
+    "members": [
+     {
+      "name": "LoadPicture",
+      "kind": "method",
+      "return_type": "IPictureDisp",
+      "param_count": 4
+     },
+     {
+      "name": "SavePicture",
+      "kind": "method",
+      "param_count": 2
+     }
+    ]
+   },
+   {
+    "name": "FontEvents",
+    "kind": "interface",
+    "members": [
+     {
+      "name": "FontChanged",
+      "kind": "method",
+      "param_count": 1
+     }
+    ]
+   }
+  ]
+ }
+]

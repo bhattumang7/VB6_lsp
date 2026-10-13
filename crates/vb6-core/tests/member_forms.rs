@@ -53,6 +53,10 @@ fn vb_config() -> SessionConfig {
     SessionConfig { project_name: None, libraries: Library::from_json(VB_LIB).unwrap() }
 }
 
+fn no_libraries() -> SessionConfig {
+    SessionConfig { project_name: None, libraries: Vec::new() }
+}
+
 fn control(idx: usize) -> DeclId {
     DeclId::Control { module: 0, idx }
 }
@@ -91,8 +95,8 @@ fn control_array_is_one_control_with_every_element_declared() {
 }
 
 #[test]
-fn control_member_of_an_external_type_is_not_loaded_by_default() {
-    let s = session(&[("frmMain.frm", FRM)]);
+fn control_member_of_an_external_type_is_not_loaded_when_the_library_is_absent() {
+    let s = session_with(&[("frmMain.frm", FRM)], no_libraries());
     let site = at(FRM, "txtDate(0).Text", "Text");
     assert_eq!(s.declaration_at(0, site), None);
     assert_eq!(s.member_status_at(0, site), Some(MemberStatus::LibraryNotLoaded("vb".to_string())));
@@ -124,7 +128,7 @@ fn me_reaches_controls_and_the_designer_base_type() {
     assert_eq!(s.declaration_at(0, at(FRM, "Me.cmdOK.Caption", "cmdOK")), Some(control(1)));
     // `Show` is not declared in the form: it is a member of `VB.Form`.
     assert_eq!(s.member_status_at(0, at(FRM, "Me.Show", "Show")), Some(MemberStatus::Resolved));
-    let without = session(&[("frmMain.frm", FRM)]);
+    let without = session_with(&[("frmMain.frm", FRM)], no_libraries());
     assert_eq!(
         without.member_status_at(0, at(FRM, "Me.Show", "Show")),
         Some(MemberStatus::LibraryNotLoaded("vb.form".to_string()))
@@ -228,6 +232,6 @@ fn unqualified_names_in_a_designer_reach_the_members_it_inherits() {
 #[test]
 fn inherited_members_are_unknown_when_the_designer_library_is_not_supplied() {
     let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\nEnd\r\nAttribute VB_Name = \"frmA\"\r\nOption Explicit\r\nPrivate Sub Go()\r\n    Hide\r\nEnd Sub\r\n";
-    let s = session(&[("frmA.frm", frm)]);
+    let s = session_with(&[("frmA.frm", frm)], no_libraries());
     assert_eq!(s.diagnostics(0).len(), 1);
 }

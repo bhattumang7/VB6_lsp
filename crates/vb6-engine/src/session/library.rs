@@ -58,6 +58,10 @@ pub struct LibraryType {
     /// names (`App`, `Screen`, `LoadPicture`), as the members of a module are.
     #[serde(default)]
     pub is_global: bool,
+    /// A generic object type: a value declared of this type has members that
+    /// are only looked up when the program runs, as with `Object`.
+    #[serde(default)]
+    pub late_bound: bool,
     #[serde(default)]
     pub members: Vec<LibraryMember>,
 }
@@ -100,15 +104,18 @@ pub struct LibraryMember {
 
 /// The runtime libraries every VB6 project sees, described by the engine.
 const VBA_JSON: &str = include_str!("../../data/vba.json");
+const VB_JSON: &str = include_str!("../../data/vb.json");
 const VBRUN_JSON: &str = include_str!("../../data/vbrun.json");
+const STDOLE_JSON: &str = include_str!("../../data/stdole.json");
 
 impl Library {
-    /// The libraries the engine describes itself: the VBA runtime library
-    /// (strings, conversion, math, date and file functions, constants, `Err`,
-    /// `Collection`) and the runtime object library (`PropertyBag`,
-    /// `AmbientProperties`, the control constants).
+    /// The libraries the engine describes itself, which every VB6 project
+    /// sees: `VBA` (strings, conversion, math, date and file functions,
+    /// constants, `Err`, `Collection`), `VB` (`Form`, `UserControl`, the
+    /// intrinsic controls, `App`, `Screen`, `Printer`, the global procedures),
+    /// `VBRUN` (the runtime objects) and `stdole` (`StdFont`, `StdPicture`).
     pub fn bundled() -> Vec<Library> {
-        [VBA_JSON, VBRUN_JSON]
+        [VBA_JSON, VB_JSON, VBRUN_JSON, STDOLE_JSON]
             .iter()
             .flat_map(|text| {
                 Library::from_json(text).expect("bundled library data is valid JSON")

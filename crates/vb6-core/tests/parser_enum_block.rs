@@ -59,6 +59,17 @@ fn junk_after_a_member_is_reported() {
 fn a_line_that_is_not_a_member_is_reported() {
     let src = "Enum Color\n    Red\n    Dim x As Long\n    Blue\nEnd Enum\n";
     let (diags, names) = enum_of(src);
-    assert_eq!(diags, vec![(Some("identifier"), "Dim".to_string())]);
+    // "Invalid inside Enum" (code 0xdeff), at the first token of the line.
+    assert_eq!(diags, vec![(None, "Dim".to_string())]);
+    assert_eq!(codes(src), vec![0xdeff]);
     assert_eq!(names, vec!["Red".to_string(), "Blue".to_string()]);
+}
+
+fn codes(src: &str) -> Vec<u32> {
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), ModuleKind::Standard);
+    let _ = parser.parse_module(&mut arena);
+    parser.diagnostics.items().iter().map(|d| d.code).collect()
 }

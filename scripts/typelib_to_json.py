@@ -38,10 +38,11 @@ VT_PTR, VT_SAFEARRAY, VT_USERDEFINED = 26, 27, 29
 WELL_KNOWN = {
     "00000000-0000-0000-c000-000000000046": "IUnknown",
     "00020400-0000-0000-c000-000000000046": "IDispatch",
-    "0be35203-8f91-11ce-9de3-00aa004bb851": "StdFont",
-    "0be35204-8f91-11ce-9de3-00aa004bb851": "StdPicture",
-    "bef6e003-a874-101a-8bba-00aa00300cab": "IFontDisp",
-    "7bf80981-bf32-101a-8bba-00aa00300cab": "IPictureDisp",
+    # Types of the OLE automation library, qualified by its name.
+    "0be35203-8f91-11ce-9de3-00aa004bb851": "stdole.StdFont",
+    "0be35204-8f91-11ce-9de3-00aa004bb851": "stdole.StdPicture",
+    "bef6e003-a874-101a-8bba-00aa00300cab": "stdole.Font",
+    "7bf80981-bf32-101a-8bba-00aa00300cab": "stdole.Picture",
 }
 
 TKIND_ENUM, TKIND_RECORD, TKIND_MODULE, TKIND_INTERFACE, TKIND_DISPATCH, TKIND_COCLASS = range(6)
@@ -205,6 +206,10 @@ def engine_type(t):
         extends = [n for n, _ in t["impl"] if n not in IGNORED_BASES]
         if extends:
             out["extends"] = extends
+        # A dispatch interface that declares nothing (and extends nothing) is a
+        # generic object type: any member is looked up when the program runs.
+        if kind == TKIND_DISPATCH and not t["funcs"] and not t["vars"] and not extends:
+            out["late_bound"] = True
         members = [{"name": v["name"], "kind": "field"} for v in t["vars"]]
     elif kind == TKIND_COCLASS:
         out["kind"] = "coclass"

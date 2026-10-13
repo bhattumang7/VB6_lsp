@@ -126,3 +126,44 @@ fn with_events_in_standard_module_is_rejected_and_still_recorded() {
     assert_eq!(p.diags, vec![(ERR_OBJECT_MODULE_ONLY, first, len), (ERR_OBJECT_MODULE_ONLY, second, len)]);
     assert_eq!(items(&p), vec![var("m_First", true, "Clock"), var("m_Second", true, "Clock")]);
 }
+
+/// "Invalid inside procedure".
+const ERR_INVALID_IN_PROCEDURE: u32 = 0x9c74;
+
+#[test]
+fn with_events_inside_a_procedure_is_rejected() {
+    let src = "Sub Go()\n    Dim WithEvents c As Clock\n    Dim n As Long\nEnd Sub\n";
+    let p = parse(src, ModuleKind::Class);
+    let at = src.find("WithEvents").unwrap() as u32;
+    assert_eq!(p.diags, vec![(ERR_INVALID_IN_PROCEDURE, at, "WithEvents".len() as u32)]);
+}
+
+#[test]
+fn with_events_inside_a_property_and_a_function_is_rejected() {
+    let src = "Property Get P() As Long\n    Dim WithEvents a As Clock\nEnd Property\n\
+               Function F() As Long\n    Dim WithEvents b As Clock\nEnd Function\n";
+    let p = parse(src, ModuleKind::Form);
+    let first = src.find("WithEvents").unwrap() as u32;
+    let second = src.rfind("WithEvents").unwrap() as u32;
+    let len = "WithEvents".len() as u32;
+    assert_eq!(
+        p.diags,
+        vec![(ERR_INVALID_IN_PROCEDURE, first, len), (ERR_INVALID_IN_PROCEDURE, second, len)]
+    );
+}
+
+#[test]
+fn with_events_after_a_procedure_is_accepted_again() {
+    let src = "Sub Go()\nEnd Sub\nPrivate WithEvents m As Clock\n";
+    let p = parse(src, ModuleKind::Class);
+    assert_eq!(p.diags, vec![]);
+}
+
+#[test]
+fn with_events_in_a_standard_module_procedure_reports_both() {
+    let src = "Sub Go()\n    Dim WithEvents c As Clock\nEnd Sub\n";
+    let p = parse(src, ModuleKind::Standard);
+    let at = src.find("WithEvents").unwrap() as u32;
+    let len = "WithEvents".len() as u32;
+    assert_eq!(p.diags, vec![(ERR_OBJECT_MODULE_ONLY, at, len), (ERR_INVALID_IN_PROCEDURE, at, len)]);
+}

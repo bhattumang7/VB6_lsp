@@ -101,6 +101,7 @@ struct LibMember {
 
 struct LibType {
     kind: LibraryTypeKind,
+    late_bound: bool,
     default_interface: Option<String>,
     interfaces: Vec<String>,
     extends: Vec<String>,
@@ -419,6 +420,7 @@ impl ProjectModel {
         match self.lib_type_ref(lib, &name) {
             Some((l, t)) => match self.libraries[l].types[t].kind {
                 LibraryTypeKind::Enum => SemType::Value(VbaType::Long),
+                _ if self.libraries[l].types[t].late_bound => SemType::LateBound,
                 _ => SemType::Lib { lib: l, ty: t },
             },
             None => SemType::Unknown(name),
@@ -502,6 +504,19 @@ impl ProjectModel {
             sem: SemType::Namespace(Qualifier::Enum { module, idx }),
             callable: None,
         })
+    }
+
+    /// The library type describing the members a container adds to a control
+    /// of `module`, when the module is a UserControl: the extender type of the
+    /// library that declares `UserControl`.
+    fn extender_type(&self, module: usize) -> Option<(usize, usize)> {
+        let base = self.modules[module].base_type.as_ref()?;
+        if base.name != "usercontrol" {
+            return None;
+        }
+        let lib = *self.library_by_name.get(base.qualifier.as_deref()?)?;
+        let ty = *self.libraries[lib].type_by_name.get("vbcontrolextender")?;
+        Some((lib, ty))
     }
 
     /// A member of a public enum of `module`, named through the module
@@ -700,16 +715,43 @@ fn summarize_library(l: &Library) -> LibSummary {
     }
     for (ti, t) in l.types.iter().enumerate() {
         let global = matches!(t.kind, LibraryTypeKind::Module | LibraryTypeKind::Enum) || t.is_global;
-        if global {
-            for (mi, m) in t.members.iter().enumerate() {
+        if !global {
+            continue;
+        }
+        // The members of a global coclass are those of the interfaces it
+        // exposes; each is recorded under the type that declares it.
+        for owner in interface_closure(l, &type_by_name, ti) {
+            for (mi, m) in l.types[owner].members.iter().enumerate() {
                 for key in global_keys(&m.name) {
-                    globals.entry(key).or_insert(LibGlobal::Member { ty: ti, member: mi });
+                    globals.entry(key).or_insert(LibGlobal::Member { ty: owner, member: mi });
                 }
             }
         }
     }
     let type_names = l.types.iter().map(|t| t.name.clone()).collect();
     LibSummary { name: lc(&l.name), type_names, types, type_by_name, globals }
+}
+
+/// Type `ti` and, transitively, the types of the same library it lists as its
+/// default interface, other interfaces or bases, in lookup order.
+fn interface_closure(l: &Library, by_name: &HashMap<String, usize>, ti: usize) -> Vec<usize> {
+    let mut out = Vec::new();
+    let mut stack = vec![ti];
+    while let Some(t) = stack.pop() {
+        if out.contains(&t) {
+            continue;
+        }
+        out.push(t);
+        let ty = &l.types[t];
+        let mut next: Vec<usize> = Vec::new();
+        for n in ty.default_interface.iter().chain(&ty.interfaces).chain(&ty.extends) {
+            if let Some(&i) = by_name.get(&lc(n)) {
+                next.push(i);
+            }
+        }
+        stack.extend(next.into_iter().rev());
+    }
+    out
 }
 
 /// The names a library procedure answers to in source. The runtime library
@@ -729,6 +771,7 @@ fn global_keys(member: &str) -> Vec<String> {
 fn summarize_lib_type(t: &LibraryType) -> LibType {
     LibType {
         kind: t.kind,
+        late_bound: t.late_bound,
         default_interface: t.default_interface.as_deref().map(lc),
         interfaces: t.interfaces.iter().map(|s| lc(s)).collect(),
         extends: t.extends.iter().map(|s| lc(s)).collect(),
@@ -752,6 +795,7 @@ impl ProjectScope for ProjectModel {
             TypeRef::Udt { module, idx } => SemType::Udt { module, idx },
             TypeRef::Enum { .. } | TypeRef::LibEnum { .. } => SemType::Value(VbaType::Long),
             TypeRef::Class { module } => SemType::Class { module },
+            TypeRef::Lib { lib, ty } if self.libraries[lib].types[ty].late_bound => SemType::LateBound,
             TypeRef::Lib { lib, ty } => SemType::Lib { lib, ty },
             TypeRef::Unknown(n) => SemType::Unknown(n),
             TypeRef::NotLoaded(q) => SemType::LibraryNotLoaded(q),
@@ -889,7 +933,7 @@ impl ProjectScope for ProjectModel {
         self.library_global(name)
     }
 
-    fn lookup_member(&self, _from: usize, base: &SemType, name: &str, access: Access) -> MemberLookup {
+    fn lookup_member(&self, from: usize, base: &SemType, name: &str, access: Access) -> MemberLookup {
         match base {
             SemType::Udt { module, idx } => {
                 let t = &self.modules[*module].types[*idx];
@@ -920,6 +964,15 @@ impl ProjectScope for ProjectModel {
                 }
                 if let Some(hit) = self.enum_namespace_or_member(*module, name) {
                     return MemberLookup::Found(hit);
+                }
+                // A UserControl seen from outside also has the members its
+                // container gives every control (position, visibility, ...).
+                if from != *module {
+                    if let Some((lib, ty)) = self.extender_type(*module) {
+                        if let found @ MemberLookup::Found(_) = self.lib_member(lib, ty, name, access) {
+                            return found;
+                        }
+                    }
                 }
                 match &m.base_type {
                     // A designer's own members were searched; the rest come from

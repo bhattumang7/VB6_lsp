@@ -416,6 +416,9 @@ impl Session {
             }
         }
 
+        // Resolutions are a hash map: report in source order.
+        undefined_calls.sort_by_key(|s| s.start);
+        undefined_vars.sort_by_key(|s| s.start);
         for span in undefined_calls {
             m.bound.diagnostics.push(ERR_SUB_OR_FUNCTION_NOT_DEFINED as u32, span);
         }

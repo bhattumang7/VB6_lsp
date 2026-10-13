@@ -58,6 +58,9 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x9caf => "Variable not defined",                   // 40111
         0x9c9f => "Duplicate declaration in current scope", // 40095
         0x23 => "Sub or Function not defined",              // 35
+        0x1cd => "Method or data member not found",         // 461
+        0x9c74 => "Invalid inside procedure",               // 40052
+        0xdeff => "Invalid inside Enum",                    // 57087
         _ => return None,
     })
 }
