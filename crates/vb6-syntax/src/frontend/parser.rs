@@ -2727,7 +2727,14 @@ impl<'src> Parser<'src> {
                 self.advance();
                 let inner = self.parse_expr(arena, 0);
                 self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
-                arena.alloc(ExprNode::Paren { inner })
+                let group = arena.alloc(ExprNode::Paren { inner });
+                // `(New Foo).Bar`, `(a).b(1)`: a grouped expression is an object
+                // value, so member access (and the calls that follow it) applies.
+                if matches!(self.peek().kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang)) {
+                    self.parse_postfix(arena, group)
+                } else {
+                    group
+                }
             }
             // Numeric / string / date literals
             TokenKind::IntLit
