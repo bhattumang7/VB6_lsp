@@ -2567,6 +2567,8 @@ impl<'src> Parser<'src> {
                     break;
                 }
                 TokenKind::Eof => break,
+                // A comment line between members is a blank line.
+                TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) => { self.advance(); }
                 _ => {
                     let m = self.parse_dim_item(arena, false, false, false);
                     self.eat_eol();
