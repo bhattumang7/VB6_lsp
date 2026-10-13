@@ -572,6 +572,12 @@ impl<'a> Scanner<'a> {
         self.ctx.sym_name(id as usize)
     }
 
+    /// True if the symbol is a reserved word (which can never name a
+    /// variable or a type); false for identifiers and contextual keywords.
+    pub fn is_reserved(&self, id: u32) -> bool {
+        self.ctx.symbols.get(id as usize).map_or(false, |s| s.flags & 4 != 0)
+    }
+
     /// Create a scanner for `src`, borrowing `ctx` for symbol interning.
     pub fn new(ctx: &'a mut ScannerContext, src: &'a [u8]) -> Self {
         Self { ctx, src, pos: 0, tok_buf: String::with_capacity(64) }

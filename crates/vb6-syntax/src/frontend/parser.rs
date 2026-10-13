@@ -348,6 +348,20 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// True if the next token is a contextual (non-reserved) keyword such as
+    /// `Name`, `Text` or `Error`, which VB6 also accepts as a variable or
+    /// type name.
+    fn at_contextual_keyword(&mut self) -> bool {
+        let t = self.peek();
+        match (&t.kind, t.sym) {
+            (TokenKind::Kw(_), Some(sym)) => {
+                let sym = sym as u32;
+                !self.scanner.is_reserved(sym)
+            }
+            _ => false,
+        }
+    }
+
     /// Skip tokens until we hit a statement end (Eol / Eof / Apos / Rem).
     fn skip_to_stmt_end(&mut self) {
         loop {
@@ -2248,6 +2262,11 @@ impl<'src> Parser<'src> {
                 let is_static = matches!(access_tok, TokenKind::Kw(Kw::Static));
                 self.parse_dim_list_static(arena, false, is_static)
             }
+            // A contextual keyword names the variable (`Public Name As String`).
+            TokenKind::Kw(_) if self.at_contextual_keyword() => {
+                let is_static = matches!(access_tok, TokenKind::Kw(Kw::Static));
+                self.parse_dim_list_static(arena, false, is_static)
+            }
             _ => {
                 let span = self.current_span();
                 self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
@@ -2532,7 +2551,8 @@ impl<'src> Parser<'src> {
                 let nid = name.sym.map(|s| s as u32).unwrap_or(0);
                 arena.alloc(ExprNode::UserType { name: nid, child: None })
             }
-            TokenKind::Ident => {
+            // A user type name; a contextual keyword (`Error`, `Line`) can be one.
+            TokenKind::Ident | TokenKind::Kw(_) if self.at_contextual_keyword() || self.peek().kind == TokenKind::Ident => {
                 let name = self.advance();
                 let nid = name.sym.map(|s| s as u32).unwrap_or(0);
                 let child = if self.eat(TokenKind::Kw(Kw::Dot)) {
