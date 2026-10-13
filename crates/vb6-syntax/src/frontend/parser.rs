@@ -1016,6 +1016,12 @@ impl<'src> Parser<'src> {
     /// property call without `Set`.
     fn parse_ident_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let lhs = self.parse_target_expr(arena);
+        self.finish_ident_stmt(arena, lhs)
+    }
+
+    /// The rest of a statement that starts with a target expression `lhs`:
+    /// an assignment, a graphics coordinate call, or an implicit call.
+    fn finish_ident_stmt(&mut self, arena: &mut ExprArena, lhs: NodeId) -> NodeId {
         if self.eat(TokenKind::Kw(Kw::Eq)) {
             let value = self.parse_expr(arena, 0);
             self.eat_eol();
@@ -1025,6 +1031,19 @@ impl<'src> Parser<'src> {
             let value = self.parse_expr(arena, 0);
             self.eat_eol();
             arena.alloc(ExprNode::Assign { target: lhs, value })
+        } else if let Some((callee, arg)) = self.paren_first_argument(arena, lhs) {
+            // `Foo (a) - (b), c` / `Foo (a), b`: in a call statement the
+            // parenthesised group after the callee begins the first argument
+            // expression; it is not the argument list.
+            let first = arena.alloc(ExprNode::Paren { inner: arg });
+            let first = self.parse_infix(arena, first, 0);
+            let mut args = vec![first];
+            if self.eat(TokenKind::Kw(Kw::Comma)) {
+                args.extend(self.parse_stmt_arg_list(arena));
+            }
+            self.eat_eol();
+            let args = arena.alloc(ExprNode::ArgList { args });
+            arena.alloc(ExprNode::CallStmt { callee, args })
         } else if self.peek().kind == TokenKind::Kw(Kw::Minus)
             && (self.peek2().kind == TokenKind::Kw(Kw::LParen)
                 || self.peek2().kind == TokenKind::Kw(Kw::Step))
@@ -1048,7 +1067,12 @@ impl<'src> Parser<'src> {
             let args = arena.alloc(ExprNode::ArgList { args: extra });
             arena.alloc(ExprNode::CallStmt { callee: lhs, args })
         } else {
-            // Implicit call with optional trailing arguments: `Foo a, b`
+            // Implicit call with optional trailing arguments: `Foo a, b`. After
+            // a parenthesised coordinate pair (`PSet (x, y), color`) the comma
+            // only separates the pair from the remaining arguments.
+            if matches!(arena.get(lhs), ExprNode::Call { .. }) {
+                self.eat(TokenKind::Kw(Kw::Comma));
+            }
             let args = self.parse_stmt_arg_list(arena);
             self.eat_eol();
             if args.is_empty() {
@@ -1058,6 +1082,22 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::CallStmt { callee: lhs, args })
             }
         }
+    }
+
+    /// If `lhs` is a call with exactly one plain argument and the statement
+    /// goes on with an operator or another argument, return `(callee, arg)`:
+    /// that parenthesised argument starts the first argument expression. A
+    /// two-value group (`(x, y)`) is a graphics coordinate pair, never this.
+    fn paren_first_argument(&mut self, arena: &ExprArena, lhs: NodeId) -> Option<(NodeId, NodeId)> {
+        let ExprNode::Call { func, args } = arena.get(lhs) else { return None };
+        let ExprNode::ArgList { args } = arena.get(*args) else { return None };
+        let [arg] = args.as_slice() else { return None };
+        if matches!(arena.get(*arg), ExprNode::NamedArg { .. } | ExprNode::MissingArg) {
+            return None;
+        }
+        let kind = self.peek().kind.clone();
+        let continues = kind == TokenKind::Kw(Kw::Comma) || infix_bp(&kind).is_some();
+        continues.then_some((*func, *arg))
     }
 
     /// Parses a `Let` assignment statement.
@@ -2189,47 +2229,7 @@ impl<'src> Parser<'src> {
         self.set_span(lhs_base, first.span);
         // Apply any postfix operators (.member, (args), etc.)
         let lhs = self.parse_postfix(arena, lhs_base);
-        if self.eat(TokenKind::Kw(Kw::Eq)) {
-            let value = self.parse_expr(arena, 0);
-            self.eat_eol();
-            arena.alloc(ExprNode::Assign { target: lhs, value })
-        } else if self.eat(TokenKind::Kw(Kw::ColonEq)) {
-            let value = self.parse_expr(arena, 0);
-            self.eat_eol();
-            arena.alloc(ExprNode::Assign { target: lhs, value })
-        } else if self.peek().kind == TokenKind::Kw(Kw::Minus)
-            && (self.peek2().kind == TokenKind::Kw(Kw::LParen)
-                || self.peek2().kind == TokenKind::Kw(Kw::Step))
-        {
-            // `Obj.Line (x1,y1)-(x2,y2)` — postfix consumed `(x1,y1)` as a call
-            // arg-list; the `-(x2,y2)` continuation signals this is a graphics call.
-            self.advance(); // consume `-`
-            let (x2, y2) = self.parse_coord_pair(arena);
-            let mut extra = vec![x2, y2];
-            if self.eat(TokenKind::Kw(Kw::Comma)) {
-                if let Some(color) = self.try_parse_expr(arena) {
-                    extra.push(color);
-                }
-                while self.eat(TokenKind::Kw(Kw::Comma)) {
-                    if let Some(flag) = self.try_parse_expr(arena) {
-                        extra.push(flag);
-                    }
-                }
-            }
-            self.eat_eol();
-            let args = arena.alloc(ExprNode::ArgList { args: extra });
-            arena.alloc(ExprNode::CallStmt { callee: lhs, args })
-        } else {
-            // Implicit call with optional trailing arguments: `Foo a, b`
-            let args = self.parse_stmt_arg_list(arena);
-            self.eat_eol();
-            if args.is_empty() {
-                lhs
-            } else {
-                let args = arena.alloc(ExprNode::ArgList { args });
-                arena.alloc(ExprNode::CallStmt { callee: lhs, args })
-            }
-        }
+        self.finish_ident_stmt(arena, lhs)
     }
 
     // ── Procedure / declaration parsers ───────────────────────────────────────
@@ -2644,9 +2644,13 @@ impl<'src> Parser<'src> {
     /// Pratt precedence-climbing expression parser.
     /// `min_bp` = minimum binding power required to consume an infix operator.
     pub fn parse_expr(&mut self, arena: &mut ExprArena, min_bp: u8) -> NodeId {
-        let mut lhs = self.parse_expr_prefix(arena);
+        let lhs = self.parse_expr_prefix(arena);
+        self.parse_infix(arena, lhs, min_bp)
+    }
 
-        // Infix loop
+    /// The infix part of an expression whose left operand `lhs` is already
+    /// parsed: consume operators binding tighter than `min_bp`.
+    fn parse_infix(&mut self, arena: &mut ExprArena, mut lhs: NodeId, min_bp: u8) -> NodeId {
         loop {
 
             let kind = self.peek().kind.clone();
@@ -2902,10 +2906,13 @@ impl<'src> Parser<'src> {
     }
 
     /// Argument list on a call statement line (no surrounding parens).
+    /// An omitted argument (`MsgBox s, , title`) is a `MissingArg`.
     fn parse_stmt_arg_list(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
         let mut args = Vec::new();
         while !self.peek().is_stmt_end() {
-            let a = if let Some(named) = self.try_parse_named_arg(arena) {
+            let a = if self.peek().kind == TokenKind::Kw(Kw::Comma) {
+                arena.alloc(ExprNode::MissingArg)
+            } else if let Some(named) = self.try_parse_named_arg(arena) {
                 named
             } else if let Some(expr) = self.try_parse_expr(arena) {
                 expr
