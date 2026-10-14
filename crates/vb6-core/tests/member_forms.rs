@@ -300,11 +300,10 @@ const OCX_FRM: &str = "VERSION 5.00\r\n\
 Begin VB.Form frmTree\r\n\
    Begin MSComctlLib.TreeView tvwMain\r\n\
    End\r\n\
-   Begin MSComctlLib.ImageList imlMain\r\n\
-   End\r\n\
 End\r\n\
 Attribute VB_Name = \"frmTree\"\r\n\
 Sub T()\r\n\
+    Dim imlMain As MSComctlLib.ImageList\r\n\
     n = tvwMain.Nodes\r\n\
     tvwMain.Left = 5\r\n\
     tvwMain.Missing = 1\r\n\
@@ -325,4 +324,38 @@ fn control_of_a_library_has_the_extender_members_the_container_adds() {
     assert_eq!(s.member_status_at(0, at(OCX_FRM, "tvwMain.Missing", "Missing")), Some(MemberStatus::NoSuchMember));
     // a class that is not a control gets none of the extender's members
     assert_eq!(s.member_status_at(0, at(OCX_FRM, "imlMain.Left", "Left")), Some(MemberStatus::NoSuchMember));
+}
+
+const UNFLAGGED_LIB: &str = r#"{
+  "name": "R8TabControl",
+  "types": [
+    {"name": "RMTabControl", "kind": "coclass", "default_interface": "_RMTabControl"},
+    {"name": "_RMTabControl", "kind": "interface", "members": [
+      {"name": "AddTab", "kind": "method", "param_count": 0}]}
+  ]
+}"#;
+
+const PLACED_FRM: &str = "VERSION 5.00\r\n\
+Begin VB.Form frmTabs\r\n\
+   Begin R8TabControl.RMTabControl tabMain\r\n\
+   End\r\n\
+End\r\n\
+Attribute VB_Name = \"frmTabs\"\r\n\
+Sub T()\r\n\
+    tabMain.AddTab\r\n\
+    tabMain.Left = 5\r\n\
+    Dim loose As R8TabControl.RMTabControl\r\n\
+    loose.Tag = \"x\"\r\n\
+End Sub\r\n";
+
+#[test]
+fn library_class_placed_on_a_form_gets_the_extender_members_even_when_unflagged() {
+    let mut libraries = Library::from_json(UNFLAGGED_LIB).unwrap();
+    libraries.extend(Library::from_json(EXTENDER_LIB).unwrap());
+    let config = SessionConfig { project_name: None, libraries };
+    let s = session_with(&[("frmTabs.frm", PLACED_FRM)], config);
+    assert_eq!(s.member_status_at(0, at(PLACED_FRM, "tabMain.AddTab", "AddTab")), Some(MemberStatus::Resolved));
+    assert_eq!(s.member_status_at(0, at(PLACED_FRM, "tabMain.Left", "Left")), Some(MemberStatus::Resolved));
+    // the class is a control class: held in a variable it has the same members
+    assert_eq!(s.member_status_at(0, at(PLACED_FRM, "loose.Tag", "Tag")), Some(MemberStatus::Resolved));
 }

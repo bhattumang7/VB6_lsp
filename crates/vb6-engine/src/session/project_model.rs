@@ -243,14 +243,33 @@ impl ProjectModel {
         for (i, l) in libs.iter().enumerate() {
             library_by_name.entry(l.name.clone()).or_insert(i);
         }
-        ProjectModel {
+        let mut model = ProjectModel {
             modules: summaries,
             module_by_name,
             index,
             project_name: project_name.map(lc),
             libraries: libs,
             library_by_name,
+        };
+        // A library class a designer places on a form is a control, whatever the library's flags say
+        // (a .NET control exported to COM does not carry `TYPEFLAG_FCONTROL`): the container
+        // gives it the extender's members.
+        let mut placed: Vec<(usize, usize)> = Vec::new();
+        for (from, m) in model.modules.iter().enumerate() {
+            for c in &m.controls {
+                let (q, n) = match c.control_type.split_once('.') {
+                    Some((q, n)) => (Some(lc(q)), lc(n)),
+                    None => (None, lc(&c.control_type)),
+                };
+                if let TypeRef::Lib { lib, ty } = model.type_ref(from, &TypeName { qualifier: q, name: n }) {
+                    placed.push((lib, ty));
+                }
+            }
         }
+        for (lib, ty) in placed {
+            model.libraries[lib].types[ty].is_control = true;
+        }
+        model
     }
 
     // ── Declared types ──────────────────────────────────────────────────────
