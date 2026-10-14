@@ -30,6 +30,7 @@ Desktop.ini
 .sonar-token
 .scannerwork/
 sonarqube-data/
+scripts/sonar-scan-local.ps1
 
 # Local tool configs
 .serena/
