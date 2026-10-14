@@ -26,6 +26,7 @@ mod folding;
 mod format;
 mod library;
 mod project_model;
+mod receivers;
 mod signature;
 pub mod forms;
 pub mod hover;
@@ -45,6 +46,7 @@ pub use library::{
 pub use line_index::{LineIndex, Position, Range};
 pub use module_index::{ExternalRef, ModuleIndex};
 pub use reverse_index::{DeclId, LibraryKey, ReferenceIndex, RefSite};
+pub use receivers::{Argument, Receiver, StaticType, Store, StoreKind};
 pub use signature::SigHelp;
 pub use tokens::{SemToken, SemTokenKind};
 
@@ -177,6 +179,10 @@ struct ModuleData {
     /// Working copy of `raw_bound` with project-level passes applied. Queries
     /// read this.
     bound: BoundModule,
+    /// `(start, end, node)` of every name use in `bound.resolutions`, by start offset: the cursor
+    /// queries (definition, references, declaration) look a use up here instead of scanning every
+    /// name of the module. Built on first use; reset whenever `bound` is replaced.
+    use_index: std::sync::OnceLock<Vec<(u32, u32, u32)>>,
     parse_diags: Vec<Diagnostic>,
     /// `NameRef` nodes used as a call target (callee of a `Call`, or a bare-name
     /// statement = implicit sub call). Excluded from the undeclared-*variable*
@@ -355,6 +361,7 @@ impl Session {
         );
         for (i, m) in self.modules.iter_mut().enumerate() {
             m.bound = bind_in_project(&m.ctx, &m.arena, &m.top, &m.spans, &m.visibility, i, &model);
+            m.use_index = Default::default();
         }
         self.bind_count += self.modules.len();
         self.build_references();
@@ -372,6 +379,7 @@ impl Session {
         let m = &mut self.modules[idx];
         m.bound =
             bind_in_project(&m.ctx, &m.arena, &m.top, &m.spans, &m.visibility, idx, &model);
+        m.use_index = Default::default();
         self.bind_count += 1;
         Self::check_undeclared_module(&mut self.modules[idx]);
         self.build_references();
@@ -763,6 +771,13 @@ impl Session {
         self.site_locations(sites)
     }
 
+    /// The library member a use at `offset` resolved to, as (library, type, member): the names a
+    /// host joins to the project that builds that library.
+    pub fn library_member_at(&self, module: usize, offset: u32) -> Option<(String, String, String)> {
+        let key = self.library_key_at(module, offset)?;
+        self.model.as_ref()?.library_member_names(key)
+    }
+
     /// The library member the cursor sits on, if it is a use of one.
     fn library_key_at(&self, module: usize, offset: u32) -> Option<LibraryKey> {
         match self.target_at(module, offset)? {
@@ -1005,9 +1020,27 @@ impl Session {
     fn target_at(&self, module: usize, offset: u32) -> Option<CursorTarget> {
         let m = self.modules.get(module)?;
         // 1) a NameRef use whose span contains the cursor
-        for (&node, res) in m.bound.resolutions.iter() {
-            if span_contains(m.spans.get(NodeId(node)), offset) {
-                return Some(CursorTarget::Use { node, res: res.clone() });
+        let index = m.use_index.get_or_init(|| {
+            let mut v: Vec<(u32, u32, u32)> = m
+                .bound
+                .resolutions
+                .keys()
+                .map(|&node| {
+                    let sp = m.spans.get(NodeId(node));
+                    (sp.start, sp.start + sp.len, node)
+                })
+                .collect();
+            v.sort_unstable();
+            v
+        });
+        // Uses do not nest, so the one that can contain `offset` is the last that starts at or
+        // before it; a few earlier ones are checked for zero-length and abutting spans.
+        let k = index.partition_point(|&(start, _, _)| start <= offset);
+        for &(start, end, node) in index[..k].iter().rev().take(4) {
+            if span_contains(Span { start, len: end - start }, offset) {
+                if let Some(res) = m.bound.resolutions.get(&node) {
+                    return Some(CursorTarget::Use { node, res: res.clone() });
+                }
             }
         }
         // 2) a declaration name whose span contains the cursor
@@ -1329,6 +1362,7 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
         standard: kind == ModuleKind::Standard,
         predeclared: raw_bound.predeclared_id || kind == ModuleKind::Form && base_type.as_ref().map_or(false, |t| t.name == "form" || t.name == "mdiform"),
         raw_bound,
+        use_index: Default::default(),
         bound,
         parse_diags,
         callee_nodes,

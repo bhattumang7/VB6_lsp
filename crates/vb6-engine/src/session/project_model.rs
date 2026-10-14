@@ -204,6 +204,14 @@ impl ProjectModel {
         out
     }
 
+    /// The names (library, type, member) of a library member key, lower-cased as the model holds them
+    /// except the type, which keeps the library's spelling.
+    pub(super) fn library_member_names(&self, key: (usize, usize, usize)) -> Option<(String, String, String)> {
+        let lib = self.libraries.get(key.0)?;
+        let member = lib.types.get(key.1)?.members.get(key.2)?;
+        Some((lib.name.clone(), lib.type_names.get(key.1)?.clone(), member.name.clone()))
+    }
+
     /// Whether module `idx`, as the model saw it, has the same interface as
     /// `module` now: the same declarations, in the same order, with the same
     /// visibility and types, and the same name, kind and controls. When it
