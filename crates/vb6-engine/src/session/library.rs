@@ -109,6 +109,10 @@ pub struct LibraryType {
     /// up when the program runs instead of being rejected.
     #[serde(default)]
     pub extensible: bool,
+    /// The type is an ActiveX control (`TYPEFLAG_FCONTROL`): the container adds the extender's
+    /// members (`Left`, `Top`, `Tag`, ...) to the ones the library describes.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub is_control: bool,
     /// For a class of an ActiveX project, how it is exposed (`None` when the
     /// library does not say).
     #[serde(default, skip_serializing_if = "Option::is_none")]

@@ -102,6 +102,7 @@ struct LibMember {
 struct LibType {
     kind: LibraryTypeKind,
     extensible: bool,
+    is_control: bool,
     default_interface: Option<String>,
     interfaces: Vec<String>,
     extends: Vec<String>,
@@ -462,6 +463,17 @@ impl ProjectModel {
                 });
             }
         }
+        if !named_somewhere
+            && self.lib_chain(lib, ty).iter().any(|&(l, t)| self.libraries[l].types[t].is_control)
+        {
+            if let Some(&vb) = self.library_by_name.get("vb") {
+                if let Some(&ext) = self.libraries[vb].type_by_name.get("_vbcontrolextender") {
+                    if let found @ MemberLookup::Found(_) = self.lib_member(vb, ext, name, access) {
+                        return found;
+                    }
+                }
+            }
+        }
         if named_somewhere {
             MemberLookup::MissingAccessor(access)
         } else if self
@@ -796,6 +808,7 @@ fn summarize_lib_type(t: &LibraryType) -> LibType {
     LibType {
         kind: t.kind,
         extensible: t.extensible,
+        is_control: t.is_control,
         default_interface: t.default_interface.as_deref().map(lc),
         interfaces: t.interfaces.iter().map(|s| lc(s)).collect(),
         extends: t.extends.iter().map(|s| lc(s)).collect(),

@@ -271,3 +271,58 @@ fn control_qualified_with_ctl_of_a_library_that_is_not_loaded_stays_not_loaded()
         Some(MemberStatus::LibraryNotLoaded("r8datetimectlctl".to_string()))
     );
 }
+
+const OCX_LIB: &str = r#"{
+  "name": "MSComctlLib",
+  "types": [
+    {"name": "TreeView", "kind": "coclass", "default_interface": "ITreeView", "is_control": true},
+    {"name": "ITreeView", "kind": "interface", "members": [
+      {"name": "Nodes", "kind": "propertyget", "return_type": "Long"}]},
+    {"name": "ImageList", "kind": "coclass", "default_interface": "IImageList"},
+    {"name": "IImageList", "kind": "interface", "members": [
+      {"name": "Count", "kind": "propertyget", "return_type": "Long"}]}
+  ]
+}"#;
+
+const EXTENDER_LIB: &str = r#"{
+  "name": "VB",
+  "types": [
+    {"name": "_VBControlExtender", "kind": "interface", "members": [
+      {"name": "Left", "kind": "field", "return_type": "Single"},
+      {"name": "Tag", "kind": "field", "return_type": "String"}]},
+    {"name": "VBControlExtender", "kind": "coclass", "default_interface": "_VBControlExtender"},
+    {"name": "Form", "kind": "class", "members": [
+      {"name": "Show", "kind": "method", "param_count": 0}]}
+  ]
+}"#;
+
+const OCX_FRM: &str = "VERSION 5.00\r\n\
+Begin VB.Form frmTree\r\n\
+   Begin MSComctlLib.TreeView tvwMain\r\n\
+   End\r\n\
+   Begin MSComctlLib.ImageList imlMain\r\n\
+   End\r\n\
+End\r\n\
+Attribute VB_Name = \"frmTree\"\r\n\
+Sub T()\r\n\
+    n = tvwMain.Nodes\r\n\
+    tvwMain.Left = 5\r\n\
+    tvwMain.Missing = 1\r\n\
+    imlMain.Left = 5\r\n\
+End Sub\r\n";
+
+#[test]
+fn control_of_a_library_has_the_extender_members_the_container_adds() {
+    let mut libraries = Library::from_json(OCX_LIB).unwrap();
+    libraries.extend(Library::from_json(EXTENDER_LIB).unwrap());
+    let config = SessionConfig { project_name: None, libraries };
+    let s = session_with(&[("frmTree.frm", OCX_FRM)], config);
+    // the library's own member is found first
+    assert_eq!(s.member_status_at(0, at(OCX_FRM, "tvwMain.Nodes", "Nodes")), Some(MemberStatus::Resolved));
+    // an extender member of a control
+    assert_eq!(s.member_status_at(0, at(OCX_FRM, "tvwMain.Left", "Left")), Some(MemberStatus::Resolved));
+    // neither the library nor the extender has it
+    assert_eq!(s.member_status_at(0, at(OCX_FRM, "tvwMain.Missing", "Missing")), Some(MemberStatus::NoSuchMember));
+    // a class that is not a control gets none of the extender's members
+    assert_eq!(s.member_status_at(0, at(OCX_FRM, "imlMain.Left", "Left")), Some(MemberStatus::NoSuchMember));
+}
