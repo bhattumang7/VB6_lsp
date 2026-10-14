@@ -235,3 +235,39 @@ fn inherited_members_are_unknown_when_the_designer_library_is_not_supplied() {
     let s = session_with(&[("frmA.frm", frm)], no_libraries());
     assert_eq!(s.diagnostics(0).len(), 1);
 }
+
+const CTL_LIB: &str = r#"{
+  "name": "R8DateTimeCtl",
+  "types": [
+    {"name": "RMDateTimeCtrl", "kind": "class", "members": [
+      {"name": "Value", "kind": "field", "return_type": "Date"}]}
+  ]
+}"#;
+
+const CTL_FRM: &str = "VERSION 5.00\r\n\
+Begin VB.Form frmDates\r\n\
+   Begin R8DateTimeCtlCtl.RMDateTimeCtrl txtDue\r\n\
+   End\r\n\
+End\r\n\
+Attribute VB_Name = \"frmDates\"\r\n\
+Sub T()\r\n\
+    txtDue.Value = Now\r\n\
+    txtDue.Missing = 1\r\n\
+End Sub\r\n";
+
+#[test]
+fn control_qualified_with_library_name_and_ctl_resolves_to_that_library() {
+    let config = SessionConfig { project_name: None, libraries: Library::from_json(CTL_LIB).unwrap() };
+    let s = session_with(&[("frmDates.frm", CTL_FRM)], config);
+    assert_eq!(s.member_status_at(0, at(CTL_FRM, "txtDue.Value", "Value")), Some(MemberStatus::Resolved));
+    assert_eq!(s.member_status_at(0, at(CTL_FRM, "txtDue.Missing", "Missing")), Some(MemberStatus::NoSuchMember));
+}
+
+#[test]
+fn control_qualified_with_ctl_of_a_library_that_is_not_loaded_stays_not_loaded() {
+    let s = session_with(&[("frmDates.frm", CTL_FRM)], no_libraries());
+    assert_eq!(
+        s.member_status_at(0, at(CTL_FRM, "txtDue.Value", "Value")),
+        Some(MemberStatus::LibraryNotLoaded("r8datetimectlctl".to_string()))
+    );
+}

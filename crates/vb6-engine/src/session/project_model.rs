@@ -350,6 +350,11 @@ impl ProjectModel {
                 if let Some(&l) = self.library_by_name.get(q) {
                     return self.lib_type(l, name).unwrap_or_else(unknown);
                 }
+                // The form designer writes a control by its component's library name plus `Ctl`
+                // (`ActiveBar2LibraryCtl.ActiveBar2`, `SHDocVwCtl.WebBrowser`).
+                if let Some(&l) = q.strip_suffix("ctl").and_then(|lib| self.library_by_name.get(lib)) {
+                    return self.lib_type(l, name).unwrap_or_else(unknown);
+                }
                 TypeRef::NotLoaded(q.to_string())
             }
         }
