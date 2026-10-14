@@ -2037,10 +2037,26 @@ impl<'a> Binder<'a> {
         let default_member = |ty: &SemType| -> SemType {
             let Some((project, module)) = self.project else { return SemType::Unresolved };
             match ty {
-                SemType::Class { .. } | SemType::Lib { .. } => project
-                    .default_member(module, ty)
-                    .map(|hit| hit.sem)
-                    .unwrap_or(SemType::Unresolved),
+                SemType::Class { .. } | SemType::Lib { .. } => {
+                    // `rs(0)` is `rs.Fields(0)`: when the default member takes no arguments, the
+                    // arguments index the object it returns, through that object's default member.
+                    let mut current = ty.clone();
+                    let mut result = SemType::Unresolved;
+                    for _ in 0..4 {
+                        let Some(hit) = project.default_member(module, &current) else {
+                            return result;
+                        };
+                        result = hit.sem.clone();
+                        let takes_no_arguments = matches!(hit.callable, Some(Arity::Known(0)));
+                        if arg_count == 0 || !takes_no_arguments
+                            || !matches!(result, SemType::Class { .. } | SemType::Lib { .. })
+                        {
+                            break;
+                        }
+                        current = result.clone();
+                    }
+                    result
+                }
                 // Indexing or calling a value of a type outside the project
                 // yields a value of that same unknown kind.
                 SemType::LateBound | SemType::Unknown(_) | SemType::LibraryNotLoaded(_) => ty.clone(),
