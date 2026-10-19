@@ -220,6 +220,16 @@ vb6-lsp write-res input.json output.res
 
 # Extract string-table entries (language ID 1 = English)
 vb6-lsp parse-string-table Game2048.RES 1
+
+# Control tree of a form with the .frx/.ctx data resolved, as JSON
+vb6-lsp read-form Main.frm
+
+# Write a form's pictures, icons and raw control bags to a folder
+vb6-lsp extract-form Main.frm out/
+
+# Decode the VB6 property bags that VB-authored controls keep in the .frx:
+# every record as name, type and value; nested groups (a column's value list) are flattened
+vb6-lsp read-bags Main.frm
 ```
 
 See [docs/RESOURCE_FILES.md](docs/RESOURCE_FILES.md) for format details.

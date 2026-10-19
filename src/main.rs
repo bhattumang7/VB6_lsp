@@ -106,12 +106,16 @@ fn handle_cli_command(args: &[String]) -> anyhow::Result<()> {
         "read-res" => cmd_read_res(args),
         "read-form" => cmd_read_form(args),
         "extract-form" => cmd_extract_form(args),
+        "read-bags" => cmd_read_bags(args),
         "write-res" => cmd_write_res(args),
         "parse-string-table" => cmd_parse_string_table(args),
         _ => {
             eprintln!("Unknown command: {}", args[0]);
             eprintln!("Available commands:");
             eprintln!("  read-res <file.res>                    - Read a .res file");
+            eprintln!("  read-form <form> [--com-decode]        - Control tree with .frx/.ctx data resolved");
+            eprintln!("  extract-form <form> <dir> [--com-decode] - Write the form's pictures and bags");
+            eprintln!("  read-bags <form>                       - Decode the VB property bags of third-party controls as JSON");
             eprintln!("  write-res <input.json> <output.res>    - Write a .res file");
             eprintln!("  parse-string-table <file.res> <id>     - Parse string table");
             std::process::exit(1);
@@ -166,6 +170,32 @@ fn cmd_read_form(args: &[String]) -> anyhow::Result<()> {
     let com_decode = args.iter().any(|a| a == "--com-decode");
     let export = build_form_export_cli(path, com_decode)?;
     println!("{}", serde_json::to_string_pretty(&export)?);
+    Ok(())
+}
+
+fn cmd_read_bags(args: &[String]) -> anyhow::Result<()> {
+    let positional: Vec<&String> = args[1..].iter().filter(|a| !a.starts_with("--")).collect();
+    if positional.is_empty() {
+        eprintln!("Usage: vb6-lsp read-bags <file.frm|.ctl|.pag|.dob>");
+        std::process::exit(1);
+    }
+    let path = std::path::Path::new(positional[0].as_str());
+    let resolved = resolve_form_cli(path, false)?;
+    let mut bags: Vec<serde_json::Value> = Vec::new();
+    for r in &resolved {
+        if let Ok(controls::frx::FrxValue::OcxBag { clsid, data }) = &r.value {
+            let decoded = controls::propbag::decode(data);
+            bags.push(serde_json::json!({
+                "control": r.reference.control_path,
+                "control_type": r.reference.control_type,
+                "property": r.reference.property,
+                "clsid": clsid.map(|c| format!("{:02x?}", c)),
+                "bytes": data.len(),
+                "bag": decoded,
+            }));
+        }
+    }
+    println!("{}", serde_json::to_string_pretty(&serde_json::json!({ "form": positional[0], "bags": bags }))?);
     Ok(())
 }
 

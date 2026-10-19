@@ -8,3 +8,4 @@ pub mod form_designer;
 pub mod resources;
 pub mod coverage;
 pub mod export;
+pub mod propbag;
