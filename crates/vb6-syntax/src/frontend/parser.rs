@@ -28,15 +28,15 @@ use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 ///
 /// Each `(left_bp, right_bp)` pair below encodes level `N` as
 /// `(2N, 2N+1)` (left-associative) so the relative ordering matches VB6
-/// exactly; `^` is right-associative (`left > right`).
+/// exactly. `^` is left-associative too: `2 ^ 3 ^ 2` is `(2 ^ 3) ^ 2`.
 fn infix_bp(kind: &TokenKind) -> Option<(u8, u8, BinOpKind)> {
     use BinOpKind as B;
     let (l, r, o) = match kind {
         // Member access (highest infix) — also handled by parse_postfix for Ident bases
         TokenKind::Kw(Kw::Dot)       => (26, 27, B::Dot),
         TokenKind::Kw(Kw::Bang)      => (26, 27, B::Bang),
-        // ^ exponentiation, level 12, right-associative
-        TokenKind::Kw(Kw::Caret)     => (25, 24, B::Pow),
+        // ^ exponentiation, level 12, left-associative
+        TokenKind::Kw(Kw::Caret)     => (25, 26, B::Pow),
         // * / multiplicative, level 11
         TokenKind::Kw(Kw::Star)      => (22, 23, B::Mul),
         TokenKind::Kw(Kw::Slash)     => (22, 23, B::Div),
