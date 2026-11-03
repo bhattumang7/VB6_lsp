@@ -394,6 +394,13 @@ pub enum ExprNode {
     CaseIs { op: BinOpKind, rhs: NodeId },
     /// Absent argument in a call arg list (consecutive commas).
     MissingArg,
+    /// A graphics point as one node: `Step (x, y)` (relative to the current
+    /// drawing position, `step`) or a plain `(x, y)`. A plain point that
+    /// begins the statement as `Obj.Line (x, y)` stays the call's argument
+    /// list instead, and one continuing it (`-(x2, y2)`) is two arguments.
+    GraphicsPoint { step: bool, x: NodeId, y: NodeId },
+    /// The `B` / `BF` box flag of a `Line` statement (`filled` for `BF`).
+    LineBox { filled: bool },
 
     // ── New nodes for D-P-NamedArg, D-P-Option, D-P-Declare, D-P-FileIO ─────
 

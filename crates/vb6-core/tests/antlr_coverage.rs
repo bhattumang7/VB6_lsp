@@ -101,6 +101,8 @@ fn kind_name(n: &ExprNode) -> &'static str {
         New { .. } => "New",
         CaseIs { .. } => "CaseIs",
         MissingArg => "MissingArg",
+        GraphicsPoint { .. } => "GraphicsPoint",
+        LineBox { .. } => "LineBox",
         NamedArg { .. } => "NamedArg",
         OptionExplicit => "OptionExplicit",
         OptionBase { .. } => "OptionBase",

@@ -212,13 +212,36 @@ pub struct Parser<'src> {
     /// (they are also in `decl_public` as public) but not part of the class's
     /// interface to other projects.
     pub decl_friend: std::collections::HashSet<u32>,
+    /// Procedures declared `Static` (`Static Sub`, `Private Static Function`):
+    /// all of their locals are static.
+    pub decl_static: std::collections::HashSet<u32>,
     /// Module kind — controls accept/reject for class-only syntax.
     pub module_kind: ModuleKind,
     /// True while a procedure body is being parsed.
     in_procedure: bool,
+    /// A variable named `Error` is declared at module level / in the current
+    /// procedure (parameters included). It shadows the `Error` statement, so a
+    /// line that starts with `Error` is then an ordinary target expression.
+    error_var_module: bool,
+    error_var_local: bool,
     /// Conditional-compilation constant table: `(lowercase_name, value)`.
     /// Pre-seeded with VB6 predefined constants.
     cc_defs: Vec<(String, i32)>,
+    /// Open `#If` blocks, innermost last.
+    cc_stack: Vec<CcFrame>,
+    /// One-token pushback for directive processing.
+    cc_pending: Option<Token>,
+}
+
+/// State of one open `#If … #End If` block.
+#[derive(Clone, Copy)]
+struct CcFrame {
+    /// The enclosing region is active.
+    parent_active: bool,
+    /// The current branch is active.
+    active: bool,
+    /// Some branch of this block has already been taken.
+    taken: bool,
 }
 
 impl<'src> Parser<'src> {
@@ -233,8 +256,13 @@ impl<'src> Parser<'src> {
             node_spans:  NodeSpans::new(),
             decl_public: std::collections::HashMap::new(),
             decl_friend: std::collections::HashSet::new(),
+            decl_static: std::collections::HashSet::new(),
             in_procedure: false,
+            error_var_module: false,
+            error_var_local: false,
             module_kind: ModuleKind::Standard,
+            cc_stack: Vec::new(),
+            cc_pending: None,
             cc_defs: vec![
                 ("win32".into(), -1),
                 ("win64".into(),  0),
@@ -306,6 +334,29 @@ impl<'src> Parser<'src> {
     /// here, wherever they occur. A `_` that is not followed by an end of line
     /// is returned as a `LineCont` token for the grammar to reject.
     fn next_logical(&mut self) -> Token {
+        loop {
+            let tok = self.next_physical();
+            if let TokenKind::Kw(kw @ (Kw::CcIf | Kw::CcElseIf | Kw::CcElse | Kw::CcEnd | Kw::CcConst)) =
+                tok.kind
+            {
+                self.cc_directive(kw);
+                continue;
+            }
+            if !self.cc_active() {
+                if tok.kind == TokenKind::Eof {
+                    return tok;
+                }
+                continue;
+            }
+            return tok;
+        }
+    }
+
+    /// The next token of the logical line, before conditional compilation.
+    fn next_physical(&mut self) -> Token {
+        if let Some(t) = self.cc_pending.take() {
+            return t;
+        }
         loop {
             let tok = self.after_line_cont.take().unwrap_or_else(|| self.scanner.next_token());
             if tok.kind == TokenKind::Kw(Kw::LineCont) {
@@ -415,11 +466,59 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// Remember that a variable called `Error` is declared (see
+    /// `error_var_module`).
+    fn note_declared_name(&mut self, name: &Token, module_level: bool) {
+        let is_error = name
+            .sym
+            .map_or(false, |s| self.scanner.sym_name(s as u32).eq_ignore_ascii_case("error"));
+        if is_error {
+            if module_level {
+                self.error_var_module = true;
+            } else {
+                self.error_var_local = true;
+            }
+        }
+    }
+
+    /// True when a line starting with the `Error` keyword is a target
+    /// expression (`Error = 5`, `Error.Foo`, `Error(i) = 5`) rather than the
+    /// `Error <number>` statement.
+    fn error_starts_target(&mut self) -> bool {
+        match self.peek2().kind {
+            TokenKind::Kw(Kw::Eq) | TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang) => true,
+            TokenKind::Kw(Kw::LParen) => self.error_var_module || self.error_var_local,
+            _ => false,
+        }
+    }
+
+    /// True when the next tokens are `End <closer>` (`End If`, `End With`,
+    /// `End Select`, `End Sub`, …). A bare `End` — the statement that stops the
+    /// program — is not a block terminator.
+    fn at_end_closer(&mut self) -> bool {
+        if !matches!(self.peek().kind, TokenKind::Kw(Kw::End)) {
+            return false;
+        }
+        matches!(
+            self.peek2().kind,
+            TokenKind::Kw(Kw::If)
+                | TokenKind::Kw(Kw::With)
+                | TokenKind::Kw(Kw::Select)
+                | TokenKind::Kw(Kw::Sub)
+                | TokenKind::Kw(Kw::Function)
+                | TokenKind::Kw(Kw::Property)
+                | TokenKind::Kw(Kw::Type)
+                | TokenKind::Kw(Kw::Enum)
+        )
+    }
+
     fn at_block_end(&mut self) -> bool {
+        if self.at_end_closer() {
+            return true;
+        }
         matches!(
             self.peek().kind,
             TokenKind::Eof
-                | TokenKind::Kw(Kw::End)
                 | TokenKind::Kw(Kw::EndIf)
                 | TokenKind::Kw(Kw::Else)
                 | TokenKind::Kw(Kw::ElseIf)
@@ -521,15 +620,6 @@ impl<'src> Parser<'src> {
                 // Implements — class-module-only
                 TokenKind::Kw(Kw::Implements) => {
                     let n = self.parse_implements_stmt(arena);
-                    nodes.push(n);
-                }
-                // Conditional compilation directives
-                TokenKind::Kw(Kw::CcIf)
-                | TokenKind::Kw(Kw::CcElse)
-                | TokenKind::Kw(Kw::CcElseIf)
-                | TokenKind::Kw(Kw::CcEnd)
-                | TokenKind::Kw(Kw::CcConst) => {
-                    let n = self.parse_cc_directive(arena);
                     nodes.push(n);
                 }
                 // Option statements
@@ -715,21 +805,16 @@ impl<'src> Parser<'src> {
                 open_mode: 0,
                 open_flags: 0,
             })
-        } else if self.peek().kind == TokenKind::Kw(Kw::LParen)
-            || (self.peek().kind == TokenKind::Kw(Kw::Step)
-                && self.peek2().kind == TokenKind::Kw(Kw::LParen))
-        {
-            // `Line [Step](x1,y1)-(x2,y2)[,color[,flags]]` — VB6 graphics method.
-            self.parse_line_graphics_stmt(arena)
         } else {
+            // `Line [Step](x1,y1)-(x2,y2)[,color[,B|BF]]` is the graphics method
+            // of the enclosing form; otherwise an ordinary name.
             self.parse_ident_stmt_with_tok(arena, t)
         }
     }
 
-    /// Parse `[Step](x, y)` — a VB6 graphics coordinate pair.
+    /// Parse `(x, y)` — a VB6 graphics coordinate pair.
     /// Returns `(x_node, y_node)`.
     fn parse_coord_pair(&mut self, arena: &mut ExprArena) -> (NodeId, NodeId) {
-        self.eat(TokenKind::Kw(Kw::Step)); // optional Step keyword
         self.expect(TokenKind::Kw(Kw::LParen), ERR_UNEXPECTED_TOKEN);
         let x = self.parse_expr(arena, 0);
         self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
@@ -738,27 +823,95 @@ impl<'src> Parser<'src> {
         (x, y)
     }
 
-    /// Parse `[Step](x1,y1)-[Step](x2,y2)[,color[,flags]]`.
-    /// Called after the `Line` keyword has already been consumed.
-    fn parse_line_graphics_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-        let (x1, y1) = self.parse_coord_pair(arena);
-        self.expect(TokenKind::Kw(Kw::Minus), ERR_UNEXPECTED_TOKEN);
-        let (x2, y2) = self.parse_coord_pair(arena);
-        let mut args = vec![x1, y1, x2, y2];
-        // Optional: `, color [, flags…]`
-        if self.eat(TokenKind::Kw(Kw::Comma)) {
-            if let Some(color) = self.try_parse_expr(arena) {
-                args.push(color);
+    /// The items of a `Print` method statement, separated by `;` or `,`
+    /// (either may also end the statement).
+    fn parse_print_method_items(&mut self, arena: &mut ExprArena, args: &mut Vec<NodeId>) {
+        while !self.peek().is_stmt_end() {
+            if self.eat(TokenKind::Kw(Kw::Semi)) || self.eat(TokenKind::Kw(Kw::Comma)) {
+                continue;
             }
-            while self.eat(TokenKind::Kw(Kw::Comma)) {
-                if let Some(flag) = self.try_parse_expr(arena) {
-                    args.push(flag);
-                }
+            match self.try_parse_expr(arena) {
+                Some(expr) => args.push(expr),
+                None => break,
             }
         }
-        self.end_stmt();
-        let arg_list = arena.alloc(ExprNode::ArgList { args });
-        arena.alloc(ExprNode::Block { stmts: vec![arg_list] })
+    }
+
+    /// `Step (x, y)` as a single [`ExprNode::GraphicsPoint`].
+    fn parse_step_point(&mut self, arena: &mut ExprArena) -> NodeId {
+        self.advance(); // `Step`
+        let (x, y) = self.parse_coord_pair(arena);
+        arena.alloc(ExprNode::GraphicsPoint { step: true, x, y })
+    }
+
+    /// The member (or bare) name `lhs` ends in, lower-cased, when `lhs` is a
+    /// name, a member access, or a call of one of those.
+    fn graphics_target_is(&self, arena: &ExprArena, lhs: NodeId, wanted: &str) -> bool {
+        let target = match arena.get(lhs) {
+            ExprNode::Call { func, .. } => *func,
+            _ => lhs,
+        };
+        let sym = match arena.get(target) {
+            ExprNode::NameRef { sym, .. } => *sym,
+            ExprNode::MemberAccess { member, .. } => *member,
+            _ => return false,
+        };
+        self.scanner.sym_name(sym).eq_ignore_ascii_case(wanted)
+    }
+
+    /// True at the `-` that continues a graphics point pair: after
+    /// `Obj.Line (x1, y1)` (a call), or at the start of `Obj.Line -(x, y)` /
+    /// `Obj.Line -Step(x, y)` where the first point is omitted.
+    fn at_graphics_continuation(&mut self, arena: &ExprArena, lhs: NodeId) -> bool {
+        if self.peek().kind != TokenKind::Kw(Kw::Minus) {
+            return false;
+        }
+        let follows = matches!(
+            self.peek2().kind,
+            TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Step)
+        );
+        follows
+            && (matches!(arena.get(lhs), ExprNode::Call { .. })
+                || self.graphics_target_is(arena, lhs, "line"))
+    }
+
+    /// The `, arg, arg …` after the points of a graphics statement. An
+    /// omitted argument is a `MissingArg`; in a `Line` statement the second
+    /// argument may be the `B` / `BF` box flag.
+    fn parse_graphics_tail(&mut self, arena: &mut ExprArena, args: &mut Vec<NodeId>, is_line: bool) {
+        let mut position = 0;
+        while self.eat(TokenKind::Kw(Kw::Comma)) {
+            let arg = if matches!(self.peek().kind, TokenKind::Kw(Kw::Comma)) || self.peek().is_stmt_end() {
+                arena.alloc(ExprNode::MissingArg)
+            } else if let Some(flag) = self.try_parse_line_box(arena, is_line && position == 1) {
+                flag
+            } else if self.peek().kind == TokenKind::Kw(Kw::Step) && self.peek2().kind == TokenKind::Kw(Kw::LParen) {
+                self.parse_step_point(arena)
+            } else if let Some(expr) = self.try_parse_expr(arena) {
+                expr
+            } else {
+                arena.alloc(ExprNode::MissingArg)
+            };
+            args.push(arg);
+            position += 1;
+        }
+    }
+
+    /// `B` / `BF` where a `Line` statement takes its box flag.
+    fn try_parse_line_box(&mut self, arena: &mut ExprArena, allowed: bool) -> Option<NodeId> {
+        if !allowed {
+            return None;
+        }
+        let filled = match self.peek().kind {
+            TokenKind::Kw(Kw::B) => false,
+            TokenKind::Kw(Kw::BF) => true,
+            _ => return None,
+        };
+        let span = self.current_span();
+        self.advance();
+        let id = arena.alloc(ExprNode::LineBox { filled });
+        self.set_span(id, span);
+        Some(id)
     }
 
     /// `Get`/`Put` random-access I/O: `#n, …`; otherwise an implicit call.
@@ -852,7 +1005,12 @@ impl<'src> Parser<'src> {
         // "End" alone terminates the program.
         // End Sub / End Function etc. are handled in their parent.
         self.advance();
-        if self.peek().is_stmt_end() {
+        if self.peek().is_stmt_end()
+            || matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else) | TokenKind::Eof
+            )
+        {
             self.end_stmt();
             return Some(arena.alloc(ExprNode::EndStmt));
         }
@@ -926,6 +1084,7 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Resume) => self.parse_resume_stmt(arena),
             TokenKind::Kw(Kw::On)     => self.parse_on_stmt(arena),
             // Error
+            TokenKind::Kw(Kw::Error) if self.error_starts_target() => self.parse_ident_stmt(arena),
             TokenKind::Kw(Kw::Error) => {
                 self.advance();
                 let expr = self.parse_expr(arena, 0);
@@ -944,12 +1103,6 @@ impl<'src> Parser<'src> {
 
             // Attribute metadata line
             TokenKind::Kw(Kw::Attribute) => self.parse_attribute_stmt(arena),
-            // Conditional compilation directives (inside proc body)
-            TokenKind::Kw(Kw::CcIf)
-            | TokenKind::Kw(Kw::CcElseIf)
-            | TokenKind::Kw(Kw::CcElse)
-            | TokenKind::Kw(Kw::CcEnd)
-            | TokenKind::Kw(Kw::CcConst) => self.parse_cc_directive(arena),
             // File I/O statements
             TokenKind::Kw(Kw::Open)   => self.parse_file_open(arena),
             TokenKind::Kw(Kw::Close)  => self.parse_file_close(arena),
@@ -1072,33 +1225,36 @@ impl<'src> Parser<'src> {
             let first = arena.alloc(ExprNode::Paren { inner: arg });
             let first = self.parse_infix(arena, first, 0);
             let mut args = vec![first];
-            if self.eat(TokenKind::Kw(Kw::Comma)) {
+            if self.graphics_target_is(arena, callee, "print") {
+                self.parse_print_method_items(arena, &mut args);
+            } else if self.eat(TokenKind::Kw(Kw::Comma)) {
                 args.extend(self.parse_stmt_arg_list(arena));
             }
             self.end_stmt();
             let args = arena.alloc(ExprNode::ArgList { args });
             arena.alloc(ExprNode::CallStmt { callee, args })
-        } else if self.peek().kind == TokenKind::Kw(Kw::Minus)
-            && (self.peek2().kind == TokenKind::Kw(Kw::LParen)
-                || self.peek2().kind == TokenKind::Kw(Kw::Step))
-        {
+        } else if self.at_graphics_continuation(arena, lhs) {
             // `Obj.Line (x1,y1)-(x2,y2)` — postfix consumed `(x1,y1)` as a call
-            // arg-list; the `-(x2,y2)` continuation signals a graphics coord-pair call.
-            self.advance(); // consume `-`
-            let (x2, y2) = self.parse_coord_pair(arena);
-            let mut extra = vec![x2, y2];
-            if self.eat(TokenKind::Kw(Kw::Comma)) {
-                if let Some(color) = self.try_parse_expr(arena) {
-                    extra.push(color);
-                }
-                while self.eat(TokenKind::Kw(Kw::Comma)) {
-                    if let Some(flag) = self.try_parse_expr(arena) {
-                        extra.push(flag);
-                    }
-                }
+            // arg-list; the `-(x2,y2)` continuation signals a graphics coord-pair
+            // call. `Obj.Line -(x2,y2)` omits the first point.
+            let is_line = self.graphics_target_is(arena, lhs, "line");
+            let mut args = Vec::new();
+            if !matches!(arena.get(lhs), ExprNode::Call { .. }) {
+                args.push(arena.alloc(ExprNode::MissingArg));
             }
+            self.advance(); // consume `-`
+            if self.peek().kind == TokenKind::Kw(Kw::Step) {
+                args.push(self.parse_step_point(arena));
+            } else if matches!(arena.get(lhs), ExprNode::Call { .. }) {
+                let (x2, y2) = self.parse_coord_pair(arena);
+                args.extend([x2, y2]);
+            } else {
+                let (x2, y2) = self.parse_coord_pair(arena);
+                args.push(arena.alloc(ExprNode::GraphicsPoint { step: false, x: x2, y: y2 }));
+            }
+            self.parse_graphics_tail(arena, &mut args, is_line);
             self.end_stmt();
-            let args = arena.alloc(ExprNode::ArgList { args: extra });
+            let args = arena.alloc(ExprNode::ArgList { args });
             arena.alloc(ExprNode::CallStmt { callee: lhs, args })
         } else {
             // Implicit call with optional trailing arguments: `Foo a, b`. After
@@ -1106,6 +1262,37 @@ impl<'src> Parser<'src> {
             // only separates the pair from the remaining arguments.
             if matches!(arena.get(lhs), ExprNode::Call { .. }) {
                 self.eat(TokenKind::Kw(Kw::Comma));
+            }
+            if self.graphics_target_is(arena, lhs, "print") {
+                // `Obj.Print a; b, c;` — `;` and `,` separate the items.
+                let mut args = Vec::new();
+                self.parse_print_method_items(arena, &mut args);
+                self.end_stmt();
+                if args.is_empty() {
+                    return lhs;
+                }
+                let args = arena.alloc(ExprNode::ArgList { args });
+                return arena.alloc(ExprNode::CallStmt { callee: lhs, args });
+            }
+            if self.peek().kind == TokenKind::Kw(Kw::Step) && self.peek2().kind == TokenKind::Kw(Kw::LParen) {
+                // `Obj.PSet Step(x, y)`, `Obj.Line Step(x1, y1)-Step(x2, y2)`.
+                let is_line = self.graphics_target_is(arena, lhs, "line");
+                let mut args = vec![self.parse_step_point(arena)];
+                if self.peek().kind == TokenKind::Kw(Kw::Minus)
+                    && matches!(self.peek2().kind, TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Step))
+                {
+                    self.advance(); // `-`
+                    if self.peek().kind == TokenKind::Kw(Kw::Step) {
+                        args.push(self.parse_step_point(arena));
+                    } else {
+                        let (x, y) = self.parse_coord_pair(arena);
+                        args.push(arena.alloc(ExprNode::GraphicsPoint { step: false, x, y }));
+                    }
+                }
+                self.parse_graphics_tail(arena, &mut args, is_line);
+                self.end_stmt();
+                let args = arena.alloc(ExprNode::ArgList { args });
+                return arena.alloc(ExprNode::CallStmt { callee: lhs, args });
             }
             let args = self.parse_stmt_arg_list(arena);
             self.end_stmt();
@@ -1130,8 +1317,11 @@ impl<'src> Parser<'src> {
             return None;
         }
         let kind = self.peek().kind.clone();
-        let continues = kind == TokenKind::Kw(Kw::Comma) || infix_bp(&kind).is_some();
-        continues.then_some((*func, *arg))
+        let (func, arg) = (*func, *arg);
+        // `Obj.Print (a); b`: `;` separates the items of a `Print` method.
+        let semi = kind == TokenKind::Kw(Kw::Semi) && self.graphics_target_is(arena, func, "print");
+        let continues = kind == TokenKind::Kw(Kw::Comma) || infix_bp(&kind).is_some() || semi;
+        continues.then_some((func, arg))
     }
 
     /// Parses a `Let` assignment statement.
@@ -1239,6 +1429,7 @@ impl<'src> Parser<'src> {
             self.advance();
         }
         let name = self.expect_ident();
+        self.note_declared_name(&name, !self.in_procedure);
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         let bounds = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let d = self.parse_array_bounds(arena);
@@ -1297,8 +1488,16 @@ impl<'src> Parser<'src> {
             // array `a(i).b(...)`: everything before the last name is the base
             // it belongs to. A parenthesised list followed by `.` indexes the
             // base; the last list holds the bounds.
-            let mut name = self.expect_ident();
+            // A leading `.` names a member of the innermost `With` object.
             let mut base: Option<NodeId> = None;
+            if self.peek().kind == TokenKind::Kw(Kw::Dot) {
+                let dot_span = self.current_span();
+                self.advance();
+                let with_ctx = arena.alloc(ExprNode::WithContext);
+                self.set_span(with_ctx, dot_span);
+                base = Some(with_ctx);
+            }
+            let mut name = self.expect_ident();
             let mut bounds: Option<NodeId> = None;
             loop {
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -1363,7 +1562,7 @@ impl<'src> Parser<'src> {
         self.eat_eol();
         let body = self.parse_block(arena);
         // For is implicitly terminated by the procedure boundary if Next is missing.
-        let at_term = matches!(self.peek().kind, TokenKind::Eof | TokenKind::Kw(Kw::End));
+        let at_term = self.peek().kind == TokenKind::Eof || self.at_end_closer();
         if !at_term {
             self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
             // `Next [var [, var]…]`
@@ -1408,7 +1607,7 @@ impl<'src> Parser<'src> {
         self.eat_eol();
         let body = self.parse_block(arena);
         // Do is implicitly terminated by the procedure boundary if Loop is missing.
-        let post = if matches!(self.peek().kind, TokenKind::Eof | TokenKind::Kw(Kw::End)) {
+        let post = if self.peek().kind == TokenKind::Eof || self.at_end_closer() {
             None
         } else {
             self.expect(TokenKind::Kw(Kw::Loop), ERR_EXPECTED_LOOP);
@@ -1535,7 +1734,7 @@ impl<'src> Parser<'src> {
                     self.advance();
                     cases.push(self.parse_case_clause(arena));
                 }
-                TokenKind::Kw(Kw::End) => {
+                TokenKind::Kw(Kw::End) if self.at_end_closer() => {
                     self.advance();
                     self.expect(TokenKind::Kw(Kw::Select), ERR_UNEXPECTED_TOKEN);
                     self.eat_eol();
@@ -1788,146 +1987,111 @@ impl<'src> Parser<'src> {
         arena.alloc(ExprNode::DebugPrint { args })
     }
 
-    // ── Conditional-compilation directive parser ─────────────────────────────
+    // ── Conditional compilation ───────────────────────────────────────────────
+    //
+    // `#Const` / `#If` / `#ElseIf` / `#Else` / `#End If` are resolved on the
+    // token stream, before the grammar sees it: a directive line is consumed
+    // and the text of every inactive branch is dropped, so the statements of
+    // the active branch parse in whatever construct surrounds the directives
+    // (a `Case` clause, an `If` block, a procedure, the module) exactly as if
+    // the directives were not there.
 
-    fn parse_cc_directive(&mut self, arena: &mut ExprArena) -> NodeId {
-        match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::CcConst) => {
-                self.advance(); // #Const
-                let name_tok = self.expect_ident();
-                let name = name_tok.sym
-                    .map(|id| self.scanner.sym_name(id as u32).to_ascii_lowercase())
-                    .unwrap_or_default();
-                self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
-                let value = self.eval_cc_expr(0);
-                self.cc_set(&name, value);
-                self.eat_eol();
-                arena.alloc(ExprNode::Block { stmts: vec![] })
+    /// Next raw token for directive processing (honours the one-token pushback).
+    fn cc_peek(&mut self) -> &Token {
+        if self.cc_pending.is_none() {
+            let t = self.next_physical();
+            self.cc_pending = Some(t);
+        }
+        self.cc_pending.as_ref().unwrap()
+    }
+
+    fn cc_advance(&mut self) -> Token {
+        match self.cc_pending.take() {
+            Some(t) => t,
+            None => self.next_physical(),
+        }
+    }
+
+    /// Consume the rest of a directive line, including its end of line.
+    fn cc_skip_line(&mut self) {
+        loop {
+            match self.cc_peek().kind {
+                TokenKind::Eof => return,
+                TokenKind::Eol => {
+                    self.cc_advance();
+                    return;
+                }
+                _ => {
+                    self.cc_advance();
+                }
             }
-            TokenKind::Kw(Kw::CcIf) => {
-                self.advance(); // #If
-                let cond = self.eval_cc_expr(0);
-                self.eat(TokenKind::Kw(Kw::Then));
-                self.eat_eol();
-                self.parse_cc_chain(arena, cond != 0)
+        }
+    }
+
+    fn cc_active(&self) -> bool {
+        self.cc_stack.last().map_or(true, |f| f.active)
+    }
+
+    /// `#If` / `#ElseIf` condition: evaluated only when the branch can still
+    /// be taken, then the rest of the line (`Then`, comment) is dropped.
+    fn cc_condition(&mut self, evaluate: bool) -> bool {
+        let value = if evaluate { self.eval_cc_expr(0) != 0 } else { false };
+        self.cc_skip_line();
+        value
+    }
+
+    /// Handle the directive token `kind` (already consumed). Returns after the
+    /// directive's whole line has been consumed.
+    fn cc_directive(&mut self, kind: Kw) {
+        match kind {
+            Kw::CcConst => {
+                if self.cc_active() {
+                    let name_tok = self.cc_advance();
+                    let name = name_tok
+                        .sym
+                        .map(|id| self.scanner.sym_name(id as u32).to_ascii_lowercase())
+                        .unwrap_or_default();
+                    if self.cc_peek().kind == TokenKind::Kw(Kw::Eq) {
+                        self.cc_advance();
+                    } else {
+                        let span = self.cc_peek().span;
+                        self.diagnostics.push(ERR_EXPECTED_EQ, span);
+                    }
+                    let value = self.eval_cc_expr(0);
+                    self.cc_set(&name, value);
+                }
+                self.cc_skip_line();
+            }
+            Kw::CcIf => {
+                let parent_active = self.cc_active();
+                let taken = self.cc_condition(parent_active);
+                self.cc_stack.push(CcFrame { parent_active, active: taken, taken });
+            }
+            Kw::CcElseIf => {
+                let Some(frame) = self.cc_stack.last().copied() else {
+                    self.cc_skip_line();
+                    return;
+                };
+                let evaluate = frame.parent_active && !frame.taken;
+                let cond = self.cc_condition(evaluate);
+                let top = self.cc_stack.last_mut().unwrap();
+                top.active = cond;
+                top.taken |= cond;
+            }
+            Kw::CcElse => {
+                self.cc_skip_line();
+                if let Some(top) = self.cc_stack.last_mut() {
+                    top.active = top.parent_active && !top.taken;
+                    top.taken = true;
+                }
             }
             _ => {
-                // Standalone #Else, #ElseIf, #End — consume and skip
-                self.advance();
-                self.skip_to_stmt_end();
-                self.eat_eol();
-                arena.alloc(ExprNode::Block { stmts: vec![] })
-            }
-        }
-    }
-
-    /// Parse the body of a CC if/elseif/else chain.
-    /// `include`: whether this branch is currently active (should be parsed).
-    /// Returns a Block node of the active branch's statements.
-    fn parse_cc_chain(&mut self, arena: &mut ExprArena, include: bool) -> NodeId {
-        let result = if include {
-            self.parse_cc_active_branch(arena)
-        } else {
-            self.skip_cc_false_branch();
-            arena.alloc(ExprNode::Block { stmts: vec![] })
-        };
-        self.parse_cc_continuation(arena, include, result)
-    }
-
-    /// Parse the statements of an active CC branch up to the next CC terminator.
-    fn parse_cc_active_branch(&mut self, arena: &mut ExprArena) -> NodeId {
-        let mut stmts = Vec::new();
-        loop {
-            while self.eat(TokenKind::Eol) {}
-            if self.is_cc_terminator() { break; }
-            match self.peek().kind.clone() {
-                TokenKind::Eof => break,
-                TokenKind::Kw(Kw::Sub)      => stmts.push(self.parse_proc_decl(arena, ProcKind::Sub)),
-                TokenKind::Kw(Kw::Function) => stmts.push(self.parse_proc_decl(arena, ProcKind::Function)),
-                TokenKind::Kw(Kw::Property) => stmts.push(self.parse_property_decl(arena)),
-                TokenKind::Kw(Kw::Declare)  => stmts.push(self.parse_declare_stmt(arena)),
-                TokenKind::Kw(Kw::Type)     => stmts.push(self.parse_type_decl(arena)),
-                TokenKind::Kw(Kw::Enum)     => stmts.push(self.parse_enum_decl(arena)),
-                TokenKind::Kw(Kw::Event)    => stmts.push(self.parse_event_decl(arena)),
-                TokenKind::Kw(Kw::Implements) => stmts.push(self.parse_implements_stmt(arena)),
-                TokenKind::Kw(Kw::Public)
-                | TokenKind::Kw(Kw::Global)
-                | TokenKind::Kw(Kw::Private)
-                | TokenKind::Kw(Kw::Friend)
-                | TokenKind::Kw(Kw::Static) => stmts.push(self.parse_access_decl(arena)),
-                TokenKind::Kw(Kw::Option)   => stmts.push(self.parse_option_stmt(arena)),
-                _ => { if let Some(n) = self.parse_stmt(arena) { stmts.push(n); } }
-            }
-        }
-        arena.alloc(ExprNode::Block { stmts })
-    }
-
-    /// Handle the `#ElseIf` / `#Else` / `#End If` continuation of a CC chain.
-    /// `result` is the node parsed for the branch that just ended.
-    fn parse_cc_continuation(
-        &mut self,
-        arena: &mut ExprArena,
-        include: bool,
-        result: NodeId,
-    ) -> NodeId {
-        match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::CcElseIf) => {
-                self.advance();
-                let cond = self.eval_cc_expr(0);
-                self.eat(TokenKind::Kw(Kw::Then));
-                self.eat_eol();
-                // Only the first matching branch is included
-                let else_node = self.parse_cc_chain(arena, !include && cond != 0);
-                if !include && cond != 0 { else_node } else { result }
-            }
-            TokenKind::Kw(Kw::CcElse) => {
-                self.advance();
-                self.eat_eol();
-                let else_node = self.parse_cc_chain(arena, !include);
-                if !include { else_node } else { result }
-            }
-            TokenKind::Kw(Kw::CcEnd) => {
-                self.advance(); // #End
-                self.eat(TokenKind::Kw(Kw::If));
-                self.eat_eol();
-                result
-            }
-            _ => result
-        }
-    }
-
-    fn is_cc_terminator(&mut self) -> bool {
-        matches!(self.peek().kind,
-            TokenKind::Kw(Kw::CcElseIf) |
-            TokenKind::Kw(Kw::CcElse) |
-            TokenKind::Kw(Kw::CcEnd))
-    }
-
-    /// Skip statements in a false CC branch, tracking nested #If depth.
-    fn skip_cc_false_branch(&mut self) {
-        let mut cc_depth = 0i32;
-        loop {
-            while self.eat(TokenKind::Eol) {}
-            match self.peek().kind.clone() {
-                TokenKind::Eof => break,
-                TokenKind::Kw(Kw::CcIf) => {
-                    cc_depth += 1;
-                    self.skip_to_stmt_end();
-                    self.eat_eol();
+                // `#End If`
+                if self.cc_peek().kind == TokenKind::Kw(Kw::If) {
+                    self.cc_advance();
                 }
-                TokenKind::Kw(Kw::CcEnd) if cc_depth > 0 => {
-                    cc_depth -= 1;
-                    self.skip_to_stmt_end();
-                    self.eat_eol();
-                }
-                // Top-level CC terminator
-                TokenKind::Kw(Kw::CcElseIf) |
-                TokenKind::Kw(Kw::CcElse) |
-                TokenKind::Kw(Kw::CcEnd) => break,
-                _ => {
-                    self.skip_to_stmt_end();
-                    self.eat_eol();
-                }
+                self.cc_skip_line();
+                self.cc_stack.pop();
             }
         }
     }
@@ -1953,19 +2117,19 @@ impl<'src> Parser<'src> {
 
     /// Evaluate a CC prefix (unary) operator, or fall through to a primary.
     fn eval_cc_prefix(&mut self) -> i32 {
-        match self.peek().kind.clone() {
+        match self.cc_peek().kind.clone() {
             TokenKind::Kw(Kw::Not) => {
-                self.advance();
+                self.cc_advance();
                 let v = self.eval_cc_expr(20);
                 if v != 0 { 0 } else { -1 }
             }
             TokenKind::Kw(Kw::Minus) => {
-                self.advance();
+                self.cc_advance();
                 let v = self.eval_cc_expr(20);
                 v.wrapping_neg()
             }
             TokenKind::Kw(Kw::Plus) => {
-                self.advance();
+                self.cc_advance();
                 self.eval_cc_expr(20)
             }
             _ => self.eval_cc_primary(),
@@ -1974,7 +2138,7 @@ impl<'src> Parser<'src> {
 
     /// Binding powers + operator tag for a CC infix operator, or `None`.
     fn cc_infix_op(&mut self) -> Option<(u8, u8, u8)> {
-        let entry = match self.peek().kind {
+        let entry = match self.cc_peek().kind {
             TokenKind::Kw(Kw::Star)       => (18, 19, b'*'),
             TokenKind::Kw(Kw::Slash)      => (18, 19, b'/'),
             TokenKind::Kw(Kw::Backslash)  => (16, 17, b'\\'),
@@ -2003,7 +2167,7 @@ impl<'src> Parser<'src> {
         loop {
             let Some((l_bp, r_bp, op)) = self.cc_infix_op() else { break };
             if l_bp <= min_bp { break; }
-            self.advance();
+            self.cc_advance();
             let rhs = self.eval_cc_expr(r_bp);
             lhs = apply_cc_binop(lhs, rhs, op);
         }
@@ -2011,25 +2175,25 @@ impl<'src> Parser<'src> {
     }
 
     fn eval_cc_primary(&mut self) -> i32 {
-        match self.peek().kind.clone() {
+        match self.cc_peek().kind.clone() {
             TokenKind::Kw(Kw::LParen) => {
-                self.advance();
+                self.cc_advance();
                 let v = self.eval_cc_expr(0);
-                self.eat(TokenKind::Kw(Kw::RParen));
+                if self.cc_peek().kind == TokenKind::Kw(Kw::RParen) { self.cc_advance(); }
                 v
             }
             TokenKind::IntLit => {
-                let tok = self.advance();
+                let tok = self.cc_advance();
                 if let Some(crate::frontend::token::Lit::Int(n)) = tok.lit { n } else { 0 }
             }
             TokenKind::LongLit => {
-                let tok = self.advance();
+                let tok = self.cc_advance();
                 if let Some(crate::frontend::token::Lit::Long(n)) = tok.lit { n } else { 0 }
             }
-            TokenKind::Kw(Kw::True)  => { self.advance(); -1 }
-            TokenKind::Kw(Kw::False) => { self.advance();  0 }
+            TokenKind::Kw(Kw::True)  => { self.cc_advance(); -1 }
+            TokenKind::Kw(Kw::False) => { self.cc_advance();  0 }
             _ => {
-                let tok = self.advance();
+                let tok = self.cc_advance();
                 if tok.kind == TokenKind::Ident || matches!(tok.kind, TokenKind::Kw(_)) {
                     if let Some(id) = tok.sym {
                         let name = self.scanner.sym_name(id as u32).to_ascii_lowercase();
@@ -2332,6 +2496,10 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Private) => Some(false),
             _ => None,
         };
+        // `Static` may follow the access modifier (`Private Static Sub`): every
+        // local of the procedure is then static.
+        let static_proc = matches!(access_tok, TokenKind::Kw(Kw::Static))
+            || self.eat(TokenKind::Kw(Kw::Static));
         let node = match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Sub)      => self.parse_proc_decl(arena, ProcKind::Sub),
             TokenKind::Kw(Kw::Function) => self.parse_proc_decl(arena, ProcKind::Function),
@@ -2347,13 +2515,11 @@ impl<'src> Parser<'src> {
             // belongs to the first variable and is handled per item.
             TokenKind::Ident | TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::WithEvents) => {
                 if self.peek().kind == TokenKind::Kw(Kw::Dim) { self.advance(); }
-                let is_static = matches!(access_tok, TokenKind::Kw(Kw::Static));
-                self.parse_dim_list_static(arena, false, is_static)
+                self.parse_dim_list_static(arena, false, static_proc)
             }
             // A contextual keyword names the variable (`Public Name As String`).
             TokenKind::Kw(_) if self.at_contextual_keyword() => {
-                let is_static = matches!(access_tok, TokenKind::Kw(Kw::Static));
-                self.parse_dim_list_static(arena, false, is_static)
+                self.parse_dim_list_static(arena, false, static_proc)
             }
             _ => {
                 let span = self.current_span();
@@ -2367,6 +2533,9 @@ impl<'src> Parser<'src> {
         }
         if access_tok == TokenKind::Kw(Kw::Friend) {
             self.decl_friend.insert(node.0);
+        }
+        if static_proc && matches!(arena.get(node), ExprNode::ProcDecl { .. }) {
+            self.decl_static.insert(node.0);
         }
         node
     }
@@ -2386,6 +2555,7 @@ impl<'src> Parser<'src> {
     /// Parses Sub or Function body.
     fn parse_proc_decl(&mut self, arena: &mut ExprArena, kind: ProcKind) -> NodeId {
         self.advance(); // consume Sub / Function
+        self.error_var_local = false;
         let name = self.expect_ident();
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         // Parameter list
@@ -2429,6 +2599,7 @@ impl<'src> Parser<'src> {
     /// Parses Property Get/Let/Set.
     fn parse_property_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Property
+        self.error_var_local = false;
         let kind = match self.peek().kind {
             TokenKind::Kw(Kw::Get) => { self.advance(); ProcKind::PropGet }
             TokenKind::Kw(Kw::Let) => { self.advance(); ProcKind::PropLet }
@@ -2587,6 +2758,7 @@ impl<'src> Parser<'src> {
             }
         }
         let name = self.expect_ident();
+        self.note_declared_name(&name, false);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
         if self.eat(TokenKind::Kw(Kw::LParen)) {
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);

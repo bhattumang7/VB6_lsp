@@ -516,11 +516,15 @@ impl ProjectModel {
 
     // ── Module member lookup ────────────────────────────────────────────────
 
-    /// Public procedures and variables of `module` named `name`, for a use
-    /// needing `access`. Procedure results are typed in `module`'s context.
-    fn module_member(&self, module: usize, name: &str, access: Access) -> MemberLookup {
+    /// Procedures and variables of `module` named `name`, for a use needing
+    /// `access`: the public ones, and every one when the use is written in
+    /// `module` itself (`from == module`: `ThisModule.Helper` reaches a
+    /// `Private` member of a standard module; pass `usize::MAX` for a use
+    /// through an object, which sees only the public interface). Procedure results are typed in `module`'s context.
+    fn module_member(&self, from: usize, module: usize, name: &str, access: Access) -> MemberLookup {
         let m = &self.modules[module];
-        if let Some(vi) = m.vars.iter().position(|v| v.is_public && v.name == name) {
+        let own = from == module;
+        if let Some(vi) = m.vars.iter().position(|v| (own || v.is_public) && v.name == name) {
             return MemberLookup::Found(MemberHit {
                 resolution: NameResolution::External { module, decl: ExternalDecl::Var(vi) },
                 sem: self.declared_sem(module, &m.vars[vi].ty),
@@ -531,7 +535,7 @@ impl ProjectModel {
             .procs
             .iter()
             .enumerate()
-            .filter(|(_, p)| p.is_public && p.name == name)
+            .filter(|(_, p)| (own || p.is_public) && p.name == name)
             .map(|(i, _)| i)
             .collect();
         if named.is_empty() {
@@ -556,9 +560,9 @@ impl ProjectModel {
         }
     }
 
-    fn enum_namespace(&self, module: usize, name: &str) -> Option<MemberHit> {
+    fn enum_namespace(&self, from: usize, module: usize, name: &str) -> Option<MemberHit> {
         let m = &self.modules[module];
-        let idx = m.enums.iter().position(|e| e.is_public && e.name == name)?;
+        let idx = m.enums.iter().position(|e| (from == module || e.is_public) && e.name == name)?;
         Some(MemberHit {
             resolution: NameResolution::External { module, decl: ExternalDecl::Enum(idx) },
             sem: SemType::Namespace(Qualifier::Enum { module, idx }),
@@ -581,9 +585,9 @@ impl ProjectModel {
 
     /// A member of a public enum of `module`, named through the module
     /// (`modUtil.Red`, `clsTrip.Done`).
-    fn enum_member(&self, module: usize, name: &str) -> Option<MemberHit> {
+    fn enum_member(&self, from: usize, module: usize, name: &str) -> Option<MemberHit> {
         let m = &self.modules[module];
-        m.enums.iter().enumerate().filter(|(_, e)| e.is_public).find_map(|(ei, e)| {
+        m.enums.iter().enumerate().filter(|(_, e)| from == module || e.is_public).find_map(|(ei, e)| {
             let mi = e.members.iter().position(|n| n == name)?;
             Some(MemberHit {
                 resolution: NameResolution::External {
@@ -597,8 +601,8 @@ impl ProjectModel {
     }
 
     /// A public enum, or a member of one, of `module`.
-    fn enum_namespace_or_member(&self, module: usize, name: &str) -> Option<MemberHit> {
-        self.enum_namespace(module, name).or_else(|| self.enum_member(module, name))
+    fn enum_namespace_or_member(&self, from: usize, module: usize, name: &str) -> Option<MemberHit> {
+        self.enum_namespace(from, module, name).or_else(|| self.enum_member(from, module, name))
     }
 
     fn module_name_hit(&self, module: usize) -> MemberHit {
@@ -1035,11 +1039,11 @@ impl ProjectScope for ProjectModel {
                         return MemberLookup::Found(hit);
                     }
                 }
-                match self.module_member(*module, name, access) {
+                match self.module_member(usize::MAX, *module, name, access) {
                     MemberLookup::NoSuchMember => {}
                     other => return other,
                 }
-                if let Some(hit) = self.enum_namespace_or_member(*module, name) {
+                if let Some(hit) = self.enum_namespace_or_member(usize::MAX, *module, name) {
                     return MemberLookup::Found(hit);
                 }
                 // A UserControl seen from outside also has the members its
@@ -1074,12 +1078,12 @@ impl ProjectScope for ProjectModel {
             SemType::Namespace(Qualifier::Module(module)) => {
                 let m = &self.modules[*module];
                 if m.standard {
-                    match self.module_member(*module, name, access) {
+                    match self.module_member(from, *module, name, access) {
                         MemberLookup::NoSuchMember => {}
                         other => return other,
                     }
                 }
-                match self.enum_namespace_or_member(*module, name) {
+                match self.enum_namespace_or_member(from, *module, name) {
                     Some(hit) => MemberLookup::Found(hit),
                     None => MemberLookup::NoSuchMember,
                 }
@@ -1090,12 +1094,12 @@ impl ProjectScope for ProjectModel {
                 }
                 for (i, m) in self.modules.iter().enumerate() {
                     if m.standard || m.global_namespace {
-                        match self.module_member(i, name, access) {
+                        match self.module_member(usize::MAX, i, name, access) {
                             MemberLookup::NoSuchMember => {}
                             other => return other,
                         }
                     }
-                    if let Some(hit) = self.enum_namespace_or_member(i, name) {
+                    if let Some(hit) = self.enum_namespace_or_member(usize::MAX, i, name) {
                         return MemberLookup::Found(hit);
                     }
                 }
@@ -1158,7 +1162,7 @@ impl ProjectScope for ProjectModel {
         match base {
             SemType::Class { module } => {
                 let name = self.modules[*module].default_member.clone()?;
-                match self.module_member(*module, &name, Access::Get) {
+                match self.module_member(usize::MAX, *module, &name, Access::Get) {
                     MemberLookup::Found(hit) => Some(hit),
                     _ => None,
                 }
