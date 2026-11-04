@@ -1889,6 +1889,17 @@ impl<'src> Parser<'src> {
     /// The rest of a statement that starts with a target expression `lhs`:
     /// an assignment, a graphics coordinate call, or an implicit call.
     fn finish_ident_stmt(&mut self, arena: &mut ExprArena, lhs: NodeId) -> NodeId {
+        // A member named like a graphics statement cannot be assigned to (`Line` excepted).
+        if self.peek().kind == TokenKind::Kw(Kw::Eq)
+            && ["Scale", "PSet", "Print", "LineInput", "Circle"]
+                .iter()
+                .any(|name| self.member_named(arena, lhs, name))
+        {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return lhs;
+        }
         if self.eat(TokenKind::Kw(Kw::Eq)) {
             let value = self.parse_expr(arena, 0);
             self.end_stmt();
@@ -1993,6 +2004,18 @@ impl<'src> Parser<'src> {
                 let args = arena.alloc(ExprNode::ArgList { args });
                 return arena.alloc(ExprNode::CallStmt { callee: lhs, args });
             }
+            // Such a member takes coordinate pairs only, never a plain argument list (`Print` excepted).
+            if !self.peek().is_stmt_end()
+                && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
+                && ["Scale", "PSet", "Line", "LineInput", "Circle"]
+                    .iter()
+                    .any(|name| self.member_named(arena, lhs, name))
+            {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                return lhs;
+            }
             let args = self.parse_stmt_arg_list(arena);
             self.end_stmt();
             if args.is_empty() {
@@ -2027,6 +2050,12 @@ impl<'src> Parser<'src> {
         let ExprNode::Call { args, .. } = arena.get(lhs) else { return false };
         matches!(arena.get(*args), ExprNode::ArgList { args }
             if args.iter().any(|a| matches!(arena.get(*a), ExprNode::AddressOf { .. })))
+    }
+
+    /// True when `target` is a member access (not a plain name) whose member is `wanted`.
+    fn member_named(&self, arena: &ExprArena, target: NodeId, wanted: &str) -> bool {
+        let ExprNode::MemberAccess { member, .. } = arena.get(target) else { return false };
+        self.scanner.sym_name(*member).eq_ignore_ascii_case(wanted)
     }
 
     /// If `lhs` is a call with exactly one plain argument and the statement

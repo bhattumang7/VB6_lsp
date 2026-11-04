@@ -636,6 +636,8 @@ pub struct Scanner<'a> {
     pos: usize,
     /// Scratch buffer for identifier and literal accumulation.
     tok_buf: String,
+    /// The token returned last was a `.` or `!` that introduces a member name.
+    after_member_operator: bool,
 }
 
 impl<'a> Scanner<'a> {
@@ -652,11 +654,17 @@ impl<'a> Scanner<'a> {
 
     /// Create a scanner for `src`, borrowing `ctx` for symbol interning.
     pub fn new(ctx: &'a mut ScannerContext, src: &'a [u8]) -> Self {
-        Self { ctx, src, pos: 0, tok_buf: String::with_capacity(64) }
+        Self { ctx, src, pos: 0, tok_buf: String::with_capacity(64), after_member_operator: false }
     }
 
     /// Return the next token from the source, advancing the position.
     pub fn next_token(&mut self) -> Token {
+        let tok = self.scan_token();
+        self.after_member_operator = matches!(tok.kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang));
+        tok
+    }
+
+    fn scan_token(&mut self) -> Token {
         loop {
             let start = self.pos;
             let b = match self.advance() {
@@ -735,7 +743,8 @@ impl<'a> Scanner<'a> {
 
                 _ => {
                     let tok = self.scan_ident(b, start);
-                    if matches!(tok.kind, TokenKind::Kw(Kw::Rem)) {
+                    // After `.` or `!` the word names a member, even `Rem`.
+                    if matches!(tok.kind, TokenKind::Kw(Kw::Rem)) && !self.after_member_operator {
                         return self.consume_comment(start, Kw::Rem);
                     }
                     return tok;

@@ -1,0 +1,21 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each word of words.txt.
+=== expr bas
+Sub Probe(o As Object)
+    x = o.{k}
+End Sub
+=== target bas
+Sub Probe(o As Object)
+    o.{k} = 1
+End Sub
+=== call bas
+Sub Probe(o As Object)
+    o.{k} 1
+End Sub
+=== bang bas
+Sub Probe(o As Object)
+    x = o!{k}
+End Sub
+=== chain bas
+Sub Probe(o As Object)
+    x = o.a.{k}.b
+End Sub
