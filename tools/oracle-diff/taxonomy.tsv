@@ -79,3 +79,8 @@ External name not defined	semantic
 Missing end bracket	syntax
 Select Case without End Select	syntax
 Block If without End If	syntax
+Cannot define a Public user-defined type within a private object module	syntax
+Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules	syntax
+Invalid use of New keyword	syntax
+Invalid outside Enum	syntax
+Not a valid interface for Implements	semantic

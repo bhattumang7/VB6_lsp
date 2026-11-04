@@ -1,0 +1,78 @@
+# template	word	class	message
+private	Long	syntax	Expected: identifier
+private	Object	syntax	Expected: identifier
+private	String	syntax	Expected: identifier
+private	Variant	syntax	Expected: identifier
+private	Class1	semantic	Object does not source automation events
+private	Collection	semantic	Object does not source automation events
+private	Zzz	semantic	User-defined type not defined
+private	Class1()	syntax	Expected: end of statement
+private	New Class1	syntax	Invalid use of New keyword
+private	String * 3	syntax	Expected: identifier
+private	Integer()	syntax	Expected: identifier
+public	Long	syntax	Expected: identifier
+public	Object	syntax	Expected: identifier
+public	String	syntax	Expected: identifier
+public	Variant	syntax	Expected: identifier
+public	Class1	semantic	Object does not source automation events
+public	Collection	semantic	Object does not source automation events
+public	Zzz	semantic	User-defined type not defined
+public	Class1()	syntax	Expected: end of statement
+public	New Class1	syntax	Invalid use of New keyword
+public	String * 3	syntax	Expected: identifier
+public	Integer()	syntax	Expected: identifier
+dim	Long	syntax	Expected: identifier
+dim	Object	syntax	Expected: identifier
+dim	String	syntax	Expected: identifier
+dim	Variant	syntax	Expected: identifier
+dim	Class1	semantic	Object does not source automation events
+dim	Collection	semantic	Object does not source automation events
+dim	Zzz	semantic	User-defined type not defined
+dim	Class1()	syntax	Expected: end of statement
+dim	New Class1	syntax	Invalid use of New keyword
+dim	String * 3	syntax	Expected: identifier
+dim	Integer()	syntax	Expected: identifier
+bare	Long	syntax	Expected: line number or label or statement or end of statement
+bare	Object	syntax	Expected: line number or label or statement or end of statement
+bare	String	syntax	Expected: line number or label or statement or end of statement
+bare	Variant	syntax	Expected: line number or label or statement or end of statement
+bare	Class1	syntax	Expected: line number or label or statement or end of statement
+bare	Collection	syntax	Expected: line number or label or statement or end of statement
+bare	Zzz	syntax	Expected: line number or label or statement or end of statement
+bare	Class1()	syntax	Expected: line number or label or statement or end of statement
+bare	New Class1	syntax	Expected: line number or label or statement or end of statement
+bare	String * 3	syntax	Expected: line number or label or statement or end of statement
+bare	Integer()	syntax	Expected: line number or label or statement or end of statement
+plainprivate	Long	accepted	
+plainprivate	Object	accepted	
+plainprivate	String	accepted	
+plainprivate	Variant	accepted	
+plainprivate	Class1	accepted	
+plainprivate	Collection	accepted	
+plainprivate	Zzz	semantic	User-defined type not defined
+plainprivate	Class1()	syntax	Expected: end of statement
+plainprivate	New Class1	accepted	
+plainprivate	String * 3	accepted	
+plainprivate	Integer()	syntax	Expected: end of statement
+procwe	Long	syntax	Syntax error
+procwe	Object	syntax	Syntax error
+procwe	String	syntax	Syntax error
+procwe	Variant	syntax	Syntax error
+procwe	Class1	syntax	Invalid attribute in Sub or Function
+procwe	Collection	syntax	Invalid attribute in Sub or Function
+procwe	Zzz	syntax	Invalid attribute in Sub or Function
+procwe	Class1()	syntax	Syntax error
+procwe	New Class1	syntax	Syntax error
+procwe	String * 3	syntax	Syntax error
+procwe	Integer()	syntax	Syntax error
+mod	Long	syntax	Only valid in object module
+mod	Object	syntax	Only valid in object module
+mod	String	syntax	Only valid in object module
+mod	Variant	syntax	Only valid in object module
+mod	Class1	syntax	Only valid in object module
+mod	Collection	syntax	Only valid in object module
+mod	Zzz	syntax	Only valid in object module
+mod	Class1()	syntax	Only valid in object module
+mod	New Class1	syntax	Only valid in object module
+mod	String * 3	syntax	Only valid in object module
+mod	Integer()	syntax	Only valid in object module

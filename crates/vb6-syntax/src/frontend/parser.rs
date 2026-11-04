@@ -234,6 +234,8 @@ pub struct Parser<'src> {
     after_colon: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
+    /// True once the header marks the class as exposed outside its project.
+    class_exposed: bool,
     /// A module-level array variable has been declared.
     module_array_seen: bool,
     /// Byte offset just past the most recently consumed token.
@@ -356,6 +358,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             module_decl_seen: false,
+            class_exposed: false,
             module_array_seen: false,
             last_token_end: 0,
             seen_option_base: false,
@@ -1053,7 +1056,9 @@ impl<'src> Parser<'src> {
                 }
                 // Type / Enum declarations
                 TokenKind::Kw(Kw::Type)  => {
+                    let at = self.current_span();
                     let n = self.parse_type_decl(arena);
+                    self.check_public_in_object_module(arena, n, at, true);
                     nodes.push(n);
                 }
                 TokenKind::Kw(Kw::Enum)  => {
@@ -1062,7 +1067,9 @@ impl<'src> Parser<'src> {
                 }
                 // External declarations
                 TokenKind::Kw(Kw::Declare) => {
+                    let at = self.current_span();
                     let n = self.parse_declare_stmt(arena);
+                    self.check_public_in_object_module(arena, n, at, true);
                     nodes.push(n);
                 }
                 // Event declarations — class-module-only
@@ -2219,7 +2226,7 @@ impl<'src> Parser<'src> {
         let mut stmts = Vec::new();
         loop {
             // Variable declarations accept `As Type()`; `Const` does not.
-            let item = self.parse_dim_item_with(arena, is_const, is_static, !is_const, is_const);
+            let item = self.parse_dim_item_with(arena, is_const, is_static, false, is_const);
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
@@ -2291,6 +2298,21 @@ impl<'src> Parser<'src> {
         }
         self.last_item_had_as = self.peek().kind == TokenKind::Kw(Kw::As);
         let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
+            if with_events {
+                // An event source is a named class: `New` and the built-in types are out.
+                let span = self.current_span();
+                if self.peek().kind == TokenKind::Kw(Kw::New) {
+                    self.diagnostics.push(ERR_INVALID_NEW_KEYWORD, span);
+                } else if matches!(
+                    self.peek().kind,
+                    TokenKind::Kw(
+                        Kw::Integer | Kw::Long | Kw::Single | Kw::Double | Kw::Currency | Kw::Date | Kw::Byte
+                            | Kw::Boolean | Kw::Variant | Kw::Object | Kw::String | Kw::Decimal
+                    )
+                ) {
+                    self.report_expected(span, "identifier");
+                }
+            }
             let is_new = self.eat(TokenKind::Kw(Kw::New));
             // `Object` is not a creatable class.
             if is_new && self.peek().kind == TokenKind::Kw(Kw::Object) {
@@ -3723,6 +3745,12 @@ impl<'src> Parser<'src> {
             self.advance();
         }
         self.end_stmt();
+        if target.is_none()
+            && self.scanner.sym_name(name).eq_ignore_ascii_case("VB_Exposed")
+            && values.first().is_some_and(|v| matches!(arena.get(*v), ExprNode::Literal { lit: AstLit::Bool(true) }))
+        {
+            self.class_exposed = true;
+        }
         let id = arena.alloc(ExprNode::Attribute { target, name, values });
         self.set_span(id, value_span);
         id
@@ -4051,7 +4079,6 @@ impl<'src> Parser<'src> {
             // Public/Private/Static variable declaration; a leading `WithEvents`
             // belongs to the first variable and is handled per item.
             TokenKind::Ident | TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::WithEvents) => {
-                if self.peek().kind == TokenKind::Kw(Kw::Dim) { self.advance(); }
                 self.parse_dim_list_static(arena, false, static_proc)
             }
             // A contextual keyword names the variable (`Public Name As String`).
@@ -4068,6 +4095,11 @@ impl<'src> Parser<'src> {
         if let Some(is_public) = vis {
             self.mark_decl_visibility(arena, node, is_public);
         }
+        if access_tok == TokenKind::Kw(Kw::Global) && self.module_kind != ModuleKind::Standard && !self.in_procedure {
+            self.diagnostics.push(ERR_PUBLIC_MEMBER_NOT_ALLOWED, access_span);
+        } else {
+            self.check_public_in_object_module(arena, node, access_span, vis == Some(true));
+        }
         if access_tok == TokenKind::Kw(Kw::Friend) {
             self.decl_friend.insert(node.0);
         }
@@ -4075,6 +4107,35 @@ impl<'src> Parser<'src> {
             self.decl_static.insert(node.0);
         }
         node
+    }
+
+    /// In an object module, constants, arrays, fixed-length strings, `Declare` statements and
+    /// (unless the class is exposed) user types cannot be public members.
+    fn check_public_in_object_module(&mut self, arena: &ExprArena, node: NodeId, at: Span, is_public: bool) {
+        if !is_public || self.module_kind == ModuleKind::Standard || self.in_procedure {
+            return;
+        }
+        let items = match arena.get(node) {
+            ExprNode::Block { stmts } => stmts.clone(),
+            _ => vec![node],
+        };
+        for item in items {
+            match arena.get(item) {
+                ExprNode::DeclareDecl { .. } => self.diagnostics.push(ERR_PUBLIC_MEMBER_NOT_ALLOWED, at),
+                ExprNode::TypeDecl { .. } if !self.class_exposed => {
+                    self.diagnostics.push(ERR_PUBLIC_TYPE_IN_PRIVATE_MODULE, at)
+                }
+                ExprNode::DimItem { is_const, bounds, type_node, .. } => {
+                    let fixed_string = type_node.is_some_and(|t| {
+                        matches!(arena.get(t), ExprNode::StringType { fixed_len: Some(_) })
+                    });
+                    if *is_const || bounds.is_some() || fixed_string {
+                        self.diagnostics.push(ERR_PUBLIC_MEMBER_NOT_ALLOWED, at);
+                    }
+                }
+                _ => {}
+            }
+        }
     }
 
     /// Record explicit visibility for a declaration node.

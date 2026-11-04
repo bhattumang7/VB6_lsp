@@ -1,0 +1,33 @@
+# template	word	class	message
+private	Public Const c = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public Const c As Long = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Private Const c = 1	accepted	
+private	Const c = 1	accepted	
+private	Global Const c = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public Declare Function f Lib "k" () As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Private Declare Function f Lib "k" () As Long	accepted	
+private	Declare Function f Lib "k" () As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public Type T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+private	Private Type T\na As Long\nEnd Type	accepted	
+private	Type T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+private	Public Enum E\na\nEnd Enum	accepted	
+private	Public a(3) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public a() As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public s As String * 3	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public s As String	accepted	
+private	Public Dim x	syntax	Expected: identifier
+private	Public x	accepted	
+private	Global x As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Global Sub P()\nEnd Sub	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+private	Public Event E()	accepted	
+private	Public WithEvents w As Class1	semantic	Object does not source automation events
+private	Public x As T	semantic	User-defined type not defined
+private	Dim a(3) As Long	accepted	
+private	Private a(3) As Long	accepted	
+private	Dim s As String * 3	accepted	
+private	Public Sub P()\nEnd Sub	accepted	
+private	Public Static Sub P()\nEnd Sub	accepted	
+private	Friend Sub P()\nEnd Sub	accepted	
+private	Public Property Get P() As Long\nEnd Property	accepted	
+private	Public Implements Class1	syntax	Expected: identifier
+private	Implements Class1	semantic	Not a valid interface for Implements

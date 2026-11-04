@@ -1,0 +1,11 @@
+Long
+Object
+String
+Variant
+Class1
+Collection
+Zzz
+Class1()
+New Class1
+String * 3
+Integer()

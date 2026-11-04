@@ -1,0 +1,2857 @@
+# template	word	class	message
+sub	Public	accepted	
+sub	Private	accepted	
+sub	Friend	syntax	Only valid in object module
+sub	Global	accepted	
+sub	Static	accepted	
+sub	Dim	syntax	Expected: identifier
+sub	Const	syntax	Expected: identifier
+sub	WithEvents	syntax	Expected: line number or label or statement or end of statement
+sub	Declare	syntax	Expected: Lib
+sub	Event	syntax	Only valid in object module
+sub	Implements	syntax	Only valid in object module
+sub	New	syntax	Expected: line number or label or statement or end of statement
+sub	Optional	syntax	Expected: line number or label or statement or end of statement
+sub	ByVal	syntax	Expected: line number or label or statement or end of statement
+sub	Preserve	syntax	Expected: line number or label or statement or end of statement
+sub	Public Public	syntax	Expected: identifier
+sub	Public Private	syntax	Expected: identifier
+sub	Public Friend	syntax	Expected: identifier
+sub	Public Global	syntax	Expected: identifier
+sub	Public Static	accepted	
+sub	Public Dim	syntax	Expected: identifier
+sub	Public Const	syntax	Expected: identifier
+sub	Public WithEvents	syntax	Only valid in object module
+sub	Public Declare	syntax	Expected: Lib
+sub	Public Event	syntax	Only valid in object module
+sub	Public Implements	syntax	Expected: identifier
+sub	Private Public	syntax	Expected: identifier
+sub	Private Private	syntax	Expected: identifier
+sub	Private Friend	syntax	Expected: identifier
+sub	Private Global	syntax	Expected: identifier
+sub	Private Static	accepted	
+sub	Private Dim	syntax	Expected: identifier
+sub	Private Const	syntax	Expected: identifier
+sub	Private WithEvents	syntax	Only valid in object module
+sub	Private Declare	syntax	Expected: Lib
+sub	Private Event	syntax	Expected: Sub or Function or Property
+sub	Private Implements	syntax	Expected: identifier
+sub	Friend Public	syntax	Only valid in object module
+sub	Friend Private	syntax	Only valid in object module
+sub	Friend Friend	syntax	Only valid in object module
+sub	Friend Global	syntax	Only valid in object module
+sub	Friend Static	syntax	Only valid in object module
+sub	Friend Dim	syntax	Only valid in object module
+sub	Friend Const	syntax	Only valid in object module
+sub	Friend WithEvents	syntax	Only valid in object module
+sub	Friend Declare	syntax	Only valid in object module
+sub	Friend Event	syntax	Only valid in object module
+sub	Friend Implements	syntax	Only valid in object module
+sub	Global Public	syntax	Expected: identifier
+sub	Global Private	syntax	Expected: identifier
+sub	Global Friend	syntax	Expected: identifier
+sub	Global Global	syntax	Expected: identifier
+sub	Global Static	accepted	
+sub	Global Dim	syntax	Expected: identifier
+sub	Global Const	syntax	Expected: identifier
+sub	Global WithEvents	syntax	Only valid in object module
+sub	Global Declare	syntax	Expected: Lib
+sub	Global Event	syntax	Expected: Sub or Function or Property
+sub	Global Implements	syntax	Expected: identifier
+sub	Static Public	accepted	
+sub	Static Private	accepted	
+sub	Static Friend	unanswered	the code generator failed after the source was read
+sub	Static Global	syntax	Expected: identifier
+sub	Static Static	syntax	Expected: identifier
+sub	Static Dim	syntax	Expected: identifier
+sub	Static Const	syntax	Expected: identifier
+sub	Static WithEvents	syntax	Expected: identifier
+sub	Static Declare	syntax	Expected: identifier
+sub	Static Event	syntax	Expected: identifier
+sub	Static Implements	syntax	Expected: identifier
+sub	Dim Public	syntax	Expected: identifier
+sub	Dim Private	syntax	Expected: identifier
+sub	Dim Friend	syntax	Expected: identifier
+sub	Dim Global	syntax	Expected: identifier
+sub	Dim Static	syntax	Expected: identifier
+sub	Dim Dim	syntax	Expected: identifier
+sub	Dim Const	syntax	Expected: identifier
+sub	Dim WithEvents	syntax	Only valid in object module
+sub	Dim Declare	syntax	Expected: identifier
+sub	Dim Event	syntax	Expected: identifier
+sub	Dim Implements	syntax	Expected: identifier
+sub	Const Public	syntax	Expected: identifier
+sub	Const Private	syntax	Expected: identifier
+sub	Const Friend	syntax	Expected: identifier
+sub	Const Global	syntax	Expected: identifier
+sub	Const Static	syntax	Expected: identifier
+sub	Const Dim	syntax	Expected: identifier
+sub	Const Const	syntax	Expected: identifier
+sub	Const WithEvents	syntax	Expected: identifier
+sub	Const Declare	syntax	Expected: identifier
+sub	Const Event	syntax	Expected: identifier
+sub	Const Implements	syntax	Expected: identifier
+sub	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+sub	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+sub	Declare Public	syntax	Expected: Sub or Function
+sub	Declare Private	syntax	Expected: Sub or Function
+sub	Declare Friend	syntax	Expected: Sub or Function
+sub	Declare Global	syntax	Expected: Sub or Function
+sub	Declare Static	syntax	Expected: Sub or Function
+sub	Declare Dim	syntax	Expected: Sub or Function
+sub	Declare Const	syntax	Expected: Sub or Function
+sub	Declare WithEvents	syntax	Expected: Sub or Function
+sub	Declare Declare	syntax	Expected: Sub or Function
+sub	Declare Event	syntax	Expected: Sub or Function
+sub	Declare Implements	syntax	Expected: Sub or Function
+sub	Event Public	syntax	Only valid in object module
+sub	Event Private	syntax	Only valid in object module
+sub	Event Friend	syntax	Only valid in object module
+sub	Event Global	syntax	Only valid in object module
+sub	Event Static	syntax	Only valid in object module
+sub	Event Dim	syntax	Only valid in object module
+sub	Event Const	syntax	Only valid in object module
+sub	Event WithEvents	syntax	Only valid in object module
+sub	Event Declare	syntax	Only valid in object module
+sub	Event Event	syntax	Only valid in object module
+sub	Event Implements	syntax	Only valid in object module
+sub	Implements Public	syntax	Only valid in object module
+sub	Implements Private	syntax	Only valid in object module
+sub	Implements Friend	syntax	Only valid in object module
+sub	Implements Global	syntax	Only valid in object module
+sub	Implements Static	syntax	Only valid in object module
+sub	Implements Dim	syntax	Only valid in object module
+sub	Implements Const	syntax	Only valid in object module
+sub	Implements WithEvents	syntax	Only valid in object module
+sub	Implements Declare	syntax	Only valid in object module
+sub	Implements Event	syntax	Only valid in object module
+sub	Implements Implements	syntax	Only valid in object module
+func	Public	accepted	
+func	Private	accepted	
+func	Friend	syntax	Only valid in object module
+func	Global	accepted	
+func	Static	accepted	
+func	Dim	syntax	Expected: identifier
+func	Const	syntax	Expected: identifier
+func	WithEvents	syntax	Expected: line number or label or statement or end of statement
+func	Declare	syntax	Expected: Lib
+func	Event	syntax	Only valid in object module
+func	Implements	syntax	Only valid in object module
+func	New	syntax	Expected: line number or label or statement or end of statement
+func	Optional	syntax	Expected: line number or label or statement or end of statement
+func	ByVal	syntax	Expected: line number or label or statement or end of statement
+func	Preserve	syntax	Expected: line number or label or statement or end of statement
+func	Public Public	syntax	Expected: identifier
+func	Public Private	syntax	Expected: identifier
+func	Public Friend	syntax	Expected: identifier
+func	Public Global	syntax	Expected: identifier
+func	Public Static	accepted	
+func	Public Dim	syntax	Expected: identifier
+func	Public Const	syntax	Expected: identifier
+func	Public WithEvents	syntax	Only valid in object module
+func	Public Declare	syntax	Expected: Lib
+func	Public Event	syntax	Only valid in object module
+func	Public Implements	syntax	Expected: identifier
+func	Private Public	syntax	Expected: identifier
+func	Private Private	syntax	Expected: identifier
+func	Private Friend	syntax	Expected: identifier
+func	Private Global	syntax	Expected: identifier
+func	Private Static	accepted	
+func	Private Dim	syntax	Expected: identifier
+func	Private Const	syntax	Expected: identifier
+func	Private WithEvents	syntax	Only valid in object module
+func	Private Declare	syntax	Expected: Lib
+func	Private Event	syntax	Expected: Sub or Function or Property
+func	Private Implements	syntax	Expected: identifier
+func	Friend Public	syntax	Only valid in object module
+func	Friend Private	syntax	Only valid in object module
+func	Friend Friend	syntax	Only valid in object module
+func	Friend Global	syntax	Only valid in object module
+func	Friend Static	syntax	Only valid in object module
+func	Friend Dim	syntax	Only valid in object module
+func	Friend Const	syntax	Only valid in object module
+func	Friend WithEvents	syntax	Only valid in object module
+func	Friend Declare	syntax	Only valid in object module
+func	Friend Event	syntax	Only valid in object module
+func	Friend Implements	syntax	Only valid in object module
+func	Global Public	syntax	Expected: identifier
+func	Global Private	syntax	Expected: identifier
+func	Global Friend	syntax	Expected: identifier
+func	Global Global	syntax	Expected: identifier
+func	Global Static	accepted	
+func	Global Dim	syntax	Expected: identifier
+func	Global Const	syntax	Expected: identifier
+func	Global WithEvents	syntax	Only valid in object module
+func	Global Declare	syntax	Expected: Lib
+func	Global Event	syntax	Expected: Sub or Function or Property
+func	Global Implements	syntax	Expected: identifier
+func	Static Public	accepted	
+func	Static Private	accepted	
+func	Static Friend	unanswered	the code generator failed after the source was read
+func	Static Global	syntax	Expected: identifier
+func	Static Static	syntax	Expected: identifier
+func	Static Dim	syntax	Expected: identifier
+func	Static Const	syntax	Expected: identifier
+func	Static WithEvents	syntax	Expected: identifier
+func	Static Declare	syntax	Expected: identifier
+func	Static Event	syntax	Expected: identifier
+func	Static Implements	syntax	Expected: identifier
+func	Dim Public	syntax	Expected: identifier
+func	Dim Private	syntax	Expected: identifier
+func	Dim Friend	syntax	Expected: identifier
+func	Dim Global	syntax	Expected: identifier
+func	Dim Static	syntax	Expected: identifier
+func	Dim Dim	syntax	Expected: identifier
+func	Dim Const	syntax	Expected: identifier
+func	Dim WithEvents	syntax	Only valid in object module
+func	Dim Declare	syntax	Expected: identifier
+func	Dim Event	syntax	Expected: identifier
+func	Dim Implements	syntax	Expected: identifier
+func	Const Public	syntax	Expected: identifier
+func	Const Private	syntax	Expected: identifier
+func	Const Friend	syntax	Expected: identifier
+func	Const Global	syntax	Expected: identifier
+func	Const Static	syntax	Expected: identifier
+func	Const Dim	syntax	Expected: identifier
+func	Const Const	syntax	Expected: identifier
+func	Const WithEvents	syntax	Expected: identifier
+func	Const Declare	syntax	Expected: identifier
+func	Const Event	syntax	Expected: identifier
+func	Const Implements	syntax	Expected: identifier
+func	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+func	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+func	Declare Public	syntax	Expected: Sub or Function
+func	Declare Private	syntax	Expected: Sub or Function
+func	Declare Friend	syntax	Expected: Sub or Function
+func	Declare Global	syntax	Expected: Sub or Function
+func	Declare Static	syntax	Expected: Sub or Function
+func	Declare Dim	syntax	Expected: Sub or Function
+func	Declare Const	syntax	Expected: Sub or Function
+func	Declare WithEvents	syntax	Expected: Sub or Function
+func	Declare Declare	syntax	Expected: Sub or Function
+func	Declare Event	syntax	Expected: Sub or Function
+func	Declare Implements	syntax	Expected: Sub or Function
+func	Event Public	syntax	Only valid in object module
+func	Event Private	syntax	Only valid in object module
+func	Event Friend	syntax	Only valid in object module
+func	Event Global	syntax	Only valid in object module
+func	Event Static	syntax	Only valid in object module
+func	Event Dim	syntax	Only valid in object module
+func	Event Const	syntax	Only valid in object module
+func	Event WithEvents	syntax	Only valid in object module
+func	Event Declare	syntax	Only valid in object module
+func	Event Event	syntax	Only valid in object module
+func	Event Implements	syntax	Only valid in object module
+func	Implements Public	syntax	Only valid in object module
+func	Implements Private	syntax	Only valid in object module
+func	Implements Friend	syntax	Only valid in object module
+func	Implements Global	syntax	Only valid in object module
+func	Implements Static	syntax	Only valid in object module
+func	Implements Dim	syntax	Only valid in object module
+func	Implements Const	syntax	Only valid in object module
+func	Implements WithEvents	syntax	Only valid in object module
+func	Implements Declare	syntax	Only valid in object module
+func	Implements Event	syntax	Only valid in object module
+func	Implements Implements	syntax	Only valid in object module
+propget	Public	accepted	
+propget	Private	accepted	
+propget	Friend	syntax	Only valid in object module
+propget	Global	accepted	
+propget	Static	accepted	
+propget	Dim	syntax	Expected: end of statement
+propget	Const	syntax	Expected: As or =
+propget	WithEvents	syntax	Expected: line number or label or statement or end of statement
+propget	Declare	syntax	Expected: Sub or Function
+propget	Event	syntax	Only valid in object module
+propget	Implements	syntax	Only valid in object module
+propget	New	syntax	Expected: line number or label or statement or end of statement
+propget	Optional	syntax	Expected: line number or label or statement or end of statement
+propget	ByVal	syntax	Expected: line number or label or statement or end of statement
+propget	Preserve	syntax	Expected: line number or label or statement or end of statement
+propget	Public Public	syntax	Expected: identifier
+propget	Public Private	syntax	Expected: identifier
+propget	Public Friend	syntax	Expected: identifier
+propget	Public Global	syntax	Expected: identifier
+propget	Public Static	accepted	
+propget	Public Dim	syntax	Expected: identifier
+propget	Public Const	syntax	Expected: As or =
+propget	Public WithEvents	syntax	Only valid in object module
+propget	Public Declare	syntax	Expected: Sub or Function
+propget	Public Event	syntax	Only valid in object module
+propget	Public Implements	syntax	Expected: identifier
+propget	Private Public	syntax	Expected: identifier
+propget	Private Private	syntax	Expected: identifier
+propget	Private Friend	syntax	Expected: identifier
+propget	Private Global	syntax	Expected: identifier
+propget	Private Static	accepted	
+propget	Private Dim	syntax	Expected: identifier
+propget	Private Const	syntax	Expected: As or =
+propget	Private WithEvents	syntax	Only valid in object module
+propget	Private Declare	syntax	Expected: Sub or Function
+propget	Private Event	syntax	Expected: Sub or Function or Property
+propget	Private Implements	syntax	Expected: identifier
+propget	Friend Public	syntax	Only valid in object module
+propget	Friend Private	syntax	Only valid in object module
+propget	Friend Friend	syntax	Only valid in object module
+propget	Friend Global	syntax	Only valid in object module
+propget	Friend Static	syntax	Only valid in object module
+propget	Friend Dim	syntax	Only valid in object module
+propget	Friend Const	syntax	Only valid in object module
+propget	Friend WithEvents	syntax	Only valid in object module
+propget	Friend Declare	syntax	Only valid in object module
+propget	Friend Event	syntax	Only valid in object module
+propget	Friend Implements	syntax	Only valid in object module
+propget	Global Public	syntax	Expected: identifier
+propget	Global Private	syntax	Expected: identifier
+propget	Global Friend	syntax	Expected: identifier
+propget	Global Global	syntax	Expected: identifier
+propget	Global Static	accepted	
+propget	Global Dim	syntax	Expected: identifier
+propget	Global Const	syntax	Expected: As or =
+propget	Global WithEvents	syntax	Only valid in object module
+propget	Global Declare	syntax	Expected: Sub or Function
+propget	Global Event	syntax	Expected: Sub or Function or Property
+propget	Global Implements	syntax	Expected: identifier
+propget	Static Public	accepted	
+propget	Static Private	accepted	
+propget	Static Friend	unanswered	the code generator failed after the source was read
+propget	Static Global	syntax	Expected: identifier
+propget	Static Static	syntax	Expected: identifier
+propget	Static Dim	syntax	Expected: identifier
+propget	Static Const	syntax	Expected: identifier
+propget	Static WithEvents	syntax	Expected: identifier
+propget	Static Declare	syntax	Expected: identifier
+propget	Static Event	syntax	Expected: identifier
+propget	Static Implements	syntax	Expected: identifier
+propget	Dim Public	syntax	Expected: identifier
+propget	Dim Private	syntax	Expected: identifier
+propget	Dim Friend	syntax	Expected: identifier
+propget	Dim Global	syntax	Expected: identifier
+propget	Dim Static	syntax	Expected: identifier
+propget	Dim Dim	syntax	Expected: identifier
+propget	Dim Const	syntax	Expected: identifier
+propget	Dim WithEvents	syntax	Only valid in object module
+propget	Dim Declare	syntax	Expected: identifier
+propget	Dim Event	syntax	Expected: identifier
+propget	Dim Implements	syntax	Expected: identifier
+propget	Const Public	syntax	Expected: identifier
+propget	Const Private	syntax	Expected: identifier
+propget	Const Friend	syntax	Expected: identifier
+propget	Const Global	syntax	Expected: identifier
+propget	Const Static	syntax	Expected: identifier
+propget	Const Dim	syntax	Expected: identifier
+propget	Const Const	syntax	Expected: identifier
+propget	Const WithEvents	syntax	Expected: identifier
+propget	Const Declare	syntax	Expected: identifier
+propget	Const Event	syntax	Expected: identifier
+propget	Const Implements	syntax	Expected: identifier
+propget	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+propget	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+propget	Declare Public	syntax	Expected: Sub or Function
+propget	Declare Private	syntax	Expected: Sub or Function
+propget	Declare Friend	syntax	Expected: Sub or Function
+propget	Declare Global	syntax	Expected: Sub or Function
+propget	Declare Static	syntax	Expected: Sub or Function
+propget	Declare Dim	syntax	Expected: Sub or Function
+propget	Declare Const	syntax	Expected: Sub or Function
+propget	Declare WithEvents	syntax	Expected: Sub or Function
+propget	Declare Declare	syntax	Expected: Sub or Function
+propget	Declare Event	syntax	Expected: Sub or Function
+propget	Declare Implements	syntax	Expected: Sub or Function
+propget	Event Public	syntax	Only valid in object module
+propget	Event Private	syntax	Only valid in object module
+propget	Event Friend	syntax	Only valid in object module
+propget	Event Global	syntax	Only valid in object module
+propget	Event Static	syntax	Only valid in object module
+propget	Event Dim	syntax	Only valid in object module
+propget	Event Const	syntax	Only valid in object module
+propget	Event WithEvents	syntax	Only valid in object module
+propget	Event Declare	syntax	Only valid in object module
+propget	Event Event	syntax	Only valid in object module
+propget	Event Implements	syntax	Only valid in object module
+propget	Implements Public	syntax	Only valid in object module
+propget	Implements Private	syntax	Only valid in object module
+propget	Implements Friend	syntax	Only valid in object module
+propget	Implements Global	syntax	Only valid in object module
+propget	Implements Static	syntax	Only valid in object module
+propget	Implements Dim	syntax	Only valid in object module
+propget	Implements Const	syntax	Only valid in object module
+propget	Implements WithEvents	syntax	Only valid in object module
+propget	Implements Declare	syntax	Only valid in object module
+propget	Implements Event	syntax	Only valid in object module
+propget	Implements Implements	syntax	Only valid in object module
+var	Public	accepted	
+var	Private	accepted	
+var	Friend	syntax	Only valid in object module
+var	Global	accepted	
+var	Static	syntax	Invalid outside procedure
+var	Dim	accepted	
+var	Const	syntax	Expected: =
+var	WithEvents	syntax	Expected: line number or label or statement or end of statement
+var	Declare	syntax	Expected: Sub or Function
+var	Event	syntax	Only valid in object module
+var	Implements	syntax	Only valid in object module
+var	New	syntax	Expected: line number or label or statement or end of statement
+var	Optional	syntax	Expected: line number or label or statement or end of statement
+var	ByVal	syntax	Expected: line number or label or statement or end of statement
+var	Preserve	syntax	Expected: line number or label or statement or end of statement
+var	Public Public	syntax	Expected: identifier
+var	Public Private	syntax	Expected: identifier
+var	Public Friend	syntax	Expected: identifier
+var	Public Global	syntax	Expected: identifier
+var	Public Static	syntax	Expected: Sub or Function or Property
+var	Public Dim	syntax	Expected: identifier
+var	Public Const	syntax	Expected: =
+var	Public WithEvents	syntax	Only valid in object module
+var	Public Declare	syntax	Expected: Sub or Function
+var	Public Event	syntax	Only valid in object module
+var	Public Implements	syntax	Expected: identifier
+var	Private Public	syntax	Expected: identifier
+var	Private Private	syntax	Expected: identifier
+var	Private Friend	syntax	Expected: identifier
+var	Private Global	syntax	Expected: identifier
+var	Private Static	syntax	Expected: Sub or Function or Property
+var	Private Dim	syntax	Expected: identifier
+var	Private Const	syntax	Expected: =
+var	Private WithEvents	syntax	Only valid in object module
+var	Private Declare	syntax	Expected: Sub or Function
+var	Private Event	syntax	Expected: Sub or Function or Property
+var	Private Implements	syntax	Expected: identifier
+var	Friend Public	syntax	Only valid in object module
+var	Friend Private	syntax	Only valid in object module
+var	Friend Friend	syntax	Only valid in object module
+var	Friend Global	syntax	Only valid in object module
+var	Friend Static	syntax	Only valid in object module
+var	Friend Dim	syntax	Only valid in object module
+var	Friend Const	syntax	Only valid in object module
+var	Friend WithEvents	syntax	Only valid in object module
+var	Friend Declare	syntax	Only valid in object module
+var	Friend Event	syntax	Only valid in object module
+var	Friend Implements	syntax	Only valid in object module
+var	Global Public	syntax	Expected: identifier
+var	Global Private	syntax	Expected: identifier
+var	Global Friend	syntax	Expected: identifier
+var	Global Global	syntax	Expected: identifier
+var	Global Static	syntax	Expected: Sub or Function or Property
+var	Global Dim	syntax	Expected: identifier
+var	Global Const	syntax	Expected: =
+var	Global WithEvents	syntax	Only valid in object module
+var	Global Declare	syntax	Expected: Sub or Function
+var	Global Event	syntax	Expected: Sub or Function or Property
+var	Global Implements	syntax	Expected: identifier
+var	Static Public	syntax	Invalid outside procedure
+var	Static Private	syntax	Invalid outside procedure
+var	Static Friend	syntax	Invalid outside procedure
+var	Static Global	syntax	Expected: identifier
+var	Static Static	syntax	Expected: identifier
+var	Static Dim	syntax	Expected: identifier
+var	Static Const	syntax	Expected: identifier
+var	Static WithEvents	syntax	Expected: identifier
+var	Static Declare	syntax	Expected: identifier
+var	Static Event	syntax	Expected: identifier
+var	Static Implements	syntax	Expected: identifier
+var	Dim Public	syntax	Expected: identifier
+var	Dim Private	syntax	Expected: identifier
+var	Dim Friend	syntax	Expected: identifier
+var	Dim Global	syntax	Expected: identifier
+var	Dim Static	syntax	Expected: identifier
+var	Dim Dim	syntax	Expected: identifier
+var	Dim Const	syntax	Expected: identifier
+var	Dim WithEvents	syntax	Only valid in object module
+var	Dim Declare	syntax	Expected: identifier
+var	Dim Event	syntax	Expected: identifier
+var	Dim Implements	syntax	Expected: identifier
+var	Const Public	syntax	Expected: identifier
+var	Const Private	syntax	Expected: identifier
+var	Const Friend	syntax	Expected: identifier
+var	Const Global	syntax	Expected: identifier
+var	Const Static	syntax	Expected: identifier
+var	Const Dim	syntax	Expected: identifier
+var	Const Const	syntax	Expected: identifier
+var	Const WithEvents	syntax	Expected: identifier
+var	Const Declare	syntax	Expected: identifier
+var	Const Event	syntax	Expected: identifier
+var	Const Implements	syntax	Expected: identifier
+var	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+var	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+var	Declare Public	syntax	Expected: Sub or Function
+var	Declare Private	syntax	Expected: Sub or Function
+var	Declare Friend	syntax	Expected: Sub or Function
+var	Declare Global	syntax	Expected: Sub or Function
+var	Declare Static	syntax	Expected: Sub or Function
+var	Declare Dim	syntax	Expected: Sub or Function
+var	Declare Const	syntax	Expected: Sub or Function
+var	Declare WithEvents	syntax	Expected: Sub or Function
+var	Declare Declare	syntax	Expected: Sub or Function
+var	Declare Event	syntax	Expected: Sub or Function
+var	Declare Implements	syntax	Expected: Sub or Function
+var	Event Public	syntax	Only valid in object module
+var	Event Private	syntax	Only valid in object module
+var	Event Friend	syntax	Only valid in object module
+var	Event Global	syntax	Only valid in object module
+var	Event Static	syntax	Only valid in object module
+var	Event Dim	syntax	Only valid in object module
+var	Event Const	syntax	Only valid in object module
+var	Event WithEvents	syntax	Only valid in object module
+var	Event Declare	syntax	Only valid in object module
+var	Event Event	syntax	Only valid in object module
+var	Event Implements	syntax	Only valid in object module
+var	Implements Public	syntax	Only valid in object module
+var	Implements Private	syntax	Only valid in object module
+var	Implements Friend	syntax	Only valid in object module
+var	Implements Global	syntax	Only valid in object module
+var	Implements Static	syntax	Only valid in object module
+var	Implements Dim	syntax	Only valid in object module
+var	Implements Const	syntax	Only valid in object module
+var	Implements WithEvents	syntax	Only valid in object module
+var	Implements Declare	syntax	Only valid in object module
+var	Implements Event	syntax	Only valid in object module
+var	Implements Implements	syntax	Only valid in object module
+const	Public	accepted	
+const	Private	accepted	
+const	Friend	syntax	Only valid in object module
+const	Global	accepted	
+const	Static	syntax	Expected: identifier
+const	Dim	syntax	Expected: identifier
+const	Const	syntax	Expected: identifier
+const	WithEvents	syntax	Expected: line number or label or statement or end of statement
+const	Declare	syntax	Expected: Sub or Function
+const	Event	syntax	Only valid in object module
+const	Implements	syntax	Only valid in object module
+const	New	syntax	Expected: line number or label or statement or end of statement
+const	Optional	syntax	Expected: line number or label or statement or end of statement
+const	ByVal	syntax	Expected: line number or label or statement or end of statement
+const	Preserve	syntax	Expected: line number or label or statement or end of statement
+const	Public Public	syntax	Expected: identifier
+const	Public Private	syntax	Expected: identifier
+const	Public Friend	syntax	Expected: identifier
+const	Public Global	syntax	Expected: identifier
+const	Public Static	syntax	Expected: Sub or Function or Property
+const	Public Dim	syntax	Expected: identifier
+const	Public Const	syntax	Expected: identifier
+const	Public WithEvents	syntax	Only valid in object module
+const	Public Declare	syntax	Expected: Sub or Function
+const	Public Event	syntax	Only valid in object module
+const	Public Implements	syntax	Expected: identifier
+const	Private Public	syntax	Expected: identifier
+const	Private Private	syntax	Expected: identifier
+const	Private Friend	syntax	Expected: identifier
+const	Private Global	syntax	Expected: identifier
+const	Private Static	syntax	Expected: Sub or Function or Property
+const	Private Dim	syntax	Expected: identifier
+const	Private Const	syntax	Expected: identifier
+const	Private WithEvents	syntax	Only valid in object module
+const	Private Declare	syntax	Expected: Sub or Function
+const	Private Event	syntax	Expected: Sub or Function or Property
+const	Private Implements	syntax	Expected: identifier
+const	Friend Public	syntax	Only valid in object module
+const	Friend Private	syntax	Only valid in object module
+const	Friend Friend	syntax	Only valid in object module
+const	Friend Global	syntax	Only valid in object module
+const	Friend Static	syntax	Only valid in object module
+const	Friend Dim	syntax	Only valid in object module
+const	Friend Const	syntax	Only valid in object module
+const	Friend WithEvents	syntax	Only valid in object module
+const	Friend Declare	syntax	Only valid in object module
+const	Friend Event	syntax	Only valid in object module
+const	Friend Implements	syntax	Only valid in object module
+const	Global Public	syntax	Expected: identifier
+const	Global Private	syntax	Expected: identifier
+const	Global Friend	syntax	Expected: identifier
+const	Global Global	syntax	Expected: identifier
+const	Global Static	syntax	Expected: Sub or Function or Property
+const	Global Dim	syntax	Expected: identifier
+const	Global Const	syntax	Expected: identifier
+const	Global WithEvents	syntax	Only valid in object module
+const	Global Declare	syntax	Expected: Sub or Function
+const	Global Event	syntax	Expected: Sub or Function or Property
+const	Global Implements	syntax	Expected: identifier
+const	Static Public	syntax	Expected: identifier
+const	Static Private	syntax	Expected: identifier
+const	Static Friend	syntax	Expected: identifier
+const	Static Global	syntax	Expected: identifier
+const	Static Static	syntax	Expected: identifier
+const	Static Dim	syntax	Expected: identifier
+const	Static Const	syntax	Expected: identifier
+const	Static WithEvents	syntax	Expected: identifier
+const	Static Declare	syntax	Expected: identifier
+const	Static Event	syntax	Expected: identifier
+const	Static Implements	syntax	Expected: identifier
+const	Dim Public	syntax	Expected: identifier
+const	Dim Private	syntax	Expected: identifier
+const	Dim Friend	syntax	Expected: identifier
+const	Dim Global	syntax	Expected: identifier
+const	Dim Static	syntax	Expected: identifier
+const	Dim Dim	syntax	Expected: identifier
+const	Dim Const	syntax	Expected: identifier
+const	Dim WithEvents	syntax	Only valid in object module
+const	Dim Declare	syntax	Expected: identifier
+const	Dim Event	syntax	Expected: identifier
+const	Dim Implements	syntax	Expected: identifier
+const	Const Public	syntax	Expected: identifier
+const	Const Private	syntax	Expected: identifier
+const	Const Friend	syntax	Expected: identifier
+const	Const Global	syntax	Expected: identifier
+const	Const Static	syntax	Expected: identifier
+const	Const Dim	syntax	Expected: identifier
+const	Const Const	syntax	Expected: identifier
+const	Const WithEvents	syntax	Expected: identifier
+const	Const Declare	syntax	Expected: identifier
+const	Const Event	syntax	Expected: identifier
+const	Const Implements	syntax	Expected: identifier
+const	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+const	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+const	Declare Public	syntax	Expected: Sub or Function
+const	Declare Private	syntax	Expected: Sub or Function
+const	Declare Friend	syntax	Expected: Sub or Function
+const	Declare Global	syntax	Expected: Sub or Function
+const	Declare Static	syntax	Expected: Sub or Function
+const	Declare Dim	syntax	Expected: Sub or Function
+const	Declare Const	syntax	Expected: Sub or Function
+const	Declare WithEvents	syntax	Expected: Sub or Function
+const	Declare Declare	syntax	Expected: Sub or Function
+const	Declare Event	syntax	Expected: Sub or Function
+const	Declare Implements	syntax	Expected: Sub or Function
+const	Event Public	syntax	Only valid in object module
+const	Event Private	syntax	Only valid in object module
+const	Event Friend	syntax	Only valid in object module
+const	Event Global	syntax	Only valid in object module
+const	Event Static	syntax	Only valid in object module
+const	Event Dim	syntax	Only valid in object module
+const	Event Const	syntax	Only valid in object module
+const	Event WithEvents	syntax	Only valid in object module
+const	Event Declare	syntax	Only valid in object module
+const	Event Event	syntax	Only valid in object module
+const	Event Implements	syntax	Only valid in object module
+const	Implements Public	syntax	Only valid in object module
+const	Implements Private	syntax	Only valid in object module
+const	Implements Friend	syntax	Only valid in object module
+const	Implements Global	syntax	Only valid in object module
+const	Implements Static	syntax	Only valid in object module
+const	Implements Dim	syntax	Only valid in object module
+const	Implements Const	syntax	Only valid in object module
+const	Implements WithEvents	syntax	Only valid in object module
+const	Implements Declare	syntax	Only valid in object module
+const	Implements Event	syntax	Only valid in object module
+const	Implements Implements	syntax	Only valid in object module
+declare	Public	accepted	
+declare	Private	accepted	
+declare	Friend	syntax	Only valid in object module
+declare	Global	accepted	
+declare	Static	syntax	Expected: identifier
+declare	Dim	syntax	Expected: identifier
+declare	Const	syntax	Expected: identifier
+declare	WithEvents	syntax	Expected: line number or label or statement or end of statement
+declare	Declare	syntax	Expected: Sub or Function
+declare	Event	syntax	Only valid in object module
+declare	Implements	syntax	Only valid in object module
+declare	New	syntax	Expected: line number or label or statement or end of statement
+declare	Optional	syntax	Expected: line number or label or statement or end of statement
+declare	ByVal	syntax	Expected: line number or label or statement or end of statement
+declare	Preserve	syntax	Expected: line number or label or statement or end of statement
+declare	Public Public	syntax	Expected: identifier
+declare	Public Private	syntax	Expected: identifier
+declare	Public Friend	syntax	Expected: identifier
+declare	Public Global	syntax	Expected: identifier
+declare	Public Static	syntax	Expected: Sub or Function or Property
+declare	Public Dim	syntax	Expected: identifier
+declare	Public Const	syntax	Expected: identifier
+declare	Public WithEvents	syntax	Only valid in object module
+declare	Public Declare	syntax	Expected: Sub or Function
+declare	Public Event	syntax	Only valid in object module
+declare	Public Implements	syntax	Expected: identifier
+declare	Private Public	syntax	Expected: identifier
+declare	Private Private	syntax	Expected: identifier
+declare	Private Friend	syntax	Expected: identifier
+declare	Private Global	syntax	Expected: identifier
+declare	Private Static	syntax	Expected: Sub or Function or Property
+declare	Private Dim	syntax	Expected: identifier
+declare	Private Const	syntax	Expected: identifier
+declare	Private WithEvents	syntax	Only valid in object module
+declare	Private Declare	syntax	Expected: Sub or Function
+declare	Private Event	syntax	Expected: Sub or Function or Property
+declare	Private Implements	syntax	Expected: identifier
+declare	Friend Public	syntax	Only valid in object module
+declare	Friend Private	syntax	Only valid in object module
+declare	Friend Friend	syntax	Only valid in object module
+declare	Friend Global	syntax	Only valid in object module
+declare	Friend Static	syntax	Only valid in object module
+declare	Friend Dim	syntax	Only valid in object module
+declare	Friend Const	syntax	Only valid in object module
+declare	Friend WithEvents	syntax	Only valid in object module
+declare	Friend Declare	syntax	Only valid in object module
+declare	Friend Event	syntax	Only valid in object module
+declare	Friend Implements	syntax	Only valid in object module
+declare	Global Public	syntax	Expected: identifier
+declare	Global Private	syntax	Expected: identifier
+declare	Global Friend	syntax	Expected: identifier
+declare	Global Global	syntax	Expected: identifier
+declare	Global Static	syntax	Expected: Sub or Function or Property
+declare	Global Dim	syntax	Expected: identifier
+declare	Global Const	syntax	Expected: identifier
+declare	Global WithEvents	syntax	Only valid in object module
+declare	Global Declare	syntax	Expected: Sub or Function
+declare	Global Event	syntax	Expected: Sub or Function or Property
+declare	Global Implements	syntax	Expected: identifier
+declare	Static Public	syntax	Expected: identifier
+declare	Static Private	syntax	Expected: identifier
+declare	Static Friend	syntax	Expected: identifier
+declare	Static Global	syntax	Expected: identifier
+declare	Static Static	syntax	Expected: identifier
+declare	Static Dim	syntax	Expected: identifier
+declare	Static Const	syntax	Expected: identifier
+declare	Static WithEvents	syntax	Expected: identifier
+declare	Static Declare	syntax	Expected: identifier
+declare	Static Event	syntax	Expected: identifier
+declare	Static Implements	syntax	Expected: identifier
+declare	Dim Public	syntax	Expected: identifier
+declare	Dim Private	syntax	Expected: identifier
+declare	Dim Friend	syntax	Expected: identifier
+declare	Dim Global	syntax	Expected: identifier
+declare	Dim Static	syntax	Expected: identifier
+declare	Dim Dim	syntax	Expected: identifier
+declare	Dim Const	syntax	Expected: identifier
+declare	Dim WithEvents	syntax	Only valid in object module
+declare	Dim Declare	syntax	Expected: identifier
+declare	Dim Event	syntax	Expected: identifier
+declare	Dim Implements	syntax	Expected: identifier
+declare	Const Public	syntax	Expected: identifier
+declare	Const Private	syntax	Expected: identifier
+declare	Const Friend	syntax	Expected: identifier
+declare	Const Global	syntax	Expected: identifier
+declare	Const Static	syntax	Expected: identifier
+declare	Const Dim	syntax	Expected: identifier
+declare	Const Const	syntax	Expected: identifier
+declare	Const WithEvents	syntax	Expected: identifier
+declare	Const Declare	syntax	Expected: identifier
+declare	Const Event	syntax	Expected: identifier
+declare	Const Implements	syntax	Expected: identifier
+declare	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+declare	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+declare	Declare Public	syntax	Expected: Sub or Function
+declare	Declare Private	syntax	Expected: Sub or Function
+declare	Declare Friend	syntax	Expected: Sub or Function
+declare	Declare Global	syntax	Expected: Sub or Function
+declare	Declare Static	syntax	Expected: Sub or Function
+declare	Declare Dim	syntax	Expected: Sub or Function
+declare	Declare Const	syntax	Expected: Sub or Function
+declare	Declare WithEvents	syntax	Expected: Sub or Function
+declare	Declare Declare	syntax	Expected: Sub or Function
+declare	Declare Event	syntax	Expected: Sub or Function
+declare	Declare Implements	syntax	Expected: Sub or Function
+declare	Event Public	syntax	Only valid in object module
+declare	Event Private	syntax	Only valid in object module
+declare	Event Friend	syntax	Only valid in object module
+declare	Event Global	syntax	Only valid in object module
+declare	Event Static	syntax	Only valid in object module
+declare	Event Dim	syntax	Only valid in object module
+declare	Event Const	syntax	Only valid in object module
+declare	Event WithEvents	syntax	Only valid in object module
+declare	Event Declare	syntax	Only valid in object module
+declare	Event Event	syntax	Only valid in object module
+declare	Event Implements	syntax	Only valid in object module
+declare	Implements Public	syntax	Only valid in object module
+declare	Implements Private	syntax	Only valid in object module
+declare	Implements Friend	syntax	Only valid in object module
+declare	Implements Global	syntax	Only valid in object module
+declare	Implements Static	syntax	Only valid in object module
+declare	Implements Dim	syntax	Only valid in object module
+declare	Implements Const	syntax	Only valid in object module
+declare	Implements WithEvents	syntax	Only valid in object module
+declare	Implements Declare	syntax	Only valid in object module
+declare	Implements Event	syntax	Only valid in object module
+declare	Implements Implements	syntax	Only valid in object module
+type	Public	accepted	
+type	Private	accepted	
+type	Friend	syntax	Only valid in object module
+type	Global	accepted	
+type	Static	syntax	Expected: identifier
+type	Dim	syntax	Expected: identifier
+type	Const	syntax	Expected: identifier
+type	WithEvents	syntax	Expected: line number or label or statement or end of statement
+type	Declare	syntax	Expected: Sub or Function
+type	Event	syntax	Only valid in object module
+type	Implements	syntax	Only valid in object module
+type	New	syntax	Expected: line number or label or statement or end of statement
+type	Optional	syntax	Expected: line number or label or statement or end of statement
+type	ByVal	syntax	Expected: line number or label or statement or end of statement
+type	Preserve	syntax	Expected: line number or label or statement or end of statement
+type	Public Public	syntax	Expected: identifier
+type	Public Private	syntax	Expected: identifier
+type	Public Friend	syntax	Expected: identifier
+type	Public Global	syntax	Expected: identifier
+type	Public Static	syntax	Expected: Sub or Function or Property
+type	Public Dim	syntax	Expected: identifier
+type	Public Const	syntax	Expected: identifier
+type	Public WithEvents	syntax	Only valid in object module
+type	Public Declare	syntax	Expected: Sub or Function
+type	Public Event	syntax	Only valid in object module
+type	Public Implements	syntax	Expected: identifier
+type	Private Public	syntax	Expected: identifier
+type	Private Private	syntax	Expected: identifier
+type	Private Friend	syntax	Expected: identifier
+type	Private Global	syntax	Expected: identifier
+type	Private Static	syntax	Expected: Sub or Function or Property
+type	Private Dim	syntax	Expected: identifier
+type	Private Const	syntax	Expected: identifier
+type	Private WithEvents	syntax	Only valid in object module
+type	Private Declare	syntax	Expected: Sub or Function
+type	Private Event	syntax	Expected: Sub or Function or Property
+type	Private Implements	syntax	Expected: identifier
+type	Friend Public	syntax	Only valid in object module
+type	Friend Private	syntax	Only valid in object module
+type	Friend Friend	syntax	Only valid in object module
+type	Friend Global	syntax	Only valid in object module
+type	Friend Static	syntax	Only valid in object module
+type	Friend Dim	syntax	Only valid in object module
+type	Friend Const	syntax	Only valid in object module
+type	Friend WithEvents	syntax	Only valid in object module
+type	Friend Declare	syntax	Only valid in object module
+type	Friend Event	syntax	Only valid in object module
+type	Friend Implements	syntax	Only valid in object module
+type	Global Public	syntax	Expected: identifier
+type	Global Private	syntax	Expected: identifier
+type	Global Friend	syntax	Expected: identifier
+type	Global Global	syntax	Expected: identifier
+type	Global Static	syntax	Expected: Sub or Function or Property
+type	Global Dim	syntax	Expected: identifier
+type	Global Const	syntax	Expected: identifier
+type	Global WithEvents	syntax	Only valid in object module
+type	Global Declare	syntax	Expected: Sub or Function
+type	Global Event	syntax	Expected: Sub or Function or Property
+type	Global Implements	syntax	Expected: identifier
+type	Static Public	syntax	Expected: identifier
+type	Static Private	syntax	Expected: identifier
+type	Static Friend	syntax	Expected: identifier
+type	Static Global	syntax	Expected: identifier
+type	Static Static	syntax	Expected: identifier
+type	Static Dim	syntax	Expected: identifier
+type	Static Const	syntax	Expected: identifier
+type	Static WithEvents	syntax	Expected: identifier
+type	Static Declare	syntax	Expected: identifier
+type	Static Event	syntax	Expected: identifier
+type	Static Implements	syntax	Expected: identifier
+type	Dim Public	syntax	Expected: identifier
+type	Dim Private	syntax	Expected: identifier
+type	Dim Friend	syntax	Expected: identifier
+type	Dim Global	syntax	Expected: identifier
+type	Dim Static	syntax	Expected: identifier
+type	Dim Dim	syntax	Expected: identifier
+type	Dim Const	syntax	Expected: identifier
+type	Dim WithEvents	syntax	Only valid in object module
+type	Dim Declare	syntax	Expected: identifier
+type	Dim Event	syntax	Expected: identifier
+type	Dim Implements	syntax	Expected: identifier
+type	Const Public	syntax	Expected: identifier
+type	Const Private	syntax	Expected: identifier
+type	Const Friend	syntax	Expected: identifier
+type	Const Global	syntax	Expected: identifier
+type	Const Static	syntax	Expected: identifier
+type	Const Dim	syntax	Expected: identifier
+type	Const Const	syntax	Expected: identifier
+type	Const WithEvents	syntax	Expected: identifier
+type	Const Declare	syntax	Expected: identifier
+type	Const Event	syntax	Expected: identifier
+type	Const Implements	syntax	Expected: identifier
+type	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+type	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+type	Declare Public	syntax	Expected: Sub or Function
+type	Declare Private	syntax	Expected: Sub or Function
+type	Declare Friend	syntax	Expected: Sub or Function
+type	Declare Global	syntax	Expected: Sub or Function
+type	Declare Static	syntax	Expected: Sub or Function
+type	Declare Dim	syntax	Expected: Sub or Function
+type	Declare Const	syntax	Expected: Sub or Function
+type	Declare WithEvents	syntax	Expected: Sub or Function
+type	Declare Declare	syntax	Expected: Sub or Function
+type	Declare Event	syntax	Expected: Sub or Function
+type	Declare Implements	syntax	Expected: Sub or Function
+type	Event Public	syntax	Only valid in object module
+type	Event Private	syntax	Only valid in object module
+type	Event Friend	syntax	Only valid in object module
+type	Event Global	syntax	Only valid in object module
+type	Event Static	syntax	Only valid in object module
+type	Event Dim	syntax	Only valid in object module
+type	Event Const	syntax	Only valid in object module
+type	Event WithEvents	syntax	Only valid in object module
+type	Event Declare	syntax	Only valid in object module
+type	Event Event	syntax	Only valid in object module
+type	Event Implements	syntax	Only valid in object module
+type	Implements Public	syntax	Only valid in object module
+type	Implements Private	syntax	Only valid in object module
+type	Implements Friend	syntax	Only valid in object module
+type	Implements Global	syntax	Only valid in object module
+type	Implements Static	syntax	Only valid in object module
+type	Implements Dim	syntax	Only valid in object module
+type	Implements Const	syntax	Only valid in object module
+type	Implements WithEvents	syntax	Only valid in object module
+type	Implements Declare	syntax	Only valid in object module
+type	Implements Event	syntax	Only valid in object module
+type	Implements Implements	syntax	Only valid in object module
+enum	Public	accepted	
+enum	Private	accepted	
+enum	Friend	syntax	Only valid in object module
+enum	Global	accepted	
+enum	Static	syntax	Expected: identifier
+enum	Dim	syntax	Expected: identifier
+enum	Const	syntax	Expected: identifier
+enum	WithEvents	syntax	Expected: line number or label or statement or end of statement
+enum	Declare	syntax	Expected: Sub or Function
+enum	Event	syntax	Only valid in object module
+enum	Implements	syntax	Only valid in object module
+enum	New	syntax	Expected: line number or label or statement or end of statement
+enum	Optional	syntax	Expected: line number or label or statement or end of statement
+enum	ByVal	syntax	Expected: line number or label or statement or end of statement
+enum	Preserve	syntax	Expected: line number or label or statement or end of statement
+enum	Public Public	syntax	Expected: identifier
+enum	Public Private	syntax	Expected: identifier
+enum	Public Friend	syntax	Expected: identifier
+enum	Public Global	syntax	Expected: identifier
+enum	Public Static	syntax	Expected: Sub or Function or Property
+enum	Public Dim	syntax	Expected: identifier
+enum	Public Const	syntax	Expected: identifier
+enum	Public WithEvents	syntax	Only valid in object module
+enum	Public Declare	syntax	Expected: Sub or Function
+enum	Public Event	syntax	Only valid in object module
+enum	Public Implements	syntax	Expected: identifier
+enum	Private Public	syntax	Expected: identifier
+enum	Private Private	syntax	Expected: identifier
+enum	Private Friend	syntax	Expected: identifier
+enum	Private Global	syntax	Expected: identifier
+enum	Private Static	syntax	Expected: Sub or Function or Property
+enum	Private Dim	syntax	Expected: identifier
+enum	Private Const	syntax	Expected: identifier
+enum	Private WithEvents	syntax	Only valid in object module
+enum	Private Declare	syntax	Expected: Sub or Function
+enum	Private Event	syntax	Expected: Sub or Function or Property
+enum	Private Implements	syntax	Expected: identifier
+enum	Friend Public	syntax	Only valid in object module
+enum	Friend Private	syntax	Only valid in object module
+enum	Friend Friend	syntax	Only valid in object module
+enum	Friend Global	syntax	Only valid in object module
+enum	Friend Static	syntax	Only valid in object module
+enum	Friend Dim	syntax	Only valid in object module
+enum	Friend Const	syntax	Only valid in object module
+enum	Friend WithEvents	syntax	Only valid in object module
+enum	Friend Declare	syntax	Only valid in object module
+enum	Friend Event	syntax	Only valid in object module
+enum	Friend Implements	syntax	Only valid in object module
+enum	Global Public	syntax	Expected: identifier
+enum	Global Private	syntax	Expected: identifier
+enum	Global Friend	syntax	Expected: identifier
+enum	Global Global	syntax	Expected: identifier
+enum	Global Static	syntax	Expected: Sub or Function or Property
+enum	Global Dim	syntax	Expected: identifier
+enum	Global Const	syntax	Expected: identifier
+enum	Global WithEvents	syntax	Only valid in object module
+enum	Global Declare	syntax	Expected: Sub or Function
+enum	Global Event	syntax	Expected: Sub or Function or Property
+enum	Global Implements	syntax	Expected: identifier
+enum	Static Public	syntax	Expected: identifier
+enum	Static Private	syntax	Expected: identifier
+enum	Static Friend	syntax	Expected: identifier
+enum	Static Global	syntax	Expected: identifier
+enum	Static Static	syntax	Expected: identifier
+enum	Static Dim	syntax	Expected: identifier
+enum	Static Const	syntax	Expected: identifier
+enum	Static WithEvents	syntax	Expected: identifier
+enum	Static Declare	syntax	Expected: identifier
+enum	Static Event	syntax	Expected: identifier
+enum	Static Implements	syntax	Expected: identifier
+enum	Dim Public	syntax	Expected: identifier
+enum	Dim Private	syntax	Expected: identifier
+enum	Dim Friend	syntax	Expected: identifier
+enum	Dim Global	syntax	Expected: identifier
+enum	Dim Static	syntax	Expected: identifier
+enum	Dim Dim	syntax	Expected: identifier
+enum	Dim Const	syntax	Expected: identifier
+enum	Dim WithEvents	syntax	Only valid in object module
+enum	Dim Declare	syntax	Expected: identifier
+enum	Dim Event	syntax	Expected: identifier
+enum	Dim Implements	syntax	Expected: identifier
+enum	Const Public	syntax	Expected: identifier
+enum	Const Private	syntax	Expected: identifier
+enum	Const Friend	syntax	Expected: identifier
+enum	Const Global	syntax	Expected: identifier
+enum	Const Static	syntax	Expected: identifier
+enum	Const Dim	syntax	Expected: identifier
+enum	Const Const	syntax	Expected: identifier
+enum	Const WithEvents	syntax	Expected: identifier
+enum	Const Declare	syntax	Expected: identifier
+enum	Const Event	syntax	Expected: identifier
+enum	Const Implements	syntax	Expected: identifier
+enum	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+enum	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+enum	Declare Public	syntax	Expected: Sub or Function
+enum	Declare Private	syntax	Expected: Sub or Function
+enum	Declare Friend	syntax	Expected: Sub or Function
+enum	Declare Global	syntax	Expected: Sub or Function
+enum	Declare Static	syntax	Expected: Sub or Function
+enum	Declare Dim	syntax	Expected: Sub or Function
+enum	Declare Const	syntax	Expected: Sub or Function
+enum	Declare WithEvents	syntax	Expected: Sub or Function
+enum	Declare Declare	syntax	Expected: Sub or Function
+enum	Declare Event	syntax	Expected: Sub or Function
+enum	Declare Implements	syntax	Expected: Sub or Function
+enum	Event Public	syntax	Only valid in object module
+enum	Event Private	syntax	Only valid in object module
+enum	Event Friend	syntax	Only valid in object module
+enum	Event Global	syntax	Only valid in object module
+enum	Event Static	syntax	Only valid in object module
+enum	Event Dim	syntax	Only valid in object module
+enum	Event Const	syntax	Only valid in object module
+enum	Event WithEvents	syntax	Only valid in object module
+enum	Event Declare	syntax	Only valid in object module
+enum	Event Event	syntax	Only valid in object module
+enum	Event Implements	syntax	Only valid in object module
+enum	Implements Public	syntax	Only valid in object module
+enum	Implements Private	syntax	Only valid in object module
+enum	Implements Friend	syntax	Only valid in object module
+enum	Implements Global	syntax	Only valid in object module
+enum	Implements Static	syntax	Only valid in object module
+enum	Implements Dim	syntax	Only valid in object module
+enum	Implements Const	syntax	Only valid in object module
+enum	Implements WithEvents	syntax	Only valid in object module
+enum	Implements Declare	syntax	Only valid in object module
+enum	Implements Event	syntax	Only valid in object module
+enum	Implements Implements	syntax	Only valid in object module
+event	Public	syntax	Only valid in object module
+event	Private	syntax	Expected: Sub or Function or Property
+event	Friend	syntax	Only valid in object module
+event	Global	syntax	Expected: Sub or Function or Property
+event	Static	syntax	Expected: identifier
+event	Dim	syntax	Expected: identifier
+event	Const	syntax	Expected: identifier
+event	WithEvents	syntax	Expected: line number or label or statement or end of statement
+event	Declare	syntax	Expected: Sub or Function
+event	Event	syntax	Only valid in object module
+event	Implements	syntax	Only valid in object module
+event	New	syntax	Expected: line number or label or statement or end of statement
+event	Optional	syntax	Expected: line number or label or statement or end of statement
+event	ByVal	syntax	Expected: line number or label or statement or end of statement
+event	Preserve	syntax	Expected: line number or label or statement or end of statement
+event	Public Public	syntax	Expected: identifier
+event	Public Private	syntax	Expected: identifier
+event	Public Friend	syntax	Expected: identifier
+event	Public Global	syntax	Expected: identifier
+event	Public Static	syntax	Expected: Sub or Function or Property
+event	Public Dim	syntax	Expected: identifier
+event	Public Const	syntax	Expected: identifier
+event	Public WithEvents	syntax	Only valid in object module
+event	Public Declare	syntax	Expected: Sub or Function
+event	Public Event	syntax	Only valid in object module
+event	Public Implements	syntax	Expected: identifier
+event	Private Public	syntax	Expected: identifier
+event	Private Private	syntax	Expected: identifier
+event	Private Friend	syntax	Expected: identifier
+event	Private Global	syntax	Expected: identifier
+event	Private Static	syntax	Expected: Sub or Function or Property
+event	Private Dim	syntax	Expected: identifier
+event	Private Const	syntax	Expected: identifier
+event	Private WithEvents	syntax	Only valid in object module
+event	Private Declare	syntax	Expected: Sub or Function
+event	Private Event	syntax	Expected: Sub or Function or Property
+event	Private Implements	syntax	Expected: identifier
+event	Friend Public	syntax	Only valid in object module
+event	Friend Private	syntax	Only valid in object module
+event	Friend Friend	syntax	Only valid in object module
+event	Friend Global	syntax	Only valid in object module
+event	Friend Static	syntax	Only valid in object module
+event	Friend Dim	syntax	Only valid in object module
+event	Friend Const	syntax	Only valid in object module
+event	Friend WithEvents	syntax	Only valid in object module
+event	Friend Declare	syntax	Only valid in object module
+event	Friend Event	syntax	Only valid in object module
+event	Friend Implements	syntax	Only valid in object module
+event	Global Public	syntax	Expected: identifier
+event	Global Private	syntax	Expected: identifier
+event	Global Friend	syntax	Expected: identifier
+event	Global Global	syntax	Expected: identifier
+event	Global Static	syntax	Expected: Sub or Function or Property
+event	Global Dim	syntax	Expected: identifier
+event	Global Const	syntax	Expected: identifier
+event	Global WithEvents	syntax	Only valid in object module
+event	Global Declare	syntax	Expected: Sub or Function
+event	Global Event	syntax	Expected: Sub or Function or Property
+event	Global Implements	syntax	Expected: identifier
+event	Static Public	syntax	Expected: identifier
+event	Static Private	syntax	Expected: identifier
+event	Static Friend	syntax	Expected: identifier
+event	Static Global	syntax	Expected: identifier
+event	Static Static	syntax	Expected: identifier
+event	Static Dim	syntax	Expected: identifier
+event	Static Const	syntax	Expected: identifier
+event	Static WithEvents	syntax	Expected: identifier
+event	Static Declare	syntax	Expected: identifier
+event	Static Event	syntax	Expected: identifier
+event	Static Implements	syntax	Expected: identifier
+event	Dim Public	syntax	Expected: identifier
+event	Dim Private	syntax	Expected: identifier
+event	Dim Friend	syntax	Expected: identifier
+event	Dim Global	syntax	Expected: identifier
+event	Dim Static	syntax	Expected: identifier
+event	Dim Dim	syntax	Expected: identifier
+event	Dim Const	syntax	Expected: identifier
+event	Dim WithEvents	syntax	Only valid in object module
+event	Dim Declare	syntax	Expected: identifier
+event	Dim Event	syntax	Expected: identifier
+event	Dim Implements	syntax	Expected: identifier
+event	Const Public	syntax	Expected: identifier
+event	Const Private	syntax	Expected: identifier
+event	Const Friend	syntax	Expected: identifier
+event	Const Global	syntax	Expected: identifier
+event	Const Static	syntax	Expected: identifier
+event	Const Dim	syntax	Expected: identifier
+event	Const Const	syntax	Expected: identifier
+event	Const WithEvents	syntax	Expected: identifier
+event	Const Declare	syntax	Expected: identifier
+event	Const Event	syntax	Expected: identifier
+event	Const Implements	syntax	Expected: identifier
+event	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+event	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+event	Declare Public	syntax	Expected: Sub or Function
+event	Declare Private	syntax	Expected: Sub or Function
+event	Declare Friend	syntax	Expected: Sub or Function
+event	Declare Global	syntax	Expected: Sub or Function
+event	Declare Static	syntax	Expected: Sub or Function
+event	Declare Dim	syntax	Expected: Sub or Function
+event	Declare Const	syntax	Expected: Sub or Function
+event	Declare WithEvents	syntax	Expected: Sub or Function
+event	Declare Declare	syntax	Expected: Sub or Function
+event	Declare Event	syntax	Expected: Sub or Function
+event	Declare Implements	syntax	Expected: Sub or Function
+event	Event Public	syntax	Only valid in object module
+event	Event Private	syntax	Only valid in object module
+event	Event Friend	syntax	Only valid in object module
+event	Event Global	syntax	Only valid in object module
+event	Event Static	syntax	Only valid in object module
+event	Event Dim	syntax	Only valid in object module
+event	Event Const	syntax	Only valid in object module
+event	Event WithEvents	syntax	Only valid in object module
+event	Event Declare	syntax	Only valid in object module
+event	Event Event	syntax	Only valid in object module
+event	Event Implements	syntax	Only valid in object module
+event	Implements Public	syntax	Only valid in object module
+event	Implements Private	syntax	Only valid in object module
+event	Implements Friend	syntax	Only valid in object module
+event	Implements Global	syntax	Only valid in object module
+event	Implements Static	syntax	Only valid in object module
+event	Implements Dim	syntax	Only valid in object module
+event	Implements Const	syntax	Only valid in object module
+event	Implements WithEvents	syntax	Only valid in object module
+event	Implements Declare	syntax	Only valid in object module
+event	Implements Event	syntax	Only valid in object module
+event	Implements Implements	syntax	Only valid in object module
+vardimless	Public	accepted	
+vardimless	Private	accepted	
+vardimless	Friend	syntax	Only valid in object module
+vardimless	Global	accepted	
+vardimless	Static	syntax	Invalid outside procedure
+vardimless	Dim	accepted	
+vardimless	Const	syntax	Expected: As or =
+vardimless	WithEvents	syntax	Expected: line number or label or statement or end of statement
+vardimless	Declare	syntax	Expected: Sub or Function
+vardimless	Event	syntax	Only valid in object module
+vardimless	Implements	syntax	Only valid in object module
+vardimless	New	syntax	Expected: line number or label or statement or end of statement
+vardimless	Optional	syntax	Expected: line number or label or statement or end of statement
+vardimless	ByVal	syntax	Expected: line number or label or statement or end of statement
+vardimless	Preserve	syntax	Expected: line number or label or statement or end of statement
+vardimless	Public Public	syntax	Expected: identifier
+vardimless	Public Private	syntax	Expected: identifier
+vardimless	Public Friend	syntax	Expected: identifier
+vardimless	Public Global	syntax	Expected: identifier
+vardimless	Public Static	syntax	Expected: Sub or Function or Property
+vardimless	Public Dim	syntax	Expected: identifier
+vardimless	Public Const	syntax	Expected: As or =
+vardimless	Public WithEvents	syntax	Only valid in object module
+vardimless	Public Declare	syntax	Expected: Sub or Function
+vardimless	Public Event	syntax	Only valid in object module
+vardimless	Public Implements	syntax	Expected: identifier
+vardimless	Private Public	syntax	Expected: identifier
+vardimless	Private Private	syntax	Expected: identifier
+vardimless	Private Friend	syntax	Expected: identifier
+vardimless	Private Global	syntax	Expected: identifier
+vardimless	Private Static	syntax	Expected: Sub or Function or Property
+vardimless	Private Dim	syntax	Expected: identifier
+vardimless	Private Const	syntax	Expected: As or =
+vardimless	Private WithEvents	syntax	Only valid in object module
+vardimless	Private Declare	syntax	Expected: Sub or Function
+vardimless	Private Event	syntax	Expected: Sub or Function or Property
+vardimless	Private Implements	syntax	Expected: identifier
+vardimless	Friend Public	syntax	Only valid in object module
+vardimless	Friend Private	syntax	Only valid in object module
+vardimless	Friend Friend	syntax	Only valid in object module
+vardimless	Friend Global	syntax	Only valid in object module
+vardimless	Friend Static	syntax	Only valid in object module
+vardimless	Friend Dim	syntax	Only valid in object module
+vardimless	Friend Const	syntax	Only valid in object module
+vardimless	Friend WithEvents	syntax	Only valid in object module
+vardimless	Friend Declare	syntax	Only valid in object module
+vardimless	Friend Event	syntax	Only valid in object module
+vardimless	Friend Implements	syntax	Only valid in object module
+vardimless	Global Public	syntax	Expected: identifier
+vardimless	Global Private	syntax	Expected: identifier
+vardimless	Global Friend	syntax	Expected: identifier
+vardimless	Global Global	syntax	Expected: identifier
+vardimless	Global Static	syntax	Expected: Sub or Function or Property
+vardimless	Global Dim	syntax	Expected: identifier
+vardimless	Global Const	syntax	Expected: As or =
+vardimless	Global WithEvents	syntax	Only valid in object module
+vardimless	Global Declare	syntax	Expected: Sub or Function
+vardimless	Global Event	syntax	Expected: Sub or Function or Property
+vardimless	Global Implements	syntax	Expected: identifier
+vardimless	Static Public	syntax	Invalid outside procedure
+vardimless	Static Private	syntax	Invalid outside procedure
+vardimless	Static Friend	syntax	Invalid outside procedure
+vardimless	Static Global	syntax	Expected: identifier
+vardimless	Static Static	syntax	Expected: identifier
+vardimless	Static Dim	syntax	Expected: identifier
+vardimless	Static Const	syntax	Expected: identifier
+vardimless	Static WithEvents	syntax	Expected: identifier
+vardimless	Static Declare	syntax	Expected: identifier
+vardimless	Static Event	syntax	Expected: identifier
+vardimless	Static Implements	syntax	Expected: identifier
+vardimless	Dim Public	syntax	Expected: identifier
+vardimless	Dim Private	syntax	Expected: identifier
+vardimless	Dim Friend	syntax	Expected: identifier
+vardimless	Dim Global	syntax	Expected: identifier
+vardimless	Dim Static	syntax	Expected: identifier
+vardimless	Dim Dim	syntax	Expected: identifier
+vardimless	Dim Const	syntax	Expected: identifier
+vardimless	Dim WithEvents	syntax	Only valid in object module
+vardimless	Dim Declare	syntax	Expected: identifier
+vardimless	Dim Event	syntax	Expected: identifier
+vardimless	Dim Implements	syntax	Expected: identifier
+vardimless	Const Public	syntax	Expected: identifier
+vardimless	Const Private	syntax	Expected: identifier
+vardimless	Const Friend	syntax	Expected: identifier
+vardimless	Const Global	syntax	Expected: identifier
+vardimless	Const Static	syntax	Expected: identifier
+vardimless	Const Dim	syntax	Expected: identifier
+vardimless	Const Const	syntax	Expected: identifier
+vardimless	Const WithEvents	syntax	Expected: identifier
+vardimless	Const Declare	syntax	Expected: identifier
+vardimless	Const Event	syntax	Expected: identifier
+vardimless	Const Implements	syntax	Expected: identifier
+vardimless	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+vardimless	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+vardimless	Declare Public	syntax	Expected: Sub or Function
+vardimless	Declare Private	syntax	Expected: Sub or Function
+vardimless	Declare Friend	syntax	Expected: Sub or Function
+vardimless	Declare Global	syntax	Expected: Sub or Function
+vardimless	Declare Static	syntax	Expected: Sub or Function
+vardimless	Declare Dim	syntax	Expected: Sub or Function
+vardimless	Declare Const	syntax	Expected: Sub or Function
+vardimless	Declare WithEvents	syntax	Expected: Sub or Function
+vardimless	Declare Declare	syntax	Expected: Sub or Function
+vardimless	Declare Event	syntax	Expected: Sub or Function
+vardimless	Declare Implements	syntax	Expected: Sub or Function
+vardimless	Event Public	syntax	Only valid in object module
+vardimless	Event Private	syntax	Only valid in object module
+vardimless	Event Friend	syntax	Only valid in object module
+vardimless	Event Global	syntax	Only valid in object module
+vardimless	Event Static	syntax	Only valid in object module
+vardimless	Event Dim	syntax	Only valid in object module
+vardimless	Event Const	syntax	Only valid in object module
+vardimless	Event WithEvents	syntax	Only valid in object module
+vardimless	Event Declare	syntax	Only valid in object module
+vardimless	Event Event	syntax	Only valid in object module
+vardimless	Event Implements	syntax	Only valid in object module
+vardimless	Implements Public	syntax	Only valid in object module
+vardimless	Implements Private	syntax	Only valid in object module
+vardimless	Implements Friend	syntax	Only valid in object module
+vardimless	Implements Global	syntax	Only valid in object module
+vardimless	Implements Static	syntax	Only valid in object module
+vardimless	Implements Dim	syntax	Only valid in object module
+vardimless	Implements Const	syntax	Only valid in object module
+vardimless	Implements WithEvents	syntax	Only valid in object module
+vardimless	Implements Declare	syntax	Only valid in object module
+vardimless	Implements Event	syntax	Only valid in object module
+vardimless	Implements Implements	syntax	Only valid in object module
+csub	Public	accepted	
+csub	Private	accepted	
+csub	Friend	accepted	
+csub	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Static	accepted	
+csub	Dim	syntax	Expected: identifier
+csub	Const	syntax	Expected: identifier
+csub	WithEvents	syntax	Expected: line number or label or statement or end of statement
+csub	Declare	syntax	Expected: Lib
+csub	Event	syntax	Expected: identifier
+csub	Implements	syntax	Expected: identifier
+csub	New	syntax	Expected: line number or label or statement or end of statement
+csub	Optional	syntax	Expected: line number or label or statement or end of statement
+csub	ByVal	syntax	Expected: line number or label or statement or end of statement
+csub	Preserve	syntax	Expected: line number or label or statement or end of statement
+csub	Public Public	syntax	Expected: identifier
+csub	Public Private	syntax	Expected: identifier
+csub	Public Friend	syntax	Expected: identifier
+csub	Public Global	syntax	Expected: identifier
+csub	Public Static	accepted	
+csub	Public Dim	syntax	Expected: identifier
+csub	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Public WithEvents	syntax	Expected: identifier
+csub	Public Declare	syntax	Expected: Lib
+csub	Public Event	syntax	Expected: identifier
+csub	Public Implements	syntax	Expected: identifier
+csub	Private Public	syntax	Expected: identifier
+csub	Private Private	syntax	Expected: identifier
+csub	Private Friend	syntax	Expected: identifier
+csub	Private Global	syntax	Expected: identifier
+csub	Private Static	accepted	
+csub	Private Dim	syntax	Expected: identifier
+csub	Private Const	syntax	Expected: identifier
+csub	Private WithEvents	syntax	Expected: identifier
+csub	Private Declare	syntax	Expected: Lib
+csub	Private Event	syntax	Expected: Sub or Function or Property
+csub	Private Implements	syntax	Expected: identifier
+csub	Friend Public	syntax	Expected: Sub or Function or Property
+csub	Friend Private	syntax	Expected: Sub or Function or Property
+csub	Friend Friend	syntax	Expected: Sub or Function or Property
+csub	Friend Global	syntax	Expected: Sub or Function or Property
+csub	Friend Static	accepted	
+csub	Friend Dim	syntax	Expected: Sub or Function or Property
+csub	Friend Const	syntax	Expected: Sub or Function or Property
+csub	Friend WithEvents	syntax	Expected: Sub or Function or Property
+csub	Friend Declare	syntax	Expected: Sub or Function or Property
+csub	Friend Event	syntax	Expected: Sub or Function or Property
+csub	Friend Implements	syntax	Expected: Sub or Function or Property
+csub	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+csub	Static Public	accepted	
+csub	Static Private	accepted	
+csub	Static Friend	accepted	
+csub	Static Global	syntax	Expected: identifier
+csub	Static Static	syntax	Expected: identifier
+csub	Static Dim	syntax	Expected: identifier
+csub	Static Const	syntax	Expected: identifier
+csub	Static WithEvents	syntax	Expected: identifier
+csub	Static Declare	syntax	Expected: identifier
+csub	Static Event	syntax	Expected: identifier
+csub	Static Implements	syntax	Expected: identifier
+csub	Dim Public	syntax	Expected: identifier
+csub	Dim Private	syntax	Expected: identifier
+csub	Dim Friend	syntax	Expected: identifier
+csub	Dim Global	syntax	Expected: identifier
+csub	Dim Static	syntax	Expected: identifier
+csub	Dim Dim	syntax	Expected: identifier
+csub	Dim Const	syntax	Expected: identifier
+csub	Dim WithEvents	syntax	Expected: identifier
+csub	Dim Declare	syntax	Expected: identifier
+csub	Dim Event	syntax	Expected: identifier
+csub	Dim Implements	syntax	Expected: identifier
+csub	Const Public	syntax	Expected: identifier
+csub	Const Private	syntax	Expected: identifier
+csub	Const Friend	syntax	Expected: identifier
+csub	Const Global	syntax	Expected: identifier
+csub	Const Static	syntax	Expected: identifier
+csub	Const Dim	syntax	Expected: identifier
+csub	Const Const	syntax	Expected: identifier
+csub	Const WithEvents	syntax	Expected: identifier
+csub	Const Declare	syntax	Expected: identifier
+csub	Const Event	syntax	Expected: identifier
+csub	Const Implements	syntax	Expected: identifier
+csub	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+csub	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+csub	Declare Public	syntax	Expected: Sub or Function
+csub	Declare Private	syntax	Expected: Sub or Function
+csub	Declare Friend	syntax	Expected: Sub or Function
+csub	Declare Global	syntax	Expected: Sub or Function
+csub	Declare Static	syntax	Expected: Sub or Function
+csub	Declare Dim	syntax	Expected: Sub or Function
+csub	Declare Const	syntax	Expected: Sub or Function
+csub	Declare WithEvents	syntax	Expected: Sub or Function
+csub	Declare Declare	syntax	Expected: Sub or Function
+csub	Declare Event	syntax	Expected: Sub or Function
+csub	Declare Implements	syntax	Expected: Sub or Function
+csub	Event Public	syntax	Expected: identifier
+csub	Event Private	syntax	Expected: identifier
+csub	Event Friend	syntax	Expected: identifier
+csub	Event Global	syntax	Expected: identifier
+csub	Event Static	syntax	Expected: identifier
+csub	Event Dim	syntax	Expected: identifier
+csub	Event Const	syntax	Expected: identifier
+csub	Event WithEvents	syntax	Expected: identifier
+csub	Event Declare	syntax	Expected: identifier
+csub	Event Event	syntax	Expected: identifier
+csub	Event Implements	syntax	Expected: identifier
+csub	Implements Public	syntax	Expected: identifier
+csub	Implements Private	syntax	Expected: identifier
+csub	Implements Friend	syntax	Expected: identifier
+csub	Implements Global	syntax	Expected: identifier
+csub	Implements Static	syntax	Expected: identifier
+csub	Implements Dim	syntax	Expected: identifier
+csub	Implements Const	syntax	Expected: identifier
+csub	Implements WithEvents	syntax	Expected: identifier
+csub	Implements Declare	syntax	Expected: identifier
+csub	Implements Event	syntax	Expected: identifier
+csub	Implements Implements	syntax	Expected: identifier
+cfunc	Public	accepted	
+cfunc	Private	accepted	
+cfunc	Friend	accepted	
+cfunc	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Static	accepted	
+cfunc	Dim	syntax	Expected: identifier
+cfunc	Const	syntax	Expected: identifier
+cfunc	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cfunc	Declare	syntax	Expected: Lib
+cfunc	Event	syntax	Expected: identifier
+cfunc	Implements	syntax	Expected: identifier
+cfunc	New	syntax	Expected: line number or label or statement or end of statement
+cfunc	Optional	syntax	Expected: line number or label or statement or end of statement
+cfunc	ByVal	syntax	Expected: line number or label or statement or end of statement
+cfunc	Preserve	syntax	Expected: line number or label or statement or end of statement
+cfunc	Public Public	syntax	Expected: identifier
+cfunc	Public Private	syntax	Expected: identifier
+cfunc	Public Friend	syntax	Expected: identifier
+cfunc	Public Global	syntax	Expected: identifier
+cfunc	Public Static	accepted	
+cfunc	Public Dim	syntax	Expected: identifier
+cfunc	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Public WithEvents	syntax	Expected: identifier
+cfunc	Public Declare	syntax	Expected: Lib
+cfunc	Public Event	syntax	Expected: identifier
+cfunc	Public Implements	syntax	Expected: identifier
+cfunc	Private Public	syntax	Expected: identifier
+cfunc	Private Private	syntax	Expected: identifier
+cfunc	Private Friend	syntax	Expected: identifier
+cfunc	Private Global	syntax	Expected: identifier
+cfunc	Private Static	accepted	
+cfunc	Private Dim	syntax	Expected: identifier
+cfunc	Private Const	syntax	Expected: identifier
+cfunc	Private WithEvents	syntax	Expected: identifier
+cfunc	Private Declare	syntax	Expected: Lib
+cfunc	Private Event	syntax	Expected: Sub or Function or Property
+cfunc	Private Implements	syntax	Expected: identifier
+cfunc	Friend Public	syntax	Expected: Sub or Function or Property
+cfunc	Friend Private	syntax	Expected: Sub or Function or Property
+cfunc	Friend Friend	syntax	Expected: Sub or Function or Property
+cfunc	Friend Global	syntax	Expected: Sub or Function or Property
+cfunc	Friend Static	accepted	
+cfunc	Friend Dim	syntax	Expected: Sub or Function or Property
+cfunc	Friend Const	syntax	Expected: Sub or Function or Property
+cfunc	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cfunc	Friend Declare	syntax	Expected: Sub or Function or Property
+cfunc	Friend Event	syntax	Expected: Sub or Function or Property
+cfunc	Friend Implements	syntax	Expected: Sub or Function or Property
+cfunc	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cfunc	Static Public	accepted	
+cfunc	Static Private	accepted	
+cfunc	Static Friend	accepted	
+cfunc	Static Global	syntax	Expected: identifier
+cfunc	Static Static	syntax	Expected: identifier
+cfunc	Static Dim	syntax	Expected: identifier
+cfunc	Static Const	syntax	Expected: identifier
+cfunc	Static WithEvents	syntax	Expected: identifier
+cfunc	Static Declare	syntax	Expected: identifier
+cfunc	Static Event	syntax	Expected: identifier
+cfunc	Static Implements	syntax	Expected: identifier
+cfunc	Dim Public	syntax	Expected: identifier
+cfunc	Dim Private	syntax	Expected: identifier
+cfunc	Dim Friend	syntax	Expected: identifier
+cfunc	Dim Global	syntax	Expected: identifier
+cfunc	Dim Static	syntax	Expected: identifier
+cfunc	Dim Dim	syntax	Expected: identifier
+cfunc	Dim Const	syntax	Expected: identifier
+cfunc	Dim WithEvents	syntax	Expected: identifier
+cfunc	Dim Declare	syntax	Expected: identifier
+cfunc	Dim Event	syntax	Expected: identifier
+cfunc	Dim Implements	syntax	Expected: identifier
+cfunc	Const Public	syntax	Expected: identifier
+cfunc	Const Private	syntax	Expected: identifier
+cfunc	Const Friend	syntax	Expected: identifier
+cfunc	Const Global	syntax	Expected: identifier
+cfunc	Const Static	syntax	Expected: identifier
+cfunc	Const Dim	syntax	Expected: identifier
+cfunc	Const Const	syntax	Expected: identifier
+cfunc	Const WithEvents	syntax	Expected: identifier
+cfunc	Const Declare	syntax	Expected: identifier
+cfunc	Const Event	syntax	Expected: identifier
+cfunc	Const Implements	syntax	Expected: identifier
+cfunc	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cfunc	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cfunc	Declare Public	syntax	Expected: Sub or Function
+cfunc	Declare Private	syntax	Expected: Sub or Function
+cfunc	Declare Friend	syntax	Expected: Sub or Function
+cfunc	Declare Global	syntax	Expected: Sub or Function
+cfunc	Declare Static	syntax	Expected: Sub or Function
+cfunc	Declare Dim	syntax	Expected: Sub or Function
+cfunc	Declare Const	syntax	Expected: Sub or Function
+cfunc	Declare WithEvents	syntax	Expected: Sub or Function
+cfunc	Declare Declare	syntax	Expected: Sub or Function
+cfunc	Declare Event	syntax	Expected: Sub or Function
+cfunc	Declare Implements	syntax	Expected: Sub or Function
+cfunc	Event Public	syntax	Expected: identifier
+cfunc	Event Private	syntax	Expected: identifier
+cfunc	Event Friend	syntax	Expected: identifier
+cfunc	Event Global	syntax	Expected: identifier
+cfunc	Event Static	syntax	Expected: identifier
+cfunc	Event Dim	syntax	Expected: identifier
+cfunc	Event Const	syntax	Expected: identifier
+cfunc	Event WithEvents	syntax	Expected: identifier
+cfunc	Event Declare	syntax	Expected: identifier
+cfunc	Event Event	syntax	Expected: identifier
+cfunc	Event Implements	syntax	Expected: identifier
+cfunc	Implements Public	syntax	Expected: identifier
+cfunc	Implements Private	syntax	Expected: identifier
+cfunc	Implements Friend	syntax	Expected: identifier
+cfunc	Implements Global	syntax	Expected: identifier
+cfunc	Implements Static	syntax	Expected: identifier
+cfunc	Implements Dim	syntax	Expected: identifier
+cfunc	Implements Const	syntax	Expected: identifier
+cfunc	Implements WithEvents	syntax	Expected: identifier
+cfunc	Implements Declare	syntax	Expected: identifier
+cfunc	Implements Event	syntax	Expected: identifier
+cfunc	Implements Implements	syntax	Expected: identifier
+cprop	Public	accepted	
+cprop	Private	accepted	
+cprop	Friend	accepted	
+cprop	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Static	accepted	
+cprop	Dim	syntax	Expected: end of statement
+cprop	Const	syntax	Expected: As or =
+cprop	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cprop	Declare	syntax	Expected: Sub or Function
+cprop	Event	syntax	Expected: end of statement
+cprop	Implements	syntax	Expected: end of statement
+cprop	New	syntax	Expected: line number or label or statement or end of statement
+cprop	Optional	syntax	Expected: line number or label or statement or end of statement
+cprop	ByVal	syntax	Expected: line number or label or statement or end of statement
+cprop	Preserve	syntax	Expected: line number or label or statement or end of statement
+cprop	Public Public	syntax	Expected: identifier
+cprop	Public Private	syntax	Expected: identifier
+cprop	Public Friend	syntax	Expected: identifier
+cprop	Public Global	syntax	Expected: identifier
+cprop	Public Static	accepted	
+cprop	Public Dim	syntax	Expected: identifier
+cprop	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Public WithEvents	syntax	Expected: As
+cprop	Public Declare	syntax	Expected: Sub or Function
+cprop	Public Event	syntax	Expected: end of statement
+cprop	Public Implements	syntax	Expected: identifier
+cprop	Private Public	syntax	Expected: identifier
+cprop	Private Private	syntax	Expected: identifier
+cprop	Private Friend	syntax	Expected: identifier
+cprop	Private Global	syntax	Expected: identifier
+cprop	Private Static	accepted	
+cprop	Private Dim	syntax	Expected: identifier
+cprop	Private Const	syntax	Expected: As or =
+cprop	Private WithEvents	syntax	Expected: As
+cprop	Private Declare	syntax	Expected: Sub or Function
+cprop	Private Event	syntax	Expected: Sub or Function or Property
+cprop	Private Implements	syntax	Expected: identifier
+cprop	Friend Public	syntax	Expected: Sub or Function or Property
+cprop	Friend Private	syntax	Expected: Sub or Function or Property
+cprop	Friend Friend	syntax	Expected: Sub or Function or Property
+cprop	Friend Global	syntax	Expected: Sub or Function or Property
+cprop	Friend Static	accepted	
+cprop	Friend Dim	syntax	Expected: Sub or Function or Property
+cprop	Friend Const	syntax	Expected: Sub or Function or Property
+cprop	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cprop	Friend Declare	syntax	Expected: Sub or Function or Property
+cprop	Friend Event	syntax	Expected: Sub or Function or Property
+cprop	Friend Implements	syntax	Expected: Sub or Function or Property
+cprop	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cprop	Static Public	accepted	
+cprop	Static Private	accepted	
+cprop	Static Friend	accepted	
+cprop	Static Global	syntax	Expected: identifier
+cprop	Static Static	syntax	Expected: identifier
+cprop	Static Dim	syntax	Expected: identifier
+cprop	Static Const	syntax	Expected: identifier
+cprop	Static WithEvents	syntax	Expected: identifier
+cprop	Static Declare	syntax	Expected: identifier
+cprop	Static Event	syntax	Expected: identifier
+cprop	Static Implements	syntax	Expected: identifier
+cprop	Dim Public	syntax	Expected: identifier
+cprop	Dim Private	syntax	Expected: identifier
+cprop	Dim Friend	syntax	Expected: identifier
+cprop	Dim Global	syntax	Expected: identifier
+cprop	Dim Static	syntax	Expected: identifier
+cprop	Dim Dim	syntax	Expected: identifier
+cprop	Dim Const	syntax	Expected: identifier
+cprop	Dim WithEvents	syntax	Expected: As
+cprop	Dim Declare	syntax	Expected: identifier
+cprop	Dim Event	syntax	Expected: identifier
+cprop	Dim Implements	syntax	Expected: identifier
+cprop	Const Public	syntax	Expected: identifier
+cprop	Const Private	syntax	Expected: identifier
+cprop	Const Friend	syntax	Expected: identifier
+cprop	Const Global	syntax	Expected: identifier
+cprop	Const Static	syntax	Expected: identifier
+cprop	Const Dim	syntax	Expected: identifier
+cprop	Const Const	syntax	Expected: identifier
+cprop	Const WithEvents	syntax	Expected: identifier
+cprop	Const Declare	syntax	Expected: identifier
+cprop	Const Event	syntax	Expected: identifier
+cprop	Const Implements	syntax	Expected: identifier
+cprop	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cprop	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cprop	Declare Public	syntax	Expected: Sub or Function
+cprop	Declare Private	syntax	Expected: Sub or Function
+cprop	Declare Friend	syntax	Expected: Sub or Function
+cprop	Declare Global	syntax	Expected: Sub or Function
+cprop	Declare Static	syntax	Expected: Sub or Function
+cprop	Declare Dim	syntax	Expected: Sub or Function
+cprop	Declare Const	syntax	Expected: Sub or Function
+cprop	Declare WithEvents	syntax	Expected: Sub or Function
+cprop	Declare Declare	syntax	Expected: Sub or Function
+cprop	Declare Event	syntax	Expected: Sub or Function
+cprop	Declare Implements	syntax	Expected: Sub or Function
+cprop	Event Public	syntax	Expected: identifier
+cprop	Event Private	syntax	Expected: identifier
+cprop	Event Friend	syntax	Expected: identifier
+cprop	Event Global	syntax	Expected: identifier
+cprop	Event Static	syntax	Expected: identifier
+cprop	Event Dim	syntax	Expected: identifier
+cprop	Event Const	syntax	Expected: identifier
+cprop	Event WithEvents	syntax	Expected: identifier
+cprop	Event Declare	syntax	Expected: identifier
+cprop	Event Event	syntax	Expected: identifier
+cprop	Event Implements	syntax	Expected: identifier
+cprop	Implements Public	syntax	Expected: identifier
+cprop	Implements Private	syntax	Expected: identifier
+cprop	Implements Friend	syntax	Expected: identifier
+cprop	Implements Global	syntax	Expected: identifier
+cprop	Implements Static	syntax	Expected: identifier
+cprop	Implements Dim	syntax	Expected: identifier
+cprop	Implements Const	syntax	Expected: identifier
+cprop	Implements WithEvents	syntax	Expected: identifier
+cprop	Implements Declare	syntax	Expected: identifier
+cprop	Implements Event	syntax	Expected: identifier
+cprop	Implements Implements	syntax	Expected: identifier
+cvar	Public	accepted	
+cvar	Private	accepted	
+cvar	Friend	syntax	Expected: Sub or Function or Property
+cvar	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Static	syntax	Invalid outside procedure
+cvar	Dim	accepted	
+cvar	Const	syntax	Expected: =
+cvar	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cvar	Declare	syntax	Expected: Sub or Function
+cvar	Event	syntax	Expected: end of statement
+cvar	Implements	syntax	Expected: end of statement
+cvar	New	syntax	Expected: line number or label or statement or end of statement
+cvar	Optional	syntax	Expected: line number or label or statement or end of statement
+cvar	ByVal	syntax	Expected: line number or label or statement or end of statement
+cvar	Preserve	syntax	Expected: line number or label or statement or end of statement
+cvar	Public Public	syntax	Expected: identifier
+cvar	Public Private	syntax	Expected: identifier
+cvar	Public Friend	syntax	Expected: identifier
+cvar	Public Global	syntax	Expected: identifier
+cvar	Public Static	syntax	Expected: Sub or Function or Property
+cvar	Public Dim	syntax	Expected: identifier
+cvar	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Public WithEvents	syntax	Expected: identifier
+cvar	Public Declare	syntax	Expected: Sub or Function
+cvar	Public Event	syntax	Expected: end of statement
+cvar	Public Implements	syntax	Expected: identifier
+cvar	Private Public	syntax	Expected: identifier
+cvar	Private Private	syntax	Expected: identifier
+cvar	Private Friend	syntax	Expected: identifier
+cvar	Private Global	syntax	Expected: identifier
+cvar	Private Static	syntax	Expected: Sub or Function or Property
+cvar	Private Dim	syntax	Expected: identifier
+cvar	Private Const	syntax	Expected: =
+cvar	Private WithEvents	syntax	Expected: identifier
+cvar	Private Declare	syntax	Expected: Sub or Function
+cvar	Private Event	syntax	Expected: Sub or Function or Property
+cvar	Private Implements	syntax	Expected: identifier
+cvar	Friend Public	syntax	Expected: Sub or Function or Property
+cvar	Friend Private	syntax	Expected: Sub or Function or Property
+cvar	Friend Friend	syntax	Expected: Sub or Function or Property
+cvar	Friend Global	syntax	Expected: Sub or Function or Property
+cvar	Friend Static	syntax	Expected: Sub or Function or Property
+cvar	Friend Dim	syntax	Expected: Sub or Function or Property
+cvar	Friend Const	syntax	Expected: Sub or Function or Property
+cvar	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cvar	Friend Declare	syntax	Expected: Sub or Function or Property
+cvar	Friend Event	syntax	Expected: Sub or Function or Property
+cvar	Friend Implements	syntax	Expected: Sub or Function or Property
+cvar	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvar	Static Public	syntax	Invalid outside procedure
+cvar	Static Private	syntax	Invalid outside procedure
+cvar	Static Friend	syntax	Invalid outside procedure
+cvar	Static Global	syntax	Expected: identifier
+cvar	Static Static	syntax	Expected: identifier
+cvar	Static Dim	syntax	Expected: identifier
+cvar	Static Const	syntax	Expected: identifier
+cvar	Static WithEvents	syntax	Expected: identifier
+cvar	Static Declare	syntax	Expected: identifier
+cvar	Static Event	syntax	Expected: identifier
+cvar	Static Implements	syntax	Expected: identifier
+cvar	Dim Public	syntax	Expected: identifier
+cvar	Dim Private	syntax	Expected: identifier
+cvar	Dim Friend	syntax	Expected: identifier
+cvar	Dim Global	syntax	Expected: identifier
+cvar	Dim Static	syntax	Expected: identifier
+cvar	Dim Dim	syntax	Expected: identifier
+cvar	Dim Const	syntax	Expected: identifier
+cvar	Dim WithEvents	syntax	Expected: identifier
+cvar	Dim Declare	syntax	Expected: identifier
+cvar	Dim Event	syntax	Expected: identifier
+cvar	Dim Implements	syntax	Expected: identifier
+cvar	Const Public	syntax	Expected: identifier
+cvar	Const Private	syntax	Expected: identifier
+cvar	Const Friend	syntax	Expected: identifier
+cvar	Const Global	syntax	Expected: identifier
+cvar	Const Static	syntax	Expected: identifier
+cvar	Const Dim	syntax	Expected: identifier
+cvar	Const Const	syntax	Expected: identifier
+cvar	Const WithEvents	syntax	Expected: identifier
+cvar	Const Declare	syntax	Expected: identifier
+cvar	Const Event	syntax	Expected: identifier
+cvar	Const Implements	syntax	Expected: identifier
+cvar	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cvar	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cvar	Declare Public	syntax	Expected: Sub or Function
+cvar	Declare Private	syntax	Expected: Sub or Function
+cvar	Declare Friend	syntax	Expected: Sub or Function
+cvar	Declare Global	syntax	Expected: Sub or Function
+cvar	Declare Static	syntax	Expected: Sub or Function
+cvar	Declare Dim	syntax	Expected: Sub or Function
+cvar	Declare Const	syntax	Expected: Sub or Function
+cvar	Declare WithEvents	syntax	Expected: Sub or Function
+cvar	Declare Declare	syntax	Expected: Sub or Function
+cvar	Declare Event	syntax	Expected: Sub or Function
+cvar	Declare Implements	syntax	Expected: Sub or Function
+cvar	Event Public	syntax	Expected: identifier
+cvar	Event Private	syntax	Expected: identifier
+cvar	Event Friend	syntax	Expected: identifier
+cvar	Event Global	syntax	Expected: identifier
+cvar	Event Static	syntax	Expected: identifier
+cvar	Event Dim	syntax	Expected: identifier
+cvar	Event Const	syntax	Expected: identifier
+cvar	Event WithEvents	syntax	Expected: identifier
+cvar	Event Declare	syntax	Expected: identifier
+cvar	Event Event	syntax	Expected: identifier
+cvar	Event Implements	syntax	Expected: identifier
+cvar	Implements Public	syntax	Expected: identifier
+cvar	Implements Private	syntax	Expected: identifier
+cvar	Implements Friend	syntax	Expected: identifier
+cvar	Implements Global	syntax	Expected: identifier
+cvar	Implements Static	syntax	Expected: identifier
+cvar	Implements Dim	syntax	Expected: identifier
+cvar	Implements Const	syntax	Expected: identifier
+cvar	Implements WithEvents	syntax	Expected: identifier
+cvar	Implements Declare	syntax	Expected: identifier
+cvar	Implements Event	syntax	Expected: identifier
+cvar	Implements Implements	syntax	Expected: identifier
+cvarwe	Public	accepted	
+cvarwe	Private	accepted	
+cvarwe	Friend	syntax	Expected: Sub or Function or Property
+cvarwe	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Static	syntax	Invalid outside procedure
+cvarwe	Dim	accepted	
+cvarwe	Const	syntax	Expected: =
+cvarwe	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cvarwe	Declare	syntax	Expected: Sub or Function
+cvarwe	Event	syntax	Expected: end of statement
+cvarwe	Implements	syntax	Expected: end of statement
+cvarwe	New	syntax	Expected: line number or label or statement or end of statement
+cvarwe	Optional	syntax	Expected: line number or label or statement or end of statement
+cvarwe	ByVal	syntax	Expected: line number or label or statement or end of statement
+cvarwe	Preserve	syntax	Expected: line number or label or statement or end of statement
+cvarwe	Public Public	syntax	Expected: identifier
+cvarwe	Public Private	syntax	Expected: identifier
+cvarwe	Public Friend	syntax	Expected: identifier
+cvarwe	Public Global	syntax	Expected: identifier
+cvarwe	Public Static	syntax	Expected: Sub or Function or Property
+cvarwe	Public Dim	syntax	Expected: identifier
+cvarwe	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Public WithEvents	syntax	Expected: identifier
+cvarwe	Public Declare	syntax	Expected: Sub or Function
+cvarwe	Public Event	syntax	Expected: end of statement
+cvarwe	Public Implements	syntax	Expected: identifier
+cvarwe	Private Public	syntax	Expected: identifier
+cvarwe	Private Private	syntax	Expected: identifier
+cvarwe	Private Friend	syntax	Expected: identifier
+cvarwe	Private Global	syntax	Expected: identifier
+cvarwe	Private Static	syntax	Expected: Sub or Function or Property
+cvarwe	Private Dim	syntax	Expected: identifier
+cvarwe	Private Const	syntax	Expected: =
+cvarwe	Private WithEvents	syntax	Expected: identifier
+cvarwe	Private Declare	syntax	Expected: Sub or Function
+cvarwe	Private Event	syntax	Expected: Sub or Function or Property
+cvarwe	Private Implements	syntax	Expected: identifier
+cvarwe	Friend Public	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Private	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Friend	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Global	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Static	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Dim	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Const	syntax	Expected: Sub or Function or Property
+cvarwe	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Declare	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Event	syntax	Expected: Sub or Function or Property
+cvarwe	Friend Implements	syntax	Expected: Sub or Function or Property
+cvarwe	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cvarwe	Static Public	syntax	Invalid outside procedure
+cvarwe	Static Private	syntax	Invalid outside procedure
+cvarwe	Static Friend	syntax	Invalid outside procedure
+cvarwe	Static Global	syntax	Expected: identifier
+cvarwe	Static Static	syntax	Expected: identifier
+cvarwe	Static Dim	syntax	Expected: identifier
+cvarwe	Static Const	syntax	Expected: identifier
+cvarwe	Static WithEvents	syntax	Expected: identifier
+cvarwe	Static Declare	syntax	Expected: identifier
+cvarwe	Static Event	syntax	Expected: identifier
+cvarwe	Static Implements	syntax	Expected: identifier
+cvarwe	Dim Public	syntax	Expected: identifier
+cvarwe	Dim Private	syntax	Expected: identifier
+cvarwe	Dim Friend	syntax	Expected: identifier
+cvarwe	Dim Global	syntax	Expected: identifier
+cvarwe	Dim Static	syntax	Expected: identifier
+cvarwe	Dim Dim	syntax	Expected: identifier
+cvarwe	Dim Const	syntax	Expected: identifier
+cvarwe	Dim WithEvents	syntax	Expected: identifier
+cvarwe	Dim Declare	syntax	Expected: identifier
+cvarwe	Dim Event	syntax	Expected: identifier
+cvarwe	Dim Implements	syntax	Expected: identifier
+cvarwe	Const Public	syntax	Expected: identifier
+cvarwe	Const Private	syntax	Expected: identifier
+cvarwe	Const Friend	syntax	Expected: identifier
+cvarwe	Const Global	syntax	Expected: identifier
+cvarwe	Const Static	syntax	Expected: identifier
+cvarwe	Const Dim	syntax	Expected: identifier
+cvarwe	Const Const	syntax	Expected: identifier
+cvarwe	Const WithEvents	syntax	Expected: identifier
+cvarwe	Const Declare	syntax	Expected: identifier
+cvarwe	Const Event	syntax	Expected: identifier
+cvarwe	Const Implements	syntax	Expected: identifier
+cvarwe	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cvarwe	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cvarwe	Declare Public	syntax	Expected: Sub or Function
+cvarwe	Declare Private	syntax	Expected: Sub or Function
+cvarwe	Declare Friend	syntax	Expected: Sub or Function
+cvarwe	Declare Global	syntax	Expected: Sub or Function
+cvarwe	Declare Static	syntax	Expected: Sub or Function
+cvarwe	Declare Dim	syntax	Expected: Sub or Function
+cvarwe	Declare Const	syntax	Expected: Sub or Function
+cvarwe	Declare WithEvents	syntax	Expected: Sub or Function
+cvarwe	Declare Declare	syntax	Expected: Sub or Function
+cvarwe	Declare Event	syntax	Expected: Sub or Function
+cvarwe	Declare Implements	syntax	Expected: Sub or Function
+cvarwe	Event Public	syntax	Expected: identifier
+cvarwe	Event Private	syntax	Expected: identifier
+cvarwe	Event Friend	syntax	Expected: identifier
+cvarwe	Event Global	syntax	Expected: identifier
+cvarwe	Event Static	syntax	Expected: identifier
+cvarwe	Event Dim	syntax	Expected: identifier
+cvarwe	Event Const	syntax	Expected: identifier
+cvarwe	Event WithEvents	syntax	Expected: identifier
+cvarwe	Event Declare	syntax	Expected: identifier
+cvarwe	Event Event	syntax	Expected: identifier
+cvarwe	Event Implements	syntax	Expected: identifier
+cvarwe	Implements Public	syntax	Expected: identifier
+cvarwe	Implements Private	syntax	Expected: identifier
+cvarwe	Implements Friend	syntax	Expected: identifier
+cvarwe	Implements Global	syntax	Expected: identifier
+cvarwe	Implements Static	syntax	Expected: identifier
+cvarwe	Implements Dim	syntax	Expected: identifier
+cvarwe	Implements Const	syntax	Expected: identifier
+cvarwe	Implements WithEvents	syntax	Expected: identifier
+cvarwe	Implements Declare	syntax	Expected: identifier
+cvarwe	Implements Event	syntax	Expected: identifier
+cvarwe	Implements Implements	syntax	Expected: identifier
+cevent	Public	accepted	
+cevent	Private	syntax	Expected: Sub or Function or Property
+cevent	Friend	syntax	Expected: Sub or Function or Property
+cevent	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Static	syntax	Expected: identifier
+cevent	Dim	syntax	Expected: identifier
+cevent	Const	syntax	Expected: identifier
+cevent	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cevent	Declare	syntax	Expected: Sub or Function
+cevent	Event	syntax	Expected: identifier
+cevent	Implements	syntax	Expected: identifier
+cevent	New	syntax	Expected: line number or label or statement or end of statement
+cevent	Optional	syntax	Expected: line number or label or statement or end of statement
+cevent	ByVal	syntax	Expected: line number or label or statement or end of statement
+cevent	Preserve	syntax	Expected: line number or label or statement or end of statement
+cevent	Public Public	syntax	Expected: identifier
+cevent	Public Private	syntax	Expected: identifier
+cevent	Public Friend	syntax	Expected: identifier
+cevent	Public Global	syntax	Expected: identifier
+cevent	Public Static	syntax	Expected: Sub or Function or Property
+cevent	Public Dim	syntax	Expected: identifier
+cevent	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Public WithEvents	syntax	Expected: identifier
+cevent	Public Declare	syntax	Expected: Sub or Function
+cevent	Public Event	syntax	Expected: identifier
+cevent	Public Implements	syntax	Expected: identifier
+cevent	Private Public	syntax	Expected: identifier
+cevent	Private Private	syntax	Expected: identifier
+cevent	Private Friend	syntax	Expected: identifier
+cevent	Private Global	syntax	Expected: identifier
+cevent	Private Static	syntax	Expected: Sub or Function or Property
+cevent	Private Dim	syntax	Expected: identifier
+cevent	Private Const	syntax	Expected: identifier
+cevent	Private WithEvents	syntax	Expected: identifier
+cevent	Private Declare	syntax	Expected: Sub or Function
+cevent	Private Event	syntax	Expected: Sub or Function or Property
+cevent	Private Implements	syntax	Expected: identifier
+cevent	Friend Public	syntax	Expected: Sub or Function or Property
+cevent	Friend Private	syntax	Expected: Sub or Function or Property
+cevent	Friend Friend	syntax	Expected: Sub or Function or Property
+cevent	Friend Global	syntax	Expected: Sub or Function or Property
+cevent	Friend Static	syntax	Expected: Sub or Function or Property
+cevent	Friend Dim	syntax	Expected: Sub or Function or Property
+cevent	Friend Const	syntax	Expected: Sub or Function or Property
+cevent	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cevent	Friend Declare	syntax	Expected: Sub or Function or Property
+cevent	Friend Event	syntax	Expected: Sub or Function or Property
+cevent	Friend Implements	syntax	Expected: Sub or Function or Property
+cevent	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cevent	Static Public	syntax	Expected: identifier
+cevent	Static Private	syntax	Expected: identifier
+cevent	Static Friend	syntax	Expected: identifier
+cevent	Static Global	syntax	Expected: identifier
+cevent	Static Static	syntax	Expected: identifier
+cevent	Static Dim	syntax	Expected: identifier
+cevent	Static Const	syntax	Expected: identifier
+cevent	Static WithEvents	syntax	Expected: identifier
+cevent	Static Declare	syntax	Expected: identifier
+cevent	Static Event	syntax	Expected: identifier
+cevent	Static Implements	syntax	Expected: identifier
+cevent	Dim Public	syntax	Expected: identifier
+cevent	Dim Private	syntax	Expected: identifier
+cevent	Dim Friend	syntax	Expected: identifier
+cevent	Dim Global	syntax	Expected: identifier
+cevent	Dim Static	syntax	Expected: identifier
+cevent	Dim Dim	syntax	Expected: identifier
+cevent	Dim Const	syntax	Expected: identifier
+cevent	Dim WithEvents	syntax	Expected: identifier
+cevent	Dim Declare	syntax	Expected: identifier
+cevent	Dim Event	syntax	Expected: identifier
+cevent	Dim Implements	syntax	Expected: identifier
+cevent	Const Public	syntax	Expected: identifier
+cevent	Const Private	syntax	Expected: identifier
+cevent	Const Friend	syntax	Expected: identifier
+cevent	Const Global	syntax	Expected: identifier
+cevent	Const Static	syntax	Expected: identifier
+cevent	Const Dim	syntax	Expected: identifier
+cevent	Const Const	syntax	Expected: identifier
+cevent	Const WithEvents	syntax	Expected: identifier
+cevent	Const Declare	syntax	Expected: identifier
+cevent	Const Event	syntax	Expected: identifier
+cevent	Const Implements	syntax	Expected: identifier
+cevent	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cevent	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cevent	Declare Public	syntax	Expected: Sub or Function
+cevent	Declare Private	syntax	Expected: Sub or Function
+cevent	Declare Friend	syntax	Expected: Sub or Function
+cevent	Declare Global	syntax	Expected: Sub or Function
+cevent	Declare Static	syntax	Expected: Sub or Function
+cevent	Declare Dim	syntax	Expected: Sub or Function
+cevent	Declare Const	syntax	Expected: Sub or Function
+cevent	Declare WithEvents	syntax	Expected: Sub or Function
+cevent	Declare Declare	syntax	Expected: Sub or Function
+cevent	Declare Event	syntax	Expected: Sub or Function
+cevent	Declare Implements	syntax	Expected: Sub or Function
+cevent	Event Public	syntax	Expected: identifier
+cevent	Event Private	syntax	Expected: identifier
+cevent	Event Friend	syntax	Expected: identifier
+cevent	Event Global	syntax	Expected: identifier
+cevent	Event Static	syntax	Expected: identifier
+cevent	Event Dim	syntax	Expected: identifier
+cevent	Event Const	syntax	Expected: identifier
+cevent	Event WithEvents	syntax	Expected: identifier
+cevent	Event Declare	syntax	Expected: identifier
+cevent	Event Event	syntax	Expected: identifier
+cevent	Event Implements	syntax	Expected: identifier
+cevent	Implements Public	syntax	Expected: identifier
+cevent	Implements Private	syntax	Expected: identifier
+cevent	Implements Friend	syntax	Expected: identifier
+cevent	Implements Global	syntax	Expected: identifier
+cevent	Implements Static	syntax	Expected: identifier
+cevent	Implements Dim	syntax	Expected: identifier
+cevent	Implements Const	syntax	Expected: identifier
+cevent	Implements WithEvents	syntax	Expected: identifier
+cevent	Implements Declare	syntax	Expected: identifier
+cevent	Implements Event	syntax	Expected: identifier
+cevent	Implements Implements	syntax	Expected: identifier
+cconst	Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Private	accepted	
+cconst	Friend	syntax	Expected: Sub or Function or Property
+cconst	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Static	syntax	Expected: identifier
+cconst	Dim	syntax	Expected: identifier
+cconst	Const	syntax	Expected: identifier
+cconst	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cconst	Declare	syntax	Expected: Sub or Function
+cconst	Event	syntax	Expected: identifier
+cconst	Implements	syntax	Expected: identifier
+cconst	New	syntax	Expected: line number or label or statement or end of statement
+cconst	Optional	syntax	Expected: line number or label or statement or end of statement
+cconst	ByVal	syntax	Expected: line number or label or statement or end of statement
+cconst	Preserve	syntax	Expected: line number or label or statement or end of statement
+cconst	Public Public	syntax	Expected: identifier
+cconst	Public Private	syntax	Expected: identifier
+cconst	Public Friend	syntax	Expected: identifier
+cconst	Public Global	syntax	Expected: identifier
+cconst	Public Static	syntax	Expected: Sub or Function or Property
+cconst	Public Dim	syntax	Expected: identifier
+cconst	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Public WithEvents	syntax	Expected: identifier
+cconst	Public Declare	syntax	Expected: Sub or Function
+cconst	Public Event	syntax	Expected: identifier
+cconst	Public Implements	syntax	Expected: identifier
+cconst	Private Public	syntax	Expected: identifier
+cconst	Private Private	syntax	Expected: identifier
+cconst	Private Friend	syntax	Expected: identifier
+cconst	Private Global	syntax	Expected: identifier
+cconst	Private Static	syntax	Expected: Sub or Function or Property
+cconst	Private Dim	syntax	Expected: identifier
+cconst	Private Const	syntax	Expected: identifier
+cconst	Private WithEvents	syntax	Expected: identifier
+cconst	Private Declare	syntax	Expected: Sub or Function
+cconst	Private Event	syntax	Expected: Sub or Function or Property
+cconst	Private Implements	syntax	Expected: identifier
+cconst	Friend Public	syntax	Expected: Sub or Function or Property
+cconst	Friend Private	syntax	Expected: Sub or Function or Property
+cconst	Friend Friend	syntax	Expected: Sub or Function or Property
+cconst	Friend Global	syntax	Expected: Sub or Function or Property
+cconst	Friend Static	syntax	Expected: Sub or Function or Property
+cconst	Friend Dim	syntax	Expected: Sub or Function or Property
+cconst	Friend Const	syntax	Expected: Sub or Function or Property
+cconst	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cconst	Friend Declare	syntax	Expected: Sub or Function or Property
+cconst	Friend Event	syntax	Expected: Sub or Function or Property
+cconst	Friend Implements	syntax	Expected: Sub or Function or Property
+cconst	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cconst	Static Public	syntax	Expected: identifier
+cconst	Static Private	syntax	Expected: identifier
+cconst	Static Friend	syntax	Expected: identifier
+cconst	Static Global	syntax	Expected: identifier
+cconst	Static Static	syntax	Expected: identifier
+cconst	Static Dim	syntax	Expected: identifier
+cconst	Static Const	syntax	Expected: identifier
+cconst	Static WithEvents	syntax	Expected: identifier
+cconst	Static Declare	syntax	Expected: identifier
+cconst	Static Event	syntax	Expected: identifier
+cconst	Static Implements	syntax	Expected: identifier
+cconst	Dim Public	syntax	Expected: identifier
+cconst	Dim Private	syntax	Expected: identifier
+cconst	Dim Friend	syntax	Expected: identifier
+cconst	Dim Global	syntax	Expected: identifier
+cconst	Dim Static	syntax	Expected: identifier
+cconst	Dim Dim	syntax	Expected: identifier
+cconst	Dim Const	syntax	Expected: identifier
+cconst	Dim WithEvents	syntax	Expected: identifier
+cconst	Dim Declare	syntax	Expected: identifier
+cconst	Dim Event	syntax	Expected: identifier
+cconst	Dim Implements	syntax	Expected: identifier
+cconst	Const Public	syntax	Expected: identifier
+cconst	Const Private	syntax	Expected: identifier
+cconst	Const Friend	syntax	Expected: identifier
+cconst	Const Global	syntax	Expected: identifier
+cconst	Const Static	syntax	Expected: identifier
+cconst	Const Dim	syntax	Expected: identifier
+cconst	Const Const	syntax	Expected: identifier
+cconst	Const WithEvents	syntax	Expected: identifier
+cconst	Const Declare	syntax	Expected: identifier
+cconst	Const Event	syntax	Expected: identifier
+cconst	Const Implements	syntax	Expected: identifier
+cconst	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cconst	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cconst	Declare Public	syntax	Expected: Sub or Function
+cconst	Declare Private	syntax	Expected: Sub or Function
+cconst	Declare Friend	syntax	Expected: Sub or Function
+cconst	Declare Global	syntax	Expected: Sub or Function
+cconst	Declare Static	syntax	Expected: Sub or Function
+cconst	Declare Dim	syntax	Expected: Sub or Function
+cconst	Declare Const	syntax	Expected: Sub or Function
+cconst	Declare WithEvents	syntax	Expected: Sub or Function
+cconst	Declare Declare	syntax	Expected: Sub or Function
+cconst	Declare Event	syntax	Expected: Sub or Function
+cconst	Declare Implements	syntax	Expected: Sub or Function
+cconst	Event Public	syntax	Expected: identifier
+cconst	Event Private	syntax	Expected: identifier
+cconst	Event Friend	syntax	Expected: identifier
+cconst	Event Global	syntax	Expected: identifier
+cconst	Event Static	syntax	Expected: identifier
+cconst	Event Dim	syntax	Expected: identifier
+cconst	Event Const	syntax	Expected: identifier
+cconst	Event WithEvents	syntax	Expected: identifier
+cconst	Event Declare	syntax	Expected: identifier
+cconst	Event Event	syntax	Expected: identifier
+cconst	Event Implements	syntax	Expected: identifier
+cconst	Implements Public	syntax	Expected: identifier
+cconst	Implements Private	syntax	Expected: identifier
+cconst	Implements Friend	syntax	Expected: identifier
+cconst	Implements Global	syntax	Expected: identifier
+cconst	Implements Static	syntax	Expected: identifier
+cconst	Implements Dim	syntax	Expected: identifier
+cconst	Implements Const	syntax	Expected: identifier
+cconst	Implements WithEvents	syntax	Expected: identifier
+cconst	Implements Declare	syntax	Expected: identifier
+cconst	Implements Event	syntax	Expected: identifier
+cconst	Implements Implements	syntax	Expected: identifier
+ctype	Public	syntax	Cannot define a Public user-defined type within a private object module
+ctype	Private	accepted	
+ctype	Friend	syntax	Expected: Sub or Function or Property
+ctype	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Static	syntax	Expected: identifier
+ctype	Dim	syntax	Expected: identifier
+ctype	Const	syntax	Expected: identifier
+ctype	WithEvents	syntax	Expected: line number or label or statement or end of statement
+ctype	Declare	syntax	Expected: Sub or Function
+ctype	Event	syntax	Expected: identifier
+ctype	Implements	syntax	Expected: identifier
+ctype	New	syntax	Expected: line number or label or statement or end of statement
+ctype	Optional	syntax	Expected: line number or label or statement or end of statement
+ctype	ByVal	syntax	Expected: line number or label or statement or end of statement
+ctype	Preserve	syntax	Expected: line number or label or statement or end of statement
+ctype	Public Public	syntax	Expected: identifier
+ctype	Public Private	syntax	Expected: identifier
+ctype	Public Friend	syntax	Expected: identifier
+ctype	Public Global	syntax	Expected: identifier
+ctype	Public Static	syntax	Expected: Sub or Function or Property
+ctype	Public Dim	syntax	Expected: identifier
+ctype	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Public WithEvents	syntax	Expected: identifier
+ctype	Public Declare	syntax	Expected: Sub or Function
+ctype	Public Event	syntax	Expected: identifier
+ctype	Public Implements	syntax	Expected: identifier
+ctype	Private Public	syntax	Expected: identifier
+ctype	Private Private	syntax	Expected: identifier
+ctype	Private Friend	syntax	Expected: identifier
+ctype	Private Global	syntax	Expected: identifier
+ctype	Private Static	syntax	Expected: Sub or Function or Property
+ctype	Private Dim	syntax	Expected: identifier
+ctype	Private Const	syntax	Expected: identifier
+ctype	Private WithEvents	syntax	Expected: identifier
+ctype	Private Declare	syntax	Expected: Sub or Function
+ctype	Private Event	syntax	Expected: Sub or Function or Property
+ctype	Private Implements	syntax	Expected: identifier
+ctype	Friend Public	syntax	Expected: Sub or Function or Property
+ctype	Friend Private	syntax	Expected: Sub or Function or Property
+ctype	Friend Friend	syntax	Expected: Sub or Function or Property
+ctype	Friend Global	syntax	Expected: Sub or Function or Property
+ctype	Friend Static	syntax	Expected: Sub or Function or Property
+ctype	Friend Dim	syntax	Expected: Sub or Function or Property
+ctype	Friend Const	syntax	Expected: Sub or Function or Property
+ctype	Friend WithEvents	syntax	Expected: Sub or Function or Property
+ctype	Friend Declare	syntax	Expected: Sub or Function or Property
+ctype	Friend Event	syntax	Expected: Sub or Function or Property
+ctype	Friend Implements	syntax	Expected: Sub or Function or Property
+ctype	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+ctype	Static Public	syntax	Expected: identifier
+ctype	Static Private	syntax	Expected: identifier
+ctype	Static Friend	syntax	Expected: identifier
+ctype	Static Global	syntax	Expected: identifier
+ctype	Static Static	syntax	Expected: identifier
+ctype	Static Dim	syntax	Expected: identifier
+ctype	Static Const	syntax	Expected: identifier
+ctype	Static WithEvents	syntax	Expected: identifier
+ctype	Static Declare	syntax	Expected: identifier
+ctype	Static Event	syntax	Expected: identifier
+ctype	Static Implements	syntax	Expected: identifier
+ctype	Dim Public	syntax	Expected: identifier
+ctype	Dim Private	syntax	Expected: identifier
+ctype	Dim Friend	syntax	Expected: identifier
+ctype	Dim Global	syntax	Expected: identifier
+ctype	Dim Static	syntax	Expected: identifier
+ctype	Dim Dim	syntax	Expected: identifier
+ctype	Dim Const	syntax	Expected: identifier
+ctype	Dim WithEvents	syntax	Expected: identifier
+ctype	Dim Declare	syntax	Expected: identifier
+ctype	Dim Event	syntax	Expected: identifier
+ctype	Dim Implements	syntax	Expected: identifier
+ctype	Const Public	syntax	Expected: identifier
+ctype	Const Private	syntax	Expected: identifier
+ctype	Const Friend	syntax	Expected: identifier
+ctype	Const Global	syntax	Expected: identifier
+ctype	Const Static	syntax	Expected: identifier
+ctype	Const Dim	syntax	Expected: identifier
+ctype	Const Const	syntax	Expected: identifier
+ctype	Const WithEvents	syntax	Expected: identifier
+ctype	Const Declare	syntax	Expected: identifier
+ctype	Const Event	syntax	Expected: identifier
+ctype	Const Implements	syntax	Expected: identifier
+ctype	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+ctype	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+ctype	Declare Public	syntax	Expected: Sub or Function
+ctype	Declare Private	syntax	Expected: Sub or Function
+ctype	Declare Friend	syntax	Expected: Sub or Function
+ctype	Declare Global	syntax	Expected: Sub or Function
+ctype	Declare Static	syntax	Expected: Sub or Function
+ctype	Declare Dim	syntax	Expected: Sub or Function
+ctype	Declare Const	syntax	Expected: Sub or Function
+ctype	Declare WithEvents	syntax	Expected: Sub or Function
+ctype	Declare Declare	syntax	Expected: Sub or Function
+ctype	Declare Event	syntax	Expected: Sub or Function
+ctype	Declare Implements	syntax	Expected: Sub or Function
+ctype	Event Public	syntax	Expected: identifier
+ctype	Event Private	syntax	Expected: identifier
+ctype	Event Friend	syntax	Expected: identifier
+ctype	Event Global	syntax	Expected: identifier
+ctype	Event Static	syntax	Expected: identifier
+ctype	Event Dim	syntax	Expected: identifier
+ctype	Event Const	syntax	Expected: identifier
+ctype	Event WithEvents	syntax	Expected: identifier
+ctype	Event Declare	syntax	Expected: identifier
+ctype	Event Event	syntax	Expected: identifier
+ctype	Event Implements	syntax	Expected: identifier
+ctype	Implements Public	syntax	Expected: identifier
+ctype	Implements Private	syntax	Expected: identifier
+ctype	Implements Friend	syntax	Expected: identifier
+ctype	Implements Global	syntax	Expected: identifier
+ctype	Implements Static	syntax	Expected: identifier
+ctype	Implements Dim	syntax	Expected: identifier
+ctype	Implements Const	syntax	Expected: identifier
+ctype	Implements WithEvents	syntax	Expected: identifier
+ctype	Implements Declare	syntax	Expected: identifier
+ctype	Implements Event	syntax	Expected: identifier
+ctype	Implements Implements	syntax	Expected: identifier
+cenum	Public	accepted	
+cenum	Private	accepted	
+cenum	Friend	syntax	Expected: Sub or Function or Property
+cenum	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Static	syntax	Expected: identifier
+cenum	Dim	syntax	Expected: identifier
+cenum	Const	syntax	Expected: identifier
+cenum	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cenum	Declare	syntax	Expected: Sub or Function
+cenum	Event	syntax	Expected: identifier
+cenum	Implements	syntax	Expected: identifier
+cenum	New	syntax	Expected: line number or label or statement or end of statement
+cenum	Optional	syntax	Expected: line number or label or statement or end of statement
+cenum	ByVal	syntax	Expected: line number or label or statement or end of statement
+cenum	Preserve	syntax	Expected: line number or label or statement or end of statement
+cenum	Public Public	syntax	Expected: identifier
+cenum	Public Private	syntax	Expected: identifier
+cenum	Public Friend	syntax	Expected: identifier
+cenum	Public Global	syntax	Expected: identifier
+cenum	Public Static	syntax	Expected: Sub or Function or Property
+cenum	Public Dim	syntax	Expected: identifier
+cenum	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Public WithEvents	syntax	Expected: identifier
+cenum	Public Declare	syntax	Expected: Sub or Function
+cenum	Public Event	syntax	Expected: identifier
+cenum	Public Implements	syntax	Expected: identifier
+cenum	Private Public	syntax	Expected: identifier
+cenum	Private Private	syntax	Expected: identifier
+cenum	Private Friend	syntax	Expected: identifier
+cenum	Private Global	syntax	Expected: identifier
+cenum	Private Static	syntax	Expected: Sub or Function or Property
+cenum	Private Dim	syntax	Expected: identifier
+cenum	Private Const	syntax	Expected: identifier
+cenum	Private WithEvents	syntax	Expected: identifier
+cenum	Private Declare	syntax	Expected: Sub or Function
+cenum	Private Event	syntax	Expected: Sub or Function or Property
+cenum	Private Implements	syntax	Expected: identifier
+cenum	Friend Public	syntax	Expected: Sub or Function or Property
+cenum	Friend Private	syntax	Expected: Sub or Function or Property
+cenum	Friend Friend	syntax	Expected: Sub or Function or Property
+cenum	Friend Global	syntax	Expected: Sub or Function or Property
+cenum	Friend Static	syntax	Expected: Sub or Function or Property
+cenum	Friend Dim	syntax	Expected: Sub or Function or Property
+cenum	Friend Const	syntax	Expected: Sub or Function or Property
+cenum	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cenum	Friend Declare	syntax	Expected: Sub or Function or Property
+cenum	Friend Event	syntax	Expected: Sub or Function or Property
+cenum	Friend Implements	syntax	Expected: Sub or Function or Property
+cenum	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cenum	Static Public	syntax	Expected: identifier
+cenum	Static Private	syntax	Expected: identifier
+cenum	Static Friend	syntax	Expected: identifier
+cenum	Static Global	syntax	Expected: identifier
+cenum	Static Static	syntax	Expected: identifier
+cenum	Static Dim	syntax	Expected: identifier
+cenum	Static Const	syntax	Expected: identifier
+cenum	Static WithEvents	syntax	Expected: identifier
+cenum	Static Declare	syntax	Expected: identifier
+cenum	Static Event	syntax	Expected: identifier
+cenum	Static Implements	syntax	Expected: identifier
+cenum	Dim Public	syntax	Expected: identifier
+cenum	Dim Private	syntax	Expected: identifier
+cenum	Dim Friend	syntax	Expected: identifier
+cenum	Dim Global	syntax	Expected: identifier
+cenum	Dim Static	syntax	Expected: identifier
+cenum	Dim Dim	syntax	Expected: identifier
+cenum	Dim Const	syntax	Expected: identifier
+cenum	Dim WithEvents	syntax	Expected: identifier
+cenum	Dim Declare	syntax	Expected: identifier
+cenum	Dim Event	syntax	Expected: identifier
+cenum	Dim Implements	syntax	Expected: identifier
+cenum	Const Public	syntax	Expected: identifier
+cenum	Const Private	syntax	Expected: identifier
+cenum	Const Friend	syntax	Expected: identifier
+cenum	Const Global	syntax	Expected: identifier
+cenum	Const Static	syntax	Expected: identifier
+cenum	Const Dim	syntax	Expected: identifier
+cenum	Const Const	syntax	Expected: identifier
+cenum	Const WithEvents	syntax	Expected: identifier
+cenum	Const Declare	syntax	Expected: identifier
+cenum	Const Event	syntax	Expected: identifier
+cenum	Const Implements	syntax	Expected: identifier
+cenum	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cenum	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cenum	Declare Public	syntax	Expected: Sub or Function
+cenum	Declare Private	syntax	Expected: Sub or Function
+cenum	Declare Friend	syntax	Expected: Sub or Function
+cenum	Declare Global	syntax	Expected: Sub or Function
+cenum	Declare Static	syntax	Expected: Sub or Function
+cenum	Declare Dim	syntax	Expected: Sub or Function
+cenum	Declare Const	syntax	Expected: Sub or Function
+cenum	Declare WithEvents	syntax	Expected: Sub or Function
+cenum	Declare Declare	syntax	Expected: Sub or Function
+cenum	Declare Event	syntax	Expected: Sub or Function
+cenum	Declare Implements	syntax	Expected: Sub or Function
+cenum	Event Public	syntax	Expected: identifier
+cenum	Event Private	syntax	Expected: identifier
+cenum	Event Friend	syntax	Expected: identifier
+cenum	Event Global	syntax	Expected: identifier
+cenum	Event Static	syntax	Expected: identifier
+cenum	Event Dim	syntax	Expected: identifier
+cenum	Event Const	syntax	Expected: identifier
+cenum	Event WithEvents	syntax	Expected: identifier
+cenum	Event Declare	syntax	Expected: identifier
+cenum	Event Event	syntax	Expected: identifier
+cenum	Event Implements	syntax	Expected: identifier
+cenum	Implements Public	syntax	Expected: identifier
+cenum	Implements Private	syntax	Expected: identifier
+cenum	Implements Friend	syntax	Expected: identifier
+cenum	Implements Global	syntax	Expected: identifier
+cenum	Implements Static	syntax	Expected: identifier
+cenum	Implements Dim	syntax	Expected: identifier
+cenum	Implements Const	syntax	Expected: identifier
+cenum	Implements WithEvents	syntax	Expected: identifier
+cenum	Implements Declare	syntax	Expected: identifier
+cenum	Implements Event	syntax	Expected: identifier
+cenum	Implements Implements	syntax	Expected: identifier
+cdeclare	Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Private	accepted	
+cdeclare	Friend	syntax	Expected: Sub or Function or Property
+cdeclare	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Static	syntax	Expected: identifier
+cdeclare	Dim	syntax	Expected: identifier
+cdeclare	Const	syntax	Expected: identifier
+cdeclare	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cdeclare	Declare	syntax	Expected: Sub or Function
+cdeclare	Event	syntax	Expected: identifier
+cdeclare	Implements	syntax	Expected: identifier
+cdeclare	New	syntax	Expected: line number or label or statement or end of statement
+cdeclare	Optional	syntax	Expected: line number or label or statement or end of statement
+cdeclare	ByVal	syntax	Expected: line number or label or statement or end of statement
+cdeclare	Preserve	syntax	Expected: line number or label or statement or end of statement
+cdeclare	Public Public	syntax	Expected: identifier
+cdeclare	Public Private	syntax	Expected: identifier
+cdeclare	Public Friend	syntax	Expected: identifier
+cdeclare	Public Global	syntax	Expected: identifier
+cdeclare	Public Static	syntax	Expected: Sub or Function or Property
+cdeclare	Public Dim	syntax	Expected: identifier
+cdeclare	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Public WithEvents	syntax	Expected: identifier
+cdeclare	Public Declare	syntax	Expected: Sub or Function
+cdeclare	Public Event	syntax	Expected: identifier
+cdeclare	Public Implements	syntax	Expected: identifier
+cdeclare	Private Public	syntax	Expected: identifier
+cdeclare	Private Private	syntax	Expected: identifier
+cdeclare	Private Friend	syntax	Expected: identifier
+cdeclare	Private Global	syntax	Expected: identifier
+cdeclare	Private Static	syntax	Expected: Sub or Function or Property
+cdeclare	Private Dim	syntax	Expected: identifier
+cdeclare	Private Const	syntax	Expected: identifier
+cdeclare	Private WithEvents	syntax	Expected: identifier
+cdeclare	Private Declare	syntax	Expected: Sub or Function
+cdeclare	Private Event	syntax	Expected: Sub or Function or Property
+cdeclare	Private Implements	syntax	Expected: identifier
+cdeclare	Friend Public	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Private	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Friend	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Global	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Static	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Dim	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Const	syntax	Expected: Sub or Function or Property
+cdeclare	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Declare	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Event	syntax	Expected: Sub or Function or Property
+cdeclare	Friend Implements	syntax	Expected: Sub or Function or Property
+cdeclare	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cdeclare	Static Public	syntax	Expected: identifier
+cdeclare	Static Private	syntax	Expected: identifier
+cdeclare	Static Friend	syntax	Expected: identifier
+cdeclare	Static Global	syntax	Expected: identifier
+cdeclare	Static Static	syntax	Expected: identifier
+cdeclare	Static Dim	syntax	Expected: identifier
+cdeclare	Static Const	syntax	Expected: identifier
+cdeclare	Static WithEvents	syntax	Expected: identifier
+cdeclare	Static Declare	syntax	Expected: identifier
+cdeclare	Static Event	syntax	Expected: identifier
+cdeclare	Static Implements	syntax	Expected: identifier
+cdeclare	Dim Public	syntax	Expected: identifier
+cdeclare	Dim Private	syntax	Expected: identifier
+cdeclare	Dim Friend	syntax	Expected: identifier
+cdeclare	Dim Global	syntax	Expected: identifier
+cdeclare	Dim Static	syntax	Expected: identifier
+cdeclare	Dim Dim	syntax	Expected: identifier
+cdeclare	Dim Const	syntax	Expected: identifier
+cdeclare	Dim WithEvents	syntax	Expected: identifier
+cdeclare	Dim Declare	syntax	Expected: identifier
+cdeclare	Dim Event	syntax	Expected: identifier
+cdeclare	Dim Implements	syntax	Expected: identifier
+cdeclare	Const Public	syntax	Expected: identifier
+cdeclare	Const Private	syntax	Expected: identifier
+cdeclare	Const Friend	syntax	Expected: identifier
+cdeclare	Const Global	syntax	Expected: identifier
+cdeclare	Const Static	syntax	Expected: identifier
+cdeclare	Const Dim	syntax	Expected: identifier
+cdeclare	Const Const	syntax	Expected: identifier
+cdeclare	Const WithEvents	syntax	Expected: identifier
+cdeclare	Const Declare	syntax	Expected: identifier
+cdeclare	Const Event	syntax	Expected: identifier
+cdeclare	Const Implements	syntax	Expected: identifier
+cdeclare	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cdeclare	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cdeclare	Declare Public	syntax	Expected: Sub or Function
+cdeclare	Declare Private	syntax	Expected: Sub or Function
+cdeclare	Declare Friend	syntax	Expected: Sub or Function
+cdeclare	Declare Global	syntax	Expected: Sub or Function
+cdeclare	Declare Static	syntax	Expected: Sub or Function
+cdeclare	Declare Dim	syntax	Expected: Sub or Function
+cdeclare	Declare Const	syntax	Expected: Sub or Function
+cdeclare	Declare WithEvents	syntax	Expected: Sub or Function
+cdeclare	Declare Declare	syntax	Expected: Sub or Function
+cdeclare	Declare Event	syntax	Expected: Sub or Function
+cdeclare	Declare Implements	syntax	Expected: Sub or Function
+cdeclare	Event Public	syntax	Expected: identifier
+cdeclare	Event Private	syntax	Expected: identifier
+cdeclare	Event Friend	syntax	Expected: identifier
+cdeclare	Event Global	syntax	Expected: identifier
+cdeclare	Event Static	syntax	Expected: identifier
+cdeclare	Event Dim	syntax	Expected: identifier
+cdeclare	Event Const	syntax	Expected: identifier
+cdeclare	Event WithEvents	syntax	Expected: identifier
+cdeclare	Event Declare	syntax	Expected: identifier
+cdeclare	Event Event	syntax	Expected: identifier
+cdeclare	Event Implements	syntax	Expected: identifier
+cdeclare	Implements Public	syntax	Expected: identifier
+cdeclare	Implements Private	syntax	Expected: identifier
+cdeclare	Implements Friend	syntax	Expected: identifier
+cdeclare	Implements Global	syntax	Expected: identifier
+cdeclare	Implements Static	syntax	Expected: identifier
+cdeclare	Implements Dim	syntax	Expected: identifier
+cdeclare	Implements Const	syntax	Expected: identifier
+cdeclare	Implements WithEvents	syntax	Expected: identifier
+cdeclare	Implements Declare	syntax	Expected: identifier
+cdeclare	Implements Event	syntax	Expected: identifier
+cdeclare	Implements Implements	syntax	Expected: identifier
+cimpl	Public	syntax	Expected: identifier
+cimpl	Private	syntax	Expected: identifier
+cimpl	Friend	syntax	Expected: Sub or Function or Property
+cimpl	Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Static	syntax	Expected: identifier
+cimpl	Dim	syntax	Expected: identifier
+cimpl	Const	syntax	Expected: identifier
+cimpl	WithEvents	syntax	Expected: line number or label or statement or end of statement
+cimpl	Declare	syntax	Expected: Sub or Function
+cimpl	Event	syntax	Expected: identifier
+cimpl	Implements	syntax	Expected: identifier
+cimpl	New	syntax	Expected: line number or label or statement or end of statement
+cimpl	Optional	syntax	Expected: line number or label or statement or end of statement
+cimpl	ByVal	syntax	Expected: line number or label or statement or end of statement
+cimpl	Preserve	syntax	Expected: line number or label or statement or end of statement
+cimpl	Public Public	syntax	Expected: identifier
+cimpl	Public Private	syntax	Expected: identifier
+cimpl	Public Friend	syntax	Expected: identifier
+cimpl	Public Global	syntax	Expected: identifier
+cimpl	Public Static	syntax	Expected: Sub or Function or Property
+cimpl	Public Dim	syntax	Expected: identifier
+cimpl	Public Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Public WithEvents	syntax	Expected: identifier
+cimpl	Public Declare	syntax	Expected: Sub or Function
+cimpl	Public Event	syntax	Expected: identifier
+cimpl	Public Implements	syntax	Expected: identifier
+cimpl	Private Public	syntax	Expected: identifier
+cimpl	Private Private	syntax	Expected: identifier
+cimpl	Private Friend	syntax	Expected: identifier
+cimpl	Private Global	syntax	Expected: identifier
+cimpl	Private Static	syntax	Expected: Sub or Function or Property
+cimpl	Private Dim	syntax	Expected: identifier
+cimpl	Private Const	syntax	Expected: identifier
+cimpl	Private WithEvents	syntax	Expected: identifier
+cimpl	Private Declare	syntax	Expected: Sub or Function
+cimpl	Private Event	syntax	Expected: Sub or Function or Property
+cimpl	Private Implements	syntax	Expected: identifier
+cimpl	Friend Public	syntax	Expected: Sub or Function or Property
+cimpl	Friend Private	syntax	Expected: Sub or Function or Property
+cimpl	Friend Friend	syntax	Expected: Sub or Function or Property
+cimpl	Friend Global	syntax	Expected: Sub or Function or Property
+cimpl	Friend Static	syntax	Expected: Sub or Function or Property
+cimpl	Friend Dim	syntax	Expected: Sub or Function or Property
+cimpl	Friend Const	syntax	Expected: Sub or Function or Property
+cimpl	Friend WithEvents	syntax	Expected: Sub or Function or Property
+cimpl	Friend Declare	syntax	Expected: Sub or Function or Property
+cimpl	Friend Event	syntax	Expected: Sub or Function or Property
+cimpl	Friend Implements	syntax	Expected: Sub or Function or Property
+cimpl	Global Public	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Private	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Friend	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Global	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Static	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Dim	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Const	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global WithEvents	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Declare	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Event	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Global Implements	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cimpl	Static Public	syntax	Expected: identifier
+cimpl	Static Private	syntax	Expected: identifier
+cimpl	Static Friend	syntax	Expected: identifier
+cimpl	Static Global	syntax	Expected: identifier
+cimpl	Static Static	syntax	Expected: identifier
+cimpl	Static Dim	syntax	Expected: identifier
+cimpl	Static Const	syntax	Expected: identifier
+cimpl	Static WithEvents	syntax	Expected: identifier
+cimpl	Static Declare	syntax	Expected: identifier
+cimpl	Static Event	syntax	Expected: identifier
+cimpl	Static Implements	syntax	Expected: identifier
+cimpl	Dim Public	syntax	Expected: identifier
+cimpl	Dim Private	syntax	Expected: identifier
+cimpl	Dim Friend	syntax	Expected: identifier
+cimpl	Dim Global	syntax	Expected: identifier
+cimpl	Dim Static	syntax	Expected: identifier
+cimpl	Dim Dim	syntax	Expected: identifier
+cimpl	Dim Const	syntax	Expected: identifier
+cimpl	Dim WithEvents	syntax	Expected: identifier
+cimpl	Dim Declare	syntax	Expected: identifier
+cimpl	Dim Event	syntax	Expected: identifier
+cimpl	Dim Implements	syntax	Expected: identifier
+cimpl	Const Public	syntax	Expected: identifier
+cimpl	Const Private	syntax	Expected: identifier
+cimpl	Const Friend	syntax	Expected: identifier
+cimpl	Const Global	syntax	Expected: identifier
+cimpl	Const Static	syntax	Expected: identifier
+cimpl	Const Dim	syntax	Expected: identifier
+cimpl	Const Const	syntax	Expected: identifier
+cimpl	Const WithEvents	syntax	Expected: identifier
+cimpl	Const Declare	syntax	Expected: identifier
+cimpl	Const Event	syntax	Expected: identifier
+cimpl	Const Implements	syntax	Expected: identifier
+cimpl	WithEvents Public	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Private	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Friend	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Global	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Static	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Dim	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Const	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents WithEvents	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Declare	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Event	syntax	Expected: line number or label or statement or end of statement
+cimpl	WithEvents Implements	syntax	Expected: line number or label or statement or end of statement
+cimpl	Declare Public	syntax	Expected: Sub or Function
+cimpl	Declare Private	syntax	Expected: Sub or Function
+cimpl	Declare Friend	syntax	Expected: Sub or Function
+cimpl	Declare Global	syntax	Expected: Sub or Function
+cimpl	Declare Static	syntax	Expected: Sub or Function
+cimpl	Declare Dim	syntax	Expected: Sub or Function
+cimpl	Declare Const	syntax	Expected: Sub or Function
+cimpl	Declare WithEvents	syntax	Expected: Sub or Function
+cimpl	Declare Declare	syntax	Expected: Sub or Function
+cimpl	Declare Event	syntax	Expected: Sub or Function
+cimpl	Declare Implements	syntax	Expected: Sub or Function
+cimpl	Event Public	syntax	Expected: identifier
+cimpl	Event Private	syntax	Expected: identifier
+cimpl	Event Friend	syntax	Expected: identifier
+cimpl	Event Global	syntax	Expected: identifier
+cimpl	Event Static	syntax	Expected: identifier
+cimpl	Event Dim	syntax	Expected: identifier
+cimpl	Event Const	syntax	Expected: identifier
+cimpl	Event WithEvents	syntax	Expected: identifier
+cimpl	Event Declare	syntax	Expected: identifier
+cimpl	Event Event	syntax	Expected: identifier
+cimpl	Event Implements	syntax	Expected: identifier
+cimpl	Implements Public	syntax	Expected: identifier
+cimpl	Implements Private	syntax	Expected: identifier
+cimpl	Implements Friend	syntax	Expected: identifier
+cimpl	Implements Global	syntax	Expected: identifier
+cimpl	Implements Static	syntax	Expected: identifier
+cimpl	Implements Dim	syntax	Expected: identifier
+cimpl	Implements Const	syntax	Expected: identifier
+cimpl	Implements WithEvents	syntax	Expected: identifier
+cimpl	Implements Declare	syntax	Expected: identifier
+cimpl	Implements Event	syntax	Expected: identifier
+cimpl	Implements Implements	syntax	Expected: identifier

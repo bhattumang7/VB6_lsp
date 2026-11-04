@@ -1,0 +1,137 @@
+
+Public
+Private
+Friend
+Global
+Static
+Dim
+Const
+WithEvents
+Declare
+Event
+Implements
+New
+Optional
+ByVal
+Preserve
+Public Public
+Public Private
+Public Friend
+Public Global
+Public Static
+Public Dim
+Public Const
+Public WithEvents
+Public Declare
+Public Event
+Public Implements
+Private Public
+Private Private
+Private Friend
+Private Global
+Private Static
+Private Dim
+Private Const
+Private WithEvents
+Private Declare
+Private Event
+Private Implements
+Friend Public
+Friend Private
+Friend Friend
+Friend Global
+Friend Static
+Friend Dim
+Friend Const
+Friend WithEvents
+Friend Declare
+Friend Event
+Friend Implements
+Global Public
+Global Private
+Global Friend
+Global Global
+Global Static
+Global Dim
+Global Const
+Global WithEvents
+Global Declare
+Global Event
+Global Implements
+Static Public
+Static Private
+Static Friend
+Static Global
+Static Static
+Static Dim
+Static Const
+Static WithEvents
+Static Declare
+Static Event
+Static Implements
+Dim Public
+Dim Private
+Dim Friend
+Dim Global
+Dim Static
+Dim Dim
+Dim Const
+Dim WithEvents
+Dim Declare
+Dim Event
+Dim Implements
+Const Public
+Const Private
+Const Friend
+Const Global
+Const Static
+Const Dim
+Const Const
+Const WithEvents
+Const Declare
+Const Event
+Const Implements
+WithEvents Public
+WithEvents Private
+WithEvents Friend
+WithEvents Global
+WithEvents Static
+WithEvents Dim
+WithEvents Const
+WithEvents WithEvents
+WithEvents Declare
+WithEvents Event
+WithEvents Implements
+Declare Public
+Declare Private
+Declare Friend
+Declare Global
+Declare Static
+Declare Dim
+Declare Const
+Declare WithEvents
+Declare Declare
+Declare Event
+Declare Implements
+Event Public
+Event Private
+Event Friend
+Event Global
+Event Static
+Event Dim
+Event Const
+Event WithEvents
+Event Declare
+Event Event
+Event Implements
+Implements Public
+Implements Private
+Implements Friend
+Implements Global
+Implements Static
+Implements Dim
+Implements Const
+Implements WithEvents
+Implements Declare
+Implements Event
+Implements Implements

@@ -140,6 +140,9 @@ pub fn run(
             Verdict::Unrecognised { exit_code: Some(code), .. } if code < 0 => {
                 Fate::Unanswered(format!("compiler terminated abnormally, exit {code}"))
             }
+            Verdict::ProjectError { message } if message.contains("INTERNAL COMPILER ERROR") => {
+                Fate::Unanswered("the code generator failed after the source was read".into())
+            }
             other => return Err(format!("{name}/{word}: no verdict from the compiler: {other:?}")),
         };
         rows.push((name, word, fate));

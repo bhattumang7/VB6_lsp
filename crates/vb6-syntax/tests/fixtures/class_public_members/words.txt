@@ -1,0 +1,32 @@
+Public Const c = 1
+Public Const c As Long = 1
+Private Const c = 1
+Const c = 1
+Global Const c = 1
+Public Declare Function f Lib "k" () As Long
+Private Declare Function f Lib "k" () As Long
+Declare Function f Lib "k" () As Long
+Public Type T\na As Long\nEnd Type
+Private Type T\na As Long\nEnd Type
+Type T\na As Long\nEnd Type
+Public Enum E\na\nEnd Enum
+Public a(3) As Long
+Public a() As Long
+Public s As String * 3
+Public s As String
+Public Dim x
+Public x
+Global x As Long
+Global Sub P()\nEnd Sub
+Public Event E()
+Public WithEvents w As Class1
+Public x As T
+Dim a(3) As Long
+Private a(3) As Long
+Dim s As String * 3
+Public Sub P()\nEnd Sub
+Public Static Sub P()\nEnd Sub
+Friend Sub P()\nEnd Sub
+Public Property Get P() As Long\nEnd Property
+Public Implements Class1
+Implements Class1
