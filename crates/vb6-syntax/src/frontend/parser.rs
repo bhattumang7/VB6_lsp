@@ -31,6 +31,10 @@ use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 /// Each `(left_bp, right_bp)` pair below encodes level `N` as
 /// `(2N, 2N+1)` (left-associative) so the relative ordering matches VB6
 /// exactly. `^` is left-associative too: `2 ^ 3 ^ 2` is `(2 ^ 3) ^ 2`.
+/// The operand of a unary plus takes operators of level 9 (`Mod`) and above, whose left binding
+/// power is 18 or more.
+const PLUS_OPERAND_MIN_BP: u8 = 17;
+
 fn infix_bp(kind: &TokenKind) -> Option<(u8, u8, BinOpKind)> {
     use BinOpKind as B;
     let (l, r, o) = match kind {
@@ -81,7 +85,6 @@ fn prefix_bp(kind: &TokenKind) -> Option<(u8, UnOpKind)> {
     use Kw::*;
     match kind {
         TokenKind::Kw(Minus) => Some((24, UnOpKind::Neg)),
-        TokenKind::Kw(Plus)  => Some((24, UnOpKind::Pos)),
         TokenKind::Kw(Not)   => Some((11, UnOpKind::Not)),
         _ => None,
     }
@@ -4679,6 +4682,12 @@ impl<'src> Parser<'src> {
     /// Parse the prefix/primary portion of an expression: a unary operator,
     /// `TypeOf`, `New`, or a plain primary.
     fn parse_expr_prefix(&mut self, arena: &mut ExprArena) -> NodeId {
+        if self.peek().kind == TokenKind::Kw(Kw::Plus) {
+            // A unary plus builds no node. Its operand takes every operator that binds
+            // tighter than `+` and `-` (`Mod` and above), so `+a * b` is `a * b`.
+            self.advance();
+            return self.parse_expr(arena, PLUS_OPERAND_MIN_BP);
+        }
         if let Some((bp, uop)) = prefix_bp(&self.peek().kind.clone()) {
             self.advance();
             let operand = self.parse_expr(arena, bp);
