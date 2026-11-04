@@ -588,7 +588,7 @@ impl<'a> Scanner<'a> {
         loop {
             let start = self.pos;
             let b = match self.advance() {
-                None => return Token::eof(),
+                None => return Token::eof(self.pos as u32),
                 Some(b) => b,
             };
             // A tab in a source file is whitespace between tokens.

@@ -367,14 +367,14 @@ fn exit_sub_accepts() {
 
 #[test]
 fn exit_for_accepts() {
-    let (_, arena, errors) = parse_stmts(b"Exit For");
+    let (_, arena, errors) = parse_stmts(b"For i = 1 To 2\nExit For\nNext");
     assert!(!errors);
     assert!(find_node(&arena, |n| matches!(n, ExprNode::ExitStmt { kind: ExitKind::For })).is_some());
 }
 
 #[test]
 fn exit_do_accepts() {
-    let (_, arena, errors) = parse_stmts(b"Exit Do");
+    let (_, arena, errors) = parse_stmts(b"Do\nExit Do\nLoop");
     assert!(!errors);
     assert!(find_node(&arena, |n| matches!(n, ExprNode::ExitStmt { kind: ExitKind::Do })).is_some());
 }

@@ -9,6 +9,34 @@
 
 use crate::frontend::token::Span;
 
+/// VB6 compile-error codes (code == the VB6 string-resource id, shown in decimal).
+pub const ERR_EXPECTED_END_SUB: u32 = 0x9c8f; // 40079
+pub const ERR_EXPECTED_END_FUNCTION: u32 = 0x9c90; // 40080
+pub const ERR_AFTER_END_OF_PROCEDURE: u32 = 0x9c91; // 40081
+pub const ERR_BLOCK_IF_WITHOUT_END_IF: u32 = 0x9c92; // 40082
+pub const ERR_WHILE_WITHOUT_WEND: u32 = 0x9c93; // 40083
+pub const ERR_DO_WITHOUT_LOOP: u32 = 0x9c94; // 40084
+pub const ERR_FOR_WITHOUT_NEXT: u32 = 0x9c95; // 40085
+pub const ERR_ELSE_WITHOUT_IF: u32 = 0x9c96; // 40086
+pub const ERR_END_IF_WITHOUT_BLOCK_IF: u32 = 0x9c97; // 40087
+pub const ERR_NEXT_WITHOUT_FOR: u32 = 0x9c98; // 40088
+pub const ERR_LOOP_WITHOUT_DO: u32 = 0x9c99; // 40089
+pub const ERR_WEND_WITHOUT_WHILE: u32 = 0x9c9a; // 40090
+pub const ERR_EXIT_FOR_OUTSIDE_FOR: u32 = 0x9c9b; // 40091
+pub const ERR_EXIT_DO_OUTSIDE_DO: u32 = 0x9c9c; // 40092
+pub const ERR_EXIT_FUNCTION_NOT_ALLOWED: u32 = 0x9ca2; // 40098
+pub const ERR_EXIT_SUB_NOT_ALLOWED: u32 = 0x9ca3; // 40099
+pub const ERR_CASE_ELSE_OUTSIDE_SELECT: u32 = 0x9ca9; // 40105
+pub const ERR_CASE_WITHOUT_SELECT: u32 = 0x9caa; // 40106
+pub const ERR_END_SELECT_WITHOUT_SELECT: u32 = 0x9cab; // 40107
+pub const ERR_SELECT_WITHOUT_END_SELECT: u32 = 0x9cac; // 40108
+pub const ERR_EXPECTED_END_PROPERTY: u32 = 0x9cbe; // 40126
+pub const ERR_EXIT_PROPERTY_NOT_ALLOWED: u32 = 0x9cbf; // 40127
+pub const ERR_END_WITH_WITHOUT_WITH: u32 = 0x9cc6; // 40134
+pub const ERR_EXPECTED_END_WITH: u32 = 0x9cc7; // 40135
+pub const ERR_INVALID_NEXT_VARIABLE: u32 = 0x9ccd; // 40141
+pub const ERR_FOR_VARIABLE_IN_USE: u32 = 0x9cce; // 40142
+
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Diagnostic {
@@ -61,6 +89,32 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_EXPECTED_END_SUB => "Expected End Sub",
+        ERR_EXPECTED_END_FUNCTION => "Expected End Function",
+        ERR_AFTER_END_OF_PROCEDURE => "Only comments may appear after End Sub, End Function, or End Property",
+        ERR_BLOCK_IF_WITHOUT_END_IF => "Block If without End If",
+        ERR_WHILE_WITHOUT_WEND => "While without Wend",
+        ERR_DO_WITHOUT_LOOP => "Do without Loop",
+        ERR_FOR_WITHOUT_NEXT => "For without Next",
+        ERR_ELSE_WITHOUT_IF => "Else without If",
+        ERR_END_IF_WITHOUT_BLOCK_IF => "End If without block If",
+        ERR_NEXT_WITHOUT_FOR => "Next without For",
+        ERR_LOOP_WITHOUT_DO => "Loop without Do",
+        ERR_WEND_WITHOUT_WHILE => "Wend without While",
+        ERR_EXIT_FOR_OUTSIDE_FOR => "Exit For not within For...Next",
+        ERR_EXIT_DO_OUTSIDE_DO => "Exit Do not within Do...Loop",
+        ERR_EXIT_FUNCTION_NOT_ALLOWED => "Exit Function not allowed in Sub or Property",
+        ERR_EXIT_SUB_NOT_ALLOWED => "Exit Sub not allowed in Function or Property",
+        ERR_CASE_ELSE_OUTSIDE_SELECT => "Case Else outside Select Case",
+        ERR_CASE_WITHOUT_SELECT => "Case without Select Case",
+        ERR_END_SELECT_WITHOUT_SELECT => "End Select without Select Case",
+        ERR_SELECT_WITHOUT_END_SELECT => "Select Case without End Select",
+        ERR_EXPECTED_END_PROPERTY => "Expected End Property",
+        ERR_EXIT_PROPERTY_NOT_ALLOWED => "Exit Property not allowed in Function or Sub",
+        ERR_END_WITH_WITHOUT_WITH => "End With without With",
+        ERR_EXPECTED_END_WITH => "Expected End With",
+        ERR_INVALID_NEXT_VARIABLE => "Invalid Next control variable reference",
+        ERR_FOR_VARIABLE_IN_USE => "For control variable already in use",
         _ => return None,
     })
 }

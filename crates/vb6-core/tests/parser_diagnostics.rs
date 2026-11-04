@@ -21,7 +21,7 @@ const ERR_OBJECT_ONLY: u32 = 0xdee1;
 #[test]
 fn missing_end_if() {
     let codes = parse_errors(b"Sub T()\nIf True Then\nEnd Sub");
-    assert!(codes.contains(&ERR_EXPECTED));
+    assert_eq!(codes, vec![0x9c92]); // Block If without End If
 }
 
 #[test]

@@ -677,8 +677,8 @@ impl Token {
     }
 
     /// End-of-file token.
-    pub fn eof() -> Self {
-        Self { kind: TokenKind::Eof, sym: None, lit: None, type_suffix: TypeSuffix::None, span: Span::DUMMY }
+    pub fn eof(pos: u32) -> Self {
+        Self { kind: TokenKind::Eof, sym: None, lit: None, type_suffix: TypeSuffix::None, span: Span { start: pos, len: 0 } }
     }
 
     /// Scan-error token.

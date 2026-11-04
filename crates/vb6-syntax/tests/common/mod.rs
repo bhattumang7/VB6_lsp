@@ -10,18 +10,26 @@ pub struct Parsed {
     pub arena: ExprArena,
     pub top: Vec<NodeId>,
     pub diags: usize,
+    /// Every diagnostic as `(code, start offset, length)`, in report order.
+    pub found: Vec<(u32, u32, u32)>,
 }
 
 pub fn parse(src: &str) -> Parsed {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let (top, diags) = {
+    let (top, diags, found) = {
         let mut parser = Parser::new(&mut ctx, src.as_bytes());
         let top = parser.parse_module(&mut arena);
-        (top, parser.diagnostics.items().len())
+        let found = parser
+            .diagnostics
+            .items()
+            .iter()
+            .map(|d| (d.code, d.span.start, d.span.len))
+            .collect();
+        (top, parser.diagnostics.items().len(), found)
     };
-    Parsed { ctx, arena, top, diags }
+    Parsed { ctx, arena, top, diags, found }
 }
 
 impl Parsed {
@@ -53,4 +61,9 @@ impl Parsed {
     pub fn name(&self, sym: u32) -> &str {
         self.ctx.sym_name(sym as usize)
     }
+}
+
+/// Byte offset of the `n`-th (0-based) occurrence of `needle` in `src`.
+pub fn offset_of(src: &str, needle: &str, n: usize) -> u32 {
+    src.match_indices(needle).nth(n).expect("needle not found").0 as u32
 }

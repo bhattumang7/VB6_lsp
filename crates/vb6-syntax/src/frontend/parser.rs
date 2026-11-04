@@ -11,7 +11,7 @@ use crate::frontend::ast::{
     AstLit, BinOpKind, DoKind, ExitKind, ExprArena, ExprNode, FileIoKind, LabelRef, NodeId,
     NodeSpans, OnErrorKind, ProcKind, ResumeTarget, UnOpKind,
 };
-use crate::frontend::diagnostics::Diagnostics;
+use crate::frontend::diagnostics::*;
 use crate::frontend::scanner::{Scanner, ScannerContext};
 use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 
@@ -219,6 +219,18 @@ pub struct Parser<'src> {
     pub module_kind: ModuleKind,
     /// True while a procedure body is being parsed.
     in_procedure: bool,
+    /// Open block statements of the procedure being parsed, innermost last.
+    blocks: Vec<Block>,
+    /// The last token consumed was the end of a line.
+    last_was_eol: bool,
+    /// Kind of the procedure being parsed.
+    proc_kind: Option<ProcKind>,
+    /// An unclosed block has been reported in the current procedure; VB6
+    /// reports only the innermost one.
+    block_error_reported: bool,
+    /// Control-variable names of a `Next a, b, …` still to be matched by the
+    /// enclosing `For` blocks, with the span of each name.
+    next_carry: Vec<(Option<u32>, Span)>,
     /// A variable named `Error` is declared at module level / in the current
     /// procedure (parameters included). It shadows the `Error` statement, so a
     /// line that starts with `Error` is then an ordinary target expression.
@@ -231,6 +243,41 @@ pub struct Parser<'src> {
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
     cc_pending: Option<Token>,
+}
+
+/// An open block-structured statement. The parser keeps these on a stack, the
+/// way VB6's compiler does: a terminator is valid only when it matches the
+/// innermost open block.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Block {
+    /// `If … Then` before any `Else`.
+    If,
+    /// `If … Then` after its `Else`: only `End If` may follow.
+    IfElse,
+    /// `For` / `For Each`, with the control variable's symbol when it is a plain name.
+    For(Option<u32>),
+    /// `Do`; `pre_test` is true for `Do While` / `Do Until`.
+    Do { pre_test: bool },
+    While,
+    With,
+    Select,
+}
+
+/// A keyword (or keyword pair) that closes or continues a block.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Term { Else, ElseIf, EndIf, Next, Loop, Wend, Case, EndWith, EndSelect }
+
+/// Whether `term` ends the body of the open block `top`.
+fn block_closed_by(top: Block, term: Term) -> bool {
+    match top {
+        Block::If => matches!(term, Term::Else | Term::ElseIf | Term::EndIf),
+        Block::IfElse => term == Term::EndIf,
+        Block::For(_) => term == Term::Next,
+        Block::Do { .. } => term == Term::Loop,
+        Block::While => term == Term::Wend,
+        Block::With => term == Term::EndWith,
+        Block::Select => matches!(term, Term::Case | Term::EndSelect),
+    }
 }
 
 /// State of one open `#If … #End If` block.
@@ -258,6 +305,11 @@ impl<'src> Parser<'src> {
             decl_friend: std::collections::HashSet::new(),
             decl_static: std::collections::HashSet::new(),
             in_procedure: false,
+            blocks: Vec::new(),
+            last_was_eol: false,
+            proc_kind: None,
+            block_error_reported: false,
+            next_carry: Vec::new(),
             error_var_module: false,
             error_var_local: false,
             module_kind: ModuleKind::Standard,
@@ -302,10 +354,12 @@ impl<'src> Parser<'src> {
     }
 
     fn advance(&mut self) -> Token {
-        match self.peeked.take() {
+        let tok = match self.peeked.take() {
             Some(t) => t,
             None    => self.peeked2.take().unwrap_or_else(|| self.next_logical()),
-        }
+        };
+        self.last_was_eol = tok.kind == TokenKind::Eol;
+        tok
     }
 
     fn current_span(&mut self) -> Span {
@@ -492,47 +546,96 @@ impl<'src> Parser<'src> {
         }
     }
 
-    /// True when the next tokens are `End <closer>` (`End If`, `End With`,
-    /// `End Select`, `End Sub`, …). A bare `End` — the statement that stops the
-    /// program — is not a block terminator.
-    fn at_end_closer(&mut self) -> bool {
-        if !matches!(self.peek().kind, TokenKind::Kw(Kw::End)) {
-            return false;
+    /// The block terminator at the current token, if any: `Else`, `ElseIf`,
+    /// `EndIf`, `Next`, `Loop`, `Wend`, `Case`, `End If`, `End With`,
+    /// `End Select`. A bare `End` (terminate the program) is not one.
+    fn terminator(&mut self) -> Option<Term> {
+        match self.peek().kind {
+            TokenKind::Kw(Kw::Else) => Some(Term::Else),
+            TokenKind::Kw(Kw::ElseIf) => Some(Term::ElseIf),
+            TokenKind::Kw(Kw::EndIf) => Some(Term::EndIf),
+            TokenKind::Kw(Kw::Next) => Some(Term::Next),
+            TokenKind::Kw(Kw::Loop) => Some(Term::Loop),
+            TokenKind::Kw(Kw::Wend) => Some(Term::Wend),
+            TokenKind::Kw(Kw::Case) => Some(Term::Case),
+            TokenKind::Kw(Kw::End) => match self.peek2().kind {
+                TokenKind::Kw(Kw::If) => Some(Term::EndIf),
+                TokenKind::Kw(Kw::With) => Some(Term::EndWith),
+                TokenKind::Kw(Kw::Select) => Some(Term::EndSelect),
+                _ => None,
+            },
+            _ => None,
         }
-        matches!(
-            self.peek2().kind,
-            TokenKind::Kw(Kw::If)
-                | TokenKind::Kw(Kw::With)
-                | TokenKind::Kw(Kw::Select)
-                | TokenKind::Kw(Kw::Sub)
-                | TokenKind::Kw(Kw::Function)
-                | TokenKind::Kw(Kw::Property)
-                | TokenKind::Kw(Kw::Type)
-                | TokenKind::Kw(Kw::Enum)
-        )
     }
 
+    /// The current token ends the body of the innermost open block: its own
+    /// terminator, the end of the procedure, or the end of the file.
     fn at_block_end(&mut self) -> bool {
-        if self.at_end_closer() {
+        if self.peek().kind == TokenKind::Eof || self.at_proc_end() {
             return true;
         }
-        matches!(
-            self.peek().kind,
-            TokenKind::Eof
-                | TokenKind::Kw(Kw::EndIf)
-                | TokenKind::Kw(Kw::Else)
-                | TokenKind::Kw(Kw::ElseIf)
-                | TokenKind::Kw(Kw::Loop)
-                | TokenKind::Kw(Kw::Next)
-                | TokenKind::Kw(Kw::Wend)
-                | TokenKind::Kw(Kw::Case)
-        )
+        let Some(top) = self.blocks.last().copied() else { return false };
+        if matches!(top, Block::For(_)) && !self.next_carry.is_empty() {
+            return true;
+        }
+        self.terminator().is_some_and(|t| block_closed_by(top, t))
     }
 
-    /// Like `at_block_end` but only stops at the specific `End Sub/Function/Property`
-    /// tokens that terminate a procedure body. This allows stranded `End If` (left by
-    /// `#End If` splitting an If/Else block) to be consumed inside the proc body by
-    /// `parse_stmt` rather than being mistaken for the proc terminator.
+    /// Consume the current block terminator when it closes the innermost open
+    /// block; otherwise report the block as unclosed with `unclosed`. Returns
+    /// whether a terminator was consumed.
+    fn close_block(&mut self, unclosed: u32) -> bool {
+        let closes = match (self.blocks.last().copied(), self.terminator()) {
+            (Some(top), Some(t)) => block_closed_by(top, t),
+            _ => false,
+        };
+        if !closes {
+            self.report_unclosed(unclosed);
+            return false;
+        }
+        if self.peek().kind == TokenKind::Kw(Kw::End) {
+            self.advance();
+        }
+        self.advance();
+        true
+    }
+
+    /// Report an unclosed block at the `End Sub`/`End Function`/`End Property`
+    /// that ends the procedure. VB6 reports only the innermost one, and at the
+    /// end of the file it reports the missing `End` of the procedure instead.
+    fn report_unclosed(&mut self, code: u32) {
+        if self.peek().kind == TokenKind::Eof || self.block_error_reported {
+            return;
+        }
+        self.block_error_reported = true;
+        let span = self.current_span();
+        self.diagnostics.push(code, span);
+    }
+
+    /// A block terminator with no matching open block: report it and skip the line.
+    fn stray_terminator(&mut self) -> Option<NodeId> {
+        let code = match self.terminator() {
+            Some(Term::Else) | Some(Term::ElseIf) => ERR_ELSE_WITHOUT_IF,
+            Some(Term::EndIf) => ERR_END_IF_WITHOUT_BLOCK_IF,
+            Some(Term::Next) => ERR_NEXT_WITHOUT_FOR,
+            Some(Term::Loop) => ERR_LOOP_WITHOUT_DO,
+            Some(Term::Wend) => ERR_WEND_WITHOUT_WHILE,
+            Some(Term::Case) if self.peek2().kind == TokenKind::Kw(Kw::Else) => {
+                ERR_CASE_ELSE_OUTSIDE_SELECT
+            }
+            Some(Term::Case) => ERR_CASE_WITHOUT_SELECT,
+            Some(Term::EndWith) => ERR_END_WITH_WITHOUT_WITH,
+            Some(Term::EndSelect) => ERR_END_SELECT_WITHOUT_SELECT,
+            None => ERR_UNEXPECTED_TOKEN,
+        };
+        let span = self.current_span();
+        self.diagnostics.push(code, span);
+        self.skip_line();
+        None
+    }
+
+    /// The current token is the `End Sub` / `End Function` / `End Property`
+    /// that ends a procedure.
     fn at_proc_end(&mut self) -> bool {
         if !matches!(self.peek().kind, TokenKind::Kw(Kw::End)) {
             return false;
@@ -545,10 +648,7 @@ impl<'src> Parser<'src> {
         )
     }
 
-    /// Parse a procedure body — like `parse_block` but uses `at_proc_end` as the
-    /// stop condition so that orphaned `End If` tokens (produced when `#End If`
-    /// splits an If/Else block) are consumed as statements rather than halting
-    /// block parsing early.
+    /// Parse a procedure body: statements up to the procedure's `End`.
     fn parse_block_proc(&mut self, arena: &mut ExprArena) -> NodeId {
         let was_in_procedure = std::mem::replace(&mut self.in_procedure, true);
         let mut stmts: Vec<NodeId> = Vec::new();
@@ -1004,6 +1104,9 @@ impl<'src> Parser<'src> {
     fn parse_end_stmt(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
         // "End" alone terminates the program.
         // End Sub / End Function etc. are handled in their parent.
+        if self.terminator().is_some() {
+            return self.stray_terminator();
+        }
         self.advance();
         if self.peek().is_stmt_end()
             || matches!(
@@ -1097,6 +1200,14 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Stop)
             }
             TokenKind::Kw(Kw::End) => return self.parse_end_stmt(arena),
+            // A block terminator that does not close the innermost open block.
+            TokenKind::Kw(Kw::Else)
+            | TokenKind::Kw(Kw::ElseIf)
+            | TokenKind::Kw(Kw::EndIf)
+            | TokenKind::Kw(Kw::Next)
+            | TokenKind::Kw(Kw::Loop)
+            | TokenKind::Kw(Kw::Wend)
+            | TokenKind::Kw(Kw::Case) => return self.stray_terminator(),
             TokenKind::Kw(Kw::Erase)  => self.parse_erase_stmt(arena),
             TokenKind::Kw(Kw::RaiseEvent) => self.parse_raise_event(arena),
             TokenKind::Kw(Kw::Debug)  => self.parse_debug_stmt(arena),
@@ -1551,7 +1662,9 @@ impl<'src> Parser<'src> {
         if self.eat(TokenKind::Kw(Kw::Each)) {
             return self.parse_for_each_stmt(arena);
         }
+        let var_span = self.current_span();
         let var   = self.parse_target_expr(arena);
+        let var_sym = self.for_variable(arena, var, var_span);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let start = self.parse_expr(arena, 0);
         self.expect(TokenKind::Kw(Kw::To), ERR_EXPECTED_TO);
@@ -1560,40 +1673,86 @@ impl<'src> Parser<'src> {
             Some(self.parse_expr(arena, 0))
         } else { None };
         self.eat_eol();
+        self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
-        // For is implicitly terminated by the procedure boundary if Next is missing.
-        let at_term = self.peek().kind == TokenKind::Eof || self.at_end_closer();
-        if !at_term {
-            self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
-            // `Next [var [, var]…]`
-            while !self.peek().is_stmt_end() {
-                match self.peek().kind {
-                    TokenKind::Ident | TokenKind::Kw(_) => { self.advance(); }
-                    _ => break,
-                }
-                if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
-            }
-            self.eat_eol();
-        }
+        self.finish_next();
+        self.blocks.pop();
         arena.alloc(ExprNode::For { var, start, end, step, body })
     }
 
     fn parse_for_each_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let var_span = self.current_span();
         let var = self.parse_target_expr(arena);
+        let var_sym = self.for_variable(arena, var, var_span);
         self.expect(TokenKind::Kw(Kw::In), ERR_EXPECTED_IN);
         let collection = self.parse_expr(arena, 0);
         self.eat_eol();
+        self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
-        self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
+        self.finish_next();
+        self.blocks.pop();
+        arena.alloc(ExprNode::ForEach { var, collection, body })
+    }
+
+    /// The symbol of a `For` control variable written as a plain name; reports
+    /// a variable already controlling an enclosing `For`.
+    fn for_variable(&mut self, arena: &ExprArena, var: NodeId, span: Span) -> Option<u32> {
+        let ExprNode::NameRef { sym, .. } = arena.get(var) else { return None };
+        let sym = *sym;
+        if self.blocks.contains(&Block::For(Some(sym))) {
+            self.diagnostics.push(ERR_FOR_VARIABLE_IN_USE, span);
+        }
+        Some(sym)
+    }
+
+    /// End of a `For` body: `Next [var [, var]…]`, or a variable carried over
+    /// from an inner `Next a, b`. Names are matched innermost loop first.
+    fn finish_next(&mut self) {
+        if !self.next_carry.is_empty() {
+            let (name, span) = self.next_carry.remove(0);
+            self.check_next_variable(name, span);
+            return;
+        }
+        if self.peek().kind != TokenKind::Kw(Kw::Next) {
+            self.report_unclosed(ERR_FOR_WITHOUT_NEXT);
+            return;
+        }
+        self.advance(); // Next
+        let mut names: Vec<(Option<u32>, Span)> = Vec::new();
         while !self.peek().is_stmt_end() {
             match self.peek().kind {
-                TokenKind::Ident | TokenKind::Kw(_) => { self.advance(); }
+                TokenKind::Ident | TokenKind::Kw(_) => {
+                    let tok = self.advance();
+                    names.push((tok.sym.map(|s| s as u32).filter(|_| tok.kind == TokenKind::Ident), tok.span));
+                }
                 _ => break,
             }
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
         self.eat_eol();
-        arena.alloc(ExprNode::ForEach { var, collection, body })
+        // Each further name closes the next enclosing `For`, provided the
+        // `For` blocks are directly nested.
+        let directly_nested = self.blocks.iter().rev().take_while(|b| matches!(b, Block::For(_))).count();
+        let mut names = names.into_iter();
+        if let Some((name, span)) = names.next() {
+            self.check_next_variable(name, span);
+        }
+        for (i, (name, span)) in names.enumerate() {
+            if i + 1 < directly_nested {
+                self.next_carry.push((name, span));
+            } else {
+                self.diagnostics.push(ERR_NEXT_WITHOUT_FOR, span);
+            }
+        }
+    }
+
+    /// A name after `Next` must be the control variable of the loop it closes.
+    fn check_next_variable(&mut self, name: Option<u32>, span: Span) {
+        if let (Some(name), Some(Block::For(Some(var)))) = (name, self.blocks.last().copied()) {
+            if name != var {
+                self.diagnostics.push(ERR_INVALID_NEXT_VARIABLE, span);
+            }
+        }
     }
 
     /// Parses a Do loop.
@@ -1605,20 +1764,25 @@ impl<'src> Parser<'src> {
             _ => None,
         };
         self.eat_eol();
+        self.blocks.push(Block::Do { pre_test: pre.is_some() });
         let body = self.parse_block(arena);
-        // Do is implicitly terminated by the procedure boundary if Loop is missing.
-        let post = if self.peek().kind == TokenKind::Eof || self.at_end_closer() {
-            None
-        } else {
-            self.expect(TokenKind::Kw(Kw::Loop), ERR_EXPECTED_LOOP);
+        let loop_span = self.current_span();
+        let post = if self.close_block(ERR_DO_WITHOUT_LOOP) {
             let p = match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::While) => { self.advance(); Some((DoKind::PostWhile, self.parse_expr(arena, 0))) }
                 TokenKind::Kw(Kw::Until) => { self.advance(); Some((DoKind::PostUntil, self.parse_expr(arena, 0))) }
                 _ => None,
             };
+            // A loop tests its condition at the top or at the bottom, not both.
+            if p.is_some() && pre.is_some() {
+                self.diagnostics.push(ERR_LOOP_WITHOUT_DO, loop_span);
+            }
             self.eat_eol();
             p
+        } else {
+            None
         };
+        self.blocks.pop();
         let (kind, cond) = if let Some((k, c)) = post {
             (k, Some(c))
         } else if let Some((k, c)) = pre {
@@ -1634,9 +1798,12 @@ impl<'src> Parser<'src> {
         self.advance(); // consume While
         let cond = self.parse_expr(arena, 0);
         self.eat_eol();
+        self.blocks.push(Block::While);
         let body = self.parse_block(arena);
-        self.expect(TokenKind::Kw(Kw::Wend), ERR_EXPECTED_WEND);
-        self.eat_eol();
+        if self.close_block(ERR_WHILE_WITHOUT_WEND) {
+            self.eat_eol();
+        }
+        self.blocks.pop();
         arena.alloc(ExprNode::While { cond, body })
     }
 
@@ -1645,10 +1812,12 @@ impl<'src> Parser<'src> {
         self.advance(); // consume With
         let obj = self.parse_expr(arena, 0);
         self.eat_eol();
+        self.blocks.push(Block::With);
         let body = self.parse_block(arena);
-        self.expect(TokenKind::Kw(Kw::End), ERR_EXPECTED_END);
-        self.expect(TokenKind::Kw(Kw::With), ERR_UNEXPECTED_TOKEN);
-        self.eat_eol();
+        if self.close_block(ERR_EXPECTED_END_WITH) {
+            self.eat_eol();
+        }
+        self.blocks.pop();
         arena.alloc(ExprNode::With { obj, body })
     }
 
@@ -1672,31 +1841,45 @@ impl<'src> Parser<'src> {
         // Single-line If: a `Then` followed immediately by a statement (not Eol),
         // or the legacy `GoTo` form.
         if legacy_goto || (has_then && !self.peek().is_stmt_end()) {
-            let then_n = if let Some(n) = self.parse_stmt(arena) { n }
-                         else { arena.alloc(ExprNode::Block { stmts: vec![] }) };
-            let then_body = arena.alloc(ExprNode::Block { stmts: vec![then_n] });
-            let else_body = if self.eat(TokenKind::Kw(Kw::Else)) {
-                let e = if let Some(n) = self.parse_stmt(arena) { n }
-                         else { arena.alloc(ExprNode::Block { stmts: vec![] }) };
-                Some(arena.alloc(ExprNode::Block { stmts: vec![e] }))
+            let stmts = self.parse_inline_statements(arena);
+            let then_body = arena.alloc(ExprNode::Block { stmts });
+            let else_body = if !self.last_was_eol && self.eat(TokenKind::Kw(Kw::Else)) {
+                let stmts = self.parse_inline_statements(arena);
+                Some(arena.alloc(ExprNode::Block { stmts }))
             } else { None };
             return arena.alloc(ExprNode::If { cond, then_body, else_body });
         }
         self.eat_eol();
+        self.blocks.push(Block::If);
         let then_body = self.parse_block(arena);
         let else_body = self.parse_else_clause(arena);
-        self.end_if(); // `End If` or the one-word `EndIf`
-        self.eat_eol();
+        if self.close_block(ERR_BLOCK_IF_WITHOUT_END_IF) { // `End If` or the one-word `EndIf`
+            self.eat_eol();
+        }
+        self.blocks.pop();
         arena.alloc(ExprNode::If { cond, then_body, else_body })
     }
 
-    /// Consume a block-`If` terminator.
-    fn end_if(&mut self) {
-        if self.eat(TokenKind::Kw(Kw::EndIf)) {
-            return;
+    /// The statements of one part of a single-line `If`: every statement
+    /// (separated by `:`) up to the `Else` or the end of the line.
+    fn parse_inline_statements(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
+        let mut stmts = Vec::new();
+        loop {
+            while self.eat(TokenKind::Kw(Kw::Colon)) {}
+            if self.last_was_eol
+                || self.peek().is_stmt_end()
+                || self.peek().kind == TokenKind::Kw(Kw::Else)
+            {
+                break;
+            }
+            if let Some(n) = self.parse_stmt(arena) {
+                stmts.push(n);
+            }
+            if self.last_was_eol {
+                break;
+            }
         }
-        self.expect(TokenKind::Kw(Kw::End), ERR_EXPECTED_END);
-        self.expect(TokenKind::Kw(Kw::If), ERR_UNEXPECTED_TOKEN);
+        stmts
     }
 
     fn parse_else_clause(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
@@ -1704,6 +1887,9 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Else) => {
                 self.advance();
                 self.eat_eol();
+                if let Some(top) = self.blocks.last_mut() {
+                    *top = Block::IfElse;
+                }
                 Some(self.parse_block(arena))
             }
             TokenKind::Kw(Kw::ElseIf) => {
@@ -1725,6 +1911,7 @@ impl<'src> Parser<'src> {
         self.expect(TokenKind::Kw(Kw::Case), ERR_EXPECTED_CASE);
         let subject = self.parse_expr(arena, 0);
         self.eat_eol();
+        self.blocks.push(Block::Select);
         let mut pre = Vec::new();
         let mut cases = Vec::new();
         loop {
@@ -1734,13 +1921,16 @@ impl<'src> Parser<'src> {
                     self.advance();
                     cases.push(self.parse_case_clause(arena));
                 }
-                TokenKind::Kw(Kw::End) if self.at_end_closer() => {
-                    self.advance();
-                    self.expect(TokenKind::Kw(Kw::Select), ERR_UNEXPECTED_TOKEN);
+                TokenKind::Kw(Kw::End) if self.terminator() == Some(Term::EndSelect) => {
+                    self.close_block(ERR_SELECT_WITHOUT_END_SELECT);
                     self.eat_eol();
                     break;
                 }
                 TokenKind::Eof => break,
+                _ if self.at_proc_end() => {
+                    self.report_unclosed(ERR_SELECT_WITHOUT_END_SELECT);
+                    break;
+                }
                 _ => {
                     // Statements before the first Case clause.
                     if self.peek().is_stmt_end() {
@@ -1751,6 +1941,7 @@ impl<'src> Parser<'src> {
                 }
             }
         }
+        self.blocks.pop();
         arena.alloc(ExprNode::SelectCase { subject, pre, cases })
     }
 
@@ -1815,6 +2006,7 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_exit_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let exit_span = self.current_span();
         self.advance(); // consume Exit
         let kind = match self.peek().kind {
             TokenKind::Kw(Kw::Sub)      => { self.advance(); ExitKind::Sub      }
@@ -1828,8 +2020,41 @@ impl<'src> Parser<'src> {
                 ExitKind::Sub
             }
         };
+        self.check_exit_context(kind, exit_span);
         self.end_stmt();
         arena.alloc(ExprNode::ExitStmt { kind })
+    }
+
+    /// `Exit For`/`Exit Do` need an enclosing loop of that kind anywhere on the
+    /// block stack; `Exit Sub`/`Function`/`Property` must match the procedure.
+    fn check_exit_context(&mut self, kind: ExitKind, span: Span) {
+        let (ok, code) = match kind {
+            ExitKind::For => (
+                self.blocks.iter().any(|b| matches!(b, Block::For(_))),
+                ERR_EXIT_FOR_OUTSIDE_FOR,
+            ),
+            ExitKind::Do => (
+                self.blocks.iter().any(|b| matches!(b, Block::Do { .. })),
+                ERR_EXIT_DO_OUTSIDE_DO,
+            ),
+            ExitKind::Sub => (
+                self.proc_kind.is_none_or(|k| k == ProcKind::Sub),
+                ERR_EXIT_SUB_NOT_ALLOWED,
+            ),
+            ExitKind::Function => (
+                self.proc_kind.is_none_or(|k| k == ProcKind::Function),
+                ERR_EXIT_FUNCTION_NOT_ALLOWED,
+            ),
+            ExitKind::Property => (
+                self.proc_kind.is_none_or(|k| {
+                    matches!(k, ProcKind::PropGet | ProcKind::PropLet | ProcKind::PropSet)
+                }),
+                ERR_EXIT_PROPERTY_NOT_ALLOWED,
+            ),
+        };
+        if !ok {
+            self.diagnostics.push(code, span);
+        }
     }
 
     fn parse_goto_stmt(&mut self, arena: &mut ExprArena, is_gosub: bool) -> NodeId {
@@ -2580,20 +2805,47 @@ impl<'src> Parser<'src> {
             }
         } else { None };
         self.eat_eol();
-        let body = self.parse_block_proc(arena);
-        if self.peek().kind != TokenKind::Eof {
-            self.expect(TokenKind::Kw(Kw::End), ERR_EXPECTED_END);
-            if matches!(self.peek().kind, TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function)) {
-                self.advance();
-            } else {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-            }
-            self.eat_eol();
-        }
+        let body = self.parse_procedure_body(arena, kind);
         let id = arena.alloc(ExprNode::ProcDecl { kind, name: name_id, params, ret_type, body });
         self.set_span(id, name.span);
         id
+    }
+
+    /// A procedure's statements and its closing `End Sub` / `End Function` /
+    /// `End Property`. A missing `End`, an `End` of the wrong kind, and text
+    /// after the `End` are reported; only a comment may follow it.
+    fn parse_procedure_body(&mut self, arena: &mut ExprArena, kind: ProcKind) -> NodeId {
+        let outer_kind = self.proc_kind.replace(kind);
+        let outer_reported = std::mem::replace(&mut self.block_error_reported, false);
+        let body = self.parse_block_proc(arena);
+        self.proc_kind = outer_kind;
+        self.block_error_reported = outer_reported;
+
+        let (closer, expected_code) = match kind {
+            ProcKind::Sub => (Kw::Sub, ERR_EXPECTED_END_SUB),
+            ProcKind::Function => (Kw::Function, ERR_EXPECTED_END_FUNCTION),
+            ProcKind::PropGet | ProcKind::PropLet | ProcKind::PropSet => {
+                (Kw::Property, ERR_EXPECTED_END_PROPERTY)
+            }
+        };
+        let end_span = self.current_span();
+        if self.peek().kind == TokenKind::Eof {
+            self.diagnostics.push(expected_code, end_span);
+            return body;
+        }
+        self.advance(); // End
+        if self.peek().kind != TokenKind::Kw(closer) {
+            self.diagnostics.push(expected_code, end_span);
+        }
+        self.advance(); // Sub / Function / Property
+        if self.peek().is_stmt_end() {
+            self.eat_eol();
+        } else {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
+            self.skip_line();
+        }
+        body
     }
 
     /// Parses Property Get/Let/Set.
@@ -2632,10 +2884,7 @@ impl<'src> Parser<'src> {
             }
         } else { None };
         self.eat_eol();
-        let body = self.parse_block_proc(arena);
-        self.expect(TokenKind::Kw(Kw::End), ERR_EXPECTED_END);
-        self.expect(TokenKind::Kw(Kw::Property), ERR_UNEXPECTED_TOKEN);
-        self.eat_eol();
+        let body = self.parse_procedure_body(arena, kind);
         let id = arena.alloc(ExprNode::ProcDecl { kind, name: name_id, params, ret_type, body });
         self.set_span(id, name.span);
         id
@@ -3292,9 +3541,6 @@ const ERR_EXPECTED_LPAREN:      u32 = 0x9c6f;
 const ERR_EXPECTED_THEN:        u32 = 0x9c6f;
 const ERR_EXPECTED_TO:          u32 = 0x9c6f;
 const ERR_EXPECTED_NEXT:        u32 = 0x9c6f;
-const ERR_EXPECTED_LOOP:        u32 = 0x9c6f;
-const ERR_EXPECTED_WEND:        u32 = 0x9c6f;
-const ERR_EXPECTED_END:         u32 = 0x9c6f;
 const ERR_EXPECTED_CASE:        u32 = 0x9c6f;
 const ERR_EXPECTED_IS:          u32 = 0x9c6f;
 const ERR_EXPECTED_IN:          u32 = 0x9c6f;
