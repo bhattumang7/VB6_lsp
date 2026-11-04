@@ -717,6 +717,14 @@ impl<'src> Parser<'src> {
         self.statement_without_operands(arena, t)
     }
 
+    /// After `New`: a class name. A built-in type word is reported as a missing type name.
+    fn require_class_name_after_new(&mut self) {
+        if self.at_reserved_word() {
+            let span = self.current_span();
+            self.report_expected(span, "type name");
+        }
+    }
+
     /// `Scale` or `Line` followed by a coordinate pair: the points are two values
     /// in brackets, so a bracket holding anything else is not that statement.
     fn graphics_point_stmt(&mut self, arena: &mut ExprArena, t: Token) -> NodeId {
@@ -4189,7 +4197,12 @@ impl<'src> Parser<'src> {
         loop {
             args.push(self.parse_param(arena, in_declare));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
-            if self.peek().kind == TokenKind::Kw(Kw::RParen) { break; }
+            if self.peek().kind == TokenKind::Kw(Kw::RParen) {
+                // A comma needs a parameter after it.
+                let span = self.current_span();
+                self.report_expected(span, "identifier");
+                break;
+            }
         }
         arena.alloc(ExprNode::ArgList { args })
     }
@@ -4225,7 +4238,10 @@ impl<'src> Parser<'src> {
         }
         self.reject_suffix_with_as(&name, "list separator or )");
         let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
-            if self.eat(TokenKind::Kw(Kw::New)) { flags |= 0x10; }
+            if self.eat(TokenKind::Kw(Kw::New)) {
+                flags |= 0x10;
+                self.require_class_name_after_new();
+            }
             if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
                 Some(arena.alloc(ExprNode::AnyType))
             } else {
@@ -4326,6 +4342,7 @@ impl<'src> Parser<'src> {
             }
             TokenKind::Kw(Kw::New) => {
                 self.advance();
+                self.require_class_name_after_new();
                 let name = self.expect_ident();
                 self.finish_user_type(arena, name)
             }
@@ -4343,7 +4360,7 @@ impl<'src> Parser<'src> {
         // The optional array marker `()` makes the type an array of it.
         if allow_array_suffix && self.peek().kind == TokenKind::Kw(Kw::LParen) {
             self.advance();
-            self.eat(TokenKind::Kw(Kw::RParen));
+            self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             return arena.alloc(ExprNode::ArrayType { elem: node });
         }
         node
