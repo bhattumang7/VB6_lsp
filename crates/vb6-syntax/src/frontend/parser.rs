@@ -2304,6 +2304,10 @@ impl<'src> Parser<'src> {
             self.report_expected(span, "end of statement");
         }
         self.last_item_had_as = self.peek().kind == TokenKind::Kw(Kw::As);
+        if with_events && !self.last_item_had_as {
+            let span = self.current_span();
+            self.report_expected(span, "As");
+        }
         let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
             if with_events {
                 // An event source is a named class: `New` and the built-in types are out.
@@ -2322,13 +2326,10 @@ impl<'src> Parser<'src> {
             }
             let is_new = self.eat(TokenKind::Kw(Kw::New));
             // `Object` is not a creatable class.
-            if is_new && self.peek().kind == TokenKind::Kw(Kw::Object) {
+            if is_new && (self.peek().kind == TokenKind::Kw(Kw::Object) || self.at_reserved_word()) {
+                // `New` takes a class name only.
                 let span = self.current_span();
-                self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "type name");
-            } else if is_new && self.reserved_names_allowed && self.at_reserved_word() {
-                // A `Type` member takes `New` before a class name only.
-                let span = self.current_span();
-                self.diagnostics.push_labeled(0x9c6f, span, "identifier");
+                self.report_expected(span, "identifier");
             }
             (is_new, Some(self.parse_type_spec(arena, array_suffix_ok)))
         } else {
@@ -2396,7 +2397,10 @@ impl<'src> Parser<'src> {
                 self.set_span(with_ctx, dot_span);
                 base = Some(with_ctx);
             }
+            // `ReDim` names an existing array, so a bracketed name is allowed.
+            self.label_target = true;
             let mut name = self.expect_decl_name();
+            self.label_target = false;
             let mut bounds: Option<NodeId> = None;
             loop {
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -4794,11 +4798,29 @@ impl<'src> Parser<'src> {
                         self.skip_line();
                         continue;
                     }
+                    // A bracketed name is a member only when bounds follow it.
+                    let bracketed = self.peek().kind == TokenKind::Ident
+                        && self.src.get(self.peek().span.start as usize) == Some(&b'[');
+                    if bracketed && self.peek2().kind != TokenKind::Kw(Kw::LParen) {
+                        if self.peek2().kind == TokenKind::Kw(Kw::As) {
+                            self.report_expected(line_span, "expression");
+                        } else {
+                            self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+                        }
+                        self.skip_line();
+                        continue;
+                    }
                     self.reserved_names_allowed = true;
+                    self.label_target = bracketed;
                     self.last_item_had_as = false;
                     let m = self.parse_dim_item(arena, false, false, false);
+                    self.label_target = false;
                     self.reserved_names_allowed = false;
-                    if !self.last_item_had_as && self.peek().kind != TokenKind::Kw(Kw::Eq) {
+                    // A member whose bounds give a range needs no `As`: it is an array of Variant.
+                    let has_bounds = matches!(arena.get(m), ExprNode::DimItem { bounds: Some(b), .. }
+                        if matches!(arena.get(*b), ExprNode::ArgList { args }
+                            if args.iter().any(|a| matches!(arena.get(*a), ExprNode::RangeTo { .. }))));
+                    if !self.last_item_had_as && !has_bounds && self.peek().kind != TokenKind::Kw(Kw::Eq) {
                         self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
                         self.skip_line();
                         continue;

@@ -1,0 +1,248 @@
+a
+a$
+[a b]
+Name
+Date
+Me
+a As Long
+a$ As Long
+[a b] As Long
+Name As Long
+Date As Long
+Me As Long
+a() As Long
+a$() As Long
+[a b]() As Long
+Name() As Long
+Date() As Long
+Me() As Long
+a(3) As Long
+a$(3) As Long
+[a b](3) As Long
+Name(3) As Long
+Date(3) As Long
+Me(3) As Long
+a(1 To 3) As Long
+a$(1 To 3) As Long
+[a b](1 To 3) As Long
+Name(1 To 3) As Long
+Date(1 To 3) As Long
+Me(1 To 3) As Long
+a(3, 4) As Long
+a$(3, 4) As Long
+[a b](3, 4) As Long
+Name(3, 4) As Long
+Date(3, 4) As Long
+Me(3, 4) As Long
+a(1 To 3, 2 To 5)
+a$(1 To 3, 2 To 5)
+[a b](1 To 3, 2 To 5)
+Name(1 To 3, 2 To 5)
+Date(1 To 3, 2 To 5)
+Me(1 To 3, 2 To 5)
+a() 
+a$() 
+[a b]() 
+Name() 
+Date() 
+Me() 
+a(,) As Long
+a$(,) As Long
+[a b](,) As Long
+Name(,) As Long
+Date(,) As Long
+Me(,) As Long
+a(1 To) As Long
+a$(1 To) As Long
+[a b](1 To) As Long
+Name(1 To) As Long
+Date(1 To) As Long
+Me(1 To) As Long
+a(To 3) As Long
+a$(To 3) As Long
+[a b](To 3) As Long
+Name(To 3) As Long
+Date(To 3) As Long
+Me(To 3) As Long
+a(3
+a$(3
+[a b](3
+Name(3
+Date(3
+Me(3
+a3 As Long
+a$3 As Long
+[a b]3 As Long
+Name3 As Long
+Date3 As Long
+Me3 As Long
+a As
+a$ As
+[a b] As
+Name As
+Date As
+Me As
+a As New Collection
+a$ As New Collection
+[a b] As New Collection
+Name As New Collection
+Date As New Collection
+Me As New Collection
+a As New Long
+a$ As New Long
+[a b] As New Long
+Name As New Long
+Date As New Long
+Me As New Long
+a As New Object
+a$ As New Object
+[a b] As New Object
+Name As New Object
+Date As New Object
+Me As New Object
+a As String * 3
+a$ As String * 3
+[a b] As String * 3
+Name As String * 3
+Date As String * 3
+Me As String * 3
+a As String * 0
+a$ As String * 0
+[a b] As String * 0
+Name As String * 0
+Date As String * 0
+Me As String * 0
+a As String * 65535
+a$ As String * 65535
+[a b] As String * 65535
+Name As String * 65535
+Date As String * 65535
+Me As String * 65535
+a As String * 65526
+a$ As String * 65526
+[a b] As String * 65526
+Name As String * 65526
+Date As String * 65526
+Me As String * 65526
+a As String * n
+a$ As String * n
+[a b] As String * n
+Name As String * n
+Date As String * n
+Me As String * n
+a As Object
+a$ As Object
+[a b] As Object
+Name As Object
+Date As Object
+Me As Object
+a As Variant
+a$ As Variant
+[a b] As Variant
+Name As Variant
+Date As Variant
+Me As Variant
+a As Any
+a$ As Any
+[a b] As Any
+Name As Any
+Date As Any
+Me As Any
+a As Decimal
+a$ As Decimal
+[a b] As Decimal
+Name As Decimal
+Date As Decimal
+Me As Decimal
+a As Class1
+a$ As Class1
+[a b] As Class1
+Name As Class1
+Date As Class1
+Me As Class1
+a As Class1.Sub1
+a$ As Class1.Sub1
+[a b] As Class1.Sub1
+Name As Class1.Sub1
+Date As Class1.Sub1
+Me As Class1.Sub1
+a As VB.Form
+a$ As VB.Form
+[a b] As VB.Form
+Name As VB.Form
+Date As VB.Form
+Me As VB.Form
+a = 1
+a$ = 1
+[a b] = 1
+Name = 1
+Date = 1
+Me = 1
+a As Long = 1
+a$ As Long = 1
+[a b] As Long = 1
+Name As Long = 1
+Date As Long = 1
+Me As Long = 1
+a(3) = 1
+a$(3) = 1
+[a b](3) = 1
+Name(3) = 1
+Date(3) = 1
+Me(3) = 1
+a, b
+a$, b
+[a b], b
+Name, b
+Date, b
+Me, b
+a, b As Long
+a$, b As Long
+[a b], b As Long
+Name, b As Long
+Date, b As Long
+Me, b As Long
+a As Long, b
+a$ As Long, b
+[a b] As Long, b
+Name As Long, b
+Date As Long, b
+Me As Long, b
+a As Long,
+a$ As Long,
+[a b] As Long,
+Name As Long,
+Date As Long,
+Me As Long,
+a As Long b
+a$ As Long b
+[a b] As Long b
+Name As Long b
+Date As Long b
+Me As Long b
+WithEvents a As Class1
+WithEvents a
+a WithEvents As Class1
+a$ WithEvents As Class1
+[a b] WithEvents As Class1
+Name WithEvents As Class1
+Date WithEvents As Class1
+Me WithEvents As Class1
+a As Integer(3)
+a$ As Integer(3)
+[a b] As Integer(3)
+Name As Integer(3)
+Date As Integer(3)
+Me As Integer(3)
+a As Long()
+a$ As Long()
+[a b] As Long()
+Name As Long()
+Date As Long()
+Me As Long()
+a() As Long()
+a$() As Long()
+[a b]() As Long()
+Name() As Long()
+Date() As Long()
+Me() As Long()

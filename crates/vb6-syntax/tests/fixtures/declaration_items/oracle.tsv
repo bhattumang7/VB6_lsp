@@ -1,0 +1,3721 @@
+# template	word	class	message
+dim_mod	a	accepted	
+dim_mod	a$	accepted	
+dim_mod	[a b]	syntax	Expected: identifier
+dim_mod	Name	accepted	
+dim_mod	Date	syntax	Expected: identifier
+dim_mod	Me	syntax	Expected: identifier
+dim_mod	a As Long	accepted	
+dim_mod	a$ As Long	syntax	Expected: end of statement
+dim_mod	[a b] As Long	syntax	Expected: identifier
+dim_mod	Name As Long	accepted	
+dim_mod	Date As Long	syntax	Expected: identifier
+dim_mod	Me As Long	syntax	Expected: identifier
+dim_mod	a() As Long	accepted	
+dim_mod	a$() As Long	syntax	Expected: end of statement
+dim_mod	[a b]() As Long	syntax	Expected: identifier
+dim_mod	Name() As Long	accepted	
+dim_mod	Date() As Long	syntax	Expected: identifier
+dim_mod	Me() As Long	syntax	Expected: identifier
+dim_mod	a(3) As Long	accepted	
+dim_mod	a$(3) As Long	syntax	Expected: end of statement
+dim_mod	[a b](3) As Long	syntax	Expected: identifier
+dim_mod	Name(3) As Long	accepted	
+dim_mod	Date(3) As Long	syntax	Expected: identifier
+dim_mod	Me(3) As Long	syntax	Expected: identifier
+dim_mod	a(1 To 3) As Long	accepted	
+dim_mod	a$(1 To 3) As Long	syntax	Expected: end of statement
+dim_mod	[a b](1 To 3) As Long	syntax	Expected: identifier
+dim_mod	Name(1 To 3) As Long	accepted	
+dim_mod	Date(1 To 3) As Long	syntax	Expected: identifier
+dim_mod	Me(1 To 3) As Long	syntax	Expected: identifier
+dim_mod	a(3, 4) As Long	accepted	
+dim_mod	a$(3, 4) As Long	syntax	Expected: end of statement
+dim_mod	[a b](3, 4) As Long	syntax	Expected: identifier
+dim_mod	Name(3, 4) As Long	accepted	
+dim_mod	Date(3, 4) As Long	syntax	Expected: identifier
+dim_mod	Me(3, 4) As Long	syntax	Expected: identifier
+dim_mod	a(1 To 3, 2 To 5)	accepted	
+dim_mod	a$(1 To 3, 2 To 5)	accepted	
+dim_mod	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+dim_mod	Name(1 To 3, 2 To 5)	accepted	
+dim_mod	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+dim_mod	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+dim_mod	a()	accepted	
+dim_mod	a$()	accepted	
+dim_mod	[a b]()	syntax	Expected: identifier
+dim_mod	Name()	accepted	
+dim_mod	Date()	syntax	Expected: identifier
+dim_mod	Me()	syntax	Expected: identifier
+dim_mod	a(,) As Long	syntax	Expected: expression
+dim_mod	a$(,) As Long	syntax	Expected: expression
+dim_mod	[a b](,) As Long	syntax	Expected: identifier
+dim_mod	Name(,) As Long	syntax	Expected: expression
+dim_mod	Date(,) As Long	syntax	Expected: identifier
+dim_mod	Me(,) As Long	syntax	Expected: identifier
+dim_mod	a(1 To) As Long	syntax	Expected: expression
+dim_mod	a$(1 To) As Long	syntax	Expected: expression
+dim_mod	[a b](1 To) As Long	syntax	Expected: identifier
+dim_mod	Name(1 To) As Long	syntax	Expected: expression
+dim_mod	Date(1 To) As Long	syntax	Expected: identifier
+dim_mod	Me(1 To) As Long	syntax	Expected: identifier
+dim_mod	a(To 3) As Long	syntax	Expected: expression
+dim_mod	a$(To 3) As Long	syntax	Expected: expression
+dim_mod	[a b](To 3) As Long	syntax	Expected: identifier
+dim_mod	Name(To 3) As Long	syntax	Expected: expression
+dim_mod	Date(To 3) As Long	syntax	Expected: identifier
+dim_mod	Me(To 3) As Long	syntax	Expected: identifier
+dim_mod	a(3	syntax	Expected: list separator or )
+dim_mod	a$(3	syntax	Expected: list separator or )
+dim_mod	[a b](3	syntax	Expected: identifier
+dim_mod	Name(3	syntax	Expected: list separator or )
+dim_mod	Date(3	syntax	Expected: identifier
+dim_mod	Me(3	syntax	Expected: identifier
+dim_mod	a3 As Long	accepted	
+dim_mod	a$3 As Long	syntax	Expected: end of statement
+dim_mod	[a b]3 As Long	syntax	Expected: identifier
+dim_mod	Name3 As Long	accepted	
+dim_mod	Date3 As Long	accepted	
+dim_mod	Me3 As Long	accepted	
+dim_mod	a As	syntax	Expected: New or type name
+dim_mod	a$ As	syntax	Expected: end of statement
+dim_mod	[a b] As	syntax	Expected: identifier
+dim_mod	Name As	syntax	Expected: New or type name
+dim_mod	Date As	syntax	Expected: identifier
+dim_mod	Me As	syntax	Expected: identifier
+dim_mod	a As New Collection	accepted	
+dim_mod	a$ As New Collection	syntax	Expected: end of statement
+dim_mod	[a b] As New Collection	syntax	Expected: identifier
+dim_mod	Name As New Collection	accepted	
+dim_mod	Date As New Collection	syntax	Expected: identifier
+dim_mod	Me As New Collection	syntax	Expected: identifier
+dim_mod	a As New Long	syntax	Expected: identifier
+dim_mod	a$ As New Long	syntax	Expected: end of statement
+dim_mod	[a b] As New Long	syntax	Expected: identifier
+dim_mod	Name As New Long	syntax	Expected: identifier
+dim_mod	Date As New Long	syntax	Expected: identifier
+dim_mod	Me As New Long	syntax	Expected: identifier
+dim_mod	a As New Object	syntax	Expected: identifier
+dim_mod	a$ As New Object	syntax	Expected: end of statement
+dim_mod	[a b] As New Object	syntax	Expected: identifier
+dim_mod	Name As New Object	syntax	Expected: identifier
+dim_mod	Date As New Object	syntax	Expected: identifier
+dim_mod	Me As New Object	syntax	Expected: identifier
+dim_mod	a As String * 3	accepted	
+dim_mod	a$ As String * 3	syntax	Expected: end of statement
+dim_mod	[a b] As String * 3	syntax	Expected: identifier
+dim_mod	Name As String * 3	accepted	
+dim_mod	Date As String * 3	syntax	Expected: identifier
+dim_mod	Me As String * 3	syntax	Expected: identifier
+dim_mod	a As String * 0	syntax	Invalid length for fixed-length string
+dim_mod	a$ As String * 0	syntax	Expected: end of statement
+dim_mod	[a b] As String * 0	syntax	Expected: identifier
+dim_mod	Name As String * 0	syntax	Invalid length for fixed-length string
+dim_mod	Date As String * 0	syntax	Expected: identifier
+dim_mod	Me As String * 0	syntax	Expected: identifier
+dim_mod	a As String * 65535	syntax	Invalid length for fixed-length string
+dim_mod	a$ As String * 65535	syntax	Expected: end of statement
+dim_mod	[a b] As String * 65535	syntax	Expected: identifier
+dim_mod	Name As String * 65535	syntax	Invalid length for fixed-length string
+dim_mod	Date As String * 65535	syntax	Expected: identifier
+dim_mod	Me As String * 65535	syntax	Expected: identifier
+dim_mod	a As String * 65526	accepted	
+dim_mod	a$ As String * 65526	syntax	Expected: end of statement
+dim_mod	[a b] As String * 65526	syntax	Expected: identifier
+dim_mod	Name As String * 65526	accepted	
+dim_mod	Date As String * 65526	syntax	Expected: identifier
+dim_mod	Me As String * 65526	syntax	Expected: identifier
+dim_mod	a As String * n	semantic	Constant expression required
+dim_mod	a$ As String * n	syntax	Expected: end of statement
+dim_mod	[a b] As String * n	syntax	Expected: identifier
+dim_mod	Name As String * n	semantic	Constant expression required
+dim_mod	Date As String * n	syntax	Expected: identifier
+dim_mod	Me As String * n	syntax	Expected: identifier
+dim_mod	a As Object	accepted	
+dim_mod	a$ As Object	syntax	Expected: end of statement
+dim_mod	[a b] As Object	syntax	Expected: identifier
+dim_mod	Name As Object	accepted	
+dim_mod	Date As Object	syntax	Expected: identifier
+dim_mod	Me As Object	syntax	Expected: identifier
+dim_mod	a As Variant	accepted	
+dim_mod	a$ As Variant	syntax	Expected: end of statement
+dim_mod	[a b] As Variant	syntax	Expected: identifier
+dim_mod	Name As Variant	accepted	
+dim_mod	Date As Variant	syntax	Expected: identifier
+dim_mod	Me As Variant	syntax	Expected: identifier
+dim_mod	a As Any	syntax	Expected: New or type name
+dim_mod	a$ As Any	syntax	Expected: end of statement
+dim_mod	[a b] As Any	syntax	Expected: identifier
+dim_mod	Name As Any	syntax	Expected: New or type name
+dim_mod	Date As Any	syntax	Expected: identifier
+dim_mod	Me As Any	syntax	Expected: identifier
+dim_mod	a As Decimal	syntax	Expected: New or type name
+dim_mod	a$ As Decimal	syntax	Expected: end of statement
+dim_mod	[a b] As Decimal	syntax	Expected: identifier
+dim_mod	Name As Decimal	syntax	Expected: New or type name
+dim_mod	Date As Decimal	syntax	Expected: identifier
+dim_mod	Me As Decimal	syntax	Expected: identifier
+dim_mod	a As Class1	semantic	User-defined type not defined
+dim_mod	a$ As Class1	syntax	Expected: end of statement
+dim_mod	[a b] As Class1	syntax	Expected: identifier
+dim_mod	Name As Class1	semantic	User-defined type not defined
+dim_mod	Date As Class1	syntax	Expected: identifier
+dim_mod	Me As Class1	syntax	Expected: identifier
+dim_mod	a As Class1.Sub1	semantic	User-defined type not defined
+dim_mod	a$ As Class1.Sub1	syntax	Expected: end of statement
+dim_mod	[a b] As Class1.Sub1	syntax	Expected: identifier
+dim_mod	Name As Class1.Sub1	semantic	User-defined type not defined
+dim_mod	Date As Class1.Sub1	syntax	Expected: identifier
+dim_mod	Me As Class1.Sub1	syntax	Expected: identifier
+dim_mod	a As VB.Form	accepted	
+dim_mod	a$ As VB.Form	syntax	Expected: end of statement
+dim_mod	[a b] As VB.Form	syntax	Expected: identifier
+dim_mod	Name As VB.Form	accepted	
+dim_mod	Date As VB.Form	syntax	Expected: identifier
+dim_mod	Me As VB.Form	syntax	Expected: identifier
+dim_mod	a = 1	syntax	Expected: end of statement
+dim_mod	a$ = 1	syntax	Expected: end of statement
+dim_mod	[a b] = 1	syntax	Expected: identifier
+dim_mod	Name = 1	syntax	Expected: end of statement
+dim_mod	Date = 1	syntax	Expected: identifier
+dim_mod	Me = 1	syntax	Expected: identifier
+dim_mod	a As Long = 1	syntax	Expected: end of statement
+dim_mod	a$ As Long = 1	syntax	Expected: end of statement
+dim_mod	[a b] As Long = 1	syntax	Expected: identifier
+dim_mod	Name As Long = 1	syntax	Expected: end of statement
+dim_mod	Date As Long = 1	syntax	Expected: identifier
+dim_mod	Me As Long = 1	syntax	Expected: identifier
+dim_mod	a(3) = 1	syntax	Expected: end of statement
+dim_mod	a$(3) = 1	syntax	Expected: end of statement
+dim_mod	[a b](3) = 1	syntax	Expected: identifier
+dim_mod	Name(3) = 1	syntax	Expected: end of statement
+dim_mod	Date(3) = 1	syntax	Expected: identifier
+dim_mod	Me(3) = 1	syntax	Expected: identifier
+dim_mod	a, b	accepted	
+dim_mod	a$, b	accepted	
+dim_mod	[a b], b	syntax	Expected: identifier
+dim_mod	Name, b	accepted	
+dim_mod	Date, b	syntax	Expected: identifier
+dim_mod	Me, b	syntax	Expected: identifier
+dim_mod	a, b As Long	accepted	
+dim_mod	a$, b As Long	accepted	
+dim_mod	[a b], b As Long	syntax	Expected: identifier
+dim_mod	Name, b As Long	accepted	
+dim_mod	Date, b As Long	syntax	Expected: identifier
+dim_mod	Me, b As Long	syntax	Expected: identifier
+dim_mod	a As Long, b	accepted	
+dim_mod	a$ As Long, b	syntax	Expected: end of statement
+dim_mod	[a b] As Long, b	syntax	Expected: identifier
+dim_mod	Name As Long, b	accepted	
+dim_mod	Date As Long, b	syntax	Expected: identifier
+dim_mod	Me As Long, b	syntax	Expected: identifier
+dim_mod	a As Long,	syntax	Expected: variable
+dim_mod	a$ As Long,	syntax	Expected: end of statement
+dim_mod	[a b] As Long,	syntax	Expected: identifier
+dim_mod	Name As Long,	syntax	Expected: variable
+dim_mod	Date As Long,	syntax	Expected: identifier
+dim_mod	Me As Long,	syntax	Expected: identifier
+dim_mod	a As Long b	syntax	Expected: end of statement
+dim_mod	a$ As Long b	syntax	Expected: end of statement
+dim_mod	[a b] As Long b	syntax	Expected: identifier
+dim_mod	Name As Long b	syntax	Expected: end of statement
+dim_mod	Date As Long b	syntax	Expected: identifier
+dim_mod	Me As Long b	syntax	Expected: identifier
+dim_mod	WithEvents a As Class1	syntax	Only valid in object module
+dim_mod	WithEvents a	syntax	Only valid in object module
+dim_mod	a WithEvents As Class1	syntax	Expected: end of statement
+dim_mod	a$ WithEvents As Class1	syntax	Expected: end of statement
+dim_mod	[a b] WithEvents As Class1	syntax	Expected: identifier
+dim_mod	Name WithEvents As Class1	syntax	Expected: end of statement
+dim_mod	Date WithEvents As Class1	syntax	Expected: identifier
+dim_mod	Me WithEvents As Class1	syntax	Expected: identifier
+dim_mod	a As Integer(3)	syntax	Expected: end of statement
+dim_mod	a$ As Integer(3)	syntax	Expected: end of statement
+dim_mod	[a b] As Integer(3)	syntax	Expected: identifier
+dim_mod	Name As Integer(3)	syntax	Expected: end of statement
+dim_mod	Date As Integer(3)	syntax	Expected: identifier
+dim_mod	Me As Integer(3)	syntax	Expected: identifier
+dim_mod	a As Long()	syntax	Expected: end of statement
+dim_mod	a$ As Long()	syntax	Expected: end of statement
+dim_mod	[a b] As Long()	syntax	Expected: identifier
+dim_mod	Name As Long()	syntax	Expected: end of statement
+dim_mod	Date As Long()	syntax	Expected: identifier
+dim_mod	Me As Long()	syntax	Expected: identifier
+dim_mod	a() As Long()	syntax	Expected: end of statement
+dim_mod	a$() As Long()	syntax	Expected: end of statement
+dim_mod	[a b]() As Long()	syntax	Expected: identifier
+dim_mod	Name() As Long()	syntax	Expected: end of statement
+dim_mod	Date() As Long()	syntax	Expected: identifier
+dim_mod	Me() As Long()	syntax	Expected: identifier
+dim_cls	a	accepted	
+dim_cls	a$	accepted	
+dim_cls	[a b]	syntax	Expected: identifier
+dim_cls	Name	accepted	
+dim_cls	Date	syntax	Expected: identifier
+dim_cls	Me	syntax	Expected: identifier
+dim_cls	a As Long	accepted	
+dim_cls	a$ As Long	syntax	Expected: end of statement
+dim_cls	[a b] As Long	syntax	Expected: identifier
+dim_cls	Name As Long	accepted	
+dim_cls	Date As Long	syntax	Expected: identifier
+dim_cls	Me As Long	syntax	Expected: identifier
+dim_cls	a() As Long	accepted	
+dim_cls	a$() As Long	syntax	Expected: end of statement
+dim_cls	[a b]() As Long	syntax	Expected: identifier
+dim_cls	Name() As Long	accepted	
+dim_cls	Date() As Long	syntax	Expected: identifier
+dim_cls	Me() As Long	syntax	Expected: identifier
+dim_cls	a(3) As Long	accepted	
+dim_cls	a$(3) As Long	syntax	Expected: end of statement
+dim_cls	[a b](3) As Long	syntax	Expected: identifier
+dim_cls	Name(3) As Long	accepted	
+dim_cls	Date(3) As Long	syntax	Expected: identifier
+dim_cls	Me(3) As Long	syntax	Expected: identifier
+dim_cls	a(1 To 3) As Long	accepted	
+dim_cls	a$(1 To 3) As Long	syntax	Expected: end of statement
+dim_cls	[a b](1 To 3) As Long	syntax	Expected: identifier
+dim_cls	Name(1 To 3) As Long	accepted	
+dim_cls	Date(1 To 3) As Long	syntax	Expected: identifier
+dim_cls	Me(1 To 3) As Long	syntax	Expected: identifier
+dim_cls	a(3, 4) As Long	accepted	
+dim_cls	a$(3, 4) As Long	syntax	Expected: end of statement
+dim_cls	[a b](3, 4) As Long	syntax	Expected: identifier
+dim_cls	Name(3, 4) As Long	accepted	
+dim_cls	Date(3, 4) As Long	syntax	Expected: identifier
+dim_cls	Me(3, 4) As Long	syntax	Expected: identifier
+dim_cls	a(1 To 3, 2 To 5)	accepted	
+dim_cls	a$(1 To 3, 2 To 5)	accepted	
+dim_cls	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+dim_cls	Name(1 To 3, 2 To 5)	accepted	
+dim_cls	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+dim_cls	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+dim_cls	a()	accepted	
+dim_cls	a$()	accepted	
+dim_cls	[a b]()	syntax	Expected: identifier
+dim_cls	Name()	accepted	
+dim_cls	Date()	syntax	Expected: identifier
+dim_cls	Me()	syntax	Expected: identifier
+dim_cls	a(,) As Long	syntax	Expected: expression
+dim_cls	a$(,) As Long	syntax	Expected: expression
+dim_cls	[a b](,) As Long	syntax	Expected: identifier
+dim_cls	Name(,) As Long	syntax	Expected: expression
+dim_cls	Date(,) As Long	syntax	Expected: identifier
+dim_cls	Me(,) As Long	syntax	Expected: identifier
+dim_cls	a(1 To) As Long	syntax	Expected: expression
+dim_cls	a$(1 To) As Long	syntax	Expected: expression
+dim_cls	[a b](1 To) As Long	syntax	Expected: identifier
+dim_cls	Name(1 To) As Long	syntax	Expected: expression
+dim_cls	Date(1 To) As Long	syntax	Expected: identifier
+dim_cls	Me(1 To) As Long	syntax	Expected: identifier
+dim_cls	a(To 3) As Long	syntax	Expected: expression
+dim_cls	a$(To 3) As Long	syntax	Expected: expression
+dim_cls	[a b](To 3) As Long	syntax	Expected: identifier
+dim_cls	Name(To 3) As Long	syntax	Expected: expression
+dim_cls	Date(To 3) As Long	syntax	Expected: identifier
+dim_cls	Me(To 3) As Long	syntax	Expected: identifier
+dim_cls	a(3	syntax	Expected: list separator or )
+dim_cls	a$(3	syntax	Expected: list separator or )
+dim_cls	[a b](3	syntax	Expected: identifier
+dim_cls	Name(3	syntax	Expected: list separator or )
+dim_cls	Date(3	syntax	Expected: identifier
+dim_cls	Me(3	syntax	Expected: identifier
+dim_cls	a3 As Long	accepted	
+dim_cls	a$3 As Long	syntax	Expected: end of statement
+dim_cls	[a b]3 As Long	syntax	Expected: identifier
+dim_cls	Name3 As Long	accepted	
+dim_cls	Date3 As Long	accepted	
+dim_cls	Me3 As Long	accepted	
+dim_cls	a As	syntax	Expected: New or type name
+dim_cls	a$ As	syntax	Expected: end of statement
+dim_cls	[a b] As	syntax	Expected: identifier
+dim_cls	Name As	syntax	Expected: New or type name
+dim_cls	Date As	syntax	Expected: identifier
+dim_cls	Me As	syntax	Expected: identifier
+dim_cls	a As New Collection	accepted	
+dim_cls	a$ As New Collection	syntax	Expected: end of statement
+dim_cls	[a b] As New Collection	syntax	Expected: identifier
+dim_cls	Name As New Collection	accepted	
+dim_cls	Date As New Collection	syntax	Expected: identifier
+dim_cls	Me As New Collection	syntax	Expected: identifier
+dim_cls	a As New Long	syntax	Expected: identifier
+dim_cls	a$ As New Long	syntax	Expected: end of statement
+dim_cls	[a b] As New Long	syntax	Expected: identifier
+dim_cls	Name As New Long	syntax	Expected: identifier
+dim_cls	Date As New Long	syntax	Expected: identifier
+dim_cls	Me As New Long	syntax	Expected: identifier
+dim_cls	a As New Object	syntax	Expected: identifier
+dim_cls	a$ As New Object	syntax	Expected: end of statement
+dim_cls	[a b] As New Object	syntax	Expected: identifier
+dim_cls	Name As New Object	syntax	Expected: identifier
+dim_cls	Date As New Object	syntax	Expected: identifier
+dim_cls	Me As New Object	syntax	Expected: identifier
+dim_cls	a As String * 3	accepted	
+dim_cls	a$ As String * 3	syntax	Expected: end of statement
+dim_cls	[a b] As String * 3	syntax	Expected: identifier
+dim_cls	Name As String * 3	accepted	
+dim_cls	Date As String * 3	syntax	Expected: identifier
+dim_cls	Me As String * 3	syntax	Expected: identifier
+dim_cls	a As String * 0	syntax	Invalid length for fixed-length string
+dim_cls	a$ As String * 0	syntax	Expected: end of statement
+dim_cls	[a b] As String * 0	syntax	Expected: identifier
+dim_cls	Name As String * 0	syntax	Invalid length for fixed-length string
+dim_cls	Date As String * 0	syntax	Expected: identifier
+dim_cls	Me As String * 0	syntax	Expected: identifier
+dim_cls	a As String * 65535	syntax	Invalid length for fixed-length string
+dim_cls	a$ As String * 65535	syntax	Expected: end of statement
+dim_cls	[a b] As String * 65535	syntax	Expected: identifier
+dim_cls	Name As String * 65535	syntax	Invalid length for fixed-length string
+dim_cls	Date As String * 65535	syntax	Expected: identifier
+dim_cls	Me As String * 65535	syntax	Expected: identifier
+dim_cls	a As String * 65526	accepted	
+dim_cls	a$ As String * 65526	syntax	Expected: end of statement
+dim_cls	[a b] As String * 65526	syntax	Expected: identifier
+dim_cls	Name As String * 65526	accepted	
+dim_cls	Date As String * 65526	syntax	Expected: identifier
+dim_cls	Me As String * 65526	syntax	Expected: identifier
+dim_cls	a As String * n	semantic	Constant expression required
+dim_cls	a$ As String * n	syntax	Expected: end of statement
+dim_cls	[a b] As String * n	syntax	Expected: identifier
+dim_cls	Name As String * n	semantic	Constant expression required
+dim_cls	Date As String * n	syntax	Expected: identifier
+dim_cls	Me As String * n	syntax	Expected: identifier
+dim_cls	a As Object	accepted	
+dim_cls	a$ As Object	syntax	Expected: end of statement
+dim_cls	[a b] As Object	syntax	Expected: identifier
+dim_cls	Name As Object	accepted	
+dim_cls	Date As Object	syntax	Expected: identifier
+dim_cls	Me As Object	syntax	Expected: identifier
+dim_cls	a As Variant	accepted	
+dim_cls	a$ As Variant	syntax	Expected: end of statement
+dim_cls	[a b] As Variant	syntax	Expected: identifier
+dim_cls	Name As Variant	accepted	
+dim_cls	Date As Variant	syntax	Expected: identifier
+dim_cls	Me As Variant	syntax	Expected: identifier
+dim_cls	a As Any	syntax	Expected: New or type name
+dim_cls	a$ As Any	syntax	Expected: end of statement
+dim_cls	[a b] As Any	syntax	Expected: identifier
+dim_cls	Name As Any	syntax	Expected: New or type name
+dim_cls	Date As Any	syntax	Expected: identifier
+dim_cls	Me As Any	syntax	Expected: identifier
+dim_cls	a As Decimal	syntax	Expected: New or type name
+dim_cls	a$ As Decimal	syntax	Expected: end of statement
+dim_cls	[a b] As Decimal	syntax	Expected: identifier
+dim_cls	Name As Decimal	syntax	Expected: New or type name
+dim_cls	Date As Decimal	syntax	Expected: identifier
+dim_cls	Me As Decimal	syntax	Expected: identifier
+dim_cls	a As Class1	accepted	
+dim_cls	a$ As Class1	syntax	Expected: end of statement
+dim_cls	[a b] As Class1	syntax	Expected: identifier
+dim_cls	Name As Class1	accepted	
+dim_cls	Date As Class1	syntax	Expected: identifier
+dim_cls	Me As Class1	syntax	Expected: identifier
+dim_cls	a As Class1.Sub1	semantic	User-defined type not defined
+dim_cls	a$ As Class1.Sub1	syntax	Expected: end of statement
+dim_cls	[a b] As Class1.Sub1	syntax	Expected: identifier
+dim_cls	Name As Class1.Sub1	semantic	User-defined type not defined
+dim_cls	Date As Class1.Sub1	syntax	Expected: identifier
+dim_cls	Me As Class1.Sub1	syntax	Expected: identifier
+dim_cls	a As VB.Form	accepted	
+dim_cls	a$ As VB.Form	syntax	Expected: end of statement
+dim_cls	[a b] As VB.Form	syntax	Expected: identifier
+dim_cls	Name As VB.Form	accepted	
+dim_cls	Date As VB.Form	syntax	Expected: identifier
+dim_cls	Me As VB.Form	syntax	Expected: identifier
+dim_cls	a = 1	syntax	Expected: end of statement
+dim_cls	a$ = 1	syntax	Expected: end of statement
+dim_cls	[a b] = 1	syntax	Expected: identifier
+dim_cls	Name = 1	syntax	Expected: end of statement
+dim_cls	Date = 1	syntax	Expected: identifier
+dim_cls	Me = 1	syntax	Expected: identifier
+dim_cls	a As Long = 1	syntax	Expected: end of statement
+dim_cls	a$ As Long = 1	syntax	Expected: end of statement
+dim_cls	[a b] As Long = 1	syntax	Expected: identifier
+dim_cls	Name As Long = 1	syntax	Expected: end of statement
+dim_cls	Date As Long = 1	syntax	Expected: identifier
+dim_cls	Me As Long = 1	syntax	Expected: identifier
+dim_cls	a(3) = 1	syntax	Expected: end of statement
+dim_cls	a$(3) = 1	syntax	Expected: end of statement
+dim_cls	[a b](3) = 1	syntax	Expected: identifier
+dim_cls	Name(3) = 1	syntax	Expected: end of statement
+dim_cls	Date(3) = 1	syntax	Expected: identifier
+dim_cls	Me(3) = 1	syntax	Expected: identifier
+dim_cls	a, b	accepted	
+dim_cls	a$, b	accepted	
+dim_cls	[a b], b	syntax	Expected: identifier
+dim_cls	Name, b	accepted	
+dim_cls	Date, b	syntax	Expected: identifier
+dim_cls	Me, b	syntax	Expected: identifier
+dim_cls	a, b As Long	accepted	
+dim_cls	a$, b As Long	accepted	
+dim_cls	[a b], b As Long	syntax	Expected: identifier
+dim_cls	Name, b As Long	accepted	
+dim_cls	Date, b As Long	syntax	Expected: identifier
+dim_cls	Me, b As Long	syntax	Expected: identifier
+dim_cls	a As Long, b	accepted	
+dim_cls	a$ As Long, b	syntax	Expected: end of statement
+dim_cls	[a b] As Long, b	syntax	Expected: identifier
+dim_cls	Name As Long, b	accepted	
+dim_cls	Date As Long, b	syntax	Expected: identifier
+dim_cls	Me As Long, b	syntax	Expected: identifier
+dim_cls	a As Long,	syntax	Expected: variable
+dim_cls	a$ As Long,	syntax	Expected: end of statement
+dim_cls	[a b] As Long,	syntax	Expected: identifier
+dim_cls	Name As Long,	syntax	Expected: variable
+dim_cls	Date As Long,	syntax	Expected: identifier
+dim_cls	Me As Long,	syntax	Expected: identifier
+dim_cls	a As Long b	syntax	Expected: end of statement
+dim_cls	a$ As Long b	syntax	Expected: end of statement
+dim_cls	[a b] As Long b	syntax	Expected: identifier
+dim_cls	Name As Long b	syntax	Expected: end of statement
+dim_cls	Date As Long b	syntax	Expected: identifier
+dim_cls	Me As Long b	syntax	Expected: identifier
+dim_cls	WithEvents a As Class1	semantic	Object does not source automation events
+dim_cls	WithEvents a	syntax	Expected: As
+dim_cls	a WithEvents As Class1	syntax	Expected: end of statement
+dim_cls	a$ WithEvents As Class1	syntax	Expected: end of statement
+dim_cls	[a b] WithEvents As Class1	syntax	Expected: identifier
+dim_cls	Name WithEvents As Class1	syntax	Expected: end of statement
+dim_cls	Date WithEvents As Class1	syntax	Expected: identifier
+dim_cls	Me WithEvents As Class1	syntax	Expected: identifier
+dim_cls	a As Integer(3)	syntax	Expected: end of statement
+dim_cls	a$ As Integer(3)	syntax	Expected: end of statement
+dim_cls	[a b] As Integer(3)	syntax	Expected: identifier
+dim_cls	Name As Integer(3)	syntax	Expected: end of statement
+dim_cls	Date As Integer(3)	syntax	Expected: identifier
+dim_cls	Me As Integer(3)	syntax	Expected: identifier
+dim_cls	a As Long()	syntax	Expected: end of statement
+dim_cls	a$ As Long()	syntax	Expected: end of statement
+dim_cls	[a b] As Long()	syntax	Expected: identifier
+dim_cls	Name As Long()	syntax	Expected: end of statement
+dim_cls	Date As Long()	syntax	Expected: identifier
+dim_cls	Me As Long()	syntax	Expected: identifier
+dim_cls	a() As Long()	syntax	Expected: end of statement
+dim_cls	a$() As Long()	syntax	Expected: end of statement
+dim_cls	[a b]() As Long()	syntax	Expected: identifier
+dim_cls	Name() As Long()	syntax	Expected: end of statement
+dim_cls	Date() As Long()	syntax	Expected: identifier
+dim_cls	Me() As Long()	syntax	Expected: identifier
+static_mod	a	syntax	Invalid outside procedure
+static_mod	a$	syntax	Invalid outside procedure
+static_mod	[a b]	syntax	Expected: identifier
+static_mod	Name	syntax	Invalid outside procedure
+static_mod	Date	syntax	Expected: identifier
+static_mod	Me	syntax	Expected: identifier
+static_mod	a As Long	syntax	Invalid outside procedure
+static_mod	a$ As Long	syntax	Expected: end of statement
+static_mod	[a b] As Long	syntax	Expected: identifier
+static_mod	Name As Long	syntax	Invalid outside procedure
+static_mod	Date As Long	syntax	Expected: identifier
+static_mod	Me As Long	syntax	Expected: identifier
+static_mod	a() As Long	syntax	Invalid outside procedure
+static_mod	a$() As Long	syntax	Expected: end of statement
+static_mod	[a b]() As Long	syntax	Expected: identifier
+static_mod	Name() As Long	syntax	Invalid outside procedure
+static_mod	Date() As Long	syntax	Expected: identifier
+static_mod	Me() As Long	syntax	Expected: identifier
+static_mod	a(3) As Long	syntax	Invalid outside procedure
+static_mod	a$(3) As Long	syntax	Expected: end of statement
+static_mod	[a b](3) As Long	syntax	Expected: identifier
+static_mod	Name(3) As Long	syntax	Invalid outside procedure
+static_mod	Date(3) As Long	syntax	Expected: identifier
+static_mod	Me(3) As Long	syntax	Expected: identifier
+static_mod	a(1 To 3) As Long	syntax	Invalid outside procedure
+static_mod	a$(1 To 3) As Long	syntax	Expected: end of statement
+static_mod	[a b](1 To 3) As Long	syntax	Expected: identifier
+static_mod	Name(1 To 3) As Long	syntax	Invalid outside procedure
+static_mod	Date(1 To 3) As Long	syntax	Expected: identifier
+static_mod	Me(1 To 3) As Long	syntax	Expected: identifier
+static_mod	a(3, 4) As Long	syntax	Invalid outside procedure
+static_mod	a$(3, 4) As Long	syntax	Expected: end of statement
+static_mod	[a b](3, 4) As Long	syntax	Expected: identifier
+static_mod	Name(3, 4) As Long	syntax	Invalid outside procedure
+static_mod	Date(3, 4) As Long	syntax	Expected: identifier
+static_mod	Me(3, 4) As Long	syntax	Expected: identifier
+static_mod	a(1 To 3, 2 To 5)	syntax	Invalid outside procedure
+static_mod	a$(1 To 3, 2 To 5)	syntax	Invalid outside procedure
+static_mod	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+static_mod	Name(1 To 3, 2 To 5)	syntax	Invalid outside procedure
+static_mod	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+static_mod	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+static_mod	a()	syntax	Invalid outside procedure
+static_mod	a$()	syntax	Invalid outside procedure
+static_mod	[a b]()	syntax	Expected: identifier
+static_mod	Name()	syntax	Invalid outside procedure
+static_mod	Date()	syntax	Expected: identifier
+static_mod	Me()	syntax	Expected: identifier
+static_mod	a(,) As Long	syntax	Expected: expression
+static_mod	a$(,) As Long	syntax	Expected: expression
+static_mod	[a b](,) As Long	syntax	Expected: identifier
+static_mod	Name(,) As Long	syntax	Expected: expression
+static_mod	Date(,) As Long	syntax	Expected: identifier
+static_mod	Me(,) As Long	syntax	Expected: identifier
+static_mod	a(1 To) As Long	syntax	Expected: expression
+static_mod	a$(1 To) As Long	syntax	Expected: expression
+static_mod	[a b](1 To) As Long	syntax	Expected: identifier
+static_mod	Name(1 To) As Long	syntax	Expected: expression
+static_mod	Date(1 To) As Long	syntax	Expected: identifier
+static_mod	Me(1 To) As Long	syntax	Expected: identifier
+static_mod	a(To 3) As Long	syntax	Expected: expression
+static_mod	a$(To 3) As Long	syntax	Expected: expression
+static_mod	[a b](To 3) As Long	syntax	Expected: identifier
+static_mod	Name(To 3) As Long	syntax	Expected: expression
+static_mod	Date(To 3) As Long	syntax	Expected: identifier
+static_mod	Me(To 3) As Long	syntax	Expected: identifier
+static_mod	a(3	syntax	Expected: list separator or )
+static_mod	a$(3	syntax	Expected: list separator or )
+static_mod	[a b](3	syntax	Expected: identifier
+static_mod	Name(3	syntax	Expected: list separator or )
+static_mod	Date(3	syntax	Expected: identifier
+static_mod	Me(3	syntax	Expected: identifier
+static_mod	a3 As Long	syntax	Invalid outside procedure
+static_mod	a$3 As Long	syntax	Expected: end of statement
+static_mod	[a b]3 As Long	syntax	Expected: identifier
+static_mod	Name3 As Long	syntax	Invalid outside procedure
+static_mod	Date3 As Long	syntax	Invalid outside procedure
+static_mod	Me3 As Long	syntax	Invalid outside procedure
+static_mod	a As	syntax	Expected: New or type name
+static_mod	a$ As	syntax	Expected: end of statement
+static_mod	[a b] As	syntax	Expected: identifier
+static_mod	Name As	syntax	Expected: New or type name
+static_mod	Date As	syntax	Expected: identifier
+static_mod	Me As	syntax	Expected: identifier
+static_mod	a As New Collection	syntax	Invalid outside procedure
+static_mod	a$ As New Collection	syntax	Expected: end of statement
+static_mod	[a b] As New Collection	syntax	Expected: identifier
+static_mod	Name As New Collection	syntax	Invalid outside procedure
+static_mod	Date As New Collection	syntax	Expected: identifier
+static_mod	Me As New Collection	syntax	Expected: identifier
+static_mod	a As New Long	syntax	Expected: identifier
+static_mod	a$ As New Long	syntax	Expected: end of statement
+static_mod	[a b] As New Long	syntax	Expected: identifier
+static_mod	Name As New Long	syntax	Expected: identifier
+static_mod	Date As New Long	syntax	Expected: identifier
+static_mod	Me As New Long	syntax	Expected: identifier
+static_mod	a As New Object	syntax	Expected: identifier
+static_mod	a$ As New Object	syntax	Expected: end of statement
+static_mod	[a b] As New Object	syntax	Expected: identifier
+static_mod	Name As New Object	syntax	Expected: identifier
+static_mod	Date As New Object	syntax	Expected: identifier
+static_mod	Me As New Object	syntax	Expected: identifier
+static_mod	a As String * 3	syntax	Invalid outside procedure
+static_mod	a$ As String * 3	syntax	Expected: end of statement
+static_mod	[a b] As String * 3	syntax	Expected: identifier
+static_mod	Name As String * 3	syntax	Invalid outside procedure
+static_mod	Date As String * 3	syntax	Expected: identifier
+static_mod	Me As String * 3	syntax	Expected: identifier
+static_mod	a As String * 0	syntax	Invalid outside procedure
+static_mod	a$ As String * 0	syntax	Expected: end of statement
+static_mod	[a b] As String * 0	syntax	Expected: identifier
+static_mod	Name As String * 0	syntax	Invalid outside procedure
+static_mod	Date As String * 0	syntax	Expected: identifier
+static_mod	Me As String * 0	syntax	Expected: identifier
+static_mod	a As String * 65535	syntax	Invalid outside procedure
+static_mod	a$ As String * 65535	syntax	Expected: end of statement
+static_mod	[a b] As String * 65535	syntax	Expected: identifier
+static_mod	Name As String * 65535	syntax	Invalid outside procedure
+static_mod	Date As String * 65535	syntax	Expected: identifier
+static_mod	Me As String * 65535	syntax	Expected: identifier
+static_mod	a As String * 65526	syntax	Invalid outside procedure
+static_mod	a$ As String * 65526	syntax	Expected: end of statement
+static_mod	[a b] As String * 65526	syntax	Expected: identifier
+static_mod	Name As String * 65526	syntax	Invalid outside procedure
+static_mod	Date As String * 65526	syntax	Expected: identifier
+static_mod	Me As String * 65526	syntax	Expected: identifier
+static_mod	a As String * n	syntax	Invalid outside procedure
+static_mod	a$ As String * n	syntax	Expected: end of statement
+static_mod	[a b] As String * n	syntax	Expected: identifier
+static_mod	Name As String * n	syntax	Invalid outside procedure
+static_mod	Date As String * n	syntax	Expected: identifier
+static_mod	Me As String * n	syntax	Expected: identifier
+static_mod	a As Object	syntax	Invalid outside procedure
+static_mod	a$ As Object	syntax	Expected: end of statement
+static_mod	[a b] As Object	syntax	Expected: identifier
+static_mod	Name As Object	syntax	Invalid outside procedure
+static_mod	Date As Object	syntax	Expected: identifier
+static_mod	Me As Object	syntax	Expected: identifier
+static_mod	a As Variant	syntax	Invalid outside procedure
+static_mod	a$ As Variant	syntax	Expected: end of statement
+static_mod	[a b] As Variant	syntax	Expected: identifier
+static_mod	Name As Variant	syntax	Invalid outside procedure
+static_mod	Date As Variant	syntax	Expected: identifier
+static_mod	Me As Variant	syntax	Expected: identifier
+static_mod	a As Any	syntax	Expected: New or type name
+static_mod	a$ As Any	syntax	Expected: end of statement
+static_mod	[a b] As Any	syntax	Expected: identifier
+static_mod	Name As Any	syntax	Expected: New or type name
+static_mod	Date As Any	syntax	Expected: identifier
+static_mod	Me As Any	syntax	Expected: identifier
+static_mod	a As Decimal	syntax	Expected: New or type name
+static_mod	a$ As Decimal	syntax	Expected: end of statement
+static_mod	[a b] As Decimal	syntax	Expected: identifier
+static_mod	Name As Decimal	syntax	Expected: New or type name
+static_mod	Date As Decimal	syntax	Expected: identifier
+static_mod	Me As Decimal	syntax	Expected: identifier
+static_mod	a As Class1	syntax	Invalid outside procedure
+static_mod	a$ As Class1	syntax	Expected: end of statement
+static_mod	[a b] As Class1	syntax	Expected: identifier
+static_mod	Name As Class1	syntax	Invalid outside procedure
+static_mod	Date As Class1	syntax	Expected: identifier
+static_mod	Me As Class1	syntax	Expected: identifier
+static_mod	a As Class1.Sub1	syntax	Invalid outside procedure
+static_mod	a$ As Class1.Sub1	syntax	Expected: end of statement
+static_mod	[a b] As Class1.Sub1	syntax	Expected: identifier
+static_mod	Name As Class1.Sub1	syntax	Invalid outside procedure
+static_mod	Date As Class1.Sub1	syntax	Expected: identifier
+static_mod	Me As Class1.Sub1	syntax	Expected: identifier
+static_mod	a As VB.Form	syntax	Invalid outside procedure
+static_mod	a$ As VB.Form	syntax	Expected: end of statement
+static_mod	[a b] As VB.Form	syntax	Expected: identifier
+static_mod	Name As VB.Form	syntax	Invalid outside procedure
+static_mod	Date As VB.Form	syntax	Expected: identifier
+static_mod	Me As VB.Form	syntax	Expected: identifier
+static_mod	a = 1	syntax	Expected: end of statement
+static_mod	a$ = 1	syntax	Expected: end of statement
+static_mod	[a b] = 1	syntax	Expected: identifier
+static_mod	Name = 1	syntax	Expected: end of statement
+static_mod	Date = 1	syntax	Expected: identifier
+static_mod	Me = 1	syntax	Expected: identifier
+static_mod	a As Long = 1	syntax	Expected: end of statement
+static_mod	a$ As Long = 1	syntax	Expected: end of statement
+static_mod	[a b] As Long = 1	syntax	Expected: identifier
+static_mod	Name As Long = 1	syntax	Expected: end of statement
+static_mod	Date As Long = 1	syntax	Expected: identifier
+static_mod	Me As Long = 1	syntax	Expected: identifier
+static_mod	a(3) = 1	syntax	Expected: end of statement
+static_mod	a$(3) = 1	syntax	Expected: end of statement
+static_mod	[a b](3) = 1	syntax	Expected: identifier
+static_mod	Name(3) = 1	syntax	Expected: end of statement
+static_mod	Date(3) = 1	syntax	Expected: identifier
+static_mod	Me(3) = 1	syntax	Expected: identifier
+static_mod	a, b	syntax	Invalid outside procedure
+static_mod	a$, b	syntax	Invalid outside procedure
+static_mod	[a b], b	syntax	Expected: identifier
+static_mod	Name, b	syntax	Invalid outside procedure
+static_mod	Date, b	syntax	Expected: identifier
+static_mod	Me, b	syntax	Expected: identifier
+static_mod	a, b As Long	syntax	Invalid outside procedure
+static_mod	a$, b As Long	syntax	Invalid outside procedure
+static_mod	[a b], b As Long	syntax	Expected: identifier
+static_mod	Name, b As Long	syntax	Invalid outside procedure
+static_mod	Date, b As Long	syntax	Expected: identifier
+static_mod	Me, b As Long	syntax	Expected: identifier
+static_mod	a As Long, b	syntax	Invalid outside procedure
+static_mod	a$ As Long, b	syntax	Expected: end of statement
+static_mod	[a b] As Long, b	syntax	Expected: identifier
+static_mod	Name As Long, b	syntax	Invalid outside procedure
+static_mod	Date As Long, b	syntax	Expected: identifier
+static_mod	Me As Long, b	syntax	Expected: identifier
+static_mod	a As Long,	syntax	Expected: variable
+static_mod	a$ As Long,	syntax	Expected: end of statement
+static_mod	[a b] As Long,	syntax	Expected: identifier
+static_mod	Name As Long,	syntax	Expected: variable
+static_mod	Date As Long,	syntax	Expected: identifier
+static_mod	Me As Long,	syntax	Expected: identifier
+static_mod	a As Long b	syntax	Expected: end of statement
+static_mod	a$ As Long b	syntax	Expected: end of statement
+static_mod	[a b] As Long b	syntax	Expected: identifier
+static_mod	Name As Long b	syntax	Expected: end of statement
+static_mod	Date As Long b	syntax	Expected: identifier
+static_mod	Me As Long b	syntax	Expected: identifier
+static_mod	WithEvents a As Class1	syntax	Expected: identifier
+static_mod	WithEvents a	syntax	Expected: identifier
+static_mod	a WithEvents As Class1	syntax	Expected: end of statement
+static_mod	a$ WithEvents As Class1	syntax	Expected: end of statement
+static_mod	[a b] WithEvents As Class1	syntax	Expected: identifier
+static_mod	Name WithEvents As Class1	syntax	Expected: end of statement
+static_mod	Date WithEvents As Class1	syntax	Expected: identifier
+static_mod	Me WithEvents As Class1	syntax	Expected: identifier
+static_mod	a As Integer(3)	syntax	Expected: end of statement
+static_mod	a$ As Integer(3)	syntax	Expected: end of statement
+static_mod	[a b] As Integer(3)	syntax	Expected: identifier
+static_mod	Name As Integer(3)	syntax	Expected: end of statement
+static_mod	Date As Integer(3)	syntax	Expected: identifier
+static_mod	Me As Integer(3)	syntax	Expected: identifier
+static_mod	a As Long()	syntax	Expected: end of statement
+static_mod	a$ As Long()	syntax	Expected: end of statement
+static_mod	[a b] As Long()	syntax	Expected: identifier
+static_mod	Name As Long()	syntax	Expected: end of statement
+static_mod	Date As Long()	syntax	Expected: identifier
+static_mod	Me As Long()	syntax	Expected: identifier
+static_mod	a() As Long()	syntax	Expected: end of statement
+static_mod	a$() As Long()	syntax	Expected: end of statement
+static_mod	[a b]() As Long()	syntax	Expected: identifier
+static_mod	Name() As Long()	syntax	Expected: end of statement
+static_mod	Date() As Long()	syntax	Expected: identifier
+static_mod	Me() As Long()	syntax	Expected: identifier
+static_cls	a	syntax	Invalid outside procedure
+static_cls	a$	syntax	Invalid outside procedure
+static_cls	[a b]	syntax	Expected: identifier
+static_cls	Name	syntax	Invalid outside procedure
+static_cls	Date	syntax	Expected: identifier
+static_cls	Me	syntax	Expected: identifier
+static_cls	a As Long	syntax	Invalid outside procedure
+static_cls	a$ As Long	syntax	Expected: end of statement
+static_cls	[a b] As Long	syntax	Expected: identifier
+static_cls	Name As Long	syntax	Invalid outside procedure
+static_cls	Date As Long	syntax	Expected: identifier
+static_cls	Me As Long	syntax	Expected: identifier
+static_cls	a() As Long	syntax	Invalid outside procedure
+static_cls	a$() As Long	syntax	Expected: end of statement
+static_cls	[a b]() As Long	syntax	Expected: identifier
+static_cls	Name() As Long	syntax	Invalid outside procedure
+static_cls	Date() As Long	syntax	Expected: identifier
+static_cls	Me() As Long	syntax	Expected: identifier
+static_cls	a(3) As Long	syntax	Invalid outside procedure
+static_cls	a$(3) As Long	syntax	Expected: end of statement
+static_cls	[a b](3) As Long	syntax	Expected: identifier
+static_cls	Name(3) As Long	syntax	Invalid outside procedure
+static_cls	Date(3) As Long	syntax	Expected: identifier
+static_cls	Me(3) As Long	syntax	Expected: identifier
+static_cls	a(1 To 3) As Long	syntax	Invalid outside procedure
+static_cls	a$(1 To 3) As Long	syntax	Expected: end of statement
+static_cls	[a b](1 To 3) As Long	syntax	Expected: identifier
+static_cls	Name(1 To 3) As Long	syntax	Invalid outside procedure
+static_cls	Date(1 To 3) As Long	syntax	Expected: identifier
+static_cls	Me(1 To 3) As Long	syntax	Expected: identifier
+static_cls	a(3, 4) As Long	syntax	Invalid outside procedure
+static_cls	a$(3, 4) As Long	syntax	Expected: end of statement
+static_cls	[a b](3, 4) As Long	syntax	Expected: identifier
+static_cls	Name(3, 4) As Long	syntax	Invalid outside procedure
+static_cls	Date(3, 4) As Long	syntax	Expected: identifier
+static_cls	Me(3, 4) As Long	syntax	Expected: identifier
+static_cls	a(1 To 3, 2 To 5)	syntax	Invalid outside procedure
+static_cls	a$(1 To 3, 2 To 5)	syntax	Invalid outside procedure
+static_cls	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+static_cls	Name(1 To 3, 2 To 5)	syntax	Invalid outside procedure
+static_cls	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+static_cls	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+static_cls	a()	syntax	Invalid outside procedure
+static_cls	a$()	syntax	Invalid outside procedure
+static_cls	[a b]()	syntax	Expected: identifier
+static_cls	Name()	syntax	Invalid outside procedure
+static_cls	Date()	syntax	Expected: identifier
+static_cls	Me()	syntax	Expected: identifier
+static_cls	a(,) As Long	syntax	Expected: expression
+static_cls	a$(,) As Long	syntax	Expected: expression
+static_cls	[a b](,) As Long	syntax	Expected: identifier
+static_cls	Name(,) As Long	syntax	Expected: expression
+static_cls	Date(,) As Long	syntax	Expected: identifier
+static_cls	Me(,) As Long	syntax	Expected: identifier
+static_cls	a(1 To) As Long	syntax	Expected: expression
+static_cls	a$(1 To) As Long	syntax	Expected: expression
+static_cls	[a b](1 To) As Long	syntax	Expected: identifier
+static_cls	Name(1 To) As Long	syntax	Expected: expression
+static_cls	Date(1 To) As Long	syntax	Expected: identifier
+static_cls	Me(1 To) As Long	syntax	Expected: identifier
+static_cls	a(To 3) As Long	syntax	Expected: expression
+static_cls	a$(To 3) As Long	syntax	Expected: expression
+static_cls	[a b](To 3) As Long	syntax	Expected: identifier
+static_cls	Name(To 3) As Long	syntax	Expected: expression
+static_cls	Date(To 3) As Long	syntax	Expected: identifier
+static_cls	Me(To 3) As Long	syntax	Expected: identifier
+static_cls	a(3	syntax	Expected: list separator or )
+static_cls	a$(3	syntax	Expected: list separator or )
+static_cls	[a b](3	syntax	Expected: identifier
+static_cls	Name(3	syntax	Expected: list separator or )
+static_cls	Date(3	syntax	Expected: identifier
+static_cls	Me(3	syntax	Expected: identifier
+static_cls	a3 As Long	syntax	Invalid outside procedure
+static_cls	a$3 As Long	syntax	Expected: end of statement
+static_cls	[a b]3 As Long	syntax	Expected: identifier
+static_cls	Name3 As Long	syntax	Invalid outside procedure
+static_cls	Date3 As Long	syntax	Invalid outside procedure
+static_cls	Me3 As Long	syntax	Invalid outside procedure
+static_cls	a As	syntax	Expected: New or type name
+static_cls	a$ As	syntax	Expected: end of statement
+static_cls	[a b] As	syntax	Expected: identifier
+static_cls	Name As	syntax	Expected: New or type name
+static_cls	Date As	syntax	Expected: identifier
+static_cls	Me As	syntax	Expected: identifier
+static_cls	a As New Collection	syntax	Invalid outside procedure
+static_cls	a$ As New Collection	syntax	Expected: end of statement
+static_cls	[a b] As New Collection	syntax	Expected: identifier
+static_cls	Name As New Collection	syntax	Invalid outside procedure
+static_cls	Date As New Collection	syntax	Expected: identifier
+static_cls	Me As New Collection	syntax	Expected: identifier
+static_cls	a As New Long	syntax	Expected: identifier
+static_cls	a$ As New Long	syntax	Expected: end of statement
+static_cls	[a b] As New Long	syntax	Expected: identifier
+static_cls	Name As New Long	syntax	Expected: identifier
+static_cls	Date As New Long	syntax	Expected: identifier
+static_cls	Me As New Long	syntax	Expected: identifier
+static_cls	a As New Object	syntax	Expected: identifier
+static_cls	a$ As New Object	syntax	Expected: end of statement
+static_cls	[a b] As New Object	syntax	Expected: identifier
+static_cls	Name As New Object	syntax	Expected: identifier
+static_cls	Date As New Object	syntax	Expected: identifier
+static_cls	Me As New Object	syntax	Expected: identifier
+static_cls	a As String * 3	syntax	Invalid outside procedure
+static_cls	a$ As String * 3	syntax	Expected: end of statement
+static_cls	[a b] As String * 3	syntax	Expected: identifier
+static_cls	Name As String * 3	syntax	Invalid outside procedure
+static_cls	Date As String * 3	syntax	Expected: identifier
+static_cls	Me As String * 3	syntax	Expected: identifier
+static_cls	a As String * 0	syntax	Invalid outside procedure
+static_cls	a$ As String * 0	syntax	Expected: end of statement
+static_cls	[a b] As String * 0	syntax	Expected: identifier
+static_cls	Name As String * 0	syntax	Invalid outside procedure
+static_cls	Date As String * 0	syntax	Expected: identifier
+static_cls	Me As String * 0	syntax	Expected: identifier
+static_cls	a As String * 65535	syntax	Invalid outside procedure
+static_cls	a$ As String * 65535	syntax	Expected: end of statement
+static_cls	[a b] As String * 65535	syntax	Expected: identifier
+static_cls	Name As String * 65535	syntax	Invalid outside procedure
+static_cls	Date As String * 65535	syntax	Expected: identifier
+static_cls	Me As String * 65535	syntax	Expected: identifier
+static_cls	a As String * 65526	syntax	Invalid outside procedure
+static_cls	a$ As String * 65526	syntax	Expected: end of statement
+static_cls	[a b] As String * 65526	syntax	Expected: identifier
+static_cls	Name As String * 65526	syntax	Invalid outside procedure
+static_cls	Date As String * 65526	syntax	Expected: identifier
+static_cls	Me As String * 65526	syntax	Expected: identifier
+static_cls	a As String * n	syntax	Invalid outside procedure
+static_cls	a$ As String * n	syntax	Expected: end of statement
+static_cls	[a b] As String * n	syntax	Expected: identifier
+static_cls	Name As String * n	syntax	Invalid outside procedure
+static_cls	Date As String * n	syntax	Expected: identifier
+static_cls	Me As String * n	syntax	Expected: identifier
+static_cls	a As Object	syntax	Invalid outside procedure
+static_cls	a$ As Object	syntax	Expected: end of statement
+static_cls	[a b] As Object	syntax	Expected: identifier
+static_cls	Name As Object	syntax	Invalid outside procedure
+static_cls	Date As Object	syntax	Expected: identifier
+static_cls	Me As Object	syntax	Expected: identifier
+static_cls	a As Variant	syntax	Invalid outside procedure
+static_cls	a$ As Variant	syntax	Expected: end of statement
+static_cls	[a b] As Variant	syntax	Expected: identifier
+static_cls	Name As Variant	syntax	Invalid outside procedure
+static_cls	Date As Variant	syntax	Expected: identifier
+static_cls	Me As Variant	syntax	Expected: identifier
+static_cls	a As Any	syntax	Expected: New or type name
+static_cls	a$ As Any	syntax	Expected: end of statement
+static_cls	[a b] As Any	syntax	Expected: identifier
+static_cls	Name As Any	syntax	Expected: New or type name
+static_cls	Date As Any	syntax	Expected: identifier
+static_cls	Me As Any	syntax	Expected: identifier
+static_cls	a As Decimal	syntax	Expected: New or type name
+static_cls	a$ As Decimal	syntax	Expected: end of statement
+static_cls	[a b] As Decimal	syntax	Expected: identifier
+static_cls	Name As Decimal	syntax	Expected: New or type name
+static_cls	Date As Decimal	syntax	Expected: identifier
+static_cls	Me As Decimal	syntax	Expected: identifier
+static_cls	a As Class1	syntax	Invalid outside procedure
+static_cls	a$ As Class1	syntax	Expected: end of statement
+static_cls	[a b] As Class1	syntax	Expected: identifier
+static_cls	Name As Class1	syntax	Invalid outside procedure
+static_cls	Date As Class1	syntax	Expected: identifier
+static_cls	Me As Class1	syntax	Expected: identifier
+static_cls	a As Class1.Sub1	syntax	Invalid outside procedure
+static_cls	a$ As Class1.Sub1	syntax	Expected: end of statement
+static_cls	[a b] As Class1.Sub1	syntax	Expected: identifier
+static_cls	Name As Class1.Sub1	syntax	Invalid outside procedure
+static_cls	Date As Class1.Sub1	syntax	Expected: identifier
+static_cls	Me As Class1.Sub1	syntax	Expected: identifier
+static_cls	a As VB.Form	syntax	Invalid outside procedure
+static_cls	a$ As VB.Form	syntax	Expected: end of statement
+static_cls	[a b] As VB.Form	syntax	Expected: identifier
+static_cls	Name As VB.Form	syntax	Invalid outside procedure
+static_cls	Date As VB.Form	syntax	Expected: identifier
+static_cls	Me As VB.Form	syntax	Expected: identifier
+static_cls	a = 1	syntax	Expected: end of statement
+static_cls	a$ = 1	syntax	Expected: end of statement
+static_cls	[a b] = 1	syntax	Expected: identifier
+static_cls	Name = 1	syntax	Expected: end of statement
+static_cls	Date = 1	syntax	Expected: identifier
+static_cls	Me = 1	syntax	Expected: identifier
+static_cls	a As Long = 1	syntax	Expected: end of statement
+static_cls	a$ As Long = 1	syntax	Expected: end of statement
+static_cls	[a b] As Long = 1	syntax	Expected: identifier
+static_cls	Name As Long = 1	syntax	Expected: end of statement
+static_cls	Date As Long = 1	syntax	Expected: identifier
+static_cls	Me As Long = 1	syntax	Expected: identifier
+static_cls	a(3) = 1	syntax	Expected: end of statement
+static_cls	a$(3) = 1	syntax	Expected: end of statement
+static_cls	[a b](3) = 1	syntax	Expected: identifier
+static_cls	Name(3) = 1	syntax	Expected: end of statement
+static_cls	Date(3) = 1	syntax	Expected: identifier
+static_cls	Me(3) = 1	syntax	Expected: identifier
+static_cls	a, b	syntax	Invalid outside procedure
+static_cls	a$, b	syntax	Invalid outside procedure
+static_cls	[a b], b	syntax	Expected: identifier
+static_cls	Name, b	syntax	Invalid outside procedure
+static_cls	Date, b	syntax	Expected: identifier
+static_cls	Me, b	syntax	Expected: identifier
+static_cls	a, b As Long	syntax	Invalid outside procedure
+static_cls	a$, b As Long	syntax	Invalid outside procedure
+static_cls	[a b], b As Long	syntax	Expected: identifier
+static_cls	Name, b As Long	syntax	Invalid outside procedure
+static_cls	Date, b As Long	syntax	Expected: identifier
+static_cls	Me, b As Long	syntax	Expected: identifier
+static_cls	a As Long, b	syntax	Invalid outside procedure
+static_cls	a$ As Long, b	syntax	Expected: end of statement
+static_cls	[a b] As Long, b	syntax	Expected: identifier
+static_cls	Name As Long, b	syntax	Invalid outside procedure
+static_cls	Date As Long, b	syntax	Expected: identifier
+static_cls	Me As Long, b	syntax	Expected: identifier
+static_cls	a As Long,	syntax	Expected: variable
+static_cls	a$ As Long,	syntax	Expected: end of statement
+static_cls	[a b] As Long,	syntax	Expected: identifier
+static_cls	Name As Long,	syntax	Expected: variable
+static_cls	Date As Long,	syntax	Expected: identifier
+static_cls	Me As Long,	syntax	Expected: identifier
+static_cls	a As Long b	syntax	Expected: end of statement
+static_cls	a$ As Long b	syntax	Expected: end of statement
+static_cls	[a b] As Long b	syntax	Expected: identifier
+static_cls	Name As Long b	syntax	Expected: end of statement
+static_cls	Date As Long b	syntax	Expected: identifier
+static_cls	Me As Long b	syntax	Expected: identifier
+static_cls	WithEvents a As Class1	syntax	Expected: identifier
+static_cls	WithEvents a	syntax	Expected: identifier
+static_cls	a WithEvents As Class1	syntax	Expected: end of statement
+static_cls	a$ WithEvents As Class1	syntax	Expected: end of statement
+static_cls	[a b] WithEvents As Class1	syntax	Expected: identifier
+static_cls	Name WithEvents As Class1	syntax	Expected: end of statement
+static_cls	Date WithEvents As Class1	syntax	Expected: identifier
+static_cls	Me WithEvents As Class1	syntax	Expected: identifier
+static_cls	a As Integer(3)	syntax	Expected: end of statement
+static_cls	a$ As Integer(3)	syntax	Expected: end of statement
+static_cls	[a b] As Integer(3)	syntax	Expected: identifier
+static_cls	Name As Integer(3)	syntax	Expected: end of statement
+static_cls	Date As Integer(3)	syntax	Expected: identifier
+static_cls	Me As Integer(3)	syntax	Expected: identifier
+static_cls	a As Long()	syntax	Expected: end of statement
+static_cls	a$ As Long()	syntax	Expected: end of statement
+static_cls	[a b] As Long()	syntax	Expected: identifier
+static_cls	Name As Long()	syntax	Expected: end of statement
+static_cls	Date As Long()	syntax	Expected: identifier
+static_cls	Me As Long()	syntax	Expected: identifier
+static_cls	a() As Long()	syntax	Expected: end of statement
+static_cls	a$() As Long()	syntax	Expected: end of statement
+static_cls	[a b]() As Long()	syntax	Expected: identifier
+static_cls	Name() As Long()	syntax	Expected: end of statement
+static_cls	Date() As Long()	syntax	Expected: identifier
+static_cls	Me() As Long()	syntax	Expected: identifier
+private_mod	a	accepted	
+private_mod	a$	accepted	
+private_mod	[a b]	syntax	Expected: identifier
+private_mod	Name	accepted	
+private_mod	Date	syntax	Expected: identifier
+private_mod	Me	syntax	Expected: identifier
+private_mod	a As Long	accepted	
+private_mod	a$ As Long	syntax	Expected: end of statement
+private_mod	[a b] As Long	syntax	Expected: identifier
+private_mod	Name As Long	accepted	
+private_mod	Date As Long	syntax	Expected: identifier
+private_mod	Me As Long	syntax	Expected: identifier
+private_mod	a() As Long	accepted	
+private_mod	a$() As Long	syntax	Expected: end of statement
+private_mod	[a b]() As Long	syntax	Expected: identifier
+private_mod	Name() As Long	accepted	
+private_mod	Date() As Long	syntax	Expected: identifier
+private_mod	Me() As Long	syntax	Expected: identifier
+private_mod	a(3) As Long	accepted	
+private_mod	a$(3) As Long	syntax	Expected: end of statement
+private_mod	[a b](3) As Long	syntax	Expected: identifier
+private_mod	Name(3) As Long	accepted	
+private_mod	Date(3) As Long	syntax	Expected: identifier
+private_mod	Me(3) As Long	syntax	Expected: identifier
+private_mod	a(1 To 3) As Long	accepted	
+private_mod	a$(1 To 3) As Long	syntax	Expected: end of statement
+private_mod	[a b](1 To 3) As Long	syntax	Expected: identifier
+private_mod	Name(1 To 3) As Long	accepted	
+private_mod	Date(1 To 3) As Long	syntax	Expected: identifier
+private_mod	Me(1 To 3) As Long	syntax	Expected: identifier
+private_mod	a(3, 4) As Long	accepted	
+private_mod	a$(3, 4) As Long	syntax	Expected: end of statement
+private_mod	[a b](3, 4) As Long	syntax	Expected: identifier
+private_mod	Name(3, 4) As Long	accepted	
+private_mod	Date(3, 4) As Long	syntax	Expected: identifier
+private_mod	Me(3, 4) As Long	syntax	Expected: identifier
+private_mod	a(1 To 3, 2 To 5)	accepted	
+private_mod	a$(1 To 3, 2 To 5)	accepted	
+private_mod	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+private_mod	Name(1 To 3, 2 To 5)	accepted	
+private_mod	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+private_mod	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+private_mod	a()	accepted	
+private_mod	a$()	accepted	
+private_mod	[a b]()	syntax	Expected: identifier
+private_mod	Name()	accepted	
+private_mod	Date()	syntax	Expected: identifier
+private_mod	Me()	syntax	Expected: identifier
+private_mod	a(,) As Long	syntax	Expected: expression
+private_mod	a$(,) As Long	syntax	Expected: expression
+private_mod	[a b](,) As Long	syntax	Expected: identifier
+private_mod	Name(,) As Long	syntax	Expected: expression
+private_mod	Date(,) As Long	syntax	Expected: identifier
+private_mod	Me(,) As Long	syntax	Expected: identifier
+private_mod	a(1 To) As Long	syntax	Expected: expression
+private_mod	a$(1 To) As Long	syntax	Expected: expression
+private_mod	[a b](1 To) As Long	syntax	Expected: identifier
+private_mod	Name(1 To) As Long	syntax	Expected: expression
+private_mod	Date(1 To) As Long	syntax	Expected: identifier
+private_mod	Me(1 To) As Long	syntax	Expected: identifier
+private_mod	a(To 3) As Long	syntax	Expected: expression
+private_mod	a$(To 3) As Long	syntax	Expected: expression
+private_mod	[a b](To 3) As Long	syntax	Expected: identifier
+private_mod	Name(To 3) As Long	syntax	Expected: expression
+private_mod	Date(To 3) As Long	syntax	Expected: identifier
+private_mod	Me(To 3) As Long	syntax	Expected: identifier
+private_mod	a(3	syntax	Expected: list separator or )
+private_mod	a$(3	syntax	Expected: list separator or )
+private_mod	[a b](3	syntax	Expected: identifier
+private_mod	Name(3	syntax	Expected: list separator or )
+private_mod	Date(3	syntax	Expected: identifier
+private_mod	Me(3	syntax	Expected: identifier
+private_mod	a3 As Long	accepted	
+private_mod	a$3 As Long	syntax	Expected: end of statement
+private_mod	[a b]3 As Long	syntax	Expected: identifier
+private_mod	Name3 As Long	accepted	
+private_mod	Date3 As Long	accepted	
+private_mod	Me3 As Long	accepted	
+private_mod	a As	syntax	Expected: New or type name
+private_mod	a$ As	syntax	Expected: end of statement
+private_mod	[a b] As	syntax	Expected: identifier
+private_mod	Name As	syntax	Expected: New or type name
+private_mod	Date As	syntax	Expected: identifier
+private_mod	Me As	syntax	Expected: identifier
+private_mod	a As New Collection	accepted	
+private_mod	a$ As New Collection	syntax	Expected: end of statement
+private_mod	[a b] As New Collection	syntax	Expected: identifier
+private_mod	Name As New Collection	accepted	
+private_mod	Date As New Collection	syntax	Expected: identifier
+private_mod	Me As New Collection	syntax	Expected: identifier
+private_mod	a As New Long	syntax	Expected: identifier
+private_mod	a$ As New Long	syntax	Expected: end of statement
+private_mod	[a b] As New Long	syntax	Expected: identifier
+private_mod	Name As New Long	syntax	Expected: identifier
+private_mod	Date As New Long	syntax	Expected: identifier
+private_mod	Me As New Long	syntax	Expected: identifier
+private_mod	a As New Object	syntax	Expected: identifier
+private_mod	a$ As New Object	syntax	Expected: end of statement
+private_mod	[a b] As New Object	syntax	Expected: identifier
+private_mod	Name As New Object	syntax	Expected: identifier
+private_mod	Date As New Object	syntax	Expected: identifier
+private_mod	Me As New Object	syntax	Expected: identifier
+private_mod	a As String * 3	accepted	
+private_mod	a$ As String * 3	syntax	Expected: end of statement
+private_mod	[a b] As String * 3	syntax	Expected: identifier
+private_mod	Name As String * 3	accepted	
+private_mod	Date As String * 3	syntax	Expected: identifier
+private_mod	Me As String * 3	syntax	Expected: identifier
+private_mod	a As String * 0	syntax	Invalid length for fixed-length string
+private_mod	a$ As String * 0	syntax	Expected: end of statement
+private_mod	[a b] As String * 0	syntax	Expected: identifier
+private_mod	Name As String * 0	syntax	Invalid length for fixed-length string
+private_mod	Date As String * 0	syntax	Expected: identifier
+private_mod	Me As String * 0	syntax	Expected: identifier
+private_mod	a As String * 65535	syntax	Invalid length for fixed-length string
+private_mod	a$ As String * 65535	syntax	Expected: end of statement
+private_mod	[a b] As String * 65535	syntax	Expected: identifier
+private_mod	Name As String * 65535	syntax	Invalid length for fixed-length string
+private_mod	Date As String * 65535	syntax	Expected: identifier
+private_mod	Me As String * 65535	syntax	Expected: identifier
+private_mod	a As String * 65526	accepted	
+private_mod	a$ As String * 65526	syntax	Expected: end of statement
+private_mod	[a b] As String * 65526	syntax	Expected: identifier
+private_mod	Name As String * 65526	accepted	
+private_mod	Date As String * 65526	syntax	Expected: identifier
+private_mod	Me As String * 65526	syntax	Expected: identifier
+private_mod	a As String * n	semantic	Constant expression required
+private_mod	a$ As String * n	syntax	Expected: end of statement
+private_mod	[a b] As String * n	syntax	Expected: identifier
+private_mod	Name As String * n	semantic	Constant expression required
+private_mod	Date As String * n	syntax	Expected: identifier
+private_mod	Me As String * n	syntax	Expected: identifier
+private_mod	a As Object	accepted	
+private_mod	a$ As Object	syntax	Expected: end of statement
+private_mod	[a b] As Object	syntax	Expected: identifier
+private_mod	Name As Object	accepted	
+private_mod	Date As Object	syntax	Expected: identifier
+private_mod	Me As Object	syntax	Expected: identifier
+private_mod	a As Variant	accepted	
+private_mod	a$ As Variant	syntax	Expected: end of statement
+private_mod	[a b] As Variant	syntax	Expected: identifier
+private_mod	Name As Variant	accepted	
+private_mod	Date As Variant	syntax	Expected: identifier
+private_mod	Me As Variant	syntax	Expected: identifier
+private_mod	a As Any	syntax	Expected: New or type name
+private_mod	a$ As Any	syntax	Expected: end of statement
+private_mod	[a b] As Any	syntax	Expected: identifier
+private_mod	Name As Any	syntax	Expected: New or type name
+private_mod	Date As Any	syntax	Expected: identifier
+private_mod	Me As Any	syntax	Expected: identifier
+private_mod	a As Decimal	syntax	Expected: New or type name
+private_mod	a$ As Decimal	syntax	Expected: end of statement
+private_mod	[a b] As Decimal	syntax	Expected: identifier
+private_mod	Name As Decimal	syntax	Expected: New or type name
+private_mod	Date As Decimal	syntax	Expected: identifier
+private_mod	Me As Decimal	syntax	Expected: identifier
+private_mod	a As Class1	semantic	User-defined type not defined
+private_mod	a$ As Class1	syntax	Expected: end of statement
+private_mod	[a b] As Class1	syntax	Expected: identifier
+private_mod	Name As Class1	semantic	User-defined type not defined
+private_mod	Date As Class1	syntax	Expected: identifier
+private_mod	Me As Class1	syntax	Expected: identifier
+private_mod	a As Class1.Sub1	semantic	User-defined type not defined
+private_mod	a$ As Class1.Sub1	syntax	Expected: end of statement
+private_mod	[a b] As Class1.Sub1	syntax	Expected: identifier
+private_mod	Name As Class1.Sub1	semantic	User-defined type not defined
+private_mod	Date As Class1.Sub1	syntax	Expected: identifier
+private_mod	Me As Class1.Sub1	syntax	Expected: identifier
+private_mod	a As VB.Form	accepted	
+private_mod	a$ As VB.Form	syntax	Expected: end of statement
+private_mod	[a b] As VB.Form	syntax	Expected: identifier
+private_mod	Name As VB.Form	accepted	
+private_mod	Date As VB.Form	syntax	Expected: identifier
+private_mod	Me As VB.Form	syntax	Expected: identifier
+private_mod	a = 1	syntax	Expected: end of statement
+private_mod	a$ = 1	syntax	Expected: end of statement
+private_mod	[a b] = 1	syntax	Expected: identifier
+private_mod	Name = 1	syntax	Expected: end of statement
+private_mod	Date = 1	syntax	Expected: identifier
+private_mod	Me = 1	syntax	Expected: identifier
+private_mod	a As Long = 1	syntax	Expected: end of statement
+private_mod	a$ As Long = 1	syntax	Expected: end of statement
+private_mod	[a b] As Long = 1	syntax	Expected: identifier
+private_mod	Name As Long = 1	syntax	Expected: end of statement
+private_mod	Date As Long = 1	syntax	Expected: identifier
+private_mod	Me As Long = 1	syntax	Expected: identifier
+private_mod	a(3) = 1	syntax	Expected: end of statement
+private_mod	a$(3) = 1	syntax	Expected: end of statement
+private_mod	[a b](3) = 1	syntax	Expected: identifier
+private_mod	Name(3) = 1	syntax	Expected: end of statement
+private_mod	Date(3) = 1	syntax	Expected: identifier
+private_mod	Me(3) = 1	syntax	Expected: identifier
+private_mod	a, b	accepted	
+private_mod	a$, b	accepted	
+private_mod	[a b], b	syntax	Expected: identifier
+private_mod	Name, b	accepted	
+private_mod	Date, b	syntax	Expected: identifier
+private_mod	Me, b	syntax	Expected: identifier
+private_mod	a, b As Long	accepted	
+private_mod	a$, b As Long	accepted	
+private_mod	[a b], b As Long	syntax	Expected: identifier
+private_mod	Name, b As Long	accepted	
+private_mod	Date, b As Long	syntax	Expected: identifier
+private_mod	Me, b As Long	syntax	Expected: identifier
+private_mod	a As Long, b	accepted	
+private_mod	a$ As Long, b	syntax	Expected: end of statement
+private_mod	[a b] As Long, b	syntax	Expected: identifier
+private_mod	Name As Long, b	accepted	
+private_mod	Date As Long, b	syntax	Expected: identifier
+private_mod	Me As Long, b	syntax	Expected: identifier
+private_mod	a As Long,	syntax	Expected: variable
+private_mod	a$ As Long,	syntax	Expected: end of statement
+private_mod	[a b] As Long,	syntax	Expected: identifier
+private_mod	Name As Long,	syntax	Expected: variable
+private_mod	Date As Long,	syntax	Expected: identifier
+private_mod	Me As Long,	syntax	Expected: identifier
+private_mod	a As Long b	syntax	Expected: end of statement
+private_mod	a$ As Long b	syntax	Expected: end of statement
+private_mod	[a b] As Long b	syntax	Expected: identifier
+private_mod	Name As Long b	syntax	Expected: end of statement
+private_mod	Date As Long b	syntax	Expected: identifier
+private_mod	Me As Long b	syntax	Expected: identifier
+private_mod	WithEvents a As Class1	syntax	Only valid in object module
+private_mod	WithEvents a	syntax	Only valid in object module
+private_mod	a WithEvents As Class1	syntax	Expected: end of statement
+private_mod	a$ WithEvents As Class1	syntax	Expected: end of statement
+private_mod	[a b] WithEvents As Class1	syntax	Expected: identifier
+private_mod	Name WithEvents As Class1	syntax	Expected: end of statement
+private_mod	Date WithEvents As Class1	syntax	Expected: identifier
+private_mod	Me WithEvents As Class1	syntax	Expected: identifier
+private_mod	a As Integer(3)	syntax	Expected: end of statement
+private_mod	a$ As Integer(3)	syntax	Expected: end of statement
+private_mod	[a b] As Integer(3)	syntax	Expected: identifier
+private_mod	Name As Integer(3)	syntax	Expected: end of statement
+private_mod	Date As Integer(3)	syntax	Expected: identifier
+private_mod	Me As Integer(3)	syntax	Expected: identifier
+private_mod	a As Long()	syntax	Expected: end of statement
+private_mod	a$ As Long()	syntax	Expected: end of statement
+private_mod	[a b] As Long()	syntax	Expected: identifier
+private_mod	Name As Long()	syntax	Expected: end of statement
+private_mod	Date As Long()	syntax	Expected: identifier
+private_mod	Me As Long()	syntax	Expected: identifier
+private_mod	a() As Long()	syntax	Expected: end of statement
+private_mod	a$() As Long()	syntax	Expected: end of statement
+private_mod	[a b]() As Long()	syntax	Expected: identifier
+private_mod	Name() As Long()	syntax	Expected: end of statement
+private_mod	Date() As Long()	syntax	Expected: identifier
+private_mod	Me() As Long()	syntax	Expected: identifier
+private_cls	a	accepted	
+private_cls	a$	accepted	
+private_cls	[a b]	syntax	Expected: identifier
+private_cls	Name	accepted	
+private_cls	Date	syntax	Expected: identifier
+private_cls	Me	syntax	Expected: identifier
+private_cls	a As Long	accepted	
+private_cls	a$ As Long	syntax	Expected: end of statement
+private_cls	[a b] As Long	syntax	Expected: identifier
+private_cls	Name As Long	accepted	
+private_cls	Date As Long	syntax	Expected: identifier
+private_cls	Me As Long	syntax	Expected: identifier
+private_cls	a() As Long	accepted	
+private_cls	a$() As Long	syntax	Expected: end of statement
+private_cls	[a b]() As Long	syntax	Expected: identifier
+private_cls	Name() As Long	accepted	
+private_cls	Date() As Long	syntax	Expected: identifier
+private_cls	Me() As Long	syntax	Expected: identifier
+private_cls	a(3) As Long	accepted	
+private_cls	a$(3) As Long	syntax	Expected: end of statement
+private_cls	[a b](3) As Long	syntax	Expected: identifier
+private_cls	Name(3) As Long	accepted	
+private_cls	Date(3) As Long	syntax	Expected: identifier
+private_cls	Me(3) As Long	syntax	Expected: identifier
+private_cls	a(1 To 3) As Long	accepted	
+private_cls	a$(1 To 3) As Long	syntax	Expected: end of statement
+private_cls	[a b](1 To 3) As Long	syntax	Expected: identifier
+private_cls	Name(1 To 3) As Long	accepted	
+private_cls	Date(1 To 3) As Long	syntax	Expected: identifier
+private_cls	Me(1 To 3) As Long	syntax	Expected: identifier
+private_cls	a(3, 4) As Long	accepted	
+private_cls	a$(3, 4) As Long	syntax	Expected: end of statement
+private_cls	[a b](3, 4) As Long	syntax	Expected: identifier
+private_cls	Name(3, 4) As Long	accepted	
+private_cls	Date(3, 4) As Long	syntax	Expected: identifier
+private_cls	Me(3, 4) As Long	syntax	Expected: identifier
+private_cls	a(1 To 3, 2 To 5)	accepted	
+private_cls	a$(1 To 3, 2 To 5)	accepted	
+private_cls	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+private_cls	Name(1 To 3, 2 To 5)	accepted	
+private_cls	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+private_cls	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+private_cls	a()	accepted	
+private_cls	a$()	accepted	
+private_cls	[a b]()	syntax	Expected: identifier
+private_cls	Name()	accepted	
+private_cls	Date()	syntax	Expected: identifier
+private_cls	Me()	syntax	Expected: identifier
+private_cls	a(,) As Long	syntax	Expected: expression
+private_cls	a$(,) As Long	syntax	Expected: expression
+private_cls	[a b](,) As Long	syntax	Expected: identifier
+private_cls	Name(,) As Long	syntax	Expected: expression
+private_cls	Date(,) As Long	syntax	Expected: identifier
+private_cls	Me(,) As Long	syntax	Expected: identifier
+private_cls	a(1 To) As Long	syntax	Expected: expression
+private_cls	a$(1 To) As Long	syntax	Expected: expression
+private_cls	[a b](1 To) As Long	syntax	Expected: identifier
+private_cls	Name(1 To) As Long	syntax	Expected: expression
+private_cls	Date(1 To) As Long	syntax	Expected: identifier
+private_cls	Me(1 To) As Long	syntax	Expected: identifier
+private_cls	a(To 3) As Long	syntax	Expected: expression
+private_cls	a$(To 3) As Long	syntax	Expected: expression
+private_cls	[a b](To 3) As Long	syntax	Expected: identifier
+private_cls	Name(To 3) As Long	syntax	Expected: expression
+private_cls	Date(To 3) As Long	syntax	Expected: identifier
+private_cls	Me(To 3) As Long	syntax	Expected: identifier
+private_cls	a(3	syntax	Expected: list separator or )
+private_cls	a$(3	syntax	Expected: list separator or )
+private_cls	[a b](3	syntax	Expected: identifier
+private_cls	Name(3	syntax	Expected: list separator or )
+private_cls	Date(3	syntax	Expected: identifier
+private_cls	Me(3	syntax	Expected: identifier
+private_cls	a3 As Long	accepted	
+private_cls	a$3 As Long	syntax	Expected: end of statement
+private_cls	[a b]3 As Long	syntax	Expected: identifier
+private_cls	Name3 As Long	accepted	
+private_cls	Date3 As Long	accepted	
+private_cls	Me3 As Long	accepted	
+private_cls	a As	syntax	Expected: New or type name
+private_cls	a$ As	syntax	Expected: end of statement
+private_cls	[a b] As	syntax	Expected: identifier
+private_cls	Name As	syntax	Expected: New or type name
+private_cls	Date As	syntax	Expected: identifier
+private_cls	Me As	syntax	Expected: identifier
+private_cls	a As New Collection	accepted	
+private_cls	a$ As New Collection	syntax	Expected: end of statement
+private_cls	[a b] As New Collection	syntax	Expected: identifier
+private_cls	Name As New Collection	accepted	
+private_cls	Date As New Collection	syntax	Expected: identifier
+private_cls	Me As New Collection	syntax	Expected: identifier
+private_cls	a As New Long	syntax	Expected: identifier
+private_cls	a$ As New Long	syntax	Expected: end of statement
+private_cls	[a b] As New Long	syntax	Expected: identifier
+private_cls	Name As New Long	syntax	Expected: identifier
+private_cls	Date As New Long	syntax	Expected: identifier
+private_cls	Me As New Long	syntax	Expected: identifier
+private_cls	a As New Object	syntax	Expected: identifier
+private_cls	a$ As New Object	syntax	Expected: end of statement
+private_cls	[a b] As New Object	syntax	Expected: identifier
+private_cls	Name As New Object	syntax	Expected: identifier
+private_cls	Date As New Object	syntax	Expected: identifier
+private_cls	Me As New Object	syntax	Expected: identifier
+private_cls	a As String * 3	accepted	
+private_cls	a$ As String * 3	syntax	Expected: end of statement
+private_cls	[a b] As String * 3	syntax	Expected: identifier
+private_cls	Name As String * 3	accepted	
+private_cls	Date As String * 3	syntax	Expected: identifier
+private_cls	Me As String * 3	syntax	Expected: identifier
+private_cls	a As String * 0	syntax	Invalid length for fixed-length string
+private_cls	a$ As String * 0	syntax	Expected: end of statement
+private_cls	[a b] As String * 0	syntax	Expected: identifier
+private_cls	Name As String * 0	syntax	Invalid length for fixed-length string
+private_cls	Date As String * 0	syntax	Expected: identifier
+private_cls	Me As String * 0	syntax	Expected: identifier
+private_cls	a As String * 65535	syntax	Invalid length for fixed-length string
+private_cls	a$ As String * 65535	syntax	Expected: end of statement
+private_cls	[a b] As String * 65535	syntax	Expected: identifier
+private_cls	Name As String * 65535	syntax	Invalid length for fixed-length string
+private_cls	Date As String * 65535	syntax	Expected: identifier
+private_cls	Me As String * 65535	syntax	Expected: identifier
+private_cls	a As String * 65526	accepted	
+private_cls	a$ As String * 65526	syntax	Expected: end of statement
+private_cls	[a b] As String * 65526	syntax	Expected: identifier
+private_cls	Name As String * 65526	accepted	
+private_cls	Date As String * 65526	syntax	Expected: identifier
+private_cls	Me As String * 65526	syntax	Expected: identifier
+private_cls	a As String * n	semantic	Constant expression required
+private_cls	a$ As String * n	syntax	Expected: end of statement
+private_cls	[a b] As String * n	syntax	Expected: identifier
+private_cls	Name As String * n	semantic	Constant expression required
+private_cls	Date As String * n	syntax	Expected: identifier
+private_cls	Me As String * n	syntax	Expected: identifier
+private_cls	a As Object	accepted	
+private_cls	a$ As Object	syntax	Expected: end of statement
+private_cls	[a b] As Object	syntax	Expected: identifier
+private_cls	Name As Object	accepted	
+private_cls	Date As Object	syntax	Expected: identifier
+private_cls	Me As Object	syntax	Expected: identifier
+private_cls	a As Variant	accepted	
+private_cls	a$ As Variant	syntax	Expected: end of statement
+private_cls	[a b] As Variant	syntax	Expected: identifier
+private_cls	Name As Variant	accepted	
+private_cls	Date As Variant	syntax	Expected: identifier
+private_cls	Me As Variant	syntax	Expected: identifier
+private_cls	a As Any	syntax	Expected: New or type name
+private_cls	a$ As Any	syntax	Expected: end of statement
+private_cls	[a b] As Any	syntax	Expected: identifier
+private_cls	Name As Any	syntax	Expected: New or type name
+private_cls	Date As Any	syntax	Expected: identifier
+private_cls	Me As Any	syntax	Expected: identifier
+private_cls	a As Decimal	syntax	Expected: New or type name
+private_cls	a$ As Decimal	syntax	Expected: end of statement
+private_cls	[a b] As Decimal	syntax	Expected: identifier
+private_cls	Name As Decimal	syntax	Expected: New or type name
+private_cls	Date As Decimal	syntax	Expected: identifier
+private_cls	Me As Decimal	syntax	Expected: identifier
+private_cls	a As Class1	accepted	
+private_cls	a$ As Class1	syntax	Expected: end of statement
+private_cls	[a b] As Class1	syntax	Expected: identifier
+private_cls	Name As Class1	accepted	
+private_cls	Date As Class1	syntax	Expected: identifier
+private_cls	Me As Class1	syntax	Expected: identifier
+private_cls	a As Class1.Sub1	semantic	User-defined type not defined
+private_cls	a$ As Class1.Sub1	syntax	Expected: end of statement
+private_cls	[a b] As Class1.Sub1	syntax	Expected: identifier
+private_cls	Name As Class1.Sub1	semantic	User-defined type not defined
+private_cls	Date As Class1.Sub1	syntax	Expected: identifier
+private_cls	Me As Class1.Sub1	syntax	Expected: identifier
+private_cls	a As VB.Form	accepted	
+private_cls	a$ As VB.Form	syntax	Expected: end of statement
+private_cls	[a b] As VB.Form	syntax	Expected: identifier
+private_cls	Name As VB.Form	accepted	
+private_cls	Date As VB.Form	syntax	Expected: identifier
+private_cls	Me As VB.Form	syntax	Expected: identifier
+private_cls	a = 1	syntax	Expected: end of statement
+private_cls	a$ = 1	syntax	Expected: end of statement
+private_cls	[a b] = 1	syntax	Expected: identifier
+private_cls	Name = 1	syntax	Expected: end of statement
+private_cls	Date = 1	syntax	Expected: identifier
+private_cls	Me = 1	syntax	Expected: identifier
+private_cls	a As Long = 1	syntax	Expected: end of statement
+private_cls	a$ As Long = 1	syntax	Expected: end of statement
+private_cls	[a b] As Long = 1	syntax	Expected: identifier
+private_cls	Name As Long = 1	syntax	Expected: end of statement
+private_cls	Date As Long = 1	syntax	Expected: identifier
+private_cls	Me As Long = 1	syntax	Expected: identifier
+private_cls	a(3) = 1	syntax	Expected: end of statement
+private_cls	a$(3) = 1	syntax	Expected: end of statement
+private_cls	[a b](3) = 1	syntax	Expected: identifier
+private_cls	Name(3) = 1	syntax	Expected: end of statement
+private_cls	Date(3) = 1	syntax	Expected: identifier
+private_cls	Me(3) = 1	syntax	Expected: identifier
+private_cls	a, b	accepted	
+private_cls	a$, b	accepted	
+private_cls	[a b], b	syntax	Expected: identifier
+private_cls	Name, b	accepted	
+private_cls	Date, b	syntax	Expected: identifier
+private_cls	Me, b	syntax	Expected: identifier
+private_cls	a, b As Long	accepted	
+private_cls	a$, b As Long	accepted	
+private_cls	[a b], b As Long	syntax	Expected: identifier
+private_cls	Name, b As Long	accepted	
+private_cls	Date, b As Long	syntax	Expected: identifier
+private_cls	Me, b As Long	syntax	Expected: identifier
+private_cls	a As Long, b	accepted	
+private_cls	a$ As Long, b	syntax	Expected: end of statement
+private_cls	[a b] As Long, b	syntax	Expected: identifier
+private_cls	Name As Long, b	accepted	
+private_cls	Date As Long, b	syntax	Expected: identifier
+private_cls	Me As Long, b	syntax	Expected: identifier
+private_cls	a As Long,	syntax	Expected: variable
+private_cls	a$ As Long,	syntax	Expected: end of statement
+private_cls	[a b] As Long,	syntax	Expected: identifier
+private_cls	Name As Long,	syntax	Expected: variable
+private_cls	Date As Long,	syntax	Expected: identifier
+private_cls	Me As Long,	syntax	Expected: identifier
+private_cls	a As Long b	syntax	Expected: end of statement
+private_cls	a$ As Long b	syntax	Expected: end of statement
+private_cls	[a b] As Long b	syntax	Expected: identifier
+private_cls	Name As Long b	syntax	Expected: end of statement
+private_cls	Date As Long b	syntax	Expected: identifier
+private_cls	Me As Long b	syntax	Expected: identifier
+private_cls	WithEvents a As Class1	semantic	Object does not source automation events
+private_cls	WithEvents a	syntax	Expected: As
+private_cls	a WithEvents As Class1	syntax	Expected: end of statement
+private_cls	a$ WithEvents As Class1	syntax	Expected: end of statement
+private_cls	[a b] WithEvents As Class1	syntax	Expected: identifier
+private_cls	Name WithEvents As Class1	syntax	Expected: end of statement
+private_cls	Date WithEvents As Class1	syntax	Expected: identifier
+private_cls	Me WithEvents As Class1	syntax	Expected: identifier
+private_cls	a As Integer(3)	syntax	Expected: end of statement
+private_cls	a$ As Integer(3)	syntax	Expected: end of statement
+private_cls	[a b] As Integer(3)	syntax	Expected: identifier
+private_cls	Name As Integer(3)	syntax	Expected: end of statement
+private_cls	Date As Integer(3)	syntax	Expected: identifier
+private_cls	Me As Integer(3)	syntax	Expected: identifier
+private_cls	a As Long()	syntax	Expected: end of statement
+private_cls	a$ As Long()	syntax	Expected: end of statement
+private_cls	[a b] As Long()	syntax	Expected: identifier
+private_cls	Name As Long()	syntax	Expected: end of statement
+private_cls	Date As Long()	syntax	Expected: identifier
+private_cls	Me As Long()	syntax	Expected: identifier
+private_cls	a() As Long()	syntax	Expected: end of statement
+private_cls	a$() As Long()	syntax	Expected: end of statement
+private_cls	[a b]() As Long()	syntax	Expected: identifier
+private_cls	Name() As Long()	syntax	Expected: end of statement
+private_cls	Date() As Long()	syntax	Expected: identifier
+private_cls	Me() As Long()	syntax	Expected: identifier
+public_mod	a	accepted	
+public_mod	a$	accepted	
+public_mod	[a b]	syntax	Expected: identifier
+public_mod	Name	accepted	
+public_mod	Date	syntax	Expected: identifier
+public_mod	Me	syntax	Expected: identifier
+public_mod	a As Long	accepted	
+public_mod	a$ As Long	syntax	Expected: end of statement
+public_mod	[a b] As Long	syntax	Expected: identifier
+public_mod	Name As Long	accepted	
+public_mod	Date As Long	syntax	Expected: identifier
+public_mod	Me As Long	syntax	Expected: identifier
+public_mod	a() As Long	accepted	
+public_mod	a$() As Long	syntax	Expected: end of statement
+public_mod	[a b]() As Long	syntax	Expected: identifier
+public_mod	Name() As Long	accepted	
+public_mod	Date() As Long	syntax	Expected: identifier
+public_mod	Me() As Long	syntax	Expected: identifier
+public_mod	a(3) As Long	accepted	
+public_mod	a$(3) As Long	syntax	Expected: end of statement
+public_mod	[a b](3) As Long	syntax	Expected: identifier
+public_mod	Name(3) As Long	accepted	
+public_mod	Date(3) As Long	syntax	Expected: identifier
+public_mod	Me(3) As Long	syntax	Expected: identifier
+public_mod	a(1 To 3) As Long	accepted	
+public_mod	a$(1 To 3) As Long	syntax	Expected: end of statement
+public_mod	[a b](1 To 3) As Long	syntax	Expected: identifier
+public_mod	Name(1 To 3) As Long	accepted	
+public_mod	Date(1 To 3) As Long	syntax	Expected: identifier
+public_mod	Me(1 To 3) As Long	syntax	Expected: identifier
+public_mod	a(3, 4) As Long	accepted	
+public_mod	a$(3, 4) As Long	syntax	Expected: end of statement
+public_mod	[a b](3, 4) As Long	syntax	Expected: identifier
+public_mod	Name(3, 4) As Long	accepted	
+public_mod	Date(3, 4) As Long	syntax	Expected: identifier
+public_mod	Me(3, 4) As Long	syntax	Expected: identifier
+public_mod	a(1 To 3, 2 To 5)	accepted	
+public_mod	a$(1 To 3, 2 To 5)	accepted	
+public_mod	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+public_mod	Name(1 To 3, 2 To 5)	accepted	
+public_mod	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+public_mod	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+public_mod	a()	accepted	
+public_mod	a$()	accepted	
+public_mod	[a b]()	syntax	Expected: identifier
+public_mod	Name()	accepted	
+public_mod	Date()	syntax	Expected: identifier
+public_mod	Me()	syntax	Expected: identifier
+public_mod	a(,) As Long	syntax	Expected: expression
+public_mod	a$(,) As Long	syntax	Expected: expression
+public_mod	[a b](,) As Long	syntax	Expected: identifier
+public_mod	Name(,) As Long	syntax	Expected: expression
+public_mod	Date(,) As Long	syntax	Expected: identifier
+public_mod	Me(,) As Long	syntax	Expected: identifier
+public_mod	a(1 To) As Long	syntax	Expected: expression
+public_mod	a$(1 To) As Long	syntax	Expected: expression
+public_mod	[a b](1 To) As Long	syntax	Expected: identifier
+public_mod	Name(1 To) As Long	syntax	Expected: expression
+public_mod	Date(1 To) As Long	syntax	Expected: identifier
+public_mod	Me(1 To) As Long	syntax	Expected: identifier
+public_mod	a(To 3) As Long	syntax	Expected: expression
+public_mod	a$(To 3) As Long	syntax	Expected: expression
+public_mod	[a b](To 3) As Long	syntax	Expected: identifier
+public_mod	Name(To 3) As Long	syntax	Expected: expression
+public_mod	Date(To 3) As Long	syntax	Expected: identifier
+public_mod	Me(To 3) As Long	syntax	Expected: identifier
+public_mod	a(3	syntax	Expected: list separator or )
+public_mod	a$(3	syntax	Expected: list separator or )
+public_mod	[a b](3	syntax	Expected: identifier
+public_mod	Name(3	syntax	Expected: list separator or )
+public_mod	Date(3	syntax	Expected: identifier
+public_mod	Me(3	syntax	Expected: identifier
+public_mod	a3 As Long	accepted	
+public_mod	a$3 As Long	syntax	Expected: end of statement
+public_mod	[a b]3 As Long	syntax	Expected: identifier
+public_mod	Name3 As Long	accepted	
+public_mod	Date3 As Long	accepted	
+public_mod	Me3 As Long	accepted	
+public_mod	a As	syntax	Expected: New or type name
+public_mod	a$ As	syntax	Expected: end of statement
+public_mod	[a b] As	syntax	Expected: identifier
+public_mod	Name As	syntax	Expected: New or type name
+public_mod	Date As	syntax	Expected: identifier
+public_mod	Me As	syntax	Expected: identifier
+public_mod	a As New Collection	accepted	
+public_mod	a$ As New Collection	syntax	Expected: end of statement
+public_mod	[a b] As New Collection	syntax	Expected: identifier
+public_mod	Name As New Collection	accepted	
+public_mod	Date As New Collection	syntax	Expected: identifier
+public_mod	Me As New Collection	syntax	Expected: identifier
+public_mod	a As New Long	syntax	Expected: identifier
+public_mod	a$ As New Long	syntax	Expected: end of statement
+public_mod	[a b] As New Long	syntax	Expected: identifier
+public_mod	Name As New Long	syntax	Expected: identifier
+public_mod	Date As New Long	syntax	Expected: identifier
+public_mod	Me As New Long	syntax	Expected: identifier
+public_mod	a As New Object	syntax	Expected: identifier
+public_mod	a$ As New Object	syntax	Expected: end of statement
+public_mod	[a b] As New Object	syntax	Expected: identifier
+public_mod	Name As New Object	syntax	Expected: identifier
+public_mod	Date As New Object	syntax	Expected: identifier
+public_mod	Me As New Object	syntax	Expected: identifier
+public_mod	a As String * 3	accepted	
+public_mod	a$ As String * 3	syntax	Expected: end of statement
+public_mod	[a b] As String * 3	syntax	Expected: identifier
+public_mod	Name As String * 3	accepted	
+public_mod	Date As String * 3	syntax	Expected: identifier
+public_mod	Me As String * 3	syntax	Expected: identifier
+public_mod	a As String * 0	syntax	Invalid length for fixed-length string
+public_mod	a$ As String * 0	syntax	Expected: end of statement
+public_mod	[a b] As String * 0	syntax	Expected: identifier
+public_mod	Name As String * 0	syntax	Invalid length for fixed-length string
+public_mod	Date As String * 0	syntax	Expected: identifier
+public_mod	Me As String * 0	syntax	Expected: identifier
+public_mod	a As String * 65535	syntax	Invalid length for fixed-length string
+public_mod	a$ As String * 65535	syntax	Expected: end of statement
+public_mod	[a b] As String * 65535	syntax	Expected: identifier
+public_mod	Name As String * 65535	syntax	Invalid length for fixed-length string
+public_mod	Date As String * 65535	syntax	Expected: identifier
+public_mod	Me As String * 65535	syntax	Expected: identifier
+public_mod	a As String * 65526	accepted	
+public_mod	a$ As String * 65526	syntax	Expected: end of statement
+public_mod	[a b] As String * 65526	syntax	Expected: identifier
+public_mod	Name As String * 65526	accepted	
+public_mod	Date As String * 65526	syntax	Expected: identifier
+public_mod	Me As String * 65526	syntax	Expected: identifier
+public_mod	a As String * n	semantic	Constant expression required
+public_mod	a$ As String * n	syntax	Expected: end of statement
+public_mod	[a b] As String * n	syntax	Expected: identifier
+public_mod	Name As String * n	semantic	Constant expression required
+public_mod	Date As String * n	syntax	Expected: identifier
+public_mod	Me As String * n	syntax	Expected: identifier
+public_mod	a As Object	accepted	
+public_mod	a$ As Object	syntax	Expected: end of statement
+public_mod	[a b] As Object	syntax	Expected: identifier
+public_mod	Name As Object	accepted	
+public_mod	Date As Object	syntax	Expected: identifier
+public_mod	Me As Object	syntax	Expected: identifier
+public_mod	a As Variant	accepted	
+public_mod	a$ As Variant	syntax	Expected: end of statement
+public_mod	[a b] As Variant	syntax	Expected: identifier
+public_mod	Name As Variant	accepted	
+public_mod	Date As Variant	syntax	Expected: identifier
+public_mod	Me As Variant	syntax	Expected: identifier
+public_mod	a As Any	syntax	Expected: New or type name
+public_mod	a$ As Any	syntax	Expected: end of statement
+public_mod	[a b] As Any	syntax	Expected: identifier
+public_mod	Name As Any	syntax	Expected: New or type name
+public_mod	Date As Any	syntax	Expected: identifier
+public_mod	Me As Any	syntax	Expected: identifier
+public_mod	a As Decimal	syntax	Expected: New or type name
+public_mod	a$ As Decimal	syntax	Expected: end of statement
+public_mod	[a b] As Decimal	syntax	Expected: identifier
+public_mod	Name As Decimal	syntax	Expected: New or type name
+public_mod	Date As Decimal	syntax	Expected: identifier
+public_mod	Me As Decimal	syntax	Expected: identifier
+public_mod	a As Class1	semantic	User-defined type not defined
+public_mod	a$ As Class1	syntax	Expected: end of statement
+public_mod	[a b] As Class1	syntax	Expected: identifier
+public_mod	Name As Class1	semantic	User-defined type not defined
+public_mod	Date As Class1	syntax	Expected: identifier
+public_mod	Me As Class1	syntax	Expected: identifier
+public_mod	a As Class1.Sub1	semantic	User-defined type not defined
+public_mod	a$ As Class1.Sub1	syntax	Expected: end of statement
+public_mod	[a b] As Class1.Sub1	syntax	Expected: identifier
+public_mod	Name As Class1.Sub1	semantic	User-defined type not defined
+public_mod	Date As Class1.Sub1	syntax	Expected: identifier
+public_mod	Me As Class1.Sub1	syntax	Expected: identifier
+public_mod	a As VB.Form	accepted	
+public_mod	a$ As VB.Form	syntax	Expected: end of statement
+public_mod	[a b] As VB.Form	syntax	Expected: identifier
+public_mod	Name As VB.Form	accepted	
+public_mod	Date As VB.Form	syntax	Expected: identifier
+public_mod	Me As VB.Form	syntax	Expected: identifier
+public_mod	a = 1	syntax	Expected: end of statement
+public_mod	a$ = 1	syntax	Expected: end of statement
+public_mod	[a b] = 1	syntax	Expected: identifier
+public_mod	Name = 1	syntax	Expected: end of statement
+public_mod	Date = 1	syntax	Expected: identifier
+public_mod	Me = 1	syntax	Expected: identifier
+public_mod	a As Long = 1	syntax	Expected: end of statement
+public_mod	a$ As Long = 1	syntax	Expected: end of statement
+public_mod	[a b] As Long = 1	syntax	Expected: identifier
+public_mod	Name As Long = 1	syntax	Expected: end of statement
+public_mod	Date As Long = 1	syntax	Expected: identifier
+public_mod	Me As Long = 1	syntax	Expected: identifier
+public_mod	a(3) = 1	syntax	Expected: end of statement
+public_mod	a$(3) = 1	syntax	Expected: end of statement
+public_mod	[a b](3) = 1	syntax	Expected: identifier
+public_mod	Name(3) = 1	syntax	Expected: end of statement
+public_mod	Date(3) = 1	syntax	Expected: identifier
+public_mod	Me(3) = 1	syntax	Expected: identifier
+public_mod	a, b	accepted	
+public_mod	a$, b	accepted	
+public_mod	[a b], b	syntax	Expected: identifier
+public_mod	Name, b	accepted	
+public_mod	Date, b	syntax	Expected: identifier
+public_mod	Me, b	syntax	Expected: identifier
+public_mod	a, b As Long	accepted	
+public_mod	a$, b As Long	accepted	
+public_mod	[a b], b As Long	syntax	Expected: identifier
+public_mod	Name, b As Long	accepted	
+public_mod	Date, b As Long	syntax	Expected: identifier
+public_mod	Me, b As Long	syntax	Expected: identifier
+public_mod	a As Long, b	accepted	
+public_mod	a$ As Long, b	syntax	Expected: end of statement
+public_mod	[a b] As Long, b	syntax	Expected: identifier
+public_mod	Name As Long, b	accepted	
+public_mod	Date As Long, b	syntax	Expected: identifier
+public_mod	Me As Long, b	syntax	Expected: identifier
+public_mod	a As Long,	syntax	Expected: variable
+public_mod	a$ As Long,	syntax	Expected: end of statement
+public_mod	[a b] As Long,	syntax	Expected: identifier
+public_mod	Name As Long,	syntax	Expected: variable
+public_mod	Date As Long,	syntax	Expected: identifier
+public_mod	Me As Long,	syntax	Expected: identifier
+public_mod	a As Long b	syntax	Expected: end of statement
+public_mod	a$ As Long b	syntax	Expected: end of statement
+public_mod	[a b] As Long b	syntax	Expected: identifier
+public_mod	Name As Long b	syntax	Expected: end of statement
+public_mod	Date As Long b	syntax	Expected: identifier
+public_mod	Me As Long b	syntax	Expected: identifier
+public_mod	WithEvents a As Class1	syntax	Only valid in object module
+public_mod	WithEvents a	syntax	Only valid in object module
+public_mod	a WithEvents As Class1	syntax	Expected: end of statement
+public_mod	a$ WithEvents As Class1	syntax	Expected: end of statement
+public_mod	[a b] WithEvents As Class1	syntax	Expected: identifier
+public_mod	Name WithEvents As Class1	syntax	Expected: end of statement
+public_mod	Date WithEvents As Class1	syntax	Expected: identifier
+public_mod	Me WithEvents As Class1	syntax	Expected: identifier
+public_mod	a As Integer(3)	syntax	Expected: end of statement
+public_mod	a$ As Integer(3)	syntax	Expected: end of statement
+public_mod	[a b] As Integer(3)	syntax	Expected: identifier
+public_mod	Name As Integer(3)	syntax	Expected: end of statement
+public_mod	Date As Integer(3)	syntax	Expected: identifier
+public_mod	Me As Integer(3)	syntax	Expected: identifier
+public_mod	a As Long()	syntax	Expected: end of statement
+public_mod	a$ As Long()	syntax	Expected: end of statement
+public_mod	[a b] As Long()	syntax	Expected: identifier
+public_mod	Name As Long()	syntax	Expected: end of statement
+public_mod	Date As Long()	syntax	Expected: identifier
+public_mod	Me As Long()	syntax	Expected: identifier
+public_mod	a() As Long()	syntax	Expected: end of statement
+public_mod	a$() As Long()	syntax	Expected: end of statement
+public_mod	[a b]() As Long()	syntax	Expected: identifier
+public_mod	Name() As Long()	syntax	Expected: end of statement
+public_mod	Date() As Long()	syntax	Expected: identifier
+public_mod	Me() As Long()	syntax	Expected: identifier
+public_cls	a	accepted	
+public_cls	a$	accepted	
+public_cls	[a b]	syntax	Expected: identifier
+public_cls	Name	accepted	
+public_cls	Date	syntax	Expected: identifier
+public_cls	Me	syntax	Expected: identifier
+public_cls	a As Long	accepted	
+public_cls	a$ As Long	syntax	Expected: end of statement
+public_cls	[a b] As Long	syntax	Expected: identifier
+public_cls	Name As Long	accepted	
+public_cls	Date As Long	syntax	Expected: identifier
+public_cls	Me As Long	syntax	Expected: identifier
+public_cls	a() As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$() As Long	syntax	Expected: end of statement
+public_cls	[a b]() As Long	syntax	Expected: identifier
+public_cls	Name() As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date() As Long	syntax	Expected: identifier
+public_cls	Me() As Long	syntax	Expected: identifier
+public_cls	a(3) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$(3) As Long	syntax	Expected: end of statement
+public_cls	[a b](3) As Long	syntax	Expected: identifier
+public_cls	Name(3) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date(3) As Long	syntax	Expected: identifier
+public_cls	Me(3) As Long	syntax	Expected: identifier
+public_cls	a(1 To 3) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$(1 To 3) As Long	syntax	Expected: end of statement
+public_cls	[a b](1 To 3) As Long	syntax	Expected: identifier
+public_cls	Name(1 To 3) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date(1 To 3) As Long	syntax	Expected: identifier
+public_cls	Me(1 To 3) As Long	syntax	Expected: identifier
+public_cls	a(3, 4) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$(3, 4) As Long	syntax	Expected: end of statement
+public_cls	[a b](3, 4) As Long	syntax	Expected: identifier
+public_cls	Name(3, 4) As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date(3, 4) As Long	syntax	Expected: identifier
+public_cls	Me(3, 4) As Long	syntax	Expected: identifier
+public_cls	a(1 To 3, 2 To 5)	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$(1 To 3, 2 To 5)	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+public_cls	Name(1 To 3, 2 To 5)	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+public_cls	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+public_cls	a()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	[a b]()	syntax	Expected: identifier
+public_cls	Name()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date()	syntax	Expected: identifier
+public_cls	Me()	syntax	Expected: identifier
+public_cls	a(,) As Long	syntax	Expected: expression
+public_cls	a$(,) As Long	syntax	Expected: expression
+public_cls	[a b](,) As Long	syntax	Expected: identifier
+public_cls	Name(,) As Long	syntax	Expected: expression
+public_cls	Date(,) As Long	syntax	Expected: identifier
+public_cls	Me(,) As Long	syntax	Expected: identifier
+public_cls	a(1 To) As Long	syntax	Expected: expression
+public_cls	a$(1 To) As Long	syntax	Expected: expression
+public_cls	[a b](1 To) As Long	syntax	Expected: identifier
+public_cls	Name(1 To) As Long	syntax	Expected: expression
+public_cls	Date(1 To) As Long	syntax	Expected: identifier
+public_cls	Me(1 To) As Long	syntax	Expected: identifier
+public_cls	a(To 3) As Long	syntax	Expected: expression
+public_cls	a$(To 3) As Long	syntax	Expected: expression
+public_cls	[a b](To 3) As Long	syntax	Expected: identifier
+public_cls	Name(To 3) As Long	syntax	Expected: expression
+public_cls	Date(To 3) As Long	syntax	Expected: identifier
+public_cls	Me(To 3) As Long	syntax	Expected: identifier
+public_cls	a(3	syntax	Expected: list separator or )
+public_cls	a$(3	syntax	Expected: list separator or )
+public_cls	[a b](3	syntax	Expected: identifier
+public_cls	Name(3	syntax	Expected: list separator or )
+public_cls	Date(3	syntax	Expected: identifier
+public_cls	Me(3	syntax	Expected: identifier
+public_cls	a3 As Long	accepted	
+public_cls	a$3 As Long	syntax	Expected: end of statement
+public_cls	[a b]3 As Long	syntax	Expected: identifier
+public_cls	Name3 As Long	accepted	
+public_cls	Date3 As Long	accepted	
+public_cls	Me3 As Long	accepted	
+public_cls	a As	syntax	Expected: New or type name
+public_cls	a$ As	syntax	Expected: end of statement
+public_cls	[a b] As	syntax	Expected: identifier
+public_cls	Name As	syntax	Expected: New or type name
+public_cls	Date As	syntax	Expected: identifier
+public_cls	Me As	syntax	Expected: identifier
+public_cls	a As New Collection	accepted	
+public_cls	a$ As New Collection	syntax	Expected: end of statement
+public_cls	[a b] As New Collection	syntax	Expected: identifier
+public_cls	Name As New Collection	accepted	
+public_cls	Date As New Collection	syntax	Expected: identifier
+public_cls	Me As New Collection	syntax	Expected: identifier
+public_cls	a As New Long	syntax	Expected: identifier
+public_cls	a$ As New Long	syntax	Expected: end of statement
+public_cls	[a b] As New Long	syntax	Expected: identifier
+public_cls	Name As New Long	syntax	Expected: identifier
+public_cls	Date As New Long	syntax	Expected: identifier
+public_cls	Me As New Long	syntax	Expected: identifier
+public_cls	a As New Object	syntax	Expected: identifier
+public_cls	a$ As New Object	syntax	Expected: end of statement
+public_cls	[a b] As New Object	syntax	Expected: identifier
+public_cls	Name As New Object	syntax	Expected: identifier
+public_cls	Date As New Object	syntax	Expected: identifier
+public_cls	Me As New Object	syntax	Expected: identifier
+public_cls	a As String * 3	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$ As String * 3	syntax	Expected: end of statement
+public_cls	[a b] As String * 3	syntax	Expected: identifier
+public_cls	Name As String * 3	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date As String * 3	syntax	Expected: identifier
+public_cls	Me As String * 3	syntax	Expected: identifier
+public_cls	a As String * 0	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$ As String * 0	syntax	Expected: end of statement
+public_cls	[a b] As String * 0	syntax	Expected: identifier
+public_cls	Name As String * 0	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date As String * 0	syntax	Expected: identifier
+public_cls	Me As String * 0	syntax	Expected: identifier
+public_cls	a As String * 65535	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$ As String * 65535	syntax	Expected: end of statement
+public_cls	[a b] As String * 65535	syntax	Expected: identifier
+public_cls	Name As String * 65535	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date As String * 65535	syntax	Expected: identifier
+public_cls	Me As String * 65535	syntax	Expected: identifier
+public_cls	a As String * 65526	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$ As String * 65526	syntax	Expected: end of statement
+public_cls	[a b] As String * 65526	syntax	Expected: identifier
+public_cls	Name As String * 65526	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date As String * 65526	syntax	Expected: identifier
+public_cls	Me As String * 65526	syntax	Expected: identifier
+public_cls	a As String * n	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	a$ As String * n	syntax	Expected: end of statement
+public_cls	[a b] As String * n	syntax	Expected: identifier
+public_cls	Name As String * n	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+public_cls	Date As String * n	syntax	Expected: identifier
+public_cls	Me As String * n	syntax	Expected: identifier
+public_cls	a As Object	accepted	
+public_cls	a$ As Object	syntax	Expected: end of statement
+public_cls	[a b] As Object	syntax	Expected: identifier
+public_cls	Name As Object	accepted	
+public_cls	Date As Object	syntax	Expected: identifier
+public_cls	Me As Object	syntax	Expected: identifier
+public_cls	a As Variant	accepted	
+public_cls	a$ As Variant	syntax	Expected: end of statement
+public_cls	[a b] As Variant	syntax	Expected: identifier
+public_cls	Name As Variant	accepted	
+public_cls	Date As Variant	syntax	Expected: identifier
+public_cls	Me As Variant	syntax	Expected: identifier
+public_cls	a As Any	syntax	Expected: New or type name
+public_cls	a$ As Any	syntax	Expected: end of statement
+public_cls	[a b] As Any	syntax	Expected: identifier
+public_cls	Name As Any	syntax	Expected: New or type name
+public_cls	Date As Any	syntax	Expected: identifier
+public_cls	Me As Any	syntax	Expected: identifier
+public_cls	a As Decimal	syntax	Expected: New or type name
+public_cls	a$ As Decimal	syntax	Expected: end of statement
+public_cls	[a b] As Decimal	syntax	Expected: identifier
+public_cls	Name As Decimal	syntax	Expected: New or type name
+public_cls	Date As Decimal	syntax	Expected: identifier
+public_cls	Me As Decimal	syntax	Expected: identifier
+public_cls	a As Class1	accepted	
+public_cls	a$ As Class1	syntax	Expected: end of statement
+public_cls	[a b] As Class1	syntax	Expected: identifier
+public_cls	Name As Class1	accepted	
+public_cls	Date As Class1	syntax	Expected: identifier
+public_cls	Me As Class1	syntax	Expected: identifier
+public_cls	a As Class1.Sub1	semantic	User-defined type not defined
+public_cls	a$ As Class1.Sub1	syntax	Expected: end of statement
+public_cls	[a b] As Class1.Sub1	syntax	Expected: identifier
+public_cls	Name As Class1.Sub1	semantic	User-defined type not defined
+public_cls	Date As Class1.Sub1	syntax	Expected: identifier
+public_cls	Me As Class1.Sub1	syntax	Expected: identifier
+public_cls	a As VB.Form	accepted	
+public_cls	a$ As VB.Form	syntax	Expected: end of statement
+public_cls	[a b] As VB.Form	syntax	Expected: identifier
+public_cls	Name As VB.Form	accepted	
+public_cls	Date As VB.Form	syntax	Expected: identifier
+public_cls	Me As VB.Form	syntax	Expected: identifier
+public_cls	a = 1	syntax	Expected: end of statement
+public_cls	a$ = 1	syntax	Expected: end of statement
+public_cls	[a b] = 1	syntax	Expected: identifier
+public_cls	Name = 1	syntax	Expected: end of statement
+public_cls	Date = 1	syntax	Expected: identifier
+public_cls	Me = 1	syntax	Expected: identifier
+public_cls	a As Long = 1	syntax	Expected: end of statement
+public_cls	a$ As Long = 1	syntax	Expected: end of statement
+public_cls	[a b] As Long = 1	syntax	Expected: identifier
+public_cls	Name As Long = 1	syntax	Expected: end of statement
+public_cls	Date As Long = 1	syntax	Expected: identifier
+public_cls	Me As Long = 1	syntax	Expected: identifier
+public_cls	a(3) = 1	syntax	Expected: end of statement
+public_cls	a$(3) = 1	syntax	Expected: end of statement
+public_cls	[a b](3) = 1	syntax	Expected: identifier
+public_cls	Name(3) = 1	syntax	Expected: end of statement
+public_cls	Date(3) = 1	syntax	Expected: identifier
+public_cls	Me(3) = 1	syntax	Expected: identifier
+public_cls	a, b	accepted	
+public_cls	a$, b	accepted	
+public_cls	[a b], b	syntax	Expected: identifier
+public_cls	Name, b	accepted	
+public_cls	Date, b	syntax	Expected: identifier
+public_cls	Me, b	syntax	Expected: identifier
+public_cls	a, b As Long	accepted	
+public_cls	a$, b As Long	accepted	
+public_cls	[a b], b As Long	syntax	Expected: identifier
+public_cls	Name, b As Long	accepted	
+public_cls	Date, b As Long	syntax	Expected: identifier
+public_cls	Me, b As Long	syntax	Expected: identifier
+public_cls	a As Long, b	accepted	
+public_cls	a$ As Long, b	syntax	Expected: end of statement
+public_cls	[a b] As Long, b	syntax	Expected: identifier
+public_cls	Name As Long, b	accepted	
+public_cls	Date As Long, b	syntax	Expected: identifier
+public_cls	Me As Long, b	syntax	Expected: identifier
+public_cls	a As Long,	syntax	Expected: variable
+public_cls	a$ As Long,	syntax	Expected: end of statement
+public_cls	[a b] As Long,	syntax	Expected: identifier
+public_cls	Name As Long,	syntax	Expected: variable
+public_cls	Date As Long,	syntax	Expected: identifier
+public_cls	Me As Long,	syntax	Expected: identifier
+public_cls	a As Long b	syntax	Expected: end of statement
+public_cls	a$ As Long b	syntax	Expected: end of statement
+public_cls	[a b] As Long b	syntax	Expected: identifier
+public_cls	Name As Long b	syntax	Expected: end of statement
+public_cls	Date As Long b	syntax	Expected: identifier
+public_cls	Me As Long b	syntax	Expected: identifier
+public_cls	WithEvents a As Class1	semantic	Object does not source automation events
+public_cls	WithEvents a	syntax	Expected: As
+public_cls	a WithEvents As Class1	syntax	Expected: end of statement
+public_cls	a$ WithEvents As Class1	syntax	Expected: end of statement
+public_cls	[a b] WithEvents As Class1	syntax	Expected: identifier
+public_cls	Name WithEvents As Class1	syntax	Expected: end of statement
+public_cls	Date WithEvents As Class1	syntax	Expected: identifier
+public_cls	Me WithEvents As Class1	syntax	Expected: identifier
+public_cls	a As Integer(3)	syntax	Expected: end of statement
+public_cls	a$ As Integer(3)	syntax	Expected: end of statement
+public_cls	[a b] As Integer(3)	syntax	Expected: identifier
+public_cls	Name As Integer(3)	syntax	Expected: end of statement
+public_cls	Date As Integer(3)	syntax	Expected: identifier
+public_cls	Me As Integer(3)	syntax	Expected: identifier
+public_cls	a As Long()	syntax	Expected: end of statement
+public_cls	a$ As Long()	syntax	Expected: end of statement
+public_cls	[a b] As Long()	syntax	Expected: identifier
+public_cls	Name As Long()	syntax	Expected: end of statement
+public_cls	Date As Long()	syntax	Expected: identifier
+public_cls	Me As Long()	syntax	Expected: identifier
+public_cls	a() As Long()	syntax	Expected: end of statement
+public_cls	a$() As Long()	syntax	Expected: end of statement
+public_cls	[a b]() As Long()	syntax	Expected: identifier
+public_cls	Name() As Long()	syntax	Expected: end of statement
+public_cls	Date() As Long()	syntax	Expected: identifier
+public_cls	Me() As Long()	syntax	Expected: identifier
+dim_proc	a	accepted	
+dim_proc	a$	accepted	
+dim_proc	[a b]	syntax	Syntax error
+dim_proc	Name	accepted	
+dim_proc	Date	syntax	Syntax error
+dim_proc	Me	syntax	Syntax error
+dim_proc	a As Long	accepted	
+dim_proc	a$ As Long	syntax	Syntax error
+dim_proc	[a b] As Long	syntax	Syntax error
+dim_proc	Name As Long	accepted	
+dim_proc	Date As Long	syntax	Syntax error
+dim_proc	Me As Long	syntax	Syntax error
+dim_proc	a() As Long	accepted	
+dim_proc	a$() As Long	syntax	Syntax error
+dim_proc	[a b]() As Long	syntax	Syntax error
+dim_proc	Name() As Long	accepted	
+dim_proc	Date() As Long	syntax	Syntax error
+dim_proc	Me() As Long	syntax	Syntax error
+dim_proc	a(3) As Long	accepted	
+dim_proc	a$(3) As Long	syntax	Syntax error
+dim_proc	[a b](3) As Long	syntax	Syntax error
+dim_proc	Name(3) As Long	accepted	
+dim_proc	Date(3) As Long	syntax	Syntax error
+dim_proc	Me(3) As Long	syntax	Syntax error
+dim_proc	a(1 To 3) As Long	accepted	
+dim_proc	a$(1 To 3) As Long	syntax	Syntax error
+dim_proc	[a b](1 To 3) As Long	syntax	Syntax error
+dim_proc	Name(1 To 3) As Long	accepted	
+dim_proc	Date(1 To 3) As Long	syntax	Syntax error
+dim_proc	Me(1 To 3) As Long	syntax	Syntax error
+dim_proc	a(3, 4) As Long	accepted	
+dim_proc	a$(3, 4) As Long	syntax	Syntax error
+dim_proc	[a b](3, 4) As Long	syntax	Syntax error
+dim_proc	Name(3, 4) As Long	accepted	
+dim_proc	Date(3, 4) As Long	syntax	Syntax error
+dim_proc	Me(3, 4) As Long	syntax	Syntax error
+dim_proc	a(1 To 3, 2 To 5)	accepted	
+dim_proc	a$(1 To 3, 2 To 5)	accepted	
+dim_proc	[a b](1 To 3, 2 To 5)	syntax	Syntax error
+dim_proc	Name(1 To 3, 2 To 5)	accepted	
+dim_proc	Date(1 To 3, 2 To 5)	syntax	Syntax error
+dim_proc	Me(1 To 3, 2 To 5)	syntax	Syntax error
+dim_proc	a()	accepted	
+dim_proc	a$()	accepted	
+dim_proc	[a b]()	syntax	Syntax error
+dim_proc	Name()	accepted	
+dim_proc	Date()	syntax	Syntax error
+dim_proc	Me()	syntax	Syntax error
+dim_proc	a(,) As Long	syntax	Syntax error
+dim_proc	a$(,) As Long	syntax	Syntax error
+dim_proc	[a b](,) As Long	syntax	Syntax error
+dim_proc	Name(,) As Long	syntax	Syntax error
+dim_proc	Date(,) As Long	syntax	Syntax error
+dim_proc	Me(,) As Long	syntax	Syntax error
+dim_proc	a(1 To) As Long	syntax	Syntax error
+dim_proc	a$(1 To) As Long	syntax	Syntax error
+dim_proc	[a b](1 To) As Long	syntax	Syntax error
+dim_proc	Name(1 To) As Long	syntax	Syntax error
+dim_proc	Date(1 To) As Long	syntax	Syntax error
+dim_proc	Me(1 To) As Long	syntax	Syntax error
+dim_proc	a(To 3) As Long	syntax	Syntax error
+dim_proc	a$(To 3) As Long	syntax	Syntax error
+dim_proc	[a b](To 3) As Long	syntax	Syntax error
+dim_proc	Name(To 3) As Long	syntax	Syntax error
+dim_proc	Date(To 3) As Long	syntax	Syntax error
+dim_proc	Me(To 3) As Long	syntax	Syntax error
+dim_proc	a(3	syntax	Syntax error
+dim_proc	a$(3	syntax	Syntax error
+dim_proc	[a b](3	syntax	Syntax error
+dim_proc	Name(3	syntax	Syntax error
+dim_proc	Date(3	syntax	Syntax error
+dim_proc	Me(3	syntax	Syntax error
+dim_proc	a3 As Long	accepted	
+dim_proc	a$3 As Long	syntax	Syntax error
+dim_proc	[a b]3 As Long	syntax	Syntax error
+dim_proc	Name3 As Long	accepted	
+dim_proc	Date3 As Long	accepted	
+dim_proc	Me3 As Long	accepted	
+dim_proc	a As	syntax	Syntax error
+dim_proc	a$ As	syntax	Syntax error
+dim_proc	[a b] As	syntax	Syntax error
+dim_proc	Name As	syntax	Syntax error
+dim_proc	Date As	syntax	Syntax error
+dim_proc	Me As	syntax	Syntax error
+dim_proc	a As New Collection	accepted	
+dim_proc	a$ As New Collection	syntax	Syntax error
+dim_proc	[a b] As New Collection	syntax	Syntax error
+dim_proc	Name As New Collection	accepted	
+dim_proc	Date As New Collection	syntax	Syntax error
+dim_proc	Me As New Collection	syntax	Syntax error
+dim_proc	a As New Long	syntax	Syntax error
+dim_proc	a$ As New Long	syntax	Syntax error
+dim_proc	[a b] As New Long	syntax	Syntax error
+dim_proc	Name As New Long	syntax	Syntax error
+dim_proc	Date As New Long	syntax	Syntax error
+dim_proc	Me As New Long	syntax	Syntax error
+dim_proc	a As New Object	syntax	Syntax error
+dim_proc	a$ As New Object	syntax	Syntax error
+dim_proc	[a b] As New Object	syntax	Syntax error
+dim_proc	Name As New Object	syntax	Syntax error
+dim_proc	Date As New Object	syntax	Syntax error
+dim_proc	Me As New Object	syntax	Syntax error
+dim_proc	a As String * 3	accepted	
+dim_proc	a$ As String * 3	syntax	Syntax error
+dim_proc	[a b] As String * 3	syntax	Syntax error
+dim_proc	Name As String * 3	accepted	
+dim_proc	Date As String * 3	syntax	Syntax error
+dim_proc	Me As String * 3	syntax	Syntax error
+dim_proc	a As String * 0	syntax	Invalid length for fixed-length string
+dim_proc	a$ As String * 0	syntax	Syntax error
+dim_proc	[a b] As String * 0	syntax	Syntax error
+dim_proc	Name As String * 0	syntax	Invalid length for fixed-length string
+dim_proc	Date As String * 0	syntax	Syntax error
+dim_proc	Me As String * 0	syntax	Syntax error
+dim_proc	a As String * 65535	syntax	Invalid length for fixed-length string
+dim_proc	a$ As String * 65535	syntax	Syntax error
+dim_proc	[a b] As String * 65535	syntax	Syntax error
+dim_proc	Name As String * 65535	syntax	Invalid length for fixed-length string
+dim_proc	Date As String * 65535	syntax	Syntax error
+dim_proc	Me As String * 65535	syntax	Syntax error
+dim_proc	a As String * 65526	accepted	
+dim_proc	a$ As String * 65526	syntax	Syntax error
+dim_proc	[a b] As String * 65526	syntax	Syntax error
+dim_proc	Name As String * 65526	accepted	
+dim_proc	Date As String * 65526	syntax	Syntax error
+dim_proc	Me As String * 65526	syntax	Syntax error
+dim_proc	a As String * n	semantic	Constant expression required
+dim_proc	a$ As String * n	syntax	Syntax error
+dim_proc	[a b] As String * n	syntax	Syntax error
+dim_proc	Name As String * n	semantic	Constant expression required
+dim_proc	Date As String * n	syntax	Syntax error
+dim_proc	Me As String * n	syntax	Syntax error
+dim_proc	a As Object	accepted	
+dim_proc	a$ As Object	syntax	Syntax error
+dim_proc	[a b] As Object	syntax	Syntax error
+dim_proc	Name As Object	accepted	
+dim_proc	Date As Object	syntax	Syntax error
+dim_proc	Me As Object	syntax	Syntax error
+dim_proc	a As Variant	accepted	
+dim_proc	a$ As Variant	syntax	Syntax error
+dim_proc	[a b] As Variant	syntax	Syntax error
+dim_proc	Name As Variant	accepted	
+dim_proc	Date As Variant	syntax	Syntax error
+dim_proc	Me As Variant	syntax	Syntax error
+dim_proc	a As Any	syntax	Syntax error
+dim_proc	a$ As Any	syntax	Syntax error
+dim_proc	[a b] As Any	syntax	Syntax error
+dim_proc	Name As Any	syntax	Syntax error
+dim_proc	Date As Any	syntax	Syntax error
+dim_proc	Me As Any	syntax	Syntax error
+dim_proc	a As Decimal	syntax	Syntax error
+dim_proc	a$ As Decimal	syntax	Syntax error
+dim_proc	[a b] As Decimal	syntax	Syntax error
+dim_proc	Name As Decimal	syntax	Syntax error
+dim_proc	Date As Decimal	syntax	Syntax error
+dim_proc	Me As Decimal	syntax	Syntax error
+dim_proc	a As Class1	semantic	User-defined type not defined
+dim_proc	a$ As Class1	syntax	Syntax error
+dim_proc	[a b] As Class1	syntax	Syntax error
+dim_proc	Name As Class1	semantic	User-defined type not defined
+dim_proc	Date As Class1	syntax	Syntax error
+dim_proc	Me As Class1	syntax	Syntax error
+dim_proc	a As Class1.Sub1	semantic	User-defined type not defined
+dim_proc	a$ As Class1.Sub1	syntax	Syntax error
+dim_proc	[a b] As Class1.Sub1	syntax	Syntax error
+dim_proc	Name As Class1.Sub1	semantic	User-defined type not defined
+dim_proc	Date As Class1.Sub1	syntax	Syntax error
+dim_proc	Me As Class1.Sub1	syntax	Syntax error
+dim_proc	a As VB.Form	accepted	
+dim_proc	a$ As VB.Form	syntax	Syntax error
+dim_proc	[a b] As VB.Form	syntax	Syntax error
+dim_proc	Name As VB.Form	accepted	
+dim_proc	Date As VB.Form	syntax	Syntax error
+dim_proc	Me As VB.Form	syntax	Syntax error
+dim_proc	a = 1	syntax	Syntax error
+dim_proc	a$ = 1	syntax	Syntax error
+dim_proc	[a b] = 1	syntax	Syntax error
+dim_proc	Name = 1	syntax	Syntax error
+dim_proc	Date = 1	syntax	Syntax error
+dim_proc	Me = 1	syntax	Syntax error
+dim_proc	a As Long = 1	syntax	Syntax error
+dim_proc	a$ As Long = 1	syntax	Syntax error
+dim_proc	[a b] As Long = 1	syntax	Syntax error
+dim_proc	Name As Long = 1	syntax	Syntax error
+dim_proc	Date As Long = 1	syntax	Syntax error
+dim_proc	Me As Long = 1	syntax	Syntax error
+dim_proc	a(3) = 1	syntax	Syntax error
+dim_proc	a$(3) = 1	syntax	Syntax error
+dim_proc	[a b](3) = 1	syntax	Syntax error
+dim_proc	Name(3) = 1	syntax	Syntax error
+dim_proc	Date(3) = 1	syntax	Syntax error
+dim_proc	Me(3) = 1	syntax	Syntax error
+dim_proc	a, b	accepted	
+dim_proc	a$, b	accepted	
+dim_proc	[a b], b	syntax	Syntax error
+dim_proc	Name, b	accepted	
+dim_proc	Date, b	syntax	Syntax error
+dim_proc	Me, b	syntax	Syntax error
+dim_proc	a, b As Long	accepted	
+dim_proc	a$, b As Long	accepted	
+dim_proc	[a b], b As Long	syntax	Syntax error
+dim_proc	Name, b As Long	accepted	
+dim_proc	Date, b As Long	syntax	Syntax error
+dim_proc	Me, b As Long	syntax	Syntax error
+dim_proc	a As Long, b	accepted	
+dim_proc	a$ As Long, b	syntax	Syntax error
+dim_proc	[a b] As Long, b	syntax	Syntax error
+dim_proc	Name As Long, b	accepted	
+dim_proc	Date As Long, b	syntax	Syntax error
+dim_proc	Me As Long, b	syntax	Syntax error
+dim_proc	a As Long,	syntax	Syntax error
+dim_proc	a$ As Long,	syntax	Syntax error
+dim_proc	[a b] As Long,	syntax	Syntax error
+dim_proc	Name As Long,	syntax	Syntax error
+dim_proc	Date As Long,	syntax	Syntax error
+dim_proc	Me As Long,	syntax	Syntax error
+dim_proc	a As Long b	syntax	Syntax error
+dim_proc	a$ As Long b	syntax	Syntax error
+dim_proc	[a b] As Long b	syntax	Syntax error
+dim_proc	Name As Long b	syntax	Syntax error
+dim_proc	Date As Long b	syntax	Syntax error
+dim_proc	Me As Long b	syntax	Syntax error
+dim_proc	WithEvents a As Class1	syntax	Syntax error
+dim_proc	WithEvents a	syntax	Syntax error
+dim_proc	a WithEvents As Class1	syntax	Syntax error
+dim_proc	a$ WithEvents As Class1	syntax	Syntax error
+dim_proc	[a b] WithEvents As Class1	syntax	Syntax error
+dim_proc	Name WithEvents As Class1	syntax	Syntax error
+dim_proc	Date WithEvents As Class1	syntax	Syntax error
+dim_proc	Me WithEvents As Class1	syntax	Syntax error
+dim_proc	a As Integer(3)	syntax	Syntax error
+dim_proc	a$ As Integer(3)	syntax	Syntax error
+dim_proc	[a b] As Integer(3)	syntax	Syntax error
+dim_proc	Name As Integer(3)	syntax	Syntax error
+dim_proc	Date As Integer(3)	syntax	Syntax error
+dim_proc	Me As Integer(3)	syntax	Syntax error
+dim_proc	a As Long()	syntax	Syntax error
+dim_proc	a$ As Long()	syntax	Syntax error
+dim_proc	[a b] As Long()	syntax	Syntax error
+dim_proc	Name As Long()	syntax	Syntax error
+dim_proc	Date As Long()	syntax	Syntax error
+dim_proc	Me As Long()	syntax	Syntax error
+dim_proc	a() As Long()	syntax	Syntax error
+dim_proc	a$() As Long()	syntax	Syntax error
+dim_proc	[a b]() As Long()	syntax	Syntax error
+dim_proc	Name() As Long()	syntax	Syntax error
+dim_proc	Date() As Long()	syntax	Syntax error
+dim_proc	Me() As Long()	syntax	Syntax error
+static_proc	a	accepted	
+static_proc	a$	accepted	
+static_proc	[a b]	syntax	Syntax error
+static_proc	Name	accepted	
+static_proc	Date	syntax	Syntax error
+static_proc	Me	syntax	Syntax error
+static_proc	a As Long	accepted	
+static_proc	a$ As Long	syntax	Syntax error
+static_proc	[a b] As Long	syntax	Syntax error
+static_proc	Name As Long	accepted	
+static_proc	Date As Long	syntax	Syntax error
+static_proc	Me As Long	syntax	Syntax error
+static_proc	a() As Long	accepted	
+static_proc	a$() As Long	syntax	Syntax error
+static_proc	[a b]() As Long	syntax	Syntax error
+static_proc	Name() As Long	accepted	
+static_proc	Date() As Long	syntax	Syntax error
+static_proc	Me() As Long	syntax	Syntax error
+static_proc	a(3) As Long	accepted	
+static_proc	a$(3) As Long	syntax	Syntax error
+static_proc	[a b](3) As Long	syntax	Syntax error
+static_proc	Name(3) As Long	accepted	
+static_proc	Date(3) As Long	syntax	Syntax error
+static_proc	Me(3) As Long	syntax	Syntax error
+static_proc	a(1 To 3) As Long	accepted	
+static_proc	a$(1 To 3) As Long	syntax	Syntax error
+static_proc	[a b](1 To 3) As Long	syntax	Syntax error
+static_proc	Name(1 To 3) As Long	accepted	
+static_proc	Date(1 To 3) As Long	syntax	Syntax error
+static_proc	Me(1 To 3) As Long	syntax	Syntax error
+static_proc	a(3, 4) As Long	accepted	
+static_proc	a$(3, 4) As Long	syntax	Syntax error
+static_proc	[a b](3, 4) As Long	syntax	Syntax error
+static_proc	Name(3, 4) As Long	accepted	
+static_proc	Date(3, 4) As Long	syntax	Syntax error
+static_proc	Me(3, 4) As Long	syntax	Syntax error
+static_proc	a(1 To 3, 2 To 5)	accepted	
+static_proc	a$(1 To 3, 2 To 5)	accepted	
+static_proc	[a b](1 To 3, 2 To 5)	syntax	Syntax error
+static_proc	Name(1 To 3, 2 To 5)	accepted	
+static_proc	Date(1 To 3, 2 To 5)	syntax	Syntax error
+static_proc	Me(1 To 3, 2 To 5)	syntax	Syntax error
+static_proc	a()	accepted	
+static_proc	a$()	accepted	
+static_proc	[a b]()	syntax	Syntax error
+static_proc	Name()	accepted	
+static_proc	Date()	syntax	Syntax error
+static_proc	Me()	syntax	Syntax error
+static_proc	a(,) As Long	syntax	Syntax error
+static_proc	a$(,) As Long	syntax	Syntax error
+static_proc	[a b](,) As Long	syntax	Syntax error
+static_proc	Name(,) As Long	syntax	Syntax error
+static_proc	Date(,) As Long	syntax	Syntax error
+static_proc	Me(,) As Long	syntax	Syntax error
+static_proc	a(1 To) As Long	syntax	Syntax error
+static_proc	a$(1 To) As Long	syntax	Syntax error
+static_proc	[a b](1 To) As Long	syntax	Syntax error
+static_proc	Name(1 To) As Long	syntax	Syntax error
+static_proc	Date(1 To) As Long	syntax	Syntax error
+static_proc	Me(1 To) As Long	syntax	Syntax error
+static_proc	a(To 3) As Long	syntax	Syntax error
+static_proc	a$(To 3) As Long	syntax	Syntax error
+static_proc	[a b](To 3) As Long	syntax	Syntax error
+static_proc	Name(To 3) As Long	syntax	Syntax error
+static_proc	Date(To 3) As Long	syntax	Syntax error
+static_proc	Me(To 3) As Long	syntax	Syntax error
+static_proc	a(3	syntax	Syntax error
+static_proc	a$(3	syntax	Syntax error
+static_proc	[a b](3	syntax	Syntax error
+static_proc	Name(3	syntax	Syntax error
+static_proc	Date(3	syntax	Syntax error
+static_proc	Me(3	syntax	Syntax error
+static_proc	a3 As Long	accepted	
+static_proc	a$3 As Long	syntax	Syntax error
+static_proc	[a b]3 As Long	syntax	Syntax error
+static_proc	Name3 As Long	accepted	
+static_proc	Date3 As Long	accepted	
+static_proc	Me3 As Long	accepted	
+static_proc	a As	syntax	Syntax error
+static_proc	a$ As	syntax	Syntax error
+static_proc	[a b] As	syntax	Syntax error
+static_proc	Name As	syntax	Syntax error
+static_proc	Date As	syntax	Syntax error
+static_proc	Me As	syntax	Syntax error
+static_proc	a As New Collection	accepted	
+static_proc	a$ As New Collection	syntax	Syntax error
+static_proc	[a b] As New Collection	syntax	Syntax error
+static_proc	Name As New Collection	accepted	
+static_proc	Date As New Collection	syntax	Syntax error
+static_proc	Me As New Collection	syntax	Syntax error
+static_proc	a As New Long	syntax	Syntax error
+static_proc	a$ As New Long	syntax	Syntax error
+static_proc	[a b] As New Long	syntax	Syntax error
+static_proc	Name As New Long	syntax	Syntax error
+static_proc	Date As New Long	syntax	Syntax error
+static_proc	Me As New Long	syntax	Syntax error
+static_proc	a As New Object	syntax	Syntax error
+static_proc	a$ As New Object	syntax	Syntax error
+static_proc	[a b] As New Object	syntax	Syntax error
+static_proc	Name As New Object	syntax	Syntax error
+static_proc	Date As New Object	syntax	Syntax error
+static_proc	Me As New Object	syntax	Syntax error
+static_proc	a As String * 3	accepted	
+static_proc	a$ As String * 3	syntax	Syntax error
+static_proc	[a b] As String * 3	syntax	Syntax error
+static_proc	Name As String * 3	accepted	
+static_proc	Date As String * 3	syntax	Syntax error
+static_proc	Me As String * 3	syntax	Syntax error
+static_proc	a As String * 0	syntax	Invalid length for fixed-length string
+static_proc	a$ As String * 0	syntax	Syntax error
+static_proc	[a b] As String * 0	syntax	Syntax error
+static_proc	Name As String * 0	syntax	Invalid length for fixed-length string
+static_proc	Date As String * 0	syntax	Syntax error
+static_proc	Me As String * 0	syntax	Syntax error
+static_proc	a As String * 65535	syntax	Invalid length for fixed-length string
+static_proc	a$ As String * 65535	syntax	Syntax error
+static_proc	[a b] As String * 65535	syntax	Syntax error
+static_proc	Name As String * 65535	syntax	Invalid length for fixed-length string
+static_proc	Date As String * 65535	syntax	Syntax error
+static_proc	Me As String * 65535	syntax	Syntax error
+static_proc	a As String * 65526	accepted	
+static_proc	a$ As String * 65526	syntax	Syntax error
+static_proc	[a b] As String * 65526	syntax	Syntax error
+static_proc	Name As String * 65526	accepted	
+static_proc	Date As String * 65526	syntax	Syntax error
+static_proc	Me As String * 65526	syntax	Syntax error
+static_proc	a As String * n	semantic	Constant expression required
+static_proc	a$ As String * n	syntax	Syntax error
+static_proc	[a b] As String * n	syntax	Syntax error
+static_proc	Name As String * n	semantic	Constant expression required
+static_proc	Date As String * n	syntax	Syntax error
+static_proc	Me As String * n	syntax	Syntax error
+static_proc	a As Object	accepted	
+static_proc	a$ As Object	syntax	Syntax error
+static_proc	[a b] As Object	syntax	Syntax error
+static_proc	Name As Object	accepted	
+static_proc	Date As Object	syntax	Syntax error
+static_proc	Me As Object	syntax	Syntax error
+static_proc	a As Variant	accepted	
+static_proc	a$ As Variant	syntax	Syntax error
+static_proc	[a b] As Variant	syntax	Syntax error
+static_proc	Name As Variant	accepted	
+static_proc	Date As Variant	syntax	Syntax error
+static_proc	Me As Variant	syntax	Syntax error
+static_proc	a As Any	syntax	Syntax error
+static_proc	a$ As Any	syntax	Syntax error
+static_proc	[a b] As Any	syntax	Syntax error
+static_proc	Name As Any	syntax	Syntax error
+static_proc	Date As Any	syntax	Syntax error
+static_proc	Me As Any	syntax	Syntax error
+static_proc	a As Decimal	syntax	Syntax error
+static_proc	a$ As Decimal	syntax	Syntax error
+static_proc	[a b] As Decimal	syntax	Syntax error
+static_proc	Name As Decimal	syntax	Syntax error
+static_proc	Date As Decimal	syntax	Syntax error
+static_proc	Me As Decimal	syntax	Syntax error
+static_proc	a As Class1	semantic	User-defined type not defined
+static_proc	a$ As Class1	syntax	Syntax error
+static_proc	[a b] As Class1	syntax	Syntax error
+static_proc	Name As Class1	semantic	User-defined type not defined
+static_proc	Date As Class1	syntax	Syntax error
+static_proc	Me As Class1	syntax	Syntax error
+static_proc	a As Class1.Sub1	semantic	User-defined type not defined
+static_proc	a$ As Class1.Sub1	syntax	Syntax error
+static_proc	[a b] As Class1.Sub1	syntax	Syntax error
+static_proc	Name As Class1.Sub1	semantic	User-defined type not defined
+static_proc	Date As Class1.Sub1	syntax	Syntax error
+static_proc	Me As Class1.Sub1	syntax	Syntax error
+static_proc	a As VB.Form	accepted	
+static_proc	a$ As VB.Form	syntax	Syntax error
+static_proc	[a b] As VB.Form	syntax	Syntax error
+static_proc	Name As VB.Form	accepted	
+static_proc	Date As VB.Form	syntax	Syntax error
+static_proc	Me As VB.Form	syntax	Syntax error
+static_proc	a = 1	syntax	Syntax error
+static_proc	a$ = 1	syntax	Syntax error
+static_proc	[a b] = 1	syntax	Syntax error
+static_proc	Name = 1	syntax	Syntax error
+static_proc	Date = 1	syntax	Syntax error
+static_proc	Me = 1	syntax	Syntax error
+static_proc	a As Long = 1	syntax	Syntax error
+static_proc	a$ As Long = 1	syntax	Syntax error
+static_proc	[a b] As Long = 1	syntax	Syntax error
+static_proc	Name As Long = 1	syntax	Syntax error
+static_proc	Date As Long = 1	syntax	Syntax error
+static_proc	Me As Long = 1	syntax	Syntax error
+static_proc	a(3) = 1	syntax	Syntax error
+static_proc	a$(3) = 1	syntax	Syntax error
+static_proc	[a b](3) = 1	syntax	Syntax error
+static_proc	Name(3) = 1	syntax	Syntax error
+static_proc	Date(3) = 1	syntax	Syntax error
+static_proc	Me(3) = 1	syntax	Syntax error
+static_proc	a, b	accepted	
+static_proc	a$, b	accepted	
+static_proc	[a b], b	syntax	Syntax error
+static_proc	Name, b	accepted	
+static_proc	Date, b	syntax	Syntax error
+static_proc	Me, b	syntax	Syntax error
+static_proc	a, b As Long	accepted	
+static_proc	a$, b As Long	accepted	
+static_proc	[a b], b As Long	syntax	Syntax error
+static_proc	Name, b As Long	accepted	
+static_proc	Date, b As Long	syntax	Syntax error
+static_proc	Me, b As Long	syntax	Syntax error
+static_proc	a As Long, b	accepted	
+static_proc	a$ As Long, b	syntax	Syntax error
+static_proc	[a b] As Long, b	syntax	Syntax error
+static_proc	Name As Long, b	accepted	
+static_proc	Date As Long, b	syntax	Syntax error
+static_proc	Me As Long, b	syntax	Syntax error
+static_proc	a As Long,	syntax	Syntax error
+static_proc	a$ As Long,	syntax	Syntax error
+static_proc	[a b] As Long,	syntax	Syntax error
+static_proc	Name As Long,	syntax	Syntax error
+static_proc	Date As Long,	syntax	Syntax error
+static_proc	Me As Long,	syntax	Syntax error
+static_proc	a As Long b	syntax	Syntax error
+static_proc	a$ As Long b	syntax	Syntax error
+static_proc	[a b] As Long b	syntax	Syntax error
+static_proc	Name As Long b	syntax	Syntax error
+static_proc	Date As Long b	syntax	Syntax error
+static_proc	Me As Long b	syntax	Syntax error
+static_proc	WithEvents a As Class1	syntax	Syntax error
+static_proc	WithEvents a	syntax	Syntax error
+static_proc	a WithEvents As Class1	syntax	Syntax error
+static_proc	a$ WithEvents As Class1	syntax	Syntax error
+static_proc	[a b] WithEvents As Class1	syntax	Syntax error
+static_proc	Name WithEvents As Class1	syntax	Syntax error
+static_proc	Date WithEvents As Class1	syntax	Syntax error
+static_proc	Me WithEvents As Class1	syntax	Syntax error
+static_proc	a As Integer(3)	syntax	Syntax error
+static_proc	a$ As Integer(3)	syntax	Syntax error
+static_proc	[a b] As Integer(3)	syntax	Syntax error
+static_proc	Name As Integer(3)	syntax	Syntax error
+static_proc	Date As Integer(3)	syntax	Syntax error
+static_proc	Me As Integer(3)	syntax	Syntax error
+static_proc	a As Long()	syntax	Syntax error
+static_proc	a$ As Long()	syntax	Syntax error
+static_proc	[a b] As Long()	syntax	Syntax error
+static_proc	Name As Long()	syntax	Syntax error
+static_proc	Date As Long()	syntax	Syntax error
+static_proc	Me As Long()	syntax	Syntax error
+static_proc	a() As Long()	syntax	Syntax error
+static_proc	a$() As Long()	syntax	Syntax error
+static_proc	[a b]() As Long()	syntax	Syntax error
+static_proc	Name() As Long()	syntax	Syntax error
+static_proc	Date() As Long()	syntax	Syntax error
+static_proc	Me() As Long()	syntax	Syntax error
+const_mod	a	syntax	Expected: As or =
+const_mod	a$	syntax	Expected: =
+const_mod	[a b]	syntax	Expected: identifier
+const_mod	Name	syntax	Expected: As or =
+const_mod	Date	syntax	Expected: identifier
+const_mod	Me	syntax	Expected: identifier
+const_mod	a As Long	syntax	Expected: =
+const_mod	a$ As Long	syntax	Expected: =
+const_mod	[a b] As Long	syntax	Expected: identifier
+const_mod	Name As Long	syntax	Expected: =
+const_mod	Date As Long	syntax	Expected: identifier
+const_mod	Me As Long	syntax	Expected: identifier
+const_mod	a() As Long	syntax	Expected: As or =
+const_mod	a$() As Long	syntax	Expected: =
+const_mod	[a b]() As Long	syntax	Expected: identifier
+const_mod	Name() As Long	syntax	Expected: As or =
+const_mod	Date() As Long	syntax	Expected: identifier
+const_mod	Me() As Long	syntax	Expected: identifier
+const_mod	a(3) As Long	syntax	Expected: As or =
+const_mod	a$(3) As Long	syntax	Expected: =
+const_mod	[a b](3) As Long	syntax	Expected: identifier
+const_mod	Name(3) As Long	syntax	Expected: As or =
+const_mod	Date(3) As Long	syntax	Expected: identifier
+const_mod	Me(3) As Long	syntax	Expected: identifier
+const_mod	a(1 To 3) As Long	syntax	Expected: As or =
+const_mod	a$(1 To 3) As Long	syntax	Expected: =
+const_mod	[a b](1 To 3) As Long	syntax	Expected: identifier
+const_mod	Name(1 To 3) As Long	syntax	Expected: As or =
+const_mod	Date(1 To 3) As Long	syntax	Expected: identifier
+const_mod	Me(1 To 3) As Long	syntax	Expected: identifier
+const_mod	a(3, 4) As Long	syntax	Expected: As or =
+const_mod	a$(3, 4) As Long	syntax	Expected: =
+const_mod	[a b](3, 4) As Long	syntax	Expected: identifier
+const_mod	Name(3, 4) As Long	syntax	Expected: As or =
+const_mod	Date(3, 4) As Long	syntax	Expected: identifier
+const_mod	Me(3, 4) As Long	syntax	Expected: identifier
+const_mod	a(1 To 3, 2 To 5)	syntax	Expected: As or =
+const_mod	a$(1 To 3, 2 To 5)	syntax	Expected: =
+const_mod	[a b](1 To 3, 2 To 5)	syntax	Expected: identifier
+const_mod	Name(1 To 3, 2 To 5)	syntax	Expected: As or =
+const_mod	Date(1 To 3, 2 To 5)	syntax	Expected: identifier
+const_mod	Me(1 To 3, 2 To 5)	syntax	Expected: identifier
+const_mod	a()	syntax	Expected: As or =
+const_mod	a$()	syntax	Expected: =
+const_mod	[a b]()	syntax	Expected: identifier
+const_mod	Name()	syntax	Expected: As or =
+const_mod	Date()	syntax	Expected: identifier
+const_mod	Me()	syntax	Expected: identifier
+const_mod	a(,) As Long	syntax	Expected: As or =
+const_mod	a$(,) As Long	syntax	Expected: =
+const_mod	[a b](,) As Long	syntax	Expected: identifier
+const_mod	Name(,) As Long	syntax	Expected: As or =
+const_mod	Date(,) As Long	syntax	Expected: identifier
+const_mod	Me(,) As Long	syntax	Expected: identifier
+const_mod	a(1 To) As Long	syntax	Expected: As or =
+const_mod	a$(1 To) As Long	syntax	Expected: =
+const_mod	[a b](1 To) As Long	syntax	Expected: identifier
+const_mod	Name(1 To) As Long	syntax	Expected: As or =
+const_mod	Date(1 To) As Long	syntax	Expected: identifier
+const_mod	Me(1 To) As Long	syntax	Expected: identifier
+const_mod	a(To 3) As Long	syntax	Expected: As or =
+const_mod	a$(To 3) As Long	syntax	Expected: =
+const_mod	[a b](To 3) As Long	syntax	Expected: identifier
+const_mod	Name(To 3) As Long	syntax	Expected: As or =
+const_mod	Date(To 3) As Long	syntax	Expected: identifier
+const_mod	Me(To 3) As Long	syntax	Expected: identifier
+const_mod	a(3	syntax	Expected: As or =
+const_mod	a$(3	syntax	Expected: =
+const_mod	[a b](3	syntax	Expected: identifier
+const_mod	Name(3	syntax	Expected: As or =
+const_mod	Date(3	syntax	Expected: identifier
+const_mod	Me(3	syntax	Expected: identifier
+const_mod	a3 As Long	syntax	Expected: =
+const_mod	a$3 As Long	syntax	Expected: =
+const_mod	[a b]3 As Long	syntax	Expected: identifier
+const_mod	Name3 As Long	syntax	Expected: =
+const_mod	Date3 As Long	syntax	Expected: =
+const_mod	Me3 As Long	syntax	Expected: =
+const_mod	a As	syntax	Expected: type name
+const_mod	a$ As	syntax	Expected: =
+const_mod	[a b] As	syntax	Expected: identifier
+const_mod	Name As	syntax	Expected: type name
+const_mod	Date As	syntax	Expected: identifier
+const_mod	Me As	syntax	Expected: identifier
+const_mod	a As New Collection	syntax	Expected: type name
+const_mod	a$ As New Collection	syntax	Expected: =
+const_mod	[a b] As New Collection	syntax	Expected: identifier
+const_mod	Name As New Collection	syntax	Expected: type name
+const_mod	Date As New Collection	syntax	Expected: identifier
+const_mod	Me As New Collection	syntax	Expected: identifier
+const_mod	a As New Long	syntax	Expected: type name
+const_mod	a$ As New Long	syntax	Expected: =
+const_mod	[a b] As New Long	syntax	Expected: identifier
+const_mod	Name As New Long	syntax	Expected: type name
+const_mod	Date As New Long	syntax	Expected: identifier
+const_mod	Me As New Long	syntax	Expected: identifier
+const_mod	a As New Object	syntax	Expected: type name
+const_mod	a$ As New Object	syntax	Expected: =
+const_mod	[a b] As New Object	syntax	Expected: identifier
+const_mod	Name As New Object	syntax	Expected: type name
+const_mod	Date As New Object	syntax	Expected: identifier
+const_mod	Me As New Object	syntax	Expected: identifier
+const_mod	a As String * 3	syntax	Expected: =
+const_mod	a$ As String * 3	syntax	Expected: =
+const_mod	[a b] As String * 3	syntax	Expected: identifier
+const_mod	Name As String * 3	syntax	Expected: =
+const_mod	Date As String * 3	syntax	Expected: identifier
+const_mod	Me As String * 3	syntax	Expected: identifier
+const_mod	a As String * 0	syntax	Expected: =
+const_mod	a$ As String * 0	syntax	Expected: =
+const_mod	[a b] As String * 0	syntax	Expected: identifier
+const_mod	Name As String * 0	syntax	Expected: =
+const_mod	Date As String * 0	syntax	Expected: identifier
+const_mod	Me As String * 0	syntax	Expected: identifier
+const_mod	a As String * 65535	syntax	Expected: =
+const_mod	a$ As String * 65535	syntax	Expected: =
+const_mod	[a b] As String * 65535	syntax	Expected: identifier
+const_mod	Name As String * 65535	syntax	Expected: =
+const_mod	Date As String * 65535	syntax	Expected: identifier
+const_mod	Me As String * 65535	syntax	Expected: identifier
+const_mod	a As String * 65526	syntax	Expected: =
+const_mod	a$ As String * 65526	syntax	Expected: =
+const_mod	[a b] As String * 65526	syntax	Expected: identifier
+const_mod	Name As String * 65526	syntax	Expected: =
+const_mod	Date As String * 65526	syntax	Expected: identifier
+const_mod	Me As String * 65526	syntax	Expected: identifier
+const_mod	a As String * n	syntax	Expected: =
+const_mod	a$ As String * n	syntax	Expected: =
+const_mod	[a b] As String * n	syntax	Expected: identifier
+const_mod	Name As String * n	syntax	Expected: =
+const_mod	Date As String * n	syntax	Expected: identifier
+const_mod	Me As String * n	syntax	Expected: identifier
+const_mod	a As Object	syntax	Expected: =
+const_mod	a$ As Object	syntax	Expected: =
+const_mod	[a b] As Object	syntax	Expected: identifier
+const_mod	Name As Object	syntax	Expected: =
+const_mod	Date As Object	syntax	Expected: identifier
+const_mod	Me As Object	syntax	Expected: identifier
+const_mod	a As Variant	syntax	Expected: =
+const_mod	a$ As Variant	syntax	Expected: =
+const_mod	[a b] As Variant	syntax	Expected: identifier
+const_mod	Name As Variant	syntax	Expected: =
+const_mod	Date As Variant	syntax	Expected: identifier
+const_mod	Me As Variant	syntax	Expected: identifier
+const_mod	a As Any	syntax	Expected: type name
+const_mod	a$ As Any	syntax	Expected: =
+const_mod	[a b] As Any	syntax	Expected: identifier
+const_mod	Name As Any	syntax	Expected: type name
+const_mod	Date As Any	syntax	Expected: identifier
+const_mod	Me As Any	syntax	Expected: identifier
+const_mod	a As Decimal	syntax	Expected: type name
+const_mod	a$ As Decimal	syntax	Expected: =
+const_mod	[a b] As Decimal	syntax	Expected: identifier
+const_mod	Name As Decimal	syntax	Expected: type name
+const_mod	Date As Decimal	syntax	Expected: identifier
+const_mod	Me As Decimal	syntax	Expected: identifier
+const_mod	a As Class1	syntax	Expected: type name
+const_mod	a$ As Class1	syntax	Expected: =
+const_mod	[a b] As Class1	syntax	Expected: identifier
+const_mod	Name As Class1	syntax	Expected: type name
+const_mod	Date As Class1	syntax	Expected: identifier
+const_mod	Me As Class1	syntax	Expected: identifier
+const_mod	a As Class1.Sub1	syntax	Expected: type name
+const_mod	a$ As Class1.Sub1	syntax	Expected: =
+const_mod	[a b] As Class1.Sub1	syntax	Expected: identifier
+const_mod	Name As Class1.Sub1	syntax	Expected: type name
+const_mod	Date As Class1.Sub1	syntax	Expected: identifier
+const_mod	Me As Class1.Sub1	syntax	Expected: identifier
+const_mod	a As VB.Form	syntax	Expected: type name
+const_mod	a$ As VB.Form	syntax	Expected: =
+const_mod	[a b] As VB.Form	syntax	Expected: identifier
+const_mod	Name As VB.Form	syntax	Expected: type name
+const_mod	Date As VB.Form	syntax	Expected: identifier
+const_mod	Me As VB.Form	syntax	Expected: identifier
+const_mod	a = 1	accepted	
+const_mod	a$ = 1	accepted	
+const_mod	[a b] = 1	syntax	Expected: identifier
+const_mod	Name = 1	accepted	
+const_mod	Date = 1	syntax	Expected: identifier
+const_mod	Me = 1	syntax	Expected: identifier
+const_mod	a As Long = 1	accepted	
+const_mod	a$ As Long = 1	syntax	Expected: =
+const_mod	[a b] As Long = 1	syntax	Expected: identifier
+const_mod	Name As Long = 1	accepted	
+const_mod	Date As Long = 1	syntax	Expected: identifier
+const_mod	Me As Long = 1	syntax	Expected: identifier
+const_mod	a(3) = 1	syntax	Expected: As or =
+const_mod	a$(3) = 1	syntax	Expected: =
+const_mod	[a b](3) = 1	syntax	Expected: identifier
+const_mod	Name(3) = 1	syntax	Expected: As or =
+const_mod	Date(3) = 1	syntax	Expected: identifier
+const_mod	Me(3) = 1	syntax	Expected: identifier
+const_mod	a, b	syntax	Expected: As or =
+const_mod	a$, b	syntax	Expected: =
+const_mod	[a b], b	syntax	Expected: identifier
+const_mod	Name, b	syntax	Expected: As or =
+const_mod	Date, b	syntax	Expected: identifier
+const_mod	Me, b	syntax	Expected: identifier
+const_mod	a, b As Long	syntax	Expected: As or =
+const_mod	a$, b As Long	syntax	Expected: =
+const_mod	[a b], b As Long	syntax	Expected: identifier
+const_mod	Name, b As Long	syntax	Expected: As or =
+const_mod	Date, b As Long	syntax	Expected: identifier
+const_mod	Me, b As Long	syntax	Expected: identifier
+const_mod	a As Long, b	syntax	Expected: =
+const_mod	a$ As Long, b	syntax	Expected: =
+const_mod	[a b] As Long, b	syntax	Expected: identifier
+const_mod	Name As Long, b	syntax	Expected: =
+const_mod	Date As Long, b	syntax	Expected: identifier
+const_mod	Me As Long, b	syntax	Expected: identifier
+const_mod	a As Long,	syntax	Expected: =
+const_mod	a$ As Long,	syntax	Expected: =
+const_mod	[a b] As Long,	syntax	Expected: identifier
+const_mod	Name As Long,	syntax	Expected: =
+const_mod	Date As Long,	syntax	Expected: identifier
+const_mod	Me As Long,	syntax	Expected: identifier
+const_mod	a As Long b	syntax	Expected: =
+const_mod	a$ As Long b	syntax	Expected: =
+const_mod	[a b] As Long b	syntax	Expected: identifier
+const_mod	Name As Long b	syntax	Expected: =
+const_mod	Date As Long b	syntax	Expected: identifier
+const_mod	Me As Long b	syntax	Expected: identifier
+const_mod	WithEvents a As Class1	syntax	Expected: identifier
+const_mod	WithEvents a	syntax	Expected: identifier
+const_mod	a WithEvents As Class1	syntax	Expected: As or =
+const_mod	a$ WithEvents As Class1	syntax	Expected: =
+const_mod	[a b] WithEvents As Class1	syntax	Expected: identifier
+const_mod	Name WithEvents As Class1	syntax	Expected: As or =
+const_mod	Date WithEvents As Class1	syntax	Expected: identifier
+const_mod	Me WithEvents As Class1	syntax	Expected: identifier
+const_mod	a As Integer(3)	syntax	Expected: =
+const_mod	a$ As Integer(3)	syntax	Expected: =
+const_mod	[a b] As Integer(3)	syntax	Expected: identifier
+const_mod	Name As Integer(3)	syntax	Expected: =
+const_mod	Date As Integer(3)	syntax	Expected: identifier
+const_mod	Me As Integer(3)	syntax	Expected: identifier
+const_mod	a As Long()	syntax	Expected: =
+const_mod	a$ As Long()	syntax	Expected: =
+const_mod	[a b] As Long()	syntax	Expected: identifier
+const_mod	Name As Long()	syntax	Expected: =
+const_mod	Date As Long()	syntax	Expected: identifier
+const_mod	Me As Long()	syntax	Expected: identifier
+const_mod	a() As Long()	syntax	Expected: As or =
+const_mod	a$() As Long()	syntax	Expected: =
+const_mod	[a b]() As Long()	syntax	Expected: identifier
+const_mod	Name() As Long()	syntax	Expected: As or =
+const_mod	Date() As Long()	syntax	Expected: identifier
+const_mod	Me() As Long()	syntax	Expected: identifier
+const_proc	a	syntax	Syntax error
+const_proc	a$	syntax	Syntax error
+const_proc	[a b]	syntax	Syntax error
+const_proc	Name	syntax	Syntax error
+const_proc	Date	syntax	Syntax error
+const_proc	Me	syntax	Syntax error
+const_proc	a As Long	syntax	Syntax error
+const_proc	a$ As Long	syntax	Syntax error
+const_proc	[a b] As Long	syntax	Syntax error
+const_proc	Name As Long	syntax	Syntax error
+const_proc	Date As Long	syntax	Syntax error
+const_proc	Me As Long	syntax	Syntax error
+const_proc	a() As Long	syntax	Syntax error
+const_proc	a$() As Long	syntax	Syntax error
+const_proc	[a b]() As Long	syntax	Syntax error
+const_proc	Name() As Long	syntax	Syntax error
+const_proc	Date() As Long	syntax	Syntax error
+const_proc	Me() As Long	syntax	Syntax error
+const_proc	a(3) As Long	syntax	Syntax error
+const_proc	a$(3) As Long	syntax	Syntax error
+const_proc	[a b](3) As Long	syntax	Syntax error
+const_proc	Name(3) As Long	syntax	Syntax error
+const_proc	Date(3) As Long	syntax	Syntax error
+const_proc	Me(3) As Long	syntax	Syntax error
+const_proc	a(1 To 3) As Long	syntax	Syntax error
+const_proc	a$(1 To 3) As Long	syntax	Syntax error
+const_proc	[a b](1 To 3) As Long	syntax	Syntax error
+const_proc	Name(1 To 3) As Long	syntax	Syntax error
+const_proc	Date(1 To 3) As Long	syntax	Syntax error
+const_proc	Me(1 To 3) As Long	syntax	Syntax error
+const_proc	a(3, 4) As Long	syntax	Syntax error
+const_proc	a$(3, 4) As Long	syntax	Syntax error
+const_proc	[a b](3, 4) As Long	syntax	Syntax error
+const_proc	Name(3, 4) As Long	syntax	Syntax error
+const_proc	Date(3, 4) As Long	syntax	Syntax error
+const_proc	Me(3, 4) As Long	syntax	Syntax error
+const_proc	a(1 To 3, 2 To 5)	syntax	Syntax error
+const_proc	a$(1 To 3, 2 To 5)	syntax	Syntax error
+const_proc	[a b](1 To 3, 2 To 5)	syntax	Syntax error
+const_proc	Name(1 To 3, 2 To 5)	syntax	Syntax error
+const_proc	Date(1 To 3, 2 To 5)	syntax	Syntax error
+const_proc	Me(1 To 3, 2 To 5)	syntax	Syntax error
+const_proc	a()	syntax	Syntax error
+const_proc	a$()	syntax	Syntax error
+const_proc	[a b]()	syntax	Syntax error
+const_proc	Name()	syntax	Syntax error
+const_proc	Date()	syntax	Syntax error
+const_proc	Me()	syntax	Syntax error
+const_proc	a(,) As Long	syntax	Syntax error
+const_proc	a$(,) As Long	syntax	Syntax error
+const_proc	[a b](,) As Long	syntax	Syntax error
+const_proc	Name(,) As Long	syntax	Syntax error
+const_proc	Date(,) As Long	syntax	Syntax error
+const_proc	Me(,) As Long	syntax	Syntax error
+const_proc	a(1 To) As Long	syntax	Syntax error
+const_proc	a$(1 To) As Long	syntax	Syntax error
+const_proc	[a b](1 To) As Long	syntax	Syntax error
+const_proc	Name(1 To) As Long	syntax	Syntax error
+const_proc	Date(1 To) As Long	syntax	Syntax error
+const_proc	Me(1 To) As Long	syntax	Syntax error
+const_proc	a(To 3) As Long	syntax	Syntax error
+const_proc	a$(To 3) As Long	syntax	Syntax error
+const_proc	[a b](To 3) As Long	syntax	Syntax error
+const_proc	Name(To 3) As Long	syntax	Syntax error
+const_proc	Date(To 3) As Long	syntax	Syntax error
+const_proc	Me(To 3) As Long	syntax	Syntax error
+const_proc	a(3	syntax	Syntax error
+const_proc	a$(3	syntax	Syntax error
+const_proc	[a b](3	syntax	Syntax error
+const_proc	Name(3	syntax	Syntax error
+const_proc	Date(3	syntax	Syntax error
+const_proc	Me(3	syntax	Syntax error
+const_proc	a3 As Long	syntax	Syntax error
+const_proc	a$3 As Long	syntax	Syntax error
+const_proc	[a b]3 As Long	syntax	Syntax error
+const_proc	Name3 As Long	syntax	Syntax error
+const_proc	Date3 As Long	syntax	Syntax error
+const_proc	Me3 As Long	syntax	Syntax error
+const_proc	a As	syntax	Syntax error
+const_proc	a$ As	syntax	Syntax error
+const_proc	[a b] As	syntax	Syntax error
+const_proc	Name As	syntax	Syntax error
+const_proc	Date As	syntax	Syntax error
+const_proc	Me As	syntax	Syntax error
+const_proc	a As New Collection	syntax	Syntax error
+const_proc	a$ As New Collection	syntax	Syntax error
+const_proc	[a b] As New Collection	syntax	Syntax error
+const_proc	Name As New Collection	syntax	Syntax error
+const_proc	Date As New Collection	syntax	Syntax error
+const_proc	Me As New Collection	syntax	Syntax error
+const_proc	a As New Long	syntax	Syntax error
+const_proc	a$ As New Long	syntax	Syntax error
+const_proc	[a b] As New Long	syntax	Syntax error
+const_proc	Name As New Long	syntax	Syntax error
+const_proc	Date As New Long	syntax	Syntax error
+const_proc	Me As New Long	syntax	Syntax error
+const_proc	a As New Object	syntax	Syntax error
+const_proc	a$ As New Object	syntax	Syntax error
+const_proc	[a b] As New Object	syntax	Syntax error
+const_proc	Name As New Object	syntax	Syntax error
+const_proc	Date As New Object	syntax	Syntax error
+const_proc	Me As New Object	syntax	Syntax error
+const_proc	a As String * 3	syntax	Syntax error
+const_proc	a$ As String * 3	syntax	Syntax error
+const_proc	[a b] As String * 3	syntax	Syntax error
+const_proc	Name As String * 3	syntax	Syntax error
+const_proc	Date As String * 3	syntax	Syntax error
+const_proc	Me As String * 3	syntax	Syntax error
+const_proc	a As String * 0	syntax	Syntax error
+const_proc	a$ As String * 0	syntax	Syntax error
+const_proc	[a b] As String * 0	syntax	Syntax error
+const_proc	Name As String * 0	syntax	Syntax error
+const_proc	Date As String * 0	syntax	Syntax error
+const_proc	Me As String * 0	syntax	Syntax error
+const_proc	a As String * 65535	syntax	Syntax error
+const_proc	a$ As String * 65535	syntax	Syntax error
+const_proc	[a b] As String * 65535	syntax	Syntax error
+const_proc	Name As String * 65535	syntax	Syntax error
+const_proc	Date As String * 65535	syntax	Syntax error
+const_proc	Me As String * 65535	syntax	Syntax error
+const_proc	a As String * 65526	syntax	Syntax error
+const_proc	a$ As String * 65526	syntax	Syntax error
+const_proc	[a b] As String * 65526	syntax	Syntax error
+const_proc	Name As String * 65526	syntax	Syntax error
+const_proc	Date As String * 65526	syntax	Syntax error
+const_proc	Me As String * 65526	syntax	Syntax error
+const_proc	a As String * n	syntax	Syntax error
+const_proc	a$ As String * n	syntax	Syntax error
+const_proc	[a b] As String * n	syntax	Syntax error
+const_proc	Name As String * n	syntax	Syntax error
+const_proc	Date As String * n	syntax	Syntax error
+const_proc	Me As String * n	syntax	Syntax error
+const_proc	a As Object	syntax	Syntax error
+const_proc	a$ As Object	syntax	Syntax error
+const_proc	[a b] As Object	syntax	Syntax error
+const_proc	Name As Object	syntax	Syntax error
+const_proc	Date As Object	syntax	Syntax error
+const_proc	Me As Object	syntax	Syntax error
+const_proc	a As Variant	syntax	Syntax error
+const_proc	a$ As Variant	syntax	Syntax error
+const_proc	[a b] As Variant	syntax	Syntax error
+const_proc	Name As Variant	syntax	Syntax error
+const_proc	Date As Variant	syntax	Syntax error
+const_proc	Me As Variant	syntax	Syntax error
+const_proc	a As Any	syntax	Syntax error
+const_proc	a$ As Any	syntax	Syntax error
+const_proc	[a b] As Any	syntax	Syntax error
+const_proc	Name As Any	syntax	Syntax error
+const_proc	Date As Any	syntax	Syntax error
+const_proc	Me As Any	syntax	Syntax error
+const_proc	a As Decimal	syntax	Syntax error
+const_proc	a$ As Decimal	syntax	Syntax error
+const_proc	[a b] As Decimal	syntax	Syntax error
+const_proc	Name As Decimal	syntax	Syntax error
+const_proc	Date As Decimal	syntax	Syntax error
+const_proc	Me As Decimal	syntax	Syntax error
+const_proc	a As Class1	syntax	Syntax error
+const_proc	a$ As Class1	syntax	Syntax error
+const_proc	[a b] As Class1	syntax	Syntax error
+const_proc	Name As Class1	syntax	Syntax error
+const_proc	Date As Class1	syntax	Syntax error
+const_proc	Me As Class1	syntax	Syntax error
+const_proc	a As Class1.Sub1	syntax	Syntax error
+const_proc	a$ As Class1.Sub1	syntax	Syntax error
+const_proc	[a b] As Class1.Sub1	syntax	Syntax error
+const_proc	Name As Class1.Sub1	syntax	Syntax error
+const_proc	Date As Class1.Sub1	syntax	Syntax error
+const_proc	Me As Class1.Sub1	syntax	Syntax error
+const_proc	a As VB.Form	syntax	Syntax error
+const_proc	a$ As VB.Form	syntax	Syntax error
+const_proc	[a b] As VB.Form	syntax	Syntax error
+const_proc	Name As VB.Form	syntax	Syntax error
+const_proc	Date As VB.Form	syntax	Syntax error
+const_proc	Me As VB.Form	syntax	Syntax error
+const_proc	a = 1	accepted	
+const_proc	a$ = 1	accepted	
+const_proc	[a b] = 1	syntax	Syntax error
+const_proc	Name = 1	accepted	
+const_proc	Date = 1	syntax	Syntax error
+const_proc	Me = 1	syntax	Syntax error
+const_proc	a As Long = 1	accepted	
+const_proc	a$ As Long = 1	syntax	Syntax error
+const_proc	[a b] As Long = 1	syntax	Syntax error
+const_proc	Name As Long = 1	accepted	
+const_proc	Date As Long = 1	syntax	Syntax error
+const_proc	Me As Long = 1	syntax	Syntax error
+const_proc	a(3) = 1	syntax	Syntax error
+const_proc	a$(3) = 1	syntax	Syntax error
+const_proc	[a b](3) = 1	syntax	Syntax error
+const_proc	Name(3) = 1	syntax	Syntax error
+const_proc	Date(3) = 1	syntax	Syntax error
+const_proc	Me(3) = 1	syntax	Syntax error
+const_proc	a, b	syntax	Syntax error
+const_proc	a$, b	syntax	Syntax error
+const_proc	[a b], b	syntax	Syntax error
+const_proc	Name, b	syntax	Syntax error
+const_proc	Date, b	syntax	Syntax error
+const_proc	Me, b	syntax	Syntax error
+const_proc	a, b As Long	syntax	Syntax error
+const_proc	a$, b As Long	syntax	Syntax error
+const_proc	[a b], b As Long	syntax	Syntax error
+const_proc	Name, b As Long	syntax	Syntax error
+const_proc	Date, b As Long	syntax	Syntax error
+const_proc	Me, b As Long	syntax	Syntax error
+const_proc	a As Long, b	syntax	Syntax error
+const_proc	a$ As Long, b	syntax	Syntax error
+const_proc	[a b] As Long, b	syntax	Syntax error
+const_proc	Name As Long, b	syntax	Syntax error
+const_proc	Date As Long, b	syntax	Syntax error
+const_proc	Me As Long, b	syntax	Syntax error
+const_proc	a As Long,	syntax	Syntax error
+const_proc	a$ As Long,	syntax	Syntax error
+const_proc	[a b] As Long,	syntax	Syntax error
+const_proc	Name As Long,	syntax	Syntax error
+const_proc	Date As Long,	syntax	Syntax error
+const_proc	Me As Long,	syntax	Syntax error
+const_proc	a As Long b	syntax	Syntax error
+const_proc	a$ As Long b	syntax	Syntax error
+const_proc	[a b] As Long b	syntax	Syntax error
+const_proc	Name As Long b	syntax	Syntax error
+const_proc	Date As Long b	syntax	Syntax error
+const_proc	Me As Long b	syntax	Syntax error
+const_proc	WithEvents a As Class1	syntax	Syntax error
+const_proc	WithEvents a	syntax	Syntax error
+const_proc	a WithEvents As Class1	syntax	Syntax error
+const_proc	a$ WithEvents As Class1	syntax	Syntax error
+const_proc	[a b] WithEvents As Class1	syntax	Syntax error
+const_proc	Name WithEvents As Class1	syntax	Syntax error
+const_proc	Date WithEvents As Class1	syntax	Syntax error
+const_proc	Me WithEvents As Class1	syntax	Syntax error
+const_proc	a As Integer(3)	syntax	Syntax error
+const_proc	a$ As Integer(3)	syntax	Syntax error
+const_proc	[a b] As Integer(3)	syntax	Syntax error
+const_proc	Name As Integer(3)	syntax	Syntax error
+const_proc	Date As Integer(3)	syntax	Syntax error
+const_proc	Me As Integer(3)	syntax	Syntax error
+const_proc	a As Long()	syntax	Syntax error
+const_proc	a$ As Long()	syntax	Syntax error
+const_proc	[a b] As Long()	syntax	Syntax error
+const_proc	Name As Long()	syntax	Syntax error
+const_proc	Date As Long()	syntax	Syntax error
+const_proc	Me As Long()	syntax	Syntax error
+const_proc	a() As Long()	syntax	Syntax error
+const_proc	a$() As Long()	syntax	Syntax error
+const_proc	[a b]() As Long()	syntax	Syntax error
+const_proc	Name() As Long()	syntax	Syntax error
+const_proc	Date() As Long()	syntax	Syntax error
+const_proc	Me() As Long()	syntax	Syntax error
+type_member	a	syntax	Statement invalid inside Type block
+type_member	a$	syntax	Statement invalid inside Type block
+type_member	[a b]	syntax	Statement invalid inside Type block
+type_member	Name	syntax	Expected: expression
+type_member	Date	syntax	Statement invalid inside Type block
+type_member	Me	syntax	Expected: =
+type_member	a As Long	accepted	
+type_member	a$ As Long	syntax	Expected: end of statement
+type_member	[a b] As Long	syntax	Expected: expression or end of statement
+type_member	Name As Long	accepted	
+type_member	Date As Long	accepted	
+type_member	Me As Long	syntax	Expected: =
+type_member	a() As Long	accepted	
+type_member	a$() As Long	syntax	Expected: end of statement
+type_member	[a b]() As Long	accepted	
+type_member	Name() As Long	syntax	Expected: expression
+type_member	Date() As Long	accepted	
+type_member	Me() As Long	accepted	
+type_member	a(3) As Long	accepted	
+type_member	a$(3) As Long	syntax	Expected: end of statement
+type_member	[a b](3) As Long	accepted	
+type_member	Name(3) As Long	syntax	Expected: expression
+type_member	Date(3) As Long	accepted	
+type_member	Me(3) As Long	accepted	
+type_member	a(1 To 3) As Long	accepted	
+type_member	a$(1 To 3) As Long	syntax	Expected: end of statement
+type_member	[a b](1 To 3) As Long	accepted	
+type_member	Name(1 To 3) As Long	syntax	Expected: )
+type_member	Date(1 To 3) As Long	accepted	
+type_member	Me(1 To 3) As Long	accepted	
+type_member	a(3, 4) As Long	accepted	
+type_member	a$(3, 4) As Long	syntax	Expected: end of statement
+type_member	[a b](3, 4) As Long	accepted	
+type_member	Name(3, 4) As Long	syntax	Expected: )
+type_member	Date(3, 4) As Long	accepted	
+type_member	Me(3, 4) As Long	accepted	
+type_member	a(1 To 3, 2 To 5)	accepted	
+type_member	a$(1 To 3, 2 To 5)	accepted	
+type_member	[a b](1 To 3, 2 To 5)	accepted	
+type_member	Name(1 To 3, 2 To 5)	syntax	Expected: )
+type_member	Date(1 To 3, 2 To 5)	accepted	
+type_member	Me(1 To 3, 2 To 5)	accepted	
+type_member	a()	syntax	Expected: =
+type_member	a$()	syntax	Expected: =
+type_member	[a b]()	syntax	Expected: =
+type_member	Name()	syntax	Expected: expression
+type_member	Date()	syntax	Expected: =
+type_member	Me()	syntax	Expected: =
+type_member	a(,) As Long	syntax	Expected: expression
+type_member	a$(,) As Long	syntax	Expected: expression
+type_member	[a b](,) As Long	syntax	Expected: expression
+type_member	Name(,) As Long	syntax	Expected: expression
+type_member	Date(,) As Long	syntax	Expected: expression
+type_member	Me(,) As Long	syntax	Expected: expression
+type_member	a(1 To) As Long	syntax	Expected: expression
+type_member	a$(1 To) As Long	syntax	Expected: expression
+type_member	[a b](1 To) As Long	syntax	Expected: expression
+type_member	Name(1 To) As Long	syntax	Expected: )
+type_member	Date(1 To) As Long	syntax	Expected: expression
+type_member	Me(1 To) As Long	syntax	Expected: expression
+type_member	a(To 3) As Long	syntax	Expected: expression
+type_member	a$(To 3) As Long	syntax	Expected: expression
+type_member	[a b](To 3) As Long	syntax	Expected: expression
+type_member	Name(To 3) As Long	syntax	Expected: expression
+type_member	Date(To 3) As Long	syntax	Expected: expression
+type_member	Me(To 3) As Long	syntax	Expected: expression
+type_member	a(3	syntax	Expected: list separator or )
+type_member	a$(3	syntax	Expected: list separator or )
+type_member	[a b](3	syntax	Expected: list separator or )
+type_member	Name(3	syntax	Expected: )
+type_member	Date(3	syntax	Expected: list separator or )
+type_member	Me(3	syntax	Expected: list separator or )
+type_member	a3 As Long	accepted	
+type_member	a$3 As Long	syntax	Expected: end of statement
+type_member	[a b]3 As Long	syntax	Expected: end of statement
+type_member	Name3 As Long	accepted	
+type_member	Date3 As Long	accepted	
+type_member	Me3 As Long	accepted	
+type_member	a As	syntax	Expected: New or type name
+type_member	a$ As	syntax	Expected: end of statement
+type_member	[a b] As	syntax	Expected: expression or end of statement
+type_member	Name As	syntax	Expected: New or type name
+type_member	Date As	syntax	Expected: New or type name
+type_member	Me As	syntax	Expected: =
+type_member	a As New Collection	accepted	
+type_member	a$ As New Collection	syntax	Expected: end of statement
+type_member	[a b] As New Collection	syntax	Expected: expression or end of statement
+type_member	Name As New Collection	accepted	
+type_member	Date As New Collection	accepted	
+type_member	Me As New Collection	syntax	Expected: =
+type_member	a As New Long	syntax	Expected: identifier
+type_member	a$ As New Long	syntax	Expected: end of statement
+type_member	[a b] As New Long	syntax	Expected: expression or end of statement
+type_member	Name As New Long	syntax	Expected: identifier
+type_member	Date As New Long	syntax	Expected: identifier
+type_member	Me As New Long	syntax	Expected: =
+type_member	a As New Object	syntax	Expected: identifier
+type_member	a$ As New Object	syntax	Expected: end of statement
+type_member	[a b] As New Object	syntax	Expected: expression or end of statement
+type_member	Name As New Object	syntax	Expected: identifier
+type_member	Date As New Object	syntax	Expected: identifier
+type_member	Me As New Object	syntax	Expected: =
+type_member	a As String * 3	accepted	
+type_member	a$ As String * 3	syntax	Expected: end of statement
+type_member	[a b] As String * 3	syntax	Expected: expression or end of statement
+type_member	Name As String * 3	accepted	
+type_member	Date As String * 3	accepted	
+type_member	Me As String * 3	syntax	Expected: =
+type_member	a As String * 0	syntax	Invalid length for fixed-length string
+type_member	a$ As String * 0	syntax	Expected: end of statement
+type_member	[a b] As String * 0	syntax	Expected: expression or end of statement
+type_member	Name As String * 0	syntax	Invalid length for fixed-length string
+type_member	Date As String * 0	syntax	Invalid length for fixed-length string
+type_member	Me As String * 0	syntax	Expected: =
+type_member	a As String * 65535	syntax	Invalid length for fixed-length string
+type_member	a$ As String * 65535	syntax	Expected: end of statement
+type_member	[a b] As String * 65535	syntax	Expected: expression or end of statement
+type_member	Name As String * 65535	syntax	Invalid length for fixed-length string
+type_member	Date As String * 65535	syntax	Invalid length for fixed-length string
+type_member	Me As String * 65535	syntax	Expected: =
+type_member	a As String * 65526	semantic	Fixed or static data can't be larger than 64K
+type_member	a$ As String * 65526	syntax	Expected: end of statement
+type_member	[a b] As String * 65526	syntax	Expected: expression or end of statement
+type_member	Name As String * 65526	semantic	Fixed or static data can't be larger than 64K
+type_member	Date As String * 65526	semantic	Fixed or static data can't be larger than 64K
+type_member	Me As String * 65526	syntax	Expected: =
+type_member	a As String * n	semantic	Constant expression required
+type_member	a$ As String * n	syntax	Expected: end of statement
+type_member	[a b] As String * n	syntax	Expected: expression or end of statement
+type_member	Name As String * n	semantic	Constant expression required
+type_member	Date As String * n	semantic	Constant expression required
+type_member	Me As String * n	syntax	Expected: =
+type_member	a As Object	accepted	
+type_member	a$ As Object	syntax	Expected: end of statement
+type_member	[a b] As Object	syntax	Expected: expression or end of statement
+type_member	Name As Object	accepted	
+type_member	Date As Object	accepted	
+type_member	Me As Object	syntax	Expected: =
+type_member	a As Variant	accepted	
+type_member	a$ As Variant	syntax	Expected: end of statement
+type_member	[a b] As Variant	syntax	Expected: expression or end of statement
+type_member	Name As Variant	accepted	
+type_member	Date As Variant	accepted	
+type_member	Me As Variant	syntax	Expected: =
+type_member	a As Any	syntax	Expected: New or type name
+type_member	a$ As Any	syntax	Expected: end of statement
+type_member	[a b] As Any	syntax	Expected: expression or end of statement
+type_member	Name As Any	syntax	Expected: New or type name
+type_member	Date As Any	syntax	Expected: New or type name
+type_member	Me As Any	syntax	Expected: =
+type_member	a As Decimal	syntax	Expected: New or type name
+type_member	a$ As Decimal	syntax	Expected: end of statement
+type_member	[a b] As Decimal	syntax	Expected: expression or end of statement
+type_member	Name As Decimal	syntax	Expected: New or type name
+type_member	Date As Decimal	syntax	Expected: New or type name
+type_member	Me As Decimal	syntax	Expected: =
+type_member	a As Class1	semantic	User-defined type not defined
+type_member	a$ As Class1	syntax	Expected: end of statement
+type_member	[a b] As Class1	syntax	Expected: expression or end of statement
+type_member	Name As Class1	semantic	User-defined type not defined
+type_member	Date As Class1	semantic	User-defined type not defined
+type_member	Me As Class1	syntax	Expected: =
+type_member	a As Class1.Sub1	semantic	User-defined type not defined
+type_member	a$ As Class1.Sub1	syntax	Expected: end of statement
+type_member	[a b] As Class1.Sub1	syntax	Expected: expression or end of statement
+type_member	Name As Class1.Sub1	semantic	User-defined type not defined
+type_member	Date As Class1.Sub1	semantic	User-defined type not defined
+type_member	Me As Class1.Sub1	syntax	Expected: =
+type_member	a As VB.Form	accepted	
+type_member	a$ As VB.Form	syntax	Expected: end of statement
+type_member	[a b] As VB.Form	syntax	Expected: expression or end of statement
+type_member	Name As VB.Form	accepted	
+type_member	Date As VB.Form	accepted	
+type_member	Me As VB.Form	syntax	Expected: =
+type_member	a = 1	syntax	Statement invalid inside Type block
+type_member	a$ = 1	syntax	Statement invalid inside Type block
+type_member	[a b] = 1	syntax	Statement invalid inside Type block
+type_member	Name = 1	syntax	Statement invalid inside Type block
+type_member	Date = 1	syntax	Statement invalid inside Type block
+type_member	Me = 1	syntax	Statement invalid inside Type block
+type_member	a As Long = 1	syntax	Expected: end of statement
+type_member	a$ As Long = 1	syntax	Expected: end of statement
+type_member	[a b] As Long = 1	syntax	Expected: expression or end of statement
+type_member	Name As Long = 1	syntax	Expected: end of statement
+type_member	Date As Long = 1	syntax	Expected: end of statement
+type_member	Me As Long = 1	syntax	Expected: =
+type_member	a(3) = 1	syntax	Statement invalid inside Type block
+type_member	a$(3) = 1	syntax	Statement invalid inside Type block
+type_member	[a b](3) = 1	syntax	Statement invalid inside Type block
+type_member	Name(3) = 1	syntax	Expected: As
+type_member	Date(3) = 1	syntax	Statement invalid inside Type block
+type_member	Me(3) = 1	syntax	Statement invalid inside Type block
+type_member	a, b	syntax	Statement invalid inside Type block
+type_member	a$, b	syntax	Statement invalid inside Type block
+type_member	[a b], b	syntax	Statement invalid inside Type block
+type_member	Name, b	syntax	Expected: expression
+type_member	Date, b	syntax	Statement invalid inside Type block
+type_member	Me, b	syntax	Expected: =
+type_member	a, b As Long	syntax	Expected: end of statement
+type_member	a$, b As Long	syntax	Expected: end of statement
+type_member	[a b], b As Long	syntax	Expected: end of statement
+type_member	Name, b As Long	syntax	Expected: expression
+type_member	Date, b As Long	syntax	Expected: end of statement
+type_member	Me, b As Long	syntax	Expected: =
+type_member	a As Long, b	syntax	Statement invalid inside Type block
+type_member	a$ As Long, b	syntax	Expected: end of statement
+type_member	[a b] As Long, b	syntax	Expected: expression or end of statement
+type_member	Name As Long, b	syntax	Statement invalid inside Type block
+type_member	Date As Long, b	syntax	Statement invalid inside Type block
+type_member	Me As Long, b	syntax	Expected: =
+type_member	a As Long,	syntax	Expected: variable
+type_member	a$ As Long,	syntax	Expected: end of statement
+type_member	[a b] As Long,	syntax	Expected: expression or end of statement
+type_member	Name As Long,	syntax	Expected: variable
+type_member	Date As Long,	syntax	Expected: variable
+type_member	Me As Long,	syntax	Expected: =
+type_member	a As Long b	syntax	Expected: end of statement
+type_member	a$ As Long b	syntax	Expected: end of statement
+type_member	[a b] As Long b	syntax	Expected: expression or end of statement
+type_member	Name As Long b	syntax	Expected: end of statement
+type_member	Date As Long b	syntax	Expected: end of statement
+type_member	Me As Long b	syntax	Expected: =
+type_member	WithEvents a As Class1	syntax	Expected: line number or label or statement or end of statement
+type_member	WithEvents a	syntax	Expected: line number or label or statement or end of statement
+type_member	a WithEvents As Class1	syntax	Expected: expression
+type_member	a$ WithEvents As Class1	syntax	Expected: expression
+type_member	[a b] WithEvents As Class1	syntax	Expected: expression
+type_member	Name WithEvents As Class1	syntax	Expected: expression
+type_member	Date WithEvents As Class1	syntax	Expected: expression
+type_member	Me WithEvents As Class1	syntax	Expected: =
+type_member	a As Integer(3)	syntax	Expected: end of statement
+type_member	a$ As Integer(3)	syntax	Expected: end of statement
+type_member	[a b] As Integer(3)	syntax	Expected: expression or end of statement
+type_member	Name As Integer(3)	syntax	Expected: end of statement
+type_member	Date As Integer(3)	syntax	Expected: end of statement
+type_member	Me As Integer(3)	syntax	Expected: =
+type_member	a As Long()	syntax	Expected: end of statement
+type_member	a$ As Long()	syntax	Expected: end of statement
+type_member	[a b] As Long()	syntax	Expected: expression or end of statement
+type_member	Name As Long()	syntax	Expected: end of statement
+type_member	Date As Long()	syntax	Expected: end of statement
+type_member	Me As Long()	syntax	Expected: =
+type_member	a() As Long()	syntax	Expected: end of statement
+type_member	a$() As Long()	syntax	Expected: end of statement
+type_member	[a b]() As Long()	syntax	Expected: end of statement
+type_member	Name() As Long()	syntax	Expected: expression
+type_member	Date() As Long()	syntax	Expected: end of statement
+type_member	Me() As Long()	syntax	Expected: end of statement
+redim	a	syntax	Syntax error
+redim	a$	syntax	Syntax error
+redim	[a b]	syntax	Syntax error
+redim	Name	syntax	Syntax error
+redim	Date	syntax	Syntax error
+redim	Me	syntax	Syntax error
+redim	a As Long	syntax	Syntax error
+redim	a$ As Long	syntax	Syntax error
+redim	[a b] As Long	syntax	Syntax error
+redim	Name As Long	syntax	Syntax error
+redim	Date As Long	syntax	Syntax error
+redim	Me As Long	syntax	Syntax error
+redim	a() As Long	syntax	Syntax error
+redim	a$() As Long	syntax	Syntax error
+redim	[a b]() As Long	syntax	Syntax error
+redim	Name() As Long	syntax	Syntax error
+redim	Date() As Long	syntax	Syntax error
+redim	Me() As Long	syntax	Syntax error
+redim	a(3) As Long	accepted	
+redim	a$(3) As Long	syntax	Syntax error
+redim	[a b](3) As Long	accepted	
+redim	Name(3) As Long	accepted	
+redim	Date(3) As Long	syntax	Syntax error
+redim	Me(3) As Long	syntax	Syntax error
+redim	a(1 To 3) As Long	accepted	
+redim	a$(1 To 3) As Long	syntax	Syntax error
+redim	[a b](1 To 3) As Long	accepted	
+redim	Name(1 To 3) As Long	accepted	
+redim	Date(1 To 3) As Long	syntax	Syntax error
+redim	Me(1 To 3) As Long	syntax	Syntax error
+redim	a(3, 4) As Long	accepted	
+redim	a$(3, 4) As Long	syntax	Syntax error
+redim	[a b](3, 4) As Long	accepted	
+redim	Name(3, 4) As Long	accepted	
+redim	Date(3, 4) As Long	syntax	Syntax error
+redim	Me(3, 4) As Long	syntax	Syntax error
+redim	a(1 To 3, 2 To 5)	accepted	
+redim	a$(1 To 3, 2 To 5)	accepted	
+redim	[a b](1 To 3, 2 To 5)	accepted	
+redim	Name(1 To 3, 2 To 5)	accepted	
+redim	Date(1 To 3, 2 To 5)	syntax	Syntax error
+redim	Me(1 To 3, 2 To 5)	unanswered	compiler terminated abnormally, exit -1073741819
+redim	a()	syntax	Syntax error
+redim	a$()	syntax	Syntax error
+redim	[a b]()	syntax	Syntax error
+redim	Name()	syntax	Syntax error
+redim	Date()	syntax	Syntax error
+redim	Me()	syntax	Syntax error
+redim	a(,) As Long	syntax	Syntax error
+redim	a$(,) As Long	syntax	Syntax error
+redim	[a b](,) As Long	syntax	Syntax error
+redim	Name(,) As Long	syntax	Syntax error
+redim	Date(,) As Long	syntax	Syntax error
+redim	Me(,) As Long	syntax	Syntax error
+redim	a(1 To) As Long	syntax	Syntax error
+redim	a$(1 To) As Long	syntax	Syntax error
+redim	[a b](1 To) As Long	syntax	Syntax error
+redim	Name(1 To) As Long	syntax	Syntax error
+redim	Date(1 To) As Long	syntax	Syntax error
+redim	Me(1 To) As Long	syntax	Syntax error
+redim	a(To 3) As Long	syntax	Syntax error
+redim	a$(To 3) As Long	syntax	Syntax error
+redim	[a b](To 3) As Long	syntax	Syntax error
+redim	Name(To 3) As Long	syntax	Syntax error
+redim	Date(To 3) As Long	syntax	Syntax error
+redim	Me(To 3) As Long	syntax	Syntax error
+redim	a(3	syntax	Syntax error
+redim	a$(3	syntax	Syntax error
+redim	[a b](3	syntax	Syntax error
+redim	Name(3	syntax	Syntax error
+redim	Date(3	syntax	Syntax error
+redim	Me(3	syntax	Syntax error
+redim	a3 As Long	syntax	Syntax error
+redim	a$3 As Long	syntax	Syntax error
+redim	[a b]3 As Long	syntax	Syntax error
+redim	Name3 As Long	syntax	Syntax error
+redim	Date3 As Long	syntax	Syntax error
+redim	Me3 As Long	syntax	Syntax error
+redim	a As	syntax	Syntax error
+redim	a$ As	syntax	Syntax error
+redim	[a b] As	syntax	Syntax error
+redim	Name As	syntax	Syntax error
+redim	Date As	syntax	Syntax error
+redim	Me As	syntax	Syntax error
+redim	a As New Collection	syntax	Syntax error
+redim	a$ As New Collection	syntax	Syntax error
+redim	[a b] As New Collection	syntax	Syntax error
+redim	Name As New Collection	syntax	Syntax error
+redim	Date As New Collection	syntax	Syntax error
+redim	Me As New Collection	syntax	Syntax error
+redim	a As New Long	syntax	Syntax error
+redim	a$ As New Long	syntax	Syntax error
+redim	[a b] As New Long	syntax	Syntax error
+redim	Name As New Long	syntax	Syntax error
+redim	Date As New Long	syntax	Syntax error
+redim	Me As New Long	syntax	Syntax error
+redim	a As New Object	syntax	Syntax error
+redim	a$ As New Object	syntax	Syntax error
+redim	[a b] As New Object	syntax	Syntax error
+redim	Name As New Object	syntax	Syntax error
+redim	Date As New Object	syntax	Syntax error
+redim	Me As New Object	syntax	Syntax error
+redim	a As String * 3	syntax	Syntax error
+redim	a$ As String * 3	syntax	Syntax error
+redim	[a b] As String * 3	syntax	Syntax error
+redim	Name As String * 3	syntax	Syntax error
+redim	Date As String * 3	syntax	Syntax error
+redim	Me As String * 3	syntax	Syntax error
+redim	a As String * 0	syntax	Syntax error
+redim	a$ As String * 0	syntax	Syntax error
+redim	[a b] As String * 0	syntax	Syntax error
+redim	Name As String * 0	syntax	Syntax error
+redim	Date As String * 0	syntax	Syntax error
+redim	Me As String * 0	syntax	Syntax error
+redim	a As String * 65535	syntax	Syntax error
+redim	a$ As String * 65535	syntax	Syntax error
+redim	[a b] As String * 65535	syntax	Syntax error
+redim	Name As String * 65535	syntax	Syntax error
+redim	Date As String * 65535	syntax	Syntax error
+redim	Me As String * 65535	syntax	Syntax error
+redim	a As String * 65526	syntax	Syntax error
+redim	a$ As String * 65526	syntax	Syntax error
+redim	[a b] As String * 65526	syntax	Syntax error
+redim	Name As String * 65526	syntax	Syntax error
+redim	Date As String * 65526	syntax	Syntax error
+redim	Me As String * 65526	syntax	Syntax error
+redim	a As String * n	syntax	Syntax error
+redim	a$ As String * n	syntax	Syntax error
+redim	[a b] As String * n	syntax	Syntax error
+redim	Name As String * n	syntax	Syntax error
+redim	Date As String * n	syntax	Syntax error
+redim	Me As String * n	syntax	Syntax error
+redim	a As Object	syntax	Syntax error
+redim	a$ As Object	syntax	Syntax error
+redim	[a b] As Object	syntax	Syntax error
+redim	Name As Object	syntax	Syntax error
+redim	Date As Object	syntax	Syntax error
+redim	Me As Object	syntax	Syntax error
+redim	a As Variant	syntax	Syntax error
+redim	a$ As Variant	syntax	Syntax error
+redim	[a b] As Variant	syntax	Syntax error
+redim	Name As Variant	syntax	Syntax error
+redim	Date As Variant	syntax	Syntax error
+redim	Me As Variant	syntax	Syntax error
+redim	a As Any	syntax	Syntax error
+redim	a$ As Any	syntax	Syntax error
+redim	[a b] As Any	syntax	Syntax error
+redim	Name As Any	syntax	Syntax error
+redim	Date As Any	syntax	Syntax error
+redim	Me As Any	syntax	Syntax error
+redim	a As Decimal	syntax	Syntax error
+redim	a$ As Decimal	syntax	Syntax error
+redim	[a b] As Decimal	syntax	Syntax error
+redim	Name As Decimal	syntax	Syntax error
+redim	Date As Decimal	syntax	Syntax error
+redim	Me As Decimal	syntax	Syntax error
+redim	a As Class1	syntax	Syntax error
+redim	a$ As Class1	syntax	Syntax error
+redim	[a b] As Class1	syntax	Syntax error
+redim	Name As Class1	syntax	Syntax error
+redim	Date As Class1	syntax	Syntax error
+redim	Me As Class1	syntax	Syntax error
+redim	a As Class1.Sub1	syntax	Syntax error
+redim	a$ As Class1.Sub1	syntax	Syntax error
+redim	[a b] As Class1.Sub1	syntax	Syntax error
+redim	Name As Class1.Sub1	syntax	Syntax error
+redim	Date As Class1.Sub1	syntax	Syntax error
+redim	Me As Class1.Sub1	syntax	Syntax error
+redim	a As VB.Form	syntax	Syntax error
+redim	a$ As VB.Form	syntax	Syntax error
+redim	[a b] As VB.Form	syntax	Syntax error
+redim	Name As VB.Form	syntax	Syntax error
+redim	Date As VB.Form	syntax	Syntax error
+redim	Me As VB.Form	syntax	Syntax error
+redim	a = 1	syntax	Syntax error
+redim	a$ = 1	syntax	Syntax error
+redim	[a b] = 1	syntax	Syntax error
+redim	Name = 1	syntax	Syntax error
+redim	Date = 1	syntax	Syntax error
+redim	Me = 1	syntax	Syntax error
+redim	a As Long = 1	syntax	Syntax error
+redim	a$ As Long = 1	syntax	Syntax error
+redim	[a b] As Long = 1	syntax	Syntax error
+redim	Name As Long = 1	syntax	Syntax error
+redim	Date As Long = 1	syntax	Syntax error
+redim	Me As Long = 1	syntax	Syntax error
+redim	a(3) = 1	syntax	Syntax error
+redim	a$(3) = 1	syntax	Syntax error
+redim	[a b](3) = 1	syntax	Syntax error
+redim	Name(3) = 1	syntax	Syntax error
+redim	Date(3) = 1	syntax	Syntax error
+redim	Me(3) = 1	syntax	Syntax error
+redim	a, b	syntax	Syntax error
+redim	a$, b	syntax	Syntax error
+redim	[a b], b	syntax	Syntax error
+redim	Name, b	syntax	Syntax error
+redim	Date, b	syntax	Syntax error
+redim	Me, b	syntax	Syntax error
+redim	a, b As Long	syntax	Syntax error
+redim	a$, b As Long	syntax	Syntax error
+redim	[a b], b As Long	syntax	Syntax error
+redim	Name, b As Long	syntax	Syntax error
+redim	Date, b As Long	syntax	Syntax error
+redim	Me, b As Long	syntax	Syntax error
+redim	a As Long, b	syntax	Syntax error
+redim	a$ As Long, b	syntax	Syntax error
+redim	[a b] As Long, b	syntax	Syntax error
+redim	Name As Long, b	syntax	Syntax error
+redim	Date As Long, b	syntax	Syntax error
+redim	Me As Long, b	syntax	Syntax error
+redim	a As Long,	syntax	Syntax error
+redim	a$ As Long,	syntax	Syntax error
+redim	[a b] As Long,	syntax	Syntax error
+redim	Name As Long,	syntax	Syntax error
+redim	Date As Long,	syntax	Syntax error
+redim	Me As Long,	syntax	Syntax error
+redim	a As Long b	syntax	Syntax error
+redim	a$ As Long b	syntax	Syntax error
+redim	[a b] As Long b	syntax	Syntax error
+redim	Name As Long b	syntax	Syntax error
+redim	Date As Long b	syntax	Syntax error
+redim	Me As Long b	syntax	Syntax error
+redim	WithEvents a As Class1	syntax	Syntax error
+redim	WithEvents a	syntax	Syntax error
+redim	a WithEvents As Class1	syntax	Syntax error
+redim	a$ WithEvents As Class1	syntax	Syntax error
+redim	[a b] WithEvents As Class1	syntax	Syntax error
+redim	Name WithEvents As Class1	syntax	Syntax error
+redim	Date WithEvents As Class1	syntax	Syntax error
+redim	Me WithEvents As Class1	syntax	Syntax error
+redim	a As Integer(3)	syntax	Syntax error
+redim	a$ As Integer(3)	syntax	Syntax error
+redim	[a b] As Integer(3)	syntax	Syntax error
+redim	Name As Integer(3)	syntax	Syntax error
+redim	Date As Integer(3)	syntax	Syntax error
+redim	Me As Integer(3)	syntax	Syntax error
+redim	a As Long()	syntax	Syntax error
+redim	a$ As Long()	syntax	Syntax error
+redim	[a b] As Long()	syntax	Syntax error
+redim	Name As Long()	syntax	Syntax error
+redim	Date As Long()	syntax	Syntax error
+redim	Me As Long()	syntax	Syntax error
+redim	a() As Long()	syntax	Syntax error
+redim	a$() As Long()	syntax	Syntax error
+redim	[a b]() As Long()	syntax	Syntax error
+redim	Name() As Long()	syntax	Syntax error
+redim	Date() As Long()	syntax	Syntax error
+redim	Me() As Long()	syntax	Syntax error
+redimpreserve	a	syntax	Syntax error
+redimpreserve	a$	syntax	Syntax error
+redimpreserve	[a b]	syntax	Syntax error
+redimpreserve	Name	syntax	Syntax error
+redimpreserve	Date	syntax	Syntax error
+redimpreserve	Me	syntax	Syntax error
+redimpreserve	a As Long	syntax	Syntax error
+redimpreserve	a$ As Long	syntax	Syntax error
+redimpreserve	[a b] As Long	syntax	Syntax error
+redimpreserve	Name As Long	syntax	Syntax error
+redimpreserve	Date As Long	syntax	Syntax error
+redimpreserve	Me As Long	syntax	Syntax error
+redimpreserve	a() As Long	syntax	Syntax error
+redimpreserve	a$() As Long	syntax	Syntax error
+redimpreserve	[a b]() As Long	syntax	Syntax error
+redimpreserve	Name() As Long	syntax	Syntax error
+redimpreserve	Date() As Long	syntax	Syntax error
+redimpreserve	Me() As Long	syntax	Syntax error
+redimpreserve	a(3) As Long	semantic	Variable not defined
+redimpreserve	a$(3) As Long	syntax	Syntax error
+redimpreserve	[a b](3) As Long	semantic	Variable not defined
+redimpreserve	Name(3) As Long	semantic	Variable not defined
+redimpreserve	Date(3) As Long	syntax	Syntax error
+redimpreserve	Me(3) As Long	syntax	Syntax error
+redimpreserve	a(1 To 3) As Long	semantic	Variable not defined
+redimpreserve	a$(1 To 3) As Long	syntax	Syntax error
+redimpreserve	[a b](1 To 3) As Long	semantic	Variable not defined
+redimpreserve	Name(1 To 3) As Long	semantic	Variable not defined
+redimpreserve	Date(1 To 3) As Long	syntax	Syntax error
+redimpreserve	Me(1 To 3) As Long	syntax	Syntax error
+redimpreserve	a(3, 4) As Long	semantic	Variable not defined
+redimpreserve	a$(3, 4) As Long	syntax	Syntax error
+redimpreserve	[a b](3, 4) As Long	semantic	Variable not defined
+redimpreserve	Name(3, 4) As Long	semantic	Variable not defined
+redimpreserve	Date(3, 4) As Long	syntax	Syntax error
+redimpreserve	Me(3, 4) As Long	syntax	Syntax error
+redimpreserve	a(1 To 3, 2 To 5)	semantic	Variable not defined
+redimpreserve	a$(1 To 3, 2 To 5)	semantic	Variable not defined
+redimpreserve	[a b](1 To 3, 2 To 5)	semantic	Variable not defined
+redimpreserve	Name(1 To 3, 2 To 5)	semantic	Variable not defined
+redimpreserve	Date(1 To 3, 2 To 5)	syntax	Syntax error
+redimpreserve	Me(1 To 3, 2 To 5)	unanswered	compiler terminated abnormally, exit -1073741819
+redimpreserve	a()	syntax	Syntax error
+redimpreserve	a$()	syntax	Syntax error
+redimpreserve	[a b]()	syntax	Syntax error
+redimpreserve	Name()	syntax	Syntax error
+redimpreserve	Date()	syntax	Syntax error
+redimpreserve	Me()	syntax	Syntax error
+redimpreserve	a(,) As Long	syntax	Syntax error
+redimpreserve	a$(,) As Long	syntax	Syntax error
+redimpreserve	[a b](,) As Long	syntax	Syntax error
+redimpreserve	Name(,) As Long	syntax	Syntax error
+redimpreserve	Date(,) As Long	syntax	Syntax error
+redimpreserve	Me(,) As Long	syntax	Syntax error
+redimpreserve	a(1 To) As Long	syntax	Syntax error
+redimpreserve	a$(1 To) As Long	syntax	Syntax error
+redimpreserve	[a b](1 To) As Long	syntax	Syntax error
+redimpreserve	Name(1 To) As Long	syntax	Syntax error
+redimpreserve	Date(1 To) As Long	syntax	Syntax error
+redimpreserve	Me(1 To) As Long	syntax	Syntax error
+redimpreserve	a(To 3) As Long	syntax	Syntax error
+redimpreserve	a$(To 3) As Long	syntax	Syntax error
+redimpreserve	[a b](To 3) As Long	syntax	Syntax error
+redimpreserve	Name(To 3) As Long	syntax	Syntax error
+redimpreserve	Date(To 3) As Long	syntax	Syntax error
+redimpreserve	Me(To 3) As Long	syntax	Syntax error
+redimpreserve	a(3	syntax	Syntax error
+redimpreserve	a$(3	syntax	Syntax error
+redimpreserve	[a b](3	syntax	Syntax error
+redimpreserve	Name(3	syntax	Syntax error
+redimpreserve	Date(3	syntax	Syntax error
+redimpreserve	Me(3	syntax	Syntax error
+redimpreserve	a3 As Long	syntax	Syntax error
+redimpreserve	a$3 As Long	syntax	Syntax error
+redimpreserve	[a b]3 As Long	syntax	Syntax error
+redimpreserve	Name3 As Long	syntax	Syntax error
+redimpreserve	Date3 As Long	syntax	Syntax error
+redimpreserve	Me3 As Long	syntax	Syntax error
+redimpreserve	a As	syntax	Syntax error
+redimpreserve	a$ As	syntax	Syntax error
+redimpreserve	[a b] As	syntax	Syntax error
+redimpreserve	Name As	syntax	Syntax error
+redimpreserve	Date As	syntax	Syntax error
+redimpreserve	Me As	syntax	Syntax error
+redimpreserve	a As New Collection	syntax	Syntax error
+redimpreserve	a$ As New Collection	syntax	Syntax error
+redimpreserve	[a b] As New Collection	syntax	Syntax error
+redimpreserve	Name As New Collection	syntax	Syntax error
+redimpreserve	Date As New Collection	syntax	Syntax error
+redimpreserve	Me As New Collection	syntax	Syntax error
+redimpreserve	a As New Long	syntax	Syntax error
+redimpreserve	a$ As New Long	syntax	Syntax error
+redimpreserve	[a b] As New Long	syntax	Syntax error
+redimpreserve	Name As New Long	syntax	Syntax error
+redimpreserve	Date As New Long	syntax	Syntax error
+redimpreserve	Me As New Long	syntax	Syntax error
+redimpreserve	a As New Object	syntax	Syntax error
+redimpreserve	a$ As New Object	syntax	Syntax error
+redimpreserve	[a b] As New Object	syntax	Syntax error
+redimpreserve	Name As New Object	syntax	Syntax error
+redimpreserve	Date As New Object	syntax	Syntax error
+redimpreserve	Me As New Object	syntax	Syntax error
+redimpreserve	a As String * 3	syntax	Syntax error
+redimpreserve	a$ As String * 3	syntax	Syntax error
+redimpreserve	[a b] As String * 3	syntax	Syntax error
+redimpreserve	Name As String * 3	syntax	Syntax error
+redimpreserve	Date As String * 3	syntax	Syntax error
+redimpreserve	Me As String * 3	syntax	Syntax error
+redimpreserve	a As String * 0	syntax	Syntax error
+redimpreserve	a$ As String * 0	syntax	Syntax error
+redimpreserve	[a b] As String * 0	syntax	Syntax error
+redimpreserve	Name As String * 0	syntax	Syntax error
+redimpreserve	Date As String * 0	syntax	Syntax error
+redimpreserve	Me As String * 0	syntax	Syntax error
+redimpreserve	a As String * 65535	syntax	Syntax error
+redimpreserve	a$ As String * 65535	syntax	Syntax error
+redimpreserve	[a b] As String * 65535	syntax	Syntax error
+redimpreserve	Name As String * 65535	syntax	Syntax error
+redimpreserve	Date As String * 65535	syntax	Syntax error
+redimpreserve	Me As String * 65535	syntax	Syntax error
+redimpreserve	a As String * 65526	syntax	Syntax error
+redimpreserve	a$ As String * 65526	syntax	Syntax error
+redimpreserve	[a b] As String * 65526	syntax	Syntax error
+redimpreserve	Name As String * 65526	syntax	Syntax error
+redimpreserve	Date As String * 65526	syntax	Syntax error
+redimpreserve	Me As String * 65526	syntax	Syntax error
+redimpreserve	a As String * n	syntax	Syntax error
+redimpreserve	a$ As String * n	syntax	Syntax error
+redimpreserve	[a b] As String * n	syntax	Syntax error
+redimpreserve	Name As String * n	syntax	Syntax error
+redimpreserve	Date As String * n	syntax	Syntax error
+redimpreserve	Me As String * n	syntax	Syntax error
+redimpreserve	a As Object	syntax	Syntax error
+redimpreserve	a$ As Object	syntax	Syntax error
+redimpreserve	[a b] As Object	syntax	Syntax error
+redimpreserve	Name As Object	syntax	Syntax error
+redimpreserve	Date As Object	syntax	Syntax error
+redimpreserve	Me As Object	syntax	Syntax error
+redimpreserve	a As Variant	syntax	Syntax error
+redimpreserve	a$ As Variant	syntax	Syntax error
+redimpreserve	[a b] As Variant	syntax	Syntax error
+redimpreserve	Name As Variant	syntax	Syntax error
+redimpreserve	Date As Variant	syntax	Syntax error
+redimpreserve	Me As Variant	syntax	Syntax error
+redimpreserve	a As Any	syntax	Syntax error
+redimpreserve	a$ As Any	syntax	Syntax error
+redimpreserve	[a b] As Any	syntax	Syntax error
+redimpreserve	Name As Any	syntax	Syntax error
+redimpreserve	Date As Any	syntax	Syntax error
+redimpreserve	Me As Any	syntax	Syntax error
+redimpreserve	a As Decimal	syntax	Syntax error
+redimpreserve	a$ As Decimal	syntax	Syntax error
+redimpreserve	[a b] As Decimal	syntax	Syntax error
+redimpreserve	Name As Decimal	syntax	Syntax error
+redimpreserve	Date As Decimal	syntax	Syntax error
+redimpreserve	Me As Decimal	syntax	Syntax error
+redimpreserve	a As Class1	syntax	Syntax error
+redimpreserve	a$ As Class1	syntax	Syntax error
+redimpreserve	[a b] As Class1	syntax	Syntax error
+redimpreserve	Name As Class1	syntax	Syntax error
+redimpreserve	Date As Class1	syntax	Syntax error
+redimpreserve	Me As Class1	syntax	Syntax error
+redimpreserve	a As Class1.Sub1	syntax	Syntax error
+redimpreserve	a$ As Class1.Sub1	syntax	Syntax error
+redimpreserve	[a b] As Class1.Sub1	syntax	Syntax error
+redimpreserve	Name As Class1.Sub1	syntax	Syntax error
+redimpreserve	Date As Class1.Sub1	syntax	Syntax error
+redimpreserve	Me As Class1.Sub1	syntax	Syntax error
+redimpreserve	a As VB.Form	syntax	Syntax error
+redimpreserve	a$ As VB.Form	syntax	Syntax error
+redimpreserve	[a b] As VB.Form	syntax	Syntax error
+redimpreserve	Name As VB.Form	syntax	Syntax error
+redimpreserve	Date As VB.Form	syntax	Syntax error
+redimpreserve	Me As VB.Form	syntax	Syntax error
+redimpreserve	a = 1	syntax	Syntax error
+redimpreserve	a$ = 1	syntax	Syntax error
+redimpreserve	[a b] = 1	syntax	Syntax error
+redimpreserve	Name = 1	syntax	Syntax error
+redimpreserve	Date = 1	syntax	Syntax error
+redimpreserve	Me = 1	syntax	Syntax error
+redimpreserve	a As Long = 1	syntax	Syntax error
+redimpreserve	a$ As Long = 1	syntax	Syntax error
+redimpreserve	[a b] As Long = 1	syntax	Syntax error
+redimpreserve	Name As Long = 1	syntax	Syntax error
+redimpreserve	Date As Long = 1	syntax	Syntax error
+redimpreserve	Me As Long = 1	syntax	Syntax error
+redimpreserve	a(3) = 1	syntax	Syntax error
+redimpreserve	a$(3) = 1	syntax	Syntax error
+redimpreserve	[a b](3) = 1	syntax	Syntax error
+redimpreserve	Name(3) = 1	syntax	Syntax error
+redimpreserve	Date(3) = 1	syntax	Syntax error
+redimpreserve	Me(3) = 1	syntax	Syntax error
+redimpreserve	a, b	syntax	Syntax error
+redimpreserve	a$, b	syntax	Syntax error
+redimpreserve	[a b], b	syntax	Syntax error
+redimpreserve	Name, b	syntax	Syntax error
+redimpreserve	Date, b	syntax	Syntax error
+redimpreserve	Me, b	syntax	Syntax error
+redimpreserve	a, b As Long	syntax	Syntax error
+redimpreserve	a$, b As Long	syntax	Syntax error
+redimpreserve	[a b], b As Long	syntax	Syntax error
+redimpreserve	Name, b As Long	syntax	Syntax error
+redimpreserve	Date, b As Long	syntax	Syntax error
+redimpreserve	Me, b As Long	syntax	Syntax error
+redimpreserve	a As Long, b	syntax	Syntax error
+redimpreserve	a$ As Long, b	syntax	Syntax error
+redimpreserve	[a b] As Long, b	syntax	Syntax error
+redimpreserve	Name As Long, b	syntax	Syntax error
+redimpreserve	Date As Long, b	syntax	Syntax error
+redimpreserve	Me As Long, b	syntax	Syntax error
+redimpreserve	a As Long,	syntax	Syntax error
+redimpreserve	a$ As Long,	syntax	Syntax error
+redimpreserve	[a b] As Long,	syntax	Syntax error
+redimpreserve	Name As Long,	syntax	Syntax error
+redimpreserve	Date As Long,	syntax	Syntax error
+redimpreserve	Me As Long,	syntax	Syntax error
+redimpreserve	a As Long b	syntax	Syntax error
+redimpreserve	a$ As Long b	syntax	Syntax error
+redimpreserve	[a b] As Long b	syntax	Syntax error
+redimpreserve	Name As Long b	syntax	Syntax error
+redimpreserve	Date As Long b	syntax	Syntax error
+redimpreserve	Me As Long b	syntax	Syntax error
+redimpreserve	WithEvents a As Class1	syntax	Syntax error
+redimpreserve	WithEvents a	syntax	Syntax error
+redimpreserve	a WithEvents As Class1	syntax	Syntax error
+redimpreserve	a$ WithEvents As Class1	syntax	Syntax error
+redimpreserve	[a b] WithEvents As Class1	syntax	Syntax error
+redimpreserve	Name WithEvents As Class1	syntax	Syntax error
+redimpreserve	Date WithEvents As Class1	syntax	Syntax error
+redimpreserve	Me WithEvents As Class1	syntax	Syntax error
+redimpreserve	a As Integer(3)	syntax	Syntax error
+redimpreserve	a$ As Integer(3)	syntax	Syntax error
+redimpreserve	[a b] As Integer(3)	syntax	Syntax error
+redimpreserve	Name As Integer(3)	syntax	Syntax error
+redimpreserve	Date As Integer(3)	syntax	Syntax error
+redimpreserve	Me As Integer(3)	syntax	Syntax error
+redimpreserve	a As Long()	syntax	Syntax error
+redimpreserve	a$ As Long()	syntax	Syntax error
+redimpreserve	[a b] As Long()	syntax	Syntax error
+redimpreserve	Name As Long()	syntax	Syntax error
+redimpreserve	Date As Long()	syntax	Syntax error
+redimpreserve	Me As Long()	syntax	Syntax error
+redimpreserve	a() As Long()	syntax	Syntax error
+redimpreserve	a$() As Long()	syntax	Syntax error
+redimpreserve	[a b]() As Long()	syntax	Syntax error
+redimpreserve	Name() As Long()	syntax	Syntax error
+redimpreserve	Date() As Long()	syntax	Syntax error
+redimpreserve	Me() As Long()	syntax	Syntax error

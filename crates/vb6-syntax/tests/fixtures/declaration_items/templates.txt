@@ -1,0 +1,79 @@
+# {k} is replaced by each declaration tail.
+=== dim_mod bas
+Dim {k}
+=== dim_cls cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Dim {k}
+=== static_mod bas
+Static {k}
+=== static_cls cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Static {k}
+=== private_mod bas
+Private {k}
+=== private_cls cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Private {k}
+=== public_mod bas
+Public {k}
+=== public_cls cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Public {k}
+=== dim_proc bas
+Sub P()
+Dim {k}
+End Sub
+=== static_proc bas
+Sub P()
+Static {k}
+End Sub
+=== const_mod bas
+Const {k}
+=== const_proc bas
+Sub P()
+Const {k}
+End Sub
+=== type_member bas
+Type T
+{k}
+End Type
+=== redim bas
+Sub P()
+ReDim {k}
+End Sub
+=== redimpreserve bas
+Sub P()
+ReDim Preserve {k}
+End Sub

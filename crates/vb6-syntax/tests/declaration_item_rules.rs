@@ -1,0 +1,75 @@
+//! Declaration items: New takes a class name, WithEvents needs a type, ReDim
+//! may name a bracketed array, and the bracketed and bounded forms of a Type
+//! member.
+
+mod common;
+use common::{offset_of, parse};
+
+const EXPECTED: u32 = 0x9c6f;
+const SYNTAX_ERROR: u32 = 0x9c70;
+const STATEMENT_IN_TYPE: u32 = 0x9c76;
+
+fn in_sub(stmt: &str) -> String {
+    format!("Sub S()\n    {stmt}\nEnd Sub\n")
+}
+
+#[test]
+fn new_before_a_built_in_type_is_an_error_at_the_type() {
+    for ty in ["Long", "Integer", "Variant", "Date", "Byte", "Boolean", "Object"] {
+        let src = format!("Dim a As New {ty}\n");
+        assert_eq!(parse(&src).found, vec![(EXPECTED, offset_of(&src, ty, 0), ty.len() as u32)], "{ty}");
+        let src = in_sub(&format!("Dim a As New {ty}"));
+        assert_eq!(parse(&src).found, vec![(SYNTAX_ERROR, offset_of(&src, ty, 0), ty.len() as u32)], "{ty}");
+    }
+    assert_eq!(parse("Dim a As New Foo\n").found, vec![]);
+}
+
+#[test]
+fn with_events_needs_a_type() {
+    let src = "WithEvents a\n";
+    let found = parse(src).found;
+    assert!(found.iter().any(|d| d.0 == EXPECTED), "{found:?}");
+}
+
+#[test]
+fn redim_names_a_bracketed_array() {
+    for text in ["ReDim [a b](3) As Long", "ReDim [a b](1 To 3, 2 To 5)", "ReDim Preserve [a b](3)"] {
+        assert_eq!(parse(&in_sub(text)).found, vec![], "{text}");
+    }
+    // A declaration still cannot take a bracketed name.
+    assert!(!parse(&in_sub("Dim [a b](3) As Long")).found.is_empty());
+}
+
+#[test]
+fn a_type_member_with_bounds_needs_no_as() {
+    for text in [
+        "Type T\n    a(1 To 3, 2 To 5)\nEnd Type\n",
+        "Type T\n    a(1 To 3)\nEnd Type\n",
+        "Type T\n    a(3, 1 To 4)\nEnd Type\n",
+        "Type T\n    a(-1 To 3)\nEnd Type\n",
+        "Type T\n    Date(1 To 3, 2 To 5)\nEnd Type\n",
+    ] {
+        assert_eq!(parse(text).found, vec![], "{text}");
+    }
+    for text in [
+        "Type T\n    a\nEnd Type\n",
+        "Type T\n    a()\nEnd Type\n",
+        "Type T\n    a(3)\nEnd Type\n",
+        "Type T\n    a(3, 4)\nEnd Type\n",
+        "Type T\n    a(x)\nEnd Type\n",
+    ] {
+        assert!(parse(text).found.iter().any(|d| d.0 == STATEMENT_IN_TYPE), "{text}");
+    }
+}
+
+#[test]
+fn a_bracketed_type_member_needs_bounds() {
+    for text in ["Type T\n    [a b](3) As Long\nEnd Type\n", "Type T\n    [a b]() As Long\nEnd Type\n"] {
+        assert_eq!(parse(text).found, vec![], "{text}");
+    }
+    let src = "Type T\n    [a b]\nEnd Type\n";
+    assert_eq!(parse(src).found[0], (STATEMENT_IN_TYPE, offset_of(src, "[a b]", 0), 5));
+    let src = "Type T\n    [a b] As Long\nEnd Type\n";
+    assert_eq!(parse(src).found[0].0, EXPECTED);
+    assert_eq!(parse(src).found[0].1, offset_of(src, "[a b]", 0));
+}

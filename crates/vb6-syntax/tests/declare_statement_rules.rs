@@ -39,7 +39,8 @@ fn non_literal_lib_or_alias_is_reported_at_the_operand() {
 fn object_is_not_creatable() {
     let src = "Sub S()\n Dim x As New Object\nEnd Sub\n";
     let p = parse(src);
-    assert_eq!(p.found, vec![(EXPECTED, offset_of(src, "Object", 0), 6)]);
+    // Inside a procedure the compiler gives its general syntax error.
+    assert_eq!(p.found, vec![(0x9c70, offset_of(src, "Object", 0), 6)]);
     let p = parse("Sub S()\n Dim x As New Collection\nEnd Sub\n");
     assert_eq!(p.found, vec![]);
 }
