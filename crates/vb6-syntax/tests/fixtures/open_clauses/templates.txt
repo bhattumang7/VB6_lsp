@@ -1,0 +1,5 @@
+# {k} is replaced by each run of Open clauses.
+=== open bas
+Sub P()
+Open "f" {k}
+End Sub

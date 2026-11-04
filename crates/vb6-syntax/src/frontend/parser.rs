@@ -3846,7 +3846,12 @@ impl<'src> Parser<'src> {
                 TokenKind::Kw(Kw::Random) => { self.advance(); 4 }
                 TokenKind::Kw(Kw::Append) => { self.advance(); 8 }
                 TokenKind::Kw(Kw::Binary) => { self.advance(); 0x20 }
-                _ => open_mode,
+                _ => {
+                    // `For` needs a mode word.
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                    open_mode
+                }
             };
         }
 
@@ -3860,7 +3865,9 @@ impl<'src> Parser<'src> {
             // neither Input nor Output.
             let conflict = (has_read && open_mode == 2)
                 || (has_write && open_mode == 1)
-                || (has_read && has_write && open_mode == 2);
+                || (has_read && has_write && open_mode == 2)
+                // Append writes, so read-only access cannot go with it.
+                || (has_read && !has_write && open_mode == 8);
             if conflict {
                 self.diagnostics.push(ERR_BAD_FILE_MODE, access_span);
             }

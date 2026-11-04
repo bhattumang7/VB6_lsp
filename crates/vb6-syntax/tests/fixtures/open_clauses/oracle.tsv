@@ -1,0 +1,2223 @@
+# template	word	class	message
+open	As #1	accepted	
+open	For Input As #1	accepted	
+open	For Output As #1	accepted	
+open	For Append As #1	accepted	
+open	For Binary As #1	accepted	
+open	For Random As #1	accepted	
+open	Access Read As #1	accepted	
+open	Access Write As #1	accepted	
+open	Access Read Write As #1	accepted	
+open	Shared As #1	accepted	
+open	Lock Read As #1	accepted	
+open	Lock Write As #1	accepted	
+open	Lock Read Write As #1	accepted	
+open	Len = 10 As #1	syntax	Syntax error
+open	As #1 For Input	syntax	Syntax error
+open	As #1 For Output	syntax	Syntax error
+open	As #1 For Append	syntax	Syntax error
+open	As #1 For Binary	syntax	Syntax error
+open	As #1 For Random	syntax	Syntax error
+open	As #1 Access Read	syntax	Syntax error
+open	As #1 Access Write	syntax	Syntax error
+open	As #1 Access Read Write	syntax	Syntax error
+open	As #1 Shared	syntax	Syntax error
+open	As #1 Lock Read	syntax	Syntax error
+open	As #1 Lock Write	syntax	Syntax error
+open	As #1 Lock Read Write	syntax	Syntax error
+open	As #1 Len = 10	accepted	
+open	For Input For Output As #1	syntax	Syntax error
+open	For Input For Append As #1	syntax	Syntax error
+open	For Input For Binary As #1	syntax	Syntax error
+open	For Input For Random As #1	syntax	Syntax error
+open	For Input Access Read As #1	accepted	
+open	For Input Access Write As #1	syntax	Syntax error
+open	For Input Access Read Write As #1	syntax	Syntax error
+open	For Input Shared As #1	accepted	
+open	For Input Lock Read As #1	accepted	
+open	For Input Lock Write As #1	accepted	
+open	For Input Lock Read Write As #1	accepted	
+open	For Input Len = 10 As #1	syntax	Syntax error
+open	For Input As #1 For Output	syntax	Syntax error
+open	For Input As #1 For Append	syntax	Syntax error
+open	For Input As #1 For Binary	syntax	Syntax error
+open	For Input As #1 For Random	syntax	Syntax error
+open	For Input As #1 Access Read	syntax	Syntax error
+open	For Input As #1 Access Write	syntax	Syntax error
+open	For Input As #1 Access Read Write	syntax	Syntax error
+open	For Input As #1 Shared	syntax	Syntax error
+open	For Input As #1 Lock Read	syntax	Syntax error
+open	For Input As #1 Lock Write	syntax	Syntax error
+open	For Input As #1 Lock Read Write	syntax	Syntax error
+open	For Input As #1 Len = 10	accepted	
+open	For Output For Input As #1	syntax	Syntax error
+open	For Output For Append As #1	syntax	Syntax error
+open	For Output For Binary As #1	syntax	Syntax error
+open	For Output For Random As #1	syntax	Syntax error
+open	For Output Access Read As #1	syntax	Syntax error
+open	For Output Access Write As #1	accepted	
+open	For Output Access Read Write As #1	syntax	Syntax error
+open	For Output Shared As #1	accepted	
+open	For Output Lock Read As #1	accepted	
+open	For Output Lock Write As #1	accepted	
+open	For Output Lock Read Write As #1	accepted	
+open	For Output Len = 10 As #1	syntax	Syntax error
+open	For Output As #1 For Input	syntax	Syntax error
+open	For Output As #1 For Append	syntax	Syntax error
+open	For Output As #1 For Binary	syntax	Syntax error
+open	For Output As #1 For Random	syntax	Syntax error
+open	For Output As #1 Access Read	syntax	Syntax error
+open	For Output As #1 Access Write	syntax	Syntax error
+open	For Output As #1 Access Read Write	syntax	Syntax error
+open	For Output As #1 Shared	syntax	Syntax error
+open	For Output As #1 Lock Read	syntax	Syntax error
+open	For Output As #1 Lock Write	syntax	Syntax error
+open	For Output As #1 Lock Read Write	syntax	Syntax error
+open	For Output As #1 Len = 10	accepted	
+open	For Append For Input As #1	syntax	Syntax error
+open	For Append For Output As #1	syntax	Syntax error
+open	For Append For Binary As #1	syntax	Syntax error
+open	For Append For Random As #1	syntax	Syntax error
+open	For Append Access Read As #1	syntax	Syntax error
+open	For Append Access Write As #1	accepted	
+open	For Append Access Read Write As #1	accepted	
+open	For Append Shared As #1	accepted	
+open	For Append Lock Read As #1	accepted	
+open	For Append Lock Write As #1	accepted	
+open	For Append Lock Read Write As #1	accepted	
+open	For Append Len = 10 As #1	syntax	Syntax error
+open	For Append As #1 For Input	syntax	Syntax error
+open	For Append As #1 For Output	syntax	Syntax error
+open	For Append As #1 For Binary	syntax	Syntax error
+open	For Append As #1 For Random	syntax	Syntax error
+open	For Append As #1 Access Read	syntax	Syntax error
+open	For Append As #1 Access Write	syntax	Syntax error
+open	For Append As #1 Access Read Write	syntax	Syntax error
+open	For Append As #1 Shared	syntax	Syntax error
+open	For Append As #1 Lock Read	syntax	Syntax error
+open	For Append As #1 Lock Write	syntax	Syntax error
+open	For Append As #1 Lock Read Write	syntax	Syntax error
+open	For Append As #1 Len = 10	accepted	
+open	For Binary For Input As #1	syntax	Syntax error
+open	For Binary For Output As #1	syntax	Syntax error
+open	For Binary For Append As #1	syntax	Syntax error
+open	For Binary For Random As #1	syntax	Syntax error
+open	For Binary Access Read As #1	accepted	
+open	For Binary Access Write As #1	accepted	
+open	For Binary Access Read Write As #1	accepted	
+open	For Binary Shared As #1	accepted	
+open	For Binary Lock Read As #1	accepted	
+open	For Binary Lock Write As #1	accepted	
+open	For Binary Lock Read Write As #1	accepted	
+open	For Binary Len = 10 As #1	syntax	Syntax error
+open	For Binary As #1 For Input	syntax	Syntax error
+open	For Binary As #1 For Output	syntax	Syntax error
+open	For Binary As #1 For Append	syntax	Syntax error
+open	For Binary As #1 For Random	syntax	Syntax error
+open	For Binary As #1 Access Read	syntax	Syntax error
+open	For Binary As #1 Access Write	syntax	Syntax error
+open	For Binary As #1 Access Read Write	syntax	Syntax error
+open	For Binary As #1 Shared	syntax	Syntax error
+open	For Binary As #1 Lock Read	syntax	Syntax error
+open	For Binary As #1 Lock Write	syntax	Syntax error
+open	For Binary As #1 Lock Read Write	syntax	Syntax error
+open	For Binary As #1 Len = 10	accepted	
+open	For Random For Input As #1	syntax	Syntax error
+open	For Random For Output As #1	syntax	Syntax error
+open	For Random For Append As #1	syntax	Syntax error
+open	For Random For Binary As #1	syntax	Syntax error
+open	For Random Access Read As #1	accepted	
+open	For Random Access Write As #1	accepted	
+open	For Random Access Read Write As #1	accepted	
+open	For Random Shared As #1	accepted	
+open	For Random Lock Read As #1	accepted	
+open	For Random Lock Write As #1	accepted	
+open	For Random Lock Read Write As #1	accepted	
+open	For Random Len = 10 As #1	syntax	Syntax error
+open	For Random As #1 For Input	syntax	Syntax error
+open	For Random As #1 For Output	syntax	Syntax error
+open	For Random As #1 For Append	syntax	Syntax error
+open	For Random As #1 For Binary	syntax	Syntax error
+open	For Random As #1 Access Read	syntax	Syntax error
+open	For Random As #1 Access Write	syntax	Syntax error
+open	For Random As #1 Access Read Write	syntax	Syntax error
+open	For Random As #1 Shared	syntax	Syntax error
+open	For Random As #1 Lock Read	syntax	Syntax error
+open	For Random As #1 Lock Write	syntax	Syntax error
+open	For Random As #1 Lock Read Write	syntax	Syntax error
+open	For Random As #1 Len = 10	accepted	
+open	Access Read For Input As #1	syntax	Syntax error
+open	Access Read For Output As #1	syntax	Syntax error
+open	Access Read For Append As #1	syntax	Syntax error
+open	Access Read For Binary As #1	syntax	Syntax error
+open	Access Read For Random As #1	syntax	Syntax error
+open	Access Read Access Write As #1	syntax	Syntax error
+open	Access Read Access Read Write As #1	syntax	Syntax error
+open	Access Read Shared As #1	accepted	
+open	Access Read Lock Read As #1	accepted	
+open	Access Read Lock Write As #1	accepted	
+open	Access Read Lock Read Write As #1	accepted	
+open	Access Read Len = 10 As #1	syntax	Syntax error
+open	Access Read As #1 For Input	syntax	Syntax error
+open	Access Read As #1 For Output	syntax	Syntax error
+open	Access Read As #1 For Append	syntax	Syntax error
+open	Access Read As #1 For Binary	syntax	Syntax error
+open	Access Read As #1 For Random	syntax	Syntax error
+open	Access Read As #1 Access Write	syntax	Syntax error
+open	Access Read As #1 Access Read Write	syntax	Syntax error
+open	Access Read As #1 Shared	syntax	Syntax error
+open	Access Read As #1 Lock Read	syntax	Syntax error
+open	Access Read As #1 Lock Write	syntax	Syntax error
+open	Access Read As #1 Lock Read Write	syntax	Syntax error
+open	Access Read As #1 Len = 10	accepted	
+open	Access Write For Input As #1	syntax	Syntax error
+open	Access Write For Output As #1	syntax	Syntax error
+open	Access Write For Append As #1	syntax	Syntax error
+open	Access Write For Binary As #1	syntax	Syntax error
+open	Access Write For Random As #1	syntax	Syntax error
+open	Access Write Access Read As #1	syntax	Syntax error
+open	Access Write Access Read Write As #1	syntax	Syntax error
+open	Access Write Shared As #1	accepted	
+open	Access Write Lock Read As #1	accepted	
+open	Access Write Lock Write As #1	accepted	
+open	Access Write Lock Read Write As #1	accepted	
+open	Access Write Len = 10 As #1	syntax	Syntax error
+open	Access Write As #1 For Input	syntax	Syntax error
+open	Access Write As #1 For Output	syntax	Syntax error
+open	Access Write As #1 For Append	syntax	Syntax error
+open	Access Write As #1 For Binary	syntax	Syntax error
+open	Access Write As #1 For Random	syntax	Syntax error
+open	Access Write As #1 Access Read	syntax	Syntax error
+open	Access Write As #1 Access Read Write	syntax	Syntax error
+open	Access Write As #1 Shared	syntax	Syntax error
+open	Access Write As #1 Lock Read	syntax	Syntax error
+open	Access Write As #1 Lock Write	syntax	Syntax error
+open	Access Write As #1 Lock Read Write	syntax	Syntax error
+open	Access Write As #1 Len = 10	accepted	
+open	Access Read Write For Input As #1	syntax	Syntax error
+open	Access Read Write For Output As #1	syntax	Syntax error
+open	Access Read Write For Append As #1	syntax	Syntax error
+open	Access Read Write For Binary As #1	syntax	Syntax error
+open	Access Read Write For Random As #1	syntax	Syntax error
+open	Access Read Write Access Read As #1	syntax	Syntax error
+open	Access Read Write Access Write As #1	syntax	Syntax error
+open	Access Read Write Shared As #1	accepted	
+open	Access Read Write Lock Read As #1	accepted	
+open	Access Read Write Lock Write As #1	accepted	
+open	Access Read Write Lock Read Write As #1	accepted	
+open	Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Write As #1 For Input	syntax	Syntax error
+open	Access Read Write As #1 For Output	syntax	Syntax error
+open	Access Read Write As #1 For Append	syntax	Syntax error
+open	Access Read Write As #1 For Binary	syntax	Syntax error
+open	Access Read Write As #1 For Random	syntax	Syntax error
+open	Access Read Write As #1 Access Read	syntax	Syntax error
+open	Access Read Write As #1 Access Write	syntax	Syntax error
+open	Access Read Write As #1 Shared	syntax	Syntax error
+open	Access Read Write As #1 Lock Read	syntax	Syntax error
+open	Access Read Write As #1 Lock Write	syntax	Syntax error
+open	Access Read Write As #1 Lock Read Write	syntax	Syntax error
+open	Access Read Write As #1 Len = 10	accepted	
+open	Shared For Input As #1	syntax	Syntax error
+open	Shared For Output As #1	syntax	Syntax error
+open	Shared For Append As #1	syntax	Syntax error
+open	Shared For Binary As #1	syntax	Syntax error
+open	Shared For Random As #1	syntax	Syntax error
+open	Shared Access Read As #1	syntax	Syntax error
+open	Shared Access Write As #1	syntax	Syntax error
+open	Shared Access Read Write As #1	syntax	Syntax error
+open	Shared Lock Read As #1	syntax	Syntax error
+open	Shared Lock Write As #1	syntax	Syntax error
+open	Shared Lock Read Write As #1	syntax	Syntax error
+open	Shared Len = 10 As #1	syntax	Syntax error
+open	Shared As #1 For Input	syntax	Syntax error
+open	Shared As #1 For Output	syntax	Syntax error
+open	Shared As #1 For Append	syntax	Syntax error
+open	Shared As #1 For Binary	syntax	Syntax error
+open	Shared As #1 For Random	syntax	Syntax error
+open	Shared As #1 Access Read	syntax	Syntax error
+open	Shared As #1 Access Write	syntax	Syntax error
+open	Shared As #1 Access Read Write	syntax	Syntax error
+open	Shared As #1 Lock Read	syntax	Syntax error
+open	Shared As #1 Lock Write	syntax	Syntax error
+open	Shared As #1 Lock Read Write	syntax	Syntax error
+open	Shared As #1 Len = 10	accepted	
+open	Lock Read For Input As #1	syntax	Syntax error
+open	Lock Read For Output As #1	syntax	Syntax error
+open	Lock Read For Append As #1	syntax	Syntax error
+open	Lock Read For Binary As #1	syntax	Syntax error
+open	Lock Read For Random As #1	syntax	Syntax error
+open	Lock Read Access Read As #1	syntax	Syntax error
+open	Lock Read Access Write As #1	syntax	Syntax error
+open	Lock Read Access Read Write As #1	syntax	Syntax error
+open	Lock Read Shared As #1	syntax	Syntax error
+open	Lock Read Lock Write As #1	syntax	Syntax error
+open	Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Len = 10 As #1	syntax	Syntax error
+open	Lock Read As #1 For Input	syntax	Syntax error
+open	Lock Read As #1 For Output	syntax	Syntax error
+open	Lock Read As #1 For Append	syntax	Syntax error
+open	Lock Read As #1 For Binary	syntax	Syntax error
+open	Lock Read As #1 For Random	syntax	Syntax error
+open	Lock Read As #1 Access Read	syntax	Syntax error
+open	Lock Read As #1 Access Write	syntax	Syntax error
+open	Lock Read As #1 Access Read Write	syntax	Syntax error
+open	Lock Read As #1 Shared	syntax	Syntax error
+open	Lock Read As #1 Lock Write	syntax	Syntax error
+open	Lock Read As #1 Lock Read Write	syntax	Syntax error
+open	Lock Read As #1 Len = 10	accepted	
+open	Lock Write For Input As #1	syntax	Syntax error
+open	Lock Write For Output As #1	syntax	Syntax error
+open	Lock Write For Append As #1	syntax	Syntax error
+open	Lock Write For Binary As #1	syntax	Syntax error
+open	Lock Write For Random As #1	syntax	Syntax error
+open	Lock Write Access Read As #1	syntax	Syntax error
+open	Lock Write Access Write As #1	syntax	Syntax error
+open	Lock Write Access Read Write As #1	syntax	Syntax error
+open	Lock Write Shared As #1	syntax	Syntax error
+open	Lock Write Lock Read As #1	syntax	Syntax error
+open	Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Lock Write Len = 10 As #1	syntax	Syntax error
+open	Lock Write As #1 For Input	syntax	Syntax error
+open	Lock Write As #1 For Output	syntax	Syntax error
+open	Lock Write As #1 For Append	syntax	Syntax error
+open	Lock Write As #1 For Binary	syntax	Syntax error
+open	Lock Write As #1 For Random	syntax	Syntax error
+open	Lock Write As #1 Access Read	syntax	Syntax error
+open	Lock Write As #1 Access Write	syntax	Syntax error
+open	Lock Write As #1 Access Read Write	syntax	Syntax error
+open	Lock Write As #1 Shared	syntax	Syntax error
+open	Lock Write As #1 Lock Read	syntax	Syntax error
+open	Lock Write As #1 Lock Read Write	syntax	Syntax error
+open	Lock Write As #1 Len = 10	accepted	
+open	Lock Read Write For Input As #1	syntax	Syntax error
+open	Lock Read Write For Output As #1	syntax	Syntax error
+open	Lock Read Write For Append As #1	syntax	Syntax error
+open	Lock Read Write For Binary As #1	syntax	Syntax error
+open	Lock Read Write For Random As #1	syntax	Syntax error
+open	Lock Read Write Access Read As #1	syntax	Syntax error
+open	Lock Read Write Access Write As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Shared As #1	syntax	Syntax error
+open	Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Lock Write As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write As #1 For Input	syntax	Syntax error
+open	Lock Read Write As #1 For Output	syntax	Syntax error
+open	Lock Read Write As #1 For Append	syntax	Syntax error
+open	Lock Read Write As #1 For Binary	syntax	Syntax error
+open	Lock Read Write As #1 For Random	syntax	Syntax error
+open	Lock Read Write As #1 Access Read	syntax	Syntax error
+open	Lock Read Write As #1 Access Write	syntax	Syntax error
+open	Lock Read Write As #1 Access Read Write	syntax	Syntax error
+open	Lock Read Write As #1 Shared	syntax	Syntax error
+open	Lock Read Write As #1 Lock Read	syntax	Syntax error
+open	Lock Read Write As #1 Lock Write	syntax	Syntax error
+open	Lock Read Write As #1 Len = 10	accepted	
+open	Len = 10 For Input As #1	syntax	Syntax error
+open	Len = 10 For Output As #1	syntax	Syntax error
+open	Len = 10 For Append As #1	syntax	Syntax error
+open	Len = 10 For Binary As #1	syntax	Syntax error
+open	Len = 10 For Random As #1	syntax	Syntax error
+open	Len = 10 Access Read As #1	syntax	Syntax error
+open	Len = 10 Access Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Shared As #1	syntax	Syntax error
+open	Len = 10 Lock Read As #1	syntax	Syntax error
+open	Len = 10 Lock Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 As #1 For Input	syntax	Syntax error
+open	Len = 10 As #1 For Output	syntax	Syntax error
+open	Len = 10 As #1 For Append	syntax	Syntax error
+open	Len = 10 As #1 For Binary	syntax	Syntax error
+open	Len = 10 As #1 For Random	syntax	Syntax error
+open	Len = 10 As #1 Access Read	syntax	Syntax error
+open	Len = 10 As #1 Access Write	syntax	Syntax error
+open	Len = 10 As #1 Access Read Write	syntax	Syntax error
+open	Len = 10 As #1 Shared	syntax	Syntax error
+open	Len = 10 As #1 Lock Read	syntax	Syntax error
+open	Len = 10 As #1 Lock Write	syntax	Syntax error
+open	Len = 10 As #1 Lock Read Write	syntax	Syntax error
+open	As #1 For Input For Output	syntax	Syntax error
+open	As #1 For Input For Append	syntax	Syntax error
+open	As #1 For Input For Binary	syntax	Syntax error
+open	As #1 For Input For Random	syntax	Syntax error
+open	As #1 For Input Access Read	syntax	Syntax error
+open	As #1 For Input Access Write	syntax	Syntax error
+open	As #1 For Input Access Read Write	syntax	Syntax error
+open	As #1 For Input Shared	syntax	Syntax error
+open	As #1 For Input Lock Read	syntax	Syntax error
+open	As #1 For Input Lock Write	syntax	Syntax error
+open	As #1 For Input Lock Read Write	syntax	Syntax error
+open	As #1 For Input Len = 10	syntax	Syntax error
+open	As #1 For Output For Input	syntax	Syntax error
+open	As #1 For Output For Append	syntax	Syntax error
+open	As #1 For Output For Binary	syntax	Syntax error
+open	As #1 For Output For Random	syntax	Syntax error
+open	As #1 For Output Access Read	syntax	Syntax error
+open	As #1 For Output Access Write	syntax	Syntax error
+open	As #1 For Output Access Read Write	syntax	Syntax error
+open	As #1 For Output Shared	syntax	Syntax error
+open	As #1 For Output Lock Read	syntax	Syntax error
+open	As #1 For Output Lock Write	syntax	Syntax error
+open	As #1 For Output Lock Read Write	syntax	Syntax error
+open	As #1 For Output Len = 10	syntax	Syntax error
+open	As #1 For Append For Input	syntax	Syntax error
+open	As #1 For Append For Output	syntax	Syntax error
+open	As #1 For Append For Binary	syntax	Syntax error
+open	As #1 For Append For Random	syntax	Syntax error
+open	As #1 For Append Access Read	syntax	Syntax error
+open	As #1 For Append Access Write	syntax	Syntax error
+open	As #1 For Append Access Read Write	syntax	Syntax error
+open	As #1 For Append Shared	syntax	Syntax error
+open	As #1 For Append Lock Read	syntax	Syntax error
+open	As #1 For Append Lock Write	syntax	Syntax error
+open	As #1 For Append Lock Read Write	syntax	Syntax error
+open	As #1 For Append Len = 10	syntax	Syntax error
+open	As #1 For Binary For Input	syntax	Syntax error
+open	As #1 For Binary For Output	syntax	Syntax error
+open	As #1 For Binary For Append	syntax	Syntax error
+open	As #1 For Binary For Random	syntax	Syntax error
+open	As #1 For Binary Access Read	syntax	Syntax error
+open	As #1 For Binary Access Write	syntax	Syntax error
+open	As #1 For Binary Access Read Write	syntax	Syntax error
+open	As #1 For Binary Shared	syntax	Syntax error
+open	As #1 For Binary Lock Read	syntax	Syntax error
+open	As #1 For Binary Lock Write	syntax	Syntax error
+open	As #1 For Binary Lock Read Write	syntax	Syntax error
+open	As #1 For Binary Len = 10	syntax	Syntax error
+open	As #1 For Random For Input	syntax	Syntax error
+open	As #1 For Random For Output	syntax	Syntax error
+open	As #1 For Random For Append	syntax	Syntax error
+open	As #1 For Random For Binary	syntax	Syntax error
+open	As #1 For Random Access Read	syntax	Syntax error
+open	As #1 For Random Access Write	syntax	Syntax error
+open	As #1 For Random Access Read Write	syntax	Syntax error
+open	As #1 For Random Shared	syntax	Syntax error
+open	As #1 For Random Lock Read	syntax	Syntax error
+open	As #1 For Random Lock Write	syntax	Syntax error
+open	As #1 For Random Lock Read Write	syntax	Syntax error
+open	As #1 For Random Len = 10	syntax	Syntax error
+open	As #1 Access Read For Input	syntax	Syntax error
+open	As #1 Access Read For Output	syntax	Syntax error
+open	As #1 Access Read For Append	syntax	Syntax error
+open	As #1 Access Read For Binary	syntax	Syntax error
+open	As #1 Access Read For Random	syntax	Syntax error
+open	As #1 Access Read Access Write	syntax	Syntax error
+open	As #1 Access Read Access Read Write	syntax	Syntax error
+open	As #1 Access Read Shared	syntax	Syntax error
+open	As #1 Access Read Lock Read	syntax	Syntax error
+open	As #1 Access Read Lock Write	syntax	Syntax error
+open	As #1 Access Read Lock Read Write	syntax	Syntax error
+open	As #1 Access Read Len = 10	syntax	Syntax error
+open	As #1 Access Write For Input	syntax	Syntax error
+open	As #1 Access Write For Output	syntax	Syntax error
+open	As #1 Access Write For Append	syntax	Syntax error
+open	As #1 Access Write For Binary	syntax	Syntax error
+open	As #1 Access Write For Random	syntax	Syntax error
+open	As #1 Access Write Access Read	syntax	Syntax error
+open	As #1 Access Write Access Read Write	syntax	Syntax error
+open	As #1 Access Write Shared	syntax	Syntax error
+open	As #1 Access Write Lock Read	syntax	Syntax error
+open	As #1 Access Write Lock Write	syntax	Syntax error
+open	As #1 Access Write Lock Read Write	syntax	Syntax error
+open	As #1 Access Write Len = 10	syntax	Syntax error
+open	As #1 Access Read Write For Input	syntax	Syntax error
+open	As #1 Access Read Write For Output	syntax	Syntax error
+open	As #1 Access Read Write For Append	syntax	Syntax error
+open	As #1 Access Read Write For Binary	syntax	Syntax error
+open	As #1 Access Read Write For Random	syntax	Syntax error
+open	As #1 Access Read Write Access Read	syntax	Syntax error
+open	As #1 Access Read Write Access Write	syntax	Syntax error
+open	As #1 Access Read Write Shared	syntax	Syntax error
+open	As #1 Access Read Write Lock Read	syntax	Syntax error
+open	As #1 Access Read Write Lock Write	syntax	Syntax error
+open	As #1 Access Read Write Lock Read Write	syntax	Syntax error
+open	As #1 Access Read Write Len = 10	syntax	Syntax error
+open	As #1 Shared For Input	syntax	Syntax error
+open	As #1 Shared For Output	syntax	Syntax error
+open	As #1 Shared For Append	syntax	Syntax error
+open	As #1 Shared For Binary	syntax	Syntax error
+open	As #1 Shared For Random	syntax	Syntax error
+open	As #1 Shared Access Read	syntax	Syntax error
+open	As #1 Shared Access Write	syntax	Syntax error
+open	As #1 Shared Access Read Write	syntax	Syntax error
+open	As #1 Shared Lock Read	syntax	Syntax error
+open	As #1 Shared Lock Write	syntax	Syntax error
+open	As #1 Shared Lock Read Write	syntax	Syntax error
+open	As #1 Shared Len = 10	syntax	Syntax error
+open	As #1 Lock Read For Input	syntax	Syntax error
+open	As #1 Lock Read For Output	syntax	Syntax error
+open	As #1 Lock Read For Append	syntax	Syntax error
+open	As #1 Lock Read For Binary	syntax	Syntax error
+open	As #1 Lock Read For Random	syntax	Syntax error
+open	As #1 Lock Read Access Read	syntax	Syntax error
+open	As #1 Lock Read Access Write	syntax	Syntax error
+open	As #1 Lock Read Access Read Write	syntax	Syntax error
+open	As #1 Lock Read Shared	syntax	Syntax error
+open	As #1 Lock Read Lock Write	syntax	Syntax error
+open	As #1 Lock Read Lock Read Write	syntax	Syntax error
+open	As #1 Lock Read Len = 10	syntax	Syntax error
+open	As #1 Lock Write For Input	syntax	Syntax error
+open	As #1 Lock Write For Output	syntax	Syntax error
+open	As #1 Lock Write For Append	syntax	Syntax error
+open	As #1 Lock Write For Binary	syntax	Syntax error
+open	As #1 Lock Write For Random	syntax	Syntax error
+open	As #1 Lock Write Access Read	syntax	Syntax error
+open	As #1 Lock Write Access Write	syntax	Syntax error
+open	As #1 Lock Write Access Read Write	syntax	Syntax error
+open	As #1 Lock Write Shared	syntax	Syntax error
+open	As #1 Lock Write Lock Read	syntax	Syntax error
+open	As #1 Lock Write Lock Read Write	syntax	Syntax error
+open	As #1 Lock Write Len = 10	syntax	Syntax error
+open	As #1 Lock Read Write For Input	syntax	Syntax error
+open	As #1 Lock Read Write For Output	syntax	Syntax error
+open	As #1 Lock Read Write For Append	syntax	Syntax error
+open	As #1 Lock Read Write For Binary	syntax	Syntax error
+open	As #1 Lock Read Write For Random	syntax	Syntax error
+open	As #1 Lock Read Write Access Read	syntax	Syntax error
+open	As #1 Lock Read Write Access Write	syntax	Syntax error
+open	As #1 Lock Read Write Access Read Write	syntax	Syntax error
+open	As #1 Lock Read Write Shared	syntax	Syntax error
+open	As #1 Lock Read Write Lock Read	syntax	Syntax error
+open	As #1 Lock Read Write Lock Write	syntax	Syntax error
+open	As #1 Lock Read Write Len = 10	syntax	Syntax error
+open	As #1 Len = 10 For Input	syntax	Syntax error
+open	As #1 Len = 10 For Output	syntax	Syntax error
+open	As #1 Len = 10 For Append	syntax	Syntax error
+open	As #1 Len = 10 For Binary	syntax	Syntax error
+open	As #1 Len = 10 For Random	syntax	Syntax error
+open	As #1 Len = 10 Access Read	syntax	Syntax error
+open	As #1 Len = 10 Access Write	syntax	Syntax error
+open	As #1 Len = 10 Access Read Write	syntax	Syntax error
+open	As #1 Len = 10 Shared	syntax	Syntax error
+open	As #1 Len = 10 Lock Read	syntax	Syntax error
+open	As #1 Len = 10 Lock Write	syntax	Syntax error
+open	As #1 Len = 10 Lock Read Write	syntax	Syntax error
+open	For Input For Output For Append As #1	syntax	Syntax error
+open	For Input For Output For Binary As #1	syntax	Syntax error
+open	For Input For Output For Random As #1	syntax	Syntax error
+open	For Input For Output Access Read As #1	syntax	Syntax error
+open	For Input For Output Access Write As #1	syntax	Syntax error
+open	For Input For Output Access Read Write As #1	syntax	Syntax error
+open	For Input For Output Shared As #1	syntax	Syntax error
+open	For Input For Output Lock Read As #1	syntax	Syntax error
+open	For Input For Output Lock Write As #1	syntax	Syntax error
+open	For Input For Output Lock Read Write As #1	syntax	Syntax error
+open	For Input For Output Len = 10 As #1	syntax	Syntax error
+open	For Input For Append For Output As #1	syntax	Syntax error
+open	For Input For Append For Binary As #1	syntax	Syntax error
+open	For Input For Append For Random As #1	syntax	Syntax error
+open	For Input For Append Access Read As #1	syntax	Syntax error
+open	For Input For Append Access Write As #1	syntax	Syntax error
+open	For Input For Append Access Read Write As #1	syntax	Syntax error
+open	For Input For Append Shared As #1	syntax	Syntax error
+open	For Input For Append Lock Read As #1	syntax	Syntax error
+open	For Input For Append Lock Write As #1	syntax	Syntax error
+open	For Input For Append Lock Read Write As #1	syntax	Syntax error
+open	For Input For Append Len = 10 As #1	syntax	Syntax error
+open	For Input For Binary For Output As #1	syntax	Syntax error
+open	For Input For Binary For Append As #1	syntax	Syntax error
+open	For Input For Binary For Random As #1	syntax	Syntax error
+open	For Input For Binary Access Read As #1	syntax	Syntax error
+open	For Input For Binary Access Write As #1	syntax	Syntax error
+open	For Input For Binary Access Read Write As #1	syntax	Syntax error
+open	For Input For Binary Shared As #1	syntax	Syntax error
+open	For Input For Binary Lock Read As #1	syntax	Syntax error
+open	For Input For Binary Lock Write As #1	syntax	Syntax error
+open	For Input For Binary Lock Read Write As #1	syntax	Syntax error
+open	For Input For Binary Len = 10 As #1	syntax	Syntax error
+open	For Input For Random For Output As #1	syntax	Syntax error
+open	For Input For Random For Append As #1	syntax	Syntax error
+open	For Input For Random For Binary As #1	syntax	Syntax error
+open	For Input For Random Access Read As #1	syntax	Syntax error
+open	For Input For Random Access Write As #1	syntax	Syntax error
+open	For Input For Random Access Read Write As #1	syntax	Syntax error
+open	For Input For Random Shared As #1	syntax	Syntax error
+open	For Input For Random Lock Read As #1	syntax	Syntax error
+open	For Input For Random Lock Write As #1	syntax	Syntax error
+open	For Input For Random Lock Read Write As #1	syntax	Syntax error
+open	For Input For Random Len = 10 As #1	syntax	Syntax error
+open	For Input Access Read For Output As #1	syntax	Syntax error
+open	For Input Access Read For Append As #1	syntax	Syntax error
+open	For Input Access Read For Binary As #1	syntax	Syntax error
+open	For Input Access Read For Random As #1	syntax	Syntax error
+open	For Input Access Read Access Write As #1	syntax	Syntax error
+open	For Input Access Read Access Read Write As #1	syntax	Syntax error
+open	For Input Access Read Shared As #1	accepted	
+open	For Input Access Read Lock Read As #1	accepted	
+open	For Input Access Read Lock Write As #1	accepted	
+open	For Input Access Read Lock Read Write As #1	accepted	
+open	For Input Access Read Len = 10 As #1	syntax	Syntax error
+open	For Input Access Write For Output As #1	syntax	Syntax error
+open	For Input Access Write For Append As #1	syntax	Syntax error
+open	For Input Access Write For Binary As #1	syntax	Syntax error
+open	For Input Access Write For Random As #1	syntax	Syntax error
+open	For Input Access Write Access Read As #1	syntax	Syntax error
+open	For Input Access Write Access Read Write As #1	syntax	Syntax error
+open	For Input Access Write Shared As #1	syntax	Syntax error
+open	For Input Access Write Lock Read As #1	syntax	Syntax error
+open	For Input Access Write Lock Write As #1	syntax	Syntax error
+open	For Input Access Write Lock Read Write As #1	syntax	Syntax error
+open	For Input Access Write Len = 10 As #1	syntax	Syntax error
+open	For Input Access Read Write For Output As #1	syntax	Syntax error
+open	For Input Access Read Write For Append As #1	syntax	Syntax error
+open	For Input Access Read Write For Binary As #1	syntax	Syntax error
+open	For Input Access Read Write For Random As #1	syntax	Syntax error
+open	For Input Access Read Write Access Read As #1	syntax	Syntax error
+open	For Input Access Read Write Access Write As #1	syntax	Syntax error
+open	For Input Access Read Write Shared As #1	syntax	Syntax error
+open	For Input Access Read Write Lock Read As #1	syntax	Syntax error
+open	For Input Access Read Write Lock Write As #1	syntax	Syntax error
+open	For Input Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	For Input Access Read Write Len = 10 As #1	syntax	Syntax error
+open	For Input Shared For Output As #1	syntax	Syntax error
+open	For Input Shared For Append As #1	syntax	Syntax error
+open	For Input Shared For Binary As #1	syntax	Syntax error
+open	For Input Shared For Random As #1	syntax	Syntax error
+open	For Input Shared Access Read As #1	syntax	Syntax error
+open	For Input Shared Access Write As #1	syntax	Syntax error
+open	For Input Shared Access Read Write As #1	syntax	Syntax error
+open	For Input Shared Lock Read As #1	syntax	Syntax error
+open	For Input Shared Lock Write As #1	syntax	Syntax error
+open	For Input Shared Lock Read Write As #1	syntax	Syntax error
+open	For Input Shared Len = 10 As #1	syntax	Syntax error
+open	For Input Lock Read For Output As #1	syntax	Syntax error
+open	For Input Lock Read For Append As #1	syntax	Syntax error
+open	For Input Lock Read For Binary As #1	syntax	Syntax error
+open	For Input Lock Read For Random As #1	syntax	Syntax error
+open	For Input Lock Read Access Read As #1	syntax	Syntax error
+open	For Input Lock Read Access Write As #1	syntax	Syntax error
+open	For Input Lock Read Access Read Write As #1	syntax	Syntax error
+open	For Input Lock Read Shared As #1	syntax	Syntax error
+open	For Input Lock Read Lock Write As #1	syntax	Syntax error
+open	For Input Lock Read Lock Read Write As #1	syntax	Syntax error
+open	For Input Lock Read Len = 10 As #1	syntax	Syntax error
+open	For Input Lock Write For Output As #1	syntax	Syntax error
+open	For Input Lock Write For Append As #1	syntax	Syntax error
+open	For Input Lock Write For Binary As #1	syntax	Syntax error
+open	For Input Lock Write For Random As #1	syntax	Syntax error
+open	For Input Lock Write Access Read As #1	syntax	Syntax error
+open	For Input Lock Write Access Write As #1	syntax	Syntax error
+open	For Input Lock Write Access Read Write As #1	syntax	Syntax error
+open	For Input Lock Write Shared As #1	syntax	Syntax error
+open	For Input Lock Write Lock Read As #1	syntax	Syntax error
+open	For Input Lock Write Lock Read Write As #1	syntax	Syntax error
+open	For Input Lock Write Len = 10 As #1	syntax	Syntax error
+open	For Input Lock Read Write For Output As #1	syntax	Syntax error
+open	For Input Lock Read Write For Append As #1	syntax	Syntax error
+open	For Input Lock Read Write For Binary As #1	syntax	Syntax error
+open	For Input Lock Read Write For Random As #1	syntax	Syntax error
+open	For Input Lock Read Write Access Read As #1	syntax	Syntax error
+open	For Input Lock Read Write Access Write As #1	syntax	Syntax error
+open	For Input Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	For Input Lock Read Write Shared As #1	syntax	Syntax error
+open	For Input Lock Read Write Lock Read As #1	syntax	Syntax error
+open	For Input Lock Read Write Lock Write As #1	syntax	Syntax error
+open	For Input Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	For Input Len = 10 For Output As #1	syntax	Syntax error
+open	For Input Len = 10 For Append As #1	syntax	Syntax error
+open	For Input Len = 10 For Binary As #1	syntax	Syntax error
+open	For Input Len = 10 For Random As #1	syntax	Syntax error
+open	For Input Len = 10 Access Read As #1	syntax	Syntax error
+open	For Input Len = 10 Access Write As #1	syntax	Syntax error
+open	For Input Len = 10 Access Read Write As #1	syntax	Syntax error
+open	For Input Len = 10 Shared As #1	syntax	Syntax error
+open	For Input Len = 10 Lock Read As #1	syntax	Syntax error
+open	For Input Len = 10 Lock Write As #1	syntax	Syntax error
+open	For Input Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	For Output For Input For Append As #1	syntax	Syntax error
+open	For Output For Input For Binary As #1	syntax	Syntax error
+open	For Output For Input For Random As #1	syntax	Syntax error
+open	For Output For Input Access Read As #1	syntax	Syntax error
+open	For Output For Input Access Write As #1	syntax	Syntax error
+open	For Output For Input Access Read Write As #1	syntax	Syntax error
+open	For Output For Input Shared As #1	syntax	Syntax error
+open	For Output For Input Lock Read As #1	syntax	Syntax error
+open	For Output For Input Lock Write As #1	syntax	Syntax error
+open	For Output For Input Lock Read Write As #1	syntax	Syntax error
+open	For Output For Input Len = 10 As #1	syntax	Syntax error
+open	For Output For Append For Input As #1	syntax	Syntax error
+open	For Output For Append For Binary As #1	syntax	Syntax error
+open	For Output For Append For Random As #1	syntax	Syntax error
+open	For Output For Append Access Read As #1	syntax	Syntax error
+open	For Output For Append Access Write As #1	syntax	Syntax error
+open	For Output For Append Access Read Write As #1	syntax	Syntax error
+open	For Output For Append Shared As #1	syntax	Syntax error
+open	For Output For Append Lock Read As #1	syntax	Syntax error
+open	For Output For Append Lock Write As #1	syntax	Syntax error
+open	For Output For Append Lock Read Write As #1	syntax	Syntax error
+open	For Output For Append Len = 10 As #1	syntax	Syntax error
+open	For Output For Binary For Input As #1	syntax	Syntax error
+open	For Output For Binary For Append As #1	syntax	Syntax error
+open	For Output For Binary For Random As #1	syntax	Syntax error
+open	For Output For Binary Access Read As #1	syntax	Syntax error
+open	For Output For Binary Access Write As #1	syntax	Syntax error
+open	For Output For Binary Access Read Write As #1	syntax	Syntax error
+open	For Output For Binary Shared As #1	syntax	Syntax error
+open	For Output For Binary Lock Read As #1	syntax	Syntax error
+open	For Output For Binary Lock Write As #1	syntax	Syntax error
+open	For Output For Binary Lock Read Write As #1	syntax	Syntax error
+open	For Output For Binary Len = 10 As #1	syntax	Syntax error
+open	For Output For Random For Input As #1	syntax	Syntax error
+open	For Output For Random For Append As #1	syntax	Syntax error
+open	For Output For Random For Binary As #1	syntax	Syntax error
+open	For Output For Random Access Read As #1	syntax	Syntax error
+open	For Output For Random Access Write As #1	syntax	Syntax error
+open	For Output For Random Access Read Write As #1	syntax	Syntax error
+open	For Output For Random Shared As #1	syntax	Syntax error
+open	For Output For Random Lock Read As #1	syntax	Syntax error
+open	For Output For Random Lock Write As #1	syntax	Syntax error
+open	For Output For Random Lock Read Write As #1	syntax	Syntax error
+open	For Output For Random Len = 10 As #1	syntax	Syntax error
+open	For Output Access Read For Input As #1	syntax	Syntax error
+open	For Output Access Read For Append As #1	syntax	Syntax error
+open	For Output Access Read For Binary As #1	syntax	Syntax error
+open	For Output Access Read For Random As #1	syntax	Syntax error
+open	For Output Access Read Access Write As #1	syntax	Syntax error
+open	For Output Access Read Access Read Write As #1	syntax	Syntax error
+open	For Output Access Read Shared As #1	syntax	Syntax error
+open	For Output Access Read Lock Read As #1	syntax	Syntax error
+open	For Output Access Read Lock Write As #1	syntax	Syntax error
+open	For Output Access Read Lock Read Write As #1	syntax	Syntax error
+open	For Output Access Read Len = 10 As #1	syntax	Syntax error
+open	For Output Access Write For Input As #1	syntax	Syntax error
+open	For Output Access Write For Append As #1	syntax	Syntax error
+open	For Output Access Write For Binary As #1	syntax	Syntax error
+open	For Output Access Write For Random As #1	syntax	Syntax error
+open	For Output Access Write Access Read As #1	syntax	Syntax error
+open	For Output Access Write Access Read Write As #1	syntax	Syntax error
+open	For Output Access Write Shared As #1	accepted	
+open	For Output Access Write Lock Read As #1	accepted	
+open	For Output Access Write Lock Write As #1	accepted	
+open	For Output Access Write Lock Read Write As #1	accepted	
+open	For Output Access Write Len = 10 As #1	syntax	Syntax error
+open	For Output Access Read Write For Input As #1	syntax	Syntax error
+open	For Output Access Read Write For Append As #1	syntax	Syntax error
+open	For Output Access Read Write For Binary As #1	syntax	Syntax error
+open	For Output Access Read Write For Random As #1	syntax	Syntax error
+open	For Output Access Read Write Access Read As #1	syntax	Syntax error
+open	For Output Access Read Write Access Write As #1	syntax	Syntax error
+open	For Output Access Read Write Shared As #1	syntax	Syntax error
+open	For Output Access Read Write Lock Read As #1	syntax	Syntax error
+open	For Output Access Read Write Lock Write As #1	syntax	Syntax error
+open	For Output Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	For Output Access Read Write Len = 10 As #1	syntax	Syntax error
+open	For Output Shared For Input As #1	syntax	Syntax error
+open	For Output Shared For Append As #1	syntax	Syntax error
+open	For Output Shared For Binary As #1	syntax	Syntax error
+open	For Output Shared For Random As #1	syntax	Syntax error
+open	For Output Shared Access Read As #1	syntax	Syntax error
+open	For Output Shared Access Write As #1	syntax	Syntax error
+open	For Output Shared Access Read Write As #1	syntax	Syntax error
+open	For Output Shared Lock Read As #1	syntax	Syntax error
+open	For Output Shared Lock Write As #1	syntax	Syntax error
+open	For Output Shared Lock Read Write As #1	syntax	Syntax error
+open	For Output Shared Len = 10 As #1	syntax	Syntax error
+open	For Output Lock Read For Input As #1	syntax	Syntax error
+open	For Output Lock Read For Append As #1	syntax	Syntax error
+open	For Output Lock Read For Binary As #1	syntax	Syntax error
+open	For Output Lock Read For Random As #1	syntax	Syntax error
+open	For Output Lock Read Access Read As #1	syntax	Syntax error
+open	For Output Lock Read Access Write As #1	syntax	Syntax error
+open	For Output Lock Read Access Read Write As #1	syntax	Syntax error
+open	For Output Lock Read Shared As #1	syntax	Syntax error
+open	For Output Lock Read Lock Write As #1	syntax	Syntax error
+open	For Output Lock Read Lock Read Write As #1	syntax	Syntax error
+open	For Output Lock Read Len = 10 As #1	syntax	Syntax error
+open	For Output Lock Write For Input As #1	syntax	Syntax error
+open	For Output Lock Write For Append As #1	syntax	Syntax error
+open	For Output Lock Write For Binary As #1	syntax	Syntax error
+open	For Output Lock Write For Random As #1	syntax	Syntax error
+open	For Output Lock Write Access Read As #1	syntax	Syntax error
+open	For Output Lock Write Access Write As #1	syntax	Syntax error
+open	For Output Lock Write Access Read Write As #1	syntax	Syntax error
+open	For Output Lock Write Shared As #1	syntax	Syntax error
+open	For Output Lock Write Lock Read As #1	syntax	Syntax error
+open	For Output Lock Write Lock Read Write As #1	syntax	Syntax error
+open	For Output Lock Write Len = 10 As #1	syntax	Syntax error
+open	For Output Lock Read Write For Input As #1	syntax	Syntax error
+open	For Output Lock Read Write For Append As #1	syntax	Syntax error
+open	For Output Lock Read Write For Binary As #1	syntax	Syntax error
+open	For Output Lock Read Write For Random As #1	syntax	Syntax error
+open	For Output Lock Read Write Access Read As #1	syntax	Syntax error
+open	For Output Lock Read Write Access Write As #1	syntax	Syntax error
+open	For Output Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	For Output Lock Read Write Shared As #1	syntax	Syntax error
+open	For Output Lock Read Write Lock Read As #1	syntax	Syntax error
+open	For Output Lock Read Write Lock Write As #1	syntax	Syntax error
+open	For Output Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	For Output Len = 10 For Input As #1	syntax	Syntax error
+open	For Output Len = 10 For Append As #1	syntax	Syntax error
+open	For Output Len = 10 For Binary As #1	syntax	Syntax error
+open	For Output Len = 10 For Random As #1	syntax	Syntax error
+open	For Output Len = 10 Access Read As #1	syntax	Syntax error
+open	For Output Len = 10 Access Write As #1	syntax	Syntax error
+open	For Output Len = 10 Access Read Write As #1	syntax	Syntax error
+open	For Output Len = 10 Shared As #1	syntax	Syntax error
+open	For Output Len = 10 Lock Read As #1	syntax	Syntax error
+open	For Output Len = 10 Lock Write As #1	syntax	Syntax error
+open	For Output Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	For Append For Input For Output As #1	syntax	Syntax error
+open	For Append For Input For Binary As #1	syntax	Syntax error
+open	For Append For Input For Random As #1	syntax	Syntax error
+open	For Append For Input Access Read As #1	syntax	Syntax error
+open	For Append For Input Access Write As #1	syntax	Syntax error
+open	For Append For Input Access Read Write As #1	syntax	Syntax error
+open	For Append For Input Shared As #1	syntax	Syntax error
+open	For Append For Input Lock Read As #1	syntax	Syntax error
+open	For Append For Input Lock Write As #1	syntax	Syntax error
+open	For Append For Input Lock Read Write As #1	syntax	Syntax error
+open	For Append For Input Len = 10 As #1	syntax	Syntax error
+open	For Append For Output For Input As #1	syntax	Syntax error
+open	For Append For Output For Binary As #1	syntax	Syntax error
+open	For Append For Output For Random As #1	syntax	Syntax error
+open	For Append For Output Access Read As #1	syntax	Syntax error
+open	For Append For Output Access Write As #1	syntax	Syntax error
+open	For Append For Output Access Read Write As #1	syntax	Syntax error
+open	For Append For Output Shared As #1	syntax	Syntax error
+open	For Append For Output Lock Read As #1	syntax	Syntax error
+open	For Append For Output Lock Write As #1	syntax	Syntax error
+open	For Append For Output Lock Read Write As #1	syntax	Syntax error
+open	For Append For Output Len = 10 As #1	syntax	Syntax error
+open	For Append For Binary For Input As #1	syntax	Syntax error
+open	For Append For Binary For Output As #1	syntax	Syntax error
+open	For Append For Binary For Random As #1	syntax	Syntax error
+open	For Append For Binary Access Read As #1	syntax	Syntax error
+open	For Append For Binary Access Write As #1	syntax	Syntax error
+open	For Append For Binary Access Read Write As #1	syntax	Syntax error
+open	For Append For Binary Shared As #1	syntax	Syntax error
+open	For Append For Binary Lock Read As #1	syntax	Syntax error
+open	For Append For Binary Lock Write As #1	syntax	Syntax error
+open	For Append For Binary Lock Read Write As #1	syntax	Syntax error
+open	For Append For Binary Len = 10 As #1	syntax	Syntax error
+open	For Append For Random For Input As #1	syntax	Syntax error
+open	For Append For Random For Output As #1	syntax	Syntax error
+open	For Append For Random For Binary As #1	syntax	Syntax error
+open	For Append For Random Access Read As #1	syntax	Syntax error
+open	For Append For Random Access Write As #1	syntax	Syntax error
+open	For Append For Random Access Read Write As #1	syntax	Syntax error
+open	For Append For Random Shared As #1	syntax	Syntax error
+open	For Append For Random Lock Read As #1	syntax	Syntax error
+open	For Append For Random Lock Write As #1	syntax	Syntax error
+open	For Append For Random Lock Read Write As #1	syntax	Syntax error
+open	For Append For Random Len = 10 As #1	syntax	Syntax error
+open	For Append Access Read For Input As #1	syntax	Syntax error
+open	For Append Access Read For Output As #1	syntax	Syntax error
+open	For Append Access Read For Binary As #1	syntax	Syntax error
+open	For Append Access Read For Random As #1	syntax	Syntax error
+open	For Append Access Read Access Write As #1	syntax	Syntax error
+open	For Append Access Read Access Read Write As #1	syntax	Syntax error
+open	For Append Access Read Shared As #1	syntax	Syntax error
+open	For Append Access Read Lock Read As #1	syntax	Syntax error
+open	For Append Access Read Lock Write As #1	syntax	Syntax error
+open	For Append Access Read Lock Read Write As #1	syntax	Syntax error
+open	For Append Access Read Len = 10 As #1	syntax	Syntax error
+open	For Append Access Write For Input As #1	syntax	Syntax error
+open	For Append Access Write For Output As #1	syntax	Syntax error
+open	For Append Access Write For Binary As #1	syntax	Syntax error
+open	For Append Access Write For Random As #1	syntax	Syntax error
+open	For Append Access Write Access Read As #1	syntax	Syntax error
+open	For Append Access Write Access Read Write As #1	syntax	Syntax error
+open	For Append Access Write Shared As #1	accepted	
+open	For Append Access Write Lock Read As #1	accepted	
+open	For Append Access Write Lock Write As #1	accepted	
+open	For Append Access Write Lock Read Write As #1	accepted	
+open	For Append Access Write Len = 10 As #1	syntax	Syntax error
+open	For Append Access Read Write For Input As #1	syntax	Syntax error
+open	For Append Access Read Write For Output As #1	syntax	Syntax error
+open	For Append Access Read Write For Binary As #1	syntax	Syntax error
+open	For Append Access Read Write For Random As #1	syntax	Syntax error
+open	For Append Access Read Write Access Read As #1	syntax	Syntax error
+open	For Append Access Read Write Access Write As #1	syntax	Syntax error
+open	For Append Access Read Write Shared As #1	accepted	
+open	For Append Access Read Write Lock Read As #1	accepted	
+open	For Append Access Read Write Lock Write As #1	accepted	
+open	For Append Access Read Write Lock Read Write As #1	accepted	
+open	For Append Access Read Write Len = 10 As #1	syntax	Syntax error
+open	For Append Shared For Input As #1	syntax	Syntax error
+open	For Append Shared For Output As #1	syntax	Syntax error
+open	For Append Shared For Binary As #1	syntax	Syntax error
+open	For Append Shared For Random As #1	syntax	Syntax error
+open	For Append Shared Access Read As #1	syntax	Syntax error
+open	For Append Shared Access Write As #1	syntax	Syntax error
+open	For Append Shared Access Read Write As #1	syntax	Syntax error
+open	For Append Shared Lock Read As #1	syntax	Syntax error
+open	For Append Shared Lock Write As #1	syntax	Syntax error
+open	For Append Shared Lock Read Write As #1	syntax	Syntax error
+open	For Append Shared Len = 10 As #1	syntax	Syntax error
+open	For Append Lock Read For Input As #1	syntax	Syntax error
+open	For Append Lock Read For Output As #1	syntax	Syntax error
+open	For Append Lock Read For Binary As #1	syntax	Syntax error
+open	For Append Lock Read For Random As #1	syntax	Syntax error
+open	For Append Lock Read Access Read As #1	syntax	Syntax error
+open	For Append Lock Read Access Write As #1	syntax	Syntax error
+open	For Append Lock Read Access Read Write As #1	syntax	Syntax error
+open	For Append Lock Read Shared As #1	syntax	Syntax error
+open	For Append Lock Read Lock Write As #1	syntax	Syntax error
+open	For Append Lock Read Lock Read Write As #1	syntax	Syntax error
+open	For Append Lock Read Len = 10 As #1	syntax	Syntax error
+open	For Append Lock Write For Input As #1	syntax	Syntax error
+open	For Append Lock Write For Output As #1	syntax	Syntax error
+open	For Append Lock Write For Binary As #1	syntax	Syntax error
+open	For Append Lock Write For Random As #1	syntax	Syntax error
+open	For Append Lock Write Access Read As #1	syntax	Syntax error
+open	For Append Lock Write Access Write As #1	syntax	Syntax error
+open	For Append Lock Write Access Read Write As #1	syntax	Syntax error
+open	For Append Lock Write Shared As #1	syntax	Syntax error
+open	For Append Lock Write Lock Read As #1	syntax	Syntax error
+open	For Append Lock Write Lock Read Write As #1	syntax	Syntax error
+open	For Append Lock Write Len = 10 As #1	syntax	Syntax error
+open	For Append Lock Read Write For Input As #1	syntax	Syntax error
+open	For Append Lock Read Write For Output As #1	syntax	Syntax error
+open	For Append Lock Read Write For Binary As #1	syntax	Syntax error
+open	For Append Lock Read Write For Random As #1	syntax	Syntax error
+open	For Append Lock Read Write Access Read As #1	syntax	Syntax error
+open	For Append Lock Read Write Access Write As #1	syntax	Syntax error
+open	For Append Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	For Append Lock Read Write Shared As #1	syntax	Syntax error
+open	For Append Lock Read Write Lock Read As #1	syntax	Syntax error
+open	For Append Lock Read Write Lock Write As #1	syntax	Syntax error
+open	For Append Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	For Append Len = 10 For Input As #1	syntax	Syntax error
+open	For Append Len = 10 For Output As #1	syntax	Syntax error
+open	For Append Len = 10 For Binary As #1	syntax	Syntax error
+open	For Append Len = 10 For Random As #1	syntax	Syntax error
+open	For Append Len = 10 Access Read As #1	syntax	Syntax error
+open	For Append Len = 10 Access Write As #1	syntax	Syntax error
+open	For Append Len = 10 Access Read Write As #1	syntax	Syntax error
+open	For Append Len = 10 Shared As #1	syntax	Syntax error
+open	For Append Len = 10 Lock Read As #1	syntax	Syntax error
+open	For Append Len = 10 Lock Write As #1	syntax	Syntax error
+open	For Append Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	For Binary For Input For Output As #1	syntax	Syntax error
+open	For Binary For Input For Append As #1	syntax	Syntax error
+open	For Binary For Input For Random As #1	syntax	Syntax error
+open	For Binary For Input Access Read As #1	syntax	Syntax error
+open	For Binary For Input Access Write As #1	syntax	Syntax error
+open	For Binary For Input Access Read Write As #1	syntax	Syntax error
+open	For Binary For Input Shared As #1	syntax	Syntax error
+open	For Binary For Input Lock Read As #1	syntax	Syntax error
+open	For Binary For Input Lock Write As #1	syntax	Syntax error
+open	For Binary For Input Lock Read Write As #1	syntax	Syntax error
+open	For Binary For Input Len = 10 As #1	syntax	Syntax error
+open	For Binary For Output For Input As #1	syntax	Syntax error
+open	For Binary For Output For Append As #1	syntax	Syntax error
+open	For Binary For Output For Random As #1	syntax	Syntax error
+open	For Binary For Output Access Read As #1	syntax	Syntax error
+open	For Binary For Output Access Write As #1	syntax	Syntax error
+open	For Binary For Output Access Read Write As #1	syntax	Syntax error
+open	For Binary For Output Shared As #1	syntax	Syntax error
+open	For Binary For Output Lock Read As #1	syntax	Syntax error
+open	For Binary For Output Lock Write As #1	syntax	Syntax error
+open	For Binary For Output Lock Read Write As #1	syntax	Syntax error
+open	For Binary For Output Len = 10 As #1	syntax	Syntax error
+open	For Binary For Append For Input As #1	syntax	Syntax error
+open	For Binary For Append For Output As #1	syntax	Syntax error
+open	For Binary For Append For Random As #1	syntax	Syntax error
+open	For Binary For Append Access Read As #1	syntax	Syntax error
+open	For Binary For Append Access Write As #1	syntax	Syntax error
+open	For Binary For Append Access Read Write As #1	syntax	Syntax error
+open	For Binary For Append Shared As #1	syntax	Syntax error
+open	For Binary For Append Lock Read As #1	syntax	Syntax error
+open	For Binary For Append Lock Write As #1	syntax	Syntax error
+open	For Binary For Append Lock Read Write As #1	syntax	Syntax error
+open	For Binary For Append Len = 10 As #1	syntax	Syntax error
+open	For Binary For Random For Input As #1	syntax	Syntax error
+open	For Binary For Random For Output As #1	syntax	Syntax error
+open	For Binary For Random For Append As #1	syntax	Syntax error
+open	For Binary For Random Access Read As #1	syntax	Syntax error
+open	For Binary For Random Access Write As #1	syntax	Syntax error
+open	For Binary For Random Access Read Write As #1	syntax	Syntax error
+open	For Binary For Random Shared As #1	syntax	Syntax error
+open	For Binary For Random Lock Read As #1	syntax	Syntax error
+open	For Binary For Random Lock Write As #1	syntax	Syntax error
+open	For Binary For Random Lock Read Write As #1	syntax	Syntax error
+open	For Binary For Random Len = 10 As #1	syntax	Syntax error
+open	For Binary Access Read For Input As #1	syntax	Syntax error
+open	For Binary Access Read For Output As #1	syntax	Syntax error
+open	For Binary Access Read For Append As #1	syntax	Syntax error
+open	For Binary Access Read For Random As #1	syntax	Syntax error
+open	For Binary Access Read Access Write As #1	syntax	Syntax error
+open	For Binary Access Read Access Read Write As #1	syntax	Syntax error
+open	For Binary Access Read Shared As #1	accepted	
+open	For Binary Access Read Lock Read As #1	accepted	
+open	For Binary Access Read Lock Write As #1	accepted	
+open	For Binary Access Read Lock Read Write As #1	accepted	
+open	For Binary Access Read Len = 10 As #1	syntax	Syntax error
+open	For Binary Access Write For Input As #1	syntax	Syntax error
+open	For Binary Access Write For Output As #1	syntax	Syntax error
+open	For Binary Access Write For Append As #1	syntax	Syntax error
+open	For Binary Access Write For Random As #1	syntax	Syntax error
+open	For Binary Access Write Access Read As #1	syntax	Syntax error
+open	For Binary Access Write Access Read Write As #1	syntax	Syntax error
+open	For Binary Access Write Shared As #1	accepted	
+open	For Binary Access Write Lock Read As #1	accepted	
+open	For Binary Access Write Lock Write As #1	accepted	
+open	For Binary Access Write Lock Read Write As #1	accepted	
+open	For Binary Access Write Len = 10 As #1	syntax	Syntax error
+open	For Binary Access Read Write For Input As #1	syntax	Syntax error
+open	For Binary Access Read Write For Output As #1	syntax	Syntax error
+open	For Binary Access Read Write For Append As #1	syntax	Syntax error
+open	For Binary Access Read Write For Random As #1	syntax	Syntax error
+open	For Binary Access Read Write Access Read As #1	syntax	Syntax error
+open	For Binary Access Read Write Access Write As #1	syntax	Syntax error
+open	For Binary Access Read Write Shared As #1	accepted	
+open	For Binary Access Read Write Lock Read As #1	accepted	
+open	For Binary Access Read Write Lock Write As #1	accepted	
+open	For Binary Access Read Write Lock Read Write As #1	accepted	
+open	For Binary Access Read Write Len = 10 As #1	syntax	Syntax error
+open	For Binary Shared For Input As #1	syntax	Syntax error
+open	For Binary Shared For Output As #1	syntax	Syntax error
+open	For Binary Shared For Append As #1	syntax	Syntax error
+open	For Binary Shared For Random As #1	syntax	Syntax error
+open	For Binary Shared Access Read As #1	syntax	Syntax error
+open	For Binary Shared Access Write As #1	syntax	Syntax error
+open	For Binary Shared Access Read Write As #1	syntax	Syntax error
+open	For Binary Shared Lock Read As #1	syntax	Syntax error
+open	For Binary Shared Lock Write As #1	syntax	Syntax error
+open	For Binary Shared Lock Read Write As #1	syntax	Syntax error
+open	For Binary Shared Len = 10 As #1	syntax	Syntax error
+open	For Binary Lock Read For Input As #1	syntax	Syntax error
+open	For Binary Lock Read For Output As #1	syntax	Syntax error
+open	For Binary Lock Read For Append As #1	syntax	Syntax error
+open	For Binary Lock Read For Random As #1	syntax	Syntax error
+open	For Binary Lock Read Access Read As #1	syntax	Syntax error
+open	For Binary Lock Read Access Write As #1	syntax	Syntax error
+open	For Binary Lock Read Access Read Write As #1	syntax	Syntax error
+open	For Binary Lock Read Shared As #1	syntax	Syntax error
+open	For Binary Lock Read Lock Write As #1	syntax	Syntax error
+open	For Binary Lock Read Lock Read Write As #1	syntax	Syntax error
+open	For Binary Lock Read Len = 10 As #1	syntax	Syntax error
+open	For Binary Lock Write For Input As #1	syntax	Syntax error
+open	For Binary Lock Write For Output As #1	syntax	Syntax error
+open	For Binary Lock Write For Append As #1	syntax	Syntax error
+open	For Binary Lock Write For Random As #1	syntax	Syntax error
+open	For Binary Lock Write Access Read As #1	syntax	Syntax error
+open	For Binary Lock Write Access Write As #1	syntax	Syntax error
+open	For Binary Lock Write Access Read Write As #1	syntax	Syntax error
+open	For Binary Lock Write Shared As #1	syntax	Syntax error
+open	For Binary Lock Write Lock Read As #1	syntax	Syntax error
+open	For Binary Lock Write Lock Read Write As #1	syntax	Syntax error
+open	For Binary Lock Write Len = 10 As #1	syntax	Syntax error
+open	For Binary Lock Read Write For Input As #1	syntax	Syntax error
+open	For Binary Lock Read Write For Output As #1	syntax	Syntax error
+open	For Binary Lock Read Write For Append As #1	syntax	Syntax error
+open	For Binary Lock Read Write For Random As #1	syntax	Syntax error
+open	For Binary Lock Read Write Access Read As #1	syntax	Syntax error
+open	For Binary Lock Read Write Access Write As #1	syntax	Syntax error
+open	For Binary Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	For Binary Lock Read Write Shared As #1	syntax	Syntax error
+open	For Binary Lock Read Write Lock Read As #1	syntax	Syntax error
+open	For Binary Lock Read Write Lock Write As #1	syntax	Syntax error
+open	For Binary Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	For Binary Len = 10 For Input As #1	syntax	Syntax error
+open	For Binary Len = 10 For Output As #1	syntax	Syntax error
+open	For Binary Len = 10 For Append As #1	syntax	Syntax error
+open	For Binary Len = 10 For Random As #1	syntax	Syntax error
+open	For Binary Len = 10 Access Read As #1	syntax	Syntax error
+open	For Binary Len = 10 Access Write As #1	syntax	Syntax error
+open	For Binary Len = 10 Access Read Write As #1	syntax	Syntax error
+open	For Binary Len = 10 Shared As #1	syntax	Syntax error
+open	For Binary Len = 10 Lock Read As #1	syntax	Syntax error
+open	For Binary Len = 10 Lock Write As #1	syntax	Syntax error
+open	For Binary Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	For Random For Input For Output As #1	syntax	Syntax error
+open	For Random For Input For Append As #1	syntax	Syntax error
+open	For Random For Input For Binary As #1	syntax	Syntax error
+open	For Random For Input Access Read As #1	syntax	Syntax error
+open	For Random For Input Access Write As #1	syntax	Syntax error
+open	For Random For Input Access Read Write As #1	syntax	Syntax error
+open	For Random For Input Shared As #1	syntax	Syntax error
+open	For Random For Input Lock Read As #1	syntax	Syntax error
+open	For Random For Input Lock Write As #1	syntax	Syntax error
+open	For Random For Input Lock Read Write As #1	syntax	Syntax error
+open	For Random For Input Len = 10 As #1	syntax	Syntax error
+open	For Random For Output For Input As #1	syntax	Syntax error
+open	For Random For Output For Append As #1	syntax	Syntax error
+open	For Random For Output For Binary As #1	syntax	Syntax error
+open	For Random For Output Access Read As #1	syntax	Syntax error
+open	For Random For Output Access Write As #1	syntax	Syntax error
+open	For Random For Output Access Read Write As #1	syntax	Syntax error
+open	For Random For Output Shared As #1	syntax	Syntax error
+open	For Random For Output Lock Read As #1	syntax	Syntax error
+open	For Random For Output Lock Write As #1	syntax	Syntax error
+open	For Random For Output Lock Read Write As #1	syntax	Syntax error
+open	For Random For Output Len = 10 As #1	syntax	Syntax error
+open	For Random For Append For Input As #1	syntax	Syntax error
+open	For Random For Append For Output As #1	syntax	Syntax error
+open	For Random For Append For Binary As #1	syntax	Syntax error
+open	For Random For Append Access Read As #1	syntax	Syntax error
+open	For Random For Append Access Write As #1	syntax	Syntax error
+open	For Random For Append Access Read Write As #1	syntax	Syntax error
+open	For Random For Append Shared As #1	syntax	Syntax error
+open	For Random For Append Lock Read As #1	syntax	Syntax error
+open	For Random For Append Lock Write As #1	syntax	Syntax error
+open	For Random For Append Lock Read Write As #1	syntax	Syntax error
+open	For Random For Append Len = 10 As #1	syntax	Syntax error
+open	For Random For Binary For Input As #1	syntax	Syntax error
+open	For Random For Binary For Output As #1	syntax	Syntax error
+open	For Random For Binary For Append As #1	syntax	Syntax error
+open	For Random For Binary Access Read As #1	syntax	Syntax error
+open	For Random For Binary Access Write As #1	syntax	Syntax error
+open	For Random For Binary Access Read Write As #1	syntax	Syntax error
+open	For Random For Binary Shared As #1	syntax	Syntax error
+open	For Random For Binary Lock Read As #1	syntax	Syntax error
+open	For Random For Binary Lock Write As #1	syntax	Syntax error
+open	For Random For Binary Lock Read Write As #1	syntax	Syntax error
+open	For Random For Binary Len = 10 As #1	syntax	Syntax error
+open	For Random Access Read For Input As #1	syntax	Syntax error
+open	For Random Access Read For Output As #1	syntax	Syntax error
+open	For Random Access Read For Append As #1	syntax	Syntax error
+open	For Random Access Read For Binary As #1	syntax	Syntax error
+open	For Random Access Read Access Write As #1	syntax	Syntax error
+open	For Random Access Read Access Read Write As #1	syntax	Syntax error
+open	For Random Access Read Shared As #1	accepted	
+open	For Random Access Read Lock Read As #1	accepted	
+open	For Random Access Read Lock Write As #1	accepted	
+open	For Random Access Read Lock Read Write As #1	accepted	
+open	For Random Access Read Len = 10 As #1	syntax	Syntax error
+open	For Random Access Write For Input As #1	syntax	Syntax error
+open	For Random Access Write For Output As #1	syntax	Syntax error
+open	For Random Access Write For Append As #1	syntax	Syntax error
+open	For Random Access Write For Binary As #1	syntax	Syntax error
+open	For Random Access Write Access Read As #1	syntax	Syntax error
+open	For Random Access Write Access Read Write As #1	syntax	Syntax error
+open	For Random Access Write Shared As #1	accepted	
+open	For Random Access Write Lock Read As #1	accepted	
+open	For Random Access Write Lock Write As #1	accepted	
+open	For Random Access Write Lock Read Write As #1	accepted	
+open	For Random Access Write Len = 10 As #1	syntax	Syntax error
+open	For Random Access Read Write For Input As #1	syntax	Syntax error
+open	For Random Access Read Write For Output As #1	syntax	Syntax error
+open	For Random Access Read Write For Append As #1	syntax	Syntax error
+open	For Random Access Read Write For Binary As #1	syntax	Syntax error
+open	For Random Access Read Write Access Read As #1	syntax	Syntax error
+open	For Random Access Read Write Access Write As #1	syntax	Syntax error
+open	For Random Access Read Write Shared As #1	accepted	
+open	For Random Access Read Write Lock Read As #1	accepted	
+open	For Random Access Read Write Lock Write As #1	accepted	
+open	For Random Access Read Write Lock Read Write As #1	accepted	
+open	For Random Access Read Write Len = 10 As #1	syntax	Syntax error
+open	For Random Shared For Input As #1	syntax	Syntax error
+open	For Random Shared For Output As #1	syntax	Syntax error
+open	For Random Shared For Append As #1	syntax	Syntax error
+open	For Random Shared For Binary As #1	syntax	Syntax error
+open	For Random Shared Access Read As #1	syntax	Syntax error
+open	For Random Shared Access Write As #1	syntax	Syntax error
+open	For Random Shared Access Read Write As #1	syntax	Syntax error
+open	For Random Shared Lock Read As #1	syntax	Syntax error
+open	For Random Shared Lock Write As #1	syntax	Syntax error
+open	For Random Shared Lock Read Write As #1	syntax	Syntax error
+open	For Random Shared Len = 10 As #1	syntax	Syntax error
+open	For Random Lock Read For Input As #1	syntax	Syntax error
+open	For Random Lock Read For Output As #1	syntax	Syntax error
+open	For Random Lock Read For Append As #1	syntax	Syntax error
+open	For Random Lock Read For Binary As #1	syntax	Syntax error
+open	For Random Lock Read Access Read As #1	syntax	Syntax error
+open	For Random Lock Read Access Write As #1	syntax	Syntax error
+open	For Random Lock Read Access Read Write As #1	syntax	Syntax error
+open	For Random Lock Read Shared As #1	syntax	Syntax error
+open	For Random Lock Read Lock Write As #1	syntax	Syntax error
+open	For Random Lock Read Lock Read Write As #1	syntax	Syntax error
+open	For Random Lock Read Len = 10 As #1	syntax	Syntax error
+open	For Random Lock Write For Input As #1	syntax	Syntax error
+open	For Random Lock Write For Output As #1	syntax	Syntax error
+open	For Random Lock Write For Append As #1	syntax	Syntax error
+open	For Random Lock Write For Binary As #1	syntax	Syntax error
+open	For Random Lock Write Access Read As #1	syntax	Syntax error
+open	For Random Lock Write Access Write As #1	syntax	Syntax error
+open	For Random Lock Write Access Read Write As #1	syntax	Syntax error
+open	For Random Lock Write Shared As #1	syntax	Syntax error
+open	For Random Lock Write Lock Read As #1	syntax	Syntax error
+open	For Random Lock Write Lock Read Write As #1	syntax	Syntax error
+open	For Random Lock Write Len = 10 As #1	syntax	Syntax error
+open	For Random Lock Read Write For Input As #1	syntax	Syntax error
+open	For Random Lock Read Write For Output As #1	syntax	Syntax error
+open	For Random Lock Read Write For Append As #1	syntax	Syntax error
+open	For Random Lock Read Write For Binary As #1	syntax	Syntax error
+open	For Random Lock Read Write Access Read As #1	syntax	Syntax error
+open	For Random Lock Read Write Access Write As #1	syntax	Syntax error
+open	For Random Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	For Random Lock Read Write Shared As #1	syntax	Syntax error
+open	For Random Lock Read Write Lock Read As #1	syntax	Syntax error
+open	For Random Lock Read Write Lock Write As #1	syntax	Syntax error
+open	For Random Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	For Random Len = 10 For Input As #1	syntax	Syntax error
+open	For Random Len = 10 For Output As #1	syntax	Syntax error
+open	For Random Len = 10 For Append As #1	syntax	Syntax error
+open	For Random Len = 10 For Binary As #1	syntax	Syntax error
+open	For Random Len = 10 Access Read As #1	syntax	Syntax error
+open	For Random Len = 10 Access Write As #1	syntax	Syntax error
+open	For Random Len = 10 Access Read Write As #1	syntax	Syntax error
+open	For Random Len = 10 Shared As #1	syntax	Syntax error
+open	For Random Len = 10 Lock Read As #1	syntax	Syntax error
+open	For Random Len = 10 Lock Write As #1	syntax	Syntax error
+open	For Random Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Access Read For Input For Output As #1	syntax	Syntax error
+open	Access Read For Input For Append As #1	syntax	Syntax error
+open	Access Read For Input For Binary As #1	syntax	Syntax error
+open	Access Read For Input For Random As #1	syntax	Syntax error
+open	Access Read For Input Access Write As #1	syntax	Syntax error
+open	Access Read For Input Access Read Write As #1	syntax	Syntax error
+open	Access Read For Input Shared As #1	syntax	Syntax error
+open	Access Read For Input Lock Read As #1	syntax	Syntax error
+open	Access Read For Input Lock Write As #1	syntax	Syntax error
+open	Access Read For Input Lock Read Write As #1	syntax	Syntax error
+open	Access Read For Input Len = 10 As #1	syntax	Syntax error
+open	Access Read For Output For Input As #1	syntax	Syntax error
+open	Access Read For Output For Append As #1	syntax	Syntax error
+open	Access Read For Output For Binary As #1	syntax	Syntax error
+open	Access Read For Output For Random As #1	syntax	Syntax error
+open	Access Read For Output Access Write As #1	syntax	Syntax error
+open	Access Read For Output Access Read Write As #1	syntax	Syntax error
+open	Access Read For Output Shared As #1	syntax	Syntax error
+open	Access Read For Output Lock Read As #1	syntax	Syntax error
+open	Access Read For Output Lock Write As #1	syntax	Syntax error
+open	Access Read For Output Lock Read Write As #1	syntax	Syntax error
+open	Access Read For Output Len = 10 As #1	syntax	Syntax error
+open	Access Read For Append For Input As #1	syntax	Syntax error
+open	Access Read For Append For Output As #1	syntax	Syntax error
+open	Access Read For Append For Binary As #1	syntax	Syntax error
+open	Access Read For Append For Random As #1	syntax	Syntax error
+open	Access Read For Append Access Write As #1	syntax	Syntax error
+open	Access Read For Append Access Read Write As #1	syntax	Syntax error
+open	Access Read For Append Shared As #1	syntax	Syntax error
+open	Access Read For Append Lock Read As #1	syntax	Syntax error
+open	Access Read For Append Lock Write As #1	syntax	Syntax error
+open	Access Read For Append Lock Read Write As #1	syntax	Syntax error
+open	Access Read For Append Len = 10 As #1	syntax	Syntax error
+open	Access Read For Binary For Input As #1	syntax	Syntax error
+open	Access Read For Binary For Output As #1	syntax	Syntax error
+open	Access Read For Binary For Append As #1	syntax	Syntax error
+open	Access Read For Binary For Random As #1	syntax	Syntax error
+open	Access Read For Binary Access Write As #1	syntax	Syntax error
+open	Access Read For Binary Access Read Write As #1	syntax	Syntax error
+open	Access Read For Binary Shared As #1	syntax	Syntax error
+open	Access Read For Binary Lock Read As #1	syntax	Syntax error
+open	Access Read For Binary Lock Write As #1	syntax	Syntax error
+open	Access Read For Binary Lock Read Write As #1	syntax	Syntax error
+open	Access Read For Binary Len = 10 As #1	syntax	Syntax error
+open	Access Read For Random For Input As #1	syntax	Syntax error
+open	Access Read For Random For Output As #1	syntax	Syntax error
+open	Access Read For Random For Append As #1	syntax	Syntax error
+open	Access Read For Random For Binary As #1	syntax	Syntax error
+open	Access Read For Random Access Write As #1	syntax	Syntax error
+open	Access Read For Random Access Read Write As #1	syntax	Syntax error
+open	Access Read For Random Shared As #1	syntax	Syntax error
+open	Access Read For Random Lock Read As #1	syntax	Syntax error
+open	Access Read For Random Lock Write As #1	syntax	Syntax error
+open	Access Read For Random Lock Read Write As #1	syntax	Syntax error
+open	Access Read For Random Len = 10 As #1	syntax	Syntax error
+open	Access Read Access Write For Input As #1	syntax	Syntax error
+open	Access Read Access Write For Output As #1	syntax	Syntax error
+open	Access Read Access Write For Append As #1	syntax	Syntax error
+open	Access Read Access Write For Binary As #1	syntax	Syntax error
+open	Access Read Access Write For Random As #1	syntax	Syntax error
+open	Access Read Access Write Access Read Write As #1	syntax	Syntax error
+open	Access Read Access Write Shared As #1	syntax	Syntax error
+open	Access Read Access Write Lock Read As #1	syntax	Syntax error
+open	Access Read Access Write Lock Write As #1	syntax	Syntax error
+open	Access Read Access Write Lock Read Write As #1	syntax	Syntax error
+open	Access Read Access Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Access Read Write For Input As #1	syntax	Syntax error
+open	Access Read Access Read Write For Output As #1	syntax	Syntax error
+open	Access Read Access Read Write For Append As #1	syntax	Syntax error
+open	Access Read Access Read Write For Binary As #1	syntax	Syntax error
+open	Access Read Access Read Write For Random As #1	syntax	Syntax error
+open	Access Read Access Read Write Access Write As #1	syntax	Syntax error
+open	Access Read Access Read Write Shared As #1	syntax	Syntax error
+open	Access Read Access Read Write Lock Read As #1	syntax	Syntax error
+open	Access Read Access Read Write Lock Write As #1	syntax	Syntax error
+open	Access Read Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	Access Read Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Shared For Input As #1	syntax	Syntax error
+open	Access Read Shared For Output As #1	syntax	Syntax error
+open	Access Read Shared For Append As #1	syntax	Syntax error
+open	Access Read Shared For Binary As #1	syntax	Syntax error
+open	Access Read Shared For Random As #1	syntax	Syntax error
+open	Access Read Shared Access Write As #1	syntax	Syntax error
+open	Access Read Shared Access Read Write As #1	syntax	Syntax error
+open	Access Read Shared Lock Read As #1	syntax	Syntax error
+open	Access Read Shared Lock Write As #1	syntax	Syntax error
+open	Access Read Shared Lock Read Write As #1	syntax	Syntax error
+open	Access Read Shared Len = 10 As #1	syntax	Syntax error
+open	Access Read Lock Read For Input As #1	syntax	Syntax error
+open	Access Read Lock Read For Output As #1	syntax	Syntax error
+open	Access Read Lock Read For Append As #1	syntax	Syntax error
+open	Access Read Lock Read For Binary As #1	syntax	Syntax error
+open	Access Read Lock Read For Random As #1	syntax	Syntax error
+open	Access Read Lock Read Access Write As #1	syntax	Syntax error
+open	Access Read Lock Read Access Read Write As #1	syntax	Syntax error
+open	Access Read Lock Read Shared As #1	syntax	Syntax error
+open	Access Read Lock Read Lock Write As #1	syntax	Syntax error
+open	Access Read Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Access Read Lock Read Len = 10 As #1	syntax	Syntax error
+open	Access Read Lock Write For Input As #1	syntax	Syntax error
+open	Access Read Lock Write For Output As #1	syntax	Syntax error
+open	Access Read Lock Write For Append As #1	syntax	Syntax error
+open	Access Read Lock Write For Binary As #1	syntax	Syntax error
+open	Access Read Lock Write For Random As #1	syntax	Syntax error
+open	Access Read Lock Write Access Write As #1	syntax	Syntax error
+open	Access Read Lock Write Access Read Write As #1	syntax	Syntax error
+open	Access Read Lock Write Shared As #1	syntax	Syntax error
+open	Access Read Lock Write Lock Read As #1	syntax	Syntax error
+open	Access Read Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Access Read Lock Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Lock Read Write For Input As #1	syntax	Syntax error
+open	Access Read Lock Read Write For Output As #1	syntax	Syntax error
+open	Access Read Lock Read Write For Append As #1	syntax	Syntax error
+open	Access Read Lock Read Write For Binary As #1	syntax	Syntax error
+open	Access Read Lock Read Write For Random As #1	syntax	Syntax error
+open	Access Read Lock Read Write Access Write As #1	syntax	Syntax error
+open	Access Read Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Access Read Lock Read Write Shared As #1	syntax	Syntax error
+open	Access Read Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Access Read Lock Read Write Lock Write As #1	syntax	Syntax error
+open	Access Read Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Len = 10 For Input As #1	syntax	Syntax error
+open	Access Read Len = 10 For Output As #1	syntax	Syntax error
+open	Access Read Len = 10 For Append As #1	syntax	Syntax error
+open	Access Read Len = 10 For Binary As #1	syntax	Syntax error
+open	Access Read Len = 10 For Random As #1	syntax	Syntax error
+open	Access Read Len = 10 Access Write As #1	syntax	Syntax error
+open	Access Read Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Access Read Len = 10 Shared As #1	syntax	Syntax error
+open	Access Read Len = 10 Lock Read As #1	syntax	Syntax error
+open	Access Read Len = 10 Lock Write As #1	syntax	Syntax error
+open	Access Read Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Access Write For Input For Output As #1	syntax	Syntax error
+open	Access Write For Input For Append As #1	syntax	Syntax error
+open	Access Write For Input For Binary As #1	syntax	Syntax error
+open	Access Write For Input For Random As #1	syntax	Syntax error
+open	Access Write For Input Access Read As #1	syntax	Syntax error
+open	Access Write For Input Access Read Write As #1	syntax	Syntax error
+open	Access Write For Input Shared As #1	syntax	Syntax error
+open	Access Write For Input Lock Read As #1	syntax	Syntax error
+open	Access Write For Input Lock Write As #1	syntax	Syntax error
+open	Access Write For Input Lock Read Write As #1	syntax	Syntax error
+open	Access Write For Input Len = 10 As #1	syntax	Syntax error
+open	Access Write For Output For Input As #1	syntax	Syntax error
+open	Access Write For Output For Append As #1	syntax	Syntax error
+open	Access Write For Output For Binary As #1	syntax	Syntax error
+open	Access Write For Output For Random As #1	syntax	Syntax error
+open	Access Write For Output Access Read As #1	syntax	Syntax error
+open	Access Write For Output Access Read Write As #1	syntax	Syntax error
+open	Access Write For Output Shared As #1	syntax	Syntax error
+open	Access Write For Output Lock Read As #1	syntax	Syntax error
+open	Access Write For Output Lock Write As #1	syntax	Syntax error
+open	Access Write For Output Lock Read Write As #1	syntax	Syntax error
+open	Access Write For Output Len = 10 As #1	syntax	Syntax error
+open	Access Write For Append For Input As #1	syntax	Syntax error
+open	Access Write For Append For Output As #1	syntax	Syntax error
+open	Access Write For Append For Binary As #1	syntax	Syntax error
+open	Access Write For Append For Random As #1	syntax	Syntax error
+open	Access Write For Append Access Read As #1	syntax	Syntax error
+open	Access Write For Append Access Read Write As #1	syntax	Syntax error
+open	Access Write For Append Shared As #1	syntax	Syntax error
+open	Access Write For Append Lock Read As #1	syntax	Syntax error
+open	Access Write For Append Lock Write As #1	syntax	Syntax error
+open	Access Write For Append Lock Read Write As #1	syntax	Syntax error
+open	Access Write For Append Len = 10 As #1	syntax	Syntax error
+open	Access Write For Binary For Input As #1	syntax	Syntax error
+open	Access Write For Binary For Output As #1	syntax	Syntax error
+open	Access Write For Binary For Append As #1	syntax	Syntax error
+open	Access Write For Binary For Random As #1	syntax	Syntax error
+open	Access Write For Binary Access Read As #1	syntax	Syntax error
+open	Access Write For Binary Access Read Write As #1	syntax	Syntax error
+open	Access Write For Binary Shared As #1	syntax	Syntax error
+open	Access Write For Binary Lock Read As #1	syntax	Syntax error
+open	Access Write For Binary Lock Write As #1	syntax	Syntax error
+open	Access Write For Binary Lock Read Write As #1	syntax	Syntax error
+open	Access Write For Binary Len = 10 As #1	syntax	Syntax error
+open	Access Write For Random For Input As #1	syntax	Syntax error
+open	Access Write For Random For Output As #1	syntax	Syntax error
+open	Access Write For Random For Append As #1	syntax	Syntax error
+open	Access Write For Random For Binary As #1	syntax	Syntax error
+open	Access Write For Random Access Read As #1	syntax	Syntax error
+open	Access Write For Random Access Read Write As #1	syntax	Syntax error
+open	Access Write For Random Shared As #1	syntax	Syntax error
+open	Access Write For Random Lock Read As #1	syntax	Syntax error
+open	Access Write For Random Lock Write As #1	syntax	Syntax error
+open	Access Write For Random Lock Read Write As #1	syntax	Syntax error
+open	Access Write For Random Len = 10 As #1	syntax	Syntax error
+open	Access Write Access Read For Input As #1	syntax	Syntax error
+open	Access Write Access Read For Output As #1	syntax	Syntax error
+open	Access Write Access Read For Append As #1	syntax	Syntax error
+open	Access Write Access Read For Binary As #1	syntax	Syntax error
+open	Access Write Access Read For Random As #1	syntax	Syntax error
+open	Access Write Access Read Access Read Write As #1	syntax	Syntax error
+open	Access Write Access Read Shared As #1	syntax	Syntax error
+open	Access Write Access Read Lock Read As #1	syntax	Syntax error
+open	Access Write Access Read Lock Write As #1	syntax	Syntax error
+open	Access Write Access Read Lock Read Write As #1	syntax	Syntax error
+open	Access Write Access Read Len = 10 As #1	syntax	Syntax error
+open	Access Write Access Read Write For Input As #1	syntax	Syntax error
+open	Access Write Access Read Write For Output As #1	syntax	Syntax error
+open	Access Write Access Read Write For Append As #1	syntax	Syntax error
+open	Access Write Access Read Write For Binary As #1	syntax	Syntax error
+open	Access Write Access Read Write For Random As #1	syntax	Syntax error
+open	Access Write Access Read Write Access Read As #1	syntax	Syntax error
+open	Access Write Access Read Write Shared As #1	syntax	Syntax error
+open	Access Write Access Read Write Lock Read As #1	syntax	Syntax error
+open	Access Write Access Read Write Lock Write As #1	syntax	Syntax error
+open	Access Write Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	Access Write Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Access Write Shared For Input As #1	syntax	Syntax error
+open	Access Write Shared For Output As #1	syntax	Syntax error
+open	Access Write Shared For Append As #1	syntax	Syntax error
+open	Access Write Shared For Binary As #1	syntax	Syntax error
+open	Access Write Shared For Random As #1	syntax	Syntax error
+open	Access Write Shared Access Read As #1	syntax	Syntax error
+open	Access Write Shared Access Read Write As #1	syntax	Syntax error
+open	Access Write Shared Lock Read As #1	syntax	Syntax error
+open	Access Write Shared Lock Write As #1	syntax	Syntax error
+open	Access Write Shared Lock Read Write As #1	syntax	Syntax error
+open	Access Write Shared Len = 10 As #1	syntax	Syntax error
+open	Access Write Lock Read For Input As #1	syntax	Syntax error
+open	Access Write Lock Read For Output As #1	syntax	Syntax error
+open	Access Write Lock Read For Append As #1	syntax	Syntax error
+open	Access Write Lock Read For Binary As #1	syntax	Syntax error
+open	Access Write Lock Read For Random As #1	syntax	Syntax error
+open	Access Write Lock Read Access Read As #1	syntax	Syntax error
+open	Access Write Lock Read Access Read Write As #1	syntax	Syntax error
+open	Access Write Lock Read Shared As #1	syntax	Syntax error
+open	Access Write Lock Read Lock Write As #1	syntax	Syntax error
+open	Access Write Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Access Write Lock Read Len = 10 As #1	syntax	Syntax error
+open	Access Write Lock Write For Input As #1	syntax	Syntax error
+open	Access Write Lock Write For Output As #1	syntax	Syntax error
+open	Access Write Lock Write For Append As #1	syntax	Syntax error
+open	Access Write Lock Write For Binary As #1	syntax	Syntax error
+open	Access Write Lock Write For Random As #1	syntax	Syntax error
+open	Access Write Lock Write Access Read As #1	syntax	Syntax error
+open	Access Write Lock Write Access Read Write As #1	syntax	Syntax error
+open	Access Write Lock Write Shared As #1	syntax	Syntax error
+open	Access Write Lock Write Lock Read As #1	syntax	Syntax error
+open	Access Write Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Access Write Lock Write Len = 10 As #1	syntax	Syntax error
+open	Access Write Lock Read Write For Input As #1	syntax	Syntax error
+open	Access Write Lock Read Write For Output As #1	syntax	Syntax error
+open	Access Write Lock Read Write For Append As #1	syntax	Syntax error
+open	Access Write Lock Read Write For Binary As #1	syntax	Syntax error
+open	Access Write Lock Read Write For Random As #1	syntax	Syntax error
+open	Access Write Lock Read Write Access Read As #1	syntax	Syntax error
+open	Access Write Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Access Write Lock Read Write Shared As #1	syntax	Syntax error
+open	Access Write Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Access Write Lock Read Write Lock Write As #1	syntax	Syntax error
+open	Access Write Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Access Write Len = 10 For Input As #1	syntax	Syntax error
+open	Access Write Len = 10 For Output As #1	syntax	Syntax error
+open	Access Write Len = 10 For Append As #1	syntax	Syntax error
+open	Access Write Len = 10 For Binary As #1	syntax	Syntax error
+open	Access Write Len = 10 For Random As #1	syntax	Syntax error
+open	Access Write Len = 10 Access Read As #1	syntax	Syntax error
+open	Access Write Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Access Write Len = 10 Shared As #1	syntax	Syntax error
+open	Access Write Len = 10 Lock Read As #1	syntax	Syntax error
+open	Access Write Len = 10 Lock Write As #1	syntax	Syntax error
+open	Access Write Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write For Input For Output As #1	syntax	Syntax error
+open	Access Read Write For Input For Append As #1	syntax	Syntax error
+open	Access Read Write For Input For Binary As #1	syntax	Syntax error
+open	Access Read Write For Input For Random As #1	syntax	Syntax error
+open	Access Read Write For Input Access Read As #1	syntax	Syntax error
+open	Access Read Write For Input Access Write As #1	syntax	Syntax error
+open	Access Read Write For Input Shared As #1	syntax	Syntax error
+open	Access Read Write For Input Lock Read As #1	syntax	Syntax error
+open	Access Read Write For Input Lock Write As #1	syntax	Syntax error
+open	Access Read Write For Input Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write For Input Len = 10 As #1	syntax	Syntax error
+open	Access Read Write For Output For Input As #1	syntax	Syntax error
+open	Access Read Write For Output For Append As #1	syntax	Syntax error
+open	Access Read Write For Output For Binary As #1	syntax	Syntax error
+open	Access Read Write For Output For Random As #1	syntax	Syntax error
+open	Access Read Write For Output Access Read As #1	syntax	Syntax error
+open	Access Read Write For Output Access Write As #1	syntax	Syntax error
+open	Access Read Write For Output Shared As #1	syntax	Syntax error
+open	Access Read Write For Output Lock Read As #1	syntax	Syntax error
+open	Access Read Write For Output Lock Write As #1	syntax	Syntax error
+open	Access Read Write For Output Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write For Output Len = 10 As #1	syntax	Syntax error
+open	Access Read Write For Append For Input As #1	syntax	Syntax error
+open	Access Read Write For Append For Output As #1	syntax	Syntax error
+open	Access Read Write For Append For Binary As #1	syntax	Syntax error
+open	Access Read Write For Append For Random As #1	syntax	Syntax error
+open	Access Read Write For Append Access Read As #1	syntax	Syntax error
+open	Access Read Write For Append Access Write As #1	syntax	Syntax error
+open	Access Read Write For Append Shared As #1	syntax	Syntax error
+open	Access Read Write For Append Lock Read As #1	syntax	Syntax error
+open	Access Read Write For Append Lock Write As #1	syntax	Syntax error
+open	Access Read Write For Append Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write For Append Len = 10 As #1	syntax	Syntax error
+open	Access Read Write For Binary For Input As #1	syntax	Syntax error
+open	Access Read Write For Binary For Output As #1	syntax	Syntax error
+open	Access Read Write For Binary For Append As #1	syntax	Syntax error
+open	Access Read Write For Binary For Random As #1	syntax	Syntax error
+open	Access Read Write For Binary Access Read As #1	syntax	Syntax error
+open	Access Read Write For Binary Access Write As #1	syntax	Syntax error
+open	Access Read Write For Binary Shared As #1	syntax	Syntax error
+open	Access Read Write For Binary Lock Read As #1	syntax	Syntax error
+open	Access Read Write For Binary Lock Write As #1	syntax	Syntax error
+open	Access Read Write For Binary Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write For Binary Len = 10 As #1	syntax	Syntax error
+open	Access Read Write For Random For Input As #1	syntax	Syntax error
+open	Access Read Write For Random For Output As #1	syntax	Syntax error
+open	Access Read Write For Random For Append As #1	syntax	Syntax error
+open	Access Read Write For Random For Binary As #1	syntax	Syntax error
+open	Access Read Write For Random Access Read As #1	syntax	Syntax error
+open	Access Read Write For Random Access Write As #1	syntax	Syntax error
+open	Access Read Write For Random Shared As #1	syntax	Syntax error
+open	Access Read Write For Random Lock Read As #1	syntax	Syntax error
+open	Access Read Write For Random Lock Write As #1	syntax	Syntax error
+open	Access Read Write For Random Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write For Random Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Access Read For Input As #1	syntax	Syntax error
+open	Access Read Write Access Read For Output As #1	syntax	Syntax error
+open	Access Read Write Access Read For Append As #1	syntax	Syntax error
+open	Access Read Write Access Read For Binary As #1	syntax	Syntax error
+open	Access Read Write Access Read For Random As #1	syntax	Syntax error
+open	Access Read Write Access Read Access Write As #1	syntax	Syntax error
+open	Access Read Write Access Read Shared As #1	syntax	Syntax error
+open	Access Read Write Access Read Lock Read As #1	syntax	Syntax error
+open	Access Read Write Access Read Lock Write As #1	syntax	Syntax error
+open	Access Read Write Access Read Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write Access Read Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Access Write For Input As #1	syntax	Syntax error
+open	Access Read Write Access Write For Output As #1	syntax	Syntax error
+open	Access Read Write Access Write For Append As #1	syntax	Syntax error
+open	Access Read Write Access Write For Binary As #1	syntax	Syntax error
+open	Access Read Write Access Write For Random As #1	syntax	Syntax error
+open	Access Read Write Access Write Access Read As #1	syntax	Syntax error
+open	Access Read Write Access Write Shared As #1	syntax	Syntax error
+open	Access Read Write Access Write Lock Read As #1	syntax	Syntax error
+open	Access Read Write Access Write Lock Write As #1	syntax	Syntax error
+open	Access Read Write Access Write Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write Access Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Shared For Input As #1	syntax	Syntax error
+open	Access Read Write Shared For Output As #1	syntax	Syntax error
+open	Access Read Write Shared For Append As #1	syntax	Syntax error
+open	Access Read Write Shared For Binary As #1	syntax	Syntax error
+open	Access Read Write Shared For Random As #1	syntax	Syntax error
+open	Access Read Write Shared Access Read As #1	syntax	Syntax error
+open	Access Read Write Shared Access Write As #1	syntax	Syntax error
+open	Access Read Write Shared Lock Read As #1	syntax	Syntax error
+open	Access Read Write Shared Lock Write As #1	syntax	Syntax error
+open	Access Read Write Shared Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write Shared Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Lock Read For Input As #1	syntax	Syntax error
+open	Access Read Write Lock Read For Output As #1	syntax	Syntax error
+open	Access Read Write Lock Read For Append As #1	syntax	Syntax error
+open	Access Read Write Lock Read For Binary As #1	syntax	Syntax error
+open	Access Read Write Lock Read For Random As #1	syntax	Syntax error
+open	Access Read Write Lock Read Access Read As #1	syntax	Syntax error
+open	Access Read Write Lock Read Access Write As #1	syntax	Syntax error
+open	Access Read Write Lock Read Shared As #1	syntax	Syntax error
+open	Access Read Write Lock Read Lock Write As #1	syntax	Syntax error
+open	Access Read Write Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write Lock Read Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Lock Write For Input As #1	syntax	Syntax error
+open	Access Read Write Lock Write For Output As #1	syntax	Syntax error
+open	Access Read Write Lock Write For Append As #1	syntax	Syntax error
+open	Access Read Write Lock Write For Binary As #1	syntax	Syntax error
+open	Access Read Write Lock Write For Random As #1	syntax	Syntax error
+open	Access Read Write Lock Write Access Read As #1	syntax	Syntax error
+open	Access Read Write Lock Write Access Write As #1	syntax	Syntax error
+open	Access Read Write Lock Write Shared As #1	syntax	Syntax error
+open	Access Read Write Lock Write Lock Read As #1	syntax	Syntax error
+open	Access Read Write Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Access Read Write Lock Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write For Input As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write For Output As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write For Append As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write For Binary As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write For Random As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write Access Read As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write Access Write As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write Shared As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write Lock Write As #1	syntax	Syntax error
+open	Access Read Write Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Access Read Write Len = 10 For Input As #1	syntax	Syntax error
+open	Access Read Write Len = 10 For Output As #1	syntax	Syntax error
+open	Access Read Write Len = 10 For Append As #1	syntax	Syntax error
+open	Access Read Write Len = 10 For Binary As #1	syntax	Syntax error
+open	Access Read Write Len = 10 For Random As #1	syntax	Syntax error
+open	Access Read Write Len = 10 Access Read As #1	syntax	Syntax error
+open	Access Read Write Len = 10 Access Write As #1	syntax	Syntax error
+open	Access Read Write Len = 10 Shared As #1	syntax	Syntax error
+open	Access Read Write Len = 10 Lock Read As #1	syntax	Syntax error
+open	Access Read Write Len = 10 Lock Write As #1	syntax	Syntax error
+open	Access Read Write Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Shared For Input For Output As #1	syntax	Syntax error
+open	Shared For Input For Append As #1	syntax	Syntax error
+open	Shared For Input For Binary As #1	syntax	Syntax error
+open	Shared For Input For Random As #1	syntax	Syntax error
+open	Shared For Input Access Read As #1	syntax	Syntax error
+open	Shared For Input Access Write As #1	syntax	Syntax error
+open	Shared For Input Access Read Write As #1	syntax	Syntax error
+open	Shared For Input Lock Read As #1	syntax	Syntax error
+open	Shared For Input Lock Write As #1	syntax	Syntax error
+open	Shared For Input Lock Read Write As #1	syntax	Syntax error
+open	Shared For Input Len = 10 As #1	syntax	Syntax error
+open	Shared For Output For Input As #1	syntax	Syntax error
+open	Shared For Output For Append As #1	syntax	Syntax error
+open	Shared For Output For Binary As #1	syntax	Syntax error
+open	Shared For Output For Random As #1	syntax	Syntax error
+open	Shared For Output Access Read As #1	syntax	Syntax error
+open	Shared For Output Access Write As #1	syntax	Syntax error
+open	Shared For Output Access Read Write As #1	syntax	Syntax error
+open	Shared For Output Lock Read As #1	syntax	Syntax error
+open	Shared For Output Lock Write As #1	syntax	Syntax error
+open	Shared For Output Lock Read Write As #1	syntax	Syntax error
+open	Shared For Output Len = 10 As #1	syntax	Syntax error
+open	Shared For Append For Input As #1	syntax	Syntax error
+open	Shared For Append For Output As #1	syntax	Syntax error
+open	Shared For Append For Binary As #1	syntax	Syntax error
+open	Shared For Append For Random As #1	syntax	Syntax error
+open	Shared For Append Access Read As #1	syntax	Syntax error
+open	Shared For Append Access Write As #1	syntax	Syntax error
+open	Shared For Append Access Read Write As #1	syntax	Syntax error
+open	Shared For Append Lock Read As #1	syntax	Syntax error
+open	Shared For Append Lock Write As #1	syntax	Syntax error
+open	Shared For Append Lock Read Write As #1	syntax	Syntax error
+open	Shared For Append Len = 10 As #1	syntax	Syntax error
+open	Shared For Binary For Input As #1	syntax	Syntax error
+open	Shared For Binary For Output As #1	syntax	Syntax error
+open	Shared For Binary For Append As #1	syntax	Syntax error
+open	Shared For Binary For Random As #1	syntax	Syntax error
+open	Shared For Binary Access Read As #1	syntax	Syntax error
+open	Shared For Binary Access Write As #1	syntax	Syntax error
+open	Shared For Binary Access Read Write As #1	syntax	Syntax error
+open	Shared For Binary Lock Read As #1	syntax	Syntax error
+open	Shared For Binary Lock Write As #1	syntax	Syntax error
+open	Shared For Binary Lock Read Write As #1	syntax	Syntax error
+open	Shared For Binary Len = 10 As #1	syntax	Syntax error
+open	Shared For Random For Input As #1	syntax	Syntax error
+open	Shared For Random For Output As #1	syntax	Syntax error
+open	Shared For Random For Append As #1	syntax	Syntax error
+open	Shared For Random For Binary As #1	syntax	Syntax error
+open	Shared For Random Access Read As #1	syntax	Syntax error
+open	Shared For Random Access Write As #1	syntax	Syntax error
+open	Shared For Random Access Read Write As #1	syntax	Syntax error
+open	Shared For Random Lock Read As #1	syntax	Syntax error
+open	Shared For Random Lock Write As #1	syntax	Syntax error
+open	Shared For Random Lock Read Write As #1	syntax	Syntax error
+open	Shared For Random Len = 10 As #1	syntax	Syntax error
+open	Shared Access Read For Input As #1	syntax	Syntax error
+open	Shared Access Read For Output As #1	syntax	Syntax error
+open	Shared Access Read For Append As #1	syntax	Syntax error
+open	Shared Access Read For Binary As #1	syntax	Syntax error
+open	Shared Access Read For Random As #1	syntax	Syntax error
+open	Shared Access Read Access Write As #1	syntax	Syntax error
+open	Shared Access Read Access Read Write As #1	syntax	Syntax error
+open	Shared Access Read Lock Read As #1	syntax	Syntax error
+open	Shared Access Read Lock Write As #1	syntax	Syntax error
+open	Shared Access Read Lock Read Write As #1	syntax	Syntax error
+open	Shared Access Read Len = 10 As #1	syntax	Syntax error
+open	Shared Access Write For Input As #1	syntax	Syntax error
+open	Shared Access Write For Output As #1	syntax	Syntax error
+open	Shared Access Write For Append As #1	syntax	Syntax error
+open	Shared Access Write For Binary As #1	syntax	Syntax error
+open	Shared Access Write For Random As #1	syntax	Syntax error
+open	Shared Access Write Access Read As #1	syntax	Syntax error
+open	Shared Access Write Access Read Write As #1	syntax	Syntax error
+open	Shared Access Write Lock Read As #1	syntax	Syntax error
+open	Shared Access Write Lock Write As #1	syntax	Syntax error
+open	Shared Access Write Lock Read Write As #1	syntax	Syntax error
+open	Shared Access Write Len = 10 As #1	syntax	Syntax error
+open	Shared Access Read Write For Input As #1	syntax	Syntax error
+open	Shared Access Read Write For Output As #1	syntax	Syntax error
+open	Shared Access Read Write For Append As #1	syntax	Syntax error
+open	Shared Access Read Write For Binary As #1	syntax	Syntax error
+open	Shared Access Read Write For Random As #1	syntax	Syntax error
+open	Shared Access Read Write Access Read As #1	syntax	Syntax error
+open	Shared Access Read Write Access Write As #1	syntax	Syntax error
+open	Shared Access Read Write Lock Read As #1	syntax	Syntax error
+open	Shared Access Read Write Lock Write As #1	syntax	Syntax error
+open	Shared Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	Shared Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Shared Lock Read For Input As #1	syntax	Syntax error
+open	Shared Lock Read For Output As #1	syntax	Syntax error
+open	Shared Lock Read For Append As #1	syntax	Syntax error
+open	Shared Lock Read For Binary As #1	syntax	Syntax error
+open	Shared Lock Read For Random As #1	syntax	Syntax error
+open	Shared Lock Read Access Read As #1	syntax	Syntax error
+open	Shared Lock Read Access Write As #1	syntax	Syntax error
+open	Shared Lock Read Access Read Write As #1	syntax	Syntax error
+open	Shared Lock Read Lock Write As #1	syntax	Syntax error
+open	Shared Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Shared Lock Read Len = 10 As #1	syntax	Syntax error
+open	Shared Lock Write For Input As #1	syntax	Syntax error
+open	Shared Lock Write For Output As #1	syntax	Syntax error
+open	Shared Lock Write For Append As #1	syntax	Syntax error
+open	Shared Lock Write For Binary As #1	syntax	Syntax error
+open	Shared Lock Write For Random As #1	syntax	Syntax error
+open	Shared Lock Write Access Read As #1	syntax	Syntax error
+open	Shared Lock Write Access Write As #1	syntax	Syntax error
+open	Shared Lock Write Access Read Write As #1	syntax	Syntax error
+open	Shared Lock Write Lock Read As #1	syntax	Syntax error
+open	Shared Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Shared Lock Write Len = 10 As #1	syntax	Syntax error
+open	Shared Lock Read Write For Input As #1	syntax	Syntax error
+open	Shared Lock Read Write For Output As #1	syntax	Syntax error
+open	Shared Lock Read Write For Append As #1	syntax	Syntax error
+open	Shared Lock Read Write For Binary As #1	syntax	Syntax error
+open	Shared Lock Read Write For Random As #1	syntax	Syntax error
+open	Shared Lock Read Write Access Read As #1	syntax	Syntax error
+open	Shared Lock Read Write Access Write As #1	syntax	Syntax error
+open	Shared Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Shared Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Shared Lock Read Write Lock Write As #1	syntax	Syntax error
+open	Shared Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Shared Len = 10 For Input As #1	syntax	Syntax error
+open	Shared Len = 10 For Output As #1	syntax	Syntax error
+open	Shared Len = 10 For Append As #1	syntax	Syntax error
+open	Shared Len = 10 For Binary As #1	syntax	Syntax error
+open	Shared Len = 10 For Random As #1	syntax	Syntax error
+open	Shared Len = 10 Access Read As #1	syntax	Syntax error
+open	Shared Len = 10 Access Write As #1	syntax	Syntax error
+open	Shared Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Shared Len = 10 Lock Read As #1	syntax	Syntax error
+open	Shared Len = 10 Lock Write As #1	syntax	Syntax error
+open	Shared Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Lock Read For Input For Output As #1	syntax	Syntax error
+open	Lock Read For Input For Append As #1	syntax	Syntax error
+open	Lock Read For Input For Binary As #1	syntax	Syntax error
+open	Lock Read For Input For Random As #1	syntax	Syntax error
+open	Lock Read For Input Access Read As #1	syntax	Syntax error
+open	Lock Read For Input Access Write As #1	syntax	Syntax error
+open	Lock Read For Input Access Read Write As #1	syntax	Syntax error
+open	Lock Read For Input Shared As #1	syntax	Syntax error
+open	Lock Read For Input Lock Write As #1	syntax	Syntax error
+open	Lock Read For Input Lock Read Write As #1	syntax	Syntax error
+open	Lock Read For Input Len = 10 As #1	syntax	Syntax error
+open	Lock Read For Output For Input As #1	syntax	Syntax error
+open	Lock Read For Output For Append As #1	syntax	Syntax error
+open	Lock Read For Output For Binary As #1	syntax	Syntax error
+open	Lock Read For Output For Random As #1	syntax	Syntax error
+open	Lock Read For Output Access Read As #1	syntax	Syntax error
+open	Lock Read For Output Access Write As #1	syntax	Syntax error
+open	Lock Read For Output Access Read Write As #1	syntax	Syntax error
+open	Lock Read For Output Shared As #1	syntax	Syntax error
+open	Lock Read For Output Lock Write As #1	syntax	Syntax error
+open	Lock Read For Output Lock Read Write As #1	syntax	Syntax error
+open	Lock Read For Output Len = 10 As #1	syntax	Syntax error
+open	Lock Read For Append For Input As #1	syntax	Syntax error
+open	Lock Read For Append For Output As #1	syntax	Syntax error
+open	Lock Read For Append For Binary As #1	syntax	Syntax error
+open	Lock Read For Append For Random As #1	syntax	Syntax error
+open	Lock Read For Append Access Read As #1	syntax	Syntax error
+open	Lock Read For Append Access Write As #1	syntax	Syntax error
+open	Lock Read For Append Access Read Write As #1	syntax	Syntax error
+open	Lock Read For Append Shared As #1	syntax	Syntax error
+open	Lock Read For Append Lock Write As #1	syntax	Syntax error
+open	Lock Read For Append Lock Read Write As #1	syntax	Syntax error
+open	Lock Read For Append Len = 10 As #1	syntax	Syntax error
+open	Lock Read For Binary For Input As #1	syntax	Syntax error
+open	Lock Read For Binary For Output As #1	syntax	Syntax error
+open	Lock Read For Binary For Append As #1	syntax	Syntax error
+open	Lock Read For Binary For Random As #1	syntax	Syntax error
+open	Lock Read For Binary Access Read As #1	syntax	Syntax error
+open	Lock Read For Binary Access Write As #1	syntax	Syntax error
+open	Lock Read For Binary Access Read Write As #1	syntax	Syntax error
+open	Lock Read For Binary Shared As #1	syntax	Syntax error
+open	Lock Read For Binary Lock Write As #1	syntax	Syntax error
+open	Lock Read For Binary Lock Read Write As #1	syntax	Syntax error
+open	Lock Read For Binary Len = 10 As #1	syntax	Syntax error
+open	Lock Read For Random For Input As #1	syntax	Syntax error
+open	Lock Read For Random For Output As #1	syntax	Syntax error
+open	Lock Read For Random For Append As #1	syntax	Syntax error
+open	Lock Read For Random For Binary As #1	syntax	Syntax error
+open	Lock Read For Random Access Read As #1	syntax	Syntax error
+open	Lock Read For Random Access Write As #1	syntax	Syntax error
+open	Lock Read For Random Access Read Write As #1	syntax	Syntax error
+open	Lock Read For Random Shared As #1	syntax	Syntax error
+open	Lock Read For Random Lock Write As #1	syntax	Syntax error
+open	Lock Read For Random Lock Read Write As #1	syntax	Syntax error
+open	Lock Read For Random Len = 10 As #1	syntax	Syntax error
+open	Lock Read Access Read For Input As #1	syntax	Syntax error
+open	Lock Read Access Read For Output As #1	syntax	Syntax error
+open	Lock Read Access Read For Append As #1	syntax	Syntax error
+open	Lock Read Access Read For Binary As #1	syntax	Syntax error
+open	Lock Read Access Read For Random As #1	syntax	Syntax error
+open	Lock Read Access Read Access Write As #1	syntax	Syntax error
+open	Lock Read Access Read Access Read Write As #1	syntax	Syntax error
+open	Lock Read Access Read Shared As #1	syntax	Syntax error
+open	Lock Read Access Read Lock Write As #1	syntax	Syntax error
+open	Lock Read Access Read Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Access Read Len = 10 As #1	syntax	Syntax error
+open	Lock Read Access Write For Input As #1	syntax	Syntax error
+open	Lock Read Access Write For Output As #1	syntax	Syntax error
+open	Lock Read Access Write For Append As #1	syntax	Syntax error
+open	Lock Read Access Write For Binary As #1	syntax	Syntax error
+open	Lock Read Access Write For Random As #1	syntax	Syntax error
+open	Lock Read Access Write Access Read As #1	syntax	Syntax error
+open	Lock Read Access Write Access Read Write As #1	syntax	Syntax error
+open	Lock Read Access Write Shared As #1	syntax	Syntax error
+open	Lock Read Access Write Lock Write As #1	syntax	Syntax error
+open	Lock Read Access Write Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Access Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Access Read Write For Input As #1	syntax	Syntax error
+open	Lock Read Access Read Write For Output As #1	syntax	Syntax error
+open	Lock Read Access Read Write For Append As #1	syntax	Syntax error
+open	Lock Read Access Read Write For Binary As #1	syntax	Syntax error
+open	Lock Read Access Read Write For Random As #1	syntax	Syntax error
+open	Lock Read Access Read Write Access Read As #1	syntax	Syntax error
+open	Lock Read Access Read Write Access Write As #1	syntax	Syntax error
+open	Lock Read Access Read Write Shared As #1	syntax	Syntax error
+open	Lock Read Access Read Write Lock Write As #1	syntax	Syntax error
+open	Lock Read Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Shared For Input As #1	syntax	Syntax error
+open	Lock Read Shared For Output As #1	syntax	Syntax error
+open	Lock Read Shared For Append As #1	syntax	Syntax error
+open	Lock Read Shared For Binary As #1	syntax	Syntax error
+open	Lock Read Shared For Random As #1	syntax	Syntax error
+open	Lock Read Shared Access Read As #1	syntax	Syntax error
+open	Lock Read Shared Access Write As #1	syntax	Syntax error
+open	Lock Read Shared Access Read Write As #1	syntax	Syntax error
+open	Lock Read Shared Lock Write As #1	syntax	Syntax error
+open	Lock Read Shared Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Shared Len = 10 As #1	syntax	Syntax error
+open	Lock Read Lock Write For Input As #1	syntax	Syntax error
+open	Lock Read Lock Write For Output As #1	syntax	Syntax error
+open	Lock Read Lock Write For Append As #1	syntax	Syntax error
+open	Lock Read Lock Write For Binary As #1	syntax	Syntax error
+open	Lock Read Lock Write For Random As #1	syntax	Syntax error
+open	Lock Read Lock Write Access Read As #1	syntax	Syntax error
+open	Lock Read Lock Write Access Write As #1	syntax	Syntax error
+open	Lock Read Lock Write Access Read Write As #1	syntax	Syntax error
+open	Lock Read Lock Write Shared As #1	syntax	Syntax error
+open	Lock Read Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Lock Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Lock Read Write For Input As #1	syntax	Syntax error
+open	Lock Read Lock Read Write For Output As #1	syntax	Syntax error
+open	Lock Read Lock Read Write For Append As #1	syntax	Syntax error
+open	Lock Read Lock Read Write For Binary As #1	syntax	Syntax error
+open	Lock Read Lock Read Write For Random As #1	syntax	Syntax error
+open	Lock Read Lock Read Write Access Read As #1	syntax	Syntax error
+open	Lock Read Lock Read Write Access Write As #1	syntax	Syntax error
+open	Lock Read Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Lock Read Lock Read Write Shared As #1	syntax	Syntax error
+open	Lock Read Lock Read Write Lock Write As #1	syntax	Syntax error
+open	Lock Read Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Len = 10 For Input As #1	syntax	Syntax error
+open	Lock Read Len = 10 For Output As #1	syntax	Syntax error
+open	Lock Read Len = 10 For Append As #1	syntax	Syntax error
+open	Lock Read Len = 10 For Binary As #1	syntax	Syntax error
+open	Lock Read Len = 10 For Random As #1	syntax	Syntax error
+open	Lock Read Len = 10 Access Read As #1	syntax	Syntax error
+open	Lock Read Len = 10 Access Write As #1	syntax	Syntax error
+open	Lock Read Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Lock Read Len = 10 Shared As #1	syntax	Syntax error
+open	Lock Read Len = 10 Lock Write As #1	syntax	Syntax error
+open	Lock Read Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Lock Write For Input For Output As #1	syntax	Syntax error
+open	Lock Write For Input For Append As #1	syntax	Syntax error
+open	Lock Write For Input For Binary As #1	syntax	Syntax error
+open	Lock Write For Input For Random As #1	syntax	Syntax error
+open	Lock Write For Input Access Read As #1	syntax	Syntax error
+open	Lock Write For Input Access Write As #1	syntax	Syntax error
+open	Lock Write For Input Access Read Write As #1	syntax	Syntax error
+open	Lock Write For Input Shared As #1	syntax	Syntax error
+open	Lock Write For Input Lock Read As #1	syntax	Syntax error
+open	Lock Write For Input Lock Read Write As #1	syntax	Syntax error
+open	Lock Write For Input Len = 10 As #1	syntax	Syntax error
+open	Lock Write For Output For Input As #1	syntax	Syntax error
+open	Lock Write For Output For Append As #1	syntax	Syntax error
+open	Lock Write For Output For Binary As #1	syntax	Syntax error
+open	Lock Write For Output For Random As #1	syntax	Syntax error
+open	Lock Write For Output Access Read As #1	syntax	Syntax error
+open	Lock Write For Output Access Write As #1	syntax	Syntax error
+open	Lock Write For Output Access Read Write As #1	syntax	Syntax error
+open	Lock Write For Output Shared As #1	syntax	Syntax error
+open	Lock Write For Output Lock Read As #1	syntax	Syntax error
+open	Lock Write For Output Lock Read Write As #1	syntax	Syntax error
+open	Lock Write For Output Len = 10 As #1	syntax	Syntax error
+open	Lock Write For Append For Input As #1	syntax	Syntax error
+open	Lock Write For Append For Output As #1	syntax	Syntax error
+open	Lock Write For Append For Binary As #1	syntax	Syntax error
+open	Lock Write For Append For Random As #1	syntax	Syntax error
+open	Lock Write For Append Access Read As #1	syntax	Syntax error
+open	Lock Write For Append Access Write As #1	syntax	Syntax error
+open	Lock Write For Append Access Read Write As #1	syntax	Syntax error
+open	Lock Write For Append Shared As #1	syntax	Syntax error
+open	Lock Write For Append Lock Read As #1	syntax	Syntax error
+open	Lock Write For Append Lock Read Write As #1	syntax	Syntax error
+open	Lock Write For Append Len = 10 As #1	syntax	Syntax error
+open	Lock Write For Binary For Input As #1	syntax	Syntax error
+open	Lock Write For Binary For Output As #1	syntax	Syntax error
+open	Lock Write For Binary For Append As #1	syntax	Syntax error
+open	Lock Write For Binary For Random As #1	syntax	Syntax error
+open	Lock Write For Binary Access Read As #1	syntax	Syntax error
+open	Lock Write For Binary Access Write As #1	syntax	Syntax error
+open	Lock Write For Binary Access Read Write As #1	syntax	Syntax error
+open	Lock Write For Binary Shared As #1	syntax	Syntax error
+open	Lock Write For Binary Lock Read As #1	syntax	Syntax error
+open	Lock Write For Binary Lock Read Write As #1	syntax	Syntax error
+open	Lock Write For Binary Len = 10 As #1	syntax	Syntax error
+open	Lock Write For Random For Input As #1	syntax	Syntax error
+open	Lock Write For Random For Output As #1	syntax	Syntax error
+open	Lock Write For Random For Append As #1	syntax	Syntax error
+open	Lock Write For Random For Binary As #1	syntax	Syntax error
+open	Lock Write For Random Access Read As #1	syntax	Syntax error
+open	Lock Write For Random Access Write As #1	syntax	Syntax error
+open	Lock Write For Random Access Read Write As #1	syntax	Syntax error
+open	Lock Write For Random Shared As #1	syntax	Syntax error
+open	Lock Write For Random Lock Read As #1	syntax	Syntax error
+open	Lock Write For Random Lock Read Write As #1	syntax	Syntax error
+open	Lock Write For Random Len = 10 As #1	syntax	Syntax error
+open	Lock Write Access Read For Input As #1	syntax	Syntax error
+open	Lock Write Access Read For Output As #1	syntax	Syntax error
+open	Lock Write Access Read For Append As #1	syntax	Syntax error
+open	Lock Write Access Read For Binary As #1	syntax	Syntax error
+open	Lock Write Access Read For Random As #1	syntax	Syntax error
+open	Lock Write Access Read Access Write As #1	syntax	Syntax error
+open	Lock Write Access Read Access Read Write As #1	syntax	Syntax error
+open	Lock Write Access Read Shared As #1	syntax	Syntax error
+open	Lock Write Access Read Lock Read As #1	syntax	Syntax error
+open	Lock Write Access Read Lock Read Write As #1	syntax	Syntax error
+open	Lock Write Access Read Len = 10 As #1	syntax	Syntax error
+open	Lock Write Access Write For Input As #1	syntax	Syntax error
+open	Lock Write Access Write For Output As #1	syntax	Syntax error
+open	Lock Write Access Write For Append As #1	syntax	Syntax error
+open	Lock Write Access Write For Binary As #1	syntax	Syntax error
+open	Lock Write Access Write For Random As #1	syntax	Syntax error
+open	Lock Write Access Write Access Read As #1	syntax	Syntax error
+open	Lock Write Access Write Access Read Write As #1	syntax	Syntax error
+open	Lock Write Access Write Shared As #1	syntax	Syntax error
+open	Lock Write Access Write Lock Read As #1	syntax	Syntax error
+open	Lock Write Access Write Lock Read Write As #1	syntax	Syntax error
+open	Lock Write Access Write Len = 10 As #1	syntax	Syntax error
+open	Lock Write Access Read Write For Input As #1	syntax	Syntax error
+open	Lock Write Access Read Write For Output As #1	syntax	Syntax error
+open	Lock Write Access Read Write For Append As #1	syntax	Syntax error
+open	Lock Write Access Read Write For Binary As #1	syntax	Syntax error
+open	Lock Write Access Read Write For Random As #1	syntax	Syntax error
+open	Lock Write Access Read Write Access Read As #1	syntax	Syntax error
+open	Lock Write Access Read Write Access Write As #1	syntax	Syntax error
+open	Lock Write Access Read Write Shared As #1	syntax	Syntax error
+open	Lock Write Access Read Write Lock Read As #1	syntax	Syntax error
+open	Lock Write Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	Lock Write Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Lock Write Shared For Input As #1	syntax	Syntax error
+open	Lock Write Shared For Output As #1	syntax	Syntax error
+open	Lock Write Shared For Append As #1	syntax	Syntax error
+open	Lock Write Shared For Binary As #1	syntax	Syntax error
+open	Lock Write Shared For Random As #1	syntax	Syntax error
+open	Lock Write Shared Access Read As #1	syntax	Syntax error
+open	Lock Write Shared Access Write As #1	syntax	Syntax error
+open	Lock Write Shared Access Read Write As #1	syntax	Syntax error
+open	Lock Write Shared Lock Read As #1	syntax	Syntax error
+open	Lock Write Shared Lock Read Write As #1	syntax	Syntax error
+open	Lock Write Shared Len = 10 As #1	syntax	Syntax error
+open	Lock Write Lock Read For Input As #1	syntax	Syntax error
+open	Lock Write Lock Read For Output As #1	syntax	Syntax error
+open	Lock Write Lock Read For Append As #1	syntax	Syntax error
+open	Lock Write Lock Read For Binary As #1	syntax	Syntax error
+open	Lock Write Lock Read For Random As #1	syntax	Syntax error
+open	Lock Write Lock Read Access Read As #1	syntax	Syntax error
+open	Lock Write Lock Read Access Write As #1	syntax	Syntax error
+open	Lock Write Lock Read Access Read Write As #1	syntax	Syntax error
+open	Lock Write Lock Read Shared As #1	syntax	Syntax error
+open	Lock Write Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Lock Write Lock Read Len = 10 As #1	syntax	Syntax error
+open	Lock Write Lock Read Write For Input As #1	syntax	Syntax error
+open	Lock Write Lock Read Write For Output As #1	syntax	Syntax error
+open	Lock Write Lock Read Write For Append As #1	syntax	Syntax error
+open	Lock Write Lock Read Write For Binary As #1	syntax	Syntax error
+open	Lock Write Lock Read Write For Random As #1	syntax	Syntax error
+open	Lock Write Lock Read Write Access Read As #1	syntax	Syntax error
+open	Lock Write Lock Read Write Access Write As #1	syntax	Syntax error
+open	Lock Write Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Lock Write Lock Read Write Shared As #1	syntax	Syntax error
+open	Lock Write Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Lock Write Lock Read Write Len = 10 As #1	syntax	Syntax error
+open	Lock Write Len = 10 For Input As #1	syntax	Syntax error
+open	Lock Write Len = 10 For Output As #1	syntax	Syntax error
+open	Lock Write Len = 10 For Append As #1	syntax	Syntax error
+open	Lock Write Len = 10 For Binary As #1	syntax	Syntax error
+open	Lock Write Len = 10 For Random As #1	syntax	Syntax error
+open	Lock Write Len = 10 Access Read As #1	syntax	Syntax error
+open	Lock Write Len = 10 Access Write As #1	syntax	Syntax error
+open	Lock Write Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Lock Write Len = 10 Shared As #1	syntax	Syntax error
+open	Lock Write Len = 10 Lock Read As #1	syntax	Syntax error
+open	Lock Write Len = 10 Lock Read Write As #1	syntax	Syntax error
+open	Lock Read Write For Input For Output As #1	syntax	Syntax error
+open	Lock Read Write For Input For Append As #1	syntax	Syntax error
+open	Lock Read Write For Input For Binary As #1	syntax	Syntax error
+open	Lock Read Write For Input For Random As #1	syntax	Syntax error
+open	Lock Read Write For Input Access Read As #1	syntax	Syntax error
+open	Lock Read Write For Input Access Write As #1	syntax	Syntax error
+open	Lock Read Write For Input Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write For Input Shared As #1	syntax	Syntax error
+open	Lock Read Write For Input Lock Read As #1	syntax	Syntax error
+open	Lock Read Write For Input Lock Write As #1	syntax	Syntax error
+open	Lock Read Write For Input Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write For Output For Input As #1	syntax	Syntax error
+open	Lock Read Write For Output For Append As #1	syntax	Syntax error
+open	Lock Read Write For Output For Binary As #1	syntax	Syntax error
+open	Lock Read Write For Output For Random As #1	syntax	Syntax error
+open	Lock Read Write For Output Access Read As #1	syntax	Syntax error
+open	Lock Read Write For Output Access Write As #1	syntax	Syntax error
+open	Lock Read Write For Output Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write For Output Shared As #1	syntax	Syntax error
+open	Lock Read Write For Output Lock Read As #1	syntax	Syntax error
+open	Lock Read Write For Output Lock Write As #1	syntax	Syntax error
+open	Lock Read Write For Output Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write For Append For Input As #1	syntax	Syntax error
+open	Lock Read Write For Append For Output As #1	syntax	Syntax error
+open	Lock Read Write For Append For Binary As #1	syntax	Syntax error
+open	Lock Read Write For Append For Random As #1	syntax	Syntax error
+open	Lock Read Write For Append Access Read As #1	syntax	Syntax error
+open	Lock Read Write For Append Access Write As #1	syntax	Syntax error
+open	Lock Read Write For Append Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write For Append Shared As #1	syntax	Syntax error
+open	Lock Read Write For Append Lock Read As #1	syntax	Syntax error
+open	Lock Read Write For Append Lock Write As #1	syntax	Syntax error
+open	Lock Read Write For Append Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write For Binary For Input As #1	syntax	Syntax error
+open	Lock Read Write For Binary For Output As #1	syntax	Syntax error
+open	Lock Read Write For Binary For Append As #1	syntax	Syntax error
+open	Lock Read Write For Binary For Random As #1	syntax	Syntax error
+open	Lock Read Write For Binary Access Read As #1	syntax	Syntax error
+open	Lock Read Write For Binary Access Write As #1	syntax	Syntax error
+open	Lock Read Write For Binary Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write For Binary Shared As #1	syntax	Syntax error
+open	Lock Read Write For Binary Lock Read As #1	syntax	Syntax error
+open	Lock Read Write For Binary Lock Write As #1	syntax	Syntax error
+open	Lock Read Write For Binary Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write For Random For Input As #1	syntax	Syntax error
+open	Lock Read Write For Random For Output As #1	syntax	Syntax error
+open	Lock Read Write For Random For Append As #1	syntax	Syntax error
+open	Lock Read Write For Random For Binary As #1	syntax	Syntax error
+open	Lock Read Write For Random Access Read As #1	syntax	Syntax error
+open	Lock Read Write For Random Access Write As #1	syntax	Syntax error
+open	Lock Read Write For Random Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write For Random Shared As #1	syntax	Syntax error
+open	Lock Read Write For Random Lock Read As #1	syntax	Syntax error
+open	Lock Read Write For Random Lock Write As #1	syntax	Syntax error
+open	Lock Read Write For Random Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Access Read For Input As #1	syntax	Syntax error
+open	Lock Read Write Access Read For Output As #1	syntax	Syntax error
+open	Lock Read Write Access Read For Append As #1	syntax	Syntax error
+open	Lock Read Write Access Read For Binary As #1	syntax	Syntax error
+open	Lock Read Write Access Read For Random As #1	syntax	Syntax error
+open	Lock Read Write Access Read Access Write As #1	syntax	Syntax error
+open	Lock Read Write Access Read Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Access Read Shared As #1	syntax	Syntax error
+open	Lock Read Write Access Read Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Access Read Lock Write As #1	syntax	Syntax error
+open	Lock Read Write Access Read Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Access Write For Input As #1	syntax	Syntax error
+open	Lock Read Write Access Write For Output As #1	syntax	Syntax error
+open	Lock Read Write Access Write For Append As #1	syntax	Syntax error
+open	Lock Read Write Access Write For Binary As #1	syntax	Syntax error
+open	Lock Read Write Access Write For Random As #1	syntax	Syntax error
+open	Lock Read Write Access Write Access Read As #1	syntax	Syntax error
+open	Lock Read Write Access Write Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Access Write Shared As #1	syntax	Syntax error
+open	Lock Read Write Access Write Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Access Write Lock Write As #1	syntax	Syntax error
+open	Lock Read Write Access Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write For Input As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write For Output As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write For Append As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write For Binary As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write For Random As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write Access Read As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write Access Write As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write Shared As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write Lock Write As #1	syntax	Syntax error
+open	Lock Read Write Access Read Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Shared For Input As #1	syntax	Syntax error
+open	Lock Read Write Shared For Output As #1	syntax	Syntax error
+open	Lock Read Write Shared For Append As #1	syntax	Syntax error
+open	Lock Read Write Shared For Binary As #1	syntax	Syntax error
+open	Lock Read Write Shared For Random As #1	syntax	Syntax error
+open	Lock Read Write Shared Access Read As #1	syntax	Syntax error
+open	Lock Read Write Shared Access Write As #1	syntax	Syntax error
+open	Lock Read Write Shared Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Shared Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Shared Lock Write As #1	syntax	Syntax error
+open	Lock Read Write Shared Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Lock Read For Input As #1	syntax	Syntax error
+open	Lock Read Write Lock Read For Output As #1	syntax	Syntax error
+open	Lock Read Write Lock Read For Append As #1	syntax	Syntax error
+open	Lock Read Write Lock Read For Binary As #1	syntax	Syntax error
+open	Lock Read Write Lock Read For Random As #1	syntax	Syntax error
+open	Lock Read Write Lock Read Access Read As #1	syntax	Syntax error
+open	Lock Read Write Lock Read Access Write As #1	syntax	Syntax error
+open	Lock Read Write Lock Read Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Lock Read Shared As #1	syntax	Syntax error
+open	Lock Read Write Lock Read Lock Write As #1	syntax	Syntax error
+open	Lock Read Write Lock Read Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Lock Write For Input As #1	syntax	Syntax error
+open	Lock Read Write Lock Write For Output As #1	syntax	Syntax error
+open	Lock Read Write Lock Write For Append As #1	syntax	Syntax error
+open	Lock Read Write Lock Write For Binary As #1	syntax	Syntax error
+open	Lock Read Write Lock Write For Random As #1	syntax	Syntax error
+open	Lock Read Write Lock Write Access Read As #1	syntax	Syntax error
+open	Lock Read Write Lock Write Access Write As #1	syntax	Syntax error
+open	Lock Read Write Lock Write Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Lock Write Shared As #1	syntax	Syntax error
+open	Lock Read Write Lock Write Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Lock Write Len = 10 As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 For Input As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 For Output As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 For Append As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 For Binary As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 For Random As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 Access Read As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 Access Write As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 Access Read Write As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 Shared As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 Lock Read As #1	syntax	Syntax error
+open	Lock Read Write Len = 10 Lock Write As #1	syntax	Syntax error
+open	Len = 10 For Input For Output As #1	syntax	Syntax error
+open	Len = 10 For Input For Append As #1	syntax	Syntax error
+open	Len = 10 For Input For Binary As #1	syntax	Syntax error
+open	Len = 10 For Input For Random As #1	syntax	Syntax error
+open	Len = 10 For Input Access Read As #1	syntax	Syntax error
+open	Len = 10 For Input Access Write As #1	syntax	Syntax error
+open	Len = 10 For Input Access Read Write As #1	syntax	Syntax error
+open	Len = 10 For Input Shared As #1	syntax	Syntax error
+open	Len = 10 For Input Lock Read As #1	syntax	Syntax error
+open	Len = 10 For Input Lock Write As #1	syntax	Syntax error
+open	Len = 10 For Input Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 For Output For Input As #1	syntax	Syntax error
+open	Len = 10 For Output For Append As #1	syntax	Syntax error
+open	Len = 10 For Output For Binary As #1	syntax	Syntax error
+open	Len = 10 For Output For Random As #1	syntax	Syntax error
+open	Len = 10 For Output Access Read As #1	syntax	Syntax error
+open	Len = 10 For Output Access Write As #1	syntax	Syntax error
+open	Len = 10 For Output Access Read Write As #1	syntax	Syntax error
+open	Len = 10 For Output Shared As #1	syntax	Syntax error
+open	Len = 10 For Output Lock Read As #1	syntax	Syntax error
+open	Len = 10 For Output Lock Write As #1	syntax	Syntax error
+open	Len = 10 For Output Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 For Append For Input As #1	syntax	Syntax error
+open	Len = 10 For Append For Output As #1	syntax	Syntax error
+open	Len = 10 For Append For Binary As #1	syntax	Syntax error
+open	Len = 10 For Append For Random As #1	syntax	Syntax error
+open	Len = 10 For Append Access Read As #1	syntax	Syntax error
+open	Len = 10 For Append Access Write As #1	syntax	Syntax error
+open	Len = 10 For Append Access Read Write As #1	syntax	Syntax error
+open	Len = 10 For Append Shared As #1	syntax	Syntax error
+open	Len = 10 For Append Lock Read As #1	syntax	Syntax error
+open	Len = 10 For Append Lock Write As #1	syntax	Syntax error
+open	Len = 10 For Append Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 For Binary For Input As #1	syntax	Syntax error
+open	Len = 10 For Binary For Output As #1	syntax	Syntax error
+open	Len = 10 For Binary For Append As #1	syntax	Syntax error
+open	Len = 10 For Binary For Random As #1	syntax	Syntax error
+open	Len = 10 For Binary Access Read As #1	syntax	Syntax error
+open	Len = 10 For Binary Access Write As #1	syntax	Syntax error
+open	Len = 10 For Binary Access Read Write As #1	syntax	Syntax error
+open	Len = 10 For Binary Shared As #1	syntax	Syntax error
+open	Len = 10 For Binary Lock Read As #1	syntax	Syntax error
+open	Len = 10 For Binary Lock Write As #1	syntax	Syntax error
+open	Len = 10 For Binary Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 For Random For Input As #1	syntax	Syntax error
+open	Len = 10 For Random For Output As #1	syntax	Syntax error
+open	Len = 10 For Random For Append As #1	syntax	Syntax error
+open	Len = 10 For Random For Binary As #1	syntax	Syntax error
+open	Len = 10 For Random Access Read As #1	syntax	Syntax error
+open	Len = 10 For Random Access Write As #1	syntax	Syntax error
+open	Len = 10 For Random Access Read Write As #1	syntax	Syntax error
+open	Len = 10 For Random Shared As #1	syntax	Syntax error
+open	Len = 10 For Random Lock Read As #1	syntax	Syntax error
+open	Len = 10 For Random Lock Write As #1	syntax	Syntax error
+open	Len = 10 For Random Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Access Read For Input As #1	syntax	Syntax error
+open	Len = 10 Access Read For Output As #1	syntax	Syntax error
+open	Len = 10 Access Read For Append As #1	syntax	Syntax error
+open	Len = 10 Access Read For Binary As #1	syntax	Syntax error
+open	Len = 10 Access Read For Random As #1	syntax	Syntax error
+open	Len = 10 Access Read Access Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Shared As #1	syntax	Syntax error
+open	Len = 10 Access Read Lock Read As #1	syntax	Syntax error
+open	Len = 10 Access Read Lock Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Access Write For Input As #1	syntax	Syntax error
+open	Len = 10 Access Write For Output As #1	syntax	Syntax error
+open	Len = 10 Access Write For Append As #1	syntax	Syntax error
+open	Len = 10 Access Write For Binary As #1	syntax	Syntax error
+open	Len = 10 Access Write For Random As #1	syntax	Syntax error
+open	Len = 10 Access Write Access Read As #1	syntax	Syntax error
+open	Len = 10 Access Write Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Access Write Shared As #1	syntax	Syntax error
+open	Len = 10 Access Write Lock Read As #1	syntax	Syntax error
+open	Len = 10 Access Write Lock Write As #1	syntax	Syntax error
+open	Len = 10 Access Write Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Write For Input As #1	syntax	Syntax error
+open	Len = 10 Access Read Write For Output As #1	syntax	Syntax error
+open	Len = 10 Access Read Write For Append As #1	syntax	Syntax error
+open	Len = 10 Access Read Write For Binary As #1	syntax	Syntax error
+open	Len = 10 Access Read Write For Random As #1	syntax	Syntax error
+open	Len = 10 Access Read Write Access Read As #1	syntax	Syntax error
+open	Len = 10 Access Read Write Access Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Write Shared As #1	syntax	Syntax error
+open	Len = 10 Access Read Write Lock Read As #1	syntax	Syntax error
+open	Len = 10 Access Read Write Lock Write As #1	syntax	Syntax error
+open	Len = 10 Access Read Write Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Shared For Input As #1	syntax	Syntax error
+open	Len = 10 Shared For Output As #1	syntax	Syntax error
+open	Len = 10 Shared For Append As #1	syntax	Syntax error
+open	Len = 10 Shared For Binary As #1	syntax	Syntax error
+open	Len = 10 Shared For Random As #1	syntax	Syntax error
+open	Len = 10 Shared Access Read As #1	syntax	Syntax error
+open	Len = 10 Shared Access Write As #1	syntax	Syntax error
+open	Len = 10 Shared Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Shared Lock Read As #1	syntax	Syntax error
+open	Len = 10 Shared Lock Write As #1	syntax	Syntax error
+open	Len = 10 Shared Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read For Input As #1	syntax	Syntax error
+open	Len = 10 Lock Read For Output As #1	syntax	Syntax error
+open	Len = 10 Lock Read For Append As #1	syntax	Syntax error
+open	Len = 10 Lock Read For Binary As #1	syntax	Syntax error
+open	Len = 10 Lock Read For Random As #1	syntax	Syntax error
+open	Len = 10 Lock Read Access Read As #1	syntax	Syntax error
+open	Len = 10 Lock Read Access Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Shared As #1	syntax	Syntax error
+open	Len = 10 Lock Read Lock Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Lock Write For Input As #1	syntax	Syntax error
+open	Len = 10 Lock Write For Output As #1	syntax	Syntax error
+open	Len = 10 Lock Write For Append As #1	syntax	Syntax error
+open	Len = 10 Lock Write For Binary As #1	syntax	Syntax error
+open	Len = 10 Lock Write For Random As #1	syntax	Syntax error
+open	Len = 10 Lock Write Access Read As #1	syntax	Syntax error
+open	Len = 10 Lock Write Access Write As #1	syntax	Syntax error
+open	Len = 10 Lock Write Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Lock Write Shared As #1	syntax	Syntax error
+open	Len = 10 Lock Write Lock Read As #1	syntax	Syntax error
+open	Len = 10 Lock Write Lock Read Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write For Input As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write For Output As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write For Append As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write For Binary As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write For Random As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write Access Read As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write Access Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write Access Read Write As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write Shared As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write Lock Read As #1	syntax	Syntax error
+open	Len = 10 Lock Read Write Lock Write As #1	syntax	Syntax error
+open	As 1	accepted	
+open	As #1, Len = 10	syntax	Syntax error
+open	For Input Lock Read Write As #1 Len = 10	accepted	
+open	As #1 As #2	syntax	Syntax error
+open	For Input As	syntax	Syntax error
+open	For As #1	syntax	Syntax error
+open	For Input As #	syntax	Syntax error
+open	Len = As #1	syntax	Syntax error
+open	As #1 Len	syntax	Syntax error
+open	As #1 Len =	syntax	Syntax error
+open	Shared Shared As #1	syntax	Syntax error

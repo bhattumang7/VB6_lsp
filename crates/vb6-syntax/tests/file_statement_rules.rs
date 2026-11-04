@@ -19,6 +19,7 @@ fn in_sub(body: &str) -> (String, Vec<(u32, u32, u32)>) {
 fn open_access_must_suit_the_mode() {
     for stmt in [
         "Open \"a\" For Input Access Write As #1",
+        "Open \"a\" For Append Access Read As #1",
         "Open \"a\" For Output Access Read As #1",
         "Open \"a\" For Input Access Read Write As #1",
         "Open \"a\" For Output Access Read Write As #1",
@@ -88,4 +89,11 @@ fn a_colon_may_separate_module_level_declarations() {
     let p = parse("Dim a As Long: Dim b As Long\nConst c = 1: Const d = 2\n");
     assert_eq!(p.found, vec![]);
     assert_eq!(p.top.len(), 4);
+}
+
+#[test]
+fn open_for_needs_a_mode_word() {
+    let (src, found) = in_sub("Open \"a\" For As #1");
+    assert_eq!(found[0], (0x9c70, offset_of(&src, "As", 0), 2));
+    assert_eq!(in_sub("Open \"a\" For Binary As #1").1, vec![]);
 }
