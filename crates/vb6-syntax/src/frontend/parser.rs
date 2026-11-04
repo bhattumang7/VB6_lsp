@@ -2175,6 +2175,10 @@ impl<'src> Parser<'src> {
             if is_new && self.peek().kind == TokenKind::Kw(Kw::Object) {
                 let span = self.current_span();
                 self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "type name");
+            } else if is_new && self.reserved_names_allowed && self.at_reserved_word() {
+                // A `Type` member takes `New` before a class name only.
+                let span = self.current_span();
+                self.diagnostics.push_labeled(0x9c6f, span, "identifier");
             }
             (is_new, Some(self.parse_type_spec(arena, array_suffix_ok)))
         } else {
@@ -4435,7 +4439,12 @@ impl<'src> Parser<'src> {
                     self.end_stmt();
                     break;
                 }
-                TokenKind::Eof => break,
+                TokenKind::Eof => {
+                    // The file ended inside the block.
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_STATEMENT_IN_TYPE, span);
+                    break;
+                }
                 // A comment line between members is a blank line, and so is a lone colon.
                 TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => { self.advance(); }
                 // A statement keyword cannot start a member. A keyword followed by
@@ -4504,7 +4513,12 @@ impl<'src> Parser<'src> {
                     self.end_stmt();
                     break;
                 }
-                TokenKind::Eof => break,
+                TokenKind::Eof => {
+                    // The file ended inside the block.
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
+                    break;
+                }
                 // A comment line between members is a blank line, and `:`
                 // separates members written on one line.
                 TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => {
