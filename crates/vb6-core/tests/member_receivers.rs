@@ -206,7 +206,7 @@ fn library_member_at_names_the_member_a_use_resolved_to() {
     let main = "Sub Run(o As OtLib.Cls)\n    o.Save\nEnd Sub\n";
     let s = session_with(
         &[("modMain.bas", main)],
-        SessionConfig { project_name: None, libraries: Library::from_json(libs).unwrap() },
+        SessionConfig { project_name: None, libraries: Library::from_json(libs).unwrap(), conditional_compilation: None },
     );
     assert_eq!(
         s.library_member_at(0, at(main, "o.Save", "Save")),

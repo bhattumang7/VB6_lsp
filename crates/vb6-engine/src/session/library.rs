@@ -248,10 +248,14 @@ pub struct SessionConfig {
     /// The libraries the project references.
     #[serde(default)]
     pub libraries: Vec<Library>,
+    /// The project's conditional-compilation arguments, as written in the
+    /// project file (`DEBUG = 1 : Name = "x"`).
+    #[serde(default)]
+    pub conditional_compilation: Option<String>,
 }
 
 impl Default for SessionConfig {
     fn default() -> Self {
-        SessionConfig { project_name: None, libraries: Library::bundled() }
+        SessionConfig { project_name: None, libraries: Library::bundled(), conditional_compilation: None }
     }
 }

@@ -1,0 +1,41 @@
+//! The project's conditional-compilation arguments decide which code a
+//! module contains.
+
+use vb6_core::session::{Session, SessionConfig};
+
+const SRC: &[u8] = b"#If MyFlag Then\nSub Enabled()\nEnd Sub\n#Else\nSub Disabled()\nEnd Sub\n#End If\nSub Run()\n    Enabled\nEnd Sub\n";
+
+fn codes(s: &Session) -> Vec<(u32, u32, u32)> {
+    s.diagnostics(0).iter().map(|d| (d.code, d.span.start, d.span.len)).collect()
+}
+
+fn config(args: Option<&str>) -> SessionConfig {
+    SessionConfig { conditional_compilation: args.map(String::from), ..SessionConfig::default() }
+}
+
+#[test]
+fn a_project_argument_selects_the_branch() {
+    // Without the argument `MyFlag` is Empty, so `Enabled` does not exist.
+    let off = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(None));
+    assert_eq!(codes(&off).len(), 1);
+    // With it, the first branch is compiled and `Enabled` resolves.
+    let on = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(Some("MyFlag = 1")));
+    assert_eq!(codes(&on), vec![]);
+}
+
+#[test]
+fn changing_the_arguments_rereads_every_module() {
+    let mut s = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(None));
+    assert_eq!(codes(&s).len(), 1);
+    s.set_config(config(Some("MyFlag = -1 : Other = \"x\"")));
+    assert_eq!(codes(&s), vec![]);
+    s.set_config(config(Some("MyFlag = 0")));
+    assert_eq!(codes(&s).len(), 1);
+}
+
+#[test]
+fn an_edited_file_is_read_with_the_project_arguments() {
+    let mut s = Session::with_config(vec![("m.bas".into(), b"Sub A()\nEnd Sub\n".to_vec())], config(Some("MyFlag = 1")));
+    s.update_file("m.bas", SRC.to_vec());
+    assert_eq!(codes(&s), vec![]);
+}

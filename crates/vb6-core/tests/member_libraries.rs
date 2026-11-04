@@ -126,7 +126,7 @@ fn app() -> Library {
 }
 
 fn config() -> SessionConfig {
-    SessionConfig { project_name: None, libraries: vec![ado(), app()] }
+    SessionConfig { project_name: None, libraries: vec![ado(), app()], conditional_compilation: None }
 }
 
 #[test]
@@ -298,7 +298,7 @@ const ADO_LIKE: &str = r#"{
 #[test]
 fn arguments_of_a_default_member_without_parameters_index_the_object_it_returns() {
     let main = "Sub A()\n    Dim rs As ADODB.Recordset\n    Dim v As Variant\n    v = rs(0).Value\n    v = rs.Fields(0).Value\n    v = rs(0).Missing\nEnd Sub\n";
-    let config = SessionConfig { project_name: None, libraries: Library::from_json(ADO_LIKE).unwrap() };
+    let config = SessionConfig { project_name: None, libraries: Library::from_json(ADO_LIKE).unwrap(), conditional_compilation: None };
     let s = session_with(&[("modMain.bas", main)], config);
     assert_eq!(s.member_status_at(0, at(main, "rs(0).Value", "Value")), Some(MemberStatus::Resolved));
     assert_eq!(s.member_status_at(0, at(main, "rs.Fields(0).Value", "Value")), Some(MemberStatus::Resolved));

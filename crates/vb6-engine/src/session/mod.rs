@@ -53,6 +53,7 @@ pub use tokens::{SemToken, SemTokenKind};
 use std::collections::{HashMap, HashSet};
 
 use crate::frm::parse_frm;
+use crate::frontend::cond_compile::{parse_cond_comp_args, CcValue};
 use crate::frontend::ast::{ExprArena, ExprNode, NodeId, NodeSpans, ProcKind, Span};
 use crate::frontend::diagnostics::Diagnostic;
 use crate::frontend::parser::{ModuleKind, Parser};
@@ -168,6 +169,10 @@ pub struct CodeAction {
 struct ModuleData {
     path: String,
     source: Vec<u8>,
+    /// The file as given, before the designer header is blanked; needed to
+    /// analyze the module again when the project's conditional-compilation
+    /// arguments change.
+    raw_source: Vec<u8>,
     ctx: ScannerContext,
     arena: ExprArena,
     spans: NodeSpans,
@@ -266,9 +271,10 @@ impl Session {
     /// about the project beyond its files: the project's name and the external
     /// libraries it references (see [`Library`]).
     pub fn with_config(files: Vec<(String, Vec<u8>)>, config: SessionConfig) -> Self {
+        let conditional = conditional_constants(&config);
         let modules: Vec<ModuleData> = files
             .into_iter()
-            .map(|(path, source)| analyze_module(path, source))
+            .map(|(path, source)| analyze_module(path, source, &conditional))
             .collect();
 
         let mut s = Session {
@@ -288,7 +294,16 @@ impl Session {
     /// Replace what the session knows about the project beyond its files (see
     /// [`SessionConfig`]) and re-analyze.
     pub fn set_config(&mut self, config: SessionConfig) {
+        let conditional_changed = config.conditional_compilation != self.config.conditional_compilation;
         self.config = config;
+        if conditional_changed {
+            // The project's conditional-compilation arguments decide which
+            // code each module contains, so every module is read again.
+            let conditional = conditional_constants(&self.config);
+            for m in &mut self.modules {
+                *m = analyze_module(m.path.clone(), m.raw_source.clone(), &conditional);
+            }
+        }
         self.relink();
     }
 
@@ -304,7 +319,7 @@ impl Session {
     /// body), only that module is bound again: nothing another module's
     /// resolution depends on has changed.
     pub fn update_file(&mut self, path: &str, source: Vec<u8>) {
-        let md = analyze_module(path.to_string(), source);
+        let md = analyze_module(path.to_string(), source, &conditional_constants(&self.config));
         match self.path_to_module.get(path).copied() {
             Some(i) => {
                 let same_interface =
@@ -1298,8 +1313,18 @@ pub fn module_kind_for_path(path: &str) -> ModuleKind {
     }
 }
 
+/// The project's conditional-compilation arguments as values.
+fn conditional_constants(config: &SessionConfig) -> Vec<(String, CcValue)> {
+    config
+        .conditional_compilation
+        .as_deref()
+        .map(parse_cond_comp_args)
+        .unwrap_or_default()
+}
+
 /// Scan + parse + bind one module into [`ModuleData`].
-fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
+fn analyze_module(path: String, raw: Vec<u8>, conditional: &[(String, CcValue)]) -> ModuleData {
+    let raw_source = raw.clone();
     // The designer section is read from the original bytes; the code parser
     // sees it blanked.
     let designer_controls = if is_designer_path(&path) {
@@ -1314,6 +1339,7 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
     let mut arena = ExprArena::new();
     let kind = module_kind_for_path(&path);
     let mut parser = Parser::with_module_kind(&mut ctx, &source, kind);
+    parser.set_conditional_constants(conditional.to_vec());
     let top = parser.parse_module(&mut arena);
     let spans = std::mem::take(&mut parser.node_spans);
     let visibility = std::mem::take(&mut parser.decl_public);
@@ -1355,6 +1381,7 @@ fn analyze_module(path: String, raw: Vec<u8>) -> ModuleData {
     ModuleData {
         path,
         source,
+        raw_source,
         ctx,
         arena,
         spans,

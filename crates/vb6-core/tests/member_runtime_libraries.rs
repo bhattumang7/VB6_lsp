@@ -82,7 +82,7 @@ fn library_member_tokens_follow_the_member_kind() {
 #[test]
 fn no_libraries_means_the_names_are_unknown() {
     let src = "Option Explicit\nSub Run()\n    Dim s As String\n    s = \"a\" & vbCrLf\nEnd Sub\n";
-    let none = SessionConfig { project_name: None, libraries: Vec::new() };
+    let none = SessionConfig { project_name: None, libraries: Vec::new(), conditional_compilation: None };
     let s = session_with(&[("modMain.bas", src)], none);
     assert_eq!(s.diagnostics(0).len(), 1);
     let names: Vec<String> = Library::bundled().into_iter().map(|l| l.name).collect();

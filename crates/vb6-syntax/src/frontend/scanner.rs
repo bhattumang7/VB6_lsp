@@ -956,6 +956,26 @@ impl<'a> Scanner<'a> {
             self.tok_buf.push(b as char);
             self.pos += 1;
         }
+        // Blanks may separate the `#` from the directive word (`# If`).
+        if self.tok_buf.len() == 1 {
+            let mut p = self.pos;
+            while matches!(self.src.get(p), Some(b' ') | Some(b'\t')) {
+                p += 1;
+            }
+            let word_start = p;
+            while let Some(&b) = self.src.get(p) {
+                if !is_ident_continue(b) { break; }
+                p += 1;
+            }
+            if p > word_start && word_start > self.pos {
+                let word: String = self.src[word_start..p].iter().map(|&b| b as char).collect();
+                let key = format!("#{}", word.to_ascii_lowercase());
+                if key == "#endif" || self.ctx.by_key.contains_key(&key) {
+                    self.tok_buf.push_str(&word);
+                    self.pos = p;
+                }
+            }
+        }
         if let Some(tok) = self.hash_directive_token(start) {
             return tok;
         }
@@ -973,14 +993,24 @@ impl<'a> Scanner<'a> {
         if self.tok_buf.len() <= 1 {
             return None;
         }
-        let key = self.tok_buf.to_ascii_lowercase();
+        let mut key = self.tok_buf.to_ascii_lowercase();
+        // `#EndIf` is the one-word spelling of `#End If`; the token carries a
+        // marker payload so the parser needs no `If` after it.
+        let one_word = key == "#endif";
+        if one_word {
+            key = "#end".to_string();
+        }
         let &sym_id = self.ctx.by_key.get(&key)?;
         let token = self.ctx.symbols[sym_id].token;
         if token <= 0 {
             return None;
         }
         let kw = Kw::from_token_id(token as u16)?;
-        Some(Token::kw(kw, sym_id, self.span(start)))
+        let mut tok = Token::kw(kw, sym_id, self.span(start));
+        if one_word {
+            tok.lit = Some(Lit::Int(1));
+        }
+        Some(tok)
     }
 
     /// Scan a `#...#` date literal from the current position, if it closes.

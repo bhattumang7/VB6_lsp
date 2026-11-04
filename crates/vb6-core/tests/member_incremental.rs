@@ -121,7 +121,7 @@ fn set_config_makes_library_types_resolve() {
         r#"[{"name":"ADODB","types":[{"name":"Recordset","kind":"class","members":[{"name":"MoveNext","kind":"method"}]}]}]"#,
     )
     .unwrap();
-    s.set_config(SessionConfig { project_name: None, libraries: libs });
+    s.set_config(SessionConfig { project_name: None, libraries: libs, conditional_compilation: None });
     assert_eq!(s.member_status_at(0, site), Some(MemberStatus::Resolved));
     assert_eq!(s.external_member_references("ADODB", "Recordset", "MoveNext").len(), 1);
 }

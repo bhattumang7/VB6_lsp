@@ -50,11 +50,11 @@ const VB_LIB: &str = r#"{
 }"#;
 
 fn vb_config() -> SessionConfig {
-    SessionConfig { project_name: None, libraries: Library::from_json(VB_LIB).unwrap() }
+    SessionConfig { project_name: None, libraries: Library::from_json(VB_LIB).unwrap(), conditional_compilation: None }
 }
 
 fn no_libraries() -> SessionConfig {
-    SessionConfig { project_name: None, libraries: Vec::new() }
+    SessionConfig { project_name: None, libraries: Vec::new(), conditional_compilation: None }
 }
 
 fn control(idx: usize) -> DeclId {
@@ -182,7 +182,7 @@ fn event_handler_is_an_ordinary_procedure() {
 fn user_control_of_the_project_types_a_control() {
     let ctl = "VERSION 5.00\r\nBegin VB.UserControl ctlTrip\r\nEnd\r\nAttribute VB_Name = \"ctlTrip\"\r\nPublic Sub Reload()\r\nEnd Sub\r\n";
     let frm = "VERSION 5.00\r\nBegin VB.Form frmHost\r\n   Begin Project1.ctlTrip ctlMain\r\n   End\r\nEnd\r\nAttribute VB_Name = \"frmHost\"\r\nSub T()\r\n    ctlMain.Reload\r\nEnd Sub\r\n";
-    let config = SessionConfig { project_name: Some("Project1".into()), libraries: vec![] };
+    let config = SessionConfig { project_name: Some("Project1".into()), libraries: vec![], conditional_compilation: None };
     let s = session_with(&[("ctlTrip.ctl", ctl), ("frmHost.frm", frm)], config);
     assert_eq!(s.declaration_at(1, at(frm, "ctlMain.Reload", "ctlMain")), Some(DeclId::Control { module: 1, idx: 0 }));
     assert_eq!(s.declaration_at(1, at(frm, "ctlMain.Reload", "Reload")), Some(DeclId::Proc { module: 0, idx: 0 }));
@@ -217,7 +217,7 @@ fn unqualified_names_in_a_designer_reach_the_members_it_inherits() {
     let frm = "VERSION 5.00\r\nBegin VB.Form frmA\r\n   Begin VB.TextBox Caption\r\n   End\r\nEnd\r\nAttribute VB_Name = \"frmA\"\r\n\
                Option Explicit\r\nPrivate Sub Go()\r\n    Hide\r\n    x = ScaleX(1, 2, 3)\r\n    PopupMenu mnuFile\r\nEnd Sub\r\n";
     let libs = Library::from_json(lib).unwrap();
-    let s = session_with(&[("frmA.frm", frm)], SessionConfig { project_name: None, libraries: libs });
+    let s = session_with(&[("frmA.frm", frm)], SessionConfig { project_name: None, libraries: libs, conditional_compilation: None });
     let one = |m: &str| s.external_member_references("VB", "Form", m);
     assert_eq!(one("Hide").iter().map(|l| l.span.start).collect::<Vec<_>>(), vec![at(frm, "    Hide", "Hide")]);
     assert_eq!(one("ScaleX").iter().map(|l| l.span.start).collect::<Vec<_>>(), vec![at(frm, "ScaleX(1", "ScaleX")]);
@@ -257,7 +257,7 @@ End Sub\r\n";
 
 #[test]
 fn control_qualified_with_library_name_and_ctl_resolves_to_that_library() {
-    let config = SessionConfig { project_name: None, libraries: Library::from_json(CTL_LIB).unwrap() };
+    let config = SessionConfig { project_name: None, libraries: Library::from_json(CTL_LIB).unwrap(), conditional_compilation: None };
     let s = session_with(&[("frmDates.frm", CTL_FRM)], config);
     assert_eq!(s.member_status_at(0, at(CTL_FRM, "txtDue.Value", "Value")), Some(MemberStatus::Resolved));
     assert_eq!(s.member_status_at(0, at(CTL_FRM, "txtDue.Missing", "Missing")), Some(MemberStatus::NoSuchMember));
@@ -314,7 +314,7 @@ End Sub\r\n";
 fn control_of_a_library_has_the_extender_members_the_container_adds() {
     let mut libraries = Library::from_json(OCX_LIB).unwrap();
     libraries.extend(Library::from_json(EXTENDER_LIB).unwrap());
-    let config = SessionConfig { project_name: None, libraries };
+    let config = SessionConfig { project_name: None, libraries, conditional_compilation: None };
     let s = session_with(&[("frmTree.frm", OCX_FRM)], config);
     // the library's own member is found first
     assert_eq!(s.member_status_at(0, at(OCX_FRM, "tvwMain.Nodes", "Nodes")), Some(MemberStatus::Resolved));
@@ -352,7 +352,7 @@ End Sub\r\n";
 fn library_class_placed_on_a_form_gets_the_extender_members_even_when_unflagged() {
     let mut libraries = Library::from_json(UNFLAGGED_LIB).unwrap();
     libraries.extend(Library::from_json(EXTENDER_LIB).unwrap());
-    let config = SessionConfig { project_name: None, libraries };
+    let config = SessionConfig { project_name: None, libraries, conditional_compilation: None };
     let s = session_with(&[("frmTabs.frm", PLACED_FRM)], config);
     assert_eq!(s.member_status_at(0, at(PLACED_FRM, "tabMain.AddTab", "AddTab")), Some(MemberStatus::Resolved));
     assert_eq!(s.member_status_at(0, at(PLACED_FRM, "tabMain.Left", "Left")), Some(MemberStatus::Resolved));

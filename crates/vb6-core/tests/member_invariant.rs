@@ -98,7 +98,7 @@ fn interface_and_library_modules_are_accounted_for() {
                Option Explicit\nPrivate Sub Form_Load()\n    txtA.Text = \"a\"\n    Me.Caption = \"c\"\n    Caption = \"d\"\nEnd Sub\n";
     let s = session_with(
         &[("frmA.frm", frm)],
-        SessionConfig { project_name: Some("P".into()), libraries: libs },
+        SessionConfig { project_name: Some("P".into()), libraries: libs, conditional_compilation: None },
     );
     assert_invariants(&s, "designer");
 }

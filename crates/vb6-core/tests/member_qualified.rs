@@ -12,7 +12,7 @@ const MOD_UTIL: &str = "Public Sub DoThing()\nEnd Sub\nPrivate Sub Secret()\nEnd
                         Public Enum Color\n    Red\n    Green\nEnd Enum\nPublic Type TPoint\n    X As Long\nEnd Type\n";
 
 fn config(name: &str) -> SessionConfig {
-    SessionConfig { project_name: Some(name.to_string()), libraries: vec![] }
+    SessionConfig { project_name: Some(name.to_string()), libraries: vec![], conditional_compilation: None }
 }
 
 fn proc(module: usize, idx: usize) -> DeclId {

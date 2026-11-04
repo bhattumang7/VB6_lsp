@@ -5,6 +5,7 @@
 //! hash table + bump arena) and only the *observable behavior* is reproduced.
 
 pub mod ast;
+pub mod cond_compile;
 pub mod diagnostics;
 pub mod keyword_table;
 pub mod parser;
