@@ -1,0 +1,1052 @@
+Option Explicit
+Option Base 1
+Option Compare Text
+Option Compare Binary
+Option Private Module
+DefInt A-Z
+DefStr S
+Dim x As Long
+Public y As Long
+Const c = 1
+Declare Sub f Lib "k" ()
+Type T\na As Long\nEnd Type
+Enum E\nA\nEnd Enum
+Sub P()\nEnd Sub
+Function F() As Long\nEnd Function
+Event Ev()
+Implements Class1
+Attribute VB_Name = "m"
+Attribute VB_Description = "d"
+#Const k = 1
+#If k Then\n#End If
+Property Get Q() As Long\nEnd Property
+Private z As Long
+Option Explicit\nOption Explicit
+Option Explicit\nOption Base 1
+Option Explicit\nOption Compare Text
+Option Explicit\nOption Compare Binary
+Option Explicit\nOption Private Module
+Option Explicit\nDefInt A-Z
+Option Explicit\nDefStr S
+Option Explicit\nDim x As Long
+Option Explicit\nPublic y As Long
+Option Explicit\nConst c = 1
+Option Explicit\nDeclare Sub f Lib "k" ()
+Option Explicit\nType T\na As Long\nEnd Type
+Option Explicit\nEnum E\nA\nEnd Enum
+Option Explicit\nSub P()\nEnd Sub
+Option Explicit\nFunction F() As Long\nEnd Function
+Option Explicit\nEvent Ev()
+Option Explicit\nImplements Class1
+Option Explicit\nAttribute VB_Name = "m"
+Option Explicit\nAttribute VB_Description = "d"
+Option Explicit\n#Const k = 1
+Option Explicit\n#If k Then\n#End If
+Option Explicit\nProperty Get Q() As Long\nEnd Property
+Option Explicit\nPrivate z As Long
+Option Base 1\nOption Explicit
+Option Base 1\nOption Base 1
+Option Base 1\nOption Compare Text
+Option Base 1\nOption Compare Binary
+Option Base 1\nOption Private Module
+Option Base 1\nDefInt A-Z
+Option Base 1\nDefStr S
+Option Base 1\nDim x As Long
+Option Base 1\nPublic y As Long
+Option Base 1\nConst c = 1
+Option Base 1\nDeclare Sub f Lib "k" ()
+Option Base 1\nType T\na As Long\nEnd Type
+Option Base 1\nEnum E\nA\nEnd Enum
+Option Base 1\nSub P()\nEnd Sub
+Option Base 1\nFunction F() As Long\nEnd Function
+Option Base 1\nEvent Ev()
+Option Base 1\nImplements Class1
+Option Base 1\nAttribute VB_Name = "m"
+Option Base 1\nAttribute VB_Description = "d"
+Option Base 1\n#Const k = 1
+Option Base 1\n#If k Then\n#End If
+Option Base 1\nProperty Get Q() As Long\nEnd Property
+Option Base 1\nPrivate z As Long
+Option Compare Text\nOption Explicit
+Option Compare Text\nOption Base 1
+Option Compare Text\nOption Compare Text
+Option Compare Text\nOption Compare Binary
+Option Compare Text\nOption Private Module
+Option Compare Text\nDefInt A-Z
+Option Compare Text\nDefStr S
+Option Compare Text\nDim x As Long
+Option Compare Text\nPublic y As Long
+Option Compare Text\nConst c = 1
+Option Compare Text\nDeclare Sub f Lib "k" ()
+Option Compare Text\nType T\na As Long\nEnd Type
+Option Compare Text\nEnum E\nA\nEnd Enum
+Option Compare Text\nSub P()\nEnd Sub
+Option Compare Text\nFunction F() As Long\nEnd Function
+Option Compare Text\nEvent Ev()
+Option Compare Text\nImplements Class1
+Option Compare Text\nAttribute VB_Name = "m"
+Option Compare Text\nAttribute VB_Description = "d"
+Option Compare Text\n#Const k = 1
+Option Compare Text\n#If k Then\n#End If
+Option Compare Text\nProperty Get Q() As Long\nEnd Property
+Option Compare Text\nPrivate z As Long
+Option Compare Binary\nOption Explicit
+Option Compare Binary\nOption Base 1
+Option Compare Binary\nOption Compare Text
+Option Compare Binary\nOption Compare Binary
+Option Compare Binary\nOption Private Module
+Option Compare Binary\nDefInt A-Z
+Option Compare Binary\nDefStr S
+Option Compare Binary\nDim x As Long
+Option Compare Binary\nPublic y As Long
+Option Compare Binary\nConst c = 1
+Option Compare Binary\nDeclare Sub f Lib "k" ()
+Option Compare Binary\nType T\na As Long\nEnd Type
+Option Compare Binary\nEnum E\nA\nEnd Enum
+Option Compare Binary\nSub P()\nEnd Sub
+Option Compare Binary\nFunction F() As Long\nEnd Function
+Option Compare Binary\nEvent Ev()
+Option Compare Binary\nImplements Class1
+Option Compare Binary\nAttribute VB_Name = "m"
+Option Compare Binary\nAttribute VB_Description = "d"
+Option Compare Binary\n#Const k = 1
+Option Compare Binary\n#If k Then\n#End If
+Option Compare Binary\nProperty Get Q() As Long\nEnd Property
+Option Compare Binary\nPrivate z As Long
+Option Private Module\nOption Explicit
+Option Private Module\nOption Base 1
+Option Private Module\nOption Compare Text
+Option Private Module\nOption Compare Binary
+Option Private Module\nOption Private Module
+Option Private Module\nDefInt A-Z
+Option Private Module\nDefStr S
+Option Private Module\nDim x As Long
+Option Private Module\nPublic y As Long
+Option Private Module\nConst c = 1
+Option Private Module\nDeclare Sub f Lib "k" ()
+Option Private Module\nType T\na As Long\nEnd Type
+Option Private Module\nEnum E\nA\nEnd Enum
+Option Private Module\nSub P()\nEnd Sub
+Option Private Module\nFunction F() As Long\nEnd Function
+Option Private Module\nEvent Ev()
+Option Private Module\nImplements Class1
+Option Private Module\nAttribute VB_Name = "m"
+Option Private Module\nAttribute VB_Description = "d"
+Option Private Module\n#Const k = 1
+Option Private Module\n#If k Then\n#End If
+Option Private Module\nProperty Get Q() As Long\nEnd Property
+Option Private Module\nPrivate z As Long
+DefInt A-Z\nOption Explicit
+DefInt A-Z\nOption Base 1
+DefInt A-Z\nOption Compare Text
+DefInt A-Z\nOption Compare Binary
+DefInt A-Z\nOption Private Module
+DefInt A-Z\nDefInt A-Z
+DefInt A-Z\nDefStr S
+DefInt A-Z\nDim x As Long
+DefInt A-Z\nPublic y As Long
+DefInt A-Z\nConst c = 1
+DefInt A-Z\nDeclare Sub f Lib "k" ()
+DefInt A-Z\nType T\na As Long\nEnd Type
+DefInt A-Z\nEnum E\nA\nEnd Enum
+DefInt A-Z\nSub P()\nEnd Sub
+DefInt A-Z\nFunction F() As Long\nEnd Function
+DefInt A-Z\nEvent Ev()
+DefInt A-Z\nImplements Class1
+DefInt A-Z\nAttribute VB_Name = "m"
+DefInt A-Z\nAttribute VB_Description = "d"
+DefInt A-Z\n#Const k = 1
+DefInt A-Z\n#If k Then\n#End If
+DefInt A-Z\nProperty Get Q() As Long\nEnd Property
+DefInt A-Z\nPrivate z As Long
+DefStr S\nOption Explicit
+DefStr S\nOption Base 1
+DefStr S\nOption Compare Text
+DefStr S\nOption Compare Binary
+DefStr S\nOption Private Module
+DefStr S\nDefInt A-Z
+DefStr S\nDefStr S
+DefStr S\nDim x As Long
+DefStr S\nPublic y As Long
+DefStr S\nConst c = 1
+DefStr S\nDeclare Sub f Lib "k" ()
+DefStr S\nType T\na As Long\nEnd Type
+DefStr S\nEnum E\nA\nEnd Enum
+DefStr S\nSub P()\nEnd Sub
+DefStr S\nFunction F() As Long\nEnd Function
+DefStr S\nEvent Ev()
+DefStr S\nImplements Class1
+DefStr S\nAttribute VB_Name = "m"
+DefStr S\nAttribute VB_Description = "d"
+DefStr S\n#Const k = 1
+DefStr S\n#If k Then\n#End If
+DefStr S\nProperty Get Q() As Long\nEnd Property
+DefStr S\nPrivate z As Long
+Dim x As Long\nOption Explicit
+Dim x As Long\nOption Base 1
+Dim x As Long\nOption Compare Text
+Dim x As Long\nOption Compare Binary
+Dim x As Long\nOption Private Module
+Dim x As Long\nDefInt A-Z
+Dim x As Long\nDefStr S
+Dim x As Long\nDim x As Long
+Dim x As Long\nPublic y As Long
+Dim x As Long\nConst c = 1
+Dim x As Long\nDeclare Sub f Lib "k" ()
+Dim x As Long\nType T\na As Long\nEnd Type
+Dim x As Long\nEnum E\nA\nEnd Enum
+Dim x As Long\nSub P()\nEnd Sub
+Dim x As Long\nFunction F() As Long\nEnd Function
+Dim x As Long\nEvent Ev()
+Dim x As Long\nImplements Class1
+Dim x As Long\nAttribute VB_Name = "m"
+Dim x As Long\nAttribute VB_Description = "d"
+Dim x As Long\n#Const k = 1
+Dim x As Long\n#If k Then\n#End If
+Dim x As Long\nProperty Get Q() As Long\nEnd Property
+Dim x As Long\nPrivate z As Long
+Public y As Long\nOption Explicit
+Public y As Long\nOption Base 1
+Public y As Long\nOption Compare Text
+Public y As Long\nOption Compare Binary
+Public y As Long\nOption Private Module
+Public y As Long\nDefInt A-Z
+Public y As Long\nDefStr S
+Public y As Long\nDim x As Long
+Public y As Long\nPublic y As Long
+Public y As Long\nConst c = 1
+Public y As Long\nDeclare Sub f Lib "k" ()
+Public y As Long\nType T\na As Long\nEnd Type
+Public y As Long\nEnum E\nA\nEnd Enum
+Public y As Long\nSub P()\nEnd Sub
+Public y As Long\nFunction F() As Long\nEnd Function
+Public y As Long\nEvent Ev()
+Public y As Long\nImplements Class1
+Public y As Long\nAttribute VB_Name = "m"
+Public y As Long\nAttribute VB_Description = "d"
+Public y As Long\n#Const k = 1
+Public y As Long\n#If k Then\n#End If
+Public y As Long\nProperty Get Q() As Long\nEnd Property
+Public y As Long\nPrivate z As Long
+Const c = 1\nOption Explicit
+Const c = 1\nOption Base 1
+Const c = 1\nOption Compare Text
+Const c = 1\nOption Compare Binary
+Const c = 1\nOption Private Module
+Const c = 1\nDefInt A-Z
+Const c = 1\nDefStr S
+Const c = 1\nDim x As Long
+Const c = 1\nPublic y As Long
+Const c = 1\nConst c = 1
+Const c = 1\nDeclare Sub f Lib "k" ()
+Const c = 1\nType T\na As Long\nEnd Type
+Const c = 1\nEnum E\nA\nEnd Enum
+Const c = 1\nSub P()\nEnd Sub
+Const c = 1\nFunction F() As Long\nEnd Function
+Const c = 1\nEvent Ev()
+Const c = 1\nImplements Class1
+Const c = 1\nAttribute VB_Name = "m"
+Const c = 1\nAttribute VB_Description = "d"
+Const c = 1\n#Const k = 1
+Const c = 1\n#If k Then\n#End If
+Const c = 1\nProperty Get Q() As Long\nEnd Property
+Const c = 1\nPrivate z As Long
+Declare Sub f Lib "k" ()\nOption Explicit
+Declare Sub f Lib "k" ()\nOption Base 1
+Declare Sub f Lib "k" ()\nOption Compare Text
+Declare Sub f Lib "k" ()\nOption Compare Binary
+Declare Sub f Lib "k" ()\nOption Private Module
+Declare Sub f Lib "k" ()\nDefInt A-Z
+Declare Sub f Lib "k" ()\nDefStr S
+Declare Sub f Lib "k" ()\nDim x As Long
+Declare Sub f Lib "k" ()\nPublic y As Long
+Declare Sub f Lib "k" ()\nConst c = 1
+Declare Sub f Lib "k" ()\nDeclare Sub f Lib "k" ()
+Declare Sub f Lib "k" ()\nType T\na As Long\nEnd Type
+Declare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum
+Declare Sub f Lib "k" ()\nSub P()\nEnd Sub
+Declare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function
+Declare Sub f Lib "k" ()\nEvent Ev()
+Declare Sub f Lib "k" ()\nImplements Class1
+Declare Sub f Lib "k" ()\nAttribute VB_Name = "m"
+Declare Sub f Lib "k" ()\nAttribute VB_Description = "d"
+Declare Sub f Lib "k" ()\n#Const k = 1
+Declare Sub f Lib "k" ()\n#If k Then\n#End If
+Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property
+Declare Sub f Lib "k" ()\nPrivate z As Long
+Type T\na As Long\nEnd Type\nOption Explicit
+Type T\na As Long\nEnd Type\nOption Base 1
+Type T\na As Long\nEnd Type\nOption Compare Text
+Type T\na As Long\nEnd Type\nOption Compare Binary
+Type T\na As Long\nEnd Type\nOption Private Module
+Type T\na As Long\nEnd Type\nDefInt A-Z
+Type T\na As Long\nEnd Type\nDefStr S
+Type T\na As Long\nEnd Type\nDim x As Long
+Type T\na As Long\nEnd Type\nPublic y As Long
+Type T\na As Long\nEnd Type\nConst c = 1
+Type T\na As Long\nEnd Type\nDeclare Sub f Lib "k" ()
+Type T\na As Long\nEnd Type\nType T\na As Long\nEnd Type
+Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum
+Type T\na As Long\nEnd Type\nSub P()\nEnd Sub
+Type T\na As Long\nEnd Type\nFunction F() As Long\nEnd Function
+Type T\na As Long\nEnd Type\nEvent Ev()
+Type T\na As Long\nEnd Type\nImplements Class1
+Type T\na As Long\nEnd Type\nAttribute VB_Name = "m"
+Type T\na As Long\nEnd Type\nAttribute VB_Description = "d"
+Type T\na As Long\nEnd Type\n#Const k = 1
+Type T\na As Long\nEnd Type\n#If k Then\n#End If
+Type T\na As Long\nEnd Type\nProperty Get Q() As Long\nEnd Property
+Type T\na As Long\nEnd Type\nPrivate z As Long
+Enum E\nA\nEnd Enum\nOption Explicit
+Enum E\nA\nEnd Enum\nOption Base 1
+Enum E\nA\nEnd Enum\nOption Compare Text
+Enum E\nA\nEnd Enum\nOption Compare Binary
+Enum E\nA\nEnd Enum\nOption Private Module
+Enum E\nA\nEnd Enum\nDefInt A-Z
+Enum E\nA\nEnd Enum\nDefStr S
+Enum E\nA\nEnd Enum\nDim x As Long
+Enum E\nA\nEnd Enum\nPublic y As Long
+Enum E\nA\nEnd Enum\nConst c = 1
+Enum E\nA\nEnd Enum\nDeclare Sub f Lib "k" ()
+Enum E\nA\nEnd Enum\nType T\na As Long\nEnd Type
+Enum E\nA\nEnd Enum\nEnum E\nA\nEnd Enum
+Enum E\nA\nEnd Enum\nSub P()\nEnd Sub
+Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function
+Enum E\nA\nEnd Enum\nEvent Ev()
+Enum E\nA\nEnd Enum\nImplements Class1
+Enum E\nA\nEnd Enum\nAttribute VB_Name = "m"
+Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"
+Enum E\nA\nEnd Enum\n#Const k = 1
+Enum E\nA\nEnd Enum\n#If k Then\n#End If
+Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property
+Enum E\nA\nEnd Enum\nPrivate z As Long
+Sub P()\nEnd Sub\nOption Explicit
+Sub P()\nEnd Sub\nOption Base 1
+Sub P()\nEnd Sub\nOption Compare Text
+Sub P()\nEnd Sub\nOption Compare Binary
+Sub P()\nEnd Sub\nOption Private Module
+Sub P()\nEnd Sub\nDefInt A-Z
+Sub P()\nEnd Sub\nDefStr S
+Sub P()\nEnd Sub\nDim x As Long
+Sub P()\nEnd Sub\nPublic y As Long
+Sub P()\nEnd Sub\nConst c = 1
+Sub P()\nEnd Sub\nDeclare Sub f Lib "k" ()
+Sub P()\nEnd Sub\nType T\na As Long\nEnd Type
+Sub P()\nEnd Sub\nEnum E\nA\nEnd Enum
+Sub P()\nEnd Sub\nSub P()\nEnd Sub
+Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function
+Sub P()\nEnd Sub\nEvent Ev()
+Sub P()\nEnd Sub\nImplements Class1
+Sub P()\nEnd Sub\nAttribute VB_Name = "m"
+Sub P()\nEnd Sub\nAttribute VB_Description = "d"
+Sub P()\nEnd Sub\n#Const k = 1
+Sub P()\nEnd Sub\n#If k Then\n#End If
+Sub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property
+Sub P()\nEnd Sub\nPrivate z As Long
+Function F() As Long\nEnd Function\nOption Explicit
+Function F() As Long\nEnd Function\nOption Base 1
+Function F() As Long\nEnd Function\nOption Compare Text
+Function F() As Long\nEnd Function\nOption Compare Binary
+Function F() As Long\nEnd Function\nOption Private Module
+Function F() As Long\nEnd Function\nDefInt A-Z
+Function F() As Long\nEnd Function\nDefStr S
+Function F() As Long\nEnd Function\nDim x As Long
+Function F() As Long\nEnd Function\nPublic y As Long
+Function F() As Long\nEnd Function\nConst c = 1
+Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()
+Function F() As Long\nEnd Function\nType T\na As Long\nEnd Type
+Function F() As Long\nEnd Function\nEnum E\nA\nEnd Enum
+Function F() As Long\nEnd Function\nSub P()\nEnd Sub
+Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function
+Function F() As Long\nEnd Function\nEvent Ev()
+Function F() As Long\nEnd Function\nImplements Class1
+Function F() As Long\nEnd Function\nAttribute VB_Name = "m"
+Function F() As Long\nEnd Function\nAttribute VB_Description = "d"
+Function F() As Long\nEnd Function\n#Const k = 1
+Function F() As Long\nEnd Function\n#If k Then\n#End If
+Function F() As Long\nEnd Function\nProperty Get Q() As Long\nEnd Property
+Function F() As Long\nEnd Function\nPrivate z As Long
+Event Ev()\nOption Explicit
+Event Ev()\nOption Base 1
+Event Ev()\nOption Compare Text
+Event Ev()\nOption Compare Binary
+Event Ev()\nOption Private Module
+Event Ev()\nDefInt A-Z
+Event Ev()\nDefStr S
+Event Ev()\nDim x As Long
+Event Ev()\nPublic y As Long
+Event Ev()\nConst c = 1
+Event Ev()\nDeclare Sub f Lib "k" ()
+Event Ev()\nType T\na As Long\nEnd Type
+Event Ev()\nEnum E\nA\nEnd Enum
+Event Ev()\nSub P()\nEnd Sub
+Event Ev()\nFunction F() As Long\nEnd Function
+Event Ev()\nEvent Ev()
+Event Ev()\nImplements Class1
+Event Ev()\nAttribute VB_Name = "m"
+Event Ev()\nAttribute VB_Description = "d"
+Event Ev()\n#Const k = 1
+Event Ev()\n#If k Then\n#End If
+Event Ev()\nProperty Get Q() As Long\nEnd Property
+Event Ev()\nPrivate z As Long
+Implements Class1\nOption Explicit
+Implements Class1\nOption Base 1
+Implements Class1\nOption Compare Text
+Implements Class1\nOption Compare Binary
+Implements Class1\nOption Private Module
+Implements Class1\nDefInt A-Z
+Implements Class1\nDefStr S
+Implements Class1\nDim x As Long
+Implements Class1\nPublic y As Long
+Implements Class1\nConst c = 1
+Implements Class1\nDeclare Sub f Lib "k" ()
+Implements Class1\nType T\na As Long\nEnd Type
+Implements Class1\nEnum E\nA\nEnd Enum
+Implements Class1\nSub P()\nEnd Sub
+Implements Class1\nFunction F() As Long\nEnd Function
+Implements Class1\nEvent Ev()
+Implements Class1\nImplements Class1
+Implements Class1\nAttribute VB_Name = "m"
+Implements Class1\nAttribute VB_Description = "d"
+Implements Class1\n#Const k = 1
+Implements Class1\n#If k Then\n#End If
+Implements Class1\nProperty Get Q() As Long\nEnd Property
+Implements Class1\nPrivate z As Long
+Attribute VB_Name = "m"\nOption Explicit
+Attribute VB_Name = "m"\nOption Base 1
+Attribute VB_Name = "m"\nOption Compare Text
+Attribute VB_Name = "m"\nOption Compare Binary
+Attribute VB_Name = "m"\nOption Private Module
+Attribute VB_Name = "m"\nDefInt A-Z
+Attribute VB_Name = "m"\nDefStr S
+Attribute VB_Name = "m"\nDim x As Long
+Attribute VB_Name = "m"\nPublic y As Long
+Attribute VB_Name = "m"\nConst c = 1
+Attribute VB_Name = "m"\nDeclare Sub f Lib "k" ()
+Attribute VB_Name = "m"\nType T\na As Long\nEnd Type
+Attribute VB_Name = "m"\nEnum E\nA\nEnd Enum
+Attribute VB_Name = "m"\nSub P()\nEnd Sub
+Attribute VB_Name = "m"\nFunction F() As Long\nEnd Function
+Attribute VB_Name = "m"\nEvent Ev()
+Attribute VB_Name = "m"\nImplements Class1
+Attribute VB_Name = "m"\nAttribute VB_Name = "m"
+Attribute VB_Name = "m"\nAttribute VB_Description = "d"
+Attribute VB_Name = "m"\n#Const k = 1
+Attribute VB_Name = "m"\n#If k Then\n#End If
+Attribute VB_Name = "m"\nProperty Get Q() As Long\nEnd Property
+Attribute VB_Name = "m"\nPrivate z As Long
+Attribute VB_Description = "d"\nOption Explicit
+Attribute VB_Description = "d"\nOption Base 1
+Attribute VB_Description = "d"\nOption Compare Text
+Attribute VB_Description = "d"\nOption Compare Binary
+Attribute VB_Description = "d"\nOption Private Module
+Attribute VB_Description = "d"\nDefInt A-Z
+Attribute VB_Description = "d"\nDefStr S
+Attribute VB_Description = "d"\nDim x As Long
+Attribute VB_Description = "d"\nPublic y As Long
+Attribute VB_Description = "d"\nConst c = 1
+Attribute VB_Description = "d"\nDeclare Sub f Lib "k" ()
+Attribute VB_Description = "d"\nType T\na As Long\nEnd Type
+Attribute VB_Description = "d"\nEnum E\nA\nEnd Enum
+Attribute VB_Description = "d"\nSub P()\nEnd Sub
+Attribute VB_Description = "d"\nFunction F() As Long\nEnd Function
+Attribute VB_Description = "d"\nEvent Ev()
+Attribute VB_Description = "d"\nImplements Class1
+Attribute VB_Description = "d"\nAttribute VB_Name = "m"
+Attribute VB_Description = "d"\nAttribute VB_Description = "d"
+Attribute VB_Description = "d"\n#Const k = 1
+Attribute VB_Description = "d"\n#If k Then\n#End If
+Attribute VB_Description = "d"\nProperty Get Q() As Long\nEnd Property
+Attribute VB_Description = "d"\nPrivate z As Long
+#Const k = 1\nOption Explicit
+#Const k = 1\nOption Base 1
+#Const k = 1\nOption Compare Text
+#Const k = 1\nOption Compare Binary
+#Const k = 1\nOption Private Module
+#Const k = 1\nDefInt A-Z
+#Const k = 1\nDefStr S
+#Const k = 1\nDim x As Long
+#Const k = 1\nPublic y As Long
+#Const k = 1\nConst c = 1
+#Const k = 1\nDeclare Sub f Lib "k" ()
+#Const k = 1\nType T\na As Long\nEnd Type
+#Const k = 1\nEnum E\nA\nEnd Enum
+#Const k = 1\nSub P()\nEnd Sub
+#Const k = 1\nFunction F() As Long\nEnd Function
+#Const k = 1\nEvent Ev()
+#Const k = 1\nImplements Class1
+#Const k = 1\nAttribute VB_Name = "m"
+#Const k = 1\nAttribute VB_Description = "d"
+#Const k = 1\n#Const k = 1
+#Const k = 1\n#If k Then\n#End If
+#Const k = 1\nProperty Get Q() As Long\nEnd Property
+#Const k = 1\nPrivate z As Long
+#If k Then\n#End If\nOption Explicit
+#If k Then\n#End If\nOption Base 1
+#If k Then\n#End If\nOption Compare Text
+#If k Then\n#End If\nOption Compare Binary
+#If k Then\n#End If\nOption Private Module
+#If k Then\n#End If\nDefInt A-Z
+#If k Then\n#End If\nDefStr S
+#If k Then\n#End If\nDim x As Long
+#If k Then\n#End If\nPublic y As Long
+#If k Then\n#End If\nConst c = 1
+#If k Then\n#End If\nDeclare Sub f Lib "k" ()
+#If k Then\n#End If\nType T\na As Long\nEnd Type
+#If k Then\n#End If\nEnum E\nA\nEnd Enum
+#If k Then\n#End If\nSub P()\nEnd Sub
+#If k Then\n#End If\nFunction F() As Long\nEnd Function
+#If k Then\n#End If\nEvent Ev()
+#If k Then\n#End If\nImplements Class1
+#If k Then\n#End If\nAttribute VB_Name = "m"
+#If k Then\n#End If\nAttribute VB_Description = "d"
+#If k Then\n#End If\n#Const k = 1
+#If k Then\n#End If\n#If k Then\n#End If
+#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property
+#If k Then\n#End If\nPrivate z As Long
+Property Get Q() As Long\nEnd Property\nOption Explicit
+Property Get Q() As Long\nEnd Property\nOption Base 1
+Property Get Q() As Long\nEnd Property\nOption Compare Text
+Property Get Q() As Long\nEnd Property\nOption Compare Binary
+Property Get Q() As Long\nEnd Property\nOption Private Module
+Property Get Q() As Long\nEnd Property\nDefInt A-Z
+Property Get Q() As Long\nEnd Property\nDefStr S
+Property Get Q() As Long\nEnd Property\nDim x As Long
+Property Get Q() As Long\nEnd Property\nPublic y As Long
+Property Get Q() As Long\nEnd Property\nConst c = 1
+Property Get Q() As Long\nEnd Property\nDeclare Sub f Lib "k" ()
+Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type
+Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum
+Property Get Q() As Long\nEnd Property\nSub P()\nEnd Sub
+Property Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function
+Property Get Q() As Long\nEnd Property\nEvent Ev()
+Property Get Q() As Long\nEnd Property\nImplements Class1
+Property Get Q() As Long\nEnd Property\nAttribute VB_Name = "m"
+Property Get Q() As Long\nEnd Property\nAttribute VB_Description = "d"
+Property Get Q() As Long\nEnd Property\n#Const k = 1
+Property Get Q() As Long\nEnd Property\n#If k Then\n#End If
+Property Get Q() As Long\nEnd Property\nProperty Get Q() As Long\nEnd Property
+Property Get Q() As Long\nEnd Property\nPrivate z As Long
+Private z As Long\nOption Explicit
+Private z As Long\nOption Base 1
+Private z As Long\nOption Compare Text
+Private z As Long\nOption Compare Binary
+Private z As Long\nOption Private Module
+Private z As Long\nDefInt A-Z
+Private z As Long\nDefStr S
+Private z As Long\nDim x As Long
+Private z As Long\nPublic y As Long
+Private z As Long\nConst c = 1
+Private z As Long\nDeclare Sub f Lib "k" ()
+Private z As Long\nType T\na As Long\nEnd Type
+Private z As Long\nEnum E\nA\nEnd Enum
+Private z As Long\nSub P()\nEnd Sub
+Private z As Long\nFunction F() As Long\nEnd Function
+Private z As Long\nEvent Ev()
+Private z As Long\nImplements Class1
+Private z As Long\nAttribute VB_Name = "m"
+Private z As Long\nAttribute VB_Description = "d"
+Private z As Long\n#Const k = 1
+Private z As Long\n#If k Then\n#End If
+Private z As Long\nProperty Get Q() As Long\nEnd Property
+Private z As Long\nPrivate z As Long
+#Const k = 1\n#Const k = 1\nOption Compare Text
+#Const k = 1\n#If k Then\n#End If\nOption Compare Text
+#Const k = 1\nAttribute VB_Description = "d"\n#If k Then\n#End If
+#Const k = 1\nAttribute VB_Name = "m"\nOption Compare Text
+#Const k = 1\nDeclare Sub f Lib "k" ()\nConst c = 1
+#Const k = 1\nDefInt A-Z\nAttribute VB_Name = "m"
+#Const k = 1\nDefInt A-Z\nOption Compare Binary
+#Const k = 1\nFunction F() As Long\nEnd Function\nOption Private Module
+#Const k = 1\nImplements Class1\nDim x As Long
+#Const k = 1\nImplements Class1\nImplements Class1
+#Const k = 1\nImplements Class1\nOption Explicit
+#Const k = 1\nOption Base 1\nDim x As Long
+#Const k = 1\nOption Compare Binary\nEvent Ev()
+#Const k = 1\nOption Compare Text\nEvent Ev()
+#Const k = 1\nOption Compare Text\nOption Compare Text
+#Const k = 1\nOption Compare Text\nPrivate z As Long
+#Const k = 1\nOption Private Module\nConst c = 1
+#Const k = 1\nOption Private Module\nOption Compare Binary
+#Const k = 1\nPrivate z As Long\nDefInt A-Z
+#Const k = 1\nPrivate z As Long\nEvent Ev()
+#Const k = 1\nPrivate z As Long\nOption Compare Binary
+#Const k = 1\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum
+#Const k = 1\nProperty Get Q() As Long\nEnd Property\nOption Base 1
+#Const k = 1\nPublic y As Long\nPrivate z As Long
+#Const k = 1\nType T\na As Long\nEnd Type\nType T\na As Long\nEnd Type
+#If k Then\n#End If\nAttribute VB_Description = "d"\nOption Compare Binary
+#If k Then\n#End If\nAttribute VB_Name = "m"\n#If k Then\n#End If
+#If k Then\n#End If\nAttribute VB_Name = "m"\nAttribute VB_Name = "m"
+#If k Then\n#End If\nDeclare Sub f Lib "k" ()\nImplements Class1
+#If k Then\n#End If\nDefInt A-Z\n#Const k = 1
+#If k Then\n#End If\nDefStr S\nImplements Class1
+#If k Then\n#End If\nDefStr S\nOption Compare Binary
+#If k Then\n#End If\nDim x As Long\nOption Explicit
+#If k Then\n#End If\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"
+#If k Then\n#End If\nEnum E\nA\nEnd Enum\nOption Compare Binary
+#If k Then\n#End If\nEnum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property
+#If k Then\n#End If\nOption Base 1\nOption Explicit
+#If k Then\n#End If\nOption Base 1\nProperty Get Q() As Long\nEnd Property
+#If k Then\n#End If\nOption Compare Text\nAttribute VB_Name = "m"
+#If k Then\n#End If\nOption Explicit\nImplements Class1
+#If k Then\n#End If\nOption Private Module\nConst c = 1
+#If k Then\n#End If\nOption Private Module\nOption Compare Binary
+#If k Then\n#End If\nPrivate z As Long\nDefInt A-Z
+#If k Then\n#End If\nPrivate z As Long\nOption Compare Binary
+#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property\nOption Explicit
+#If k Then\n#End If\nSub P()\nEnd Sub\nDim x As Long
+#If k Then\n#End If\nSub P()\nEnd Sub\nImplements Class1
+#If k Then\n#End If\nType T\na As Long\nEnd Type\nAttribute VB_Description = "d"
+#If k Then\n#End If\nType T\na As Long\nEnd Type\nDefInt A-Z
+#If k Then\n#End If\nType T\na As Long\nEnd Type\nOption Compare Text
+Attribute VB_Description = "d"\n#Const k = 1\nProperty Get Q() As Long\nEnd Property
+Attribute VB_Description = "d"\n#If k Then\n#End If\nImplements Class1
+Attribute VB_Description = "d"\nAttribute VB_Name = "m"\nAttribute VB_Name = "m"
+Attribute VB_Description = "d"\nDeclare Sub f Lib "k" ()\nOption Base 1
+Attribute VB_Description = "d"\nDefStr S\n#If k Then\n#End If
+Attribute VB_Description = "d"\nDefStr S\nImplements Class1
+Attribute VB_Description = "d"\nEvent Ev()\nAttribute VB_Description = "d"
+Attribute VB_Description = "d"\nEvent Ev()\nDefStr S
+Attribute VB_Description = "d"\nOption Base 1\nOption Explicit
+Attribute VB_Description = "d"\nOption Compare Binary\nEnum E\nA\nEnd Enum
+Attribute VB_Description = "d"\nOption Compare Binary\nImplements Class1
+Attribute VB_Description = "d"\nOption Compare Binary\nOption Compare Text
+Attribute VB_Description = "d"\nOption Private Module\nDim x As Long
+Attribute VB_Description = "d"\nOption Private Module\nOption Compare Text
+Attribute VB_Name = "m"\n#Const k = 1\n#Const k = 1
+Attribute VB_Name = "m"\nAttribute VB_Description = "d"\nOption Compare Binary
+Attribute VB_Name = "m"\nAttribute VB_Name = "m"\nImplements Class1
+Attribute VB_Name = "m"\nConst c = 1\nAttribute VB_Name = "m"
+Attribute VB_Name = "m"\nConst c = 1\nFunction F() As Long\nEnd Function
+Attribute VB_Name = "m"\nConst c = 1\nProperty Get Q() As Long\nEnd Property
+Attribute VB_Name = "m"\nDefInt A-Z\nAttribute VB_Description = "d"
+Attribute VB_Name = "m"\nDefInt A-Z\nSub P()\nEnd Sub
+Attribute VB_Name = "m"\nDefStr S\nProperty Get Q() As Long\nEnd Property
+Attribute VB_Name = "m"\nDim x As Long\nType T\na As Long\nEnd Type
+Attribute VB_Name = "m"\nImplements Class1\nPublic y As Long
+Attribute VB_Name = "m"\nOption Compare Text\nAttribute VB_Name = "m"
+Attribute VB_Name = "m"\nOption Compare Text\nEnum E\nA\nEnd Enum
+Attribute VB_Name = "m"\nOption Compare Text\nEvent Ev()
+Attribute VB_Name = "m"\nOption Compare Text\nImplements Class1
+Attribute VB_Name = "m"\nPrivate z As Long\n#If k Then\n#End If
+Attribute VB_Name = "m"\nPrivate z As Long\nOption Base 1
+Attribute VB_Name = "m"\nProperty Get Q() As Long\nEnd Property\nOption Compare Text
+Attribute VB_Name = "m"\nPublic y As Long\nConst c = 1
+Const c = 1\n#Const k = 1\nSub P()\nEnd Sub
+Const c = 1\n#If k Then\n#End If\nAttribute VB_Description = "d"
+Const c = 1\n#If k Then\n#End If\nOption Private Module
+Const c = 1\nAttribute VB_Description = "d"\nOption Compare Binary
+Const c = 1\nAttribute VB_Description = "d"\nOption Compare Text
+Const c = 1\nAttribute VB_Name = "m"\n#If k Then\n#End If
+Const c = 1\nDeclare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum
+Const c = 1\nDefStr S\nProperty Get Q() As Long\nEnd Property
+Const c = 1\nEnum E\nA\nEnd Enum\nOption Compare Text
+Const c = 1\nEvent Ev()\nFunction F() As Long\nEnd Function
+Const c = 1\nEvent Ev()\nOption Compare Binary
+Const c = 1\nEvent Ev()\nPrivate z As Long
+Const c = 1\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()
+Const c = 1\nImplements Class1\nDefInt A-Z
+Const c = 1\nOption Base 1\nOption Explicit
+Const c = 1\nOption Explicit\n#If k Then\n#End If
+Const c = 1\nOption Explicit\nDefStr S
+Const c = 1\nOption Explicit\nOption Compare Text
+Const c = 1\nOption Private Module\nOption Compare Text
+Const c = 1\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum
+Const c = 1\nPublic y As Long\nAttribute VB_Description = "d"
+Const c = 1\nPublic y As Long\nOption Base 1
+Const c = 1\nType T\na As Long\nEnd Type\nImplements Class1
+Declare Sub f Lib "k" ()\n#Const k = 1\nDeclare Sub f Lib "k" ()
+Declare Sub f Lib "k" ()\nAttribute VB_Name = "m"\nSub P()\nEnd Sub
+Declare Sub f Lib "k" ()\nConst c = 1\n#If k Then\n#End If
+Declare Sub f Lib "k" ()\nConst c = 1\nOption Compare Binary
+Declare Sub f Lib "k" ()\nConst c = 1\nOption Private Module
+Declare Sub f Lib "k" ()\nDefInt A-Z\nOption Compare Text
+Declare Sub f Lib "k" ()\nDefStr S\nProperty Get Q() As Long\nEnd Property
+Declare Sub f Lib "k" ()\nDim x As Long\nImplements Class1
+Declare Sub f Lib "k" ()\nDim x As Long\nProperty Get Q() As Long\nEnd Property
+Declare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()
+Declare Sub f Lib "k" ()\nOption Compare Binary\nDefStr S
+Declare Sub f Lib "k" ()\nOption Compare Text\nConst c = 1
+Declare Sub f Lib "k" ()\nOption Compare Text\nType T\na As Long\nEnd Type
+Declare Sub f Lib "k" ()\nOption Explicit\nSub P()\nEnd Sub
+Declare Sub f Lib "k" ()\nOption Private Module\nOption Compare Text
+Declare Sub f Lib "k" ()\nPrivate z As Long\n#Const k = 1
+Declare Sub f Lib "k" ()\nPrivate z As Long\nFunction F() As Long\nEnd Function
+Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function
+Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nOption Private Module
+Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long
+Declare Sub f Lib "k" ()\nPublic y As Long\nPrivate z As Long
+Declare Sub f Lib "k" ()\nPublic y As Long\nPublic y As Long
+Declare Sub f Lib "k" ()\nType T\na As Long\nEnd Type\nOption Compare Binary
+DefInt A-Z\nConst c = 1\nDeclare Sub f Lib "k" ()
+DefInt A-Z\nConst c = 1\nProperty Get Q() As Long\nEnd Property
+DefInt A-Z\nDeclare Sub f Lib "k" ()\nDefStr S
+DefInt A-Z\nDeclare Sub f Lib "k" ()\nImplements Class1
+DefInt A-Z\nDefInt A-Z\nOption Compare Text
+DefInt A-Z\nDefStr S\nEnum E\nA\nEnd Enum
+DefInt A-Z\nDim x As Long\nPublic y As Long
+DefInt A-Z\nEnum E\nA\nEnd Enum\n#Const k = 1
+DefInt A-Z\nEnum E\nA\nEnd Enum\nDefStr S
+DefInt A-Z\nEnum E\nA\nEnd Enum\nPrivate z As Long
+DefInt A-Z\nImplements Class1\nImplements Class1
+DefInt A-Z\nOption Base 1\nFunction F() As Long\nEnd Function
+DefInt A-Z\nOption Compare Binary\nFunction F() As Long\nEnd Function
+DefInt A-Z\nOption Compare Text\nAttribute VB_Name = "m"
+DefInt A-Z\nOption Compare Text\nDeclare Sub f Lib "k" ()
+DefInt A-Z\nOption Explicit\nDefStr S
+DefInt A-Z\nProperty Get Q() As Long\nEnd Property\nAttribute VB_Name = "m"
+DefInt A-Z\nProperty Get Q() As Long\nEnd Property\nOption Private Module
+DefStr S\n#Const k = 1\nType T\na As Long\nEnd Type
+DefStr S\n#If k Then\n#End If\nAttribute VB_Name = "m"
+DefStr S\n#If k Then\n#End If\nEnum E\nA\nEnd Enum
+DefStr S\n#If k Then\n#End If\nSub P()\nEnd Sub
+DefStr S\nAttribute VB_Description = "d"\nDim x As Long
+DefStr S\nAttribute VB_Name = "m"\n#Const k = 1
+DefStr S\nConst c = 1\nOption Private Module
+DefStr S\nDeclare Sub f Lib "k" ()\nDeclare Sub f Lib "k" ()
+DefStr S\nDefInt A-Z\n#If k Then\n#End If
+DefStr S\nDefInt A-Z\nImplements Class1
+DefStr S\nDefInt A-Z\nType T\na As Long\nEnd Type
+DefStr S\nDefStr S\nDefStr S
+DefStr S\nDefStr S\nEnum E\nA\nEnd Enum
+DefStr S\nDim x As Long\nEnum E\nA\nEnd Enum
+DefStr S\nFunction F() As Long\nEnd Function\nImplements Class1
+DefStr S\nFunction F() As Long\nEnd Function\nSub P()\nEnd Sub
+DefStr S\nImplements Class1\nAttribute VB_Description = "d"
+DefStr S\nImplements Class1\nDefInt A-Z
+DefStr S\nImplements Class1\nPrivate z As Long
+DefStr S\nOption Base 1\nAttribute VB_Name = "m"
+DefStr S\nOption Compare Text\nOption Private Module
+DefStr S\nOption Compare Text\nSub P()\nEnd Sub
+DefStr S\nOption Private Module\nEnum E\nA\nEnd Enum
+DefStr S\nOption Private Module\nOption Private Module
+DefStr S\nOption Private Module\nPrivate z As Long
+DefStr S\nOption Private Module\nSub P()\nEnd Sub
+DefStr S\nPrivate z As Long\nImplements Class1
+DefStr S\nPrivate z As Long\nOption Compare Binary
+DefStr S\nProperty Get Q() As Long\nEnd Property\nOption Base 1
+DefStr S\nProperty Get Q() As Long\nEnd Property\nPublic y As Long
+DefStr S\nSub P()\nEnd Sub\nDefStr S
+Dim x As Long\n#Const k = 1\nDim x As Long
+Dim x As Long\n#Const k = 1\nOption Explicit
+Dim x As Long\n#If k Then\n#End If\nConst c = 1
+Dim x As Long\n#If k Then\n#End If\nSub P()\nEnd Sub
+Dim x As Long\n#If k Then\n#End If\nType T\na As Long\nEnd Type
+Dim x As Long\nAttribute VB_Description = "d"\nDeclare Sub f Lib "k" ()
+Dim x As Long\nConst c = 1\nOption Explicit
+Dim x As Long\nEnum E\nA\nEnd Enum\nImplements Class1
+Dim x As Long\nEnum E\nA\nEnd Enum\nOption Base 1
+Dim x As Long\nEvent Ev()\nAttribute VB_Description = "d"
+Dim x As Long\nImplements Class1\n#If k Then\n#End If
+Dim x As Long\nImplements Class1\nEnum E\nA\nEnd Enum
+Dim x As Long\nImplements Class1\nOption Base 1
+Dim x As Long\nOption Base 1\nDefInt A-Z
+Dim x As Long\nOption Compare Binary\nFunction F() As Long\nEnd Function
+Dim x As Long\nOption Compare Text\nSub P()\nEnd Sub
+Dim x As Long\nOption Compare Text\nType T\na As Long\nEnd Type
+Dim x As Long\nPublic y As Long\nFunction F() As Long\nEnd Function
+Dim x As Long\nType T\na As Long\nEnd Type\nProperty Get Q() As Long\nEnd Property
+Enum E\nA\nEnd Enum\n#Const k = 1\nConst c = 1
+Enum E\nA\nEnd Enum\n#Const k = 1\nDeclare Sub f Lib "k" ()
+Enum E\nA\nEnd Enum\n#Const k = 1\nPrivate z As Long
+Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\n#Const k = 1
+Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\nDefInt A-Z
+Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\nOption Explicit
+Enum E\nA\nEnd Enum\nDeclare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property
+Enum E\nA\nEnd Enum\nDefInt A-Z\nConst c = 1
+Enum E\nA\nEnd Enum\nDefInt A-Z\nEnum E\nA\nEnd Enum
+Enum E\nA\nEnd Enum\nDefStr S\nAttribute VB_Description = "d"
+Enum E\nA\nEnd Enum\nDefStr S\nImplements Class1
+Enum E\nA\nEnd Enum\nDim x As Long\nOption Compare Text
+Enum E\nA\nEnd Enum\nEvent Ev()\n#Const k = 1
+Enum E\nA\nEnd Enum\nEvent Ev()\nDeclare Sub f Lib "k" ()
+Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function\nDefStr S
+Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function\nSub P()\nEnd Sub
+Enum E\nA\nEnd Enum\nImplements Class1\nOption Base 1
+Enum E\nA\nEnd Enum\nOption Compare Binary\nDeclare Sub f Lib "k" ()
+Enum E\nA\nEnd Enum\nOption Compare Binary\nSub P()\nEnd Sub
+Enum E\nA\nEnd Enum\nOption Compare Text\nOption Compare Text
+Enum E\nA\nEnd Enum\nOption Explicit\nAttribute VB_Name = "m"
+Enum E\nA\nEnd Enum\nOption Private Module\nFunction F() As Long\nEnd Function
+Enum E\nA\nEnd Enum\nOption Private Module\nType T\na As Long\nEnd Type
+Enum E\nA\nEnd Enum\nPrivate z As Long\nAttribute VB_Description = "d"
+Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function
+Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property\nPublic y As Long
+Enum E\nA\nEnd Enum\nSub P()\nEnd Sub\nDefStr S
+Enum E\nA\nEnd Enum\nSub P()\nEnd Sub\nImplements Class1
+Enum E\nA\nEnd Enum\nType T\na As Long\nEnd Type\nDeclare Sub f Lib "k" ()
+Event Ev()\n#If k Then\n#End If\n#Const k = 1
+Event Ev()\n#If k Then\n#End If\nDeclare Sub f Lib "k" ()
+Event Ev()\n#If k Then\n#End If\nPublic y As Long
+Event Ev()\nAttribute VB_Description = "d"\nOption Explicit
+Event Ev()\nAttribute VB_Name = "m"\n#If k Then\n#End If
+Event Ev()\nConst c = 1\nOption Compare Binary
+Event Ev()\nDefInt A-Z\nEvent Ev()
+Event Ev()\nDim x As Long\nDeclare Sub f Lib "k" ()
+Event Ev()\nEvent Ev()\nAttribute VB_Name = "m"
+Event Ev()\nEvent Ev()\nType T\na As Long\nEnd Type
+Event Ev()\nOption Compare Binary\nEvent Ev()
+Event Ev()\nOption Compare Binary\nOption Explicit
+Event Ev()\nOption Compare Text\nConst c = 1
+Event Ev()\nOption Compare Text\nPrivate z As Long
+Event Ev()\nOption Explicit\nProperty Get Q() As Long\nEnd Property
+Event Ev()\nOption Private Module\nDeclare Sub f Lib "k" ()
+Event Ev()\nOption Private Module\nImplements Class1
+Event Ev()\nOption Private Module\nOption Compare Text
+Event Ev()\nPrivate z As Long\nFunction F() As Long\nEnd Function
+Event Ev()\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function
+Event Ev()\nPublic y As Long\nDefInt A-Z
+Event Ev()\nPublic y As Long\nDefStr S
+Event Ev()\nPublic y As Long\nDim x As Long
+Event Ev()\nPublic y As Long\nEvent Ev()
+Event Ev()\nType T\na As Long\nEnd Type\nOption Base 1
+Event Ev()\nType T\na As Long\nEnd Type\nPrivate z As Long
+Function F() As Long\nEnd Function\n#If k Then\n#End If\n#Const k = 1
+Function F() As Long\nEnd Function\nAttribute VB_Name = "m"\nFunction F() As Long\nEnd Function
+Function F() As Long\nEnd Function\nConst c = 1\nOption Explicit
+Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nConst c = 1
+Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function
+Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nOption Compare Text
+Function F() As Long\nEnd Function\nDefInt A-Z\nPublic y As Long
+Function F() As Long\nEnd Function\nDefStr S\n#If k Then\n#End If
+Function F() As Long\nEnd Function\nDim x As Long\nPrivate z As Long
+Function F() As Long\nEnd Function\nEnum E\nA\nEnd Enum\nOption Compare Text
+Function F() As Long\nEnd Function\nEvent Ev()\nAttribute VB_Description = "d"
+Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function\nFunction F() As Long\nEnd Function
+Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function\nImplements Class1
+Function F() As Long\nEnd Function\nImplements Class1\nAttribute VB_Description = "d"
+Function F() As Long\nEnd Function\nImplements Class1\nAttribute VB_Name = "m"
+Function F() As Long\nEnd Function\nOption Base 1\nEnum E\nA\nEnd Enum
+Function F() As Long\nEnd Function\nOption Compare Binary\nAttribute VB_Name = "m"
+Function F() As Long\nEnd Function\nOption Compare Binary\nDefStr S
+Function F() As Long\nEnd Function\nOption Explicit\nConst c = 1
+Function F() As Long\nEnd Function\nOption Explicit\nDefStr S
+Function F() As Long\nEnd Function\nOption Private Module\nDim x As Long
+Function F() As Long\nEnd Function\nOption Private Module\nProperty Get Q() As Long\nEnd Property
+Function F() As Long\nEnd Function\nPublic y As Long\nOption Explicit
+Function F() As Long\nEnd Function\nSub P()\nEnd Sub\nEnum E\nA\nEnd Enum
+Implements Class1\n#Const k = 1\nType T\na As Long\nEnd Type
+Implements Class1\nAttribute VB_Description = "d"\nEvent Ev()
+Implements Class1\nAttribute VB_Description = "d"\nOption Private Module
+Implements Class1\nConst c = 1\nOption Explicit
+Implements Class1\nDeclare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function
+Implements Class1\nDeclare Sub f Lib "k" ()\nImplements Class1
+Implements Class1\nEvent Ev()\n#If k Then\n#End If
+Implements Class1\nEvent Ev()\nProperty Get Q() As Long\nEnd Property
+Implements Class1\nImplements Class1\n#Const k = 1
+Implements Class1\nImplements Class1\nPublic y As Long
+Implements Class1\nOption Explicit\n#Const k = 1
+Implements Class1\nOption Explicit\nConst c = 1
+Implements Class1\nOption Explicit\nDeclare Sub f Lib "k" ()
+Implements Class1\nOption Private Module\n#If k Then\n#End If
+Implements Class1\nOption Private Module\nConst c = 1
+Implements Class1\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long
+Implements Class1\nPublic y As Long\nDim x As Long
+Implements Class1\nSub P()\nEnd Sub\nSub P()\nEnd Sub
+Implements Class1\nType T\na As Long\nEnd Type\nSub P()\nEnd Sub
+Option Base 1\n#Const k = 1\nEnum E\nA\nEnd Enum
+Option Base 1\n#Const k = 1\nSub P()\nEnd Sub
+Option Base 1\n#If k Then\n#End If\nDefInt A-Z
+Option Base 1\nAttribute VB_Description = "d"\nDeclare Sub f Lib "k" ()
+Option Base 1\nAttribute VB_Name = "m"\n#Const k = 1
+Option Base 1\nConst c = 1\nOption Explicit
+Option Base 1\nDeclare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum
+Option Base 1\nDeclare Sub f Lib "k" ()\nOption Compare Binary
+Option Base 1\nDefInt A-Z\nAttribute VB_Name = "m"
+Option Base 1\nDefStr S\nDefInt A-Z
+Option Base 1\nEvent Ev()\nEnum E\nA\nEnd Enum
+Option Base 1\nEvent Ev()\nPrivate z As Long
+Option Base 1\nFunction F() As Long\nEnd Function\nAttribute VB_Description = "d"
+Option Base 1\nFunction F() As Long\nEnd Function\nEvent Ev()
+Option Base 1\nImplements Class1\nEnum E\nA\nEnd Enum
+Option Base 1\nImplements Class1\nOption Compare Binary
+Option Base 1\nOption Base 1\nDefInt A-Z
+Option Base 1\nOption Base 1\nDefStr S
+Option Base 1\nOption Private Module\nAttribute VB_Description = "d"
+Option Base 1\nOption Private Module\nDefStr S
+Option Base 1\nProperty Get Q() As Long\nEnd Property\nDim x As Long
+Option Base 1\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long
+Option Base 1\nPublic y As Long\n#Const k = 1
+Option Base 1\nSub P()\nEnd Sub\nEvent Ev()
+Option Base 1\nSub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property
+Option Base 1\nType T\na As Long\nEnd Type\nImplements Class1
+Option Compare Binary\n#Const k = 1\nOption Compare Binary
+Option Compare Binary\n#If k Then\n#End If\nFunction F() As Long\nEnd Function
+Option Compare Binary\nAttribute VB_Description = "d"\nEnum E\nA\nEnd Enum
+Option Compare Binary\nAttribute VB_Description = "d"\nOption Base 1
+Option Compare Binary\nAttribute VB_Description = "d"\nOption Compare Binary
+Option Compare Binary\nAttribute VB_Name = "m"\nAttribute VB_Description = "d"
+Option Compare Binary\nConst c = 1\nEnum E\nA\nEnd Enum
+Option Compare Binary\nDefInt A-Z\nEnum E\nA\nEnd Enum
+Option Compare Binary\nDefStr S\nAttribute VB_Description = "d"
+Option Compare Binary\nDefStr S\nDefInt A-Z
+Option Compare Binary\nDim x As Long\nAttribute VB_Name = "m"
+Option Compare Binary\nEvent Ev()\n#Const k = 1
+Option Compare Binary\nFunction F() As Long\nEnd Function\n#Const k = 1
+Option Compare Binary\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()
+Option Compare Binary\nFunction F() As Long\nEnd Function\nOption Compare Binary
+Option Compare Binary\nImplements Class1\nConst c = 1
+Option Compare Binary\nImplements Class1\nDim x As Long
+Option Compare Binary\nImplements Class1\nOption Private Module
+Option Compare Binary\nOption Compare Binary\nOption Base 1
+Option Compare Binary\nOption Private Module\n#Const k = 1
+Option Compare Binary\nOption Private Module\nDim x As Long
+Option Compare Binary\nOption Private Module\nProperty Get Q() As Long\nEnd Property
+Option Compare Binary\nPrivate z As Long\nImplements Class1
+Option Compare Binary\nSub P()\nEnd Sub\nSub P()\nEnd Sub
+Option Compare Text\n#If k Then\n#End If\nOption Compare Binary
+Option Compare Text\nAttribute VB_Description = "d"\n#If k Then\n#End If
+Option Compare Text\nAttribute VB_Description = "d"\nAttribute VB_Name = "m"
+Option Compare Text\nAttribute VB_Name = "m"\nOption Compare Text
+Option Compare Text\nConst c = 1\nAttribute VB_Name = "m"
+Option Compare Text\nDeclare Sub f Lib "k" ()\nOption Compare Text
+Option Compare Text\nDeclare Sub f Lib "k" ()\nSub P()\nEnd Sub
+Option Compare Text\nDefStr S\nAttribute VB_Description = "d"
+Option Compare Text\nDim x As Long\nSub P()\nEnd Sub
+Option Compare Text\nFunction F() As Long\nEnd Function\n#If k Then\n#End If
+Option Compare Text\nFunction F() As Long\nEnd Function\nAttribute VB_Name = "m"
+Option Compare Text\nOption Base 1\nFunction F() As Long\nEnd Function
+Option Compare Text\nOption Compare Binary\nDeclare Sub f Lib "k" ()
+Option Compare Text\nOption Explicit\n#If k Then\n#End If
+Option Compare Text\nOption Explicit\nProperty Get Q() As Long\nEnd Property
+Option Compare Text\nOption Private Module\nDim x As Long
+Option Compare Text\nPrivate z As Long\n#Const k = 1
+Option Compare Text\nPrivate z As Long\n#If k Then\n#End If
+Option Compare Text\nPrivate z As Long\nPublic y As Long
+Option Compare Text\nProperty Get Q() As Long\nEnd Property\nEvent Ev()
+Option Compare Text\nSub P()\nEnd Sub\nOption Base 1
+Option Compare Text\nSub P()\nEnd Sub\nOption Explicit
+Option Explicit\n#Const k = 1\nOption Base 1
+Option Explicit\n#If k Then\n#End If\nOption Private Module
+Option Explicit\n#If k Then\n#End If\nPrivate z As Long
+Option Explicit\n#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property
+Option Explicit\nAttribute VB_Description = "d"\nEvent Ev()
+Option Explicit\nConst c = 1\nProperty Get Q() As Long\nEnd Property
+Option Explicit\nDeclare Sub f Lib "k" ()\nOption Base 1
+Option Explicit\nDefInt A-Z\nDefStr S
+Option Explicit\nDefStr S\nDefStr S
+Option Explicit\nDim x As Long\nAttribute VB_Description = "d"
+Option Explicit\nDim x As Long\nPrivate z As Long
+Option Explicit\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"
+Option Explicit\nEnum E\nA\nEnd Enum\nPrivate z As Long
+Option Explicit\nEvent Ev()\nType T\na As Long\nEnd Type
+Option Explicit\nImplements Class1\nOption Compare Text
+Option Explicit\nOption Base 1\nDefStr S
+Option Explicit\nOption Compare Binary\nPublic y As Long
+Option Explicit\nOption Compare Text\nPublic y As Long
+Option Explicit\nPublic y As Long\nAttribute VB_Description = "d"
+Option Explicit\nPublic y As Long\nDim x As Long
+Option Explicit\nType T\na As Long\nEnd Type\n#If k Then\n#End If
+Option Explicit\nType T\na As Long\nEnd Type\nConst c = 1
+Option Explicit\nType T\na As Long\nEnd Type\nImplements Class1
+Option Private Module\n#If k Then\n#End If\n#Const k = 1
+Option Private Module\nAttribute VB_Description = "d"\nAttribute VB_Description = "d"
+Option Private Module\nAttribute VB_Description = "d"\nPrivate z As Long
+Option Private Module\nDeclare Sub f Lib "k" ()\nAttribute VB_Name = "m"
+Option Private Module\nDeclare Sub f Lib "k" ()\nType T\na As Long\nEnd Type
+Option Private Module\nDefStr S\nDefInt A-Z
+Option Private Module\nDefStr S\nEnum E\nA\nEnd Enum
+Option Private Module\nDim x As Long\nDefInt A-Z
+Option Private Module\nDim x As Long\nEvent Ev()
+Option Private Module\nDim x As Long\nOption Explicit
+Option Private Module\nEnum E\nA\nEnd Enum\nDefInt A-Z
+Option Private Module\nEnum E\nA\nEnd Enum\nEvent Ev()
+Option Private Module\nImplements Class1\nEnum E\nA\nEnd Enum
+Option Private Module\nOption Base 1\n#If k Then\n#End If
+Option Private Module\nOption Compare Binary\nProperty Get Q() As Long\nEnd Property
+Option Private Module\nOption Compare Binary\nType T\na As Long\nEnd Type
+Option Private Module\nOption Compare Text\nPublic y As Long
+Option Private Module\nOption Private Module\nOption Compare Text
+Option Private Module\nProperty Get Q() As Long\nEnd Property\n#Const k = 1
+Option Private Module\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function
+Option Private Module\nPublic y As Long\nDim x As Long
+Option Private Module\nPublic y As Long\nImplements Class1
+Private z As Long\nAttribute VB_Description = "d"\nDim x As Long
+Private z As Long\nAttribute VB_Description = "d"\nSub P()\nEnd Sub
+Private z As Long\nConst c = 1\nOption Explicit
+Private z As Long\nDefStr S\nAttribute VB_Description = "d"
+Private z As Long\nDim x As Long\nEvent Ev()
+Private z As Long\nEnum E\nA\nEnd Enum\nPublic y As Long
+Private z As Long\nEnum E\nA\nEnd Enum\nSub P()\nEnd Sub
+Private z As Long\nEvent Ev()\nDim x As Long
+Private z As Long\nImplements Class1\nOption Compare Binary
+Private z As Long\nOption Compare Binary\nOption Explicit
+Private z As Long\nOption Compare Text\nDim x As Long
+Private z As Long\nOption Compare Text\nOption Compare Binary
+Private z As Long\nOption Compare Text\nPublic y As Long
+Private z As Long\nOption Explicit\nEvent Ev()
+Private z As Long\nSub P()\nEnd Sub\nSub P()\nEnd Sub
+Private z As Long\nType T\na As Long\nEnd Type\nSub P()\nEnd Sub
+Property Get Q() As Long\nEnd Property\nAttribute VB_Description = "d"\nPrivate z As Long
+Property Get Q() As Long\nEnd Property\nConst c = 1\nDeclare Sub f Lib "k" ()
+Property Get Q() As Long\nEnd Property\nDefInt A-Z\nAttribute VB_Name = "m"
+Property Get Q() As Long\nEnd Property\nDefStr S\nDefStr S
+Property Get Q() As Long\nEnd Property\nDefStr S\nOption Compare Text
+Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum\n#Const k = 1
+Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum\nAttribute VB_Description = "d"
+Property Get Q() As Long\nEnd Property\nEvent Ev()\nPublic y As Long
+Property Get Q() As Long\nEnd Property\nOption Compare Text\nFunction F() As Long\nEnd Function
+Property Get Q() As Long\nEnd Property\nPrivate z As Long\nOption Compare Text
+Property Get Q() As Long\nEnd Property\nSub P()\nEnd Sub\nType T\na As Long\nEnd Type
+Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type\nAttribute VB_Name = "m"
+Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type\nType T\na As Long\nEnd Type
+Public y As Long\n#If k Then\n#End If\nAttribute VB_Description = "d"
+Public y As Long\nAttribute VB_Description = "d"\nType T\na As Long\nEnd Type
+Public y As Long\nAttribute VB_Name = "m"\nConst c = 1
+Public y As Long\nDeclare Sub f Lib "k" ()\nDefStr S
+Public y As Long\nDefInt A-Z\nDeclare Sub f Lib "k" ()
+Public y As Long\nDefStr S\nDefStr S
+Public y As Long\nDim x As Long\nDefStr S
+Public y As Long\nDim x As Long\nEvent Ev()
+Public y As Long\nEnum E\nA\nEnd Enum\nOption Private Module
+Public y As Long\nEvent Ev()\nOption Explicit
+Public y As Long\nFunction F() As Long\nEnd Function\nImplements Class1
+Public y As Long\nFunction F() As Long\nEnd Function\nOption Compare Binary
+Public y As Long\nImplements Class1\nAttribute VB_Name = "m"
+Public y As Long\nOption Compare Binary\nDeclare Sub f Lib "k" ()
+Public y As Long\nOption Compare Text\nOption Compare Text
+Public y As Long\nOption Private Module\nPrivate z As Long
+Public y As Long\nProperty Get Q() As Long\nEnd Property\nConst c = 1
+Public y As Long\nPublic y As Long\n#Const k = 1
+Public y As Long\nPublic y As Long\nDeclare Sub f Lib "k" ()
+Public y As Long\nPublic y As Long\nSub P()\nEnd Sub
+Public y As Long\nSub P()\nEnd Sub\nAttribute VB_Name = "m"
+Public y As Long\nSub P()\nEnd Sub\nDeclare Sub f Lib "k" ()
+Sub P()\nEnd Sub\n#Const k = 1\nDefInt A-Z
+Sub P()\nEnd Sub\n#Const k = 1\nEvent Ev()
+Sub P()\nEnd Sub\n#Const k = 1\nOption Explicit
+Sub P()\nEnd Sub\nAttribute VB_Description = "d"\nAttribute VB_Description = "d"
+Sub P()\nEnd Sub\nAttribute VB_Description = "d"\nDefInt A-Z
+Sub P()\nEnd Sub\nAttribute VB_Name = "m"\nOption Compare Binary
+Sub P()\nEnd Sub\nAttribute VB_Name = "m"\nPrivate z As Long
+Sub P()\nEnd Sub\nConst c = 1\nImplements Class1
+Sub P()\nEnd Sub\nDefInt A-Z\nDeclare Sub f Lib "k" ()
+Sub P()\nEnd Sub\nEnum E\nA\nEnd Enum\n#If k Then\n#End If
+Sub P()\nEnd Sub\nEvent Ev()\nImplements Class1
+Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\n#Const k = 1
+Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nDim x As Long
+Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nOption Base 1
+Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nType T\na As Long\nEnd Type
+Sub P()\nEnd Sub\nImplements Class1\nAttribute VB_Description = "d"
+Sub P()\nEnd Sub\nImplements Class1\nEvent Ev()
+Sub P()\nEnd Sub\nOption Compare Text\nAttribute VB_Description = "d"
+Sub P()\nEnd Sub\nOption Explicit\nEnum E\nA\nEnd Enum
+Sub P()\nEnd Sub\nPrivate z As Long\nDeclare Sub f Lib "k" ()
+Sub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum
+Type T\na As Long\nEnd Type\nAttribute VB_Name = "m"\nPrivate z As Long
+Type T\na As Long\nEnd Type\nDefInt A-Z\nDefInt A-Z
+Type T\na As Long\nEnd Type\nDim x As Long\n#Const k = 1
+Type T\na As Long\nEnd Type\nDim x As Long\nAttribute VB_Description = "d"
+Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"
+Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum\nDefStr S
+Type T\na As Long\nEnd Type\nImplements Class1\nConst c = 1
+Type T\na As Long\nEnd Type\nOption Base 1\nPrivate z As Long
+Type T\na As Long\nEnd Type\nOption Compare Text\nProperty Get Q() As Long\nEnd Property
+Type T\na As Long\nEnd Type\nOption Explicit\nEnum E\nA\nEnd Enum
+Type T\na As Long\nEnd Type\nOption Explicit\nType T\na As Long\nEnd Type
+Type T\na As Long\nEnd Type\nOption Private Module\n#If k Then\n#End If
+Type T\na As Long\nEnd Type\nOption Private Module\nFunction F() As Long\nEnd Function
+Type T\na As Long\nEnd Type\nPrivate z As Long\nOption Explicit
+Type T\na As Long\nEnd Type\nPublic y As Long\n#Const k = 1
+Type T\na As Long\nEnd Type\nSub P()\nEnd Sub\n#Const k = 1

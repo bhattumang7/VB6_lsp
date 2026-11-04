@@ -1,0 +1,2105 @@
+# template	word	class	message
+bas	Option Explicit	accepted	
+bas	Option Base 1	accepted	
+bas	Option Compare Text	accepted	
+bas	Option Compare Binary	accepted	
+bas	Option Private Module	accepted	
+bas	DefInt A-Z	accepted	
+bas	DefStr S	accepted	
+bas	Dim x As Long	accepted	
+bas	Public y As Long	accepted	
+bas	Const c = 1	accepted	
+bas	Declare Sub f Lib "k" ()	accepted	
+bas	Type T\na As Long\nEnd Type	accepted	
+bas	Enum E\nA\nEnd Enum	accepted	
+bas	Sub P()\nEnd Sub	accepted	
+bas	Function F() As Long\nEnd Function	accepted	
+bas	Event Ev()	syntax	Only valid in object module
+bas	Implements Class1	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"	accepted	
+bas	Attribute VB_Description = "d"	accepted	
+bas	#Const k = 1	accepted	
+bas	#If k Then\n#End If	accepted	
+bas	Property Get Q() As Long\nEnd Property	accepted	
+bas	Private z As Long	accepted	
+bas	Option Explicit\nOption Explicit	syntax	Duplicate Option statement
+bas	Option Explicit\nOption Base 1	accepted	
+bas	Option Explicit\nOption Compare Text	accepted	
+bas	Option Explicit\nOption Compare Binary	accepted	
+bas	Option Explicit\nOption Private Module	accepted	
+bas	Option Explicit\nDefInt A-Z	accepted	
+bas	Option Explicit\nDefStr S	accepted	
+bas	Option Explicit\nDim x As Long	accepted	
+bas	Option Explicit\nPublic y As Long	accepted	
+bas	Option Explicit\nConst c = 1	accepted	
+bas	Option Explicit\nDeclare Sub f Lib "k" ()	accepted	
+bas	Option Explicit\nType T\na As Long\nEnd Type	accepted	
+bas	Option Explicit\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Explicit\nSub P()\nEnd Sub	accepted	
+bas	Option Explicit\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Explicit\nEvent Ev()	syntax	Only valid in object module
+bas	Option Explicit\nImplements Class1	syntax	Only valid in object module
+bas	Option Explicit\nAttribute VB_Name = "m"	accepted	
+bas	Option Explicit\nAttribute VB_Description = "d"	accepted	
+bas	Option Explicit\n#Const k = 1	accepted	
+bas	Option Explicit\n#If k Then\n#End If	accepted	
+bas	Option Explicit\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Explicit\nPrivate z As Long	accepted	
+bas	Option Base 1\nOption Explicit	accepted	
+bas	Option Base 1\nOption Base 1	syntax	Duplicate Option statement
+bas	Option Base 1\nOption Compare Text	accepted	
+bas	Option Base 1\nOption Compare Binary	accepted	
+bas	Option Base 1\nOption Private Module	accepted	
+bas	Option Base 1\nDefInt A-Z	accepted	
+bas	Option Base 1\nDefStr S	accepted	
+bas	Option Base 1\nDim x As Long	accepted	
+bas	Option Base 1\nPublic y As Long	accepted	
+bas	Option Base 1\nConst c = 1	accepted	
+bas	Option Base 1\nDeclare Sub f Lib "k" ()	accepted	
+bas	Option Base 1\nType T\na As Long\nEnd Type	accepted	
+bas	Option Base 1\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Base 1\nSub P()\nEnd Sub	accepted	
+bas	Option Base 1\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Base 1\nEvent Ev()	syntax	Only valid in object module
+bas	Option Base 1\nImplements Class1	syntax	Only valid in object module
+bas	Option Base 1\nAttribute VB_Name = "m"	accepted	
+bas	Option Base 1\nAttribute VB_Description = "d"	accepted	
+bas	Option Base 1\n#Const k = 1	accepted	
+bas	Option Base 1\n#If k Then\n#End If	accepted	
+bas	Option Base 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Base 1\nPrivate z As Long	accepted	
+bas	Option Compare Text\nOption Explicit	accepted	
+bas	Option Compare Text\nOption Base 1	accepted	
+bas	Option Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+bas	Option Compare Text\nOption Compare Binary	syntax	Duplicate Option statement
+bas	Option Compare Text\nOption Private Module	accepted	
+bas	Option Compare Text\nDefInt A-Z	accepted	
+bas	Option Compare Text\nDefStr S	accepted	
+bas	Option Compare Text\nDim x As Long	accepted	
+bas	Option Compare Text\nPublic y As Long	accepted	
+bas	Option Compare Text\nConst c = 1	accepted	
+bas	Option Compare Text\nDeclare Sub f Lib "k" ()	accepted	
+bas	Option Compare Text\nType T\na As Long\nEnd Type	accepted	
+bas	Option Compare Text\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Compare Text\nSub P()\nEnd Sub	accepted	
+bas	Option Compare Text\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Compare Text\nEvent Ev()	syntax	Only valid in object module
+bas	Option Compare Text\nImplements Class1	syntax	Only valid in object module
+bas	Option Compare Text\nAttribute VB_Name = "m"	accepted	
+bas	Option Compare Text\nAttribute VB_Description = "d"	accepted	
+bas	Option Compare Text\n#Const k = 1	accepted	
+bas	Option Compare Text\n#If k Then\n#End If	accepted	
+bas	Option Compare Text\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Compare Text\nPrivate z As Long	accepted	
+bas	Option Compare Binary\nOption Explicit	accepted	
+bas	Option Compare Binary\nOption Base 1	accepted	
+bas	Option Compare Binary\nOption Compare Text	syntax	Duplicate Option statement
+bas	Option Compare Binary\nOption Compare Binary	syntax	Duplicate Option statement
+bas	Option Compare Binary\nOption Private Module	accepted	
+bas	Option Compare Binary\nDefInt A-Z	accepted	
+bas	Option Compare Binary\nDefStr S	accepted	
+bas	Option Compare Binary\nDim x As Long	accepted	
+bas	Option Compare Binary\nPublic y As Long	accepted	
+bas	Option Compare Binary\nConst c = 1	accepted	
+bas	Option Compare Binary\nDeclare Sub f Lib "k" ()	accepted	
+bas	Option Compare Binary\nType T\na As Long\nEnd Type	accepted	
+bas	Option Compare Binary\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Compare Binary\nSub P()\nEnd Sub	accepted	
+bas	Option Compare Binary\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Compare Binary\nEvent Ev()	syntax	Only valid in object module
+bas	Option Compare Binary\nImplements Class1	syntax	Only valid in object module
+bas	Option Compare Binary\nAttribute VB_Name = "m"	accepted	
+bas	Option Compare Binary\nAttribute VB_Description = "d"	accepted	
+bas	Option Compare Binary\n#Const k = 1	accepted	
+bas	Option Compare Binary\n#If k Then\n#End If	accepted	
+bas	Option Compare Binary\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Compare Binary\nPrivate z As Long	accepted	
+bas	Option Private Module\nOption Explicit	accepted	
+bas	Option Private Module\nOption Base 1	accepted	
+bas	Option Private Module\nOption Compare Text	accepted	
+bas	Option Private Module\nOption Compare Binary	accepted	
+bas	Option Private Module\nOption Private Module	syntax	Duplicate Option statement
+bas	Option Private Module\nDefInt A-Z	accepted	
+bas	Option Private Module\nDefStr S	accepted	
+bas	Option Private Module\nDim x As Long	accepted	
+bas	Option Private Module\nPublic y As Long	accepted	
+bas	Option Private Module\nConst c = 1	accepted	
+bas	Option Private Module\nDeclare Sub f Lib "k" ()	accepted	
+bas	Option Private Module\nType T\na As Long\nEnd Type	accepted	
+bas	Option Private Module\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Private Module\nSub P()\nEnd Sub	accepted	
+bas	Option Private Module\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Private Module\nEvent Ev()	syntax	Only valid in object module
+bas	Option Private Module\nImplements Class1	syntax	Only valid in object module
+bas	Option Private Module\nAttribute VB_Name = "m"	accepted	
+bas	Option Private Module\nAttribute VB_Description = "d"	accepted	
+bas	Option Private Module\n#Const k = 1	accepted	
+bas	Option Private Module\n#If k Then\n#End If	accepted	
+bas	Option Private Module\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Private Module\nPrivate z As Long	accepted	
+bas	DefInt A-Z\nOption Explicit	accepted	
+bas	DefInt A-Z\nOption Base 1	accepted	
+bas	DefInt A-Z\nOption Compare Text	accepted	
+bas	DefInt A-Z\nOption Compare Binary	accepted	
+bas	DefInt A-Z\nOption Private Module	accepted	
+bas	DefInt A-Z\nDefInt A-Z	syntax	Duplicate Deftype statement
+bas	DefInt A-Z\nDefStr S	syntax	Duplicate Deftype statement
+bas	DefInt A-Z\nDim x As Long	accepted	
+bas	DefInt A-Z\nPublic y As Long	accepted	
+bas	DefInt A-Z\nConst c = 1	accepted	
+bas	DefInt A-Z\nDeclare Sub f Lib "k" ()	accepted	
+bas	DefInt A-Z\nType T\na As Long\nEnd Type	accepted	
+bas	DefInt A-Z\nEnum E\nA\nEnd Enum	accepted	
+bas	DefInt A-Z\nSub P()\nEnd Sub	accepted	
+bas	DefInt A-Z\nFunction F() As Long\nEnd Function	accepted	
+bas	DefInt A-Z\nEvent Ev()	syntax	Only valid in object module
+bas	DefInt A-Z\nImplements Class1	syntax	Only valid in object module
+bas	DefInt A-Z\nAttribute VB_Name = "m"	accepted	
+bas	DefInt A-Z\nAttribute VB_Description = "d"	accepted	
+bas	DefInt A-Z\n#Const k = 1	accepted	
+bas	DefInt A-Z\n#If k Then\n#End If	accepted	
+bas	DefInt A-Z\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	DefInt A-Z\nPrivate z As Long	accepted	
+bas	DefStr S\nOption Explicit	accepted	
+bas	DefStr S\nOption Base 1	accepted	
+bas	DefStr S\nOption Compare Text	accepted	
+bas	DefStr S\nOption Compare Binary	accepted	
+bas	DefStr S\nOption Private Module	accepted	
+bas	DefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+bas	DefStr S\nDefStr S	syntax	Duplicate Deftype statement
+bas	DefStr S\nDim x As Long	accepted	
+bas	DefStr S\nPublic y As Long	accepted	
+bas	DefStr S\nConst c = 1	accepted	
+bas	DefStr S\nDeclare Sub f Lib "k" ()	accepted	
+bas	DefStr S\nType T\na As Long\nEnd Type	accepted	
+bas	DefStr S\nEnum E\nA\nEnd Enum	accepted	
+bas	DefStr S\nSub P()\nEnd Sub	accepted	
+bas	DefStr S\nFunction F() As Long\nEnd Function	accepted	
+bas	DefStr S\nEvent Ev()	syntax	Only valid in object module
+bas	DefStr S\nImplements Class1	syntax	Only valid in object module
+bas	DefStr S\nAttribute VB_Name = "m"	accepted	
+bas	DefStr S\nAttribute VB_Description = "d"	accepted	
+bas	DefStr S\n#Const k = 1	accepted	
+bas	DefStr S\n#If k Then\n#End If	accepted	
+bas	DefStr S\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	DefStr S\nPrivate z As Long	accepted	
+bas	Dim x As Long\nOption Explicit	accepted	
+bas	Dim x As Long\nOption Base 1	accepted	
+bas	Dim x As Long\nOption Compare Text	accepted	
+bas	Dim x As Long\nOption Compare Binary	accepted	
+bas	Dim x As Long\nOption Private Module	accepted	
+bas	Dim x As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Dim x As Long\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Dim x As Long\nDim x As Long	semantic	Ambiguous name detected: x
+bas	Dim x As Long\nPublic y As Long	accepted	
+bas	Dim x As Long\nConst c = 1	accepted	
+bas	Dim x As Long\nDeclare Sub f Lib "k" ()	accepted	
+bas	Dim x As Long\nType T\na As Long\nEnd Type	accepted	
+bas	Dim x As Long\nEnum E\nA\nEnd Enum	accepted	
+bas	Dim x As Long\nSub P()\nEnd Sub	accepted	
+bas	Dim x As Long\nFunction F() As Long\nEnd Function	accepted	
+bas	Dim x As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Dim x As Long\nImplements Class1	syntax	Only valid in object module
+bas	Dim x As Long\nAttribute VB_Name = "m"	accepted	
+bas	Dim x As Long\nAttribute VB_Description = "d"	accepted	
+bas	Dim x As Long\n#Const k = 1	accepted	
+bas	Dim x As Long\n#If k Then\n#End If	accepted	
+bas	Dim x As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Dim x As Long\nPrivate z As Long	accepted	
+bas	Public y As Long\nOption Explicit	accepted	
+bas	Public y As Long\nOption Base 1	accepted	
+bas	Public y As Long\nOption Compare Text	accepted	
+bas	Public y As Long\nOption Compare Binary	accepted	
+bas	Public y As Long\nOption Private Module	accepted	
+bas	Public y As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Public y As Long\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Public y As Long\nDim x As Long	accepted	
+bas	Public y As Long\nPublic y As Long	semantic	Ambiguous name detected: y
+bas	Public y As Long\nConst c = 1	accepted	
+bas	Public y As Long\nDeclare Sub f Lib "k" ()	accepted	
+bas	Public y As Long\nType T\na As Long\nEnd Type	accepted	
+bas	Public y As Long\nEnum E\nA\nEnd Enum	accepted	
+bas	Public y As Long\nSub P()\nEnd Sub	accepted	
+bas	Public y As Long\nFunction F() As Long\nEnd Function	accepted	
+bas	Public y As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Public y As Long\nImplements Class1	syntax	Only valid in object module
+bas	Public y As Long\nAttribute VB_Name = "m"	accepted	
+bas	Public y As Long\nAttribute VB_Description = "d"	accepted	
+bas	Public y As Long\n#Const k = 1	accepted	
+bas	Public y As Long\n#If k Then\n#End If	accepted	
+bas	Public y As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Public y As Long\nPrivate z As Long	accepted	
+bas	Const c = 1\nOption Explicit	accepted	
+bas	Const c = 1\nOption Base 1	accepted	
+bas	Const c = 1\nOption Compare Text	accepted	
+bas	Const c = 1\nOption Compare Binary	accepted	
+bas	Const c = 1\nOption Private Module	accepted	
+bas	Const c = 1\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Const c = 1\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Const c = 1\nDim x As Long	accepted	
+bas	Const c = 1\nPublic y As Long	accepted	
+bas	Const c = 1\nConst c = 1	semantic	Ambiguous name detected: c
+bas	Const c = 1\nDeclare Sub f Lib "k" ()	accepted	
+bas	Const c = 1\nType T\na As Long\nEnd Type	accepted	
+bas	Const c = 1\nEnum E\nA\nEnd Enum	accepted	
+bas	Const c = 1\nSub P()\nEnd Sub	accepted	
+bas	Const c = 1\nFunction F() As Long\nEnd Function	accepted	
+bas	Const c = 1\nEvent Ev()	syntax	Only valid in object module
+bas	Const c = 1\nImplements Class1	syntax	Only valid in object module
+bas	Const c = 1\nAttribute VB_Name = "m"	accepted	
+bas	Const c = 1\nAttribute VB_Description = "d"	accepted	
+bas	Const c = 1\n#Const k = 1	accepted	
+bas	Const c = 1\n#If k Then\n#End If	accepted	
+bas	Const c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Const c = 1\nPrivate z As Long	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Explicit	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Base 1	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Compare Text	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Compare Binary	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Private Module	accepted	
+bas	Declare Sub f Lib "k" ()\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Declare Sub f Lib "k" ()\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Declare Sub f Lib "k" ()\nDim x As Long	accepted	
+bas	Declare Sub f Lib "k" ()\nPublic y As Long	accepted	
+bas	Declare Sub f Lib "k" ()\nConst c = 1	accepted	
+bas	Declare Sub f Lib "k" ()\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: f
+bas	Declare Sub f Lib "k" ()\nType T\na As Long\nEnd Type	accepted	
+bas	Declare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum	accepted	
+bas	Declare Sub f Lib "k" ()\nSub P()\nEnd Sub	accepted	
+bas	Declare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+bas	Declare Sub f Lib "k" ()\nEvent Ev()	syntax	Only valid in object module
+bas	Declare Sub f Lib "k" ()\nImplements Class1	syntax	Only valid in object module
+bas	Declare Sub f Lib "k" ()\nAttribute VB_Name = "m"	accepted	
+bas	Declare Sub f Lib "k" ()\nAttribute VB_Description = "d"	accepted	
+bas	Declare Sub f Lib "k" ()\n#Const k = 1	accepted	
+bas	Declare Sub f Lib "k" ()\n#If k Then\n#End If	accepted	
+bas	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Declare Sub f Lib "k" ()\nPrivate z As Long	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Explicit	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Base 1	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Compare Text	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Compare Binary	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Private Module	accepted	
+bas	Type T\na As Long\nEnd Type\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Type T\na As Long\nEnd Type\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Type T\na As Long\nEnd Type\nDim x As Long	accepted	
+bas	Type T\na As Long\nEnd Type\nPublic y As Long	accepted	
+bas	Type T\na As Long\nEnd Type\nConst c = 1	accepted	
+bas	Type T\na As Long\nEnd Type\nDeclare Sub f Lib "k" ()	accepted	
+bas	Type T\na As Long\nEnd Type\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: T
+bas	Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum	accepted	
+bas	Type T\na As Long\nEnd Type\nSub P()\nEnd Sub	accepted	
+bas	Type T\na As Long\nEnd Type\nFunction F() As Long\nEnd Function	accepted	
+bas	Type T\na As Long\nEnd Type\nEvent Ev()	syntax	Only valid in object module
+bas	Type T\na As Long\nEnd Type\nImplements Class1	syntax	Only valid in object module
+bas	Type T\na As Long\nEnd Type\nAttribute VB_Name = "m"	accepted	
+bas	Type T\na As Long\nEnd Type\nAttribute VB_Description = "d"	accepted	
+bas	Type T\na As Long\nEnd Type\n#Const k = 1	accepted	
+bas	Type T\na As Long\nEnd Type\n#If k Then\n#End If	accepted	
+bas	Type T\na As Long\nEnd Type\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Type T\na As Long\nEnd Type\nPrivate z As Long	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Explicit	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Base 1	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Compare Text	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Compare Binary	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Private Module	accepted	
+bas	Enum E\nA\nEnd Enum\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nDim x As Long	accepted	
+bas	Enum E\nA\nEnd Enum\nPublic y As Long	accepted	
+bas	Enum E\nA\nEnd Enum\nConst c = 1	accepted	
+bas	Enum E\nA\nEnd Enum\nDeclare Sub f Lib "k" ()	accepted	
+bas	Enum E\nA\nEnd Enum\nType T\na As Long\nEnd Type	accepted	
+bas	Enum E\nA\nEnd Enum\nEnum E\nA\nEnd Enum	semantic	Ambiguous name detected: E
+bas	Enum E\nA\nEnd Enum\nSub P()\nEnd Sub	accepted	
+bas	Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function	accepted	
+bas	Enum E\nA\nEnd Enum\nEvent Ev()	syntax	Only valid in object module
+bas	Enum E\nA\nEnd Enum\nImplements Class1	syntax	Only valid in object module
+bas	Enum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+bas	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"	accepted	
+bas	Enum E\nA\nEnd Enum\n#Const k = 1	accepted	
+bas	Enum E\nA\nEnd Enum\n#If k Then\n#End If	accepted	
+bas	Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Enum E\nA\nEnd Enum\nPrivate z As Long	accepted	
+bas	Sub P()\nEnd Sub\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nOption Private Module	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+bas	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function	accepted	
+bas	Sub P()\nEnd Sub\nEvent Ev()	syntax	Syntax error
+bas	Sub P()\nEnd Sub\nImplements Class1	syntax	Syntax error
+bas	Sub P()\nEnd Sub\nAttribute VB_Name = "m"	accepted	
+bas	Sub P()\nEnd Sub\nAttribute VB_Description = "d"	accepted	
+bas	Sub P()\nEnd Sub\n#Const k = 1	accepted	
+bas	Sub P()\nEnd Sub\n#If k Then\n#End If	accepted	
+bas	Sub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Sub P()\nEnd Sub\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Private Module	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nSub P()\nEnd Sub	accepted	
+bas	Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+bas	Function F() As Long\nEnd Function\nEvent Ev()	syntax	Syntax error
+bas	Function F() As Long\nEnd Function\nImplements Class1	syntax	Syntax error
+bas	Function F() As Long\nEnd Function\nAttribute VB_Name = "m"	accepted	
+bas	Function F() As Long\nEnd Function\nAttribute VB_Description = "d"	accepted	
+bas	Function F() As Long\nEnd Function\n#Const k = 1	accepted	
+bas	Function F() As Long\nEnd Function\n#If k Then\n#End If	accepted	
+bas	Function F() As Long\nEnd Function\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Function F() As Long\nEnd Function\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Event Ev()\nOption Explicit	syntax	Only valid in object module
+bas	Event Ev()\nOption Base 1	syntax	Only valid in object module
+bas	Event Ev()\nOption Compare Text	syntax	Only valid in object module
+bas	Event Ev()\nOption Compare Binary	syntax	Only valid in object module
+bas	Event Ev()\nOption Private Module	syntax	Only valid in object module
+bas	Event Ev()\nDefInt A-Z	syntax	Only valid in object module
+bas	Event Ev()\nDefStr S	syntax	Only valid in object module
+bas	Event Ev()\nDim x As Long	syntax	Only valid in object module
+bas	Event Ev()\nPublic y As Long	syntax	Only valid in object module
+bas	Event Ev()\nConst c = 1	syntax	Only valid in object module
+bas	Event Ev()\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Event Ev()\nType T\na As Long\nEnd Type	syntax	Only valid in object module
+bas	Event Ev()\nEnum E\nA\nEnd Enum	syntax	Only valid in object module
+bas	Event Ev()\nSub P()\nEnd Sub	syntax	Only valid in object module
+bas	Event Ev()\nFunction F() As Long\nEnd Function	syntax	Only valid in object module
+bas	Event Ev()\nEvent Ev()	syntax	Only valid in object module
+bas	Event Ev()\nImplements Class1	syntax	Only valid in object module
+bas	Event Ev()\nAttribute VB_Name = "m"	syntax	Only valid in object module
+bas	Event Ev()\nAttribute VB_Description = "d"	syntax	Only valid in object module
+bas	Event Ev()\n#Const k = 1	syntax	Only valid in object module
+bas	Event Ev()\n#If k Then\n#End If	syntax	Only valid in object module
+bas	Event Ev()\nProperty Get Q() As Long\nEnd Property	syntax	Only valid in object module
+bas	Event Ev()\nPrivate z As Long	syntax	Only valid in object module
+bas	Implements Class1\nOption Explicit	syntax	Only valid in object module
+bas	Implements Class1\nOption Base 1	syntax	Only valid in object module
+bas	Implements Class1\nOption Compare Text	syntax	Only valid in object module
+bas	Implements Class1\nOption Compare Binary	syntax	Only valid in object module
+bas	Implements Class1\nOption Private Module	syntax	Only valid in object module
+bas	Implements Class1\nDefInt A-Z	syntax	Only valid in object module
+bas	Implements Class1\nDefStr S	syntax	Only valid in object module
+bas	Implements Class1\nDim x As Long	syntax	Only valid in object module
+bas	Implements Class1\nPublic y As Long	syntax	Only valid in object module
+bas	Implements Class1\nConst c = 1	syntax	Only valid in object module
+bas	Implements Class1\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Implements Class1\nType T\na As Long\nEnd Type	syntax	Only valid in object module
+bas	Implements Class1\nEnum E\nA\nEnd Enum	syntax	Only valid in object module
+bas	Implements Class1\nSub P()\nEnd Sub	syntax	Only valid in object module
+bas	Implements Class1\nFunction F() As Long\nEnd Function	syntax	Only valid in object module
+bas	Implements Class1\nEvent Ev()	syntax	Only valid in object module
+bas	Implements Class1\nImplements Class1	syntax	Only valid in object module
+bas	Implements Class1\nAttribute VB_Name = "m"	syntax	Only valid in object module
+bas	Implements Class1\nAttribute VB_Description = "d"	syntax	Only valid in object module
+bas	Implements Class1\n#Const k = 1	syntax	Only valid in object module
+bas	Implements Class1\n#If k Then\n#End If	syntax	Only valid in object module
+bas	Implements Class1\nProperty Get Q() As Long\nEnd Property	syntax	Only valid in object module
+bas	Implements Class1\nPrivate z As Long	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nOption Explicit	accepted	
+bas	Attribute VB_Name = "m"\nOption Base 1	accepted	
+bas	Attribute VB_Name = "m"\nOption Compare Text	accepted	
+bas	Attribute VB_Name = "m"\nOption Compare Binary	accepted	
+bas	Attribute VB_Name = "m"\nOption Private Module	accepted	
+bas	Attribute VB_Name = "m"\nDefInt A-Z	accepted	
+bas	Attribute VB_Name = "m"\nDefStr S	accepted	
+bas	Attribute VB_Name = "m"\nDim x As Long	accepted	
+bas	Attribute VB_Name = "m"\nPublic y As Long	accepted	
+bas	Attribute VB_Name = "m"\nConst c = 1	accepted	
+bas	Attribute VB_Name = "m"\nDeclare Sub f Lib "k" ()	accepted	
+bas	Attribute VB_Name = "m"\nType T\na As Long\nEnd Type	accepted	
+bas	Attribute VB_Name = "m"\nEnum E\nA\nEnd Enum	accepted	
+bas	Attribute VB_Name = "m"\nSub P()\nEnd Sub	accepted	
+bas	Attribute VB_Name = "m"\nFunction F() As Long\nEnd Function	accepted	
+bas	Attribute VB_Name = "m"\nEvent Ev()	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nAttribute VB_Name = "m"	accepted	
+bas	Attribute VB_Name = "m"\nAttribute VB_Description = "d"	accepted	
+bas	Attribute VB_Name = "m"\n#Const k = 1	accepted	
+bas	Attribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+bas	Attribute VB_Name = "m"\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Attribute VB_Name = "m"\nPrivate z As Long	accepted	
+bas	Attribute VB_Description = "d"\nOption Explicit	accepted	
+bas	Attribute VB_Description = "d"\nOption Base 1	accepted	
+bas	Attribute VB_Description = "d"\nOption Compare Text	accepted	
+bas	Attribute VB_Description = "d"\nOption Compare Binary	accepted	
+bas	Attribute VB_Description = "d"\nOption Private Module	accepted	
+bas	Attribute VB_Description = "d"\nDefInt A-Z	accepted	
+bas	Attribute VB_Description = "d"\nDefStr S	accepted	
+bas	Attribute VB_Description = "d"\nDim x As Long	accepted	
+bas	Attribute VB_Description = "d"\nPublic y As Long	accepted	
+bas	Attribute VB_Description = "d"\nConst c = 1	accepted	
+bas	Attribute VB_Description = "d"\nDeclare Sub f Lib "k" ()	accepted	
+bas	Attribute VB_Description = "d"\nType T\na As Long\nEnd Type	accepted	
+bas	Attribute VB_Description = "d"\nEnum E\nA\nEnd Enum	accepted	
+bas	Attribute VB_Description = "d"\nSub P()\nEnd Sub	accepted	
+bas	Attribute VB_Description = "d"\nFunction F() As Long\nEnd Function	accepted	
+bas	Attribute VB_Description = "d"\nEvent Ev()	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nAttribute VB_Name = "m"	accepted	
+bas	Attribute VB_Description = "d"\nAttribute VB_Description = "d"	accepted	
+bas	Attribute VB_Description = "d"\n#Const k = 1	accepted	
+bas	Attribute VB_Description = "d"\n#If k Then\n#End If	accepted	
+bas	Attribute VB_Description = "d"\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Attribute VB_Description = "d"\nPrivate z As Long	accepted	
+bas	#Const k = 1\nOption Explicit	accepted	
+bas	#Const k = 1\nOption Base 1	accepted	
+bas	#Const k = 1\nOption Compare Text	accepted	
+bas	#Const k = 1\nOption Compare Binary	accepted	
+bas	#Const k = 1\nOption Private Module	accepted	
+bas	#Const k = 1\nDefInt A-Z	accepted	
+bas	#Const k = 1\nDefStr S	accepted	
+bas	#Const k = 1\nDim x As Long	accepted	
+bas	#Const k = 1\nPublic y As Long	accepted	
+bas	#Const k = 1\nConst c = 1	accepted	
+bas	#Const k = 1\nDeclare Sub f Lib "k" ()	accepted	
+bas	#Const k = 1\nType T\na As Long\nEnd Type	accepted	
+bas	#Const k = 1\nEnum E\nA\nEnd Enum	accepted	
+bas	#Const k = 1\nSub P()\nEnd Sub	accepted	
+bas	#Const k = 1\nFunction F() As Long\nEnd Function	accepted	
+bas	#Const k = 1\nEvent Ev()	syntax	Only valid in object module
+bas	#Const k = 1\nImplements Class1	syntax	Only valid in object module
+bas	#Const k = 1\nAttribute VB_Name = "m"	accepted	
+bas	#Const k = 1\nAttribute VB_Description = "d"	accepted	
+bas	#Const k = 1\n#Const k = 1	semantic	Duplicate definition
+bas	#Const k = 1\n#If k Then\n#End If	accepted	
+bas	#Const k = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	#Const k = 1\nPrivate z As Long	accepted	
+bas	#If k Then\n#End If\nOption Explicit	accepted	
+bas	#If k Then\n#End If\nOption Base 1	accepted	
+bas	#If k Then\n#End If\nOption Compare Text	accepted	
+bas	#If k Then\n#End If\nOption Compare Binary	accepted	
+bas	#If k Then\n#End If\nOption Private Module	accepted	
+bas	#If k Then\n#End If\nDefInt A-Z	accepted	
+bas	#If k Then\n#End If\nDefStr S	accepted	
+bas	#If k Then\n#End If\nDim x As Long	accepted	
+bas	#If k Then\n#End If\nPublic y As Long	accepted	
+bas	#If k Then\n#End If\nConst c = 1	accepted	
+bas	#If k Then\n#End If\nDeclare Sub f Lib "k" ()	accepted	
+bas	#If k Then\n#End If\nType T\na As Long\nEnd Type	accepted	
+bas	#If k Then\n#End If\nEnum E\nA\nEnd Enum	accepted	
+bas	#If k Then\n#End If\nSub P()\nEnd Sub	accepted	
+bas	#If k Then\n#End If\nFunction F() As Long\nEnd Function	accepted	
+bas	#If k Then\n#End If\nEvent Ev()	syntax	Only valid in object module
+bas	#If k Then\n#End If\nImplements Class1	syntax	Only valid in object module
+bas	#If k Then\n#End If\nAttribute VB_Name = "m"	accepted	
+bas	#If k Then\n#End If\nAttribute VB_Description = "d"	accepted	
+bas	#If k Then\n#End If\n#Const k = 1	accepted	
+bas	#If k Then\n#End If\n#If k Then\n#End If	accepted	
+bas	#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	#If k Then\n#End If\nPrivate z As Long	accepted	
+bas	Property Get Q() As Long\nEnd Property\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nOption Private Module	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nSub P()\nEnd Sub	accepted	
+bas	Property Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	accepted	
+bas	Property Get Q() As Long\nEnd Property\nEvent Ev()	syntax	Syntax error
+bas	Property Get Q() As Long\nEnd Property\nImplements Class1	syntax	Syntax error
+bas	Property Get Q() As Long\nEnd Property\nAttribute VB_Name = "m"	accepted	
+bas	Property Get Q() As Long\nEnd Property\nAttribute VB_Description = "d"	accepted	
+bas	Property Get Q() As Long\nEnd Property\n#Const k = 1	accepted	
+bas	Property Get Q() As Long\nEnd Property\n#If k Then\n#End If	accepted	
+bas	Property Get Q() As Long\nEnd Property\nProperty Get Q() As Long\nEnd Property	semantic	Ambiguous name detected: Q
+bas	Property Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Private z As Long\nOption Explicit	accepted	
+bas	Private z As Long\nOption Base 1	accepted	
+bas	Private z As Long\nOption Compare Text	accepted	
+bas	Private z As Long\nOption Compare Binary	accepted	
+bas	Private z As Long\nOption Private Module	accepted	
+bas	Private z As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Private z As Long\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Private z As Long\nDim x As Long	accepted	
+bas	Private z As Long\nPublic y As Long	accepted	
+bas	Private z As Long\nConst c = 1	accepted	
+bas	Private z As Long\nDeclare Sub f Lib "k" ()	accepted	
+bas	Private z As Long\nType T\na As Long\nEnd Type	accepted	
+bas	Private z As Long\nEnum E\nA\nEnd Enum	accepted	
+bas	Private z As Long\nSub P()\nEnd Sub	accepted	
+bas	Private z As Long\nFunction F() As Long\nEnd Function	accepted	
+bas	Private z As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Private z As Long\nImplements Class1	syntax	Only valid in object module
+bas	Private z As Long\nAttribute VB_Name = "m"	accepted	
+bas	Private z As Long\nAttribute VB_Description = "d"	accepted	
+bas	Private z As Long\n#Const k = 1	accepted	
+bas	Private z As Long\n#If k Then\n#End If	accepted	
+bas	Private z As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Private z As Long\nPrivate z As Long	semantic	Ambiguous name detected: z
+bas	#Const k = 1\n#Const k = 1\nOption Compare Text	semantic	Duplicate definition
+bas	#Const k = 1\n#If k Then\n#End If\nOption Compare Text	accepted	
+bas	#Const k = 1\nAttribute VB_Description = "d"\n#If k Then\n#End If	accepted	
+bas	#Const k = 1\nAttribute VB_Name = "m"\nOption Compare Text	accepted	
+bas	#Const k = 1\nDeclare Sub f Lib "k" ()\nConst c = 1	accepted	
+bas	#Const k = 1\nDefInt A-Z\nAttribute VB_Name = "m"	accepted	
+bas	#Const k = 1\nDefInt A-Z\nOption Compare Binary	accepted	
+bas	#Const k = 1\nFunction F() As Long\nEnd Function\nOption Private Module	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	#Const k = 1\nImplements Class1\nDim x As Long	syntax	Only valid in object module
+bas	#Const k = 1\nImplements Class1\nImplements Class1	syntax	Only valid in object module
+bas	#Const k = 1\nImplements Class1\nOption Explicit	syntax	Only valid in object module
+bas	#Const k = 1\nOption Base 1\nDim x As Long	accepted	
+bas	#Const k = 1\nOption Compare Binary\nEvent Ev()	syntax	Only valid in object module
+bas	#Const k = 1\nOption Compare Text\nEvent Ev()	syntax	Only valid in object module
+bas	#Const k = 1\nOption Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+bas	#Const k = 1\nOption Compare Text\nPrivate z As Long	accepted	
+bas	#Const k = 1\nOption Private Module\nConst c = 1	accepted	
+bas	#Const k = 1\nOption Private Module\nOption Compare Binary	accepted	
+bas	#Const k = 1\nPrivate z As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	#Const k = 1\nPrivate z As Long\nEvent Ev()	syntax	Only valid in object module
+bas	#Const k = 1\nPrivate z As Long\nOption Compare Binary	accepted	
+bas	#Const k = 1\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	#Const k = 1\nProperty Get Q() As Long\nEnd Property\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	#Const k = 1\nPublic y As Long\nPrivate z As Long	accepted	
+bas	#Const k = 1\nType T\na As Long\nEnd Type\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: T
+bas	#If k Then\n#End If\nAttribute VB_Description = "d"\nOption Compare Binary	accepted	
+bas	#If k Then\n#End If\nAttribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+bas	#If k Then\n#End If\nAttribute VB_Name = "m"\nAttribute VB_Name = "m"	accepted	
+bas	#If k Then\n#End If\nDeclare Sub f Lib "k" ()\nImplements Class1	syntax	Only valid in object module
+bas	#If k Then\n#End If\nDefInt A-Z\n#Const k = 1	accepted	
+bas	#If k Then\n#End If\nDefStr S\nImplements Class1	syntax	Only valid in object module
+bas	#If k Then\n#End If\nDefStr S\nOption Compare Binary	accepted	
+bas	#If k Then\n#End If\nDim x As Long\nOption Explicit	accepted	
+bas	#If k Then\n#End If\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+bas	#If k Then\n#End If\nEnum E\nA\nEnd Enum\nOption Compare Binary	accepted	
+bas	#If k Then\n#End If\nEnum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	#If k Then\n#End If\nOption Base 1\nOption Explicit	accepted	
+bas	#If k Then\n#End If\nOption Base 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	#If k Then\n#End If\nOption Compare Text\nAttribute VB_Name = "m"	accepted	
+bas	#If k Then\n#End If\nOption Explicit\nImplements Class1	syntax	Only valid in object module
+bas	#If k Then\n#End If\nOption Private Module\nConst c = 1	accepted	
+bas	#If k Then\n#End If\nOption Private Module\nOption Compare Binary	accepted	
+bas	#If k Then\n#End If\nPrivate z As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	#If k Then\n#End If\nPrivate z As Long\nOption Compare Binary	accepted	
+bas	#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	#If k Then\n#End If\nSub P()\nEnd Sub\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	#If k Then\n#End If\nSub P()\nEnd Sub\nImplements Class1	syntax	Syntax error
+bas	#If k Then\n#End If\nType T\na As Long\nEnd Type\nAttribute VB_Description = "d"	accepted	
+bas	#If k Then\n#End If\nType T\na As Long\nEnd Type\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	#If k Then\n#End If\nType T\na As Long\nEnd Type\nOption Compare Text	accepted	
+bas	Attribute VB_Description = "d"\n#Const k = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Attribute VB_Description = "d"\n#If k Then\n#End If\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nAttribute VB_Name = "m"\nAttribute VB_Name = "m"	accepted	
+bas	Attribute VB_Description = "d"\nDeclare Sub f Lib "k" ()\nOption Base 1	accepted	
+bas	Attribute VB_Description = "d"\nDefStr S\n#If k Then\n#End If	accepted	
+bas	Attribute VB_Description = "d"\nDefStr S\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nEvent Ev()\nAttribute VB_Description = "d"	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nEvent Ev()\nDefStr S	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nOption Base 1\nOption Explicit	accepted	
+bas	Attribute VB_Description = "d"\nOption Compare Binary\nEnum E\nA\nEnd Enum	accepted	
+bas	Attribute VB_Description = "d"\nOption Compare Binary\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Description = "d"\nOption Compare Binary\nOption Compare Text	syntax	Duplicate Option statement
+bas	Attribute VB_Description = "d"\nOption Private Module\nDim x As Long	accepted	
+bas	Attribute VB_Description = "d"\nOption Private Module\nOption Compare Text	accepted	
+bas	Attribute VB_Name = "m"\n#Const k = 1\n#Const k = 1	semantic	Duplicate definition
+bas	Attribute VB_Name = "m"\nAttribute VB_Description = "d"\nOption Compare Binary	accepted	
+bas	Attribute VB_Name = "m"\nAttribute VB_Name = "m"\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nConst c = 1\nAttribute VB_Name = "m"	accepted	
+bas	Attribute VB_Name = "m"\nConst c = 1\nFunction F() As Long\nEnd Function	accepted	
+bas	Attribute VB_Name = "m"\nConst c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Attribute VB_Name = "m"\nDefInt A-Z\nAttribute VB_Description = "d"	accepted	
+bas	Attribute VB_Name = "m"\nDefInt A-Z\nSub P()\nEnd Sub	accepted	
+bas	Attribute VB_Name = "m"\nDefStr S\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Attribute VB_Name = "m"\nDim x As Long\nType T\na As Long\nEnd Type	accepted	
+bas	Attribute VB_Name = "m"\nImplements Class1\nPublic y As Long	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nOption Compare Text\nAttribute VB_Name = "m"	accepted	
+bas	Attribute VB_Name = "m"\nOption Compare Text\nEnum E\nA\nEnd Enum	accepted	
+bas	Attribute VB_Name = "m"\nOption Compare Text\nEvent Ev()	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nOption Compare Text\nImplements Class1	syntax	Only valid in object module
+bas	Attribute VB_Name = "m"\nPrivate z As Long\n#If k Then\n#End If	accepted	
+bas	Attribute VB_Name = "m"\nPrivate z As Long\nOption Base 1	accepted	
+bas	Attribute VB_Name = "m"\nProperty Get Q() As Long\nEnd Property\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Attribute VB_Name = "m"\nPublic y As Long\nConst c = 1	accepted	
+bas	Const c = 1\n#Const k = 1\nSub P()\nEnd Sub	accepted	
+bas	Const c = 1\n#If k Then\n#End If\nAttribute VB_Description = "d"	accepted	
+bas	Const c = 1\n#If k Then\n#End If\nOption Private Module	accepted	
+bas	Const c = 1\nAttribute VB_Description = "d"\nOption Compare Binary	accepted	
+bas	Const c = 1\nAttribute VB_Description = "d"\nOption Compare Text	accepted	
+bas	Const c = 1\nAttribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+bas	Const c = 1\nDeclare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum	accepted	
+bas	Const c = 1\nDefStr S\nProperty Get Q() As Long\nEnd Property	syntax	Deftype statements must precede declarations
+bas	Const c = 1\nEnum E\nA\nEnd Enum\nOption Compare Text	accepted	
+bas	Const c = 1\nEvent Ev()\nFunction F() As Long\nEnd Function	syntax	Only valid in object module
+bas	Const c = 1\nEvent Ev()\nOption Compare Binary	syntax	Only valid in object module
+bas	Const c = 1\nEvent Ev()\nPrivate z As Long	syntax	Only valid in object module
+bas	Const c = 1\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Const c = 1\nImplements Class1\nDefInt A-Z	syntax	Only valid in object module
+bas	Const c = 1\nOption Base 1\nOption Explicit	accepted	
+bas	Const c = 1\nOption Explicit\n#If k Then\n#End If	accepted	
+bas	Const c = 1\nOption Explicit\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Const c = 1\nOption Explicit\nOption Compare Text	accepted	
+bas	Const c = 1\nOption Private Module\nOption Compare Text	accepted	
+bas	Const c = 1\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Const c = 1\nPublic y As Long\nAttribute VB_Description = "d"	accepted	
+bas	Const c = 1\nPublic y As Long\nOption Base 1	accepted	
+bas	Const c = 1\nType T\na As Long\nEnd Type\nImplements Class1	syntax	Only valid in object module
+bas	Declare Sub f Lib "k" ()\n#Const k = 1\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: f
+bas	Declare Sub f Lib "k" ()\nAttribute VB_Name = "m"\nSub P()\nEnd Sub	accepted	
+bas	Declare Sub f Lib "k" ()\nConst c = 1\n#If k Then\n#End If	accepted	
+bas	Declare Sub f Lib "k" ()\nConst c = 1\nOption Compare Binary	accepted	
+bas	Declare Sub f Lib "k" ()\nConst c = 1\nOption Private Module	accepted	
+bas	Declare Sub f Lib "k" ()\nDefInt A-Z\nOption Compare Text	syntax	Deftype statements must precede declarations
+bas	Declare Sub f Lib "k" ()\nDefStr S\nProperty Get Q() As Long\nEnd Property	syntax	Deftype statements must precede declarations
+bas	Declare Sub f Lib "k" ()\nDim x As Long\nImplements Class1	syntax	Only valid in object module
+bas	Declare Sub f Lib "k" ()\nDim x As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Declare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Declare Sub f Lib "k" ()\nOption Compare Binary\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Declare Sub f Lib "k" ()\nOption Compare Text\nConst c = 1	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Compare Text\nType T\na As Long\nEnd Type	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Explicit\nSub P()\nEnd Sub	accepted	
+bas	Declare Sub f Lib "k" ()\nOption Private Module\nOption Compare Text	accepted	
+bas	Declare Sub f Lib "k" ()\nPrivate z As Long\n#Const k = 1	accepted	
+bas	Declare Sub f Lib "k" ()\nPrivate z As Long\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+bas	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+bas	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nOption Private Module	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Declare Sub f Lib "k" ()\nPublic y As Long\nPrivate z As Long	accepted	
+bas	Declare Sub f Lib "k" ()\nPublic y As Long\nPublic y As Long	semantic	Ambiguous name detected: y
+bas	Declare Sub f Lib "k" ()\nType T\na As Long\nEnd Type\nOption Compare Binary	accepted	
+bas	DefInt A-Z\nConst c = 1\nDeclare Sub f Lib "k" ()	accepted	
+bas	DefInt A-Z\nConst c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	DefInt A-Z\nDeclare Sub f Lib "k" ()\nDefStr S	syntax	Deftype statements must precede declarations
+bas	DefInt A-Z\nDeclare Sub f Lib "k" ()\nImplements Class1	syntax	Only valid in object module
+bas	DefInt A-Z\nDefInt A-Z\nOption Compare Text	syntax	Duplicate Deftype statement
+bas	DefInt A-Z\nDefStr S\nEnum E\nA\nEnd Enum	syntax	Duplicate Deftype statement
+bas	DefInt A-Z\nDim x As Long\nPublic y As Long	accepted	
+bas	DefInt A-Z\nEnum E\nA\nEnd Enum\n#Const k = 1	accepted	
+bas	DefInt A-Z\nEnum E\nA\nEnd Enum\nDefStr S	syntax	Deftype statements must precede declarations
+bas	DefInt A-Z\nEnum E\nA\nEnd Enum\nPrivate z As Long	accepted	
+bas	DefInt A-Z\nImplements Class1\nImplements Class1	syntax	Only valid in object module
+bas	DefInt A-Z\nOption Base 1\nFunction F() As Long\nEnd Function	accepted	
+bas	DefInt A-Z\nOption Compare Binary\nFunction F() As Long\nEnd Function	accepted	
+bas	DefInt A-Z\nOption Compare Text\nAttribute VB_Name = "m"	accepted	
+bas	DefInt A-Z\nOption Compare Text\nDeclare Sub f Lib "k" ()	accepted	
+bas	DefInt A-Z\nOption Explicit\nDefStr S	syntax	Duplicate Deftype statement
+bas	DefInt A-Z\nProperty Get Q() As Long\nEnd Property\nAttribute VB_Name = "m"	accepted	
+bas	DefInt A-Z\nProperty Get Q() As Long\nEnd Property\nOption Private Module	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	DefStr S\n#Const k = 1\nType T\na As Long\nEnd Type	accepted	
+bas	DefStr S\n#If k Then\n#End If\nAttribute VB_Name = "m"	accepted	
+bas	DefStr S\n#If k Then\n#End If\nEnum E\nA\nEnd Enum	accepted	
+bas	DefStr S\n#If k Then\n#End If\nSub P()\nEnd Sub	accepted	
+bas	DefStr S\nAttribute VB_Description = "d"\nDim x As Long	accepted	
+bas	DefStr S\nAttribute VB_Name = "m"\n#Const k = 1	accepted	
+bas	DefStr S\nConst c = 1\nOption Private Module	accepted	
+bas	DefStr S\nDeclare Sub f Lib "k" ()\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: f
+bas	DefStr S\nDefInt A-Z\n#If k Then\n#End If	syntax	Duplicate Deftype statement
+bas	DefStr S\nDefInt A-Z\nImplements Class1	syntax	Duplicate Deftype statement
+bas	DefStr S\nDefInt A-Z\nType T\na As Long\nEnd Type	syntax	Duplicate Deftype statement
+bas	DefStr S\nDefStr S\nDefStr S	syntax	Duplicate Deftype statement
+bas	DefStr S\nDefStr S\nEnum E\nA\nEnd Enum	syntax	Duplicate Deftype statement
+bas	DefStr S\nDim x As Long\nEnum E\nA\nEnd Enum	accepted	
+bas	DefStr S\nFunction F() As Long\nEnd Function\nImplements Class1	syntax	Syntax error
+bas	DefStr S\nFunction F() As Long\nEnd Function\nSub P()\nEnd Sub	accepted	
+bas	DefStr S\nImplements Class1\nAttribute VB_Description = "d"	syntax	Only valid in object module
+bas	DefStr S\nImplements Class1\nDefInt A-Z	syntax	Only valid in object module
+bas	DefStr S\nImplements Class1\nPrivate z As Long	syntax	Only valid in object module
+bas	DefStr S\nOption Base 1\nAttribute VB_Name = "m"	accepted	
+bas	DefStr S\nOption Compare Text\nOption Private Module	accepted	
+bas	DefStr S\nOption Compare Text\nSub P()\nEnd Sub	accepted	
+bas	DefStr S\nOption Private Module\nEnum E\nA\nEnd Enum	accepted	
+bas	DefStr S\nOption Private Module\nOption Private Module	syntax	Duplicate Option statement
+bas	DefStr S\nOption Private Module\nPrivate z As Long	accepted	
+bas	DefStr S\nOption Private Module\nSub P()\nEnd Sub	accepted	
+bas	DefStr S\nPrivate z As Long\nImplements Class1	syntax	Only valid in object module
+bas	DefStr S\nPrivate z As Long\nOption Compare Binary	accepted	
+bas	DefStr S\nProperty Get Q() As Long\nEnd Property\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	DefStr S\nProperty Get Q() As Long\nEnd Property\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	DefStr S\nSub P()\nEnd Sub\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Dim x As Long\n#Const k = 1\nDim x As Long	semantic	Ambiguous name detected: x
+bas	Dim x As Long\n#Const k = 1\nOption Explicit	accepted	
+bas	Dim x As Long\n#If k Then\n#End If\nConst c = 1	accepted	
+bas	Dim x As Long\n#If k Then\n#End If\nSub P()\nEnd Sub	accepted	
+bas	Dim x As Long\n#If k Then\n#End If\nType T\na As Long\nEnd Type	accepted	
+bas	Dim x As Long\nAttribute VB_Description = "d"\nDeclare Sub f Lib "k" ()	accepted	
+bas	Dim x As Long\nConst c = 1\nOption Explicit	accepted	
+bas	Dim x As Long\nEnum E\nA\nEnd Enum\nImplements Class1	syntax	Only valid in object module
+bas	Dim x As Long\nEnum E\nA\nEnd Enum\nOption Base 1	accepted	
+bas	Dim x As Long\nEvent Ev()\nAttribute VB_Description = "d"	syntax	Only valid in object module
+bas	Dim x As Long\nImplements Class1\n#If k Then\n#End If	syntax	Only valid in object module
+bas	Dim x As Long\nImplements Class1\nEnum E\nA\nEnd Enum	syntax	Only valid in object module
+bas	Dim x As Long\nImplements Class1\nOption Base 1	syntax	Only valid in object module
+bas	Dim x As Long\nOption Base 1\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Dim x As Long\nOption Compare Binary\nFunction F() As Long\nEnd Function	accepted	
+bas	Dim x As Long\nOption Compare Text\nSub P()\nEnd Sub	accepted	
+bas	Dim x As Long\nOption Compare Text\nType T\na As Long\nEnd Type	accepted	
+bas	Dim x As Long\nPublic y As Long\nFunction F() As Long\nEnd Function	accepted	
+bas	Dim x As Long\nType T\na As Long\nEnd Type\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Enum E\nA\nEnd Enum\n#Const k = 1\nConst c = 1	accepted	
+bas	Enum E\nA\nEnd Enum\n#Const k = 1\nDeclare Sub f Lib "k" ()	accepted	
+bas	Enum E\nA\nEnd Enum\n#Const k = 1\nPrivate z As Long	accepted	
+bas	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\n#Const k = 1	accepted	
+bas	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\nOption Explicit	accepted	
+bas	Enum E\nA\nEnd Enum\nDeclare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Enum E\nA\nEnd Enum\nDefInt A-Z\nConst c = 1	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nDefInt A-Z\nEnum E\nA\nEnd Enum	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nDefStr S\nAttribute VB_Description = "d"	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nDefStr S\nImplements Class1	syntax	Deftype statements must precede declarations
+bas	Enum E\nA\nEnd Enum\nDim x As Long\nOption Compare Text	accepted	
+bas	Enum E\nA\nEnd Enum\nEvent Ev()\n#Const k = 1	syntax	Only valid in object module
+bas	Enum E\nA\nEnd Enum\nEvent Ev()\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function\nSub P()\nEnd Sub	accepted	
+bas	Enum E\nA\nEnd Enum\nImplements Class1\nOption Base 1	syntax	Only valid in object module
+bas	Enum E\nA\nEnd Enum\nOption Compare Binary\nDeclare Sub f Lib "k" ()	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Compare Binary\nSub P()\nEnd Sub	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+bas	Enum E\nA\nEnd Enum\nOption Explicit\nAttribute VB_Name = "m"	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Private Module\nFunction F() As Long\nEnd Function	accepted	
+bas	Enum E\nA\nEnd Enum\nOption Private Module\nType T\na As Long\nEnd Type	accepted	
+bas	Enum E\nA\nEnd Enum\nPrivate z As Long\nAttribute VB_Description = "d"	accepted	
+bas	Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	accepted	
+bas	Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Enum E\nA\nEnd Enum\nSub P()\nEnd Sub\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Enum E\nA\nEnd Enum\nSub P()\nEnd Sub\nImplements Class1	syntax	Syntax error
+bas	Enum E\nA\nEnd Enum\nType T\na As Long\nEnd Type\nDeclare Sub f Lib "k" ()	accepted	
+bas	Event Ev()\n#If k Then\n#End If\n#Const k = 1	syntax	Only valid in object module
+bas	Event Ev()\n#If k Then\n#End If\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Event Ev()\n#If k Then\n#End If\nPublic y As Long	syntax	Only valid in object module
+bas	Event Ev()\nAttribute VB_Description = "d"\nOption Explicit	syntax	Only valid in object module
+bas	Event Ev()\nAttribute VB_Name = "m"\n#If k Then\n#End If	syntax	Only valid in object module
+bas	Event Ev()\nConst c = 1\nOption Compare Binary	syntax	Only valid in object module
+bas	Event Ev()\nDefInt A-Z\nEvent Ev()	syntax	Only valid in object module
+bas	Event Ev()\nDim x As Long\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Event Ev()\nEvent Ev()\nAttribute VB_Name = "m"	syntax	Only valid in object module
+bas	Event Ev()\nEvent Ev()\nType T\na As Long\nEnd Type	syntax	Only valid in object module
+bas	Event Ev()\nOption Compare Binary\nEvent Ev()	syntax	Only valid in object module
+bas	Event Ev()\nOption Compare Binary\nOption Explicit	syntax	Only valid in object module
+bas	Event Ev()\nOption Compare Text\nConst c = 1	syntax	Only valid in object module
+bas	Event Ev()\nOption Compare Text\nPrivate z As Long	syntax	Only valid in object module
+bas	Event Ev()\nOption Explicit\nProperty Get Q() As Long\nEnd Property	syntax	Only valid in object module
+bas	Event Ev()\nOption Private Module\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Event Ev()\nOption Private Module\nImplements Class1	syntax	Only valid in object module
+bas	Event Ev()\nOption Private Module\nOption Compare Text	syntax	Only valid in object module
+bas	Event Ev()\nPrivate z As Long\nFunction F() As Long\nEnd Function	syntax	Only valid in object module
+bas	Event Ev()\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	syntax	Only valid in object module
+bas	Event Ev()\nPublic y As Long\nDefInt A-Z	syntax	Only valid in object module
+bas	Event Ev()\nPublic y As Long\nDefStr S	syntax	Only valid in object module
+bas	Event Ev()\nPublic y As Long\nDim x As Long	syntax	Only valid in object module
+bas	Event Ev()\nPublic y As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Event Ev()\nType T\na As Long\nEnd Type\nOption Base 1	syntax	Only valid in object module
+bas	Event Ev()\nType T\na As Long\nEnd Type\nPrivate z As Long	syntax	Only valid in object module
+bas	Function F() As Long\nEnd Function\n#If k Then\n#End If\n#Const k = 1	accepted	
+bas	Function F() As Long\nEnd Function\nAttribute VB_Name = "m"\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+bas	Function F() As Long\nEnd Function\nConst c = 1\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDefInt A-Z\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDefStr S\n#If k Then\n#End If	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nDim x As Long\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nEnum E\nA\nEnd Enum\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nEvent Ev()\nAttribute VB_Description = "d"	syntax	Syntax error
+bas	Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+bas	Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function\nImplements Class1	semantic	Ambiguous name detected: F
+bas	Function F() As Long\nEnd Function\nImplements Class1\nAttribute VB_Description = "d"	syntax	Syntax error
+bas	Function F() As Long\nEnd Function\nImplements Class1\nAttribute VB_Name = "m"	syntax	Syntax error
+bas	Function F() As Long\nEnd Function\nOption Base 1\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Compare Binary\nAttribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Compare Binary\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Explicit\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Explicit\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Private Module\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nOption Private Module\nProperty Get Q() As Long\nEnd Property	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nPublic y As Long\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Function F() As Long\nEnd Function\nSub P()\nEnd Sub\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Implements Class1\n#Const k = 1\nType T\na As Long\nEnd Type	syntax	Only valid in object module
+bas	Implements Class1\nAttribute VB_Description = "d"\nEvent Ev()	syntax	Only valid in object module
+bas	Implements Class1\nAttribute VB_Description = "d"\nOption Private Module	syntax	Only valid in object module
+bas	Implements Class1\nConst c = 1\nOption Explicit	syntax	Only valid in object module
+bas	Implements Class1\nDeclare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function	syntax	Only valid in object module
+bas	Implements Class1\nDeclare Sub f Lib "k" ()\nImplements Class1	syntax	Only valid in object module
+bas	Implements Class1\nEvent Ev()\n#If k Then\n#End If	syntax	Only valid in object module
+bas	Implements Class1\nEvent Ev()\nProperty Get Q() As Long\nEnd Property	syntax	Only valid in object module
+bas	Implements Class1\nImplements Class1\n#Const k = 1	syntax	Only valid in object module
+bas	Implements Class1\nImplements Class1\nPublic y As Long	syntax	Only valid in object module
+bas	Implements Class1\nOption Explicit\n#Const k = 1	syntax	Only valid in object module
+bas	Implements Class1\nOption Explicit\nConst c = 1	syntax	Only valid in object module
+bas	Implements Class1\nOption Explicit\nDeclare Sub f Lib "k" ()	syntax	Only valid in object module
+bas	Implements Class1\nOption Private Module\n#If k Then\n#End If	syntax	Only valid in object module
+bas	Implements Class1\nOption Private Module\nConst c = 1	syntax	Only valid in object module
+bas	Implements Class1\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Only valid in object module
+bas	Implements Class1\nPublic y As Long\nDim x As Long	syntax	Only valid in object module
+bas	Implements Class1\nSub P()\nEnd Sub\nSub P()\nEnd Sub	syntax	Only valid in object module
+bas	Implements Class1\nType T\na As Long\nEnd Type\nSub P()\nEnd Sub	syntax	Only valid in object module
+bas	Option Base 1\n#Const k = 1\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Base 1\n#Const k = 1\nSub P()\nEnd Sub	accepted	
+bas	Option Base 1\n#If k Then\n#End If\nDefInt A-Z	accepted	
+bas	Option Base 1\nAttribute VB_Description = "d"\nDeclare Sub f Lib "k" ()	accepted	
+bas	Option Base 1\nAttribute VB_Name = "m"\n#Const k = 1	accepted	
+bas	Option Base 1\nConst c = 1\nOption Explicit	accepted	
+bas	Option Base 1\nDeclare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Base 1\nDeclare Sub f Lib "k" ()\nOption Compare Binary	accepted	
+bas	Option Base 1\nDefInt A-Z\nAttribute VB_Name = "m"	accepted	
+bas	Option Base 1\nDefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+bas	Option Base 1\nEvent Ev()\nEnum E\nA\nEnd Enum	syntax	Only valid in object module
+bas	Option Base 1\nEvent Ev()\nPrivate z As Long	syntax	Only valid in object module
+bas	Option Base 1\nFunction F() As Long\nEnd Function\nAttribute VB_Description = "d"	accepted	
+bas	Option Base 1\nFunction F() As Long\nEnd Function\nEvent Ev()	syntax	Syntax error
+bas	Option Base 1\nImplements Class1\nEnum E\nA\nEnd Enum	syntax	Only valid in object module
+bas	Option Base 1\nImplements Class1\nOption Compare Binary	syntax	Only valid in object module
+bas	Option Base 1\nOption Base 1\nDefInt A-Z	syntax	Duplicate Option statement
+bas	Option Base 1\nOption Base 1\nDefStr S	syntax	Duplicate Option statement
+bas	Option Base 1\nOption Private Module\nAttribute VB_Description = "d"	accepted	
+bas	Option Base 1\nOption Private Module\nDefStr S	accepted	
+bas	Option Base 1\nProperty Get Q() As Long\nEnd Property\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Option Base 1\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Option Base 1\nPublic y As Long\n#Const k = 1	accepted	
+bas	Option Base 1\nSub P()\nEnd Sub\nEvent Ev()	syntax	Syntax error
+bas	Option Base 1\nSub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Base 1\nType T\na As Long\nEnd Type\nImplements Class1	syntax	Only valid in object module
+bas	Option Compare Binary\n#Const k = 1\nOption Compare Binary	syntax	Duplicate Option statement
+bas	Option Compare Binary\n#If k Then\n#End If\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Compare Binary\nAttribute VB_Description = "d"\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Compare Binary\nAttribute VB_Description = "d"\nOption Base 1	accepted	
+bas	Option Compare Binary\nAttribute VB_Description = "d"\nOption Compare Binary	syntax	Duplicate Option statement
+bas	Option Compare Binary\nAttribute VB_Name = "m"\nAttribute VB_Description = "d"	accepted	
+bas	Option Compare Binary\nConst c = 1\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Compare Binary\nDefInt A-Z\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Compare Binary\nDefStr S\nAttribute VB_Description = "d"	accepted	
+bas	Option Compare Binary\nDefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+bas	Option Compare Binary\nDim x As Long\nAttribute VB_Name = "m"	accepted	
+bas	Option Compare Binary\nEvent Ev()\n#Const k = 1	syntax	Only valid in object module
+bas	Option Compare Binary\nFunction F() As Long\nEnd Function\n#Const k = 1	accepted	
+bas	Option Compare Binary\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Option Compare Binary\nFunction F() As Long\nEnd Function\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Option Compare Binary\nImplements Class1\nConst c = 1	syntax	Only valid in object module
+bas	Option Compare Binary\nImplements Class1\nDim x As Long	syntax	Only valid in object module
+bas	Option Compare Binary\nImplements Class1\nOption Private Module	syntax	Only valid in object module
+bas	Option Compare Binary\nOption Compare Binary\nOption Base 1	syntax	Duplicate Option statement
+bas	Option Compare Binary\nOption Private Module\n#Const k = 1	accepted	
+bas	Option Compare Binary\nOption Private Module\nDim x As Long	accepted	
+bas	Option Compare Binary\nOption Private Module\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Compare Binary\nPrivate z As Long\nImplements Class1	syntax	Only valid in object module
+bas	Option Compare Binary\nSub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+bas	Option Compare Text\n#If k Then\n#End If\nOption Compare Binary	syntax	Duplicate Option statement
+bas	Option Compare Text\nAttribute VB_Description = "d"\n#If k Then\n#End If	accepted	
+bas	Option Compare Text\nAttribute VB_Description = "d"\nAttribute VB_Name = "m"	accepted	
+bas	Option Compare Text\nAttribute VB_Name = "m"\nOption Compare Text	syntax	Duplicate Option statement
+bas	Option Compare Text\nConst c = 1\nAttribute VB_Name = "m"	accepted	
+bas	Option Compare Text\nDeclare Sub f Lib "k" ()\nOption Compare Text	syntax	Duplicate Option statement
+bas	Option Compare Text\nDeclare Sub f Lib "k" ()\nSub P()\nEnd Sub	accepted	
+bas	Option Compare Text\nDefStr S\nAttribute VB_Description = "d"	accepted	
+bas	Option Compare Text\nDim x As Long\nSub P()\nEnd Sub	accepted	
+bas	Option Compare Text\nFunction F() As Long\nEnd Function\n#If k Then\n#End If	accepted	
+bas	Option Compare Text\nFunction F() As Long\nEnd Function\nAttribute VB_Name = "m"	accepted	
+bas	Option Compare Text\nOption Base 1\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Compare Text\nOption Compare Binary\nDeclare Sub f Lib "k" ()	syntax	Duplicate Option statement
+bas	Option Compare Text\nOption Explicit\n#If k Then\n#End If	accepted	
+bas	Option Compare Text\nOption Explicit\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Compare Text\nOption Private Module\nDim x As Long	accepted	
+bas	Option Compare Text\nPrivate z As Long\n#Const k = 1	accepted	
+bas	Option Compare Text\nPrivate z As Long\n#If k Then\n#End If	accepted	
+bas	Option Compare Text\nPrivate z As Long\nPublic y As Long	accepted	
+bas	Option Compare Text\nProperty Get Q() As Long\nEnd Property\nEvent Ev()	syntax	Syntax error
+bas	Option Compare Text\nSub P()\nEnd Sub\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Option Compare Text\nSub P()\nEnd Sub\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Option Explicit\n#Const k = 1\nOption Base 1	accepted	
+bas	Option Explicit\n#If k Then\n#End If\nOption Private Module	accepted	
+bas	Option Explicit\n#If k Then\n#End If\nPrivate z As Long	accepted	
+bas	Option Explicit\n#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Explicit\nAttribute VB_Description = "d"\nEvent Ev()	syntax	Only valid in object module
+bas	Option Explicit\nConst c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Explicit\nDeclare Sub f Lib "k" ()\nOption Base 1	accepted	
+bas	Option Explicit\nDefInt A-Z\nDefStr S	syntax	Duplicate Deftype statement
+bas	Option Explicit\nDefStr S\nDefStr S	syntax	Duplicate Deftype statement
+bas	Option Explicit\nDim x As Long\nAttribute VB_Description = "d"	accepted	
+bas	Option Explicit\nDim x As Long\nPrivate z As Long	accepted	
+bas	Option Explicit\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+bas	Option Explicit\nEnum E\nA\nEnd Enum\nPrivate z As Long	accepted	
+bas	Option Explicit\nEvent Ev()\nType T\na As Long\nEnd Type	syntax	Only valid in object module
+bas	Option Explicit\nImplements Class1\nOption Compare Text	syntax	Only valid in object module
+bas	Option Explicit\nOption Base 1\nDefStr S	accepted	
+bas	Option Explicit\nOption Compare Binary\nPublic y As Long	accepted	
+bas	Option Explicit\nOption Compare Text\nPublic y As Long	accepted	
+bas	Option Explicit\nPublic y As Long\nAttribute VB_Description = "d"	accepted	
+bas	Option Explicit\nPublic y As Long\nDim x As Long	accepted	
+bas	Option Explicit\nType T\na As Long\nEnd Type\n#If k Then\n#End If	accepted	
+bas	Option Explicit\nType T\na As Long\nEnd Type\nConst c = 1	accepted	
+bas	Option Explicit\nType T\na As Long\nEnd Type\nImplements Class1	syntax	Only valid in object module
+bas	Option Private Module\n#If k Then\n#End If\n#Const k = 1	accepted	
+bas	Option Private Module\nAttribute VB_Description = "d"\nAttribute VB_Description = "d"	accepted	
+bas	Option Private Module\nAttribute VB_Description = "d"\nPrivate z As Long	accepted	
+bas	Option Private Module\nDeclare Sub f Lib "k" ()\nAttribute VB_Name = "m"	accepted	
+bas	Option Private Module\nDeclare Sub f Lib "k" ()\nType T\na As Long\nEnd Type	accepted	
+bas	Option Private Module\nDefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+bas	Option Private Module\nDefStr S\nEnum E\nA\nEnd Enum	accepted	
+bas	Option Private Module\nDim x As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Option Private Module\nDim x As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Option Private Module\nDim x As Long\nOption Explicit	accepted	
+bas	Option Private Module\nEnum E\nA\nEnd Enum\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Option Private Module\nEnum E\nA\nEnd Enum\nEvent Ev()	syntax	Only valid in object module
+bas	Option Private Module\nImplements Class1\nEnum E\nA\nEnd Enum	syntax	Only valid in object module
+bas	Option Private Module\nOption Base 1\n#If k Then\n#End If	accepted	
+bas	Option Private Module\nOption Compare Binary\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Option Private Module\nOption Compare Binary\nType T\na As Long\nEnd Type	accepted	
+bas	Option Private Module\nOption Compare Text\nPublic y As Long	accepted	
+bas	Option Private Module\nOption Private Module\nOption Compare Text	syntax	Duplicate Option statement
+bas	Option Private Module\nProperty Get Q() As Long\nEnd Property\n#Const k = 1	accepted	
+bas	Option Private Module\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	accepted	
+bas	Option Private Module\nPublic y As Long\nDim x As Long	accepted	
+bas	Option Private Module\nPublic y As Long\nImplements Class1	syntax	Only valid in object module
+bas	Private z As Long\nAttribute VB_Description = "d"\nDim x As Long	accepted	
+bas	Private z As Long\nAttribute VB_Description = "d"\nSub P()\nEnd Sub	accepted	
+bas	Private z As Long\nConst c = 1\nOption Explicit	accepted	
+bas	Private z As Long\nDefStr S\nAttribute VB_Description = "d"	syntax	Deftype statements must precede declarations
+bas	Private z As Long\nDim x As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Private z As Long\nEnum E\nA\nEnd Enum\nPublic y As Long	accepted	
+bas	Private z As Long\nEnum E\nA\nEnd Enum\nSub P()\nEnd Sub	accepted	
+bas	Private z As Long\nEvent Ev()\nDim x As Long	syntax	Only valid in object module
+bas	Private z As Long\nImplements Class1\nOption Compare Binary	syntax	Only valid in object module
+bas	Private z As Long\nOption Compare Binary\nOption Explicit	accepted	
+bas	Private z As Long\nOption Compare Text\nDim x As Long	accepted	
+bas	Private z As Long\nOption Compare Text\nOption Compare Binary	syntax	Duplicate Option statement
+bas	Private z As Long\nOption Compare Text\nPublic y As Long	accepted	
+bas	Private z As Long\nOption Explicit\nEvent Ev()	syntax	Only valid in object module
+bas	Private z As Long\nSub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+bas	Private z As Long\nType T\na As Long\nEnd Type\nSub P()\nEnd Sub	accepted	
+bas	Property Get Q() As Long\nEnd Property\nAttribute VB_Description = "d"\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nConst c = 1\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDefInt A-Z\nAttribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDefStr S\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nDefStr S\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum\n#Const k = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum\nAttribute VB_Description = "d"	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nEvent Ev()\nPublic y As Long	syntax	Syntax error
+bas	Property Get Q() As Long\nEnd Property\nOption Compare Text\nFunction F() As Long\nEnd Function	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nPrivate z As Long\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nSub P()\nEnd Sub\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type\nAttribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Public y As Long\n#If k Then\n#End If\nAttribute VB_Description = "d"	accepted	
+bas	Public y As Long\nAttribute VB_Description = "d"\nType T\na As Long\nEnd Type	accepted	
+bas	Public y As Long\nAttribute VB_Name = "m"\nConst c = 1	accepted	
+bas	Public y As Long\nDeclare Sub f Lib "k" ()\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Public y As Long\nDefInt A-Z\nDeclare Sub f Lib "k" ()	syntax	Deftype statements must precede declarations
+bas	Public y As Long\nDefStr S\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Public y As Long\nDim x As Long\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Public y As Long\nDim x As Long\nEvent Ev()	syntax	Only valid in object module
+bas	Public y As Long\nEnum E\nA\nEnd Enum\nOption Private Module	accepted	
+bas	Public y As Long\nEvent Ev()\nOption Explicit	syntax	Only valid in object module
+bas	Public y As Long\nFunction F() As Long\nEnd Function\nImplements Class1	syntax	Syntax error
+bas	Public y As Long\nFunction F() As Long\nEnd Function\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Public y As Long\nImplements Class1\nAttribute VB_Name = "m"	syntax	Only valid in object module
+bas	Public y As Long\nOption Compare Binary\nDeclare Sub f Lib "k" ()	accepted	
+bas	Public y As Long\nOption Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+bas	Public y As Long\nOption Private Module\nPrivate z As Long	accepted	
+bas	Public y As Long\nProperty Get Q() As Long\nEnd Property\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Public y As Long\nPublic y As Long\n#Const k = 1	semantic	Ambiguous name detected: y
+bas	Public y As Long\nPublic y As Long\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: y
+bas	Public y As Long\nPublic y As Long\nSub P()\nEnd Sub	semantic	Ambiguous name detected: y
+bas	Public y As Long\nSub P()\nEnd Sub\nAttribute VB_Name = "m"	accepted	
+bas	Public y As Long\nSub P()\nEnd Sub\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\n#Const k = 1\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\n#Const k = 1\nEvent Ev()	syntax	Syntax error
+bas	Sub P()\nEnd Sub\n#Const k = 1\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nAttribute VB_Description = "d"\nAttribute VB_Description = "d"	accepted	
+bas	Sub P()\nEnd Sub\nAttribute VB_Description = "d"\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nAttribute VB_Name = "m"\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nAttribute VB_Name = "m"\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nConst c = 1\nImplements Class1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nDefInt A-Z\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nEnum E\nA\nEnd Enum\n#If k Then\n#End If	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nEvent Ev()\nImplements Class1	syntax	Syntax error
+bas	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\n#Const k = 1	accepted	
+bas	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nImplements Class1\nAttribute VB_Description = "d"	syntax	Syntax error
+bas	Sub P()\nEnd Sub\nImplements Class1\nEvent Ev()	syntax	Syntax error
+bas	Sub P()\nEnd Sub\nOption Compare Text\nAttribute VB_Description = "d"	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nOption Explicit\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nPrivate z As Long\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Sub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+bas	Type T\na As Long\nEnd Type\nAttribute VB_Name = "m"\nPrivate z As Long	accepted	
+bas	Type T\na As Long\nEnd Type\nDefInt A-Z\nDefInt A-Z	syntax	Deftype statements must precede declarations
+bas	Type T\na As Long\nEnd Type\nDim x As Long\n#Const k = 1	accepted	
+bas	Type T\na As Long\nEnd Type\nDim x As Long\nAttribute VB_Description = "d"	accepted	
+bas	Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+bas	Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum\nDefStr S	syntax	Deftype statements must precede declarations
+bas	Type T\na As Long\nEnd Type\nImplements Class1\nConst c = 1	syntax	Only valid in object module
+bas	Type T\na As Long\nEnd Type\nOption Base 1\nPrivate z As Long	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Compare Text\nProperty Get Q() As Long\nEnd Property	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Explicit\nEnum E\nA\nEnd Enum	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Explicit\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: T
+bas	Type T\na As Long\nEnd Type\nOption Private Module\n#If k Then\n#End If	accepted	
+bas	Type T\na As Long\nEnd Type\nOption Private Module\nFunction F() As Long\nEnd Function	accepted	
+bas	Type T\na As Long\nEnd Type\nPrivate z As Long\nOption Explicit	accepted	
+bas	Type T\na As Long\nEnd Type\nPublic y As Long\n#Const k = 1	accepted	
+bas	Type T\na As Long\nEnd Type\nSub P()\nEnd Sub\n#Const k = 1	accepted	
+cls	Option Explicit	accepted	
+cls	Option Base 1	accepted	
+cls	Option Compare Text	accepted	
+cls	Option Compare Binary	accepted	
+cls	Option Private Module	syntax	Option Private Module not permitted in a object module
+cls	DefInt A-Z	accepted	
+cls	DefStr S	accepted	
+cls	Dim x As Long	accepted	
+cls	Public y As Long	accepted	
+cls	Const c = 1	accepted	
+cls	Declare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Type T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Enum E\nA\nEnd Enum	accepted	
+cls	Sub P()\nEnd Sub	accepted	
+cls	Function F() As Long\nEnd Function	accepted	
+cls	Event Ev()	accepted	
+cls	Implements Class1	semantic	Not a valid interface for Implements
+cls	Attribute VB_Name = "m"	accepted	
+cls	Attribute VB_Description = "d"	accepted	
+cls	#Const k = 1	accepted	
+cls	#If k Then\n#End If	accepted	
+cls	Property Get Q() As Long\nEnd Property	accepted	
+cls	Private z As Long	accepted	
+cls	Option Explicit\nOption Explicit	syntax	Duplicate Option statement
+cls	Option Explicit\nOption Base 1	accepted	
+cls	Option Explicit\nOption Compare Text	accepted	
+cls	Option Explicit\nOption Compare Binary	accepted	
+cls	Option Explicit\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Explicit\nDefInt A-Z	accepted	
+cls	Option Explicit\nDefStr S	accepted	
+cls	Option Explicit\nDim x As Long	accepted	
+cls	Option Explicit\nPublic y As Long	accepted	
+cls	Option Explicit\nConst c = 1	accepted	
+cls	Option Explicit\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Explicit\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Explicit\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Explicit\nSub P()\nEnd Sub	accepted	
+cls	Option Explicit\nFunction F() As Long\nEnd Function	accepted	
+cls	Option Explicit\nEvent Ev()	accepted	
+cls	Option Explicit\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Option Explicit\nAttribute VB_Name = "m"	accepted	
+cls	Option Explicit\nAttribute VB_Description = "d"	accepted	
+cls	Option Explicit\n#Const k = 1	accepted	
+cls	Option Explicit\n#If k Then\n#End If	accepted	
+cls	Option Explicit\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Explicit\nPrivate z As Long	accepted	
+cls	Option Base 1\nOption Explicit	accepted	
+cls	Option Base 1\nOption Base 1	syntax	Duplicate Option statement
+cls	Option Base 1\nOption Compare Text	accepted	
+cls	Option Base 1\nOption Compare Binary	accepted	
+cls	Option Base 1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Base 1\nDefInt A-Z	accepted	
+cls	Option Base 1\nDefStr S	accepted	
+cls	Option Base 1\nDim x As Long	accepted	
+cls	Option Base 1\nPublic y As Long	accepted	
+cls	Option Base 1\nConst c = 1	accepted	
+cls	Option Base 1\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Base 1\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Base 1\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Base 1\nSub P()\nEnd Sub	accepted	
+cls	Option Base 1\nFunction F() As Long\nEnd Function	accepted	
+cls	Option Base 1\nEvent Ev()	accepted	
+cls	Option Base 1\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Option Base 1\nAttribute VB_Name = "m"	accepted	
+cls	Option Base 1\nAttribute VB_Description = "d"	accepted	
+cls	Option Base 1\n#Const k = 1	accepted	
+cls	Option Base 1\n#If k Then\n#End If	accepted	
+cls	Option Base 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Base 1\nPrivate z As Long	accepted	
+cls	Option Compare Text\nOption Explicit	accepted	
+cls	Option Compare Text\nOption Base 1	accepted	
+cls	Option Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+cls	Option Compare Text\nOption Compare Binary	syntax	Duplicate Option statement
+cls	Option Compare Text\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Text\nDefInt A-Z	accepted	
+cls	Option Compare Text\nDefStr S	accepted	
+cls	Option Compare Text\nDim x As Long	accepted	
+cls	Option Compare Text\nPublic y As Long	accepted	
+cls	Option Compare Text\nConst c = 1	accepted	
+cls	Option Compare Text\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Compare Text\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Compare Text\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Compare Text\nSub P()\nEnd Sub	accepted	
+cls	Option Compare Text\nFunction F() As Long\nEnd Function	accepted	
+cls	Option Compare Text\nEvent Ev()	accepted	
+cls	Option Compare Text\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Option Compare Text\nAttribute VB_Name = "m"	accepted	
+cls	Option Compare Text\nAttribute VB_Description = "d"	accepted	
+cls	Option Compare Text\n#Const k = 1	accepted	
+cls	Option Compare Text\n#If k Then\n#End If	accepted	
+cls	Option Compare Text\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Compare Text\nPrivate z As Long	accepted	
+cls	Option Compare Binary\nOption Explicit	accepted	
+cls	Option Compare Binary\nOption Base 1	accepted	
+cls	Option Compare Binary\nOption Compare Text	syntax	Duplicate Option statement
+cls	Option Compare Binary\nOption Compare Binary	syntax	Duplicate Option statement
+cls	Option Compare Binary\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Binary\nDefInt A-Z	accepted	
+cls	Option Compare Binary\nDefStr S	accepted	
+cls	Option Compare Binary\nDim x As Long	accepted	
+cls	Option Compare Binary\nPublic y As Long	accepted	
+cls	Option Compare Binary\nConst c = 1	accepted	
+cls	Option Compare Binary\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Compare Binary\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Compare Binary\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Compare Binary\nSub P()\nEnd Sub	accepted	
+cls	Option Compare Binary\nFunction F() As Long\nEnd Function	accepted	
+cls	Option Compare Binary\nEvent Ev()	accepted	
+cls	Option Compare Binary\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Option Compare Binary\nAttribute VB_Name = "m"	accepted	
+cls	Option Compare Binary\nAttribute VB_Description = "d"	accepted	
+cls	Option Compare Binary\n#Const k = 1	accepted	
+cls	Option Compare Binary\n#If k Then\n#End If	accepted	
+cls	Option Compare Binary\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Compare Binary\nPrivate z As Long	accepted	
+cls	Option Private Module\nOption Explicit	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Base 1	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Compare Text	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Compare Binary	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDefInt A-Z	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDefStr S	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDim x As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nPublic y As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nConst c = 1	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDeclare Sub f Lib "k" ()	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nType T\na As Long\nEnd Type	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nEnum E\nA\nEnd Enum	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nSub P()\nEnd Sub	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nFunction F() As Long\nEnd Function	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nEvent Ev()	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nImplements Class1	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nAttribute VB_Name = "m"	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nAttribute VB_Description = "d"	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\n#Const k = 1	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\n#If k Then\n#End If	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nProperty Get Q() As Long\nEnd Property	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nPrivate z As Long	syntax	Option Private Module not permitted in a object module
+cls	DefInt A-Z\nOption Explicit	accepted	
+cls	DefInt A-Z\nOption Base 1	accepted	
+cls	DefInt A-Z\nOption Compare Text	accepted	
+cls	DefInt A-Z\nOption Compare Binary	accepted	
+cls	DefInt A-Z\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	DefInt A-Z\nDefInt A-Z	syntax	Duplicate Deftype statement
+cls	DefInt A-Z\nDefStr S	syntax	Duplicate Deftype statement
+cls	DefInt A-Z\nDim x As Long	accepted	
+cls	DefInt A-Z\nPublic y As Long	accepted	
+cls	DefInt A-Z\nConst c = 1	accepted	
+cls	DefInt A-Z\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	DefInt A-Z\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	DefInt A-Z\nEnum E\nA\nEnd Enum	accepted	
+cls	DefInt A-Z\nSub P()\nEnd Sub	accepted	
+cls	DefInt A-Z\nFunction F() As Long\nEnd Function	accepted	
+cls	DefInt A-Z\nEvent Ev()	accepted	
+cls	DefInt A-Z\nImplements Class1	semantic	Not a valid interface for Implements
+cls	DefInt A-Z\nAttribute VB_Name = "m"	accepted	
+cls	DefInt A-Z\nAttribute VB_Description = "d"	accepted	
+cls	DefInt A-Z\n#Const k = 1	accepted	
+cls	DefInt A-Z\n#If k Then\n#End If	accepted	
+cls	DefInt A-Z\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	DefInt A-Z\nPrivate z As Long	accepted	
+cls	DefStr S\nOption Explicit	accepted	
+cls	DefStr S\nOption Base 1	accepted	
+cls	DefStr S\nOption Compare Text	accepted	
+cls	DefStr S\nOption Compare Binary	accepted	
+cls	DefStr S\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+cls	DefStr S\nDefStr S	syntax	Duplicate Deftype statement
+cls	DefStr S\nDim x As Long	accepted	
+cls	DefStr S\nPublic y As Long	accepted	
+cls	DefStr S\nConst c = 1	accepted	
+cls	DefStr S\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	DefStr S\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	DefStr S\nEnum E\nA\nEnd Enum	accepted	
+cls	DefStr S\nSub P()\nEnd Sub	accepted	
+cls	DefStr S\nFunction F() As Long\nEnd Function	accepted	
+cls	DefStr S\nEvent Ev()	accepted	
+cls	DefStr S\nImplements Class1	semantic	Not a valid interface for Implements
+cls	DefStr S\nAttribute VB_Name = "m"	accepted	
+cls	DefStr S\nAttribute VB_Description = "d"	accepted	
+cls	DefStr S\n#Const k = 1	accepted	
+cls	DefStr S\n#If k Then\n#End If	accepted	
+cls	DefStr S\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	DefStr S\nPrivate z As Long	accepted	
+cls	Dim x As Long\nOption Explicit	accepted	
+cls	Dim x As Long\nOption Base 1	accepted	
+cls	Dim x As Long\nOption Compare Text	accepted	
+cls	Dim x As Long\nOption Compare Binary	accepted	
+cls	Dim x As Long\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Dim x As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Dim x As Long\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Dim x As Long\nDim x As Long	semantic	Ambiguous name detected: x
+cls	Dim x As Long\nPublic y As Long	accepted	
+cls	Dim x As Long\nConst c = 1	accepted	
+cls	Dim x As Long\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Dim x As Long\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Dim x As Long\nEnum E\nA\nEnd Enum	accepted	
+cls	Dim x As Long\nSub P()\nEnd Sub	accepted	
+cls	Dim x As Long\nFunction F() As Long\nEnd Function	accepted	
+cls	Dim x As Long\nEvent Ev()	accepted	
+cls	Dim x As Long\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Dim x As Long\nAttribute VB_Name = "m"	accepted	
+cls	Dim x As Long\nAttribute VB_Description = "d"	accepted	
+cls	Dim x As Long\n#Const k = 1	accepted	
+cls	Dim x As Long\n#If k Then\n#End If	accepted	
+cls	Dim x As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Dim x As Long\nPrivate z As Long	accepted	
+cls	Public y As Long\nOption Explicit	accepted	
+cls	Public y As Long\nOption Base 1	accepted	
+cls	Public y As Long\nOption Compare Text	accepted	
+cls	Public y As Long\nOption Compare Binary	accepted	
+cls	Public y As Long\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Public y As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Public y As Long\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Public y As Long\nDim x As Long	accepted	
+cls	Public y As Long\nPublic y As Long	semantic	Ambiguous name detected: y
+cls	Public y As Long\nConst c = 1	accepted	
+cls	Public y As Long\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Public y As Long\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Public y As Long\nEnum E\nA\nEnd Enum	accepted	
+cls	Public y As Long\nSub P()\nEnd Sub	accepted	
+cls	Public y As Long\nFunction F() As Long\nEnd Function	accepted	
+cls	Public y As Long\nEvent Ev()	accepted	
+cls	Public y As Long\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Public y As Long\nAttribute VB_Name = "m"	accepted	
+cls	Public y As Long\nAttribute VB_Description = "d"	accepted	
+cls	Public y As Long\n#Const k = 1	accepted	
+cls	Public y As Long\n#If k Then\n#End If	accepted	
+cls	Public y As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Public y As Long\nPrivate z As Long	accepted	
+cls	Const c = 1\nOption Explicit	accepted	
+cls	Const c = 1\nOption Base 1	accepted	
+cls	Const c = 1\nOption Compare Text	accepted	
+cls	Const c = 1\nOption Compare Binary	accepted	
+cls	Const c = 1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Const c = 1\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Const c = 1\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Const c = 1\nDim x As Long	accepted	
+cls	Const c = 1\nPublic y As Long	accepted	
+cls	Const c = 1\nConst c = 1	semantic	Ambiguous name detected: c
+cls	Const c = 1\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Const c = 1\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Const c = 1\nEnum E\nA\nEnd Enum	accepted	
+cls	Const c = 1\nSub P()\nEnd Sub	accepted	
+cls	Const c = 1\nFunction F() As Long\nEnd Function	accepted	
+cls	Const c = 1\nEvent Ev()	accepted	
+cls	Const c = 1\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Const c = 1\nAttribute VB_Name = "m"	accepted	
+cls	Const c = 1\nAttribute VB_Description = "d"	accepted	
+cls	Const c = 1\n#Const k = 1	accepted	
+cls	Const c = 1\n#If k Then\n#End If	accepted	
+cls	Const c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Const c = 1\nPrivate z As Long	accepted	
+cls	Declare Sub f Lib "k" ()\nOption Explicit	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nOption Base 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nOption Compare Text	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nOption Compare Binary	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Declare Sub f Lib "k" ()\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Declare Sub f Lib "k" ()\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Declare Sub f Lib "k" ()\nDim x As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nPublic y As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nConst c = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: f
+cls	Declare Sub f Lib "k" ()\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Declare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nSub P()\nEnd Sub	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Declare Sub f Lib "k" ()\nEvent Ev()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Declare Sub f Lib "k" ()\nAttribute VB_Name = "m"	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nAttribute VB_Description = "d"	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\n#Const k = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\n#If k Then\n#End If	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nPrivate z As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Type T\na As Long\nEnd Type\nOption Explicit	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Base 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Compare Text	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Compare Binary	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Type T\na As Long\nEnd Type\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Type T\na As Long\nEnd Type\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Type T\na As Long\nEnd Type\nDim x As Long	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nPublic y As Long	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nConst c = 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nDeclare Sub f Lib "k" ()	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: T
+cls	Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nSub P()\nEnd Sub	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nFunction F() As Long\nEnd Function	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nEvent Ev()	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nImplements Class1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nAttribute VB_Name = "m"	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nAttribute VB_Description = "d"	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\n#Const k = 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\n#If k Then\n#End If	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nProperty Get Q() As Long\nEnd Property	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nPrivate z As Long	syntax	Cannot define a Public user-defined type within a private object module
+cls	Enum E\nA\nEnd Enum\nOption Explicit	accepted	
+cls	Enum E\nA\nEnd Enum\nOption Base 1	accepted	
+cls	Enum E\nA\nEnd Enum\nOption Compare Text	accepted	
+cls	Enum E\nA\nEnd Enum\nOption Compare Binary	accepted	
+cls	Enum E\nA\nEnd Enum\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Enum E\nA\nEnd Enum\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nDim x As Long	accepted	
+cls	Enum E\nA\nEnd Enum\nPublic y As Long	accepted	
+cls	Enum E\nA\nEnd Enum\nConst c = 1	accepted	
+cls	Enum E\nA\nEnd Enum\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Enum E\nA\nEnd Enum\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Enum E\nA\nEnd Enum\nEnum E\nA\nEnd Enum	semantic	Ambiguous name detected: E
+cls	Enum E\nA\nEnd Enum\nSub P()\nEnd Sub	accepted	
+cls	Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function	accepted	
+cls	Enum E\nA\nEnd Enum\nEvent Ev()	accepted	
+cls	Enum E\nA\nEnd Enum\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Enum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+cls	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"	accepted	
+cls	Enum E\nA\nEnd Enum\n#Const k = 1	accepted	
+cls	Enum E\nA\nEnd Enum\n#If k Then\n#End If	accepted	
+cls	Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Enum E\nA\nEnd Enum\nPrivate z As Long	accepted	
+cls	Sub P()\nEnd Sub\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nOption Private Module	syntax	Syntax error
+cls	Sub P()\nEnd Sub\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+cls	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function	accepted	
+cls	Sub P()\nEnd Sub\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Sub P()\nEnd Sub\nAttribute VB_Name = "m"	accepted	
+cls	Sub P()\nEnd Sub\nAttribute VB_Description = "d"	accepted	
+cls	Sub P()\nEnd Sub\n#Const k = 1	accepted	
+cls	Sub P()\nEnd Sub\n#If k Then\n#End If	accepted	
+cls	Sub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Sub P()\nEnd Sub\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Private Module	syntax	Syntax error
+cls	Function F() As Long\nEnd Function\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nSub P()\nEnd Sub	accepted	
+cls	Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Function F() As Long\nEnd Function\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Function F() As Long\nEnd Function\nAttribute VB_Name = "m"	accepted	
+cls	Function F() As Long\nEnd Function\nAttribute VB_Description = "d"	accepted	
+cls	Function F() As Long\nEnd Function\n#Const k = 1	accepted	
+cls	Function F() As Long\nEnd Function\n#If k Then\n#End If	accepted	
+cls	Function F() As Long\nEnd Function\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Function F() As Long\nEnd Function\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Event Ev()\nOption Explicit	accepted	
+cls	Event Ev()\nOption Base 1	accepted	
+cls	Event Ev()\nOption Compare Text	accepted	
+cls	Event Ev()\nOption Compare Binary	accepted	
+cls	Event Ev()\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Event Ev()\nDefInt A-Z	accepted	
+cls	Event Ev()\nDefStr S	accepted	
+cls	Event Ev()\nDim x As Long	accepted	
+cls	Event Ev()\nPublic y As Long	accepted	
+cls	Event Ev()\nConst c = 1	accepted	
+cls	Event Ev()\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Event Ev()\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Event Ev()\nEnum E\nA\nEnd Enum	accepted	
+cls	Event Ev()\nSub P()\nEnd Sub	accepted	
+cls	Event Ev()\nFunction F() As Long\nEnd Function	accepted	
+cls	Event Ev()\nEvent Ev()	semantic	Ambiguous name detected: Ev
+cls	Event Ev()\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Event Ev()\nAttribute VB_Name = "m"	accepted	
+cls	Event Ev()\nAttribute VB_Description = "d"	accepted	
+cls	Event Ev()\n#Const k = 1	accepted	
+cls	Event Ev()\n#If k Then\n#End If	accepted	
+cls	Event Ev()\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Event Ev()\nPrivate z As Long	accepted	
+cls	Implements Class1\nOption Explicit	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Base 1	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Compare Text	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Compare Binary	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Implements Class1\nDefInt A-Z	semantic	Not a valid interface for Implements
+cls	Implements Class1\nDefStr S	semantic	Not a valid interface for Implements
+cls	Implements Class1\nDim x As Long	semantic	Not a valid interface for Implements
+cls	Implements Class1\nPublic y As Long	semantic	Not a valid interface for Implements
+cls	Implements Class1\nConst c = 1	semantic	Not a valid interface for Implements
+cls	Implements Class1\nDeclare Sub f Lib "k" ()	semantic	Not a valid interface for Implements
+cls	Implements Class1\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Implements Class1\nEnum E\nA\nEnd Enum	semantic	Not a valid interface for Implements
+cls	Implements Class1\nSub P()\nEnd Sub	semantic	Not a valid interface for Implements
+cls	Implements Class1\nFunction F() As Long\nEnd Function	semantic	Not a valid interface for Implements
+cls	Implements Class1\nEvent Ev()	semantic	Not a valid interface for Implements
+cls	Implements Class1\nImplements Class1	semantic	Ambiguous name detected: Class1
+cls	Implements Class1\nAttribute VB_Name = "m"	semantic	User-defined type not defined
+cls	Implements Class1\nAttribute VB_Description = "d"	semantic	Not a valid interface for Implements
+cls	Implements Class1\n#Const k = 1	semantic	Not a valid interface for Implements
+cls	Implements Class1\n#If k Then\n#End If	semantic	Not a valid interface for Implements
+cls	Implements Class1\nProperty Get Q() As Long\nEnd Property	semantic	Not a valid interface for Implements
+cls	Implements Class1\nPrivate z As Long	semantic	Not a valid interface for Implements
+cls	Attribute VB_Name = "m"\nOption Explicit	accepted	
+cls	Attribute VB_Name = "m"\nOption Base 1	accepted	
+cls	Attribute VB_Name = "m"\nOption Compare Text	accepted	
+cls	Attribute VB_Name = "m"\nOption Compare Binary	accepted	
+cls	Attribute VB_Name = "m"\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Attribute VB_Name = "m"\nDefInt A-Z	accepted	
+cls	Attribute VB_Name = "m"\nDefStr S	accepted	
+cls	Attribute VB_Name = "m"\nDim x As Long	accepted	
+cls	Attribute VB_Name = "m"\nPublic y As Long	accepted	
+cls	Attribute VB_Name = "m"\nConst c = 1	accepted	
+cls	Attribute VB_Name = "m"\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Attribute VB_Name = "m"\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Attribute VB_Name = "m"\nEnum E\nA\nEnd Enum	accepted	
+cls	Attribute VB_Name = "m"\nSub P()\nEnd Sub	accepted	
+cls	Attribute VB_Name = "m"\nFunction F() As Long\nEnd Function	accepted	
+cls	Attribute VB_Name = "m"\nEvent Ev()	accepted	
+cls	Attribute VB_Name = "m"\nImplements Class1	semantic	User-defined type not defined
+cls	Attribute VB_Name = "m"\nAttribute VB_Name = "m"	accepted	
+cls	Attribute VB_Name = "m"\nAttribute VB_Description = "d"	accepted	
+cls	Attribute VB_Name = "m"\n#Const k = 1	accepted	
+cls	Attribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+cls	Attribute VB_Name = "m"\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Attribute VB_Name = "m"\nPrivate z As Long	accepted	
+cls	Attribute VB_Description = "d"\nOption Explicit	accepted	
+cls	Attribute VB_Description = "d"\nOption Base 1	accepted	
+cls	Attribute VB_Description = "d"\nOption Compare Text	accepted	
+cls	Attribute VB_Description = "d"\nOption Compare Binary	accepted	
+cls	Attribute VB_Description = "d"\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Attribute VB_Description = "d"\nDefInt A-Z	accepted	
+cls	Attribute VB_Description = "d"\nDefStr S	accepted	
+cls	Attribute VB_Description = "d"\nDim x As Long	accepted	
+cls	Attribute VB_Description = "d"\nPublic y As Long	accepted	
+cls	Attribute VB_Description = "d"\nConst c = 1	accepted	
+cls	Attribute VB_Description = "d"\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Attribute VB_Description = "d"\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Attribute VB_Description = "d"\nEnum E\nA\nEnd Enum	accepted	
+cls	Attribute VB_Description = "d"\nSub P()\nEnd Sub	accepted	
+cls	Attribute VB_Description = "d"\nFunction F() As Long\nEnd Function	accepted	
+cls	Attribute VB_Description = "d"\nEvent Ev()	accepted	
+cls	Attribute VB_Description = "d"\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Attribute VB_Description = "d"\nAttribute VB_Name = "m"	accepted	
+cls	Attribute VB_Description = "d"\nAttribute VB_Description = "d"	accepted	
+cls	Attribute VB_Description = "d"\n#Const k = 1	accepted	
+cls	Attribute VB_Description = "d"\n#If k Then\n#End If	accepted	
+cls	Attribute VB_Description = "d"\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Attribute VB_Description = "d"\nPrivate z As Long	accepted	
+cls	#Const k = 1\nOption Explicit	accepted	
+cls	#Const k = 1\nOption Base 1	accepted	
+cls	#Const k = 1\nOption Compare Text	accepted	
+cls	#Const k = 1\nOption Compare Binary	accepted	
+cls	#Const k = 1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	#Const k = 1\nDefInt A-Z	accepted	
+cls	#Const k = 1\nDefStr S	accepted	
+cls	#Const k = 1\nDim x As Long	accepted	
+cls	#Const k = 1\nPublic y As Long	accepted	
+cls	#Const k = 1\nConst c = 1	accepted	
+cls	#Const k = 1\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	#Const k = 1\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	#Const k = 1\nEnum E\nA\nEnd Enum	accepted	
+cls	#Const k = 1\nSub P()\nEnd Sub	accepted	
+cls	#Const k = 1\nFunction F() As Long\nEnd Function	accepted	
+cls	#Const k = 1\nEvent Ev()	accepted	
+cls	#Const k = 1\nImplements Class1	semantic	Not a valid interface for Implements
+cls	#Const k = 1\nAttribute VB_Name = "m"	accepted	
+cls	#Const k = 1\nAttribute VB_Description = "d"	accepted	
+cls	#Const k = 1\n#Const k = 1	semantic	Duplicate definition
+cls	#Const k = 1\n#If k Then\n#End If	accepted	
+cls	#Const k = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	#Const k = 1\nPrivate z As Long	accepted	
+cls	#If k Then\n#End If\nOption Explicit	accepted	
+cls	#If k Then\n#End If\nOption Base 1	accepted	
+cls	#If k Then\n#End If\nOption Compare Text	accepted	
+cls	#If k Then\n#End If\nOption Compare Binary	accepted	
+cls	#If k Then\n#End If\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	#If k Then\n#End If\nDefInt A-Z	accepted	
+cls	#If k Then\n#End If\nDefStr S	accepted	
+cls	#If k Then\n#End If\nDim x As Long	accepted	
+cls	#If k Then\n#End If\nPublic y As Long	accepted	
+cls	#If k Then\n#End If\nConst c = 1	accepted	
+cls	#If k Then\n#End If\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	#If k Then\n#End If\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	#If k Then\n#End If\nEnum E\nA\nEnd Enum	accepted	
+cls	#If k Then\n#End If\nSub P()\nEnd Sub	accepted	
+cls	#If k Then\n#End If\nFunction F() As Long\nEnd Function	accepted	
+cls	#If k Then\n#End If\nEvent Ev()	accepted	
+cls	#If k Then\n#End If\nImplements Class1	semantic	Not a valid interface for Implements
+cls	#If k Then\n#End If\nAttribute VB_Name = "m"	accepted	
+cls	#If k Then\n#End If\nAttribute VB_Description = "d"	accepted	
+cls	#If k Then\n#End If\n#Const k = 1	accepted	
+cls	#If k Then\n#End If\n#If k Then\n#End If	accepted	
+cls	#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	#If k Then\n#End If\nPrivate z As Long	accepted	
+cls	Property Get Q() As Long\nEnd Property\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nOption Private Module	syntax	Syntax error
+cls	Property Get Q() As Long\nEnd Property\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nSub P()\nEnd Sub	accepted	
+cls	Property Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	accepted	
+cls	Property Get Q() As Long\nEnd Property\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Property Get Q() As Long\nEnd Property\nAttribute VB_Name = "m"	accepted	
+cls	Property Get Q() As Long\nEnd Property\nAttribute VB_Description = "d"	accepted	
+cls	Property Get Q() As Long\nEnd Property\n#Const k = 1	accepted	
+cls	Property Get Q() As Long\nEnd Property\n#If k Then\n#End If	accepted	
+cls	Property Get Q() As Long\nEnd Property\nProperty Get Q() As Long\nEnd Property	semantic	Ambiguous name detected: Q
+cls	Property Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Private z As Long\nOption Explicit	accepted	
+cls	Private z As Long\nOption Base 1	accepted	
+cls	Private z As Long\nOption Compare Text	accepted	
+cls	Private z As Long\nOption Compare Binary	accepted	
+cls	Private z As Long\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Private z As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Private z As Long\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Private z As Long\nDim x As Long	accepted	
+cls	Private z As Long\nPublic y As Long	accepted	
+cls	Private z As Long\nConst c = 1	accepted	
+cls	Private z As Long\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Private z As Long\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Private z As Long\nEnum E\nA\nEnd Enum	accepted	
+cls	Private z As Long\nSub P()\nEnd Sub	accepted	
+cls	Private z As Long\nFunction F() As Long\nEnd Function	accepted	
+cls	Private z As Long\nEvent Ev()	accepted	
+cls	Private z As Long\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Private z As Long\nAttribute VB_Name = "m"	accepted	
+cls	Private z As Long\nAttribute VB_Description = "d"	accepted	
+cls	Private z As Long\n#Const k = 1	accepted	
+cls	Private z As Long\n#If k Then\n#End If	accepted	
+cls	Private z As Long\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Private z As Long\nPrivate z As Long	semantic	Ambiguous name detected: z
+cls	#Const k = 1\n#Const k = 1\nOption Compare Text	semantic	Duplicate definition
+cls	#Const k = 1\n#If k Then\n#End If\nOption Compare Text	accepted	
+cls	#Const k = 1\nAttribute VB_Description = "d"\n#If k Then\n#End If	accepted	
+cls	#Const k = 1\nAttribute VB_Name = "m"\nOption Compare Text	accepted	
+cls	#Const k = 1\nDeclare Sub f Lib "k" ()\nConst c = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	#Const k = 1\nDefInt A-Z\nAttribute VB_Name = "m"	accepted	
+cls	#Const k = 1\nDefInt A-Z\nOption Compare Binary	accepted	
+cls	#Const k = 1\nFunction F() As Long\nEnd Function\nOption Private Module	syntax	Syntax error
+cls	#Const k = 1\nImplements Class1\nDim x As Long	semantic	Not a valid interface for Implements
+cls	#Const k = 1\nImplements Class1\nImplements Class1	semantic	Ambiguous name detected: Class1
+cls	#Const k = 1\nImplements Class1\nOption Explicit	semantic	Not a valid interface for Implements
+cls	#Const k = 1\nOption Base 1\nDim x As Long	accepted	
+cls	#Const k = 1\nOption Compare Binary\nEvent Ev()	accepted	
+cls	#Const k = 1\nOption Compare Text\nEvent Ev()	accepted	
+cls	#Const k = 1\nOption Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+cls	#Const k = 1\nOption Compare Text\nPrivate z As Long	accepted	
+cls	#Const k = 1\nOption Private Module\nConst c = 1	syntax	Option Private Module not permitted in a object module
+cls	#Const k = 1\nOption Private Module\nOption Compare Binary	syntax	Option Private Module not permitted in a object module
+cls	#Const k = 1\nPrivate z As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	#Const k = 1\nPrivate z As Long\nEvent Ev()	accepted	
+cls	#Const k = 1\nPrivate z As Long\nOption Compare Binary	accepted	
+cls	#Const k = 1\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	#Const k = 1\nProperty Get Q() As Long\nEnd Property\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	#Const k = 1\nPublic y As Long\nPrivate z As Long	accepted	
+cls	#Const k = 1\nType T\na As Long\nEnd Type\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: T
+cls	#If k Then\n#End If\nAttribute VB_Description = "d"\nOption Compare Binary	accepted	
+cls	#If k Then\n#End If\nAttribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+cls	#If k Then\n#End If\nAttribute VB_Name = "m"\nAttribute VB_Name = "m"	accepted	
+cls	#If k Then\n#End If\nDeclare Sub f Lib "k" ()\nImplements Class1	semantic	Not a valid interface for Implements
+cls	#If k Then\n#End If\nDefInt A-Z\n#Const k = 1	accepted	
+cls	#If k Then\n#End If\nDefStr S\nImplements Class1	semantic	Not a valid interface for Implements
+cls	#If k Then\n#End If\nDefStr S\nOption Compare Binary	accepted	
+cls	#If k Then\n#End If\nDim x As Long\nOption Explicit	accepted	
+cls	#If k Then\n#End If\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+cls	#If k Then\n#End If\nEnum E\nA\nEnd Enum\nOption Compare Binary	accepted	
+cls	#If k Then\n#End If\nEnum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	#If k Then\n#End If\nOption Base 1\nOption Explicit	accepted	
+cls	#If k Then\n#End If\nOption Base 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	#If k Then\n#End If\nOption Compare Text\nAttribute VB_Name = "m"	accepted	
+cls	#If k Then\n#End If\nOption Explicit\nImplements Class1	semantic	Not a valid interface for Implements
+cls	#If k Then\n#End If\nOption Private Module\nConst c = 1	syntax	Option Private Module not permitted in a object module
+cls	#If k Then\n#End If\nOption Private Module\nOption Compare Binary	syntax	Option Private Module not permitted in a object module
+cls	#If k Then\n#End If\nPrivate z As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	#If k Then\n#End If\nPrivate z As Long\nOption Compare Binary	accepted	
+cls	#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	#If k Then\n#End If\nSub P()\nEnd Sub\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	#If k Then\n#End If\nSub P()\nEnd Sub\nImplements Class1	semantic	Not a valid interface for Implements
+cls	#If k Then\n#End If\nType T\na As Long\nEnd Type\nAttribute VB_Description = "d"	syntax	Cannot define a Public user-defined type within a private object module
+cls	#If k Then\n#End If\nType T\na As Long\nEnd Type\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	#If k Then\n#End If\nType T\na As Long\nEnd Type\nOption Compare Text	syntax	Cannot define a Public user-defined type within a private object module
+cls	Attribute VB_Description = "d"\n#Const k = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Attribute VB_Description = "d"\n#If k Then\n#End If\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Attribute VB_Description = "d"\nAttribute VB_Name = "m"\nAttribute VB_Name = "m"	accepted	
+cls	Attribute VB_Description = "d"\nDeclare Sub f Lib "k" ()\nOption Base 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Attribute VB_Description = "d"\nDefStr S\n#If k Then\n#End If	accepted	
+cls	Attribute VB_Description = "d"\nDefStr S\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Attribute VB_Description = "d"\nEvent Ev()\nAttribute VB_Description = "d"	accepted	
+cls	Attribute VB_Description = "d"\nEvent Ev()\nDefStr S	accepted	
+cls	Attribute VB_Description = "d"\nOption Base 1\nOption Explicit	accepted	
+cls	Attribute VB_Description = "d"\nOption Compare Binary\nEnum E\nA\nEnd Enum	accepted	
+cls	Attribute VB_Description = "d"\nOption Compare Binary\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Attribute VB_Description = "d"\nOption Compare Binary\nOption Compare Text	syntax	Duplicate Option statement
+cls	Attribute VB_Description = "d"\nOption Private Module\nDim x As Long	syntax	Option Private Module not permitted in a object module
+cls	Attribute VB_Description = "d"\nOption Private Module\nOption Compare Text	syntax	Option Private Module not permitted in a object module
+cls	Attribute VB_Name = "m"\n#Const k = 1\n#Const k = 1	semantic	Duplicate definition
+cls	Attribute VB_Name = "m"\nAttribute VB_Description = "d"\nOption Compare Binary	accepted	
+cls	Attribute VB_Name = "m"\nAttribute VB_Name = "m"\nImplements Class1	semantic	User-defined type not defined
+cls	Attribute VB_Name = "m"\nConst c = 1\nAttribute VB_Name = "m"	accepted	
+cls	Attribute VB_Name = "m"\nConst c = 1\nFunction F() As Long\nEnd Function	accepted	
+cls	Attribute VB_Name = "m"\nConst c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Attribute VB_Name = "m"\nDefInt A-Z\nAttribute VB_Description = "d"	accepted	
+cls	Attribute VB_Name = "m"\nDefInt A-Z\nSub P()\nEnd Sub	accepted	
+cls	Attribute VB_Name = "m"\nDefStr S\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Attribute VB_Name = "m"\nDim x As Long\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Attribute VB_Name = "m"\nImplements Class1\nPublic y As Long	semantic	User-defined type not defined
+cls	Attribute VB_Name = "m"\nOption Compare Text\nAttribute VB_Name = "m"	accepted	
+cls	Attribute VB_Name = "m"\nOption Compare Text\nEnum E\nA\nEnd Enum	accepted	
+cls	Attribute VB_Name = "m"\nOption Compare Text\nEvent Ev()	accepted	
+cls	Attribute VB_Name = "m"\nOption Compare Text\nImplements Class1	semantic	User-defined type not defined
+cls	Attribute VB_Name = "m"\nPrivate z As Long\n#If k Then\n#End If	accepted	
+cls	Attribute VB_Name = "m"\nPrivate z As Long\nOption Base 1	accepted	
+cls	Attribute VB_Name = "m"\nProperty Get Q() As Long\nEnd Property\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Attribute VB_Name = "m"\nPublic y As Long\nConst c = 1	accepted	
+cls	Const c = 1\n#Const k = 1\nSub P()\nEnd Sub	accepted	
+cls	Const c = 1\n#If k Then\n#End If\nAttribute VB_Description = "d"	accepted	
+cls	Const c = 1\n#If k Then\n#End If\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Const c = 1\nAttribute VB_Description = "d"\nOption Compare Binary	accepted	
+cls	Const c = 1\nAttribute VB_Description = "d"\nOption Compare Text	accepted	
+cls	Const c = 1\nAttribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+cls	Const c = 1\nDeclare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Const c = 1\nDefStr S\nProperty Get Q() As Long\nEnd Property	syntax	Deftype statements must precede declarations
+cls	Const c = 1\nEnum E\nA\nEnd Enum\nOption Compare Text	accepted	
+cls	Const c = 1\nEvent Ev()\nFunction F() As Long\nEnd Function	accepted	
+cls	Const c = 1\nEvent Ev()\nOption Compare Binary	accepted	
+cls	Const c = 1\nEvent Ev()\nPrivate z As Long	accepted	
+cls	Const c = 1\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Const c = 1\nImplements Class1\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Const c = 1\nOption Base 1\nOption Explicit	accepted	
+cls	Const c = 1\nOption Explicit\n#If k Then\n#End If	accepted	
+cls	Const c = 1\nOption Explicit\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Const c = 1\nOption Explicit\nOption Compare Text	accepted	
+cls	Const c = 1\nOption Private Module\nOption Compare Text	syntax	Option Private Module not permitted in a object module
+cls	Const c = 1\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Const c = 1\nPublic y As Long\nAttribute VB_Description = "d"	accepted	
+cls	Const c = 1\nPublic y As Long\nOption Base 1	accepted	
+cls	Const c = 1\nType T\na As Long\nEnd Type\nImplements Class1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Declare Sub f Lib "k" ()\n#Const k = 1\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: f
+cls	Declare Sub f Lib "k" ()\nAttribute VB_Name = "m"\nSub P()\nEnd Sub	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nConst c = 1\n#If k Then\n#End If	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nConst c = 1\nOption Compare Binary	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nConst c = 1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Declare Sub f Lib "k" ()\nDefInt A-Z\nOption Compare Text	syntax	Deftype statements must precede declarations
+cls	Declare Sub f Lib "k" ()\nDefStr S\nProperty Get Q() As Long\nEnd Property	syntax	Deftype statements must precede declarations
+cls	Declare Sub f Lib "k" ()\nDim x As Long\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Declare Sub f Lib "k" ()\nDim x As Long\nProperty Get Q() As Long\nEnd Property	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Declare Sub f Lib "k" ()\nOption Compare Binary\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Declare Sub f Lib "k" ()\nOption Compare Text\nConst c = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nOption Compare Text\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Declare Sub f Lib "k" ()\nOption Explicit\nSub P()\nEnd Sub	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nOption Private Module\nOption Compare Text	syntax	Option Private Module not permitted in a object module
+cls	Declare Sub f Lib "k" ()\nPrivate z As Long\n#Const k = 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nPrivate z As Long\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nOption Private Module	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nPublic y As Long\nPrivate z As Long	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Declare Sub f Lib "k" ()\nPublic y As Long\nPublic y As Long	semantic	Ambiguous name detected: y
+cls	Declare Sub f Lib "k" ()\nType T\na As Long\nEnd Type\nOption Compare Binary	syntax	Cannot define a Public user-defined type within a private object module
+cls	DefInt A-Z\nConst c = 1\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	DefInt A-Z\nConst c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	DefInt A-Z\nDeclare Sub f Lib "k" ()\nDefStr S	syntax	Deftype statements must precede declarations
+cls	DefInt A-Z\nDeclare Sub f Lib "k" ()\nImplements Class1	semantic	Not a valid interface for Implements
+cls	DefInt A-Z\nDefInt A-Z\nOption Compare Text	syntax	Duplicate Deftype statement
+cls	DefInt A-Z\nDefStr S\nEnum E\nA\nEnd Enum	syntax	Duplicate Deftype statement
+cls	DefInt A-Z\nDim x As Long\nPublic y As Long	accepted	
+cls	DefInt A-Z\nEnum E\nA\nEnd Enum\n#Const k = 1	accepted	
+cls	DefInt A-Z\nEnum E\nA\nEnd Enum\nDefStr S	syntax	Deftype statements must precede declarations
+cls	DefInt A-Z\nEnum E\nA\nEnd Enum\nPrivate z As Long	accepted	
+cls	DefInt A-Z\nImplements Class1\nImplements Class1	semantic	Ambiguous name detected: Class1
+cls	DefInt A-Z\nOption Base 1\nFunction F() As Long\nEnd Function	accepted	
+cls	DefInt A-Z\nOption Compare Binary\nFunction F() As Long\nEnd Function	accepted	
+cls	DefInt A-Z\nOption Compare Text\nAttribute VB_Name = "m"	accepted	
+cls	DefInt A-Z\nOption Compare Text\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	DefInt A-Z\nOption Explicit\nDefStr S	syntax	Duplicate Deftype statement
+cls	DefInt A-Z\nProperty Get Q() As Long\nEnd Property\nAttribute VB_Name = "m"	accepted	
+cls	DefInt A-Z\nProperty Get Q() As Long\nEnd Property\nOption Private Module	syntax	Syntax error
+cls	DefStr S\n#Const k = 1\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	DefStr S\n#If k Then\n#End If\nAttribute VB_Name = "m"	accepted	
+cls	DefStr S\n#If k Then\n#End If\nEnum E\nA\nEnd Enum	accepted	
+cls	DefStr S\n#If k Then\n#End If\nSub P()\nEnd Sub	accepted	
+cls	DefStr S\nAttribute VB_Description = "d"\nDim x As Long	accepted	
+cls	DefStr S\nAttribute VB_Name = "m"\n#Const k = 1	accepted	
+cls	DefStr S\nConst c = 1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nDeclare Sub f Lib "k" ()\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: f
+cls	DefStr S\nDefInt A-Z\n#If k Then\n#End If	syntax	Duplicate Deftype statement
+cls	DefStr S\nDefInt A-Z\nImplements Class1	syntax	Duplicate Deftype statement
+cls	DefStr S\nDefInt A-Z\nType T\na As Long\nEnd Type	syntax	Duplicate Deftype statement
+cls	DefStr S\nDefStr S\nDefStr S	syntax	Duplicate Deftype statement
+cls	DefStr S\nDefStr S\nEnum E\nA\nEnd Enum	syntax	Duplicate Deftype statement
+cls	DefStr S\nDim x As Long\nEnum E\nA\nEnd Enum	accepted	
+cls	DefStr S\nFunction F() As Long\nEnd Function\nImplements Class1	semantic	Not a valid interface for Implements
+cls	DefStr S\nFunction F() As Long\nEnd Function\nSub P()\nEnd Sub	accepted	
+cls	DefStr S\nImplements Class1\nAttribute VB_Description = "d"	semantic	Not a valid interface for Implements
+cls	DefStr S\nImplements Class1\nDefInt A-Z	syntax	Duplicate Deftype statement
+cls	DefStr S\nImplements Class1\nPrivate z As Long	semantic	Not a valid interface for Implements
+cls	DefStr S\nOption Base 1\nAttribute VB_Name = "m"	accepted	
+cls	DefStr S\nOption Compare Text\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nOption Compare Text\nSub P()\nEnd Sub	accepted	
+cls	DefStr S\nOption Private Module\nEnum E\nA\nEnd Enum	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nOption Private Module\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nOption Private Module\nPrivate z As Long	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nOption Private Module\nSub P()\nEnd Sub	syntax	Option Private Module not permitted in a object module
+cls	DefStr S\nPrivate z As Long\nImplements Class1	semantic	Not a valid interface for Implements
+cls	DefStr S\nPrivate z As Long\nOption Compare Binary	accepted	
+cls	DefStr S\nProperty Get Q() As Long\nEnd Property\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	DefStr S\nProperty Get Q() As Long\nEnd Property\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	DefStr S\nSub P()\nEnd Sub\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Dim x As Long\n#Const k = 1\nDim x As Long	semantic	Ambiguous name detected: x
+cls	Dim x As Long\n#Const k = 1\nOption Explicit	accepted	
+cls	Dim x As Long\n#If k Then\n#End If\nConst c = 1	accepted	
+cls	Dim x As Long\n#If k Then\n#End If\nSub P()\nEnd Sub	accepted	
+cls	Dim x As Long\n#If k Then\n#End If\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Dim x As Long\nAttribute VB_Description = "d"\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Dim x As Long\nConst c = 1\nOption Explicit	accepted	
+cls	Dim x As Long\nEnum E\nA\nEnd Enum\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Dim x As Long\nEnum E\nA\nEnd Enum\nOption Base 1	accepted	
+cls	Dim x As Long\nEvent Ev()\nAttribute VB_Description = "d"	accepted	
+cls	Dim x As Long\nImplements Class1\n#If k Then\n#End If	semantic	Not a valid interface for Implements
+cls	Dim x As Long\nImplements Class1\nEnum E\nA\nEnd Enum	semantic	Not a valid interface for Implements
+cls	Dim x As Long\nImplements Class1\nOption Base 1	semantic	Not a valid interface for Implements
+cls	Dim x As Long\nOption Base 1\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Dim x As Long\nOption Compare Binary\nFunction F() As Long\nEnd Function	accepted	
+cls	Dim x As Long\nOption Compare Text\nSub P()\nEnd Sub	accepted	
+cls	Dim x As Long\nOption Compare Text\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Dim x As Long\nPublic y As Long\nFunction F() As Long\nEnd Function	accepted	
+cls	Dim x As Long\nType T\na As Long\nEnd Type\nProperty Get Q() As Long\nEnd Property	syntax	Cannot define a Public user-defined type within a private object module
+cls	Enum E\nA\nEnd Enum\n#Const k = 1\nConst c = 1	accepted	
+cls	Enum E\nA\nEnd Enum\n#Const k = 1\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Enum E\nA\nEnd Enum\n#Const k = 1\nPrivate z As Long	accepted	
+cls	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\n#Const k = 1	accepted	
+cls	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nAttribute VB_Description = "d"\nOption Explicit	accepted	
+cls	Enum E\nA\nEnd Enum\nDeclare Sub f Lib "k" ()\nProperty Get Q() As Long\nEnd Property	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Enum E\nA\nEnd Enum\nDefInt A-Z\nConst c = 1	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nDefInt A-Z\nEnum E\nA\nEnd Enum	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nDefStr S\nAttribute VB_Description = "d"	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nDefStr S\nImplements Class1	syntax	Deftype statements must precede declarations
+cls	Enum E\nA\nEnd Enum\nDim x As Long\nOption Compare Text	accepted	
+cls	Enum E\nA\nEnd Enum\nEvent Ev()\n#Const k = 1	accepted	
+cls	Enum E\nA\nEnd Enum\nEvent Ev()\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Enum E\nA\nEnd Enum\nFunction F() As Long\nEnd Function\nSub P()\nEnd Sub	accepted	
+cls	Enum E\nA\nEnd Enum\nImplements Class1\nOption Base 1	semantic	Not a valid interface for Implements
+cls	Enum E\nA\nEnd Enum\nOption Compare Binary\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Enum E\nA\nEnd Enum\nOption Compare Binary\nSub P()\nEnd Sub	accepted	
+cls	Enum E\nA\nEnd Enum\nOption Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+cls	Enum E\nA\nEnd Enum\nOption Explicit\nAttribute VB_Name = "m"	accepted	
+cls	Enum E\nA\nEnd Enum\nOption Private Module\nFunction F() As Long\nEnd Function	syntax	Option Private Module not permitted in a object module
+cls	Enum E\nA\nEnd Enum\nOption Private Module\nType T\na As Long\nEnd Type	syntax	Option Private Module not permitted in a object module
+cls	Enum E\nA\nEnd Enum\nPrivate z As Long\nAttribute VB_Description = "d"	accepted	
+cls	Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	accepted	
+cls	Enum E\nA\nEnd Enum\nProperty Get Q() As Long\nEnd Property\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Enum E\nA\nEnd Enum\nSub P()\nEnd Sub\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Enum E\nA\nEnd Enum\nSub P()\nEnd Sub\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Enum E\nA\nEnd Enum\nType T\na As Long\nEnd Type\nDeclare Sub f Lib "k" ()	syntax	Cannot define a Public user-defined type within a private object module
+cls	Event Ev()\n#If k Then\n#End If\n#Const k = 1	accepted	
+cls	Event Ev()\n#If k Then\n#End If\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Event Ev()\n#If k Then\n#End If\nPublic y As Long	accepted	
+cls	Event Ev()\nAttribute VB_Description = "d"\nOption Explicit	accepted	
+cls	Event Ev()\nAttribute VB_Name = "m"\n#If k Then\n#End If	accepted	
+cls	Event Ev()\nConst c = 1\nOption Compare Binary	accepted	
+cls	Event Ev()\nDefInt A-Z\nEvent Ev()	semantic	Ambiguous name detected: Ev
+cls	Event Ev()\nDim x As Long\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Event Ev()\nEvent Ev()\nAttribute VB_Name = "m"	semantic	Ambiguous name detected: Ev
+cls	Event Ev()\nEvent Ev()\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: Ev
+cls	Event Ev()\nOption Compare Binary\nEvent Ev()	semantic	Ambiguous name detected: Ev
+cls	Event Ev()\nOption Compare Binary\nOption Explicit	accepted	
+cls	Event Ev()\nOption Compare Text\nConst c = 1	accepted	
+cls	Event Ev()\nOption Compare Text\nPrivate z As Long	accepted	
+cls	Event Ev()\nOption Explicit\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Event Ev()\nOption Private Module\nDeclare Sub f Lib "k" ()	syntax	Option Private Module not permitted in a object module
+cls	Event Ev()\nOption Private Module\nImplements Class1	syntax	Option Private Module not permitted in a object module
+cls	Event Ev()\nOption Private Module\nOption Compare Text	syntax	Option Private Module not permitted in a object module
+cls	Event Ev()\nPrivate z As Long\nFunction F() As Long\nEnd Function	accepted	
+cls	Event Ev()\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	accepted	
+cls	Event Ev()\nPublic y As Long\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Event Ev()\nPublic y As Long\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Event Ev()\nPublic y As Long\nDim x As Long	accepted	
+cls	Event Ev()\nPublic y As Long\nEvent Ev()	semantic	Ambiguous name detected: Ev
+cls	Event Ev()\nType T\na As Long\nEnd Type\nOption Base 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Event Ev()\nType T\na As Long\nEnd Type\nPrivate z As Long	syntax	Cannot define a Public user-defined type within a private object module
+cls	Function F() As Long\nEnd Function\n#If k Then\n#End If\n#Const k = 1	accepted	
+cls	Function F() As Long\nEnd Function\nAttribute VB_Name = "m"\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Function F() As Long\nEnd Function\nConst c = 1\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDefInt A-Z\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDefStr S\n#If k Then\n#End If	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nDim x As Long\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nEnum E\nA\nEnd Enum\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nEvent Ev()\nAttribute VB_Description = "d"	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Function F() As Long\nEnd Function\nFunction F() As Long\nEnd Function\nImplements Class1	semantic	Ambiguous name detected: F
+cls	Function F() As Long\nEnd Function\nImplements Class1\nAttribute VB_Description = "d"	semantic	Not a valid interface for Implements
+cls	Function F() As Long\nEnd Function\nImplements Class1\nAttribute VB_Name = "m"	semantic	User-defined type not defined
+cls	Function F() As Long\nEnd Function\nOption Base 1\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Compare Binary\nAttribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Compare Binary\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Explicit\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Explicit\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nOption Private Module\nDim x As Long	syntax	Syntax error
+cls	Function F() As Long\nEnd Function\nOption Private Module\nProperty Get Q() As Long\nEnd Property	syntax	Syntax error
+cls	Function F() As Long\nEnd Function\nPublic y As Long\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Function F() As Long\nEnd Function\nSub P()\nEnd Sub\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Implements Class1\n#Const k = 1\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Implements Class1\nAttribute VB_Description = "d"\nEvent Ev()	semantic	Not a valid interface for Implements
+cls	Implements Class1\nAttribute VB_Description = "d"\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Implements Class1\nConst c = 1\nOption Explicit	semantic	Not a valid interface for Implements
+cls	Implements Class1\nDeclare Sub f Lib "k" ()\nFunction F() As Long\nEnd Function	semantic	Ambiguous name detected: F
+cls	Implements Class1\nDeclare Sub f Lib "k" ()\nImplements Class1	semantic	Ambiguous name detected: Class1
+cls	Implements Class1\nEvent Ev()\n#If k Then\n#End If	semantic	Not a valid interface for Implements
+cls	Implements Class1\nEvent Ev()\nProperty Get Q() As Long\nEnd Property	semantic	Not a valid interface for Implements
+cls	Implements Class1\nImplements Class1\n#Const k = 1	semantic	Ambiguous name detected: Class1
+cls	Implements Class1\nImplements Class1\nPublic y As Long	semantic	Ambiguous name detected: Class1
+cls	Implements Class1\nOption Explicit\n#Const k = 1	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Explicit\nConst c = 1	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Explicit\nDeclare Sub f Lib "k" ()	semantic	Not a valid interface for Implements
+cls	Implements Class1\nOption Private Module\n#If k Then\n#End If	syntax	Option Private Module not permitted in a object module
+cls	Implements Class1\nOption Private Module\nConst c = 1	syntax	Option Private Module not permitted in a object module
+cls	Implements Class1\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long	semantic	Not a valid interface for Implements
+cls	Implements Class1\nPublic y As Long\nDim x As Long	semantic	Not a valid interface for Implements
+cls	Implements Class1\nSub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+cls	Implements Class1\nType T\na As Long\nEnd Type\nSub P()\nEnd Sub	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Base 1\n#Const k = 1\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Base 1\n#Const k = 1\nSub P()\nEnd Sub	accepted	
+cls	Option Base 1\n#If k Then\n#End If\nDefInt A-Z	accepted	
+cls	Option Base 1\nAttribute VB_Description = "d"\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Base 1\nAttribute VB_Name = "m"\n#Const k = 1	accepted	
+cls	Option Base 1\nConst c = 1\nOption Explicit	accepted	
+cls	Option Base 1\nDeclare Sub f Lib "k" ()\nEnum E\nA\nEnd Enum	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Base 1\nDeclare Sub f Lib "k" ()\nOption Compare Binary	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Base 1\nDefInt A-Z\nAttribute VB_Name = "m"	accepted	
+cls	Option Base 1\nDefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+cls	Option Base 1\nEvent Ev()\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Base 1\nEvent Ev()\nPrivate z As Long	accepted	
+cls	Option Base 1\nFunction F() As Long\nEnd Function\nAttribute VB_Description = "d"	accepted	
+cls	Option Base 1\nFunction F() As Long\nEnd Function\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Base 1\nImplements Class1\nEnum E\nA\nEnd Enum	semantic	Not a valid interface for Implements
+cls	Option Base 1\nImplements Class1\nOption Compare Binary	semantic	Not a valid interface for Implements
+cls	Option Base 1\nOption Base 1\nDefInt A-Z	syntax	Duplicate Option statement
+cls	Option Base 1\nOption Base 1\nDefStr S	syntax	Duplicate Option statement
+cls	Option Base 1\nOption Private Module\nAttribute VB_Description = "d"	syntax	Option Private Module not permitted in a object module
+cls	Option Base 1\nOption Private Module\nDefStr S	syntax	Option Private Module not permitted in a object module
+cls	Option Base 1\nProperty Get Q() As Long\nEnd Property\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Base 1\nProperty Get Q() As Long\nEnd Property\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Base 1\nPublic y As Long\n#Const k = 1	accepted	
+cls	Option Base 1\nSub P()\nEnd Sub\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Base 1\nSub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Base 1\nType T\na As Long\nEnd Type\nImplements Class1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Compare Binary\n#Const k = 1\nOption Compare Binary	syntax	Duplicate Option statement
+cls	Option Compare Binary\n#If k Then\n#End If\nFunction F() As Long\nEnd Function	accepted	
+cls	Option Compare Binary\nAttribute VB_Description = "d"\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Compare Binary\nAttribute VB_Description = "d"\nOption Base 1	accepted	
+cls	Option Compare Binary\nAttribute VB_Description = "d"\nOption Compare Binary	syntax	Duplicate Option statement
+cls	Option Compare Binary\nAttribute VB_Name = "m"\nAttribute VB_Description = "d"	accepted	
+cls	Option Compare Binary\nConst c = 1\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Compare Binary\nDefInt A-Z\nEnum E\nA\nEnd Enum	accepted	
+cls	Option Compare Binary\nDefStr S\nAttribute VB_Description = "d"	accepted	
+cls	Option Compare Binary\nDefStr S\nDefInt A-Z	syntax	Duplicate Deftype statement
+cls	Option Compare Binary\nDim x As Long\nAttribute VB_Name = "m"	accepted	
+cls	Option Compare Binary\nEvent Ev()\n#Const k = 1	accepted	
+cls	Option Compare Binary\nFunction F() As Long\nEnd Function\n#Const k = 1	accepted	
+cls	Option Compare Binary\nFunction F() As Long\nEnd Function\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Compare Binary\nFunction F() As Long\nEnd Function\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Compare Binary\nImplements Class1\nConst c = 1	semantic	Not a valid interface for Implements
+cls	Option Compare Binary\nImplements Class1\nDim x As Long	semantic	Not a valid interface for Implements
+cls	Option Compare Binary\nImplements Class1\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Binary\nOption Compare Binary\nOption Base 1	syntax	Duplicate Option statement
+cls	Option Compare Binary\nOption Private Module\n#Const k = 1	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Binary\nOption Private Module\nDim x As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Binary\nOption Private Module\nProperty Get Q() As Long\nEnd Property	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Binary\nPrivate z As Long\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Option Compare Binary\nSub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+cls	Option Compare Text\n#If k Then\n#End If\nOption Compare Binary	syntax	Duplicate Option statement
+cls	Option Compare Text\nAttribute VB_Description = "d"\n#If k Then\n#End If	accepted	
+cls	Option Compare Text\nAttribute VB_Description = "d"\nAttribute VB_Name = "m"	accepted	
+cls	Option Compare Text\nAttribute VB_Name = "m"\nOption Compare Text	syntax	Duplicate Option statement
+cls	Option Compare Text\nConst c = 1\nAttribute VB_Name = "m"	accepted	
+cls	Option Compare Text\nDeclare Sub f Lib "k" ()\nOption Compare Text	syntax	Duplicate Option statement
+cls	Option Compare Text\nDeclare Sub f Lib "k" ()\nSub P()\nEnd Sub	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Compare Text\nDefStr S\nAttribute VB_Description = "d"	accepted	
+cls	Option Compare Text\nDim x As Long\nSub P()\nEnd Sub	accepted	
+cls	Option Compare Text\nFunction F() As Long\nEnd Function\n#If k Then\n#End If	accepted	
+cls	Option Compare Text\nFunction F() As Long\nEnd Function\nAttribute VB_Name = "m"	accepted	
+cls	Option Compare Text\nOption Base 1\nFunction F() As Long\nEnd Function	accepted	
+cls	Option Compare Text\nOption Compare Binary\nDeclare Sub f Lib "k" ()	syntax	Duplicate Option statement
+cls	Option Compare Text\nOption Explicit\n#If k Then\n#End If	accepted	
+cls	Option Compare Text\nOption Explicit\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Compare Text\nOption Private Module\nDim x As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Compare Text\nPrivate z As Long\n#Const k = 1	accepted	
+cls	Option Compare Text\nPrivate z As Long\n#If k Then\n#End If	accepted	
+cls	Option Compare Text\nPrivate z As Long\nPublic y As Long	accepted	
+cls	Option Compare Text\nProperty Get Q() As Long\nEnd Property\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Compare Text\nSub P()\nEnd Sub\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Compare Text\nSub P()\nEnd Sub\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Option Explicit\n#Const k = 1\nOption Base 1	accepted	
+cls	Option Explicit\n#If k Then\n#End If\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Explicit\n#If k Then\n#End If\nPrivate z As Long	accepted	
+cls	Option Explicit\n#If k Then\n#End If\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Explicit\nAttribute VB_Description = "d"\nEvent Ev()	accepted	
+cls	Option Explicit\nConst c = 1\nProperty Get Q() As Long\nEnd Property	accepted	
+cls	Option Explicit\nDeclare Sub f Lib "k" ()\nOption Base 1	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Option Explicit\nDefInt A-Z\nDefStr S	syntax	Duplicate Deftype statement
+cls	Option Explicit\nDefStr S\nDefStr S	syntax	Duplicate Deftype statement
+cls	Option Explicit\nDim x As Long\nAttribute VB_Description = "d"	accepted	
+cls	Option Explicit\nDim x As Long\nPrivate z As Long	accepted	
+cls	Option Explicit\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"	accepted	
+cls	Option Explicit\nEnum E\nA\nEnd Enum\nPrivate z As Long	accepted	
+cls	Option Explicit\nEvent Ev()\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Explicit\nImplements Class1\nOption Compare Text	semantic	Not a valid interface for Implements
+cls	Option Explicit\nOption Base 1\nDefStr S	accepted	
+cls	Option Explicit\nOption Compare Binary\nPublic y As Long	accepted	
+cls	Option Explicit\nOption Compare Text\nPublic y As Long	accepted	
+cls	Option Explicit\nPublic y As Long\nAttribute VB_Description = "d"	accepted	
+cls	Option Explicit\nPublic y As Long\nDim x As Long	accepted	
+cls	Option Explicit\nType T\na As Long\nEnd Type\n#If k Then\n#End If	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Explicit\nType T\na As Long\nEnd Type\nConst c = 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Explicit\nType T\na As Long\nEnd Type\nImplements Class1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Option Private Module\n#If k Then\n#End If\n#Const k = 1	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nAttribute VB_Description = "d"\nAttribute VB_Description = "d"	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nAttribute VB_Description = "d"\nPrivate z As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDeclare Sub f Lib "k" ()\nAttribute VB_Name = "m"	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDeclare Sub f Lib "k" ()\nType T\na As Long\nEnd Type	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDefStr S\nDefInt A-Z	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDefStr S\nEnum E\nA\nEnd Enum	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDim x As Long\nDefInt A-Z	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDim x As Long\nEvent Ev()	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nDim x As Long\nOption Explicit	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nEnum E\nA\nEnd Enum\nDefInt A-Z	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nEnum E\nA\nEnd Enum\nEvent Ev()	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nImplements Class1\nEnum E\nA\nEnd Enum	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Base 1\n#If k Then\n#End If	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Compare Binary\nProperty Get Q() As Long\nEnd Property	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Compare Binary\nType T\na As Long\nEnd Type	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Compare Text\nPublic y As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nOption Private Module\nOption Compare Text	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nProperty Get Q() As Long\nEnd Property\n#Const k = 1	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nProperty Get Q() As Long\nEnd Property\nFunction F() As Long\nEnd Function	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nPublic y As Long\nDim x As Long	syntax	Option Private Module not permitted in a object module
+cls	Option Private Module\nPublic y As Long\nImplements Class1	syntax	Option Private Module not permitted in a object module
+cls	Private z As Long\nAttribute VB_Description = "d"\nDim x As Long	accepted	
+cls	Private z As Long\nAttribute VB_Description = "d"\nSub P()\nEnd Sub	accepted	
+cls	Private z As Long\nConst c = 1\nOption Explicit	accepted	
+cls	Private z As Long\nDefStr S\nAttribute VB_Description = "d"	syntax	Deftype statements must precede declarations
+cls	Private z As Long\nDim x As Long\nEvent Ev()	accepted	
+cls	Private z As Long\nEnum E\nA\nEnd Enum\nPublic y As Long	accepted	
+cls	Private z As Long\nEnum E\nA\nEnd Enum\nSub P()\nEnd Sub	accepted	
+cls	Private z As Long\nEvent Ev()\nDim x As Long	accepted	
+cls	Private z As Long\nImplements Class1\nOption Compare Binary	semantic	Not a valid interface for Implements
+cls	Private z As Long\nOption Compare Binary\nOption Explicit	accepted	
+cls	Private z As Long\nOption Compare Text\nDim x As Long	accepted	
+cls	Private z As Long\nOption Compare Text\nOption Compare Binary	syntax	Duplicate Option statement
+cls	Private z As Long\nOption Compare Text\nPublic y As Long	accepted	
+cls	Private z As Long\nOption Explicit\nEvent Ev()	accepted	
+cls	Private z As Long\nSub P()\nEnd Sub\nSub P()\nEnd Sub	semantic	Ambiguous name detected: P
+cls	Private z As Long\nType T\na As Long\nEnd Type\nSub P()\nEnd Sub	syntax	Cannot define a Public user-defined type within a private object module
+cls	Property Get Q() As Long\nEnd Property\nAttribute VB_Description = "d"\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nConst c = 1\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nDefInt A-Z\nAttribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nDefStr S\nDefStr S	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nDefStr S\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum\n#Const k = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum\nAttribute VB_Description = "d"	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nEvent Ev()\nPublic y As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nOption Compare Text\nFunction F() As Long\nEnd Function	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nPrivate z As Long\nOption Compare Text	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nSub P()\nEnd Sub\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type\nAttribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Property Get Q() As Long\nEnd Property\nType T\na As Long\nEnd Type\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Public y As Long\n#If k Then\n#End If\nAttribute VB_Description = "d"	accepted	
+cls	Public y As Long\nAttribute VB_Description = "d"\nType T\na As Long\nEnd Type	syntax	Cannot define a Public user-defined type within a private object module
+cls	Public y As Long\nAttribute VB_Name = "m"\nConst c = 1	accepted	
+cls	Public y As Long\nDeclare Sub f Lib "k" ()\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Public y As Long\nDefInt A-Z\nDeclare Sub f Lib "k" ()	syntax	Deftype statements must precede declarations
+cls	Public y As Long\nDefStr S\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Public y As Long\nDim x As Long\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Public y As Long\nDim x As Long\nEvent Ev()	accepted	
+cls	Public y As Long\nEnum E\nA\nEnd Enum\nOption Private Module	syntax	Option Private Module not permitted in a object module
+cls	Public y As Long\nEvent Ev()\nOption Explicit	accepted	
+cls	Public y As Long\nFunction F() As Long\nEnd Function\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Public y As Long\nFunction F() As Long\nEnd Function\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Public y As Long\nImplements Class1\nAttribute VB_Name = "m"	semantic	User-defined type not defined
+cls	Public y As Long\nOption Compare Binary\nDeclare Sub f Lib "k" ()	syntax	Constants, fixed-length strings, arrays, user-defined types and Declare statements not allowed as Public members of object modules
+cls	Public y As Long\nOption Compare Text\nOption Compare Text	syntax	Duplicate Option statement
+cls	Public y As Long\nOption Private Module\nPrivate z As Long	syntax	Option Private Module not permitted in a object module
+cls	Public y As Long\nProperty Get Q() As Long\nEnd Property\nConst c = 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Public y As Long\nPublic y As Long\n#Const k = 1	semantic	Ambiguous name detected: y
+cls	Public y As Long\nPublic y As Long\nDeclare Sub f Lib "k" ()	semantic	Ambiguous name detected: y
+cls	Public y As Long\nPublic y As Long\nSub P()\nEnd Sub	semantic	Ambiguous name detected: y
+cls	Public y As Long\nSub P()\nEnd Sub\nAttribute VB_Name = "m"	accepted	
+cls	Public y As Long\nSub P()\nEnd Sub\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\n#Const k = 1\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\n#Const k = 1\nEvent Ev()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\n#Const k = 1\nOption Explicit	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nAttribute VB_Description = "d"\nAttribute VB_Description = "d"	accepted	
+cls	Sub P()\nEnd Sub\nAttribute VB_Description = "d"\nDefInt A-Z	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nAttribute VB_Name = "m"\nOption Compare Binary	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nAttribute VB_Name = "m"\nPrivate z As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nConst c = 1\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Sub P()\nEnd Sub\nDefInt A-Z\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nEnum E\nA\nEnd Enum\n#If k Then\n#End If	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nEvent Ev()\nImplements Class1	semantic	Not a valid interface for Implements
+cls	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\n#Const k = 1	accepted	
+cls	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nDim x As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nOption Base 1	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nFunction F() As Long\nEnd Function\nType T\na As Long\nEnd Type	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nImplements Class1\nAttribute VB_Description = "d"	semantic	Not a valid interface for Implements
+cls	Sub P()\nEnd Sub\nImplements Class1\nEvent Ev()	semantic	Not a valid interface for Implements
+cls	Sub P()\nEnd Sub\nOption Compare Text\nAttribute VB_Description = "d"	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nOption Explicit\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nPrivate z As Long\nDeclare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Sub P()\nEnd Sub\nProperty Get Q() As Long\nEnd Property\nEnum E\nA\nEnd Enum	syntax	Only comments may appear after End Sub, End Function, or End Property
+cls	Type T\na As Long\nEnd Type\nAttribute VB_Name = "m"\nPrivate z As Long	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nDefInt A-Z\nDefInt A-Z	syntax	Deftype statements must precede declarations
+cls	Type T\na As Long\nEnd Type\nDim x As Long\n#Const k = 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nDim x As Long\nAttribute VB_Description = "d"	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum\nAttribute VB_Name = "m"	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nEnum E\nA\nEnd Enum\nDefStr S	syntax	Deftype statements must precede declarations
+cls	Type T\na As Long\nEnd Type\nImplements Class1\nConst c = 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Base 1\nPrivate z As Long	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Compare Text\nProperty Get Q() As Long\nEnd Property	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Explicit\nEnum E\nA\nEnd Enum	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nOption Explicit\nType T\na As Long\nEnd Type	semantic	Ambiguous name detected: T
+cls	Type T\na As Long\nEnd Type\nOption Private Module\n#If k Then\n#End If	syntax	Option Private Module not permitted in a object module
+cls	Type T\na As Long\nEnd Type\nOption Private Module\nFunction F() As Long\nEnd Function	syntax	Option Private Module not permitted in a object module
+cls	Type T\na As Long\nEnd Type\nPrivate z As Long\nOption Explicit	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nPublic y As Long\n#Const k = 1	syntax	Cannot define a Public user-defined type within a private object module
+cls	Type T\na As Long\nEnd Type\nSub P()\nEnd Sub\n#Const k = 1	syntax	Cannot define a Public user-defined type within a private object module

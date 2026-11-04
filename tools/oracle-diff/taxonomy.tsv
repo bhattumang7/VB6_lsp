@@ -97,3 +97,9 @@ End Select without Select Case	syntax
 End With without With	syntax
 For control variable already in use	syntax
 For without Next	syntax
+Ambiguous name detected: *	semantic
+Duplicate definition	semantic
+Deftype statements must precede declarations	syntax
+Duplicate Deftype statement	syntax
+Duplicate Option statement	syntax
+Option Private Module not permitted in a object module	syntax

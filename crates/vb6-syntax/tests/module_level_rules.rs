@@ -65,7 +65,7 @@ fn option_base_after_a_module_level_array_is_reported() {
     for ok in [
         "Dim n As Long\nOption Base 1\n",
         "Const n = 5\nOption Base 1\n",
-        "Sub S()\nDim a(5) As Long\nEnd Sub\nOption Base 1\n",
+        "Option Base 1\nSub S()\nDim a(5) As Long\nEnd Sub\n",
     ] {
         assert_eq!(parse(ok).found, vec![], "for {ok:?}");
     }
@@ -89,9 +89,9 @@ fn deftype_after_a_declaration_is_reported_at_the_deftype_keyword() {
         "Dim n As Long",
         "Public n As Long",
         "Private Declare Function F Lib \"k\" () As Long",
-        "Sub S()\nEnd Sub",
-        "Function F()\nEnd Function",
-        "Property Get P()\nEnd Property",
+        "Const n = 1",
+        "Enum E\n    A\nEnd Enum",
+        "Type T\n    a As Long\nEnd Type",
     ] {
         let src = format!("{decl}\nDefInt A-Z\n");
         let p = parse(&src);
@@ -124,4 +124,31 @@ fn deftype_letters_may_not_overlap_an_earlier_deftype() {
     assert_eq!(parse(src).found, vec![]);
     let src = "DefInt A-C, E, G-I\nDefStr I-J\n";
     assert_eq!(parse(src).found, vec![(DUPLICATE_DEFTYPE, offset_of(src, "DefStr", 0), 6)]);
+}
+
+#[test]
+fn nothing_but_a_procedure_may_follow_a_procedure() {
+    const AFTER_END_OF_PROCEDURE: u32 = 0x9c91;
+    for decl in [
+        "Option Explicit",
+        "Option Base 1",
+        "DefInt A-Z",
+        "Dim n As Long",
+        "Public n As Long",
+        "Private n As Long",
+        "Const n = 1",
+        "Declare Sub F Lib \"k\" ()",
+        "Type T\n    a As Long\nEnd Type",
+        "Enum E\n    A\nEnd Enum",
+    ] {
+        for proc in ["Sub S()\nEnd Sub", "Function F()\nEnd Function", "Property Get P()\nEnd Property"] {
+            let src = format!("{proc}\n{decl}\n");
+            let p = parse(&src);
+            let first = decl.split(' ').next().unwrap();
+            assert_eq!(p.found, vec![(AFTER_END_OF_PROCEDURE, offset_of(&src, first, 0), first.len() as u32)], "for {src:?}");
+        }
+    }
+    // Procedures, attribute lines and conditional compilation may follow.
+    let src = "Sub S()\nEnd Sub\nAttribute VB_Name = \"m\"\n#Const k = 1\nPublic Sub T()\nEnd Sub\nProperty Get Q()\nEnd Property\n";
+    assert_eq!(parse(src).found, vec![]);
 }

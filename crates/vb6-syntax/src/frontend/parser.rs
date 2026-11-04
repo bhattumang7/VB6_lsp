@@ -234,6 +234,8 @@ pub struct Parser<'src> {
     after_colon: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
+    /// True once a procedure has been read: no declaration may follow it.
+    procedure_seen: bool,
     /// True while the parameter list of a `Property Let` or `Property Set` is being read.
     value_owner_params: bool,
     /// True once the header marks the class as exposed outside its project.
@@ -364,6 +366,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             module_decl_seen: false,
+            procedure_seen: false,
             class_exposed: false,
             value_owner_params: false,
             module_array_seen: false,
@@ -1037,6 +1040,14 @@ impl<'src> Parser<'src> {
                 self.diagnostics.push_labeled(0x9c6f, span, "statement or end of statement");
             }
 
+            // After a procedure only procedures (and attribute lines, conditional compilation,
+            // `Implements`) may stand; any other declaration is reported alone.
+            let late_declaration = if self.procedure_seen && self.starts_module_declaration() {
+                Some((self.diagnostics.len(), self.current_span()))
+            } else {
+                None
+            };
+
             match self.peek().kind.clone() {
                 // Procedure declarations
                 TokenKind::Kw(Kw::Sub)      => {
@@ -1140,8 +1151,33 @@ impl<'src> Parser<'src> {
                 }
                 _ => self.recover_module_unexpected(),
             }
+            if let Some((mark, span)) = late_declaration {
+                self.diagnostics.truncate(mark);
+                self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
+            }
         }
         nodes
+    }
+
+    /// True when the next tokens begin a declaration that belongs before the procedures of a
+    /// module: `Option`, `Def…`, `Dim`, `Const`, `Type`, `Enum`, `Declare`, `Event`, or a
+    /// variable, constant, type or external declaration behind an access word.
+    fn starts_module_declaration(&mut self) -> bool {
+        let first = self.peek().kind.clone();
+        let is_procedure_word =
+            |k: &TokenKind| matches!(k, TokenKind::Kw(Kw::Sub | Kw::Function | Kw::Property));
+        match first {
+            TokenKind::Kw(Kw::Option | Kw::Dim | Kw::Const | Kw::Type | Kw::Enum | Kw::Declare | Kw::Event) => true,
+            TokenKind::Kw(k) if def_type_kw(k).is_some() => true,
+            TokenKind::Kw(Kw::Public | Kw::Private | Kw::Global | Kw::Friend | Kw::Static) => {
+                let second = self.peek2().kind.clone();
+                !is_procedure_word(&second)
+                    && second != TokenKind::Kw(Kw::Static)
+                    && !(matches!(first, TokenKind::Kw(Kw::Friend | Kw::Static)))
+                    && !matches!(second, TokenKind::Eol | TokenKind::Eof)
+            }
+            _ => false,
+        }
     }
 
     /// True when the next tokens begin the declaration of a procedure, a `Declare` or an
@@ -2289,9 +2325,11 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
-        if !self.in_procedure && !is_const {
+        if !self.in_procedure {
             self.module_decl_seen = true;
-            self.module_array_seen |= bounds.is_some();
+            if !is_const {
+                self.module_array_seen |= bounds.is_some();
+            }
         }
         self.reject_suffix_with_as(&name, "end of statement");
         // `Dir$` is the one built-in `$` name that a variable or member declaration still reads
@@ -4219,6 +4257,7 @@ impl<'src> Parser<'src> {
         let body = self.parse_block_proc(arena);
         self.proc_kind = outer_kind;
         self.block_error_reported = outer_reported;
+        self.procedure_seen = true;
         self.report_undefined_labels();
 
         let (closer, expected_code) = match kind {
@@ -4761,6 +4800,7 @@ impl<'src> Parser<'src> {
     /// Parse a Type declaration block.
     fn parse_type_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Type
+        self.module_decl_seen = true;
         let name = self.expect_decl_name();
         self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -4859,6 +4899,7 @@ impl<'src> Parser<'src> {
     /// Parse an Enum declaration block.
     fn parse_enum_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Enum
+        self.module_decl_seen = true;
         let name = self.expect_decl_name();
         self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
