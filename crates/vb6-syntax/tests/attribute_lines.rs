@@ -72,3 +72,40 @@ fn a_name_chain_without_an_equals_sign_is_a_syntax_error() {
         assert_eq!(p.found[0].0, 0x9c70, "{src}");
     }
 }
+
+#[test]
+fn the_rest_of_an_ignored_line_includes_colons() {
+    for src in [
+        "Attribute Attribute VB_Name = \"m\"\n",
+        "Attribute : VB_Name = \"m\"\n",
+        "Attribute VB_Name = : \"m\"\n",
+        "Attribute VB_Name = \"m\": Dim y\n",
+    ] {
+        let p = parse(src);
+        assert_eq!(p.found, vec![], "{src:?}");
+        assert_eq!(p.top.len(), 1, "{src:?}: the whole line is one attribute line");
+    }
+}
+
+#[test]
+fn a_plain_name_before_the_equals_sign_is_a_syntax_error() {
+    for src in ["Attribute x = \"m\"\n", "Attribute Step = \"m\"\n"] {
+        let p = parse(src);
+        assert!(!p.found.is_empty(), "{src:?}");
+        assert!(p.found.iter().all(|d| d.0 == 0x9c70 || d.0 == 0x9c6f), "{src:?}: {:?}", p.found);
+    }
+    // A dotted name, or a header name, is fine.
+    for src in ["Attribute Foo.x = \"m\"\n", "Attribute VB_Anything = 1\n"] {
+        assert_eq!(parse(src).found, vec![], "{src:?}");
+    }
+}
+
+#[test]
+fn as_after_attribute_is_expected_type_name() {
+    for src in ["Attribute As = \"m\"\n", "Attribute As VB_Name = \"m\"\n"] {
+        let p = parse(src);
+        assert_eq!(p.found.len(), 1, "{src:?}: {:?}", p.found);
+        assert_eq!(p.found[0].0, 0x9c6f, "{src:?}");
+        assert_eq!(p.found[0].1, src.find("As").unwrap() as u32, "{src:?}");
+    }
+}

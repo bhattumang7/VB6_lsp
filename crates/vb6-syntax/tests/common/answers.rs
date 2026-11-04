@@ -43,13 +43,24 @@ pub fn unescape(word: &str) -> String {
     word.replace("\\n", "\n").replace("\\t", "\t")
 }
 
+/// The diagnostics that report a block left open at the end of the source. When the
+/// source holds a semantic error as well, the compiler reports that one first and
+/// never gets to the open block, so such a row says nothing about the parse.
+const MISSING_END_CODES: [u32; 12] = [
+    0x9c8f, 0x9c90, 0x9c92, 0x9c93, 0x9c94, 0x9c95, 0x9cac, 0x9cbe, 0x9cc7, 0x9c76, 0xdeff, 0x9c91,
+];
+
 pub fn diagnostics(source: &str, kind: ModuleKind) -> usize {
+    diagnostic_codes(source, kind).len()
+}
+
+pub fn diagnostic_codes(source: &str, kind: ModuleKind) -> Vec<u32> {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
     let mut parser = Parser::with_module_kind(&mut ctx, source.as_bytes(), kind);
     parser.parse_module(&mut arena);
-    parser.diagnostics.items().len()
+    parser.diagnostics.items().iter().map(|d| d.code).collect()
 }
 
 /// Every row on which the parser and the compiler disagree, as readable lines.
@@ -77,9 +88,12 @@ pub fn disagreements(
         }
         let t = &templates[template];
         let source = t.text.replace("{k}", &unescape(word));
-        let found = diagnostics(&source, t.kind);
+        let codes = diagnostic_codes(&source, t.kind);
+        let found = codes.len();
+        // A semantic answer hides a block that is left open.
+        let masked = class == "semantic" && !codes.is_empty() && codes.iter().all(|c| MISSING_END_CODES.contains(c));
         checked += 1;
-        if (found == 0) != expect_parses {
+        if !masked && (found == 0) != expect_parses {
             let verdict = if expect_parses { "accepts" } else { "rejects" };
             wrong.push(format!("{template} {word}: the compiler {verdict} ({class} {message}), parser reported {found}"));
         }
@@ -95,7 +109,7 @@ pub fn assert_none_wrong(checked: usize, wrong: &[String]) {
     }
     let mut examples: Vec<String> = Vec::new();
     for template in per_template.keys() {
-        examples.extend(wrong.iter().filter(|w| w.starts_with(&format!("{template} "))).take(12).cloned());
+        examples.extend(wrong.iter().filter(|w| w.starts_with(&format!("{template} "))).take(std::env::var("EXAMPLES").ok().and_then(|v| v.parse().ok()).unwrap_or(12)).cloned());
     }
     assert!(
         wrong.is_empty(),

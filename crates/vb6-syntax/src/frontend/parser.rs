@@ -3513,7 +3513,13 @@ impl<'src> Parser<'src> {
         // `Attribute VB_Name = …` or `Attribute Member.VB_UserMemId = …`: the
         // attribute is the last name; a preceding name is the member it applies to.
         // A line that does not begin with a name is not read at all.
-        if !self.at_attribute_word() {
+        if self.peek().kind == TokenKind::Kw(Kw::As) {
+            // `As` here is read as the start of a type clause.
+            let span = self.current_span();
+            self.diagnostics.push_labeled(0x9c6f, span, "New or type name");
+            return self.ignore_attribute_line(arena);
+        }
+        if !self.at_attribute_word() || self.peek().kind == TokenKind::Kw(Kw::Attribute) {
             return self.ignore_attribute_line(arena);
         }
         let mut key = self.advance();
@@ -3534,6 +3540,12 @@ impl<'src> Parser<'src> {
             self.skip_line();
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
+        // Without a member before it, the name must be one of the header words.
+        if target.is_none() && !is_header_word(self.scanner.sym_name(name)) {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, key.span);
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         // The node spans its first value: for `VB_Name` that is where the
         // module name is written. Whatever follows the `=` is only read for
         // its values: a value that does not parse is not an error.
@@ -3549,7 +3561,7 @@ impl<'src> Parser<'src> {
             }
         }
         self.diagnostics.truncate(mark);
-        while !self.peek().is_stmt_end() && self.peek().kind != TokenKind::Kw(Kw::Colon) {
+        while !self.peek().is_stmt_end() {
             self.advance();
         }
         self.end_stmt();
@@ -3574,7 +3586,7 @@ impl<'src> Parser<'src> {
 
     /// The rest of an `Attribute` line that the compiler does not read.
     fn ignore_attribute_line(&mut self, arena: &mut ExprArena) -> NodeId {
-        while !self.peek().is_stmt_end() && self.peek().kind != TokenKind::Kw(Kw::Colon) {
+        while !self.peek().is_stmt_end() {
             self.advance();
         }
         self.end_stmt();
