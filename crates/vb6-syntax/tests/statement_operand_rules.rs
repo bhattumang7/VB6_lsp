@@ -121,3 +121,42 @@ fn end_takes_no_operand() {
     assert!(matches!(p.node(body[0]), ExprNode::EndStmt));
     let _ = AstLit::Empty;
 }
+
+#[test]
+fn const_declaration_requires_a_value() {
+    let (src, found) = in_sub("Const c As Long");
+    let eol = offset_of(&src, "Long\n", 0) + 4;
+    assert_eq!(found[0], (EXPECTED, eol, 0));
+    let (src, found) = in_sub("Const a = 1, b");
+    let eol = offset_of(&src, "b\n", 0) + 1;
+    assert_eq!(found[0], (EXPECTED, eol, 0));
+    let (_, found) = in_sub("Const a = 1, b = 2");
+    assert_eq!(found, vec![]);
+}
+
+#[test]
+fn enum_members_keep_an_optional_value() {
+    assert_eq!(module("Enum E\n A\n B = 2\nEnd Enum\n"), vec![]);
+}
+
+#[test]
+fn assignment_and_loop_targets_name_something() {
+    for body in ["For Each 5 In c\nNext", "Erase 5", "Erase \"a\"", "Set 5 = x"] {
+        let (src, found) = in_sub(body);
+        let at = body.find(|c: char| c == '5' || c == '"').unwrap() as u32 + 8;
+        assert_eq!(found[0].0, 0x9c6f, "{body}: {src:?}");
+        assert_eq!(found[0].1, at, "{body}");
+    }
+}
+
+#[test]
+fn mid_statement_takes_two_or_three_arguments() {
+    let (_, found) = in_sub("Mid(s, 1) = \"a\"");
+    assert_eq!(found, vec![]);
+    let (_, found) = in_sub("Mid$(s, 1, 2) = \"a\"");
+    assert_eq!(found, vec![]);
+    let (src, found) = in_sub("Mid(s) = \"a\"");
+    assert_eq!(found, vec![(EXPECTED, offset_of(&src, ")", 1), 1)]);
+    let (src, found) = in_sub("Mid(s, 1, 2, 3) = \"a\"");
+    assert_eq!(found, vec![(EXPECTED, offset_of(&src, ")", 1), 1)]);
+}

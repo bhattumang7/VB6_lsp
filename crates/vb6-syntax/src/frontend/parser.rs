@@ -1607,6 +1607,15 @@ impl<'src> Parser<'src> {
         self.advance(); // consume Mid / Mid$ / MidB / MidB$
         self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
         let args = self.parse_arg_list(arena);
+        // `Mid(target, start [, length])`
+        let arg_count = match arena.get(args) {
+            ExprNode::ArgList { args } => args.len(),
+            _ => 0,
+        };
+        if !(2..=3).contains(&arg_count) {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+        }
         self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
@@ -1650,7 +1659,7 @@ impl<'src> Parser<'src> {
         let mut stmts = Vec::new();
         loop {
             // Variable declarations accept `As Type()`; `Const` does not.
-            let item = self.parse_dim_item(arena, is_const, is_static, !is_const);
+            let item = self.parse_dim_item_with(arena, is_const, is_static, !is_const, is_const);
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
@@ -1667,6 +1676,19 @@ impl<'src> Parser<'src> {
     /// `WithEvents` may precede each variable of a list (not a constant).
     /// `array_suffix_ok` permits a trailing `As Type()` array marker.
     fn parse_dim_item(&mut self, arena: &mut ExprArena, is_const: bool, is_static: bool, array_suffix_ok: bool) -> NodeId {
+        self.parse_dim_item_with(arena, is_const, is_static, array_suffix_ok, false)
+    }
+
+    /// As [`Self::parse_dim_item`]; `value_required` makes `= value` mandatory
+    /// (a `Const` declaration, as opposed to an `Enum` member).
+    fn parse_dim_item_with(
+        &mut self,
+        arena: &mut ExprArena,
+        is_const: bool,
+        is_static: bool,
+        array_suffix_ok: bool,
+        value_required: bool,
+    ) -> NodeId {
         let with_events = !is_const && self.peek().kind == TokenKind::Kw(Kw::WithEvents);
         if with_events {
             self.reject_in_standard_module();
@@ -1698,8 +1720,13 @@ impl<'src> Parser<'src> {
             (false, self.type_node_from_suffix(arena, name.type_suffix))
         };
         // Only a constant has an initial value.
-        let init = if is_const && self.eat(TokenKind::Kw(Kw::Eq)) {
-            Some(self.parse_expr(arena, 0))
+        let init = if is_const {
+            if value_required {
+                self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
+                Some(self.parse_expr(arena, 0))
+            } else if self.eat(TokenKind::Kw(Kw::Eq)) {
+                Some(self.parse_expr(arena, 0))
+            } else { None }
         } else { None };
         let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, with_events, bounds, type_node, init });
         self.set_span(id, name.span);
@@ -3878,7 +3905,32 @@ impl<'src> Parser<'src> {
         if let Some(access) = self.try_parse_leading_with_member(arena) {
             return self.parse_postfix(arena, access);
         }
+        // A target names something: a literal does not.
+        if matches!(
+            self.peek().kind,
+            TokenKind::IntLit
+                | TokenKind::LongLit
+                | TokenKind::SngLit
+                | TokenKind::DblLit
+                | TokenKind::CurLit
+                | TokenKind::StrLit
+                | TokenKind::DateLit
+                | TokenKind::Kw(Kw::True)
+                | TokenKind::Kw(Kw::False)
+                | TokenKind::Kw(Kw::Nothing)
+                | TokenKind::Kw(Kw::Empty)
+                | TokenKind::Kw(Kw::Null)
+        ) {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, span, "Identifier");
+            self.advance();
+            return self.parse_primary_placeholder(arena);
+        }
         self.parse_primary(arena)
+    }
+
+    fn parse_primary_placeholder(&mut self, arena: &mut ExprArena) -> NodeId {
+        arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
     }
 
     /// If the next token is a leading `.` or `!` (a With-block member reference
