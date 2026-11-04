@@ -1,0 +1,62 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each word of words.txt.
+=== namedarg bas
+Sub Probe(o As Object)
+    x = o.f({k}:=1)
+End Sub
+=== namedargstmt bas
+Sub Probe(o As Object)
+    o.f {k}:=1
+End Sub
+=== gotolabel bas
+Sub Probe()
+    GoTo {k}
+End Sub
+=== gosublabel bas
+Sub Probe()
+    GoSub {k}
+End Sub
+=== resumelabel bas
+Sub Probe()
+    Resume {k}
+End Sub
+=== onerrorlabel bas
+Sub Probe()
+    On Error GoTo {k}
+End Sub
+=== exitword bas
+Sub Probe()
+    Exit {k}
+End Sub
+=== optionword bas
+Option {k}
+=== withmember bas
+Sub Probe(o As Object)
+    With o
+        x = .{k}
+    End With
+End Sub
+=== withtarget bas
+Sub Probe(o As Object)
+    With o
+        .{k} = 1
+    End With
+End Sub
+=== callword bas
+Sub Probe()
+    Call {k}
+End Sub
+=== labelcolon bas
+Sub Probe()
+{k}: x = 1
+End Sub
+=== labeldef bas
+Sub Probe()
+    GoTo L
+{k}:
+End Sub
+=== withcall bas
+Sub Probe(o As Object)
+    With o
+        .{k} 1
+    End With
+End Sub

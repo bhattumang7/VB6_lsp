@@ -69,3 +69,7 @@ Must be first statement on the line	syntax
 Statement invalid outside Type block	syntax
 Statements and labels invalid between Select Case and first Case	syntax
 Invalid attribute in Sub or Function	syntax
+Exit Do not within Do...Loop	syntax
+Exit For not within For...Next	syntax
+Exit Function not allowed in Sub or Property	syntax
+Exit Property not allowed in Function or Sub	syntax

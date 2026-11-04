@@ -2054,7 +2054,11 @@ impl<'src> Parser<'src> {
 
     /// True when `target` is a member access (not a plain name) whose member is `wanted`.
     fn member_named(&self, arena: &ExprArena, target: NodeId, wanted: &str) -> bool {
-        let ExprNode::MemberAccess { member, .. } = arena.get(target) else { return false };
+        let ExprNode::MemberAccess { base, member, .. } = arena.get(target) else { return false };
+        // Inside a `With` the members are ordinary names; the rule is for an explicit object.
+        if matches!(arena.get(*base), ExprNode::WithContext) {
+            return false;
+        }
         self.scanner.sym_name(*member).eq_ignore_ascii_case(wanted)
     }
 
@@ -5091,6 +5095,9 @@ impl<'src> Parser<'src> {
     fn parse_stmt_arg_list(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
         let mut args = Vec::new();
         while !self.peek().is_stmt_end() {
+            if self.peek().kind == TokenKind::Kw(Kw::Else) {
+                break;
+            }
             let a = if self.peek().kind == TokenKind::Kw(Kw::Comma) {
                 arena.alloc(ExprNode::MissingArg)
             } else if let Some(named) = self.try_parse_named_arg(arena) {

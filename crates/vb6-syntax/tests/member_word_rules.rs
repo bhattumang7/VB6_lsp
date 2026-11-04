@@ -56,3 +56,17 @@ fn graphics_words_as_called_members_take_coordinate_pairs_only() {
         assert_eq!(p.found, vec![], "{ok}");
     }
 }
+
+#[test]
+fn inside_with_the_graphics_words_are_ordinary_members() {
+    for word in ["Scale", "PSet", "Print", "LineInput", "Circle", "Line"] {
+        let src = format!("Sub S(o As Object)\n    With o\n        .{word} = 1\n        .{word} 1\n    End With\nEnd Sub\n");
+        assert_eq!(parse(&src).found, vec![], "{word}");
+    }
+}
+
+#[test]
+fn else_cannot_be_a_named_argument_of_a_statement_call() {
+    let (p, src) = body("o.f Else:=1");
+    assert!(p.found.iter().any(|d| d.1 == offset_of(&src, "Else", 0)), "{:?}", p.found);
+}

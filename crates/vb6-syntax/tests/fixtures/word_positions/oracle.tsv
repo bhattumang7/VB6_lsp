@@ -1,0 +1,2563 @@
+# template	word	class	message
+namedarg	Xor	accepted	
+namedarg	Write	accepted	
+namedarg	WithEvents	accepted	
+namedarg	With	accepted	
+namedarg	Width	accepted	
+namedarg	While	accepted	
+namedarg	Wend	accepted	
+namedarg	Variant	accepted	
+namedarg	Until	accepted	
+namedarg	Unknown	accepted	
+namedarg	Unlock	accepted	
+namedarg	Unload	accepted	
+namedarg	UBound	accepted	
+namedarg	TypeOf	accepted	
+namedarg	Type	accepted	
+namedarg	True	accepted	
+namedarg	To	accepted	
+namedarg	Then	accepted	
+namedarg	Text	accepted	
+namedarg	Tab	accepted	
+namedarg	Sub	accepted	
+namedarg	String	accepted	
+namedarg	StrComp	accepted	
+namedarg	Stop	accepted	
+namedarg	Step	accepted	
+namedarg	Static	accepted	
+namedarg	Spc	accepted	
+namedarg	Single	accepted	
+namedarg	Shared	accepted	
+namedarg	Sgn	accepted	
+namedarg	Set	accepted	
+namedarg	Select	accepted	
+namedarg	Seek	accepted	
+namedarg	Scale	accepted	
+namedarg	RSet	accepted	
+namedarg	RGB	accepted	
+namedarg	Return	accepted	
+namedarg	Resume	accepted	
+namedarg	Rem	syntax	Syntax error
+namedarg	ReDim	accepted	
+namedarg	Read	accepted	
+namedarg	Randomize	accepted	
+namedarg	Random	accepted	
+namedarg	RaiseEvent	accepted	
+namedarg	Put	accepted	
+namedarg	Public	accepted	
+namedarg	PSet	accepted	
+namedarg	Property	accepted	
+namedarg	Private	accepted	
+namedarg	Print	accepted	
+namedarg	Preserve	accepted	
+namedarg	ParamArray	accepted	
+namedarg	Output	accepted	
+namedarg	Or	accepted	
+namedarg	Optional	accepted	
+namedarg	Option	accepted	
+namedarg	Open	accepted	
+namedarg	On	accepted	
+namedarg	Object	accepted	
+namedarg	Null	accepted	
+namedarg	Nothing	accepted	
+namedarg	Not	accepted	
+namedarg	Next	accepted	
+namedarg	New	accepted	
+namedarg	Name	accepted	
+namedarg	Module	accepted	
+namedarg	Mod	accepted	
+namedarg	MidB	accepted	
+namedarg	Mid	accepted	
+namedarg	Me	accepted	
+namedarg	LSet	accepted	
+namedarg	Loop	accepted	
+namedarg	Long	accepted	
+namedarg	Lock	accepted	
+namedarg	Local	accepted	
+namedarg	Load	accepted	
+namedarg	LINEINPUT	accepted	
+namedarg	Line	accepted	
+namedarg	Like	accepted	
+namedarg	Lib	accepted	
+namedarg	Let	accepted	
+namedarg	LenB	accepted	
+namedarg	Len	accepted	
+namedarg	Left	accepted	
+namedarg	LBound	accepted	
+namedarg	Is	accepted	
+namedarg	Integer	accepted	
+namedarg	Int	accepted	
+namedarg	InStrB	accepted	
+namedarg	InStr	accepted	
+namedarg	InputB	accepted	
+namedarg	Input	accepted	
+namedarg	In	accepted	
+namedarg	Implements	accepted	
+namedarg	Imp	accepted	
+namedarg	If	accepted	
+namedarg	GoTo	accepted	
+namedarg	GoSub	accepted	
+namedarg	Go	accepted	
+namedarg	Global	accepted	
+namedarg	Get	accepted	
+namedarg	Function	accepted	
+namedarg	Friend	accepted	
+namedarg	FreeFile	accepted	
+namedarg	Format	accepted	
+namedarg	For	accepted	
+namedarg	Fix	accepted	
+namedarg	False	accepted	
+namedarg	Explicit	accepted	
+namedarg	Exit	accepted	
+namedarg	Event	accepted	
+namedarg	Error	accepted	
+namedarg	Erase	accepted	
+namedarg	Eqv	accepted	
+namedarg	Enum	accepted	
+namedarg	EndIf	accepted	
+namedarg	End	accepted	
+namedarg	Empty	accepted	
+namedarg	ElseIf	accepted	
+namedarg	Else	accepted	
+namedarg	Each	accepted	
+namedarg	Double	accepted	
+namedarg	DoEvents	accepted	
+namedarg	Do	accepted	
+namedarg	Dir	accepted	
+namedarg	Dim	accepted	
+namedarg	DefVar	accepted	
+namedarg	DefStr	accepted	
+namedarg	DefSng	accepted	
+namedarg	DefObj	accepted	
+namedarg	DefLng	accepted	
+namedarg	DefInt	accepted	
+namedarg	DefDbl	accepted	
+namedarg	DefDec	accepted	
+namedarg	DefDate	accepted	
+namedarg	DefCur	accepted	
+namedarg	DefByte	accepted	
+namedarg	DefBool	accepted	
+namedarg	Declare	accepted	
+namedarg	Decimal	accepted	
+namedarg	Debug	accepted	
+namedarg	Date	accepted	
+namedarg	Database	accepted	
+namedarg	Currency	accepted	
+namedarg	CVErr	accepted	
+namedarg	CVDate	accepted	
+namedarg	CVar	accepted	
+namedarg	CurDir	accepted	
+namedarg	CStr	accepted	
+namedarg	CSng	accepted	
+namedarg	Const	accepted	
+namedarg	Compare	accepted	
+namedarg	Close	accepted	
+namedarg	CLng	accepted	
+namedarg	Circle	accepted	
+namedarg	CInt	accepted	
+namedarg	ChDir	accepted	
+namedarg	CDecl	accepted	
+namedarg	CDbl	accepted	
+namedarg	CDec	accepted	
+namedarg	CDate	accepted	
+namedarg	CCur	accepted	
+namedarg	CByte	accepted	
+namedarg	CBool	accepted	
+namedarg	Case	accepted	
+namedarg	Call	accepted	
+namedarg	ByVal	accepted	
+namedarg	Byte	accepted	
+namedarg	ByRef	accepted	
+namedarg	Boolean	accepted	
+namedarg	Binary	accepted	
+namedarg	BF	accepted	
+namedarg	Base	accepted	
+namedarg	Assert	accepted	
+namedarg	As	accepted	
+namedarg	Array	accepted	
+namedarg	Append	accepted	
+namedarg	Any	accepted	
+namedarg	And	accepted	
+namedarg	Alias	accepted	
+namedarg	AddressOf	accepted	
+namedarg	Access	accepted	
+namedarg	Abs	accepted	
+namedargstmt	Xor	accepted	
+namedargstmt	Write	accepted	
+namedargstmt	WithEvents	accepted	
+namedargstmt	With	accepted	
+namedargstmt	Width	accepted	
+namedargstmt	While	accepted	
+namedargstmt	Wend	accepted	
+namedargstmt	Variant	accepted	
+namedargstmt	Until	accepted	
+namedargstmt	Unknown	accepted	
+namedargstmt	Unlock	accepted	
+namedargstmt	Unload	accepted	
+namedargstmt	UBound	accepted	
+namedargstmt	TypeOf	accepted	
+namedargstmt	Type	accepted	
+namedargstmt	True	accepted	
+namedargstmt	To	accepted	
+namedargstmt	Then	accepted	
+namedargstmt	Text	accepted	
+namedargstmt	Tab	accepted	
+namedargstmt	Sub	accepted	
+namedargstmt	String	accepted	
+namedargstmt	StrComp	accepted	
+namedargstmt	Stop	accepted	
+namedargstmt	Step	accepted	
+namedargstmt	Static	accepted	
+namedargstmt	Spc	accepted	
+namedargstmt	Single	accepted	
+namedargstmt	Shared	accepted	
+namedargstmt	Sgn	accepted	
+namedargstmt	Set	accepted	
+namedargstmt	Select	accepted	
+namedargstmt	Seek	accepted	
+namedargstmt	Scale	accepted	
+namedargstmt	RSet	accepted	
+namedargstmt	RGB	accepted	
+namedargstmt	Return	accepted	
+namedargstmt	Resume	accepted	
+namedargstmt	Rem	syntax	Syntax error
+namedargstmt	ReDim	accepted	
+namedargstmt	Read	accepted	
+namedargstmt	Randomize	accepted	
+namedargstmt	Random	accepted	
+namedargstmt	RaiseEvent	accepted	
+namedargstmt	Put	accepted	
+namedargstmt	Public	accepted	
+namedargstmt	PSet	accepted	
+namedargstmt	Property	accepted	
+namedargstmt	Private	accepted	
+namedargstmt	Print	accepted	
+namedargstmt	Preserve	accepted	
+namedargstmt	ParamArray	accepted	
+namedargstmt	Output	accepted	
+namedargstmt	Or	accepted	
+namedargstmt	Optional	accepted	
+namedargstmt	Option	accepted	
+namedargstmt	Open	accepted	
+namedargstmt	On	accepted	
+namedargstmt	Object	accepted	
+namedargstmt	Null	accepted	
+namedargstmt	Nothing	accepted	
+namedargstmt	Not	accepted	
+namedargstmt	Next	accepted	
+namedargstmt	New	accepted	
+namedargstmt	Name	accepted	
+namedargstmt	Module	accepted	
+namedargstmt	Mod	accepted	
+namedargstmt	MidB	accepted	
+namedargstmt	Mid	accepted	
+namedargstmt	Me	accepted	
+namedargstmt	LSet	accepted	
+namedargstmt	Loop	accepted	
+namedargstmt	Long	accepted	
+namedargstmt	Lock	accepted	
+namedargstmt	Local	accepted	
+namedargstmt	Load	accepted	
+namedargstmt	LINEINPUT	accepted	
+namedargstmt	Line	accepted	
+namedargstmt	Like	accepted	
+namedargstmt	Lib	accepted	
+namedargstmt	Let	accepted	
+namedargstmt	LenB	accepted	
+namedargstmt	Len	accepted	
+namedargstmt	Left	accepted	
+namedargstmt	LBound	accepted	
+namedargstmt	Is	accepted	
+namedargstmt	Integer	accepted	
+namedargstmt	Int	accepted	
+namedargstmt	InStrB	accepted	
+namedargstmt	InStr	accepted	
+namedargstmt	InputB	accepted	
+namedargstmt	Input	accepted	
+namedargstmt	In	accepted	
+namedargstmt	Implements	accepted	
+namedargstmt	Imp	accepted	
+namedargstmt	If	accepted	
+namedargstmt	GoTo	accepted	
+namedargstmt	GoSub	accepted	
+namedargstmt	Go	accepted	
+namedargstmt	Global	accepted	
+namedargstmt	Get	accepted	
+namedargstmt	Function	accepted	
+namedargstmt	Friend	accepted	
+namedargstmt	FreeFile	accepted	
+namedargstmt	Format	accepted	
+namedargstmt	For	accepted	
+namedargstmt	Fix	accepted	
+namedargstmt	False	accepted	
+namedargstmt	Explicit	accepted	
+namedargstmt	Exit	accepted	
+namedargstmt	Event	accepted	
+namedargstmt	Error	accepted	
+namedargstmt	Erase	accepted	
+namedargstmt	Eqv	accepted	
+namedargstmt	Enum	accepted	
+namedargstmt	EndIf	accepted	
+namedargstmt	End	accepted	
+namedargstmt	Empty	accepted	
+namedargstmt	ElseIf	accepted	
+namedargstmt	Else	syntax	Syntax error
+namedargstmt	Each	accepted	
+namedargstmt	Double	accepted	
+namedargstmt	DoEvents	accepted	
+namedargstmt	Do	accepted	
+namedargstmt	Dir	accepted	
+namedargstmt	Dim	accepted	
+namedargstmt	DefVar	accepted	
+namedargstmt	DefStr	accepted	
+namedargstmt	DefSng	accepted	
+namedargstmt	DefObj	accepted	
+namedargstmt	DefLng	accepted	
+namedargstmt	DefInt	accepted	
+namedargstmt	DefDbl	accepted	
+namedargstmt	DefDec	accepted	
+namedargstmt	DefDate	accepted	
+namedargstmt	DefCur	accepted	
+namedargstmt	DefByte	accepted	
+namedargstmt	DefBool	accepted	
+namedargstmt	Declare	accepted	
+namedargstmt	Decimal	accepted	
+namedargstmt	Debug	accepted	
+namedargstmt	Date	accepted	
+namedargstmt	Database	accepted	
+namedargstmt	Currency	accepted	
+namedargstmt	CVErr	accepted	
+namedargstmt	CVDate	accepted	
+namedargstmt	CVar	accepted	
+namedargstmt	CurDir	accepted	
+namedargstmt	CStr	accepted	
+namedargstmt	CSng	accepted	
+namedargstmt	Const	accepted	
+namedargstmt	Compare	accepted	
+namedargstmt	Close	accepted	
+namedargstmt	CLng	accepted	
+namedargstmt	Circle	accepted	
+namedargstmt	CInt	accepted	
+namedargstmt	ChDir	accepted	
+namedargstmt	CDecl	accepted	
+namedargstmt	CDbl	accepted	
+namedargstmt	CDec	accepted	
+namedargstmt	CDate	accepted	
+namedargstmt	CCur	accepted	
+namedargstmt	CByte	accepted	
+namedargstmt	CBool	accepted	
+namedargstmt	Case	accepted	
+namedargstmt	Call	accepted	
+namedargstmt	ByVal	accepted	
+namedargstmt	Byte	accepted	
+namedargstmt	ByRef	accepted	
+namedargstmt	Boolean	accepted	
+namedargstmt	Binary	accepted	
+namedargstmt	BF	accepted	
+namedargstmt	Base	accepted	
+namedargstmt	Assert	accepted	
+namedargstmt	As	accepted	
+namedargstmt	Array	accepted	
+namedargstmt	Append	accepted	
+namedargstmt	Any	accepted	
+namedargstmt	And	accepted	
+namedargstmt	Alias	accepted	
+namedargstmt	AddressOf	accepted	
+namedargstmt	Access	accepted	
+namedargstmt	Abs	accepted	
+gotolabel	Xor	syntax	Syntax error
+gotolabel	Write	syntax	Syntax error
+gotolabel	WithEvents	syntax	Syntax error
+gotolabel	With	syntax	Syntax error
+gotolabel	Width	syntax	Label not defined
+gotolabel	While	syntax	Syntax error
+gotolabel	Wend	syntax	Syntax error
+gotolabel	Variant	syntax	Syntax error
+gotolabel	Until	syntax	Syntax error
+gotolabel	Unknown	syntax	Label not defined
+gotolabel	Unlock	syntax	Syntax error
+gotolabel	Unload	syntax	Label not defined
+gotolabel	UBound	syntax	Syntax error
+gotolabel	TypeOf	syntax	Syntax error
+gotolabel	Type	syntax	Syntax error
+gotolabel	True	syntax	Syntax error
+gotolabel	To	syntax	Syntax error
+gotolabel	Then	syntax	Syntax error
+gotolabel	Text	syntax	Label not defined
+gotolabel	Tab	syntax	Syntax error
+gotolabel	Sub	syntax	Syntax error
+gotolabel	String	syntax	Syntax error
+gotolabel	StrComp	syntax	Label not defined
+gotolabel	Stop	syntax	Syntax error
+gotolabel	Step	syntax	Label not defined
+gotolabel	Static	syntax	Syntax error
+gotolabel	Spc	syntax	Syntax error
+gotolabel	Single	syntax	Syntax error
+gotolabel	Shared	syntax	Syntax error
+gotolabel	Sgn	syntax	Syntax error
+gotolabel	Set	syntax	Syntax error
+gotolabel	Select	syntax	Syntax error
+gotolabel	Seek	syntax	Syntax error
+gotolabel	Scale	syntax	Syntax error
+gotolabel	RSet	syntax	Syntax error
+gotolabel	RGB	syntax	Label not defined
+gotolabel	Return	syntax	Syntax error
+gotolabel	Resume	syntax	Syntax error
+gotolabel	Rem	syntax	Syntax error
+gotolabel	ReDim	syntax	Syntax error
+gotolabel	Read	syntax	Label not defined
+gotolabel	Randomize	syntax	Label not defined
+gotolabel	Random	syntax	Label not defined
+gotolabel	RaiseEvent	syntax	Syntax error
+gotolabel	Put	syntax	Syntax error
+gotolabel	Public	syntax	Syntax error
+gotolabel	PSet	syntax	Syntax error
+gotolabel	Property	syntax	Label not defined
+gotolabel	Private	syntax	Syntax error
+gotolabel	Print	syntax	Syntax error
+gotolabel	Preserve	syntax	Syntax error
+gotolabel	ParamArray	syntax	Syntax error
+gotolabel	Output	syntax	Label not defined
+gotolabel	Or	syntax	Syntax error
+gotolabel	Optional	syntax	Syntax error
+gotolabel	Option	syntax	Syntax error
+gotolabel	Open	syntax	Syntax error
+gotolabel	On	syntax	Syntax error
+gotolabel	Object	syntax	Label not defined
+gotolabel	Null	syntax	Syntax error
+gotolabel	Nothing	syntax	Syntax error
+gotolabel	Not	syntax	Syntax error
+gotolabel	Next	syntax	Syntax error
+gotolabel	New	syntax	Syntax error
+gotolabel	Name	syntax	Label not defined
+gotolabel	Module	syntax	Label not defined
+gotolabel	Mod	syntax	Syntax error
+gotolabel	MidB	syntax	Label not defined
+gotolabel	Mid	syntax	Label not defined
+gotolabel	Me	syntax	Syntax error
+gotolabel	LSet	syntax	Syntax error
+gotolabel	Loop	syntax	Syntax error
+gotolabel	Long	syntax	Syntax error
+gotolabel	Lock	syntax	Syntax error
+gotolabel	Local	syntax	Syntax error
+gotolabel	Load	syntax	Label not defined
+gotolabel	LINEINPUT	syntax	Syntax error
+gotolabel	Line	syntax	Label not defined
+gotolabel	Like	syntax	Syntax error
+gotolabel	Lib	syntax	Label not defined
+gotolabel	Let	syntax	Syntax error
+gotolabel	LenB	syntax	Syntax error
+gotolabel	Len	syntax	Syntax error
+gotolabel	Left	syntax	Label not defined
+gotolabel	LBound	syntax	Syntax error
+gotolabel	Is	syntax	Syntax error
+gotolabel	Integer	syntax	Syntax error
+gotolabel	Int	syntax	Syntax error
+gotolabel	InStrB	syntax	Label not defined
+gotolabel	InStr	syntax	Label not defined
+gotolabel	InputB	syntax	Syntax error
+gotolabel	Input	syntax	Syntax error
+gotolabel	In	syntax	Syntax error
+gotolabel	Implements	syntax	Syntax error
+gotolabel	Imp	syntax	Syntax error
+gotolabel	If	syntax	Syntax error
+gotolabel	GoTo	syntax	Syntax error
+gotolabel	GoSub	syntax	Syntax error
+gotolabel	Go	syntax	Label not defined
+gotolabel	Global	syntax	Syntax error
+gotolabel	Get	syntax	Syntax error
+gotolabel	Function	syntax	Syntax error
+gotolabel	Friend	syntax	Syntax error
+gotolabel	FreeFile	syntax	Label not defined
+gotolabel	Format	syntax	Label not defined
+gotolabel	For	syntax	Syntax error
+gotolabel	Fix	syntax	Syntax error
+gotolabel	False	syntax	Syntax error
+gotolabel	Explicit	syntax	Label not defined
+gotolabel	Exit	syntax	Syntax error
+gotolabel	Event	syntax	Syntax error
+gotolabel	Error	syntax	Label not defined
+gotolabel	Erase	syntax	Syntax error
+gotolabel	Eqv	syntax	Syntax error
+gotolabel	Enum	syntax	Syntax error
+gotolabel	EndIf	syntax	Syntax error
+gotolabel	End	syntax	Syntax error
+gotolabel	Empty	syntax	Syntax error
+gotolabel	ElseIf	syntax	Syntax error
+gotolabel	Else	syntax	Syntax error
+gotolabel	Each	syntax	Syntax error
+gotolabel	Double	syntax	Syntax error
+gotolabel	DoEvents	syntax	Syntax error
+gotolabel	Do	syntax	Syntax error
+gotolabel	Dir	syntax	Label not defined
+gotolabel	Dim	syntax	Syntax error
+gotolabel	DefVar	syntax	Syntax error
+gotolabel	DefStr	syntax	Syntax error
+gotolabel	DefSng	syntax	Syntax error
+gotolabel	DefObj	syntax	Syntax error
+gotolabel	DefLng	syntax	Syntax error
+gotolabel	DefInt	syntax	Syntax error
+gotolabel	DefDbl	syntax	Syntax error
+gotolabel	DefDec	syntax	Syntax error
+gotolabel	DefDate	syntax	Syntax error
+gotolabel	DefCur	syntax	Syntax error
+gotolabel	DefByte	syntax	Syntax error
+gotolabel	DefBool	syntax	Syntax error
+gotolabel	Declare	syntax	Syntax error
+gotolabel	Decimal	syntax	Syntax error
+gotolabel	Debug	syntax	Syntax error
+gotolabel	Date	syntax	Syntax error
+gotolabel	Database	syntax	Label not defined
+gotolabel	Currency	syntax	Syntax error
+gotolabel	CVErr	syntax	Syntax error
+gotolabel	CVDate	syntax	Label not defined
+gotolabel	CVar	syntax	Syntax error
+gotolabel	CurDir	syntax	Label not defined
+gotolabel	CStr	syntax	Syntax error
+gotolabel	CSng	syntax	Syntax error
+gotolabel	Const	syntax	Syntax error
+gotolabel	Compare	syntax	Label not defined
+gotolabel	Close	syntax	Syntax error
+gotolabel	CLng	syntax	Syntax error
+gotolabel	Circle	syntax	Syntax error
+gotolabel	CInt	syntax	Syntax error
+gotolabel	ChDir	syntax	Label not defined
+gotolabel	CDecl	syntax	Syntax error
+gotolabel	CDbl	syntax	Syntax error
+gotolabel	CDec	syntax	Syntax error
+gotolabel	CDate	syntax	Syntax error
+gotolabel	CCur	syntax	Syntax error
+gotolabel	CByte	syntax	Syntax error
+gotolabel	CBool	syntax	Syntax error
+gotolabel	Case	syntax	Syntax error
+gotolabel	Call	syntax	Syntax error
+gotolabel	ByVal	syntax	Syntax error
+gotolabel	Byte	syntax	Syntax error
+gotolabel	ByRef	syntax	Syntax error
+gotolabel	Boolean	syntax	Syntax error
+gotolabel	Binary	syntax	Label not defined
+gotolabel	BF	syntax	Label not defined
+gotolabel	Base	syntax	Label not defined
+gotolabel	Assert	syntax	Label not defined
+gotolabel	As	syntax	Syntax error
+gotolabel	Array	syntax	Syntax error
+gotolabel	Append	syntax	Label not defined
+gotolabel	Any	syntax	Syntax error
+gotolabel	And	syntax	Syntax error
+gotolabel	Alias	syntax	Label not defined
+gotolabel	AddressOf	syntax	Syntax error
+gotolabel	Access	syntax	Label not defined
+gotolabel	Abs	syntax	Syntax error
+gosublabel	Xor	syntax	Syntax error
+gosublabel	Write	syntax	Syntax error
+gosublabel	WithEvents	syntax	Syntax error
+gosublabel	With	syntax	Syntax error
+gosublabel	Width	syntax	Label not defined
+gosublabel	While	syntax	Syntax error
+gosublabel	Wend	syntax	Syntax error
+gosublabel	Variant	syntax	Syntax error
+gosublabel	Until	syntax	Syntax error
+gosublabel	Unknown	syntax	Label not defined
+gosublabel	Unlock	syntax	Syntax error
+gosublabel	Unload	syntax	Label not defined
+gosublabel	UBound	syntax	Syntax error
+gosublabel	TypeOf	syntax	Syntax error
+gosublabel	Type	syntax	Syntax error
+gosublabel	True	syntax	Syntax error
+gosublabel	To	syntax	Syntax error
+gosublabel	Then	syntax	Syntax error
+gosublabel	Text	syntax	Label not defined
+gosublabel	Tab	syntax	Syntax error
+gosublabel	Sub	syntax	Syntax error
+gosublabel	String	syntax	Syntax error
+gosublabel	StrComp	syntax	Label not defined
+gosublabel	Stop	syntax	Syntax error
+gosublabel	Step	syntax	Label not defined
+gosublabel	Static	syntax	Syntax error
+gosublabel	Spc	syntax	Syntax error
+gosublabel	Single	syntax	Syntax error
+gosublabel	Shared	syntax	Syntax error
+gosublabel	Sgn	syntax	Syntax error
+gosublabel	Set	syntax	Syntax error
+gosublabel	Select	syntax	Syntax error
+gosublabel	Seek	syntax	Syntax error
+gosublabel	Scale	syntax	Syntax error
+gosublabel	RSet	syntax	Syntax error
+gosublabel	RGB	syntax	Label not defined
+gosublabel	Return	syntax	Syntax error
+gosublabel	Resume	syntax	Syntax error
+gosublabel	Rem	syntax	Syntax error
+gosublabel	ReDim	syntax	Syntax error
+gosublabel	Read	syntax	Label not defined
+gosublabel	Randomize	syntax	Label not defined
+gosublabel	Random	syntax	Label not defined
+gosublabel	RaiseEvent	syntax	Syntax error
+gosublabel	Put	syntax	Syntax error
+gosublabel	Public	syntax	Syntax error
+gosublabel	PSet	syntax	Syntax error
+gosublabel	Property	syntax	Label not defined
+gosublabel	Private	syntax	Syntax error
+gosublabel	Print	syntax	Syntax error
+gosublabel	Preserve	syntax	Syntax error
+gosublabel	ParamArray	syntax	Syntax error
+gosublabel	Output	syntax	Label not defined
+gosublabel	Or	syntax	Syntax error
+gosublabel	Optional	syntax	Syntax error
+gosublabel	Option	syntax	Syntax error
+gosublabel	Open	syntax	Syntax error
+gosublabel	On	syntax	Syntax error
+gosublabel	Object	syntax	Label not defined
+gosublabel	Null	syntax	Syntax error
+gosublabel	Nothing	syntax	Syntax error
+gosublabel	Not	syntax	Syntax error
+gosublabel	Next	syntax	Syntax error
+gosublabel	New	syntax	Syntax error
+gosublabel	Name	syntax	Label not defined
+gosublabel	Module	syntax	Label not defined
+gosublabel	Mod	syntax	Syntax error
+gosublabel	MidB	syntax	Label not defined
+gosublabel	Mid	syntax	Label not defined
+gosublabel	Me	syntax	Syntax error
+gosublabel	LSet	syntax	Syntax error
+gosublabel	Loop	syntax	Syntax error
+gosublabel	Long	syntax	Syntax error
+gosublabel	Lock	syntax	Syntax error
+gosublabel	Local	syntax	Syntax error
+gosublabel	Load	syntax	Label not defined
+gosublabel	LINEINPUT	syntax	Syntax error
+gosublabel	Line	syntax	Label not defined
+gosublabel	Like	syntax	Syntax error
+gosublabel	Lib	syntax	Label not defined
+gosublabel	Let	syntax	Syntax error
+gosublabel	LenB	syntax	Syntax error
+gosublabel	Len	syntax	Syntax error
+gosublabel	Left	syntax	Label not defined
+gosublabel	LBound	syntax	Syntax error
+gosublabel	Is	syntax	Syntax error
+gosublabel	Integer	syntax	Syntax error
+gosublabel	Int	syntax	Syntax error
+gosublabel	InStrB	syntax	Label not defined
+gosublabel	InStr	syntax	Label not defined
+gosublabel	InputB	syntax	Syntax error
+gosublabel	Input	syntax	Syntax error
+gosublabel	In	syntax	Syntax error
+gosublabel	Implements	syntax	Syntax error
+gosublabel	Imp	syntax	Syntax error
+gosublabel	If	syntax	Syntax error
+gosublabel	GoTo	syntax	Syntax error
+gosublabel	GoSub	syntax	Syntax error
+gosublabel	Go	syntax	Label not defined
+gosublabel	Global	syntax	Syntax error
+gosublabel	Get	syntax	Syntax error
+gosublabel	Function	syntax	Syntax error
+gosublabel	Friend	syntax	Syntax error
+gosublabel	FreeFile	syntax	Label not defined
+gosublabel	Format	syntax	Label not defined
+gosublabel	For	syntax	Syntax error
+gosublabel	Fix	syntax	Syntax error
+gosublabel	False	syntax	Syntax error
+gosublabel	Explicit	syntax	Label not defined
+gosublabel	Exit	syntax	Syntax error
+gosublabel	Event	syntax	Syntax error
+gosublabel	Error	syntax	Label not defined
+gosublabel	Erase	syntax	Syntax error
+gosublabel	Eqv	syntax	Syntax error
+gosublabel	Enum	syntax	Syntax error
+gosublabel	EndIf	syntax	Syntax error
+gosublabel	End	syntax	Syntax error
+gosublabel	Empty	syntax	Syntax error
+gosublabel	ElseIf	syntax	Syntax error
+gosublabel	Else	syntax	Syntax error
+gosublabel	Each	syntax	Syntax error
+gosublabel	Double	syntax	Syntax error
+gosublabel	DoEvents	syntax	Syntax error
+gosublabel	Do	syntax	Syntax error
+gosublabel	Dir	syntax	Label not defined
+gosublabel	Dim	syntax	Syntax error
+gosublabel	DefVar	syntax	Syntax error
+gosublabel	DefStr	syntax	Syntax error
+gosublabel	DefSng	syntax	Syntax error
+gosublabel	DefObj	syntax	Syntax error
+gosublabel	DefLng	syntax	Syntax error
+gosublabel	DefInt	syntax	Syntax error
+gosublabel	DefDbl	syntax	Syntax error
+gosublabel	DefDec	syntax	Syntax error
+gosublabel	DefDate	syntax	Syntax error
+gosublabel	DefCur	syntax	Syntax error
+gosublabel	DefByte	syntax	Syntax error
+gosublabel	DefBool	syntax	Syntax error
+gosublabel	Declare	syntax	Syntax error
+gosublabel	Decimal	syntax	Syntax error
+gosublabel	Debug	syntax	Syntax error
+gosublabel	Date	syntax	Syntax error
+gosublabel	Database	syntax	Label not defined
+gosublabel	Currency	syntax	Syntax error
+gosublabel	CVErr	syntax	Syntax error
+gosublabel	CVDate	syntax	Label not defined
+gosublabel	CVar	syntax	Syntax error
+gosublabel	CurDir	syntax	Label not defined
+gosublabel	CStr	syntax	Syntax error
+gosublabel	CSng	syntax	Syntax error
+gosublabel	Const	syntax	Syntax error
+gosublabel	Compare	syntax	Label not defined
+gosublabel	Close	syntax	Syntax error
+gosublabel	CLng	syntax	Syntax error
+gosublabel	Circle	syntax	Syntax error
+gosublabel	CInt	syntax	Syntax error
+gosublabel	ChDir	syntax	Label not defined
+gosublabel	CDecl	syntax	Syntax error
+gosublabel	CDbl	syntax	Syntax error
+gosublabel	CDec	syntax	Syntax error
+gosublabel	CDate	syntax	Syntax error
+gosublabel	CCur	syntax	Syntax error
+gosublabel	CByte	syntax	Syntax error
+gosublabel	CBool	syntax	Syntax error
+gosublabel	Case	syntax	Syntax error
+gosublabel	Call	syntax	Syntax error
+gosublabel	ByVal	syntax	Syntax error
+gosublabel	Byte	syntax	Syntax error
+gosublabel	ByRef	syntax	Syntax error
+gosublabel	Boolean	syntax	Syntax error
+gosublabel	Binary	syntax	Label not defined
+gosublabel	BF	syntax	Label not defined
+gosublabel	Base	syntax	Label not defined
+gosublabel	Assert	syntax	Label not defined
+gosublabel	As	syntax	Syntax error
+gosublabel	Array	syntax	Syntax error
+gosublabel	Append	syntax	Label not defined
+gosublabel	Any	syntax	Syntax error
+gosublabel	And	syntax	Syntax error
+gosublabel	Alias	syntax	Label not defined
+gosublabel	AddressOf	syntax	Syntax error
+gosublabel	Access	syntax	Label not defined
+gosublabel	Abs	syntax	Syntax error
+resumelabel	Xor	syntax	Syntax error
+resumelabel	Write	syntax	Syntax error
+resumelabel	WithEvents	syntax	Syntax error
+resumelabel	With	syntax	Syntax error
+resumelabel	Width	syntax	Label not defined
+resumelabel	While	syntax	Syntax error
+resumelabel	Wend	syntax	Syntax error
+resumelabel	Variant	syntax	Syntax error
+resumelabel	Until	syntax	Syntax error
+resumelabel	Unknown	syntax	Label not defined
+resumelabel	Unlock	syntax	Syntax error
+resumelabel	Unload	syntax	Label not defined
+resumelabel	UBound	syntax	Syntax error
+resumelabel	TypeOf	syntax	Syntax error
+resumelabel	Type	syntax	Syntax error
+resumelabel	True	syntax	Syntax error
+resumelabel	To	syntax	Syntax error
+resumelabel	Then	syntax	Syntax error
+resumelabel	Text	syntax	Label not defined
+resumelabel	Tab	syntax	Syntax error
+resumelabel	Sub	syntax	Syntax error
+resumelabel	String	syntax	Syntax error
+resumelabel	StrComp	syntax	Label not defined
+resumelabel	Stop	syntax	Syntax error
+resumelabel	Step	syntax	Label not defined
+resumelabel	Static	syntax	Syntax error
+resumelabel	Spc	syntax	Syntax error
+resumelabel	Single	syntax	Syntax error
+resumelabel	Shared	syntax	Syntax error
+resumelabel	Sgn	syntax	Syntax error
+resumelabel	Set	syntax	Syntax error
+resumelabel	Select	syntax	Syntax error
+resumelabel	Seek	syntax	Syntax error
+resumelabel	Scale	syntax	Syntax error
+resumelabel	RSet	syntax	Syntax error
+resumelabel	RGB	syntax	Label not defined
+resumelabel	Return	syntax	Syntax error
+resumelabel	Resume	syntax	Syntax error
+resumelabel	Rem	syntax	Syntax error
+resumelabel	ReDim	syntax	Syntax error
+resumelabel	Read	syntax	Label not defined
+resumelabel	Randomize	syntax	Label not defined
+resumelabel	Random	syntax	Label not defined
+resumelabel	RaiseEvent	syntax	Syntax error
+resumelabel	Put	syntax	Syntax error
+resumelabel	Public	syntax	Syntax error
+resumelabel	PSet	syntax	Syntax error
+resumelabel	Property	syntax	Label not defined
+resumelabel	Private	syntax	Syntax error
+resumelabel	Print	syntax	Syntax error
+resumelabel	Preserve	syntax	Syntax error
+resumelabel	ParamArray	syntax	Syntax error
+resumelabel	Output	syntax	Label not defined
+resumelabel	Or	syntax	Syntax error
+resumelabel	Optional	syntax	Syntax error
+resumelabel	Option	syntax	Syntax error
+resumelabel	Open	syntax	Syntax error
+resumelabel	On	syntax	Syntax error
+resumelabel	Object	syntax	Label not defined
+resumelabel	Null	syntax	Syntax error
+resumelabel	Nothing	syntax	Syntax error
+resumelabel	Not	syntax	Syntax error
+resumelabel	Next	accepted	
+resumelabel	New	syntax	Syntax error
+resumelabel	Name	syntax	Label not defined
+resumelabel	Module	syntax	Label not defined
+resumelabel	Mod	syntax	Syntax error
+resumelabel	MidB	syntax	Label not defined
+resumelabel	Mid	syntax	Label not defined
+resumelabel	Me	syntax	Syntax error
+resumelabel	LSet	syntax	Syntax error
+resumelabel	Loop	syntax	Syntax error
+resumelabel	Long	syntax	Syntax error
+resumelabel	Lock	syntax	Syntax error
+resumelabel	Local	syntax	Syntax error
+resumelabel	Load	syntax	Label not defined
+resumelabel	LINEINPUT	syntax	Syntax error
+resumelabel	Line	syntax	Label not defined
+resumelabel	Like	syntax	Syntax error
+resumelabel	Lib	syntax	Label not defined
+resumelabel	Let	syntax	Syntax error
+resumelabel	LenB	syntax	Syntax error
+resumelabel	Len	syntax	Syntax error
+resumelabel	Left	syntax	Label not defined
+resumelabel	LBound	syntax	Syntax error
+resumelabel	Is	syntax	Syntax error
+resumelabel	Integer	syntax	Syntax error
+resumelabel	Int	syntax	Syntax error
+resumelabel	InStrB	syntax	Label not defined
+resumelabel	InStr	syntax	Label not defined
+resumelabel	InputB	syntax	Syntax error
+resumelabel	Input	syntax	Syntax error
+resumelabel	In	syntax	Syntax error
+resumelabel	Implements	syntax	Syntax error
+resumelabel	Imp	syntax	Syntax error
+resumelabel	If	syntax	Syntax error
+resumelabel	GoTo	syntax	Syntax error
+resumelabel	GoSub	syntax	Syntax error
+resumelabel	Go	syntax	Label not defined
+resumelabel	Global	syntax	Syntax error
+resumelabel	Get	syntax	Syntax error
+resumelabel	Function	syntax	Syntax error
+resumelabel	Friend	syntax	Syntax error
+resumelabel	FreeFile	syntax	Label not defined
+resumelabel	Format	syntax	Label not defined
+resumelabel	For	syntax	Syntax error
+resumelabel	Fix	syntax	Syntax error
+resumelabel	False	syntax	Syntax error
+resumelabel	Explicit	syntax	Label not defined
+resumelabel	Exit	syntax	Syntax error
+resumelabel	Event	syntax	Syntax error
+resumelabel	Error	syntax	Label not defined
+resumelabel	Erase	syntax	Syntax error
+resumelabel	Eqv	syntax	Syntax error
+resumelabel	Enum	syntax	Syntax error
+resumelabel	EndIf	syntax	Syntax error
+resumelabel	End	syntax	Syntax error
+resumelabel	Empty	syntax	Syntax error
+resumelabel	ElseIf	syntax	Syntax error
+resumelabel	Else	syntax	Syntax error
+resumelabel	Each	syntax	Syntax error
+resumelabel	Double	syntax	Syntax error
+resumelabel	DoEvents	syntax	Syntax error
+resumelabel	Do	syntax	Syntax error
+resumelabel	Dir	syntax	Label not defined
+resumelabel	Dim	syntax	Syntax error
+resumelabel	DefVar	syntax	Syntax error
+resumelabel	DefStr	syntax	Syntax error
+resumelabel	DefSng	syntax	Syntax error
+resumelabel	DefObj	syntax	Syntax error
+resumelabel	DefLng	syntax	Syntax error
+resumelabel	DefInt	syntax	Syntax error
+resumelabel	DefDbl	syntax	Syntax error
+resumelabel	DefDec	syntax	Syntax error
+resumelabel	DefDate	syntax	Syntax error
+resumelabel	DefCur	syntax	Syntax error
+resumelabel	DefByte	syntax	Syntax error
+resumelabel	DefBool	syntax	Syntax error
+resumelabel	Declare	syntax	Syntax error
+resumelabel	Decimal	syntax	Syntax error
+resumelabel	Debug	syntax	Syntax error
+resumelabel	Date	syntax	Syntax error
+resumelabel	Database	syntax	Label not defined
+resumelabel	Currency	syntax	Syntax error
+resumelabel	CVErr	syntax	Syntax error
+resumelabel	CVDate	syntax	Label not defined
+resumelabel	CVar	syntax	Syntax error
+resumelabel	CurDir	syntax	Label not defined
+resumelabel	CStr	syntax	Syntax error
+resumelabel	CSng	syntax	Syntax error
+resumelabel	Const	syntax	Syntax error
+resumelabel	Compare	syntax	Label not defined
+resumelabel	Close	syntax	Syntax error
+resumelabel	CLng	syntax	Syntax error
+resumelabel	Circle	syntax	Syntax error
+resumelabel	CInt	syntax	Syntax error
+resumelabel	ChDir	syntax	Label not defined
+resumelabel	CDecl	syntax	Syntax error
+resumelabel	CDbl	syntax	Syntax error
+resumelabel	CDec	syntax	Syntax error
+resumelabel	CDate	syntax	Syntax error
+resumelabel	CCur	syntax	Syntax error
+resumelabel	CByte	syntax	Syntax error
+resumelabel	CBool	syntax	Syntax error
+resumelabel	Case	syntax	Syntax error
+resumelabel	Call	syntax	Syntax error
+resumelabel	ByVal	syntax	Syntax error
+resumelabel	Byte	syntax	Syntax error
+resumelabel	ByRef	syntax	Syntax error
+resumelabel	Boolean	syntax	Syntax error
+resumelabel	Binary	syntax	Label not defined
+resumelabel	BF	syntax	Label not defined
+resumelabel	Base	syntax	Label not defined
+resumelabel	Assert	syntax	Label not defined
+resumelabel	As	syntax	Syntax error
+resumelabel	Array	syntax	Syntax error
+resumelabel	Append	syntax	Label not defined
+resumelabel	Any	syntax	Syntax error
+resumelabel	And	syntax	Syntax error
+resumelabel	Alias	syntax	Label not defined
+resumelabel	AddressOf	syntax	Syntax error
+resumelabel	Access	syntax	Label not defined
+resumelabel	Abs	syntax	Syntax error
+onerrorlabel	Xor	syntax	Syntax error
+onerrorlabel	Write	syntax	Syntax error
+onerrorlabel	WithEvents	syntax	Syntax error
+onerrorlabel	With	syntax	Syntax error
+onerrorlabel	Width	syntax	Label not defined
+onerrorlabel	While	syntax	Syntax error
+onerrorlabel	Wend	syntax	Syntax error
+onerrorlabel	Variant	syntax	Syntax error
+onerrorlabel	Until	syntax	Syntax error
+onerrorlabel	Unknown	syntax	Label not defined
+onerrorlabel	Unlock	syntax	Syntax error
+onerrorlabel	Unload	syntax	Label not defined
+onerrorlabel	UBound	syntax	Syntax error
+onerrorlabel	TypeOf	syntax	Syntax error
+onerrorlabel	Type	syntax	Syntax error
+onerrorlabel	True	syntax	Syntax error
+onerrorlabel	To	syntax	Syntax error
+onerrorlabel	Then	syntax	Syntax error
+onerrorlabel	Text	syntax	Label not defined
+onerrorlabel	Tab	syntax	Syntax error
+onerrorlabel	Sub	syntax	Syntax error
+onerrorlabel	String	syntax	Syntax error
+onerrorlabel	StrComp	syntax	Label not defined
+onerrorlabel	Stop	syntax	Syntax error
+onerrorlabel	Step	syntax	Label not defined
+onerrorlabel	Static	syntax	Syntax error
+onerrorlabel	Spc	syntax	Syntax error
+onerrorlabel	Single	syntax	Syntax error
+onerrorlabel	Shared	syntax	Syntax error
+onerrorlabel	Sgn	syntax	Syntax error
+onerrorlabel	Set	syntax	Syntax error
+onerrorlabel	Select	syntax	Syntax error
+onerrorlabel	Seek	syntax	Syntax error
+onerrorlabel	Scale	syntax	Syntax error
+onerrorlabel	RSet	syntax	Syntax error
+onerrorlabel	RGB	syntax	Label not defined
+onerrorlabel	Return	syntax	Syntax error
+onerrorlabel	Resume	syntax	Syntax error
+onerrorlabel	Rem	syntax	Syntax error
+onerrorlabel	ReDim	syntax	Syntax error
+onerrorlabel	Read	syntax	Label not defined
+onerrorlabel	Randomize	syntax	Label not defined
+onerrorlabel	Random	syntax	Label not defined
+onerrorlabel	RaiseEvent	syntax	Syntax error
+onerrorlabel	Put	syntax	Syntax error
+onerrorlabel	Public	syntax	Syntax error
+onerrorlabel	PSet	syntax	Syntax error
+onerrorlabel	Property	syntax	Label not defined
+onerrorlabel	Private	syntax	Syntax error
+onerrorlabel	Print	syntax	Syntax error
+onerrorlabel	Preserve	syntax	Syntax error
+onerrorlabel	ParamArray	syntax	Syntax error
+onerrorlabel	Output	syntax	Label not defined
+onerrorlabel	Or	syntax	Syntax error
+onerrorlabel	Optional	syntax	Syntax error
+onerrorlabel	Option	syntax	Syntax error
+onerrorlabel	Open	syntax	Syntax error
+onerrorlabel	On	syntax	Syntax error
+onerrorlabel	Object	syntax	Label not defined
+onerrorlabel	Null	syntax	Syntax error
+onerrorlabel	Nothing	syntax	Syntax error
+onerrorlabel	Not	syntax	Syntax error
+onerrorlabel	Next	syntax	Syntax error
+onerrorlabel	New	syntax	Syntax error
+onerrorlabel	Name	syntax	Label not defined
+onerrorlabel	Module	syntax	Label not defined
+onerrorlabel	Mod	syntax	Syntax error
+onerrorlabel	MidB	syntax	Label not defined
+onerrorlabel	Mid	syntax	Label not defined
+onerrorlabel	Me	syntax	Syntax error
+onerrorlabel	LSet	syntax	Syntax error
+onerrorlabel	Loop	syntax	Syntax error
+onerrorlabel	Long	syntax	Syntax error
+onerrorlabel	Lock	syntax	Syntax error
+onerrorlabel	Local	syntax	Syntax error
+onerrorlabel	Load	syntax	Label not defined
+onerrorlabel	LINEINPUT	syntax	Syntax error
+onerrorlabel	Line	syntax	Label not defined
+onerrorlabel	Like	syntax	Syntax error
+onerrorlabel	Lib	syntax	Label not defined
+onerrorlabel	Let	syntax	Syntax error
+onerrorlabel	LenB	syntax	Syntax error
+onerrorlabel	Len	syntax	Syntax error
+onerrorlabel	Left	syntax	Label not defined
+onerrorlabel	LBound	syntax	Syntax error
+onerrorlabel	Is	syntax	Syntax error
+onerrorlabel	Integer	syntax	Syntax error
+onerrorlabel	Int	syntax	Syntax error
+onerrorlabel	InStrB	syntax	Label not defined
+onerrorlabel	InStr	syntax	Label not defined
+onerrorlabel	InputB	syntax	Syntax error
+onerrorlabel	Input	syntax	Syntax error
+onerrorlabel	In	syntax	Syntax error
+onerrorlabel	Implements	syntax	Syntax error
+onerrorlabel	Imp	syntax	Syntax error
+onerrorlabel	If	syntax	Syntax error
+onerrorlabel	GoTo	syntax	Syntax error
+onerrorlabel	GoSub	syntax	Syntax error
+onerrorlabel	Go	syntax	Label not defined
+onerrorlabel	Global	syntax	Syntax error
+onerrorlabel	Get	syntax	Syntax error
+onerrorlabel	Function	syntax	Syntax error
+onerrorlabel	Friend	syntax	Syntax error
+onerrorlabel	FreeFile	syntax	Label not defined
+onerrorlabel	Format	syntax	Label not defined
+onerrorlabel	For	syntax	Syntax error
+onerrorlabel	Fix	syntax	Syntax error
+onerrorlabel	False	syntax	Syntax error
+onerrorlabel	Explicit	syntax	Label not defined
+onerrorlabel	Exit	syntax	Syntax error
+onerrorlabel	Event	syntax	Syntax error
+onerrorlabel	Error	syntax	Label not defined
+onerrorlabel	Erase	syntax	Syntax error
+onerrorlabel	Eqv	syntax	Syntax error
+onerrorlabel	Enum	syntax	Syntax error
+onerrorlabel	EndIf	syntax	Syntax error
+onerrorlabel	End	syntax	Syntax error
+onerrorlabel	Empty	syntax	Syntax error
+onerrorlabel	ElseIf	syntax	Syntax error
+onerrorlabel	Else	syntax	Syntax error
+onerrorlabel	Each	syntax	Syntax error
+onerrorlabel	Double	syntax	Syntax error
+onerrorlabel	DoEvents	syntax	Syntax error
+onerrorlabel	Do	syntax	Syntax error
+onerrorlabel	Dir	syntax	Label not defined
+onerrorlabel	Dim	syntax	Syntax error
+onerrorlabel	DefVar	syntax	Syntax error
+onerrorlabel	DefStr	syntax	Syntax error
+onerrorlabel	DefSng	syntax	Syntax error
+onerrorlabel	DefObj	syntax	Syntax error
+onerrorlabel	DefLng	syntax	Syntax error
+onerrorlabel	DefInt	syntax	Syntax error
+onerrorlabel	DefDbl	syntax	Syntax error
+onerrorlabel	DefDec	syntax	Syntax error
+onerrorlabel	DefDate	syntax	Syntax error
+onerrorlabel	DefCur	syntax	Syntax error
+onerrorlabel	DefByte	syntax	Syntax error
+onerrorlabel	DefBool	syntax	Syntax error
+onerrorlabel	Declare	syntax	Syntax error
+onerrorlabel	Decimal	syntax	Syntax error
+onerrorlabel	Debug	syntax	Syntax error
+onerrorlabel	Date	syntax	Syntax error
+onerrorlabel	Database	syntax	Label not defined
+onerrorlabel	Currency	syntax	Syntax error
+onerrorlabel	CVErr	syntax	Syntax error
+onerrorlabel	CVDate	syntax	Label not defined
+onerrorlabel	CVar	syntax	Syntax error
+onerrorlabel	CurDir	syntax	Label not defined
+onerrorlabel	CStr	syntax	Syntax error
+onerrorlabel	CSng	syntax	Syntax error
+onerrorlabel	Const	syntax	Syntax error
+onerrorlabel	Compare	syntax	Label not defined
+onerrorlabel	Close	syntax	Syntax error
+onerrorlabel	CLng	syntax	Syntax error
+onerrorlabel	Circle	syntax	Syntax error
+onerrorlabel	CInt	syntax	Syntax error
+onerrorlabel	ChDir	syntax	Label not defined
+onerrorlabel	CDecl	syntax	Syntax error
+onerrorlabel	CDbl	syntax	Syntax error
+onerrorlabel	CDec	syntax	Syntax error
+onerrorlabel	CDate	syntax	Syntax error
+onerrorlabel	CCur	syntax	Syntax error
+onerrorlabel	CByte	syntax	Syntax error
+onerrorlabel	CBool	syntax	Syntax error
+onerrorlabel	Case	syntax	Syntax error
+onerrorlabel	Call	syntax	Syntax error
+onerrorlabel	ByVal	syntax	Syntax error
+onerrorlabel	Byte	syntax	Syntax error
+onerrorlabel	ByRef	syntax	Syntax error
+onerrorlabel	Boolean	syntax	Syntax error
+onerrorlabel	Binary	syntax	Label not defined
+onerrorlabel	BF	syntax	Label not defined
+onerrorlabel	Base	syntax	Label not defined
+onerrorlabel	Assert	syntax	Label not defined
+onerrorlabel	As	syntax	Syntax error
+onerrorlabel	Array	syntax	Syntax error
+onerrorlabel	Append	syntax	Label not defined
+onerrorlabel	Any	syntax	Syntax error
+onerrorlabel	And	syntax	Syntax error
+onerrorlabel	Alias	syntax	Label not defined
+onerrorlabel	AddressOf	syntax	Syntax error
+onerrorlabel	Access	syntax	Label not defined
+onerrorlabel	Abs	syntax	Syntax error
+exitword	Xor	syntax	Syntax error
+exitword	Write	syntax	Syntax error
+exitword	WithEvents	syntax	Syntax error
+exitword	With	syntax	Syntax error
+exitword	Width	syntax	Syntax error
+exitword	While	syntax	Syntax error
+exitword	Wend	syntax	Syntax error
+exitword	Variant	syntax	Syntax error
+exitword	Until	syntax	Syntax error
+exitword	Unknown	syntax	Syntax error
+exitword	Unlock	syntax	Syntax error
+exitword	Unload	syntax	Syntax error
+exitword	UBound	syntax	Syntax error
+exitword	TypeOf	syntax	Syntax error
+exitword	Type	syntax	Syntax error
+exitword	True	syntax	Syntax error
+exitword	To	syntax	Syntax error
+exitword	Then	syntax	Syntax error
+exitword	Text	syntax	Syntax error
+exitword	Tab	syntax	Syntax error
+exitword	Sub	accepted	
+exitword	String	syntax	Syntax error
+exitword	StrComp	syntax	Syntax error
+exitword	Stop	syntax	Syntax error
+exitword	Step	syntax	Syntax error
+exitword	Static	syntax	Syntax error
+exitword	Spc	syntax	Syntax error
+exitword	Single	syntax	Syntax error
+exitword	Shared	syntax	Syntax error
+exitword	Sgn	syntax	Syntax error
+exitword	Set	syntax	Syntax error
+exitword	Select	syntax	Syntax error
+exitword	Seek	syntax	Syntax error
+exitword	Scale	syntax	Syntax error
+exitword	RSet	syntax	Syntax error
+exitword	RGB	syntax	Syntax error
+exitword	Return	syntax	Syntax error
+exitword	Resume	syntax	Syntax error
+exitword	Rem	syntax	Syntax error
+exitword	ReDim	syntax	Syntax error
+exitword	Read	syntax	Syntax error
+exitword	Randomize	syntax	Syntax error
+exitword	Random	syntax	Syntax error
+exitword	RaiseEvent	syntax	Syntax error
+exitword	Put	syntax	Syntax error
+exitword	Public	syntax	Syntax error
+exitword	PSet	syntax	Syntax error
+exitword	Property	syntax	Exit Property not allowed in Function or Sub
+exitword	Private	syntax	Syntax error
+exitword	Print	syntax	Syntax error
+exitword	Preserve	syntax	Syntax error
+exitword	ParamArray	syntax	Syntax error
+exitword	Output	syntax	Syntax error
+exitword	Or	syntax	Syntax error
+exitword	Optional	syntax	Syntax error
+exitword	Option	syntax	Syntax error
+exitword	Open	syntax	Syntax error
+exitword	On	syntax	Syntax error
+exitword	Object	syntax	Syntax error
+exitword	Null	syntax	Syntax error
+exitword	Nothing	syntax	Syntax error
+exitword	Not	syntax	Syntax error
+exitword	Next	syntax	Syntax error
+exitword	New	syntax	Syntax error
+exitword	Name	syntax	Syntax error
+exitword	Module	syntax	Syntax error
+exitword	Mod	syntax	Syntax error
+exitword	MidB	syntax	Syntax error
+exitword	Mid	syntax	Syntax error
+exitword	Me	syntax	Syntax error
+exitword	LSet	syntax	Syntax error
+exitword	Loop	syntax	Syntax error
+exitword	Long	syntax	Syntax error
+exitword	Lock	syntax	Syntax error
+exitword	Local	syntax	Syntax error
+exitword	Load	syntax	Syntax error
+exitword	LINEINPUT	syntax	Syntax error
+exitword	Line	syntax	Syntax error
+exitword	Like	syntax	Syntax error
+exitword	Lib	syntax	Syntax error
+exitword	Let	syntax	Syntax error
+exitword	LenB	syntax	Syntax error
+exitword	Len	syntax	Syntax error
+exitword	Left	syntax	Syntax error
+exitword	LBound	syntax	Syntax error
+exitword	Is	syntax	Syntax error
+exitword	Integer	syntax	Syntax error
+exitword	Int	syntax	Syntax error
+exitword	InStrB	syntax	Syntax error
+exitword	InStr	syntax	Syntax error
+exitword	InputB	syntax	Syntax error
+exitword	Input	syntax	Syntax error
+exitword	In	syntax	Syntax error
+exitword	Implements	syntax	Syntax error
+exitword	Imp	syntax	Syntax error
+exitword	If	syntax	Syntax error
+exitword	GoTo	syntax	Syntax error
+exitword	GoSub	syntax	Syntax error
+exitword	Go	syntax	Syntax error
+exitword	Global	syntax	Syntax error
+exitword	Get	syntax	Syntax error
+exitword	Function	syntax	Exit Function not allowed in Sub or Property
+exitword	Friend	syntax	Syntax error
+exitword	FreeFile	syntax	Syntax error
+exitword	Format	syntax	Syntax error
+exitword	For	syntax	Exit For not within For...Next
+exitword	Fix	syntax	Syntax error
+exitword	False	syntax	Syntax error
+exitword	Explicit	syntax	Syntax error
+exitword	Exit	syntax	Syntax error
+exitword	Event	syntax	Syntax error
+exitword	Error	syntax	Syntax error
+exitword	Erase	syntax	Syntax error
+exitword	Eqv	syntax	Syntax error
+exitword	Enum	syntax	Syntax error
+exitword	EndIf	syntax	Syntax error
+exitword	End	syntax	Syntax error
+exitword	Empty	syntax	Syntax error
+exitword	ElseIf	syntax	Syntax error
+exitword	Else	syntax	Syntax error
+exitword	Each	syntax	Syntax error
+exitword	Double	syntax	Syntax error
+exitword	DoEvents	syntax	Syntax error
+exitword	Do	syntax	Exit Do not within Do...Loop
+exitword	Dir	syntax	Syntax error
+exitword	Dim	syntax	Syntax error
+exitword	DefVar	syntax	Syntax error
+exitword	DefStr	syntax	Syntax error
+exitword	DefSng	syntax	Syntax error
+exitword	DefObj	syntax	Syntax error
+exitword	DefLng	syntax	Syntax error
+exitword	DefInt	syntax	Syntax error
+exitword	DefDbl	syntax	Syntax error
+exitword	DefDec	syntax	Syntax error
+exitword	DefDate	syntax	Syntax error
+exitword	DefCur	syntax	Syntax error
+exitword	DefByte	syntax	Syntax error
+exitword	DefBool	syntax	Syntax error
+exitword	Declare	syntax	Syntax error
+exitword	Decimal	syntax	Syntax error
+exitword	Debug	syntax	Syntax error
+exitword	Date	syntax	Syntax error
+exitword	Database	syntax	Syntax error
+exitword	Currency	syntax	Syntax error
+exitword	CVErr	syntax	Syntax error
+exitword	CVDate	syntax	Syntax error
+exitword	CVar	syntax	Syntax error
+exitword	CurDir	syntax	Syntax error
+exitword	CStr	syntax	Syntax error
+exitword	CSng	syntax	Syntax error
+exitword	Const	syntax	Syntax error
+exitword	Compare	syntax	Syntax error
+exitword	Close	syntax	Syntax error
+exitword	CLng	syntax	Syntax error
+exitword	Circle	syntax	Syntax error
+exitword	CInt	syntax	Syntax error
+exitword	ChDir	syntax	Syntax error
+exitword	CDecl	syntax	Syntax error
+exitword	CDbl	syntax	Syntax error
+exitword	CDec	syntax	Syntax error
+exitword	CDate	syntax	Syntax error
+exitword	CCur	syntax	Syntax error
+exitword	CByte	syntax	Syntax error
+exitword	CBool	syntax	Syntax error
+exitword	Case	syntax	Syntax error
+exitword	Call	syntax	Syntax error
+exitword	ByVal	syntax	Syntax error
+exitword	Byte	syntax	Syntax error
+exitword	ByRef	syntax	Syntax error
+exitword	Boolean	syntax	Syntax error
+exitword	Binary	syntax	Syntax error
+exitword	BF	syntax	Syntax error
+exitword	Base	syntax	Syntax error
+exitword	Assert	syntax	Syntax error
+exitword	As	syntax	Syntax error
+exitword	Array	syntax	Syntax error
+exitword	Append	syntax	Syntax error
+exitword	Any	syntax	Syntax error
+exitword	And	syntax	Syntax error
+exitword	Alias	syntax	Syntax error
+exitword	AddressOf	syntax	Syntax error
+exitword	Access	syntax	Syntax error
+exitword	Abs	syntax	Syntax error
+optionword	Xor	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Write	syntax	Expected: Base or Compare or Explicit or Private
+optionword	WithEvents	syntax	Expected: Base or Compare or Explicit or Private
+optionword	With	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Width	syntax	Expected: Base or Compare or Explicit or Private
+optionword	While	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Wend	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Variant	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Until	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Unknown	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Unlock	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Unload	syntax	Expected: Base or Compare or Explicit or Private
+optionword	UBound	syntax	Expected: Base or Compare or Explicit or Private
+optionword	TypeOf	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Type	syntax	Expected: Base or Compare or Explicit or Private
+optionword	True	syntax	Expected: Base or Compare or Explicit or Private
+optionword	To	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Then	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Text	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Tab	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Sub	syntax	Expected: Base or Compare or Explicit or Private
+optionword	String	syntax	Expected: Base or Compare or Explicit or Private
+optionword	StrComp	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Stop	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Step	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Static	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Spc	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Single	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Shared	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Sgn	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Set	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Select	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Seek	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Scale	syntax	Expected: Base or Compare or Explicit or Private
+optionword	RSet	syntax	Expected: Base or Compare or Explicit or Private
+optionword	RGB	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Return	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Resume	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Rem	syntax	Expected: Base or Compare or Explicit or Private
+optionword	ReDim	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Read	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Randomize	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Random	syntax	Expected: Base or Compare or Explicit or Private
+optionword	RaiseEvent	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Put	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Public	syntax	Expected: Base or Compare or Explicit or Private
+optionword	PSet	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Property	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Private	syntax	Expected: Module
+optionword	Print	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Preserve	syntax	Expected: Base or Compare or Explicit or Private
+optionword	ParamArray	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Output	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Or	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Optional	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Option	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Open	syntax	Expected: Base or Compare or Explicit or Private
+optionword	On	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Object	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Null	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Nothing	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Not	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Next	syntax	Expected: Base or Compare or Explicit or Private
+optionword	New	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Name	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Module	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Mod	syntax	Expected: Base or Compare or Explicit or Private
+optionword	MidB	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Mid	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Me	syntax	Expected: Base or Compare or Explicit or Private
+optionword	LSet	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Loop	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Long	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Lock	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Local	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Load	syntax	Expected: Base or Compare or Explicit or Private
+optionword	LINEINPUT	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Line	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Like	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Lib	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Let	syntax	Expected: Base or Compare or Explicit or Private
+optionword	LenB	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Len	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Left	syntax	Expected: Base or Compare or Explicit or Private
+optionword	LBound	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Is	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Integer	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Int	syntax	Expected: Base or Compare or Explicit or Private
+optionword	InStrB	syntax	Expected: Base or Compare or Explicit or Private
+optionword	InStr	syntax	Expected: Base or Compare or Explicit or Private
+optionword	InputB	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Input	syntax	Expected: Base or Compare or Explicit or Private
+optionword	In	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Implements	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Imp	syntax	Expected: Base or Compare or Explicit or Private
+optionword	If	syntax	Expected: Base or Compare or Explicit or Private
+optionword	GoTo	syntax	Expected: Base or Compare or Explicit or Private
+optionword	GoSub	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Go	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Global	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Get	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Function	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Friend	syntax	Expected: Base or Compare or Explicit or Private
+optionword	FreeFile	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Format	syntax	Expected: Base or Compare or Explicit or Private
+optionword	For	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Fix	syntax	Expected: Base or Compare or Explicit or Private
+optionword	False	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Explicit	accepted	
+optionword	Exit	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Event	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Error	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Erase	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Eqv	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Enum	syntax	Expected: Base or Compare or Explicit or Private
+optionword	EndIf	syntax	Expected: Base or Compare or Explicit or Private
+optionword	End	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Empty	syntax	Expected: Base or Compare or Explicit or Private
+optionword	ElseIf	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Else	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Each	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Double	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DoEvents	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Do	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Dir	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Dim	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefVar	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefStr	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefSng	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefObj	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefLng	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefInt	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefDbl	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefDec	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefDate	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefCur	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefByte	syntax	Expected: Base or Compare or Explicit or Private
+optionword	DefBool	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Declare	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Decimal	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Debug	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Date	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Database	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Currency	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CVErr	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CVDate	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CVar	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CurDir	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CStr	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CSng	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Const	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Compare	syntax	Expected: Text or Binary
+optionword	Close	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CLng	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Circle	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CInt	syntax	Expected: Base or Compare or Explicit or Private
+optionword	ChDir	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CDecl	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CDbl	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CDec	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CDate	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CCur	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CByte	syntax	Expected: Base or Compare or Explicit or Private
+optionword	CBool	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Case	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Call	syntax	Expected: Base or Compare or Explicit or Private
+optionword	ByVal	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Byte	syntax	Expected: Base or Compare or Explicit or Private
+optionword	ByRef	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Boolean	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Binary	syntax	Expected: Base or Compare or Explicit or Private
+optionword	BF	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Base	syntax	Expected: 0 or 1
+optionword	Assert	syntax	Expected: Base or Compare or Explicit or Private
+optionword	As	syntax	Expected: New or type name
+optionword	Array	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Append	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Any	syntax	Expected: Base or Compare or Explicit or Private
+optionword	And	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Alias	syntax	Expected: Base or Compare or Explicit or Private
+optionword	AddressOf	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Access	syntax	Expected: Base or Compare or Explicit or Private
+optionword	Abs	syntax	Expected: Base or Compare or Explicit or Private
+withmember	Xor	accepted	
+withmember	Write	accepted	
+withmember	WithEvents	accepted	
+withmember	With	accepted	
+withmember	Width	accepted	
+withmember	While	accepted	
+withmember	Wend	accepted	
+withmember	Variant	accepted	
+withmember	Until	accepted	
+withmember	Unknown	accepted	
+withmember	Unlock	accepted	
+withmember	Unload	accepted	
+withmember	UBound	accepted	
+withmember	TypeOf	accepted	
+withmember	Type	accepted	
+withmember	True	accepted	
+withmember	To	accepted	
+withmember	Then	accepted	
+withmember	Text	accepted	
+withmember	Tab	accepted	
+withmember	Sub	accepted	
+withmember	String	accepted	
+withmember	StrComp	accepted	
+withmember	Stop	accepted	
+withmember	Step	accepted	
+withmember	Static	accepted	
+withmember	Spc	accepted	
+withmember	Single	accepted	
+withmember	Shared	accepted	
+withmember	Sgn	accepted	
+withmember	Set	accepted	
+withmember	Select	accepted	
+withmember	Seek	accepted	
+withmember	Scale	accepted	
+withmember	RSet	accepted	
+withmember	RGB	accepted	
+withmember	Return	accepted	
+withmember	Resume	accepted	
+withmember	Rem	accepted	
+withmember	ReDim	accepted	
+withmember	Read	accepted	
+withmember	Randomize	accepted	
+withmember	Random	accepted	
+withmember	RaiseEvent	accepted	
+withmember	Put	accepted	
+withmember	Public	accepted	
+withmember	PSet	accepted	
+withmember	Property	accepted	
+withmember	Private	accepted	
+withmember	Print	accepted	
+withmember	Preserve	accepted	
+withmember	ParamArray	accepted	
+withmember	Output	accepted	
+withmember	Or	accepted	
+withmember	Optional	accepted	
+withmember	Option	accepted	
+withmember	Open	accepted	
+withmember	On	accepted	
+withmember	Object	accepted	
+withmember	Null	accepted	
+withmember	Nothing	accepted	
+withmember	Not	accepted	
+withmember	Next	accepted	
+withmember	New	accepted	
+withmember	Name	accepted	
+withmember	Module	accepted	
+withmember	Mod	accepted	
+withmember	MidB	accepted	
+withmember	Mid	accepted	
+withmember	Me	accepted	
+withmember	LSet	accepted	
+withmember	Loop	accepted	
+withmember	Long	accepted	
+withmember	Lock	accepted	
+withmember	Local	accepted	
+withmember	Load	accepted	
+withmember	LINEINPUT	accepted	
+withmember	Line	accepted	
+withmember	Like	accepted	
+withmember	Lib	accepted	
+withmember	Let	accepted	
+withmember	LenB	accepted	
+withmember	Len	accepted	
+withmember	Left	accepted	
+withmember	LBound	accepted	
+withmember	Is	accepted	
+withmember	Integer	accepted	
+withmember	Int	accepted	
+withmember	InStrB	accepted	
+withmember	InStr	accepted	
+withmember	InputB	accepted	
+withmember	Input	accepted	
+withmember	In	accepted	
+withmember	Implements	accepted	
+withmember	Imp	accepted	
+withmember	If	accepted	
+withmember	GoTo	accepted	
+withmember	GoSub	accepted	
+withmember	Go	accepted	
+withmember	Global	accepted	
+withmember	Get	accepted	
+withmember	Function	accepted	
+withmember	Friend	accepted	
+withmember	FreeFile	accepted	
+withmember	Format	accepted	
+withmember	For	accepted	
+withmember	Fix	accepted	
+withmember	False	accepted	
+withmember	Explicit	accepted	
+withmember	Exit	accepted	
+withmember	Event	accepted	
+withmember	Error	accepted	
+withmember	Erase	accepted	
+withmember	Eqv	accepted	
+withmember	Enum	accepted	
+withmember	EndIf	accepted	
+withmember	End	accepted	
+withmember	Empty	accepted	
+withmember	ElseIf	accepted	
+withmember	Else	accepted	
+withmember	Each	accepted	
+withmember	Double	accepted	
+withmember	DoEvents	accepted	
+withmember	Do	accepted	
+withmember	Dir	accepted	
+withmember	Dim	accepted	
+withmember	DefVar	accepted	
+withmember	DefStr	accepted	
+withmember	DefSng	accepted	
+withmember	DefObj	accepted	
+withmember	DefLng	accepted	
+withmember	DefInt	accepted	
+withmember	DefDbl	accepted	
+withmember	DefDec	accepted	
+withmember	DefDate	accepted	
+withmember	DefCur	accepted	
+withmember	DefByte	accepted	
+withmember	DefBool	accepted	
+withmember	Declare	accepted	
+withmember	Decimal	accepted	
+withmember	Debug	accepted	
+withmember	Date	accepted	
+withmember	Database	accepted	
+withmember	Currency	accepted	
+withmember	CVErr	accepted	
+withmember	CVDate	accepted	
+withmember	CVar	accepted	
+withmember	CurDir	accepted	
+withmember	CStr	accepted	
+withmember	CSng	accepted	
+withmember	Const	accepted	
+withmember	Compare	accepted	
+withmember	Close	accepted	
+withmember	CLng	accepted	
+withmember	Circle	accepted	
+withmember	CInt	accepted	
+withmember	ChDir	accepted	
+withmember	CDecl	accepted	
+withmember	CDbl	accepted	
+withmember	CDec	accepted	
+withmember	CDate	accepted	
+withmember	CCur	accepted	
+withmember	CByte	accepted	
+withmember	CBool	accepted	
+withmember	Case	accepted	
+withmember	Call	accepted	
+withmember	ByVal	accepted	
+withmember	Byte	accepted	
+withmember	ByRef	accepted	
+withmember	Boolean	accepted	
+withmember	Binary	accepted	
+withmember	BF	accepted	
+withmember	Base	accepted	
+withmember	Assert	accepted	
+withmember	As	accepted	
+withmember	Array	accepted	
+withmember	Append	accepted	
+withmember	Any	accepted	
+withmember	And	accepted	
+withmember	Alias	accepted	
+withmember	AddressOf	accepted	
+withmember	Access	accepted	
+withmember	Abs	accepted	
+withtarget	Xor	accepted	
+withtarget	Write	accepted	
+withtarget	WithEvents	accepted	
+withtarget	With	accepted	
+withtarget	Width	accepted	
+withtarget	While	accepted	
+withtarget	Wend	accepted	
+withtarget	Variant	accepted	
+withtarget	Until	accepted	
+withtarget	Unknown	accepted	
+withtarget	Unlock	accepted	
+withtarget	Unload	accepted	
+withtarget	UBound	accepted	
+withtarget	TypeOf	accepted	
+withtarget	Type	accepted	
+withtarget	True	accepted	
+withtarget	To	accepted	
+withtarget	Then	accepted	
+withtarget	Text	accepted	
+withtarget	Tab	accepted	
+withtarget	Sub	accepted	
+withtarget	String	accepted	
+withtarget	StrComp	accepted	
+withtarget	Stop	accepted	
+withtarget	Step	accepted	
+withtarget	Static	accepted	
+withtarget	Spc	accepted	
+withtarget	Single	accepted	
+withtarget	Shared	accepted	
+withtarget	Sgn	accepted	
+withtarget	Set	accepted	
+withtarget	Select	accepted	
+withtarget	Seek	accepted	
+withtarget	Scale	accepted	
+withtarget	RSet	accepted	
+withtarget	RGB	accepted	
+withtarget	Return	accepted	
+withtarget	Resume	accepted	
+withtarget	Rem	accepted	
+withtarget	ReDim	accepted	
+withtarget	Read	accepted	
+withtarget	Randomize	accepted	
+withtarget	Random	accepted	
+withtarget	RaiseEvent	accepted	
+withtarget	Put	accepted	
+withtarget	Public	accepted	
+withtarget	PSet	accepted	
+withtarget	Property	accepted	
+withtarget	Private	accepted	
+withtarget	Print	accepted	
+withtarget	Preserve	accepted	
+withtarget	ParamArray	accepted	
+withtarget	Output	accepted	
+withtarget	Or	accepted	
+withtarget	Optional	accepted	
+withtarget	Option	accepted	
+withtarget	Open	accepted	
+withtarget	On	accepted	
+withtarget	Object	accepted	
+withtarget	Null	accepted	
+withtarget	Nothing	accepted	
+withtarget	Not	accepted	
+withtarget	Next	accepted	
+withtarget	New	accepted	
+withtarget	Name	accepted	
+withtarget	Module	accepted	
+withtarget	Mod	accepted	
+withtarget	MidB	accepted	
+withtarget	Mid	accepted	
+withtarget	Me	accepted	
+withtarget	LSet	accepted	
+withtarget	Loop	accepted	
+withtarget	Long	accepted	
+withtarget	Lock	accepted	
+withtarget	Local	accepted	
+withtarget	Load	accepted	
+withtarget	LINEINPUT	accepted	
+withtarget	Line	accepted	
+withtarget	Like	accepted	
+withtarget	Lib	accepted	
+withtarget	Let	accepted	
+withtarget	LenB	accepted	
+withtarget	Len	accepted	
+withtarget	Left	accepted	
+withtarget	LBound	accepted	
+withtarget	Is	accepted	
+withtarget	Integer	accepted	
+withtarget	Int	accepted	
+withtarget	InStrB	accepted	
+withtarget	InStr	accepted	
+withtarget	InputB	accepted	
+withtarget	Input	accepted	
+withtarget	In	accepted	
+withtarget	Implements	accepted	
+withtarget	Imp	accepted	
+withtarget	If	accepted	
+withtarget	GoTo	accepted	
+withtarget	GoSub	accepted	
+withtarget	Go	accepted	
+withtarget	Global	accepted	
+withtarget	Get	accepted	
+withtarget	Function	accepted	
+withtarget	Friend	accepted	
+withtarget	FreeFile	accepted	
+withtarget	Format	accepted	
+withtarget	For	accepted	
+withtarget	Fix	accepted	
+withtarget	False	accepted	
+withtarget	Explicit	accepted	
+withtarget	Exit	accepted	
+withtarget	Event	accepted	
+withtarget	Error	accepted	
+withtarget	Erase	accepted	
+withtarget	Eqv	accepted	
+withtarget	Enum	accepted	
+withtarget	EndIf	accepted	
+withtarget	End	accepted	
+withtarget	Empty	accepted	
+withtarget	ElseIf	accepted	
+withtarget	Else	accepted	
+withtarget	Each	accepted	
+withtarget	Double	accepted	
+withtarget	DoEvents	accepted	
+withtarget	Do	accepted	
+withtarget	Dir	accepted	
+withtarget	Dim	accepted	
+withtarget	DefVar	accepted	
+withtarget	DefStr	accepted	
+withtarget	DefSng	accepted	
+withtarget	DefObj	accepted	
+withtarget	DefLng	accepted	
+withtarget	DefInt	accepted	
+withtarget	DefDbl	accepted	
+withtarget	DefDec	accepted	
+withtarget	DefDate	accepted	
+withtarget	DefCur	accepted	
+withtarget	DefByte	accepted	
+withtarget	DefBool	accepted	
+withtarget	Declare	accepted	
+withtarget	Decimal	accepted	
+withtarget	Debug	accepted	
+withtarget	Date	accepted	
+withtarget	Database	accepted	
+withtarget	Currency	accepted	
+withtarget	CVErr	accepted	
+withtarget	CVDate	accepted	
+withtarget	CVar	accepted	
+withtarget	CurDir	accepted	
+withtarget	CStr	accepted	
+withtarget	CSng	accepted	
+withtarget	Const	accepted	
+withtarget	Compare	accepted	
+withtarget	Close	accepted	
+withtarget	CLng	accepted	
+withtarget	Circle	accepted	
+withtarget	CInt	accepted	
+withtarget	ChDir	accepted	
+withtarget	CDecl	accepted	
+withtarget	CDbl	accepted	
+withtarget	CDec	accepted	
+withtarget	CDate	accepted	
+withtarget	CCur	accepted	
+withtarget	CByte	accepted	
+withtarget	CBool	accepted	
+withtarget	Case	accepted	
+withtarget	Call	accepted	
+withtarget	ByVal	accepted	
+withtarget	Byte	accepted	
+withtarget	ByRef	accepted	
+withtarget	Boolean	accepted	
+withtarget	Binary	accepted	
+withtarget	BF	accepted	
+withtarget	Base	accepted	
+withtarget	Assert	accepted	
+withtarget	As	accepted	
+withtarget	Array	accepted	
+withtarget	Append	accepted	
+withtarget	Any	accepted	
+withtarget	And	accepted	
+withtarget	Alias	accepted	
+withtarget	AddressOf	accepted	
+withtarget	Access	accepted	
+withtarget	Abs	accepted	
+callword	Xor	syntax	Syntax error
+callword	Write	syntax	Syntax error
+callword	WithEvents	syntax	Syntax error
+callword	With	syntax	Syntax error
+callword	Width	semantic	Argument not optional
+callword	While	syntax	Syntax error
+callword	Wend	syntax	Syntax error
+callword	Variant	syntax	Syntax error
+callword	Until	syntax	Syntax error
+callword	Unknown	semantic	Sub or Function not defined
+callword	Unlock	syntax	Syntax error
+callword	Unload	semantic	Argument not optional
+callword	UBound	syntax	Syntax error
+callword	TypeOf	syntax	Syntax error
+callword	Type	syntax	Syntax error
+callword	True	syntax	Syntax error
+callword	To	syntax	Syntax error
+callword	Then	syntax	Syntax error
+callword	Text	semantic	Sub or Function not defined
+callword	Tab	syntax	Syntax error
+callword	Sub	syntax	Syntax error
+callword	String	syntax	Syntax error
+callword	StrComp	semantic	Argument not optional
+callword	Stop	syntax	Syntax error
+callword	Step	semantic	Sub or Function not defined
+callword	Static	syntax	Syntax error
+callword	Spc	syntax	Syntax error
+callword	Single	syntax	Syntax error
+callword	Shared	syntax	Syntax error
+callword	Sgn	syntax	Syntax error
+callword	Set	syntax	Syntax error
+callword	Select	syntax	Syntax error
+callword	Seek	syntax	Syntax error
+callword	Scale	syntax	Syntax error
+callword	RSet	syntax	Syntax error
+callword	RGB	semantic	Argument not optional
+callword	Return	syntax	Syntax error
+callword	Resume	syntax	Syntax error
+callword	Rem	syntax	Syntax error
+callword	ReDim	syntax	Syntax error
+callword	Read	semantic	Sub or Function not defined
+callword	Randomize	accepted	
+callword	Random	semantic	Sub or Function not defined
+callword	RaiseEvent	syntax	Syntax error
+callword	Put	syntax	Syntax error
+callword	Public	syntax	Syntax error
+callword	PSet	syntax	Syntax error
+callword	Property	semantic	Sub or Function not defined
+callword	Private	syntax	Syntax error
+callword	Print	syntax	Syntax error
+callword	Preserve	syntax	Syntax error
+callword	ParamArray	syntax	Syntax error
+callword	Output	semantic	Sub or Function not defined
+callword	Or	syntax	Syntax error
+callword	Optional	syntax	Syntax error
+callword	Option	syntax	Syntax error
+callword	Open	syntax	Syntax error
+callword	On	syntax	Syntax error
+callword	Object	semantic	Sub or Function not defined
+callword	Null	syntax	Syntax error
+callword	Nothing	syntax	Syntax error
+callword	Not	syntax	Syntax error
+callword	Next	syntax	Syntax error
+callword	New	syntax	Syntax error
+callword	Name	semantic	Sub or Function not defined
+callword	Module	semantic	Sub or Function not defined
+callword	Mod	syntax	Syntax error
+callword	MidB	semantic	Argument not optional
+callword	Mid	semantic	Argument not optional
+callword	Me	semantic	Invalid use of Me keyword
+callword	LSet	syntax	Syntax error
+callword	Loop	syntax	Syntax error
+callword	Long	syntax	Syntax error
+callword	Lock	syntax	Syntax error
+callword	Local	syntax	Syntax error
+callword	Load	semantic	Argument not optional
+callword	LINEINPUT	syntax	Syntax error
+callword	Line	semantic	Sub or Function not defined
+callword	Like	syntax	Syntax error
+callword	Lib	semantic	Sub or Function not defined
+callword	Let	syntax	Syntax error
+callword	LenB	syntax	Syntax error
+callword	Len	syntax	Syntax error
+callword	Left	semantic	Argument not optional
+callword	LBound	syntax	Syntax error
+callword	Is	syntax	Syntax error
+callword	Integer	syntax	Syntax error
+callword	Int	syntax	Syntax error
+callword	InStrB	accepted	
+callword	InStr	accepted	
+callword	InputB	syntax	Syntax error
+callword	Input	syntax	Syntax error
+callword	In	syntax	Syntax error
+callword	Implements	syntax	Syntax error
+callword	Imp	syntax	Syntax error
+callword	If	syntax	Syntax error
+callword	GoTo	syntax	Syntax error
+callword	GoSub	syntax	Syntax error
+callword	Go	semantic	Sub or Function not defined
+callword	Global	syntax	Syntax error
+callword	Get	syntax	Syntax error
+callword	Function	syntax	Syntax error
+callword	Friend	syntax	Syntax error
+callword	FreeFile	accepted	
+callword	Format	semantic	Argument not optional
+callword	For	syntax	Syntax error
+callword	Fix	syntax	Syntax error
+callword	False	syntax	Syntax error
+callword	Explicit	semantic	Sub or Function not defined
+callword	Exit	syntax	Syntax error
+callword	Event	syntax	Syntax error
+callword	Error	accepted	
+callword	Erase	syntax	Syntax error
+callword	Eqv	syntax	Syntax error
+callword	Enum	syntax	Syntax error
+callword	EndIf	syntax	Syntax error
+callword	End	syntax	Syntax error
+callword	Empty	syntax	Syntax error
+callword	ElseIf	syntax	Syntax error
+callword	Else	syntax	Syntax error
+callword	Each	syntax	Syntax error
+callword	Double	syntax	Syntax error
+callword	DoEvents	syntax	Syntax error
+callword	Do	syntax	Syntax error
+callword	Dir	accepted	
+callword	Dim	syntax	Syntax error
+callword	DefVar	syntax	Syntax error
+callword	DefStr	syntax	Syntax error
+callword	DefSng	syntax	Syntax error
+callword	DefObj	syntax	Syntax error
+callword	DefLng	syntax	Syntax error
+callword	DefInt	syntax	Syntax error
+callword	DefDbl	syntax	Syntax error
+callword	DefDec	syntax	Syntax error
+callword	DefDate	syntax	Syntax error
+callword	DefCur	syntax	Syntax error
+callword	DefByte	syntax	Syntax error
+callword	DefBool	syntax	Syntax error
+callword	Declare	syntax	Syntax error
+callword	Decimal	syntax	Syntax error
+callword	Debug	syntax	Syntax error
+callword	Date	syntax	Syntax error
+callword	Database	semantic	Sub or Function not defined
+callword	Currency	syntax	Syntax error
+callword	CVErr	syntax	Syntax error
+callword	CVDate	semantic	Argument not optional
+callword	CVar	syntax	Syntax error
+callword	CurDir	accepted	
+callword	CStr	syntax	Syntax error
+callword	CSng	syntax	Syntax error
+callword	Const	syntax	Syntax error
+callword	Compare	semantic	Sub or Function not defined
+callword	Close	syntax	Syntax error
+callword	CLng	syntax	Syntax error
+callword	Circle	syntax	Syntax error
+callword	CInt	syntax	Syntax error
+callword	ChDir	semantic	Argument not optional
+callword	CDecl	syntax	Syntax error
+callword	CDbl	syntax	Syntax error
+callword	CDec	syntax	Syntax error
+callword	CDate	syntax	Syntax error
+callword	CCur	syntax	Syntax error
+callword	CByte	syntax	Syntax error
+callword	CBool	syntax	Syntax error
+callword	Case	syntax	Syntax error
+callword	Call	syntax	Syntax error
+callword	ByVal	syntax	Syntax error
+callword	Byte	syntax	Syntax error
+callword	ByRef	syntax	Syntax error
+callword	Boolean	syntax	Syntax error
+callword	Binary	semantic	Sub or Function not defined
+callword	BF	semantic	Sub or Function not defined
+callword	Base	semantic	Sub or Function not defined
+callword	Assert	semantic	Sub or Function not defined
+callword	As	syntax	Syntax error
+callword	Array	syntax	Syntax error
+callword	Append	semantic	Sub or Function not defined
+callword	Any	syntax	Syntax error
+callword	And	syntax	Syntax error
+callword	Alias	semantic	Sub or Function not defined
+callword	AddressOf	syntax	Syntax error
+callword	Access	semantic	Sub or Function not defined
+callword	Abs	syntax	Syntax error
+labelcolon	Xor	syntax	Syntax error
+labelcolon	Write	syntax	Syntax error
+labelcolon	WithEvents	syntax	Syntax error
+labelcolon	With	syntax	Syntax error
+labelcolon	Width	accepted	
+labelcolon	While	syntax	Syntax error
+labelcolon	Wend	syntax	Wend without While
+labelcolon	Variant	syntax	Syntax error
+labelcolon	Until	syntax	Syntax error
+labelcolon	Unknown	accepted	
+labelcolon	Unlock	syntax	Syntax error
+labelcolon	Unload	accepted	
+labelcolon	UBound	syntax	Syntax error
+labelcolon	TypeOf	syntax	Syntax error
+labelcolon	Type	syntax	Syntax error
+labelcolon	True	syntax	Syntax error
+labelcolon	To	syntax	Syntax error
+labelcolon	Then	syntax	Syntax error
+labelcolon	Text	accepted	
+labelcolon	Tab	syntax	Syntax error
+labelcolon	Sub	syntax	Syntax error
+labelcolon	String	syntax	Syntax error
+labelcolon	StrComp	accepted	
+labelcolon	Stop	accepted	
+labelcolon	Step	accepted	
+labelcolon	Static	syntax	Syntax error
+labelcolon	Spc	syntax	Syntax error
+labelcolon	Single	syntax	Syntax error
+labelcolon	Shared	syntax	Syntax error
+labelcolon	Sgn	syntax	Syntax error
+labelcolon	Set	syntax	Syntax error
+labelcolon	Select	syntax	Syntax error
+labelcolon	Seek	syntax	Syntax error
+labelcolon	Scale	semantic	Method not valid without suitable object
+labelcolon	RSet	syntax	Syntax error
+labelcolon	RGB	accepted	
+labelcolon	Return	accepted	
+labelcolon	Resume	accepted	
+labelcolon	Rem	accepted	
+labelcolon	ReDim	syntax	Syntax error
+labelcolon	Read	accepted	
+labelcolon	Randomize	accepted	
+labelcolon	Random	accepted	
+labelcolon	RaiseEvent	syntax	Syntax error
+labelcolon	Put	syntax	Syntax error
+labelcolon	Public	syntax	Syntax error
+labelcolon	PSet	syntax	Syntax error
+labelcolon	Property	accepted	
+labelcolon	Private	syntax	Syntax error
+labelcolon	Print	semantic	Method not valid without suitable object
+labelcolon	Preserve	syntax	Syntax error
+labelcolon	ParamArray	syntax	Syntax error
+labelcolon	Output	accepted	
+labelcolon	Or	syntax	Syntax error
+labelcolon	Optional	syntax	Syntax error
+labelcolon	Option	syntax	Syntax error
+labelcolon	Open	syntax	Syntax error
+labelcolon	On	syntax	Syntax error
+labelcolon	Object	accepted	
+labelcolon	Null	syntax	Syntax error
+labelcolon	Nothing	syntax	Syntax error
+labelcolon	Not	syntax	Syntax error
+labelcolon	Next	syntax	Next without For
+labelcolon	New	syntax	Syntax error
+labelcolon	Name	accepted	
+labelcolon	Module	accepted	
+labelcolon	Mod	syntax	Syntax error
+labelcolon	MidB	accepted	
+labelcolon	Mid	accepted	
+labelcolon	Me	syntax	Syntax error
+labelcolon	LSet	syntax	Syntax error
+labelcolon	Loop	syntax	Loop without Do
+labelcolon	Long	syntax	Syntax error
+labelcolon	Lock	syntax	Syntax error
+labelcolon	Local	syntax	Syntax error
+labelcolon	Load	accepted	
+labelcolon	LINEINPUT	syntax	Syntax error
+labelcolon	Line	accepted	
+labelcolon	Like	syntax	Syntax error
+labelcolon	Lib	accepted	
+labelcolon	Let	syntax	Syntax error
+labelcolon	LenB	syntax	Syntax error
+labelcolon	Len	syntax	Syntax error
+labelcolon	Left	accepted	
+labelcolon	LBound	syntax	Syntax error
+labelcolon	Is	syntax	Syntax error
+labelcolon	Integer	syntax	Syntax error
+labelcolon	Int	syntax	Syntax error
+labelcolon	InStrB	accepted	
+labelcolon	InStr	accepted	
+labelcolon	InputB	syntax	Syntax error
+labelcolon	Input	syntax	Syntax error
+labelcolon	In	syntax	Syntax error
+labelcolon	Implements	syntax	Syntax error
+labelcolon	Imp	syntax	Syntax error
+labelcolon	If	syntax	Syntax error
+labelcolon	GoTo	syntax	Syntax error
+labelcolon	GoSub	syntax	Syntax error
+labelcolon	Go	accepted	
+labelcolon	Global	syntax	Syntax error
+labelcolon	Get	syntax	Syntax error
+labelcolon	Function	syntax	Syntax error
+labelcolon	Friend	syntax	Syntax error
+labelcolon	FreeFile	accepted	
+labelcolon	Format	accepted	
+labelcolon	For	syntax	Syntax error
+labelcolon	Fix	syntax	Syntax error
+labelcolon	False	syntax	Syntax error
+labelcolon	Explicit	accepted	
+labelcolon	Exit	syntax	Syntax error
+labelcolon	Event	syntax	Syntax error
+labelcolon	Error	accepted	
+labelcolon	Erase	syntax	Syntax error
+labelcolon	Eqv	syntax	Syntax error
+labelcolon	Enum	syntax	Syntax error
+labelcolon	EndIf	syntax	End If without block If
+labelcolon	End	accepted	
+labelcolon	Empty	syntax	Syntax error
+labelcolon	ElseIf	syntax	Syntax error
+labelcolon	Else	syntax	Else without If
+labelcolon	Each	syntax	Syntax error
+labelcolon	Double	syntax	Syntax error
+labelcolon	DoEvents	accepted	
+labelcolon	Do	syntax	Do without Loop
+labelcolon	Dir	accepted	
+labelcolon	Dim	syntax	Syntax error
+labelcolon	DefVar	syntax	Syntax error
+labelcolon	DefStr	syntax	Syntax error
+labelcolon	DefSng	syntax	Syntax error
+labelcolon	DefObj	syntax	Syntax error
+labelcolon	DefLng	syntax	Syntax error
+labelcolon	DefInt	syntax	Syntax error
+labelcolon	DefDbl	syntax	Syntax error
+labelcolon	DefDec	syntax	Syntax error
+labelcolon	DefDate	syntax	Syntax error
+labelcolon	DefCur	syntax	Syntax error
+labelcolon	DefByte	syntax	Syntax error
+labelcolon	DefBool	syntax	Syntax error
+labelcolon	Declare	syntax	Syntax error
+labelcolon	Decimal	syntax	Syntax error
+labelcolon	Debug	syntax	Syntax error
+labelcolon	Date	semantic	Invalid use of property
+labelcolon	Database	accepted	
+labelcolon	Currency	syntax	Syntax error
+labelcolon	CVErr	syntax	Syntax error
+labelcolon	CVDate	accepted	
+labelcolon	CVar	syntax	Syntax error
+labelcolon	CurDir	accepted	
+labelcolon	CStr	syntax	Syntax error
+labelcolon	CSng	syntax	Syntax error
+labelcolon	Const	syntax	Syntax error
+labelcolon	Compare	accepted	
+labelcolon	Close	accepted	
+labelcolon	CLng	syntax	Syntax error
+labelcolon	Circle	syntax	Syntax error
+labelcolon	CInt	syntax	Syntax error
+labelcolon	ChDir	accepted	
+labelcolon	CDecl	syntax	Syntax error
+labelcolon	CDbl	syntax	Syntax error
+labelcolon	CDec	semantic	Argument not optional
+labelcolon	CDate	syntax	Syntax error
+labelcolon	CCur	syntax	Syntax error
+labelcolon	CByte	syntax	Syntax error
+labelcolon	CBool	syntax	Syntax error
+labelcolon	Case	syntax	Syntax error
+labelcolon	Call	syntax	Syntax error
+labelcolon	ByVal	syntax	Syntax error
+labelcolon	Byte	syntax	Syntax error
+labelcolon	ByRef	syntax	Syntax error
+labelcolon	Boolean	syntax	Syntax error
+labelcolon	Binary	accepted	
+labelcolon	BF	accepted	
+labelcolon	Base	accepted	
+labelcolon	Assert	accepted	
+labelcolon	As	syntax	Syntax error
+labelcolon	Array	syntax	Syntax error
+labelcolon	Append	accepted	
+labelcolon	Any	syntax	Syntax error
+labelcolon	And	syntax	Syntax error
+labelcolon	Alias	accepted	
+labelcolon	AddressOf	syntax	Syntax error
+labelcolon	Access	accepted	
+labelcolon	Abs	syntax	Syntax error
+labeldef	Xor	syntax	Syntax error
+labeldef	Write	syntax	Syntax error
+labeldef	WithEvents	syntax	Syntax error
+labeldef	With	syntax	Syntax error
+labeldef	Width	syntax	Label not defined
+labeldef	While	syntax	Syntax error
+labeldef	Wend	syntax	Wend without While
+labeldef	Variant	syntax	Syntax error
+labeldef	Until	syntax	Syntax error
+labeldef	Unknown	syntax	Label not defined
+labeldef	Unlock	syntax	Syntax error
+labeldef	Unload	syntax	Label not defined
+labeldef	UBound	syntax	Syntax error
+labeldef	TypeOf	syntax	Syntax error
+labeldef	Type	syntax	Syntax error
+labeldef	True	syntax	Syntax error
+labeldef	To	syntax	Syntax error
+labeldef	Then	syntax	Syntax error
+labeldef	Text	syntax	Label not defined
+labeldef	Tab	syntax	Syntax error
+labeldef	Sub	syntax	Syntax error
+labeldef	String	syntax	Syntax error
+labeldef	StrComp	syntax	Label not defined
+labeldef	Stop	syntax	Label not defined
+labeldef	Step	syntax	Label not defined
+labeldef	Static	syntax	Syntax error
+labeldef	Spc	syntax	Syntax error
+labeldef	Single	syntax	Syntax error
+labeldef	Shared	syntax	Syntax error
+labeldef	Sgn	syntax	Syntax error
+labeldef	Set	syntax	Syntax error
+labeldef	Select	syntax	Syntax error
+labeldef	Seek	syntax	Syntax error
+labeldef	Scale	semantic	Method not valid without suitable object
+labeldef	RSet	syntax	Syntax error
+labeldef	RGB	syntax	Label not defined
+labeldef	Return	syntax	Label not defined
+labeldef	Resume	syntax	Label not defined
+labeldef	Rem	syntax	Label not defined
+labeldef	ReDim	syntax	Syntax error
+labeldef	Read	syntax	Label not defined
+labeldef	Randomize	syntax	Label not defined
+labeldef	Random	syntax	Label not defined
+labeldef	RaiseEvent	syntax	Syntax error
+labeldef	Put	syntax	Syntax error
+labeldef	Public	syntax	Syntax error
+labeldef	PSet	syntax	Syntax error
+labeldef	Property	syntax	Label not defined
+labeldef	Private	syntax	Syntax error
+labeldef	Print	semantic	Method not valid without suitable object
+labeldef	Preserve	syntax	Syntax error
+labeldef	ParamArray	syntax	Syntax error
+labeldef	Output	syntax	Label not defined
+labeldef	Or	syntax	Syntax error
+labeldef	Optional	syntax	Syntax error
+labeldef	Option	syntax	Syntax error
+labeldef	Open	syntax	Syntax error
+labeldef	On	syntax	Syntax error
+labeldef	Object	syntax	Label not defined
+labeldef	Null	syntax	Syntax error
+labeldef	Nothing	syntax	Syntax error
+labeldef	Not	syntax	Syntax error
+labeldef	Next	syntax	Next without For
+labeldef	New	syntax	Syntax error
+labeldef	Name	syntax	Label not defined
+labeldef	Module	syntax	Label not defined
+labeldef	Mod	syntax	Syntax error
+labeldef	MidB	syntax	Label not defined
+labeldef	Mid	syntax	Label not defined
+labeldef	Me	syntax	Syntax error
+labeldef	LSet	syntax	Syntax error
+labeldef	Loop	syntax	Loop without Do
+labeldef	Long	syntax	Syntax error
+labeldef	Lock	syntax	Syntax error
+labeldef	Local	syntax	Syntax error
+labeldef	Load	syntax	Label not defined
+labeldef	LINEINPUT	syntax	Syntax error
+labeldef	Line	syntax	Label not defined
+labeldef	Like	syntax	Syntax error
+labeldef	Lib	syntax	Label not defined
+labeldef	Let	syntax	Syntax error
+labeldef	LenB	syntax	Syntax error
+labeldef	Len	syntax	Syntax error
+labeldef	Left	syntax	Label not defined
+labeldef	LBound	syntax	Syntax error
+labeldef	Is	syntax	Syntax error
+labeldef	Integer	syntax	Syntax error
+labeldef	Int	syntax	Syntax error
+labeldef	InStrB	syntax	Label not defined
+labeldef	InStr	syntax	Label not defined
+labeldef	InputB	syntax	Syntax error
+labeldef	Input	syntax	Syntax error
+labeldef	In	syntax	Syntax error
+labeldef	Implements	syntax	Syntax error
+labeldef	Imp	syntax	Syntax error
+labeldef	If	syntax	Syntax error
+labeldef	GoTo	syntax	Syntax error
+labeldef	GoSub	syntax	Syntax error
+labeldef	Go	syntax	Label not defined
+labeldef	Global	syntax	Syntax error
+labeldef	Get	syntax	Syntax error
+labeldef	Function	syntax	Syntax error
+labeldef	Friend	syntax	Syntax error
+labeldef	FreeFile	syntax	Label not defined
+labeldef	Format	syntax	Label not defined
+labeldef	For	syntax	Syntax error
+labeldef	Fix	syntax	Syntax error
+labeldef	False	syntax	Syntax error
+labeldef	Explicit	syntax	Label not defined
+labeldef	Exit	syntax	Syntax error
+labeldef	Event	syntax	Syntax error
+labeldef	Error	syntax	Label not defined
+labeldef	Erase	syntax	Syntax error
+labeldef	Eqv	syntax	Syntax error
+labeldef	Enum	syntax	Syntax error
+labeldef	EndIf	syntax	End If without block If
+labeldef	End	syntax	Label not defined
+labeldef	Empty	syntax	Syntax error
+labeldef	ElseIf	syntax	Syntax error
+labeldef	Else	syntax	Else without If
+labeldef	Each	syntax	Syntax error
+labeldef	Double	syntax	Syntax error
+labeldef	DoEvents	syntax	Label not defined
+labeldef	Do	syntax	Do without Loop
+labeldef	Dir	syntax	Label not defined
+labeldef	Dim	syntax	Syntax error
+labeldef	DefVar	syntax	Syntax error
+labeldef	DefStr	syntax	Syntax error
+labeldef	DefSng	syntax	Syntax error
+labeldef	DefObj	syntax	Syntax error
+labeldef	DefLng	syntax	Syntax error
+labeldef	DefInt	syntax	Syntax error
+labeldef	DefDbl	syntax	Syntax error
+labeldef	DefDec	syntax	Syntax error
+labeldef	DefDate	syntax	Syntax error
+labeldef	DefCur	syntax	Syntax error
+labeldef	DefByte	syntax	Syntax error
+labeldef	DefBool	syntax	Syntax error
+labeldef	Declare	syntax	Syntax error
+labeldef	Decimal	syntax	Syntax error
+labeldef	Debug	syntax	Syntax error
+labeldef	Date	semantic	Invalid use of property
+labeldef	Database	syntax	Label not defined
+labeldef	Currency	syntax	Syntax error
+labeldef	CVErr	syntax	Syntax error
+labeldef	CVDate	syntax	Label not defined
+labeldef	CVar	syntax	Syntax error
+labeldef	CurDir	syntax	Label not defined
+labeldef	CStr	syntax	Syntax error
+labeldef	CSng	syntax	Syntax error
+labeldef	Const	syntax	Syntax error
+labeldef	Compare	syntax	Label not defined
+labeldef	Close	syntax	Label not defined
+labeldef	CLng	syntax	Syntax error
+labeldef	Circle	syntax	Syntax error
+labeldef	CInt	syntax	Syntax error
+labeldef	ChDir	syntax	Label not defined
+labeldef	CDecl	syntax	Syntax error
+labeldef	CDbl	syntax	Syntax error
+labeldef	CDec	semantic	Argument not optional
+labeldef	CDate	syntax	Syntax error
+labeldef	CCur	syntax	Syntax error
+labeldef	CByte	syntax	Syntax error
+labeldef	CBool	syntax	Syntax error
+labeldef	Case	syntax	Syntax error
+labeldef	Call	syntax	Syntax error
+labeldef	ByVal	syntax	Syntax error
+labeldef	Byte	syntax	Syntax error
+labeldef	ByRef	syntax	Syntax error
+labeldef	Boolean	syntax	Syntax error
+labeldef	Binary	syntax	Label not defined
+labeldef	BF	syntax	Label not defined
+labeldef	Base	syntax	Label not defined
+labeldef	Assert	syntax	Label not defined
+labeldef	As	syntax	Syntax error
+labeldef	Array	syntax	Syntax error
+labeldef	Append	syntax	Label not defined
+labeldef	Any	syntax	Syntax error
+labeldef	And	syntax	Syntax error
+labeldef	Alias	syntax	Label not defined
+labeldef	AddressOf	syntax	Syntax error
+labeldef	Access	syntax	Label not defined
+labeldef	Abs	syntax	Syntax error
+withcall	Xor	accepted	
+withcall	Write	accepted	
+withcall	WithEvents	accepted	
+withcall	With	accepted	
+withcall	Width	accepted	
+withcall	While	accepted	
+withcall	Wend	accepted	
+withcall	Variant	accepted	
+withcall	Until	accepted	
+withcall	Unknown	accepted	
+withcall	Unlock	accepted	
+withcall	Unload	accepted	
+withcall	UBound	accepted	
+withcall	TypeOf	accepted	
+withcall	Type	accepted	
+withcall	True	accepted	
+withcall	To	accepted	
+withcall	Then	accepted	
+withcall	Text	accepted	
+withcall	Tab	accepted	
+withcall	Sub	accepted	
+withcall	String	accepted	
+withcall	StrComp	accepted	
+withcall	Stop	accepted	
+withcall	Step	accepted	
+withcall	Static	accepted	
+withcall	Spc	accepted	
+withcall	Single	accepted	
+withcall	Shared	accepted	
+withcall	Sgn	accepted	
+withcall	Set	accepted	
+withcall	Select	accepted	
+withcall	Seek	accepted	
+withcall	Scale	accepted	
+withcall	RSet	accepted	
+withcall	RGB	accepted	
+withcall	Return	accepted	
+withcall	Resume	accepted	
+withcall	Rem	accepted	
+withcall	ReDim	accepted	
+withcall	Read	accepted	
+withcall	Randomize	accepted	
+withcall	Random	accepted	
+withcall	RaiseEvent	accepted	
+withcall	Put	accepted	
+withcall	Public	accepted	
+withcall	PSet	accepted	
+withcall	Property	accepted	
+withcall	Private	accepted	
+withcall	Print	accepted	
+withcall	Preserve	accepted	
+withcall	ParamArray	accepted	
+withcall	Output	accepted	
+withcall	Or	accepted	
+withcall	Optional	accepted	
+withcall	Option	accepted	
+withcall	Open	accepted	
+withcall	On	accepted	
+withcall	Object	accepted	
+withcall	Null	accepted	
+withcall	Nothing	accepted	
+withcall	Not	accepted	
+withcall	Next	accepted	
+withcall	New	accepted	
+withcall	Name	accepted	
+withcall	Module	accepted	
+withcall	Mod	accepted	
+withcall	MidB	accepted	
+withcall	Mid	accepted	
+withcall	Me	accepted	
+withcall	LSet	accepted	
+withcall	Loop	accepted	
+withcall	Long	accepted	
+withcall	Lock	accepted	
+withcall	Local	accepted	
+withcall	Load	accepted	
+withcall	LINEINPUT	accepted	
+withcall	Line	accepted	
+withcall	Like	accepted	
+withcall	Lib	accepted	
+withcall	Let	accepted	
+withcall	LenB	accepted	
+withcall	Len	accepted	
+withcall	Left	accepted	
+withcall	LBound	accepted	
+withcall	Is	accepted	
+withcall	Integer	accepted	
+withcall	Int	accepted	
+withcall	InStrB	accepted	
+withcall	InStr	accepted	
+withcall	InputB	accepted	
+withcall	Input	accepted	
+withcall	In	accepted	
+withcall	Implements	accepted	
+withcall	Imp	accepted	
+withcall	If	accepted	
+withcall	GoTo	accepted	
+withcall	GoSub	accepted	
+withcall	Go	accepted	
+withcall	Global	accepted	
+withcall	Get	accepted	
+withcall	Function	accepted	
+withcall	Friend	accepted	
+withcall	FreeFile	accepted	
+withcall	Format	accepted	
+withcall	For	accepted	
+withcall	Fix	accepted	
+withcall	False	accepted	
+withcall	Explicit	accepted	
+withcall	Exit	accepted	
+withcall	Event	accepted	
+withcall	Error	accepted	
+withcall	Erase	accepted	
+withcall	Eqv	accepted	
+withcall	Enum	accepted	
+withcall	EndIf	accepted	
+withcall	End	accepted	
+withcall	Empty	accepted	
+withcall	ElseIf	accepted	
+withcall	Else	accepted	
+withcall	Each	accepted	
+withcall	Double	accepted	
+withcall	DoEvents	accepted	
+withcall	Do	accepted	
+withcall	Dir	accepted	
+withcall	Dim	accepted	
+withcall	DefVar	accepted	
+withcall	DefStr	accepted	
+withcall	DefSng	accepted	
+withcall	DefObj	accepted	
+withcall	DefLng	accepted	
+withcall	DefInt	accepted	
+withcall	DefDbl	accepted	
+withcall	DefDec	accepted	
+withcall	DefDate	accepted	
+withcall	DefCur	accepted	
+withcall	DefByte	accepted	
+withcall	DefBool	accepted	
+withcall	Declare	accepted	
+withcall	Decimal	accepted	
+withcall	Debug	accepted	
+withcall	Date	accepted	
+withcall	Database	accepted	
+withcall	Currency	accepted	
+withcall	CVErr	accepted	
+withcall	CVDate	accepted	
+withcall	CVar	accepted	
+withcall	CurDir	accepted	
+withcall	CStr	accepted	
+withcall	CSng	accepted	
+withcall	Const	accepted	
+withcall	Compare	accepted	
+withcall	Close	accepted	
+withcall	CLng	accepted	
+withcall	Circle	accepted	
+withcall	CInt	accepted	
+withcall	ChDir	accepted	
+withcall	CDecl	accepted	
+withcall	CDbl	accepted	
+withcall	CDec	accepted	
+withcall	CDate	accepted	
+withcall	CCur	accepted	
+withcall	CByte	accepted	
+withcall	CBool	accepted	
+withcall	Case	accepted	
+withcall	Call	accepted	
+withcall	ByVal	accepted	
+withcall	Byte	accepted	
+withcall	ByRef	accepted	
+withcall	Boolean	accepted	
+withcall	Binary	accepted	
+withcall	BF	accepted	
+withcall	Base	accepted	
+withcall	Assert	accepted	
+withcall	As	accepted	
+withcall	Array	accepted	
+withcall	Append	accepted	
+withcall	Any	accepted	
+withcall	And	accepted	
+withcall	Alias	accepted	
+withcall	AddressOf	accepted	
+withcall	Access	accepted	
+withcall	Abs	accepted	
