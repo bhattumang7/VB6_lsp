@@ -109,8 +109,23 @@ fn unclosed_blocks_are_reported_at_the_end_of_the_procedure() {
     assert_unclosed("Do", 0x9c94);
     assert_unclosed("For i = 1 To 2", 0x9c95);
     assert_unclosed("For Each v In c", 0x9c95);
-    assert_unclosed("Select Case a", 0x9cac);
     assert_unclosed("With o", 0x9cc7);
+}
+
+#[test]
+fn an_unclosed_select_case_also_reports_the_statement_left_before_its_first_case() {
+    // The statement after the header is reported first, at the statement; the block is
+    // still unclosed at the end of the procedure.
+    let src = "Sub S()
+Select Case a
+x = 1
+End Sub
+";
+    let p = parse(src);
+    assert_eq!(
+        p.found,
+        vec![(0x9d95, offset_of(src, "x = 1", 0), 1), (0x9cac, offset_of(src, "End Sub", 0), 3)]
+    );
 }
 
 #[test]

@@ -993,6 +993,15 @@ impl<'src> Parser<'src> {
             self.skip_module_blank_lines();
             if self.peek().kind == TokenKind::Eof { break; }
 
+            // `Else` or a line number in front of an attribute line does not change it.
+            if self.at_prefixed_attribute_line() {
+                self.advance();
+                self.eat(TokenKind::Kw(Kw::Colon));
+                let n = self.parse_attribute_stmt(arena);
+                nodes.push(n);
+                continue;
+            }
+
             // A colon that starts the line cannot precede the declaration of a procedure,
             // a `Declare` or an `Event`.
             if self.after_colon && self.starts_procedure_like_declaration() {
@@ -1129,6 +1138,11 @@ impl<'src> Parser<'src> {
     /// An executable statement outside any procedure: report it once, at its
     /// start, and consume the whole statement (a block statement included).
     fn skip_executable_statement(&mut self, arena: &mut ExprArena) {
+        if self.line_has_trailing_attribute_line() {
+            // The whole line is an attribute line.
+            self.skip_line();
+            return;
+        }
         let span = self.current_span();
         let mark = self.diagnostics.len();
         let before = span.start;
@@ -1563,6 +1577,13 @@ impl<'src> Parser<'src> {
         while self.eat(TokenKind::Eol) {}
         if self.peek().kind == TokenKind::Eof { return None; }
 
+        // `Else` or a line number in front of an attribute line does not change it.
+        if self.at_prefixed_attribute_line() {
+            self.advance();
+            self.eat(TokenKind::Kw(Kw::Colon));
+            return Some(self.parse_attribute_stmt(arena));
+        }
+
         let kind = self.peek().kind.clone();
         let node = match &kind {
             // A keyword that is not reserved names a line label like any name;
@@ -1797,6 +1818,12 @@ impl<'src> Parser<'src> {
                     return None;
                 }
                 let tok = self.advance(); // consume the line number
+                if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                    self.skip_line();
+                    return None;
+                }
                 let line = line_label_value(&tok.lit);
                 if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
                     self.after_colon = false;
@@ -2499,7 +2526,7 @@ impl<'src> Parser<'src> {
         // Legacy single-line form `If <cond> GoTo|GoSub <label>` (no `Then`).
         let legacy_goto = matches!(
             self.peek().kind,
-            TokenKind::Kw(Kw::GoTo) | TokenKind::Kw(Kw::GoSub) | TokenKind::Kw(Kw::Go)
+            TokenKind::Kw(Kw::GoTo) | TokenKind::Kw(Kw::Go)
         );
         let has_then = if legacy_goto {
             false
@@ -2586,6 +2613,10 @@ impl<'src> Parser<'src> {
                     self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
                 }
                 self.advance();
+                // A statement on the `Else` line does not start a line of its own.
+                if !self.peek().is_stmt_end() {
+                    self.after_colon = true;
+                }
                 self.eat_eol();
                 if let Some(top) = self.blocks.last_mut() {
                     *top = Block::IfElse;
@@ -2622,12 +2653,20 @@ impl<'src> Parser<'src> {
         self.blocks.push(Block::Select);
         let mut pre = Vec::new();
         let mut cases = Vec::new();
+        let mut seen_else = false;
         loop {
             while self.eat(TokenKind::Eol) {}
             match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::Case) => {
+                    let case_span = self.current_span();
                     self.advance();
-                    cases.push(self.parse_case_clause(arena));
+                    if seen_else {
+                        // `Case Else` is the last clause.
+                        self.diagnostics.push(ERR_CASE_WITHOUT_SELECT, case_span);
+                    }
+                    let clause = self.parse_case_clause(arena);
+                    seen_else |= matches!(arena.get(clause), ExprNode::CaseElse { .. });
+                    cases.push(clause);
                 }
                 TokenKind::Kw(Kw::End) if self.terminator() == Some(Term::EndSelect) => {
                     self.close_block(ERR_SELECT_WITHOUT_END_SELECT);
@@ -2643,8 +2682,12 @@ impl<'src> Parser<'src> {
                     // Statements before the first Case clause.
                     if self.peek().is_stmt_end() {
                         self.advance();
-                    } else if let Some(stmt) = self.parse_stmt(arena) {
-                        pre.push(stmt);
+                    } else {
+                        let span = self.current_span();
+                        if let Some(stmt) = self.parse_stmt(arena) {
+                            self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                            pre.push(stmt);
+                        }
                     }
                 }
             }
@@ -3582,6 +3625,41 @@ impl<'src> Parser<'src> {
             }
             _ => false,
         }
+    }
+
+    /// True at `Else` or a line number that is followed, directly or after a colon, by an
+    /// attribute line proper (`Attribute`, a name, any `.name` parts and an `=`). Such a line
+    /// is an attribute line whatever precedes it; a bare `Attribute` after the prefix is not.
+    fn at_prefixed_attribute_line(&mut self) -> bool {
+        let prefix = matches!(
+            self.peek().kind,
+            TokenKind::Kw(Kw::Else) | TokenKind::IntLit | TokenKind::LongLit
+        );
+        if !prefix {
+            return false;
+        }
+        let end = (self.peek().span.start + self.peek().span.len) as usize;
+        let rest = line_rest(self.src, end);
+        let mut i = skip_blanks(rest, 0);
+        if rest.get(i) == Some(&b':') {
+            i = skip_blanks(rest, i + 1);
+        }
+        attribute_line(&rest[i..])
+    }
+
+    /// True when the rest of the line holds a colon followed by an attribute line proper.
+    fn line_has_trailing_attribute_line(&mut self) -> bool {
+        let start = self.peek().span.start as usize;
+        let rest = line_rest(self.src, start);
+        let mut from = 0;
+        while let Some(colon) = rest[from..].iter().position(|b| *b == b':') {
+            let at = skip_blanks(rest, from + colon + 1);
+            if attribute_line(&rest[at..]) {
+                return true;
+            }
+            from += colon + 1;
+        }
+        false
     }
 
     /// The rest of an `Attribute` line that the compiler does not read.
@@ -5180,3 +5258,44 @@ const INTRINSIC_SHAPES: &[IntrinsicShape] = &[
     IntrinsicShape { name: "LBound", min: 1, max: 2, name_first: true, bare_ok: false },
     IntrinsicShape { name: "Date", min: 0, max: 0, name_first: false, bare_ok: true },
 ];
+
+/// The bytes of the line that starts at `from`, up to its end.
+fn line_rest(src: &[u8], from: usize) -> &[u8] {
+    let rest = src.get(from..).unwrap_or(&[]);
+    let end = rest.iter().position(|b| *b == b'\n' || *b == b'\r').unwrap_or(rest.len());
+    &rest[..end]
+}
+
+fn skip_blanks(line: &[u8], mut i: usize) -> usize {
+    while i < line.len() && (line[i] == b' ' || line[i] == b'\t') {
+        i += 1;
+    }
+    i
+}
+
+/// True when `line` begins with `Attribute`, a name, any `.name` parts and an `=`.
+fn attribute_line(line: &[u8]) -> bool {
+    let word_len = |from: usize| {
+        line[from..].iter().take_while(|b| b.is_ascii_alphanumeric() || **b == b'_').count()
+    };
+    let i = skip_blanks(line, 0);
+    let n = word_len(i);
+    if n != 9 || !line[i..i + n].eq_ignore_ascii_case(b"Attribute") {
+        return false;
+    }
+    let mut i = skip_blanks(line, i + n);
+    let n = word_len(i);
+    if n == 0 {
+        return false;
+    }
+    i += n;
+    while i < line.len() && line[i] == b'.' {
+        let n = word_len(i + 1);
+        if n == 0 {
+            return false;
+        }
+        i += 1 + n;
+    }
+    let i = skip_blanks(line, i);
+    i < line.len() && line[i] == b'='
+}

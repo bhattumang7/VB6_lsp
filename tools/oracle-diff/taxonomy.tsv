@@ -67,3 +67,4 @@ Expected End Function	syntax
 Expected End Property	syntax
 Must be first statement on the line	syntax
 Statement invalid outside Type block	syntax
+Statements and labels invalid between Select Case and first Case	syntax

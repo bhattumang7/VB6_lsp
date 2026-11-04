@@ -673,6 +673,130 @@ body	For Each x In a\nNext y	semantic	Invalid Next control variable reference
 body	For Each x In a\nNext x, y	syntax	Next without For
 body	For i = 1 To 2\nNext i\nNext	syntax	Next without For
 body	Next i	syntax	Next without For
+body	If x Then\nEnd If	accepted	
+body	If x Then\nElse\nEnd If	accepted	
+body	If x Then\nElseIf y Then\nEnd If	accepted	
+body	If x Then\nElseIf y\nEnd If	syntax	Syntax error
+body	If x Then\nElseIf Then\nEnd If	syntax	Syntax error
+body	If x Then\nElse x\nEnd If	semantic	Expected Sub, Function, or Property
+body	If x Then\nElse If y Then\nEnd If\nEnd If	syntax	Syntax error
+body	If x Then\nElse: y = 1\nEnd If	accepted	
+body	If x Then\nElseIf y Then: z = 1\nEnd If	accepted	
+body	If x Then\nEnd If x	syntax	Syntax error
+body	If x Then\nEnd If: y = 1	accepted	
+body	If x Then\nEndIf	accepted	
+body	If x Then\nEnd  If	accepted	
+body	If x Then\nElse\nElse\nEnd If	syntax	Else without If
+body	If x Then\nElse\nElseIf y Then\nEnd If	syntax	Else without If
+body	If x Then\nElseIf y Then\nElseIf z Then\nElse\nEnd If	accepted	
+body	If Then\nEnd If	syntax	Syntax error
+body	If\nEnd If	syntax	Syntax error
+body	If x\nEnd If	syntax	Syntax error
+body	If x Then y = 1 Else\n	accepted	
+body	If x Then Else	accepted	
+body	If x Then: y = 1	accepted	
+body	If x Then y = 1: Else z = 2	accepted	
+body	If x Then y = 1 Else z = 2 Else w = 3	syntax	Syntax error
+body	If x Then y = 1 ElseIf z Then w = 2	syntax	Syntax error
+body	If x Then If y Then z = 1 Else w = 2	accepted	
+body	If x Then y = 1 Else If z Then w = 2	accepted	
+body	If x, y Then z = 1	syntax	Syntax error
+body	If x = 1, Then y = 1	syntax	Syntax error
+body	If (x) Then y = 1	accepted	
+body	If Not x Then y = 1	accepted	
+body	If x Then y = 1 Else: z = 2	accepted	
+body	If x Then GoTo L\nL:	accepted	
+body	If x GoTo L\nL:	accepted	
+body	If x GoSub L\nL:	syntax	Syntax error
+body	If x Then L\nL:	semantic	Sub or Function not defined
+body	If x Then 10\n10:	accepted	
+body	If x Then Exit Sub	accepted	
+body	If x Then Return	accepted	
+body	If x Then End	accepted	
+body	Select Case x\nEnd Select	accepted	
+body	Select Case x\nCase 1\nEnd Select	accepted	
+body	Select Case x\nCase Else\nEnd Select	accepted	
+body	Select Case x\nCase 1\nCase Else\nCase 2\nEnd Select	syntax	Case without Select Case
+body	Select Case x\nCase Else\nCase Else\nEnd Select	syntax	Case without Select Case
+body	Select Case x\nCase\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase 1,\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase ,1\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase 1 To\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase To 1\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase Is\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase Is 1\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase Is = 1\nEnd Select	accepted	
+body	Select Case x\nCase Is Like "a"\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase Is Is 1\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase 1 To 2 To 3\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase 1: y = 1\nEnd Select	accepted	
+body	Select Case x\nCase Else: y = 1\nEnd Select	accepted	
+body	Select Case x\nCase 1 y = 1\nEnd Select	syntax	Syntax error
+body	Select Case x\ny = 1\nCase 1\nEnd Select	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nCase 1\ny = 1\nEnd Select x	syntax	Syntax error
+body	Select Case x\nCase 1\nEnd Select: y = 1	accepted	
+body	Select Case x\nEnd  Select	accepted	
+body	Select x\nEnd Select	syntax	Syntax error
+body	Select Case\nEnd Select	syntax	Syntax error
+body	Select Case x, y\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase 1\nSelect Case y\nCase 2\nEnd Select\nEnd Select	accepted	
+body	Select Case x: Case 1: y = 1: End Select	accepted	
+body	Select Case x\nCase "a" To "z"\nEnd Select	accepted	
+body	Select Case x\nCase Is > 1, Is < 0\nEnd Select	accepted	
+body	Select Case x\nCase 1, 2, 3\nEnd Select	accepted	
+body	Select Case x\nCase (1)\nEnd Select	accepted	
+body	Select Case x\nCase -1\nEnd Select	accepted	
+body	Select Case x\nCase Not 1\nEnd Select	accepted	
+body	Select Case x\nCase New Foo\nEnd Select	semantic	User-defined type not defined
+body	Select Case x\nCase Else 1\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase Else, 1\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase 1, Else\nEnd Select	syntax	Syntax error
+body	With o\nEnd With	accepted	
+body	With o.p\n.q = 1\nEnd With	accepted	
+body	With o\nWith .p\n.q = 1\nEnd With\nEnd With	accepted	
+body	With\nEnd With	syntax	Syntax error
+body	With o, p\nEnd With	syntax	Syntax error
+body	With o x\nEnd With	syntax	Syntax error
+body	With o\nEnd With x	syntax	Syntax error
+body	With o\nEnd With: y = 1	accepted	
+body	With o\nEnd  With	accepted	
+body	With o\n.p\nEnd With	accepted	
+body	With o\n.p = 1: .q = 2\nEnd With	accepted	
+body	With o: .p = 1: End With	accepted	
+body	With Me\nEnd With	semantic	Invalid use of Me keyword
+body	With New Foo\nEnd With	semantic	User-defined type not defined
+body	With Nothing\nEnd With	accepted	
+body	With (o)\nEnd With	accepted	
+body	With o(1)\nEnd With	semantic	Sub or Function not defined
+body	With o.p(1).q\nEnd With	accepted	
+body	With 1\nEnd With	semantic	With object must be user-defined type, Object, or Variant
+body	With "s"\nEnd With	semantic	With object must be user-defined type, Object, or Variant
+body	With\n.p = 1\nEnd With	syntax	Syntax error
+body	Else Attribute VB_Name = "m"	accepted	
+body	1 Attribute VB_Name = "m"	accepted	
+body	1 Dim a As Long	accepted	
+body	Else Dim a As Long	syntax	Else without If
+body	Else	syntax	Else without If
+body	1	accepted	
+body	Select Case x\ny = 1	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\ny = 1\Case 1	syntax	Syntax error
+body	x Attribute VB_Name = "m"	syntax	Syntax error
+body	x = 1: Attribute VB_Name = "m"	accepted	
+body	Dim a As Long: Attribute VB_Name = "m"	accepted	
+body	Dim Attribute VB_Name = "m"	syntax	Syntax error
+body	10 20 Attribute VB_Name = "m"	syntax	Syntax error
+body	10: Attribute VB_Name = "m"	accepted	
+body	Else: Attribute VB_Name = "m"	accepted	
+body	Else Attribute	syntax	Else without If
+body	Else Attribute x = "m"	syntax	Syntax error
+body	1 Attribute x = "m"	syntax	Syntax error
+body	1 Attribute	accepted	
+body	Then Attribute VB_Name = "m"	syntax	Syntax error
+body	End Attribute VB_Name = "m"	syntax	Syntax error
+body	End Sub Attribute VB_Name = "m"	syntax	Syntax error
+body	x = Attribute	syntax	Syntax error
+body	Attribute Attribute	accepted	
+body	Attribute Attribute Attribute	accepted	
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -1347,3 +1471,127 @@ module	For Each x In a\nNext y	syntax	Invalid outside procedure
 module	For Each x In a\nNext x, y	syntax	Invalid outside procedure
 module	For i = 1 To 2\nNext i\nNext	syntax	Invalid outside procedure
 module	Next i	syntax	Invalid outside procedure
+module	If x Then\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElse\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElseIf y Then\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElseIf y\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElseIf Then\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElse x\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElse If y Then\nEnd If\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElse: y = 1\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElseIf y Then: z = 1\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nEnd If x	syntax	Invalid outside procedure
+module	If x Then\nEnd If: y = 1	syntax	Invalid outside procedure
+module	If x Then\nEndIf	syntax	Invalid outside procedure
+module	If x Then\nEnd  If	syntax	Invalid outside procedure
+module	If x Then\nElse\nElse\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElse\nElseIf y Then\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElseIf y Then\nElseIf z Then\nElse\nEnd If	syntax	Invalid outside procedure
+module	If Then\nEnd If	syntax	Expected: expression
+module	If\nEnd If	syntax	Expected: expression
+module	If x\nEnd If	syntax	Expected: Then or GoTo
+module	If x Then y = 1 Else\n	syntax	Invalid outside procedure
+module	If x Then Else	syntax	Invalid outside procedure
+module	If x Then: y = 1	syntax	Invalid outside procedure
+module	If x Then y = 1: Else z = 2	syntax	Invalid outside procedure
+module	If x Then y = 1 Else z = 2 Else w = 3	syntax	Expected: end of statement
+module	If x Then y = 1 ElseIf z Then w = 2	syntax	Expected: end of statement
+module	If x Then If y Then z = 1 Else w = 2	syntax	Invalid outside procedure
+module	If x Then y = 1 Else If z Then w = 2	syntax	Invalid outside procedure
+module	If x, y Then z = 1	syntax	Expected: Then or GoTo
+module	If x = 1, Then y = 1	syntax	Expected: Then or GoTo
+module	If (x) Then y = 1	syntax	Invalid outside procedure
+module	If Not x Then y = 1	syntax	Invalid outside procedure
+module	If x Then y = 1 Else: z = 2	syntax	Invalid outside procedure
+module	If x Then GoTo L\nL:	syntax	Invalid outside procedure
+module	If x GoTo L\nL:	syntax	Invalid outside procedure
+module	If x GoSub L\nL:	syntax	Expected: Then or GoTo
+module	If x Then L\nL:	syntax	Invalid outside procedure
+module	If x Then 10\n10:	syntax	Invalid outside procedure
+module	If x Then Exit Sub	syntax	Invalid outside procedure
+module	If x Then Return	syntax	Invalid outside procedure
+module	If x Then End	syntax	Invalid outside procedure
+module	Select Case x\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Else\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1\nCase Else\nCase 2\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Else\nCase Else\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1,\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase ,1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1 To\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase To 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Is\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Is 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Is = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Is Like "a"\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Is Is 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1 To 2 To 3\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1: y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Else: y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1 y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\ny = 1\nCase 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1\ny = 1\nEnd Select x	syntax	Invalid outside procedure
+module	Select Case x\nCase 1\nEnd Select: y = 1	syntax	Invalid outside procedure
+module	Select Case x\nEnd  Select	syntax	Invalid outside procedure
+module	Select x\nEnd Select	syntax	Expected: Case
+module	Select Case\nEnd Select	syntax	Expected: expression
+module	Select Case x, y\nEnd Select	syntax	Expected: end of statement
+module	Select Case x\nCase 1\nSelect Case y\nCase 2\nEnd Select\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x: Case 1: y = 1: End Select	syntax	Invalid outside procedure
+module	Select Case x\nCase "a" To "z"\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Is > 1, Is < 0\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1, 2, 3\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase (1)\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase -1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Not 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase New Foo\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Else 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Else, 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase 1, Else\nEnd Select	syntax	Invalid outside procedure
+module	With o\nEnd With	syntax	Invalid outside procedure
+module	With o.p\n.q = 1\nEnd With	syntax	Invalid outside procedure
+module	With o\nWith .p\n.q = 1\nEnd With\nEnd With	syntax	Invalid outside procedure
+module	With\nEnd With	syntax	Expected: expression
+module	With o, p\nEnd With	syntax	Expected: end of statement
+module	With o x\nEnd With	syntax	Expected: end of statement
+module	With o\nEnd With x	syntax	Invalid outside procedure
+module	With o\nEnd With: y = 1	syntax	Invalid outside procedure
+module	With o\nEnd  With	syntax	Invalid outside procedure
+module	With o\n.p\nEnd With	syntax	Invalid outside procedure
+module	With o\n.p = 1: .q = 2\nEnd With	syntax	Invalid outside procedure
+module	With o: .p = 1: End With	syntax	Invalid outside procedure
+module	With Me\nEnd With	syntax	Invalid outside procedure
+module	With New Foo\nEnd With	syntax	Invalid outside procedure
+module	With Nothing\nEnd With	syntax	Invalid outside procedure
+module	With (o)\nEnd With	syntax	Invalid outside procedure
+module	With o(1)\nEnd With	syntax	Invalid outside procedure
+module	With o.p(1).q\nEnd With	syntax	Invalid outside procedure
+module	With 1\nEnd With	syntax	Invalid outside procedure
+module	With "s"\nEnd With	syntax	Invalid outside procedure
+module	With\n.p = 1\nEnd With	syntax	Expected: expression
+module	Else Attribute VB_Name = "m"	accepted	
+module	1 Attribute VB_Name = "m"	accepted	
+module	1 Dim a As Long	syntax	Invalid outside procedure
+module	Else Dim a As Long	syntax	Invalid outside procedure
+module	Else	syntax	Invalid outside procedure
+module	1	syntax	Invalid outside procedure
+module	Select Case x\ny = 1	syntax	Invalid outside procedure
+module	Select Case x\ny = 1\Case 1	syntax	Invalid outside procedure
+module	x Attribute VB_Name = "m"	syntax	Expected: expression
+module	x = 1: Attribute VB_Name = "m"	accepted	
+module	Dim a As Long: Attribute VB_Name = "m"	accepted	
+module	Dim Attribute VB_Name = "m"	syntax	Expected: identifier
+module	10 20 Attribute VB_Name = "m"	syntax	Expected: label or statement or end of statement
+module	10: Attribute VB_Name = "m"	accepted	
+module	Else: Attribute VB_Name = "m"	accepted	
+module	Else Attribute	syntax	Invalid outside procedure
+module	Else Attribute x = "m"	syntax	Syntax error
+module	1 Attribute x = "m"	syntax	Syntax error
+module	1 Attribute	syntax	Invalid outside procedure
+module	Then Attribute VB_Name = "m"	syntax	Expected: line number or label or statement or end of statement
+module	End Attribute VB_Name = "m"	syntax	Expected: If or Select or Sub or Function or Property or Type or With or Enum or end of statement
+module	End Sub Attribute VB_Name = "m"	syntax	Only comments may appear after End Sub, End Function, or End Property
+module	x = Attribute	syntax	Expected: expression
+module	Attribute Attribute	accepted	
+module	Attribute Attribute Attribute	accepted	

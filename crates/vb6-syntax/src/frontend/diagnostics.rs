@@ -28,6 +28,7 @@ pub const ERR_EXIT_FUNCTION_NOT_ALLOWED: u32 = 0x9ca2; // 40098
 pub const ERR_EXIT_SUB_NOT_ALLOWED: u32 = 0x9ca3; // 40099
 pub const ERR_CASE_ELSE_OUTSIDE_SELECT: u32 = 0x9ca9; // 40105
 pub const ERR_CASE_WITHOUT_SELECT: u32 = 0x9caa; // 40106
+pub const ERR_STATEMENT_BEFORE_FIRST_CASE: u32 = 0x9d95; // 40341
 pub const ERR_END_SELECT_WITHOUT_SELECT: u32 = 0x9cab; // 40107
 pub const ERR_SELECT_WITHOUT_END_SELECT: u32 = 0x9cac; // 40108
 pub const ERR_EXPECTED_END_PROPERTY: u32 = 0x9cbe; // 40126
@@ -175,6 +176,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         ERR_EXIT_SUB_NOT_ALLOWED => "Exit Sub not allowed in Function or Property",
         ERR_CASE_ELSE_OUTSIDE_SELECT => "Case Else outside Select Case",
         ERR_CASE_WITHOUT_SELECT => "Case without Select Case",
+        ERR_STATEMENT_BEFORE_FIRST_CASE => "Statements and labels invalid between Select Case and first Case",
         ERR_END_SELECT_WITHOUT_SELECT => "End Select without Select Case",
         ERR_SELECT_WITHOUT_END_SELECT => "Select Case without End Select",
         ERR_EXPECTED_END_PROPERTY => "Expected End Property",

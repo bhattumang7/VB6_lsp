@@ -109,3 +109,59 @@ fn as_after_attribute_is_expected_type_name() {
         assert_eq!(p.found[0].1, src.find("As").unwrap() as u32, "{src:?}");
     }
 }
+
+#[test]
+fn else_or_a_line_number_before_an_attribute_line_still_makes_an_attribute_line() {
+    for src in [
+        "Else Attribute VB_Name = \"m\"\n",
+        "1 Attribute VB_Name = \"m\"\n",
+        "Sub S()\nElse Attribute VB_Name = \"m\"\nEnd Sub\n",
+        "Sub S()\n1 Attribute VB_Name = \"m\"\nEnd Sub\n",
+    ] {
+        assert_eq!(parse(src).found, vec![], "{src:?}");
+    }
+}
+
+#[test]
+fn a_prefixed_attribute_line_follows_the_same_name_rules() {
+    for src in ["Else Attribute x = \"m\"\n", "1 Attribute x = \"m\"\n"] {
+        assert!(!parse(src).found.is_empty(), "{src:?}");
+    }
+}
+
+#[test]
+fn a_bare_attribute_word_after_else_or_a_line_number_is_not_an_attribute_line() {
+    // `Else` without an `If` is still reported, and a line number plus a bare word at module level is
+    // still a statement outside a procedure.
+    let body = "Sub S()\nElse Attribute\nEnd Sub\n";
+    assert!(parse(body).found.iter().any(|d| d.0 == 0x9c96), "{:?}", parse(body).found);
+    let module = "1 Attribute\n";
+    assert!(parse(module).found.iter().any(|d| d.0 == 0x9c73), "{:?}", parse(module).found);
+}
+
+#[test]
+fn a_prefix_and_a_colon_before_an_attribute_line_still_make_an_attribute_line() {
+    for src in [
+        "Else: Attribute VB_Name = \"m\"\n",
+        "10: Attribute VB_Name = \"m\"\n",
+        "Sub S()\nElse: Attribute VB_Name = \"m\"\nEnd Sub\n",
+    ] {
+        assert_eq!(parse(src).found, vec![], "{src:?}");
+    }
+}
+
+#[test]
+fn a_statement_before_a_trailing_attribute_line_belongs_to_that_line_at_module_level() {
+    assert_eq!(parse("x = 1: Attribute VB_Name = \"m\"\n").found, vec![]);
+    // Without the trailing attribute line it is still a statement outside a procedure.
+    let p = parse("x = 1: y = 2\n");
+    assert_eq!(p.found.len(), 1);
+    assert_eq!(p.found[0].0, 0x9c73);
+}
+
+#[test]
+fn a_second_line_number_on_one_line_is_a_syntax_error() {
+    let src = "Sub S()\n10 20 x = 1\nEnd Sub\n";
+    let p = parse(src);
+    assert_eq!(p.found[0], (0x9c70, src.find("20").unwrap() as u32, 2));
+}

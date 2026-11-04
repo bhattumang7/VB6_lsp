@@ -674,3 +674,127 @@ For Each x In a\nNext y
 For Each x In a\nNext x, y
 For i = 1 To 2\nNext i\nNext
 Next i
+If x Then\nEnd If
+If x Then\nElse\nEnd If
+If x Then\nElseIf y Then\nEnd If
+If x Then\nElseIf y\nEnd If
+If x Then\nElseIf Then\nEnd If
+If x Then\nElse x\nEnd If
+If x Then\nElse If y Then\nEnd If\nEnd If
+If x Then\nElse: y = 1\nEnd If
+If x Then\nElseIf y Then: z = 1\nEnd If
+If x Then\nEnd If x
+If x Then\nEnd If: y = 1
+If x Then\nEndIf
+If x Then\nEnd  If
+If x Then\nElse\nElse\nEnd If
+If x Then\nElse\nElseIf y Then\nEnd If
+If x Then\nElseIf y Then\nElseIf z Then\nElse\nEnd If
+If Then\nEnd If
+If\nEnd If
+If x\nEnd If
+If x Then y = 1 Else\n
+If x Then Else
+If x Then: y = 1
+If x Then y = 1: Else z = 2
+If x Then y = 1 Else z = 2 Else w = 3
+If x Then y = 1 ElseIf z Then w = 2
+If x Then If y Then z = 1 Else w = 2
+If x Then y = 1 Else If z Then w = 2
+If x, y Then z = 1
+If x = 1, Then y = 1
+If (x) Then y = 1
+If Not x Then y = 1
+If x Then y = 1 Else: z = 2
+If x Then GoTo L\nL:
+If x GoTo L\nL:
+If x GoSub L\nL:
+If x Then L\nL:
+If x Then 10\n10:
+If x Then Exit Sub
+If x Then Return
+If x Then End
+Select Case x\nEnd Select
+Select Case x\nCase 1\nEnd Select
+Select Case x\nCase Else\nEnd Select
+Select Case x\nCase 1\nCase Else\nCase 2\nEnd Select
+Select Case x\nCase Else\nCase Else\nEnd Select
+Select Case x\nCase\nEnd Select
+Select Case x\nCase 1,\nEnd Select
+Select Case x\nCase ,1\nEnd Select
+Select Case x\nCase 1 To\nEnd Select
+Select Case x\nCase To 1\nEnd Select
+Select Case x\nCase Is\nEnd Select
+Select Case x\nCase Is 1\nEnd Select
+Select Case x\nCase Is = 1\nEnd Select
+Select Case x\nCase Is Like "a"\nEnd Select
+Select Case x\nCase Is Is 1\nEnd Select
+Select Case x\nCase 1 To 2 To 3\nEnd Select
+Select Case x\nCase 1: y = 1\nEnd Select
+Select Case x\nCase Else: y = 1\nEnd Select
+Select Case x\nCase 1 y = 1\nEnd Select
+Select Case x\ny = 1\nCase 1\nEnd Select
+Select Case x\nCase 1\ny = 1\nEnd Select x
+Select Case x\nCase 1\nEnd Select: y = 1
+Select Case x\nEnd  Select
+Select x\nEnd Select
+Select Case\nEnd Select
+Select Case x, y\nEnd Select
+Select Case x\nCase 1\nSelect Case y\nCase 2\nEnd Select\nEnd Select
+Select Case x: Case 1: y = 1: End Select
+Select Case x\nCase "a" To "z"\nEnd Select
+Select Case x\nCase Is > 1, Is < 0\nEnd Select
+Select Case x\nCase 1, 2, 3\nEnd Select
+Select Case x\nCase (1)\nEnd Select
+Select Case x\nCase -1\nEnd Select
+Select Case x\nCase Not 1\nEnd Select
+Select Case x\nCase New Foo\nEnd Select
+Select Case x\nCase Else 1\nEnd Select
+Select Case x\nCase Else, 1\nEnd Select
+Select Case x\nCase 1, Else\nEnd Select
+With o\nEnd With
+With o.p\n.q = 1\nEnd With
+With o\nWith .p\n.q = 1\nEnd With\nEnd With
+With\nEnd With
+With o, p\nEnd With
+With o x\nEnd With
+With o\nEnd With x
+With o\nEnd With: y = 1
+With o\nEnd  With
+With o\n.p\nEnd With
+With o\n.p = 1: .q = 2\nEnd With
+With o: .p = 1: End With
+With Me\nEnd With
+With New Foo\nEnd With
+With Nothing\nEnd With
+With (o)\nEnd With
+With o(1)\nEnd With
+With o.p(1).q\nEnd With
+With 1\nEnd With
+With "s"\nEnd With
+With\n.p = 1\nEnd With
+Else Attribute VB_Name = "m"
+1 Attribute VB_Name = "m"
+1 Dim a As Long
+Else Dim a As Long
+Else
+1
+Select Case x\ny = 1
+Select Case x\ny = 1\Case 1
+x Attribute VB_Name = "m"
+x = 1: Attribute VB_Name = "m"
+Dim a As Long: Attribute VB_Name = "m"
+Dim Attribute VB_Name = "m"
+10 20 Attribute VB_Name = "m"
+10: Attribute VB_Name = "m"
+Else: Attribute VB_Name = "m"
+Else Attribute
+Else Attribute x = "m"
+1 Attribute x = "m"
+1 Attribute
+Then Attribute VB_Name = "m"
+End Attribute VB_Name = "m"
+End Sub Attribute VB_Name = "m"
+x = Attribute
+Attribute Attribute
+Attribute Attribute Attribute
