@@ -12,7 +12,7 @@ const ANSWERS: &str = include_str!("fixtures/attribute_lines/oracle.tsv");
 
 #[test]
 fn attribute_lines_match_the_compiler() {
-    let (checked, wrong) = disagreements(TEMPLATES, ANSWERS, |_, _, _| false);
+    let (checked, wrong) = disagreements(TEMPLATES, ANSWERS, |_, _, _, _| false);
     assert!(checked > 100, "fixture is unexpectedly small: {checked}");
     assert_none_wrong(checked, &wrong);
 }

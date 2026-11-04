@@ -591,6 +591,88 @@ body	Rem c: x = 1	accepted
 body	Call Rem	syntax	Syntax error
 body	Call Rem c	syntax	Syntax error
 body	Foo Rem	syntax	Syntax error
+body	For Each x In a\nNext	accepted	
+body	For Each x In a.b\nNext	accepted	
+body	For Each x In a(1)\nNext	semantic	Sub or Function not defined
+body	For Each x In Foo()\nNext	semantic	Sub or Function not defined
+body	For Each x In (a)\nNext	syntax	Syntax error
+body	For Each x In a + b\nNext	syntax	Syntax error
+body	For Each x In 1\nNext	syntax	Syntax error
+body	For Each x In "s"\nNext	syntax	Syntax error
+body	For Each x In a, b\nNext	syntax	Syntax error
+body	For Each x In New Foo\nNext	syntax	Syntax error
+body	For Each x In Nothing\nNext	syntax	Syntax error
+body	For Each x In Me\nNext	semantic	Invalid use of Me keyword
+body	For Each x In a!b\nNext	accepted	
+body	For Each x In .p\nNext	semantic	Invalid or unqualified reference
+body	For Each x In a.b.c(1).d\nNext	accepted	
+body	For Each x In Array(1)\nNext	accepted	
+body	For Each x In UBound(a)\nNext	syntax	Syntax error
+body	For Each x In\nNext	syntax	Syntax error
+body	For Each In a\nNext	syntax	Syntax error
+body	For Each x a\nNext	syntax	Syntax error
+body	For Each x In a Step 1\nNext	syntax	Syntax error
+body	For Each a.b In c\nNext	semantic	Variable required - can't assign to this expression
+body	For Each a(1) In c\nNext	semantic	Sub or Function not defined
+body	For Each (a) In c\nNext	syntax	Syntax error
+body	For Each .x In c\nNext	semantic	Invalid or unqualified reference
+body	For Each 1 In c\nNext	syntax	Syntax error
+body	For Each a$ In c\nNext	semantic	For Each control variable must be Variant or Object
+body	For Each a% In c\nNext	semantic	For Each control variable must be Variant or Object
+body	For Each x = 1 To 2\nNext	syntax	Syntax error
+body	For a.b = 1 To 2\nNext	semantic	Variable required - can't assign to this expression
+body	For a(1) = 1 To 2\nNext	semantic	Sub or Function not defined
+body	For .x = 1 To 2\nNext	semantic	Invalid or unqualified reference
+body	For (a) = 1 To 2\nNext	syntax	Syntax error
+body	For 1 = 1 To 2\nNext	syntax	Syntax error
+body	For a$ = 1 To 2\nNext	semantic	Type mismatch
+body	For a% = 1 To 2\nNext	accepted	
+body	For i = 1 To 2 Step\nNext	syntax	Syntax error
+body	For i = 1 To 2 Step 0\nNext	accepted	
+body	For i = 1 To 2 Step -1\nNext	accepted	
+body	For i = 1 To 2 Step 1, 2\nNext	syntax	Syntax error
+body	For i = 1 To 2 Step 1 Step 2\nNext	syntax	Syntax error
+body	For i = 1 To\nNext	syntax	Syntax error
+body	For i = 1\nNext	syntax	Syntax error
+body	For i To 2\nNext	syntax	Syntax error
+body	For i = 1 To 2 3\nNext	syntax	Syntax error
+body	For i = 1, 2 To 3\nNext	syntax	Syntax error
+body	For i = 1 To 2, 3\nNext	syntax	Syntax error
+body	For i := 1 To 2\nNext	syntax	Syntax error
+body	For\nNext	syntax	Syntax error
+body	For i = 1 To 2:\nNext	accepted	
+body	For i = 1 To 2: Next	accepted	
+body	For i = 1 To 2\nNext i	accepted	
+body	For i = 1 To 2\nNext j	semantic	Invalid Next control variable reference
+body	For i = 1 To 2\nNext a.b	semantic	Invalid Next control variable reference
+body	For i = 1 To 2\nNext i.b	semantic	Invalid Next control variable reference
+body	For i = 1 To 2\nNext i(1)	semantic	Invalid Next control variable reference
+body	For i = 1 To 2\nNext 1	syntax	Syntax error
+body	For i = 1 To 2\nNext i + 1	syntax	Syntax error
+body	For i = 1 To 2\nNext (i)	syntax	Syntax error
+body	For i = 1 To 2\nNext i,\nNext	syntax	Syntax error
+body	For i = 1 To 2\nNext i, j	syntax	Next without For
+body	For i = 1 To 2\nFor j = 1 To 2\nNext j, i	accepted	
+body	For i = 1 To 2\nFor j = 1 To 2\nNext i, j	semantic	Invalid Next control variable reference
+body	For i = 1 To 2\nFor j = 1 To 2\nNext j, j	semantic	Invalid Next control variable reference
+body	For i = 1 To 2\nFor j = 1 To 2\nNext i,, j	syntax	Syntax error
+body	For i = 1 To 2\nNext Else	syntax	Syntax error
+body	If x Then For i = 1 To 2: Next Else y = 1	syntax	Syntax error
+body	If x Then For i = 1 To 2: Next i Else y = 1	accepted	
+body	For i = 1 To 2\nNext i Else	syntax	Syntax error
+body	For i = 1 To 2\nNext i: y = 1	accepted	
+body	For i = 1 To 2\nNext: y = 1	accepted	
+body	For i = 1 To 2\nNext i ' c	accepted	
+body	For i = 1 To 2\nNext ' c	accepted	
+body	For i = 1 To 2\nNext i%	semantic	Type-declaration character does not match declared data type
+body	For i% = 1 To 2\nNext i%	accepted	
+body	For i% = 1 To 2\nNext i	accepted	
+body	For i = 1 To 2\nNext i$	semantic	Type-declaration character does not match declared data type
+body	For Each x In a\nNext x	accepted	
+body	For Each x In a\nNext y	semantic	Invalid Next control variable reference
+body	For Each x In a\nNext x, y	syntax	Next without For
+body	For i = 1 To 2\nNext i\nNext	syntax	Next without For
+body	Next i	syntax	Next without For
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -1183,3 +1265,85 @@ module	Rem c: x = 1	accepted
 module	Call Rem	syntax	Expected: identifier
 module	Call Rem c	syntax	Expected: identifier
 module	Foo Rem	syntax	Expected: expression
+module	For Each x In a\nNext	syntax	Invalid outside procedure
+module	For Each x In a.b\nNext	syntax	Invalid outside procedure
+module	For Each x In a(1)\nNext	syntax	Invalid outside procedure
+module	For Each x In Foo()\nNext	syntax	Invalid outside procedure
+module	For Each x In (a)\nNext	syntax	Expected: variable
+module	For Each x In a + b\nNext	syntax	Expected: end of statement
+module	For Each x In 1\nNext	syntax	Expected: variable
+module	For Each x In "s"\nNext	syntax	Expected: variable
+module	For Each x In a, b\nNext	syntax	Expected: end of statement
+module	For Each x In New Foo\nNext	syntax	Expected: variable
+module	For Each x In Nothing\nNext	syntax	Expected: variable
+module	For Each x In Me\nNext	syntax	Invalid outside procedure
+module	For Each x In a!b\nNext	syntax	Invalid outside procedure
+module	For Each x In .p\nNext	syntax	Invalid outside procedure
+module	For Each x In a.b.c(1).d\nNext	syntax	Invalid outside procedure
+module	For Each x In Array(1)\nNext	syntax	Invalid outside procedure
+module	For Each x In UBound(a)\nNext	syntax	Expected: variable
+module	For Each x In\nNext	syntax	Expected: variable
+module	For Each In a\nNext	syntax	Expected: variable
+module	For Each x a\nNext	syntax	Expected: In
+module	For Each x In a Step 1\nNext	syntax	Expected: end of statement
+module	For Each a.b In c\nNext	syntax	Invalid outside procedure
+module	For Each a(1) In c\nNext	syntax	Invalid outside procedure
+module	For Each (a) In c\nNext	syntax	Expected: variable
+module	For Each .x In c\nNext	syntax	Invalid outside procedure
+module	For Each 1 In c\nNext	syntax	Expected: variable
+module	For Each a$ In c\nNext	syntax	Invalid outside procedure
+module	For Each a% In c\nNext	syntax	Invalid outside procedure
+module	For Each x = 1 To 2\nNext	syntax	Expected: In
+module	For a.b = 1 To 2\nNext	syntax	Invalid outside procedure
+module	For a(1) = 1 To 2\nNext	syntax	Invalid outside procedure
+module	For .x = 1 To 2\nNext	syntax	Invalid outside procedure
+module	For (a) = 1 To 2\nNext	syntax	Expected: variable
+module	For 1 = 1 To 2\nNext	syntax	Expected: variable
+module	For a$ = 1 To 2\nNext	syntax	Invalid outside procedure
+module	For a% = 1 To 2\nNext	syntax	Invalid outside procedure
+module	For i = 1 To 2 Step\nNext	syntax	Expected: expression
+module	For i = 1 To 2 Step 0\nNext	syntax	Invalid outside procedure
+module	For i = 1 To 2 Step -1\nNext	syntax	Invalid outside procedure
+module	For i = 1 To 2 Step 1, 2\nNext	syntax	Expected: end of statement
+module	For i = 1 To 2 Step 1 Step 2\nNext	syntax	Expected: end of statement
+module	For i = 1 To\nNext	syntax	Expected: expression
+module	For i = 1\nNext	syntax	Expected: To
+module	For i To 2\nNext	syntax	Expected: =
+module	For i = 1 To 2 3\nNext	syntax	Expected: end of statement
+module	For i = 1, 2 To 3\nNext	syntax	Expected: To
+module	For i = 1 To 2, 3\nNext	syntax	Expected: end of statement
+module	For i := 1 To 2\nNext	syntax	Expected: =
+module	For\nNext	syntax	Expected: variable
+module	For i = 1 To 2:\nNext	syntax	Invalid outside procedure
+module	For i = 1 To 2: Next	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext j	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext a.b	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i.b	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i(1)	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext 1	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i + 1	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext (i)	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i,\nNext	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i, j	syntax	Invalid outside procedure
+module	For i = 1 To 2\nFor j = 1 To 2\nNext j, i	syntax	Invalid outside procedure
+module	For i = 1 To 2\nFor j = 1 To 2\nNext i, j	syntax	Invalid outside procedure
+module	For i = 1 To 2\nFor j = 1 To 2\nNext j, j	syntax	Invalid outside procedure
+module	For i = 1 To 2\nFor j = 1 To 2\nNext i,, j	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext Else	syntax	Invalid outside procedure
+module	If x Then For i = 1 To 2: Next Else y = 1	syntax	Expected: variable
+module	If x Then For i = 1 To 2: Next i Else y = 1	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i Else	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i: y = 1	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext: y = 1	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i ' c	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext ' c	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i%	syntax	Invalid outside procedure
+module	For i% = 1 To 2\nNext i%	syntax	Invalid outside procedure
+module	For i% = 1 To 2\nNext i	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i$	syntax	Invalid outside procedure
+module	For Each x In a\nNext x	syntax	Invalid outside procedure
+module	For Each x In a\nNext y	syntax	Invalid outside procedure
+module	For Each x In a\nNext x, y	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i\nNext	syntax	Invalid outside procedure
+module	Next i	syntax	Invalid outside procedure

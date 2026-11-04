@@ -7868,3 +7868,552 @@ paramas	Alias	semantic	User-defined type not defined
 paramas	AddressOf	syntax	Expected: type name
 paramas	Access	semantic	User-defined type not defined
 paramas	Abs	syntax	Expected: type name
+foreachcoll	Xor	syntax	Syntax error
+foreachcoll	Write	syntax	Syntax error
+foreachcoll	WithEvents	syntax	Syntax error
+foreachcoll	With	syntax	Syntax error
+foreachcoll	Width	semantic	Argument not optional
+foreachcoll	While	syntax	Syntax error
+foreachcoll	Wend	syntax	Syntax error
+foreachcoll	Variant	syntax	Syntax error
+foreachcoll	Until	syntax	Syntax error
+foreachcoll	Unknown	accepted	
+foreachcoll	Unlock	syntax	Syntax error
+foreachcoll	Unload	semantic	Argument not optional
+foreachcoll	UBound	syntax	Syntax error
+foreachcoll	TypeOf	syntax	Syntax error
+foreachcoll	Type	syntax	Syntax error
+foreachcoll	True	syntax	Syntax error
+foreachcoll	To	syntax	Syntax error
+foreachcoll	Then	syntax	Syntax error
+foreachcoll	Text	accepted	
+foreachcoll	Tab	syntax	Syntax error
+foreachcoll	Sub	syntax	Syntax error
+foreachcoll	String	syntax	Syntax error
+foreachcoll	StrComp	semantic	Argument not optional
+foreachcoll	Stop	syntax	Syntax error
+foreachcoll	Step	accepted	
+foreachcoll	Static	syntax	Syntax error
+foreachcoll	Spc	syntax	Syntax error
+foreachcoll	Single	syntax	Syntax error
+foreachcoll	Shared	syntax	Syntax error
+foreachcoll	Sgn	syntax	Syntax error
+foreachcoll	Set	syntax	Syntax error
+foreachcoll	Select	syntax	Syntax error
+foreachcoll	Seek	syntax	Syntax error
+foreachcoll	Scale	syntax	Syntax error
+foreachcoll	RSet	syntax	Syntax error
+foreachcoll	RGB	semantic	Argument not optional
+foreachcoll	Return	syntax	Syntax error
+foreachcoll	Resume	syntax	Syntax error
+foreachcoll	Rem	syntax	Syntax error
+foreachcoll	ReDim	syntax	Syntax error
+foreachcoll	Read	accepted	
+foreachcoll	Randomize	semantic	Expected Function or variable
+foreachcoll	Random	accepted	
+foreachcoll	RaiseEvent	syntax	Syntax error
+foreachcoll	Put	syntax	Syntax error
+foreachcoll	Public	syntax	Syntax error
+foreachcoll	PSet	syntax	Syntax error
+foreachcoll	Property	accepted	
+foreachcoll	Private	syntax	Syntax error
+foreachcoll	Print	syntax	Syntax error
+foreachcoll	Preserve	syntax	Syntax error
+foreachcoll	ParamArray	syntax	Syntax error
+foreachcoll	Output	accepted	
+foreachcoll	Or	syntax	Syntax error
+foreachcoll	Optional	syntax	Syntax error
+foreachcoll	Option	syntax	Syntax error
+foreachcoll	Open	syntax	Syntax error
+foreachcoll	On	syntax	Syntax error
+foreachcoll	Object	accepted	
+foreachcoll	Null	syntax	Syntax error
+foreachcoll	Nothing	syntax	Syntax error
+foreachcoll	Not	syntax	Syntax error
+foreachcoll	Next	syntax	Syntax error
+foreachcoll	New	syntax	Syntax error
+foreachcoll	Name	accepted	
+foreachcoll	Module	accepted	
+foreachcoll	Mod	syntax	Syntax error
+foreachcoll	MidB	semantic	Argument not optional
+foreachcoll	Mid	semantic	Argument not optional
+foreachcoll	Me	semantic	Invalid use of Me keyword
+foreachcoll	LSet	syntax	Syntax error
+foreachcoll	Loop	syntax	Syntax error
+foreachcoll	Long	syntax	Syntax error
+foreachcoll	Lock	syntax	Syntax error
+foreachcoll	Local	syntax	Syntax error
+foreachcoll	Load	semantic	Argument not optional
+foreachcoll	LINEINPUT	syntax	Syntax error
+foreachcoll	Line	accepted	
+foreachcoll	Like	syntax	Syntax error
+foreachcoll	Lib	accepted	
+foreachcoll	Let	syntax	Syntax error
+foreachcoll	LenB	syntax	Syntax error
+foreachcoll	Len	syntax	Syntax error
+foreachcoll	Left	semantic	Argument not optional
+foreachcoll	LBound	syntax	Syntax error
+foreachcoll	Is	syntax	Syntax error
+foreachcoll	Integer	syntax	Syntax error
+foreachcoll	Int	syntax	Syntax error
+foreachcoll	InStrB	accepted	
+foreachcoll	InStr	accepted	
+foreachcoll	InputB	syntax	Syntax error
+foreachcoll	Input	syntax	Syntax error
+foreachcoll	In	syntax	Syntax error
+foreachcoll	Implements	syntax	Syntax error
+foreachcoll	Imp	syntax	Syntax error
+foreachcoll	If	syntax	Syntax error
+foreachcoll	GoTo	syntax	Syntax error
+foreachcoll	GoSub	syntax	Syntax error
+foreachcoll	Go	accepted	
+foreachcoll	Global	syntax	Syntax error
+foreachcoll	Get	syntax	Syntax error
+foreachcoll	Function	syntax	Syntax error
+foreachcoll	Friend	syntax	Syntax error
+foreachcoll	FreeFile	semantic	For Each may only iterate over a collection object or an array
+foreachcoll	Format	semantic	Argument not optional
+foreachcoll	For	syntax	Syntax error
+foreachcoll	Fix	syntax	Syntax error
+foreachcoll	False	syntax	Syntax error
+foreachcoll	Explicit	accepted	
+foreachcoll	Exit	syntax	Syntax error
+foreachcoll	Event	syntax	Syntax error
+foreachcoll	Error	accepted	
+foreachcoll	Erase	syntax	Syntax error
+foreachcoll	Eqv	syntax	Syntax error
+foreachcoll	Enum	syntax	Syntax error
+foreachcoll	EndIf	syntax	Syntax error
+foreachcoll	End	syntax	Syntax error
+foreachcoll	Empty	syntax	Syntax error
+foreachcoll	ElseIf	syntax	Syntax error
+foreachcoll	Else	syntax	Syntax error
+foreachcoll	Each	syntax	Syntax error
+foreachcoll	Double	syntax	Syntax error
+foreachcoll	DoEvents	syntax	Syntax error
+foreachcoll	Do	syntax	Syntax error
+foreachcoll	Dir	semantic	For Each may only iterate over a collection object or an array
+foreachcoll	Dim	syntax	Syntax error
+foreachcoll	DefVar	syntax	Syntax error
+foreachcoll	DefStr	syntax	Syntax error
+foreachcoll	DefSng	syntax	Syntax error
+foreachcoll	DefObj	syntax	Syntax error
+foreachcoll	DefLng	syntax	Syntax error
+foreachcoll	DefInt	syntax	Syntax error
+foreachcoll	DefDbl	syntax	Syntax error
+foreachcoll	DefDec	syntax	Syntax error
+foreachcoll	DefDate	syntax	Syntax error
+foreachcoll	DefCur	syntax	Syntax error
+foreachcoll	DefByte	syntax	Syntax error
+foreachcoll	DefBool	syntax	Syntax error
+foreachcoll	Declare	syntax	Syntax error
+foreachcoll	Decimal	syntax	Syntax error
+foreachcoll	Debug	syntax	Syntax error
+foreachcoll	Date	syntax	Syntax error
+foreachcoll	Database	accepted	
+foreachcoll	Currency	syntax	Syntax error
+foreachcoll	CVErr	syntax	Syntax error
+foreachcoll	CVDate	semantic	Argument not optional
+foreachcoll	CVar	syntax	Syntax error
+foreachcoll	CurDir	accepted	
+foreachcoll	CStr	syntax	Syntax error
+foreachcoll	CSng	syntax	Syntax error
+foreachcoll	Const	syntax	Syntax error
+foreachcoll	Compare	accepted	
+foreachcoll	Close	syntax	Syntax error
+foreachcoll	CLng	syntax	Syntax error
+foreachcoll	Circle	syntax	Syntax error
+foreachcoll	CInt	syntax	Syntax error
+foreachcoll	ChDir	semantic	Argument not optional
+foreachcoll	CDecl	syntax	Syntax error
+foreachcoll	CDbl	syntax	Syntax error
+foreachcoll	CDec	syntax	Syntax error
+foreachcoll	CDate	syntax	Syntax error
+foreachcoll	CCur	syntax	Syntax error
+foreachcoll	CByte	syntax	Syntax error
+foreachcoll	CBool	syntax	Syntax error
+foreachcoll	Case	syntax	Syntax error
+foreachcoll	Call	syntax	Syntax error
+foreachcoll	ByVal	syntax	Syntax error
+foreachcoll	Byte	syntax	Syntax error
+foreachcoll	ByRef	syntax	Syntax error
+foreachcoll	Boolean	syntax	Syntax error
+foreachcoll	Binary	accepted	
+foreachcoll	BF	accepted	
+foreachcoll	Base	accepted	
+foreachcoll	Assert	accepted	
+foreachcoll	As	syntax	Syntax error
+foreachcoll	Array	syntax	Syntax error
+foreachcoll	Append	accepted	
+foreachcoll	Any	syntax	Syntax error
+foreachcoll	And	syntax	Syntax error
+foreachcoll	Alias	accepted	
+foreachcoll	AddressOf	syntax	Syntax error
+foreachcoll	Access	accepted	
+foreachcoll	Abs	syntax	Syntax error
+foreachcollcall	Xor	syntax	Syntax error
+foreachcollcall	Write	syntax	Syntax error
+foreachcollcall	WithEvents	syntax	Syntax error
+foreachcollcall	With	syntax	Syntax error
+foreachcollcall	Width	semantic	Argument not optional
+foreachcollcall	While	syntax	Syntax error
+foreachcollcall	Wend	syntax	Syntax error
+foreachcollcall	Variant	syntax	Syntax error
+foreachcollcall	Until	syntax	Syntax error
+foreachcollcall	Unknown	semantic	Sub or Function not defined
+foreachcollcall	Unlock	syntax	Syntax error
+foreachcollcall	Unload	semantic	Type mismatch
+foreachcollcall	UBound	syntax	Syntax error
+foreachcollcall	TypeOf	syntax	Syntax error
+foreachcollcall	Type	syntax	Syntax error
+foreachcollcall	True	syntax	Syntax error
+foreachcollcall	To	syntax	Syntax error
+foreachcollcall	Then	syntax	Syntax error
+foreachcollcall	Text	semantic	Sub or Function not defined
+foreachcollcall	Tab	syntax	Syntax error
+foreachcollcall	Sub	syntax	Syntax error
+foreachcollcall	String	syntax	Syntax error
+foreachcollcall	StrComp	semantic	Argument not optional
+foreachcollcall	Stop	syntax	Syntax error
+foreachcollcall	Step	semantic	Sub or Function not defined
+foreachcollcall	Static	syntax	Syntax error
+foreachcollcall	Spc	syntax	Syntax error
+foreachcollcall	Single	syntax	Syntax error
+foreachcollcall	Shared	syntax	Syntax error
+foreachcollcall	Sgn	syntax	Syntax error
+foreachcollcall	Set	syntax	Syntax error
+foreachcollcall	Select	syntax	Syntax error
+foreachcollcall	Seek	syntax	Syntax error
+foreachcollcall	Scale	syntax	Syntax error
+foreachcollcall	RSet	syntax	Syntax error
+foreachcollcall	RGB	semantic	Argument not optional
+foreachcollcall	Return	syntax	Syntax error
+foreachcollcall	Resume	syntax	Syntax error
+foreachcollcall	Rem	syntax	Syntax error
+foreachcollcall	ReDim	syntax	Syntax error
+foreachcollcall	Read	semantic	Sub or Function not defined
+foreachcollcall	Randomize	semantic	Expected Function or variable
+foreachcollcall	Random	semantic	Sub or Function not defined
+foreachcollcall	RaiseEvent	syntax	Syntax error
+foreachcollcall	Put	syntax	Syntax error
+foreachcollcall	Public	syntax	Syntax error
+foreachcollcall	PSet	syntax	Syntax error
+foreachcollcall	Property	semantic	Sub or Function not defined
+foreachcollcall	Private	syntax	Syntax error
+foreachcollcall	Print	syntax	Syntax error
+foreachcollcall	Preserve	syntax	Syntax error
+foreachcollcall	ParamArray	syntax	Syntax error
+foreachcollcall	Output	semantic	Sub or Function not defined
+foreachcollcall	Or	syntax	Syntax error
+foreachcollcall	Optional	syntax	Syntax error
+foreachcollcall	Option	syntax	Syntax error
+foreachcollcall	Open	syntax	Syntax error
+foreachcollcall	On	syntax	Syntax error
+foreachcollcall	Object	semantic	Sub or Function not defined
+foreachcollcall	Null	syntax	Syntax error
+foreachcollcall	Nothing	syntax	Syntax error
+foreachcollcall	Not	syntax	Syntax error
+foreachcollcall	Next	syntax	Syntax error
+foreachcollcall	New	syntax	Syntax error
+foreachcollcall	Name	semantic	Sub or Function not defined
+foreachcollcall	Module	semantic	Sub or Function not defined
+foreachcollcall	Mod	syntax	Syntax error
+foreachcollcall	MidB	semantic	Argument not optional
+foreachcollcall	Mid	semantic	Argument not optional
+foreachcollcall	Me	semantic	Invalid use of Me keyword
+foreachcollcall	LSet	syntax	Syntax error
+foreachcollcall	Loop	syntax	Syntax error
+foreachcollcall	Long	syntax	Syntax error
+foreachcollcall	Lock	syntax	Syntax error
+foreachcollcall	Local	syntax	Syntax error
+foreachcollcall	Load	semantic	Type mismatch
+foreachcollcall	LINEINPUT	syntax	Syntax error
+foreachcollcall	Line	semantic	Sub or Function not defined
+foreachcollcall	Like	syntax	Syntax error
+foreachcollcall	Lib	semantic	Sub or Function not defined
+foreachcollcall	Let	syntax	Syntax error
+foreachcollcall	LenB	syntax	Syntax error
+foreachcollcall	Len	syntax	Syntax error
+foreachcollcall	Left	semantic	Argument not optional
+foreachcollcall	LBound	syntax	Syntax error
+foreachcollcall	Is	syntax	Syntax error
+foreachcollcall	Integer	syntax	Syntax error
+foreachcollcall	Int	syntax	Syntax error
+foreachcollcall	InStrB	accepted	
+foreachcollcall	InStr	accepted	
+foreachcollcall	InputB	syntax	Syntax error
+foreachcollcall	Input	syntax	Syntax error
+foreachcollcall	In	syntax	Syntax error
+foreachcollcall	Implements	syntax	Syntax error
+foreachcollcall	Imp	syntax	Syntax error
+foreachcollcall	If	syntax	Syntax error
+foreachcollcall	GoTo	syntax	Syntax error
+foreachcollcall	GoSub	syntax	Syntax error
+foreachcollcall	Go	semantic	Sub or Function not defined
+foreachcollcall	Global	syntax	Syntax error
+foreachcollcall	Get	syntax	Syntax error
+foreachcollcall	Function	syntax	Syntax error
+foreachcollcall	Friend	syntax	Syntax error
+foreachcollcall	FreeFile	semantic	For Each may only iterate over a collection object or an array
+foreachcollcall	Format	accepted	
+foreachcollcall	For	syntax	Syntax error
+foreachcollcall	Fix	syntax	Syntax error
+foreachcollcall	False	syntax	Syntax error
+foreachcollcall	Explicit	semantic	Sub or Function not defined
+foreachcollcall	Exit	syntax	Syntax error
+foreachcollcall	Event	syntax	Syntax error
+foreachcollcall	Error	accepted	
+foreachcollcall	Erase	syntax	Syntax error
+foreachcollcall	Eqv	syntax	Syntax error
+foreachcollcall	Enum	syntax	Syntax error
+foreachcollcall	EndIf	syntax	Syntax error
+foreachcollcall	End	syntax	Syntax error
+foreachcollcall	Empty	syntax	Syntax error
+foreachcollcall	ElseIf	syntax	Syntax error
+foreachcollcall	Else	syntax	Syntax error
+foreachcollcall	Each	syntax	Syntax error
+foreachcollcall	Double	syntax	Syntax error
+foreachcollcall	DoEvents	syntax	Syntax error
+foreachcollcall	Do	syntax	Syntax error
+foreachcollcall	Dir	semantic	For Each may only iterate over a collection object or an array
+foreachcollcall	Dim	syntax	Syntax error
+foreachcollcall	DefVar	syntax	Syntax error
+foreachcollcall	DefStr	syntax	Syntax error
+foreachcollcall	DefSng	syntax	Syntax error
+foreachcollcall	DefObj	syntax	Syntax error
+foreachcollcall	DefLng	syntax	Syntax error
+foreachcollcall	DefInt	syntax	Syntax error
+foreachcollcall	DefDbl	syntax	Syntax error
+foreachcollcall	DefDec	syntax	Syntax error
+foreachcollcall	DefDate	syntax	Syntax error
+foreachcollcall	DefCur	syntax	Syntax error
+foreachcollcall	DefByte	syntax	Syntax error
+foreachcollcall	DefBool	syntax	Syntax error
+foreachcollcall	Declare	syntax	Syntax error
+foreachcollcall	Decimal	syntax	Syntax error
+foreachcollcall	Debug	syntax	Syntax error
+foreachcollcall	Date	syntax	Syntax error
+foreachcollcall	Database	semantic	Sub or Function not defined
+foreachcollcall	Currency	syntax	Syntax error
+foreachcollcall	CVErr	syntax	Syntax error
+foreachcollcall	CVDate	accepted	
+foreachcollcall	CVar	syntax	Syntax error
+foreachcollcall	CurDir	accepted	
+foreachcollcall	CStr	syntax	Syntax error
+foreachcollcall	CSng	syntax	Syntax error
+foreachcollcall	Const	syntax	Syntax error
+foreachcollcall	Compare	semantic	Sub or Function not defined
+foreachcollcall	Close	syntax	Syntax error
+foreachcollcall	CLng	syntax	Syntax error
+foreachcollcall	Circle	syntax	Syntax error
+foreachcollcall	CInt	syntax	Syntax error
+foreachcollcall	ChDir	semantic	Expected Function or variable
+foreachcollcall	CDecl	syntax	Syntax error
+foreachcollcall	CDbl	syntax	Syntax error
+foreachcollcall	CDec	syntax	Syntax error
+foreachcollcall	CDate	syntax	Syntax error
+foreachcollcall	CCur	syntax	Syntax error
+foreachcollcall	CByte	syntax	Syntax error
+foreachcollcall	CBool	syntax	Syntax error
+foreachcollcall	Case	syntax	Syntax error
+foreachcollcall	Call	syntax	Syntax error
+foreachcollcall	ByVal	syntax	Syntax error
+foreachcollcall	Byte	syntax	Syntax error
+foreachcollcall	ByRef	syntax	Syntax error
+foreachcollcall	Boolean	syntax	Syntax error
+foreachcollcall	Binary	semantic	Sub or Function not defined
+foreachcollcall	BF	semantic	Sub or Function not defined
+foreachcollcall	Base	semantic	Sub or Function not defined
+foreachcollcall	Assert	semantic	Sub or Function not defined
+foreachcollcall	As	syntax	Syntax error
+foreachcollcall	Array	accepted	
+foreachcollcall	Append	semantic	Sub or Function not defined
+foreachcollcall	Any	syntax	Syntax error
+foreachcollcall	And	syntax	Syntax error
+foreachcollcall	Alias	semantic	Sub or Function not defined
+foreachcollcall	AddressOf	syntax	Syntax error
+foreachcollcall	Access	semantic	Sub or Function not defined
+foreachcollcall	Abs	syntax	Syntax error
+nextvar	Xor	syntax	Syntax error
+nextvar	Write	syntax	Syntax error
+nextvar	WithEvents	syntax	Syntax error
+nextvar	With	syntax	Syntax error
+nextvar	Width	semantic	Argument not optional
+nextvar	While	syntax	Syntax error
+nextvar	Wend	syntax	Syntax error
+nextvar	Variant	syntax	Syntax error
+nextvar	Until	syntax	Syntax error
+nextvar	Unknown	semantic	Invalid Next control variable reference
+nextvar	Unlock	syntax	Syntax error
+nextvar	Unload	semantic	Argument not optional
+nextvar	UBound	syntax	Syntax error
+nextvar	TypeOf	syntax	Syntax error
+nextvar	Type	syntax	Syntax error
+nextvar	True	syntax	Syntax error
+nextvar	To	syntax	Syntax error
+nextvar	Then	syntax	Syntax error
+nextvar	Text	semantic	Invalid Next control variable reference
+nextvar	Tab	syntax	Syntax error
+nextvar	Sub	syntax	Syntax error
+nextvar	String	syntax	Syntax error
+nextvar	StrComp	semantic	Argument not optional
+nextvar	Stop	syntax	Syntax error
+nextvar	Step	semantic	Invalid Next control variable reference
+nextvar	Static	syntax	Syntax error
+nextvar	Spc	syntax	Syntax error
+nextvar	Single	syntax	Syntax error
+nextvar	Shared	syntax	Syntax error
+nextvar	Sgn	syntax	Syntax error
+nextvar	Set	syntax	Syntax error
+nextvar	Select	syntax	Syntax error
+nextvar	Seek	syntax	Syntax error
+nextvar	Scale	syntax	Syntax error
+nextvar	RSet	syntax	Syntax error
+nextvar	RGB	semantic	Argument not optional
+nextvar	Return	syntax	Syntax error
+nextvar	Resume	syntax	Syntax error
+nextvar	Rem	syntax	Syntax error
+nextvar	ReDim	syntax	Syntax error
+nextvar	Read	semantic	Invalid Next control variable reference
+nextvar	Randomize	semantic	Expected Function or variable
+nextvar	Random	semantic	Invalid Next control variable reference
+nextvar	RaiseEvent	syntax	Syntax error
+nextvar	Put	syntax	Syntax error
+nextvar	Public	syntax	Syntax error
+nextvar	PSet	syntax	Syntax error
+nextvar	Property	semantic	Invalid Next control variable reference
+nextvar	Private	syntax	Syntax error
+nextvar	Print	syntax	Syntax error
+nextvar	Preserve	syntax	Syntax error
+nextvar	ParamArray	syntax	Syntax error
+nextvar	Output	semantic	Invalid Next control variable reference
+nextvar	Or	syntax	Syntax error
+nextvar	Optional	syntax	Syntax error
+nextvar	Option	syntax	Syntax error
+nextvar	Open	syntax	Syntax error
+nextvar	On	syntax	Syntax error
+nextvar	Object	semantic	Invalid Next control variable reference
+nextvar	Null	syntax	Syntax error
+nextvar	Nothing	syntax	Syntax error
+nextvar	Not	syntax	Syntax error
+nextvar	Next	syntax	Syntax error
+nextvar	New	syntax	Syntax error
+nextvar	Name	semantic	Invalid Next control variable reference
+nextvar	Module	semantic	Invalid Next control variable reference
+nextvar	Mod	syntax	Syntax error
+nextvar	MidB	semantic	Argument not optional
+nextvar	Mid	semantic	Argument not optional
+nextvar	Me	semantic	Invalid use of Me keyword
+nextvar	LSet	syntax	Syntax error
+nextvar	Loop	syntax	Syntax error
+nextvar	Long	syntax	Syntax error
+nextvar	Lock	syntax	Syntax error
+nextvar	Local	syntax	Syntax error
+nextvar	Load	semantic	Argument not optional
+nextvar	LINEINPUT	syntax	Syntax error
+nextvar	Line	semantic	Invalid Next control variable reference
+nextvar	Like	syntax	Syntax error
+nextvar	Lib	semantic	Invalid Next control variable reference
+nextvar	Let	syntax	Syntax error
+nextvar	LenB	syntax	Syntax error
+nextvar	Len	syntax	Syntax error
+nextvar	Left	semantic	Argument not optional
+nextvar	LBound	syntax	Syntax error
+nextvar	Is	syntax	Syntax error
+nextvar	Integer	syntax	Syntax error
+nextvar	Int	syntax	Syntax error
+nextvar	InStrB	semantic	Invalid Next control variable reference
+nextvar	InStr	semantic	Invalid Next control variable reference
+nextvar	InputB	syntax	Syntax error
+nextvar	Input	syntax	Syntax error
+nextvar	In	syntax	Syntax error
+nextvar	Implements	syntax	Syntax error
+nextvar	Imp	syntax	Syntax error
+nextvar	If	syntax	Syntax error
+nextvar	GoTo	syntax	Syntax error
+nextvar	GoSub	syntax	Syntax error
+nextvar	Go	semantic	Invalid Next control variable reference
+nextvar	Global	syntax	Syntax error
+nextvar	Get	syntax	Syntax error
+nextvar	Function	syntax	Syntax error
+nextvar	Friend	syntax	Syntax error
+nextvar	FreeFile	semantic	Invalid Next control variable reference
+nextvar	Format	semantic	Argument not optional
+nextvar	For	syntax	Syntax error
+nextvar	Fix	syntax	Syntax error
+nextvar	False	syntax	Syntax error
+nextvar	Explicit	semantic	Invalid Next control variable reference
+nextvar	Exit	syntax	Syntax error
+nextvar	Event	syntax	Syntax error
+nextvar	Error	semantic	Invalid Next control variable reference
+nextvar	Erase	syntax	Syntax error
+nextvar	Eqv	syntax	Syntax error
+nextvar	Enum	syntax	Syntax error
+nextvar	EndIf	syntax	Syntax error
+nextvar	End	syntax	Syntax error
+nextvar	Empty	syntax	Syntax error
+nextvar	ElseIf	syntax	Syntax error
+nextvar	Else	syntax	Syntax error
+nextvar	Each	syntax	Syntax error
+nextvar	Double	syntax	Syntax error
+nextvar	DoEvents	syntax	Syntax error
+nextvar	Do	syntax	Syntax error
+nextvar	Dir	semantic	Invalid Next control variable reference
+nextvar	Dim	syntax	Syntax error
+nextvar	DefVar	syntax	Syntax error
+nextvar	DefStr	syntax	Syntax error
+nextvar	DefSng	syntax	Syntax error
+nextvar	DefObj	syntax	Syntax error
+nextvar	DefLng	syntax	Syntax error
+nextvar	DefInt	syntax	Syntax error
+nextvar	DefDbl	syntax	Syntax error
+nextvar	DefDec	syntax	Syntax error
+nextvar	DefDate	syntax	Syntax error
+nextvar	DefCur	syntax	Syntax error
+nextvar	DefByte	syntax	Syntax error
+nextvar	DefBool	syntax	Syntax error
+nextvar	Declare	syntax	Syntax error
+nextvar	Decimal	syntax	Syntax error
+nextvar	Debug	syntax	Syntax error
+nextvar	Date	syntax	Syntax error
+nextvar	Database	semantic	Invalid Next control variable reference
+nextvar	Currency	syntax	Syntax error
+nextvar	CVErr	syntax	Syntax error
+nextvar	CVDate	semantic	Argument not optional
+nextvar	CVar	syntax	Syntax error
+nextvar	CurDir	semantic	Invalid Next control variable reference
+nextvar	CStr	syntax	Syntax error
+nextvar	CSng	syntax	Syntax error
+nextvar	Const	syntax	Syntax error
+nextvar	Compare	semantic	Invalid Next control variable reference
+nextvar	Close	syntax	Syntax error
+nextvar	CLng	syntax	Syntax error
+nextvar	Circle	syntax	Syntax error
+nextvar	CInt	syntax	Syntax error
+nextvar	ChDir	semantic	Argument not optional
+nextvar	CDecl	syntax	Syntax error
+nextvar	CDbl	syntax	Syntax error
+nextvar	CDec	syntax	Syntax error
+nextvar	CDate	syntax	Syntax error
+nextvar	CCur	syntax	Syntax error
+nextvar	CByte	syntax	Syntax error
+nextvar	CBool	syntax	Syntax error
+nextvar	Case	syntax	Syntax error
+nextvar	Call	syntax	Syntax error
+nextvar	ByVal	syntax	Syntax error
+nextvar	Byte	syntax	Syntax error
+nextvar	ByRef	syntax	Syntax error
+nextvar	Boolean	syntax	Syntax error
+nextvar	Binary	semantic	Invalid Next control variable reference
+nextvar	BF	semantic	Invalid Next control variable reference
+nextvar	Base	semantic	Invalid Next control variable reference
+nextvar	Assert	semantic	Invalid Next control variable reference
+nextvar	As	syntax	Syntax error
+nextvar	Array	syntax	Syntax error
+nextvar	Append	semantic	Invalid Next control variable reference
+nextvar	Any	syntax	Syntax error
+nextvar	And	syntax	Syntax error
+nextvar	Alias	semantic	Invalid Next control variable reference
+nextvar	AddressOf	syntax	Syntax error
+nextvar	Access	semantic	Invalid Next control variable reference
+nextvar	Abs	syntax	Syntax error

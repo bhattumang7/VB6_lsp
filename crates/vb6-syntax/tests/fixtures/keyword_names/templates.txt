@@ -172,3 +172,18 @@ Dim a As {k}
 === paramas bas
 Sub Probe(a As {k})
 End Sub
+=== foreachcoll bas
+Sub Probe()
+    For Each x In {k}
+    Next
+End Sub
+=== foreachcollcall bas
+Sub Probe()
+    For Each x In {k}(1)
+    Next
+End Sub
+=== nextvar bas
+Sub Probe()
+    For i = 1 To 2
+    Next {k}
+End Sub

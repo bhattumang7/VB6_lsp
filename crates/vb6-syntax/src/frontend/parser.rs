@@ -215,6 +215,9 @@ pub struct Parser<'src> {
     in_inline_if: bool,
     /// A statement's target is being parsed, where built-in functions are plain names.
     in_target: bool,
+    /// The target about to be parsed is at the start of a statement, where a few reserved
+    /// words (`Date`, `DoEvents`, `CDec`) may name what is assigned or called.
+    target_at_statement_start: bool,
     /// Open block statements of the procedure being parsed, innermost last.
     blocks: Vec<Block>,
     /// The last token consumed was the end of a line.
@@ -339,6 +342,7 @@ impl<'src> Parser<'src> {
             address_of_ok: false,
             in_inline_if: false,
             in_target: false,
+            target_at_statement_start: false,
             blocks: Vec::new(),
             last_was_eol: false,
             after_colon: false,
@@ -739,6 +743,13 @@ impl<'src> Parser<'src> {
         let node = arena.alloc(ExprNode::NameRef { sym, suffix: t.type_suffix });
         self.set_span(node, t.span);
         node
+    }
+
+    /// `Array(` : the one reserved built-in function that a target expression may call.
+    fn at_array_call(&mut self) -> bool {
+        let Some(sym) = self.peek().sym else { return false };
+        self.scanner.sym_name(sym as u32).eq_ignore_ascii_case("Array")
+            && self.peek2().kind == TokenKind::Kw(Kw::LParen)
     }
 
     /// A reserved word where a target belongs: reported, consumed and replaced by a placeholder.
@@ -1802,6 +1813,7 @@ impl<'src> Parser<'src> {
     /// Covers: `target = expr` (Let), `Call target(args)`, label definition,
     /// property call without `Set`.
     fn parse_ident_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        self.target_at_statement_start = true;
         let lhs = self.parse_target_expr(arena);
         self.finish_ident_stmt(arena, lhs)
     }
@@ -2271,7 +2283,7 @@ impl<'src> Parser<'src> {
         self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
-        self.finish_next();
+        self.finish_next(arena);
         self.blocks.pop();
         arena.alloc(ExprNode::For { var, start, end, step, body })
     }
@@ -2284,11 +2296,12 @@ impl<'src> Parser<'src> {
         let var = self.parse_target_expr(arena);
         let var_sym = self.for_variable(arena, var, var_span);
         self.expect(TokenKind::Kw(Kw::In), ERR_EXPECTED_IN);
-        let collection = self.parse_expr(arena, 0);
+        // The collection is a target expression: a name or a chain of members, indexes and calls.
+        let collection = self.parse_target_expr(arena);
         self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
-        self.finish_next();
+        self.finish_next(arena);
         self.blocks.pop();
         arena.alloc(ExprNode::ForEach { var, collection, body })
     }
@@ -2306,7 +2319,7 @@ impl<'src> Parser<'src> {
 
     /// End of a `For` body: `Next [var [, var]…]`, or a variable carried over
     /// from an inner `Next a, b`. Names are matched innermost loop first.
-    fn finish_next(&mut self) {
+    fn finish_next(&mut self, arena: &mut ExprArena) {
         if !self.next_carry.is_empty() {
             let (name, span) = self.next_carry.remove(0);
             self.check_next_variable(name, span);
@@ -2319,20 +2332,28 @@ impl<'src> Parser<'src> {
         self.advance(); // Next
         let mut names: Vec<(Option<u32>, Span)> = Vec::new();
         while !self.peek().is_stmt_end() {
-            match self.peek().kind {
-                TokenKind::Kw(Kw::Rem) => break,
-                TokenKind::Ident | TokenKind::Kw(_) => {
-                    let tok = self.advance();
-                    names.push((tok.sym.map(|s| s as u32).filter(|_| tok.kind == TokenKind::Ident), tok.span));
-                }
-                _ => break,
+            if matches!(self.peek().kind, TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)) {
+                break;
             }
+            // Each variable is a target expression; only a plain name can be a control variable.
+            let span = self.current_span();
+            let var = self.parse_target_expr(arena);
+            let name = match arena.get(var) {
+                ExprNode::NameRef { sym, .. } => Some(*sym),
+                _ => None,
+            };
+            names.push((name, span));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             if self.peek().is_stmt_end() {
                 // A comma needs another variable after it.
                 let span = self.current_span();
                 self.report_expected(span, "variable");
             }
+        }
+        if names.is_empty() && self.peek().kind == TokenKind::Kw(Kw::Else) {
+            // `Next` alone does not end a single-line `If` part; `Next i` does.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         }
         self.end_stmt();
         // Each further name closes the next enclosing `For`, provided the
@@ -2353,8 +2374,8 @@ impl<'src> Parser<'src> {
 
     /// A name after `Next` must be the control variable of the loop it closes.
     fn check_next_variable(&mut self, name: Option<u32>, span: Span) {
-        if let (Some(name), Some(Block::For(Some(var)))) = (name, self.blocks.last().copied()) {
-            if name != var {
+        if let Some(Block::For(Some(var))) = self.blocks.last().copied() {
+            if name != Some(var) {
                 self.diagnostics.push(ERR_INVALID_NEXT_VARIABLE, span);
             }
         }
@@ -4745,7 +4766,19 @@ impl<'src> Parser<'src> {
         }
         // A target names something: a reserved word does not (`Me` and the few reserved
         // words that also name callable things apart).
-        if self.at_reserved_word() && !self.starts_name_statement() && self.peek().kind != TokenKind::Kw(Kw::Me) {
+        let at_start = std::mem::take(&mut self.target_at_statement_start);
+        if self.peek().kind == TokenKind::Kw(Kw::Rem) {
+            // A comment cannot stand where a target belongs.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return self.parse_primary_placeholder(arena);
+        }
+        if self.at_reserved_word()
+            && !(at_start && self.starts_name_statement())
+            && self.peek().kind != TokenKind::Kw(Kw::Me)
+            && !self.at_array_call()
+        {
             return self.reject_reserved_word_target(arena);
         }
         // A target names something: a bracket or an operator does not.

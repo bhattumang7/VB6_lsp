@@ -592,3 +592,85 @@ Rem c: x = 1
 Call Rem
 Call Rem c
 Foo Rem
+For Each x In a\nNext
+For Each x In a.b\nNext
+For Each x In a(1)\nNext
+For Each x In Foo()\nNext
+For Each x In (a)\nNext
+For Each x In a + b\nNext
+For Each x In 1\nNext
+For Each x In "s"\nNext
+For Each x In a, b\nNext
+For Each x In New Foo\nNext
+For Each x In Nothing\nNext
+For Each x In Me\nNext
+For Each x In a!b\nNext
+For Each x In .p\nNext
+For Each x In a.b.c(1).d\nNext
+For Each x In Array(1)\nNext
+For Each x In UBound(a)\nNext
+For Each x In\nNext
+For Each In a\nNext
+For Each x a\nNext
+For Each x In a Step 1\nNext
+For Each a.b In c\nNext
+For Each a(1) In c\nNext
+For Each (a) In c\nNext
+For Each .x In c\nNext
+For Each 1 In c\nNext
+For Each a$ In c\nNext
+For Each a% In c\nNext
+For Each x = 1 To 2\nNext
+For a.b = 1 To 2\nNext
+For a(1) = 1 To 2\nNext
+For .x = 1 To 2\nNext
+For (a) = 1 To 2\nNext
+For 1 = 1 To 2\nNext
+For a$ = 1 To 2\nNext
+For a% = 1 To 2\nNext
+For i = 1 To 2 Step\nNext
+For i = 1 To 2 Step 0\nNext
+For i = 1 To 2 Step -1\nNext
+For i = 1 To 2 Step 1, 2\nNext
+For i = 1 To 2 Step 1 Step 2\nNext
+For i = 1 To\nNext
+For i = 1\nNext
+For i To 2\nNext
+For i = 1 To 2 3\nNext
+For i = 1, 2 To 3\nNext
+For i = 1 To 2, 3\nNext
+For i := 1 To 2\nNext
+For\nNext
+For i = 1 To 2:\nNext
+For i = 1 To 2: Next
+For i = 1 To 2\nNext i
+For i = 1 To 2\nNext j
+For i = 1 To 2\nNext a.b
+For i = 1 To 2\nNext i.b
+For i = 1 To 2\nNext i(1)
+For i = 1 To 2\nNext 1
+For i = 1 To 2\nNext i + 1
+For i = 1 To 2\nNext (i)
+For i = 1 To 2\nNext i,\nNext
+For i = 1 To 2\nNext i, j
+For i = 1 To 2\nFor j = 1 To 2\nNext j, i
+For i = 1 To 2\nFor j = 1 To 2\nNext i, j
+For i = 1 To 2\nFor j = 1 To 2\nNext j, j
+For i = 1 To 2\nFor j = 1 To 2\nNext i,, j
+For i = 1 To 2\nNext Else
+If x Then For i = 1 To 2: Next Else y = 1
+If x Then For i = 1 To 2: Next i Else y = 1
+For i = 1 To 2\nNext i Else
+For i = 1 To 2\nNext i: y = 1
+For i = 1 To 2\nNext: y = 1
+For i = 1 To 2\nNext i ' c
+For i = 1 To 2\nNext ' c
+For i = 1 To 2\nNext i%
+For i% = 1 To 2\nNext i%
+For i% = 1 To 2\nNext i
+For i = 1 To 2\nNext i$
+For Each x In a\nNext x
+For Each x In a\nNext y
+For Each x In a\nNext x, y
+For i = 1 To 2\nNext i\nNext
+Next i

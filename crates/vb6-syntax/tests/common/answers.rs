@@ -53,11 +53,11 @@ pub fn diagnostics(source: &str, kind: ModuleKind) -> usize {
 }
 
 /// Every row on which the parser and the compiler disagree, as readable lines.
-/// `skip(template, word, class)` leaves out rows whose answer says nothing about the parse.
+/// `skip(template, word, class, message)` leaves out rows whose answer says nothing about the parse.
 pub fn disagreements(
     templates_text: &str,
     answers: &str,
-    skip: impl Fn(&str, &str, &str) -> bool,
+    skip: impl Fn(&str, &str, &str, &str) -> bool,
 ) -> (usize, Vec<String>) {
     let templates = templates(templates_text);
     let mut wrong = Vec::new();
@@ -72,7 +72,7 @@ pub fn disagreements(
             "unanswered" => continue,
             other => panic!("unknown class `{other}`"),
         };
-        if skip(template, word, class) {
+        if skip(template, word, class, message) {
             continue;
         }
         let t = &templates[template];

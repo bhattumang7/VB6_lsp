@@ -57,3 +57,6 @@ Argument in ParamArray may not be named	semantic
 Named argument not found	semantic
 Expected End With	syntax
 Invalid use of AddressOf operator	semantic
+For Each control variable must be Variant or Object	semantic
+Invalid Next control variable reference	semantic
+For Each may only iterate over a collection object or an array	semantic

@@ -14,7 +14,7 @@ fn calls_with_any_callee_match_the_compiler() {
     // A block opener whose templates do not close the block: the compiler's semantic
     // error comes first and hides the missing closer, so its answer says nothing
     // about the parse.
-    let skip = |_: &str, word: &str, class: &str| {
+    let skip = |_: &str, word: &str, class: &str, _: &str| {
         class == "semantic" && ["With", "While", "Case"].contains(&word)
     };
     let (checked, wrong) = disagreements(TEMPLATES, ANSWERS, skip);
