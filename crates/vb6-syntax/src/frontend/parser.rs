@@ -2274,7 +2274,7 @@ impl<'src> Parser<'src> {
         self.advance(); // consume On
         // `On Local Error …` is the explicit form of `On Error …`; `Local` is the
         // default error scope and a reserved word, so eating it here is
-        // unambiguous and leaves the handler form unchanged. (oracle-confirmed)
+        // unambiguous and leaves the handler form unchanged.
         self.eat(TokenKind::Kw(Kw::Local));
         if self.eat(TokenKind::Kw(Kw::Error)) {
             if self.eat(TokenKind::Kw(Kw::Resume)) {
@@ -2283,6 +2283,16 @@ impl<'src> Parser<'src> {
                 return arena.alloc(ExprNode::OnError { kind: OnErrorKind::ResumeNext });
             }
             if self.eat(TokenKind::Kw(Kw::GoTo)) {
+                // `On Error GoTo -1` leaves the error state of the handler.
+                if self.peek().kind == TokenKind::Kw(Kw::Minus)
+                    && matches!(self.peek2().kind, TokenKind::IntLit | TokenKind::LongLit)
+                    && line_label_value(&self.peek2().lit) == 1
+                {
+                    self.advance();
+                    self.advance();
+                    self.end_stmt();
+                    return arena.alloc(ExprNode::OnError { kind: OnErrorKind::ClearError });
+                }
                 if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
                     let tok = self.advance();
                     let line = line_label_value(&tok.lit);
@@ -2322,14 +2332,16 @@ impl<'src> Parser<'src> {
             let lref = if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
                 let tok = self.advance();
                 self.label_refs.push((LabelRef::Line(line_label_value(&tok.lit)), tok.span));
-                let n = arena.alloc(ExprNode::Literal { lit: AstLit::Int(line_label_value(&tok.lit)) });
+                let n = arena.alloc(ExprNode::JumpTarget {
+                    target: LabelRef::Line(line_label_value(&tok.lit)),
+                });
                 self.set_span(n, tok.span);
                 n
             } else {
                 let lbl = self.expect_ident();
                 let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
                 self.label_refs.push((LabelRef::Name(lid), lbl.span));
-                let nref = arena.alloc(ExprNode::NameRef { sym: lid, suffix: TypeSuffix::None });
+                let nref = arena.alloc(ExprNode::JumpTarget { target: LabelRef::Name(lid) });
                 self.set_span(nref, lbl.span);
                 nref
             };
@@ -2956,7 +2968,24 @@ impl<'src> Parser<'src> {
 
     /// Parse an access-modifier prefix (Public/Private/Friend/Static) then dispatch.
     fn parse_access_decl(&mut self, arena: &mut ExprArena) -> NodeId {
-        let access_tok = self.advance().kind.clone();
+        let first = self.advance();
+        let mut access_tok = first.kind.clone();
+        // `Static` and an access modifier combine in either order
+        // (`Static Private Sub`, `Private Static Sub`): every local of the
+        // procedure is then static.
+        let mut static_proc = access_tok == TokenKind::Kw(Kw::Static);
+        let mut access_span = first.span;
+        if static_proc {
+            if matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Friend)
+            ) {
+                access_span = self.current_span();
+                access_tok = self.advance().kind.clone();
+            }
+        } else if self.eat(TokenKind::Kw(Kw::Static)) {
+            static_proc = true;
+        }
         let vis = match access_tok {
             TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Friend) => {
                 Some(true)
@@ -2964,10 +2993,32 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Private) => Some(false),
             _ => None,
         };
-        // `Static` may follow the access modifier (`Private Static Sub`): every
-        // local of the procedure is then static.
-        let static_proc = matches!(access_tok, TokenKind::Kw(Kw::Static))
-            || self.eat(TokenKind::Kw(Kw::Static));
+        let is_friend = access_tok == TokenKind::Kw(Kw::Friend);
+        if is_friend {
+            self.reject_in_standard_module_at(access_span);
+        }
+        // `Friend` and a combined `Static` only qualify a procedure.
+        let procedure_only = is_friend || (static_proc && access_tok != TokenKind::Kw(Kw::Static));
+        if procedure_only
+            && !matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
+            )
+        {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Function or Sub or Property");
+            self.skip_to_stmt_end();
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        }
+        // An event is always public.
+        if self.peek().kind == TokenKind::Kw(Kw::Event)
+            && matches!(access_tok, TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Friend))
+        {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+            self.skip_to_stmt_end();
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        }
         let node = match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Sub)      => self.parse_proc_decl(arena, ProcKind::Sub),
             TokenKind::Kw(Kw::Function) => self.parse_proc_decl(arena, ProcKind::Function),
@@ -3162,8 +3213,12 @@ impl<'src> Parser<'src> {
     /// a standard module. Called on the keyword of every class-only statement,
     /// whichever path (bare, access-modified, inside `#If`) reached it.
     fn reject_in_standard_module(&mut self) {
+        let span = self.current_span();
+        self.reject_in_standard_module_at(span);
+    }
+
+    fn reject_in_standard_module_at(&mut self, span: Span) {
         if self.module_kind == ModuleKind::Standard {
-            let span = self.current_span();
             self.diagnostics.push(ERR_OBJECT_MODULE_ONLY, span);
         }
     }

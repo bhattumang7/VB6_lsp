@@ -94,6 +94,7 @@ pub enum OnErrorKind {
     Goto(LabelRef), // On Error GoTo label / line#
     ResumeNext,     // On Error Resume Next
     Disable,        // On Error GoTo 0
+    ClearError,     // On Error GoTo -1
 }
 
 /// Target of a `Resume` statement — the four VB6 forms.
@@ -447,6 +448,10 @@ pub enum ExprNode {
     /// label symbol or the line-number value, so a numeric label is preserved
     /// as a distinct jump target rather than collapsed to a sentinel.
     Label { target: LabelRef },
+
+    /// A jump target named in a `On <expr> GoTo/GoSub` list: a reference to a
+    /// label, not a variable read.
+    JumpTarget { target: LabelRef },
 
     /// `Def<Type> letter[-letter][, …]` module-level default-type declaration
     /// (`DefInt A-Z`, `DefBool B`, …).

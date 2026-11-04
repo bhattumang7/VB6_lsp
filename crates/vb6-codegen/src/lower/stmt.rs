@@ -285,6 +285,8 @@ pub(super) fn lower_stmt(
                 ctx.goto_patches.borrow_mut().push((*target, patch));
                 Ok(())
             }
+            // `On Error GoTo -1` has no encoding here yet.
+            OnErrorKind::ClearError => Err(LowerError::UnsupportedNode),
             OnErrorKind::Disable => {
                 out.push(0x4b);
                 out.extend_from_slice(&0xfffe_u16.to_le_bytes());
@@ -435,8 +437,7 @@ pub(super) fn lower_stmt(
             out.extend_from_slice(&((labels.len() * 2) as u16).to_le_bytes());
             for &lbl in labels {
                 let target = match expr_arena.get(lbl) {
-                    ExprNode::NameRef { sym, .. } => LabelRef::Name(*sym),
-                    ExprNode::Literal { lit: AstLit::Int(v) } => LabelRef::Line(*v),
+                    ExprNode::JumpTarget { target } => *target,
                     _ => return Err(LowerError::UnsupportedNode),
                 };
                 let patch = out.len();
