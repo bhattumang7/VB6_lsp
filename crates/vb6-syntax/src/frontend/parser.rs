@@ -2760,7 +2760,13 @@ impl<'src> Parser<'src> {
         // `On Local Error …` is the explicit form of `On Error …`; `Local` is the
         // default error scope and a reserved word, so eating it here is
         // unambiguous and leaves the handler form unchanged.
-        self.eat(TokenKind::Kw(Kw::Local));
+        if self.eat(TokenKind::Kw(Kw::Local)) && self.peek().kind != TokenKind::Kw(Kw::Error) {
+            // `Local` only qualifies `Error`.
+            let span = self.current_span();
+            self.report_expected(span, "Error");
+            self.skip_line();
+            return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Disable });
+        }
         if self.eat(TokenKind::Kw(Kw::Error)) {
             if self.eat(TokenKind::Kw(Kw::Resume)) {
                 self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);

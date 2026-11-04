@@ -446,6 +446,39 @@ body	Foo AddressOf Bar.Baz.Qux	semantic	Invalid use of AddressOf operator
 body	x = AddressOf Foo + 1	syntax	Syntax error
 body	Set x = AddressOf Foo	syntax	Syntax error
 body	y = Array(AddressOf Foo)	semantic	Expected Sub, Function, or Property
+body	On Local x GoTo L\nL:	syntax	Syntax error
+body	On Local Error GoTo L\nL:	accepted	
+body	On Local Error Resume Next	accepted	
+body	On Local Local Error Resume Next	syntax	Syntax error
+body	On Local	syntax	Syntax error
+body	On Error GoSub L\nL:	syntax	Syntax error
+body	On Error Go To L\nL:	syntax	Syntax error
+body	On Error Go Sub L\nL:	syntax	Syntax error
+body	On Error Go L\nL:	syntax	Syntax error
+body	On Error GoTo -2	syntax	Syntax error
+body	On Error GoTo - 1	accepted	
+body	On Error GoTo -0	syntax	Syntax error
+body	On Error GoTo 5	syntax	Label not defined
+body	On Error GoTo 0	accepted	
+body	On Error GoTo L\nL:	accepted	
+body	On Error Resume Next	accepted	
+body	On Error Resume L\nL:	syntax	Syntax error
+body	On Error Resume 0	syntax	Syntax error
+body	On Error Else	syntax	Syntax error
+body	On Error 1	syntax	Syntax error
+body	On x Go To L\nL:	syntax	Syntax error
+body	On x Go Sub L\nL:	syntax	Syntax error
+body	On x GoTo L, M\nL:\nM:	accepted	
+body	On x GoSub L, M\nL:\nM:	accepted	
+body	On x GoTo L,\nL:	syntax	Syntax error
+body	On x GoTo 10, 20\n10:\n20:	accepted	
+body	On x GoTo	syntax	Syntax error
+body	On x	syntax	Syntax error
+body	On x Then L	syntax	Syntax error
+body	On x GoTo L M\nL:\nM:	syntax	Syntax error
+body	On x + 1 GoTo L\nL:	accepted	
+body	On x GoTo (L)	syntax	Syntax error
+body	On x GoTo -1	syntax	Syntax error
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -893,3 +926,36 @@ module	Foo AddressOf Bar.Baz.Qux	syntax	Invalid outside procedure
 module	x = AddressOf Foo + 1	syntax	Expected: expression
 module	Set x = AddressOf Foo	syntax	Expected: expression
 module	y = Array(AddressOf Foo)	syntax	Invalid outside procedure
+module	On Local x GoTo L\nL:	syntax	Expected: Error
+module	On Local Error GoTo L\nL:	syntax	Invalid outside procedure
+module	On Local Error Resume Next	syntax	Invalid outside procedure
+module	On Local Local Error Resume Next	syntax	Expected: Error
+module	On Local	syntax	Expected: Error
+module	On Error GoSub L\nL:	syntax	Expected: GoTo or Resume
+module	On Error Go To L\nL:	syntax	Expected: GoTo or Resume
+module	On Error Go Sub L\nL:	syntax	Expected: GoTo or Resume
+module	On Error Go L\nL:	syntax	Expected: GoTo or Resume
+module	On Error GoTo -2	syntax	Expected: line number or label
+module	On Error GoTo - 1	syntax	Invalid outside procedure
+module	On Error GoTo -0	syntax	Expected: line number or label
+module	On Error GoTo 5	syntax	Invalid outside procedure
+module	On Error GoTo 0	syntax	Invalid outside procedure
+module	On Error GoTo L\nL:	syntax	Invalid outside procedure
+module	On Error Resume Next	syntax	Invalid outside procedure
+module	On Error Resume L\nL:	syntax	Expected: Next
+module	On Error Resume 0	syntax	Expected: Next
+module	On Error Else	syntax	Expected: GoTo or Resume
+module	On Error 1	syntax	Expected: GoTo or Resume
+module	On x Go To L\nL:	syntax	Expected: Go
+module	On x Go Sub L\nL:	syntax	Expected: Go
+module	On x GoTo L, M\nL:\nM:	syntax	Invalid outside procedure
+module	On x GoSub L, M\nL:\nM:	syntax	Invalid outside procedure
+module	On x GoTo L,\nL:	syntax	Expected: line number or label
+module	On x GoTo 10, 20\n10:\n20:	syntax	Invalid outside procedure
+module	On x GoTo	syntax	Expected: line number or label
+module	On x	syntax	Expected: Go
+module	On x Then L	syntax	Expected: Go
+module	On x GoTo L M\nL:\nM:	syntax	Expected: end of statement
+module	On x + 1 GoTo L\nL:	syntax	Invalid outside procedure
+module	On x GoTo (L)	syntax	Expected: line number or label
+module	On x GoTo -1	syntax	Expected: line number or label

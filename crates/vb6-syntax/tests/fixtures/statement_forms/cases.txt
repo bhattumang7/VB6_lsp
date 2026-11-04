@@ -447,3 +447,36 @@ Foo AddressOf Bar.Baz.Qux
 x = AddressOf Foo + 1
 Set x = AddressOf Foo
 y = Array(AddressOf Foo)
+On Local x GoTo L\nL:
+On Local Error GoTo L\nL:
+On Local Error Resume Next
+On Local Local Error Resume Next
+On Local
+On Error GoSub L\nL:
+On Error Go To L\nL:
+On Error Go Sub L\nL:
+On Error Go L\nL:
+On Error GoTo -2
+On Error GoTo - 1
+On Error GoTo -0
+On Error GoTo 5
+On Error GoTo 0
+On Error GoTo L\nL:
+On Error Resume Next
+On Error Resume L\nL:
+On Error Resume 0
+On Error Else
+On Error 1
+On x Go To L\nL:
+On x Go Sub L\nL:
+On x GoTo L, M\nL:\nM:
+On x GoSub L, M\nL:\nM:
+On x GoTo L,\nL:
+On x GoTo 10, 20\n10:\n20:
+On x GoTo
+On x
+On x Then L
+On x GoTo L M\nL:\nM:
+On x + 1 GoTo L\nL:
+On x GoTo (L)
+On x GoTo -1
