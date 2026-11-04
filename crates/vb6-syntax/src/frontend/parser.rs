@@ -91,6 +91,19 @@ fn prefix_bp(kind: &TokenKind) -> Option<(u8, UnOpKind)> {
 
 /// If `k` is a `Def<Type>` keyword (`DefBool`..`DefVar`, token ids 0x31–0x3c),
 /// return its token id; otherwise `None`.  Used by module-level dispatch.
+/// Whether `k` begins an executable statement (one that is only valid inside a
+/// procedure).
+fn starts_executable_statement(k: Kw) -> bool {
+    use Kw::*;
+    matches!(
+        k,
+        If | For | Do | While | Select | With | Let | Set | Call | GoTo | GoSub | Go | Exit
+            | Return | Resume | On | Error | Stop | Erase | RaiseEvent | Debug | Open | Close
+            | Print | Write | Input | Line | Get | Put | Seek | Lock | Unlock | Width | Name
+            | Mid | MidS | MidB | MidBS | LSet | RSet | Question | InputS | InputB | InputBS
+    )
+}
+
 fn def_type_kw(k: Kw) -> Option<u16> {
     use Kw::*;
     matches!(
@@ -801,9 +814,13 @@ impl<'src> Parser<'src> {
                         // VERSION x.y CLASS / VERSION 5.00 — file-format header; skip entire line.
                         self.skip_line();
                     } else {
-                        self.recover_module_unexpected();
+                        self.skip_executable_statement(arena);
                     }
                 }
+                TokenKind::Kw(k) if starts_executable_statement(k) => {
+                    self.skip_executable_statement(arena);
+                }
+                TokenKind::IntLit | TokenKind::LongLit => self.skip_executable_statement(arena),
                 // `End Type` with no `Type` block open.
                 TokenKind::Kw(Kw::End) if self.peek2().kind == TokenKind::Kw(Kw::Type) => {
                     let span = self.current_span();
@@ -814,6 +831,25 @@ impl<'src> Parser<'src> {
             }
         }
         nodes
+    }
+
+    /// An executable statement outside any procedure: report it once, at its
+    /// start, and consume the whole statement (a block statement included).
+    fn skip_executable_statement(&mut self, arena: &mut ExprArena) {
+        let span = self.current_span();
+        let mark = self.diagnostics.len();
+        let before = span.start;
+        let _ = self.parse_stmt(arena);
+        // The rest of the line (statements after `:` or a line number) goes too.
+        if !self.last_was_eol {
+            self.skip_line();
+        }
+        self.diagnostics.truncate(mark);
+        self.diagnostics.push(ERR_INVALID_OUTSIDE_PROCEDURE, span);
+        // Always make progress.
+        if self.current_span().start == before && self.peek().kind != TokenKind::Eof {
+            self.advance();
+        }
     }
 
     /// Skip a `BEGIN ... END` designer-metadata block found in `.cls` files.
@@ -1301,10 +1337,32 @@ impl<'src> Parser<'src> {
                 self.parse_input_keyword_stmt(arena)
             }
             // Sub / Function / Property — nested (error but recover)
-            TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property) => {
+            TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
+            | TokenKind::Kw(Kw::Declare) | TokenKind::Kw(Kw::Event) | TokenKind::Kw(Kw::Implements)
+            | TokenKind::Kw(Kw::Option) => {
                 let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                self.skip_to_stmt_end();
+                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
+                self.skip_line();
+                return None;
+            }
+            // A `Type` or `Enum` block cannot be declared inside a procedure; the
+            // whole block is consumed so its members are not read as statements.
+            TokenKind::Kw(Kw::Type) | TokenKind::Kw(Kw::Enum) => {
+                let span = self.current_span();
+                let mark = self.diagnostics.len();
+                if kind == TokenKind::Kw(Kw::Type) {
+                    self.parse_type_decl(arena);
+                } else {
+                    self.parse_enum_decl(arena);
+                }
+                self.diagnostics.truncate(mark);
+                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
+                return None;
+            }
+            TokenKind::Kw(k) if def_type_kw(*k).is_some() => {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
+                self.skip_line();
                 return None;
             }
             // Comment tokens — consume and return None

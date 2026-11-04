@@ -53,6 +53,7 @@ pub const ERR_IDENTIFIER_TOO_LONG: u32 = 0x9c6d; // 40045
 pub const ERR_TOO_MANY_DIMENSIONS: u32 = 0x9c80; // 40064
 pub const ERR_INVALID_FIXED_STRING_LENGTH: u32 = 0x9cb0; // 40112
 pub const ERR_MUST_BE_FIRST_ON_LINE: u32 = 0x9c71; // 40049
+pub const ERR_INVALID_OUTSIDE_PROCEDURE: u32 = 0x9c73; // 40051
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -106,6 +107,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_INVALID_OUTSIDE_PROCEDURE => "Invalid outside procedure",
         ERR_MUST_BE_FIRST_ON_LINE => "Must be first statement on the line",
         ERR_IDENTIFIER_TOO_LONG => "Identifier too long",
         ERR_TOO_MANY_DIMENSIONS => "Too many dimensions",
