@@ -719,7 +719,7 @@ impl<'src> Parser<'src> {
 
     /// After `New`: a class name. A built-in type word is reported as a missing type name.
     fn require_class_name_after_new(&mut self) {
-        if self.at_reserved_word() {
+        if self.at_reserved_word() || self.peek().kind == TokenKind::Kw(Kw::Object) {
             let span = self.current_span();
             self.report_expected(span, "type name");
         }
@@ -3460,6 +3460,10 @@ impl<'src> Parser<'src> {
             if !self.eat(TokenKind::Kw(Kw::Comma)) {
                 break;
             }
+            // A comma may end the list.
+            if self.peek().is_stmt_end() {
+                break;
+            }
         }
         if self.module_decl_seen {
             self.diagnostics.push(ERR_DEFTYPE_AFTER_DECLARATION, def_span);
@@ -4318,6 +4322,7 @@ impl<'src> Parser<'src> {
     /// `Const` leaves the `=` to the constant's value.
     fn parse_fixed_string_length(&mut self, arena: &mut ExprArena) -> NodeId {
         let len_span = self.current_span();
+        let contextual = self.at_contextual_keyword();
         match self.peek().kind {
             TokenKind::IntLit | TokenKind::LongLit => {
                 let tok = self.advance();
@@ -4331,6 +4336,13 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Literal { lit })
             }
             TokenKind::Ident => {
+                let tok = self.advance();
+                let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
+                let name = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
+                self.set_span(name, tok.span);
+                name
+            }
+            TokenKind::Kw(_) if contextual => {
                 let tok = self.advance();
                 let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
                 let name = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
