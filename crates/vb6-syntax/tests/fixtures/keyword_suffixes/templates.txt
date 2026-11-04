@@ -1,0 +1,25 @@
+# {k} is replaced by each keyword followed by a type suffix.
+=== asvalue bas
+Sub P()
+x = {k}
+End Sub
+=== asstmt bas
+Sub P()
+{k}
+End Sub
+=== asstmtarg bas
+Sub P()
+{k} 1
+End Sub
+=== asassign bas
+Sub P()
+{k} = 1
+End Sub
+=== asdecl bas
+Sub P()
+Dim {k} As Long
+End Sub
+=== asmember bas
+Sub P(o As Object)
+x = o.{k}
+End Sub

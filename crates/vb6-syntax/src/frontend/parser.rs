@@ -616,7 +616,7 @@ impl<'src> Parser<'src> {
         if !name.starts_with(|c: char| c.is_ascii_alphabetic()) {
             return false;
         }
-        if ["CDec", "Date", "DoEvents"].iter().any(|n| name.eq_ignore_ascii_case(n)) {
+        if ["CDec", "Date", "Date$", "DoEvents"].iter().any(|n| name.eq_ignore_ascii_case(n)) {
             return true;
         }
         !self.at_reserved_word()
@@ -640,7 +640,7 @@ impl<'src> Parser<'src> {
     fn at_callable_reserved_word(&mut self) -> bool {
         let Some(sym) = self.peek().sym else { return false };
         let name = self.scanner.sym_name(sym as u32);
-        ["Me", "Date", "DoEvents", "CDec"].iter().any(|n| name.eq_ignore_ascii_case(n))
+        ["Me", "Date", "Date$", "DoEvents", "CDec"].iter().any(|n| name.eq_ignore_ascii_case(n))
     }
 
     /// True when the next token is a keyword that begins a statement of its own
@@ -655,7 +655,7 @@ impl<'src> Parser<'src> {
     fn names_enum_member(&mut self) -> bool {
         let Some(sym) = self.peek().sym else { return false };
         let name = self.scanner.sym_name(sym as u32).to_string();
-        if ["Date", "DoEvents", "CDec"].iter().any(|n| name.eq_ignore_ascii_case(n)) {
+        if ["Date", "Date$", "DoEvents", "CDec"].iter().any(|n| name.eq_ignore_ascii_case(n)) {
             return true;
         }
         let valued = self.peek2().kind == TokenKind::Kw(Kw::Eq);
@@ -2280,6 +2280,15 @@ impl<'src> Parser<'src> {
             self.module_array_seen |= bounds.is_some();
         }
         self.reject_suffix_with_as(&name, "end of statement");
+        // `Dir$` is the one built-in `$` name that a variable or member declaration still reads
+        // as `Dir` with a type-declaration character.
+        if !is_const
+            && name.sym.is_some_and(|s| self.scanner.sym_name(s as u32).eq_ignore_ascii_case("Dir$"))
+            && self.peek().kind == TokenKind::Kw(Kw::As)
+        {
+            let span = self.current_span();
+            self.report_expected(span, "end of statement");
+        }
         self.last_item_had_as = self.peek().kind == TokenKind::Kw(Kw::As);
         let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
             let is_new = self.eat(TokenKind::Kw(Kw::New));
@@ -4934,7 +4943,7 @@ impl<'src> Parser<'src> {
                 let name = self.scanner.sym_name(sym_id).to_string();
                 if let Some(shape) = INTRINSIC_SHAPES
                     .iter()
-                    .find(|s| !self.in_target && name.eq_ignore_ascii_case(s.name))
+                    .find(|s| !self.in_target && name.trim_end_matches('$').eq_ignore_ascii_case(s.name))
                 {
                     return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
                 }

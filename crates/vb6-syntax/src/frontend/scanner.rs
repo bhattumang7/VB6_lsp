@@ -1253,6 +1253,14 @@ impl<'a> Scanner<'a> {
         let Some(&suffix) = self.src.get(self.pos) else {
             return TypeSuffix::None;
         };
+        // The file statements take `#` as the channel mark, never as a suffix.
+        if suffix == b'#'
+            && ["Close", "Get", "Input", "Lock", "Open", "Print", "Put", "Seek", "Unlock", "Write"]
+                .iter()
+                .any(|w| self.tok_buf.eq_ignore_ascii_case(w))
+        {
+            return TypeSuffix::None;
+        }
         let folds_to_keyword = matches!(suffix, b'$' | b'%' | b'!' | b'#' | b'@') && {
             let mut with_suffix = self.tok_buf.clone();
             with_suffix.push(suffix as char);
