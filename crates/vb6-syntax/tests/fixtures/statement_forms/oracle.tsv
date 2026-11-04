@@ -797,6 +797,27 @@ body	End Sub Attribute VB_Name = "m"	syntax	Syntax error
 body	x = Attribute	syntax	Syntax error
 body	Attribute Attribute	accepted	
 body	Attribute Attribute Attribute	accepted	
+body	x = a &7	syntax	Syntax error
+body	x = a & 7	accepted	
+body	x = a &1	syntax	Syntax error
+body	x = a&7	syntax	Syntax error
+body	x = a& 7	syntax	Syntax error
+body	x = &8	syntax	Syntax error
+body	x = &9	syntax	Syntax error
+body	x = &07	accepted	
+body	x = &17777	accepted	
+body	x = &177777	accepted	
+body	x = &200000	accepted	
+body	x = &7&	accepted	
+body	x = &7%	accepted	
+body	x = &77777777777	syntax	Syntax error
+body	x = &1 + 2	accepted	
+body	x = 1 + &7	accepted	
+body	x = &7 & &7	accepted	
+body	x = a &7 + 1	syntax	Syntax error
+body	f &7	semantic	Sub or Function not defined
+body	x = (&7)	accepted	
+body	x = &	syntax	Syntax error
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -1595,3 +1616,24 @@ module	End Sub Attribute VB_Name = "m"	syntax	Only comments may appear after End
 module	x = Attribute	syntax	Expected: expression
 module	Attribute Attribute	accepted	
 module	Attribute Attribute Attribute	accepted	
+module	x = a &7	syntax	Expected: end of statement
+module	x = a & 7	syntax	Invalid outside procedure
+module	x = a &1	syntax	Expected: end of statement
+module	x = a&7	syntax	Expected: end of statement
+module	x = a& 7	syntax	Expected: end of statement
+module	x = &8	syntax	Expected: expression
+module	x = &9	syntax	Expected: expression
+module	x = &07	syntax	Invalid outside procedure
+module	x = &17777	syntax	Invalid outside procedure
+module	x = &177777	syntax	Invalid outside procedure
+module	x = &200000	syntax	Invalid outside procedure
+module	x = &7&	syntax	Invalid outside procedure
+module	x = &7%	syntax	Invalid outside procedure
+module	x = &77777777777	syntax	Expected: expression
+module	x = &1 + 2	syntax	Invalid outside procedure
+module	x = 1 + &7	syntax	Invalid outside procedure
+module	x = &7 & &7	syntax	Invalid outside procedure
+module	x = a &7 + 1	syntax	Expected: end of statement
+module	f &7	syntax	Invalid outside procedure
+module	x = (&7)	syntax	Invalid outside procedure
+module	x = &	syntax	Expected: expression

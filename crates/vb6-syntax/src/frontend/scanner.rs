@@ -515,6 +515,9 @@ fn numeric_date(nums: &[(i32, usize)]) -> Option<f64> {
     let [(a, ad), (b, _), (c, cd)] = *nums else { return None };
     if ad >= 3 || a > 31 {
         valid_serial(full_year(a, ad)?, b, c)
+    } else if a > 12 && b <= 12 {
+        // A first field that cannot be a month is the day: `13/1/2000` is the 13th of January.
+        valid_serial(full_year(c, cd)?, b, a)
     } else {
         valid_serial(full_year(c, cd)?, a, b)
     }
@@ -1068,6 +1071,11 @@ impl<'a> Scanner<'a> {
             }
             Some(b'O') | Some(b'o') => {
                 self.pos += 1;
+                let val = self.scan_radix_digits(8);
+                self.finish_radix_literal(val, start)
+            }
+            // `&` and an octal digit start an octal literal without the `O`, wherever they stand.
+            Some(b'0'..=b'7') => {
                 let val = self.scan_radix_digits(8);
                 self.finish_radix_literal(val, start)
             }

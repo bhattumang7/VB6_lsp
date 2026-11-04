@@ -1,0 +1,601 @@
+# template	word	class	message
+assign	0	accepted	
+assign	1	accepted	
+assign	-1	accepted	
+assign	007	accepted	
+assign	32767	accepted	
+assign	32768	accepted	
+assign	65535	accepted	
+assign	65536	accepted	
+assign	2147483647	accepted	
+assign	2147483648	accepted	
+assign	4294967295	accepted	
+assign	-2147483648	accepted	
+assign	&H0	accepted	
+assign	&H7FFF	accepted	
+assign	&H8000	accepted	
+assign	&HFFFF	accepted	
+assign	&H10000	accepted	
+assign	&HFFFFFFFF	accepted	
+assign	&H100000000	syntax	Syntax error
+assign	&H	syntax	Syntax error
+assign	&HG	syntax	Syntax error
+assign	&H1&	accepted	
+assign	&H1%	accepted	
+assign	&H1#	syntax	Syntax error
+assign	&H1!	syntax	Syntax error
+assign	&H1@	syntax	Syntax error
+assign	&O7	accepted	
+assign	&O17777	accepted	
+assign	&O177777	accepted	
+assign	&O20000000000	accepted	
+assign	&O37777777777	accepted	
+assign	&O40000000000	syntax	Syntax error
+assign	&O	syntax	Syntax error
+assign	&O8	syntax	Syntax error
+assign	&7	accepted	
+assign	&B1	syntax	Syntax error
+assign	1.5	accepted	
+assign	.5	accepted	
+assign	5.	accepted	
+assign	1.	accepted	
+assign	1.5E3	accepted	
+assign	1.5E+3	accepted	
+assign	1.5E-3	accepted	
+assign	1E3	accepted	
+assign	1E	syntax	Syntax error
+assign	1E+	syntax	Syntax error
+assign	1D3	accepted	
+assign	1d3	accepted	
+assign	1.5D+3	accepted	
+assign	1e400	syntax	Syntax error
+assign	1E-400	accepted	
+assign	1.7976931348623157E308	accepted	
+assign	1.7976931348623159E308	syntax	Syntax error
+assign	3.4028235E38	accepted	
+assign	3.5E38	accepted	
+assign	1.5!	accepted	
+assign	1.5#	accepted	
+assign	1.5@	accepted	
+assign	1.5%	syntax	Syntax error
+assign	1.5&	syntax	Syntax error
+assign	1.5$	syntax	Syntax error
+assign	1!	accepted	
+assign	1#	accepted	
+assign	1@	accepted	
+assign	1%	accepted	
+assign	1&	accepted	
+assign	1$	syntax	Syntax error
+assign	99999999999999@	accepted	
+assign	922337203685477.5807@	accepted	
+assign	922337203685477.5808@	syntax	Syntax error
+assign	32767%	accepted	
+assign	32768%	syntax	Syntax error
+assign	2147483647&	accepted	
+assign	2147483648&	syntax	Syntax error
+assign	1,5	syntax	Syntax error
+assign	1..5	syntax	Syntax error
+assign	1.5.5	syntax	Syntax error
+assign	1_000	syntax	Syntax error
+assign	1 000	syntax	Syntax error
+assign	0x10	syntax	Syntax error
+assign	10L	syntax	Syntax error
+assign	10l	syntax	Syntax error
+assign	"abc"	accepted	
+assign	""	accepted	
+assign	"a""b"	accepted	
+assign	"a"b"	syntax	Syntax error
+assign	"abc	accepted	
+assign	"a" & "b"	accepted	
+assign	"a""	accepted	
+assign	""""	accepted	
+assign	#1/1/2000#	accepted	
+assign	#1/1/2000 12:00:00 AM#	accepted	
+assign	#12:00:00 AM#	accepted	
+assign	#13:00#	accepted	
+assign	#1-1-2000#	accepted	
+assign	#2000-01-01#	accepted	
+assign	#Jan 1, 2000#	accepted	
+assign	#1 January 2000#	accepted	
+assign	#1/1/100#	accepted	
+assign	#1/1/99#	accepted	
+assign	#12/31/9999#	accepted	
+assign	#1/1/10000#	syntax	Syntax error
+assign	#2/29/2000#	accepted	
+assign	#2/29/1900#	syntax	Syntax error
+assign	#2/30/2000#	syntax	Syntax error
+assign	#0/1/2000#	syntax	Syntax error
+assign	#13/1/2000#	accepted	
+assign	#25:00#	syntax	Syntax error
+assign	#12:60#	syntax	Syntax error
+assign	#12:00:60#	syntax	Syntax error
+assign	#12:00 PM#	accepted	
+assign	#12:00 XM#	syntax	Syntax error
+assign	##	syntax	Syntax error
+assign	#abc#	syntax	Syntax error
+assign	#1/1/2000	syntax	Syntax error
+assign	True	accepted	
+assign	False	accepted	
+assign	Nothing	accepted	
+assign	Empty	accepted	
+assign	Null	accepted	
+arg	0	semantic	Sub or Function not defined
+arg	1	semantic	Sub or Function not defined
+arg	-1	semantic	Sub or Function not defined
+arg	007	semantic	Sub or Function not defined
+arg	32767	semantic	Sub or Function not defined
+arg	32768	semantic	Sub or Function not defined
+arg	65535	semantic	Sub or Function not defined
+arg	65536	semantic	Sub or Function not defined
+arg	2147483647	semantic	Sub or Function not defined
+arg	2147483648	semantic	Sub or Function not defined
+arg	4294967295	semantic	Sub or Function not defined
+arg	-2147483648	semantic	Sub or Function not defined
+arg	&H0	semantic	Sub or Function not defined
+arg	&H7FFF	semantic	Sub or Function not defined
+arg	&H8000	semantic	Sub or Function not defined
+arg	&HFFFF	semantic	Sub or Function not defined
+arg	&H10000	semantic	Sub or Function not defined
+arg	&HFFFFFFFF	semantic	Sub or Function not defined
+arg	&H100000000	syntax	Syntax error
+arg	&H	syntax	Syntax error
+arg	&HG	syntax	Syntax error
+arg	&H1&	semantic	Sub or Function not defined
+arg	&H1%	semantic	Sub or Function not defined
+arg	&H1#	syntax	Syntax error
+arg	&H1!	syntax	Syntax error
+arg	&H1@	syntax	Syntax error
+arg	&O7	semantic	Sub or Function not defined
+arg	&O17777	semantic	Sub or Function not defined
+arg	&O177777	semantic	Sub or Function not defined
+arg	&O20000000000	semantic	Sub or Function not defined
+arg	&O37777777777	semantic	Sub or Function not defined
+arg	&O40000000000	syntax	Syntax error
+arg	&O	syntax	Syntax error
+arg	&O8	syntax	Syntax error
+arg	&7	semantic	Sub or Function not defined
+arg	&B1	syntax	Syntax error
+arg	1.5	semantic	Sub or Function not defined
+arg	.5	semantic	Sub or Function not defined
+arg	5.	semantic	Sub or Function not defined
+arg	1.	semantic	Sub or Function not defined
+arg	1.5E3	semantic	Sub or Function not defined
+arg	1.5E+3	semantic	Sub or Function not defined
+arg	1.5E-3	semantic	Sub or Function not defined
+arg	1E3	semantic	Sub or Function not defined
+arg	1E	syntax	Syntax error
+arg	1E+	syntax	Syntax error
+arg	1D3	semantic	Sub or Function not defined
+arg	1d3	semantic	Sub or Function not defined
+arg	1.5D+3	semantic	Sub or Function not defined
+arg	1e400	syntax	Syntax error
+arg	1E-400	semantic	Sub or Function not defined
+arg	1.7976931348623157E308	semantic	Sub or Function not defined
+arg	1.7976931348623159E308	syntax	Syntax error
+arg	3.4028235E38	semantic	Sub or Function not defined
+arg	3.5E38	semantic	Sub or Function not defined
+arg	1.5!	semantic	Sub or Function not defined
+arg	1.5#	semantic	Sub or Function not defined
+arg	1.5@	semantic	Sub or Function not defined
+arg	1.5%	syntax	Syntax error
+arg	1.5&	syntax	Syntax error
+arg	1.5$	syntax	Syntax error
+arg	1!	semantic	Sub or Function not defined
+arg	1#	semantic	Sub or Function not defined
+arg	1@	semantic	Sub or Function not defined
+arg	1%	semantic	Sub or Function not defined
+arg	1&	semantic	Sub or Function not defined
+arg	1$	syntax	Syntax error
+arg	99999999999999@	semantic	Sub or Function not defined
+arg	922337203685477.5807@	semantic	Sub or Function not defined
+arg	922337203685477.5808@	syntax	Syntax error
+arg	32767%	semantic	Sub or Function not defined
+arg	32768%	syntax	Syntax error
+arg	2147483647&	semantic	Sub or Function not defined
+arg	2147483648&	syntax	Syntax error
+arg	1,5	semantic	Sub or Function not defined
+arg	1..5	syntax	Syntax error
+arg	1.5.5	syntax	Syntax error
+arg	1_000	syntax	Syntax error
+arg	1 000	syntax	Syntax error
+arg	0x10	syntax	Syntax error
+arg	10L	syntax	Syntax error
+arg	10l	syntax	Syntax error
+arg	"abc"	semantic	Sub or Function not defined
+arg	""	semantic	Sub or Function not defined
+arg	"a""b"	semantic	Sub or Function not defined
+arg	"a"b"	syntax	Syntax error
+arg	"abc	semantic	Sub or Function not defined
+arg	"a" & "b"	semantic	Sub or Function not defined
+arg	"a""	semantic	Sub or Function not defined
+arg	""""	semantic	Sub or Function not defined
+arg	#1/1/2000#	semantic	Sub or Function not defined
+arg	#1/1/2000 12:00:00 AM#	semantic	Sub or Function not defined
+arg	#12:00:00 AM#	semantic	Sub or Function not defined
+arg	#13:00#	semantic	Sub or Function not defined
+arg	#1-1-2000#	semantic	Sub or Function not defined
+arg	#2000-01-01#	semantic	Sub or Function not defined
+arg	#Jan 1, 2000#	semantic	Sub or Function not defined
+arg	#1 January 2000#	semantic	Sub or Function not defined
+arg	#1/1/100#	semantic	Sub or Function not defined
+arg	#1/1/99#	semantic	Sub or Function not defined
+arg	#12/31/9999#	semantic	Sub or Function not defined
+arg	#1/1/10000#	syntax	Syntax error
+arg	#2/29/2000#	semantic	Sub or Function not defined
+arg	#2/29/1900#	syntax	Syntax error
+arg	#2/30/2000#	syntax	Syntax error
+arg	#0/1/2000#	syntax	Syntax error
+arg	#13/1/2000#	semantic	Sub or Function not defined
+arg	#25:00#	syntax	Syntax error
+arg	#12:60#	syntax	Syntax error
+arg	#12:00:60#	syntax	Syntax error
+arg	#12:00 PM#	semantic	Sub or Function not defined
+arg	#12:00 XM#	syntax	Syntax error
+arg	##	syntax	Syntax error
+arg	#abc#	syntax	Syntax error
+arg	#1/1/2000	syntax	Syntax error
+arg	True	semantic	Sub or Function not defined
+arg	False	semantic	Sub or Function not defined
+arg	Nothing	semantic	Sub or Function not defined
+arg	Empty	semantic	Sub or Function not defined
+arg	Null	semantic	Sub or Function not defined
+inexpr	0	accepted	
+inexpr	1	accepted	
+inexpr	-1	accepted	
+inexpr	007	accepted	
+inexpr	32767	accepted	
+inexpr	32768	accepted	
+inexpr	65535	accepted	
+inexpr	65536	accepted	
+inexpr	2147483647	accepted	
+inexpr	2147483648	accepted	
+inexpr	4294967295	accepted	
+inexpr	-2147483648	accepted	
+inexpr	&H0	accepted	
+inexpr	&H7FFF	accepted	
+inexpr	&H8000	accepted	
+inexpr	&HFFFF	accepted	
+inexpr	&H10000	accepted	
+inexpr	&HFFFFFFFF	accepted	
+inexpr	&H100000000	syntax	Syntax error
+inexpr	&H	syntax	Syntax error
+inexpr	&HG	syntax	Syntax error
+inexpr	&H1&	accepted	
+inexpr	&H1%	accepted	
+inexpr	&H1#	syntax	Syntax error
+inexpr	&H1!	syntax	Syntax error
+inexpr	&H1@	syntax	Syntax error
+inexpr	&O7	accepted	
+inexpr	&O17777	accepted	
+inexpr	&O177777	accepted	
+inexpr	&O20000000000	accepted	
+inexpr	&O37777777777	accepted	
+inexpr	&O40000000000	syntax	Syntax error
+inexpr	&O	syntax	Syntax error
+inexpr	&O8	syntax	Syntax error
+inexpr	&7	accepted	
+inexpr	&B1	syntax	Syntax error
+inexpr	1.5	accepted	
+inexpr	.5	accepted	
+inexpr	5.	accepted	
+inexpr	1.	accepted	
+inexpr	1.5E3	accepted	
+inexpr	1.5E+3	accepted	
+inexpr	1.5E-3	accepted	
+inexpr	1E3	accepted	
+inexpr	1E	syntax	Syntax error
+inexpr	1E+	syntax	Syntax error
+inexpr	1D3	accepted	
+inexpr	1d3	accepted	
+inexpr	1.5D+3	accepted	
+inexpr	1e400	syntax	Syntax error
+inexpr	1E-400	accepted	
+inexpr	1.7976931348623157E308	accepted	
+inexpr	1.7976931348623159E308	syntax	Syntax error
+inexpr	3.4028235E38	accepted	
+inexpr	3.5E38	accepted	
+inexpr	1.5!	accepted	
+inexpr	1.5#	accepted	
+inexpr	1.5@	accepted	
+inexpr	1.5%	syntax	Syntax error
+inexpr	1.5&	syntax	Syntax error
+inexpr	1.5$	syntax	Syntax error
+inexpr	1!	accepted	
+inexpr	1#	accepted	
+inexpr	1@	accepted	
+inexpr	1%	accepted	
+inexpr	1&	accepted	
+inexpr	1$	syntax	Syntax error
+inexpr	99999999999999@	accepted	
+inexpr	922337203685477.5807@	accepted	
+inexpr	922337203685477.5808@	syntax	Syntax error
+inexpr	32767%	accepted	
+inexpr	32768%	syntax	Syntax error
+inexpr	2147483647&	accepted	
+inexpr	2147483648&	syntax	Syntax error
+inexpr	1,5	syntax	Syntax error
+inexpr	1..5	syntax	Syntax error
+inexpr	1.5.5	syntax	Syntax error
+inexpr	1_000	syntax	Syntax error
+inexpr	1 000	syntax	Syntax error
+inexpr	0x10	syntax	Syntax error
+inexpr	10L	syntax	Syntax error
+inexpr	10l	syntax	Syntax error
+inexpr	"abc"	accepted	
+inexpr	""	accepted	
+inexpr	"a""b"	accepted	
+inexpr	"a"b"	syntax	Syntax error
+inexpr	"abc	accepted	
+inexpr	"a" & "b"	accepted	
+inexpr	"a""	accepted	
+inexpr	""""	accepted	
+inexpr	#1/1/2000#	accepted	
+inexpr	#1/1/2000 12:00:00 AM#	accepted	
+inexpr	#12:00:00 AM#	accepted	
+inexpr	#13:00#	accepted	
+inexpr	#1-1-2000#	accepted	
+inexpr	#2000-01-01#	accepted	
+inexpr	#Jan 1, 2000#	accepted	
+inexpr	#1 January 2000#	accepted	
+inexpr	#1/1/100#	accepted	
+inexpr	#1/1/99#	accepted	
+inexpr	#12/31/9999#	accepted	
+inexpr	#1/1/10000#	syntax	Syntax error
+inexpr	#2/29/2000#	accepted	
+inexpr	#2/29/1900#	syntax	Syntax error
+inexpr	#2/30/2000#	syntax	Syntax error
+inexpr	#0/1/2000#	syntax	Syntax error
+inexpr	#13/1/2000#	accepted	
+inexpr	#25:00#	syntax	Syntax error
+inexpr	#12:60#	syntax	Syntax error
+inexpr	#12:00:60#	syntax	Syntax error
+inexpr	#12:00 PM#	accepted	
+inexpr	#12:00 XM#	syntax	Syntax error
+inexpr	##	syntax	Syntax error
+inexpr	#abc#	syntax	Syntax error
+inexpr	#1/1/2000	syntax	Syntax error
+inexpr	True	accepted	
+inexpr	False	accepted	
+inexpr	Nothing	semantic	Invalid use of object
+inexpr	Empty	accepted	
+inexpr	Null	accepted	
+constdecl	0	accepted	
+constdecl	1	accepted	
+constdecl	-1	accepted	
+constdecl	007	accepted	
+constdecl	32767	accepted	
+constdecl	32768	accepted	
+constdecl	65535	accepted	
+constdecl	65536	accepted	
+constdecl	2147483647	accepted	
+constdecl	2147483648	accepted	
+constdecl	4294967295	accepted	
+constdecl	-2147483648	accepted	
+constdecl	&H0	accepted	
+constdecl	&H7FFF	accepted	
+constdecl	&H8000	accepted	
+constdecl	&HFFFF	accepted	
+constdecl	&H10000	accepted	
+constdecl	&HFFFFFFFF	accepted	
+constdecl	&H100000000	syntax	Expected: expression
+constdecl	&H	syntax	Expected: expression
+constdecl	&HG	syntax	Expected: expression
+constdecl	&H1&	accepted	
+constdecl	&H1%	accepted	
+constdecl	&H1#	syntax	Expected: expression
+constdecl	&H1!	syntax	Expected: expression
+constdecl	&H1@	syntax	Expected: expression
+constdecl	&O7	accepted	
+constdecl	&O17777	accepted	
+constdecl	&O177777	accepted	
+constdecl	&O20000000000	accepted	
+constdecl	&O37777777777	accepted	
+constdecl	&O40000000000	syntax	Expected: expression
+constdecl	&O	syntax	Expected: expression
+constdecl	&O8	syntax	Expected: expression
+constdecl	&7	accepted	
+constdecl	&B1	syntax	Expected: expression
+constdecl	1.5	accepted	
+constdecl	.5	accepted	
+constdecl	5.	accepted	
+constdecl	1.	accepted	
+constdecl	1.5E3	accepted	
+constdecl	1.5E+3	accepted	
+constdecl	1.5E-3	accepted	
+constdecl	1E3	accepted	
+constdecl	1E	syntax	Syntax error
+constdecl	1E+	syntax	Overflow
+constdecl	1D3	accepted	
+constdecl	1d3	accepted	
+constdecl	1.5D+3	accepted	
+constdecl	1e400	syntax	Overflow
+constdecl	1E-400	accepted	
+constdecl	1.7976931348623157E308	accepted	
+constdecl	1.7976931348623159E308	syntax	Overflow
+constdecl	3.4028235E38	accepted	
+constdecl	3.5E38	accepted	
+constdecl	1.5!	accepted	
+constdecl	1.5#	accepted	
+constdecl	1.5@	accepted	
+constdecl	1.5%	syntax	Expected: expression
+constdecl	1.5&	syntax	Expected: expression
+constdecl	1.5$	syntax	Expected: expression
+constdecl	1!	accepted	
+constdecl	1#	accepted	
+constdecl	1@	accepted	
+constdecl	1%	accepted	
+constdecl	1&	accepted	
+constdecl	1$	syntax	Expected: expression
+constdecl	99999999999999@	accepted	
+constdecl	922337203685477.5807@	accepted	
+constdecl	922337203685477.5808@	syntax	Expected: expression
+constdecl	32767%	accepted	
+constdecl	32768%	syntax	Expected: expression
+constdecl	2147483647&	accepted	
+constdecl	2147483648&	syntax	Expected: expression
+constdecl	1,5	syntax	Expected: identifier
+constdecl	1..5	syntax	Expected: end of statement
+constdecl	1.5.5	syntax	Expected: end of statement
+constdecl	1_000	syntax	Invalid character
+constdecl	1 000	syntax	Expected: end of statement
+constdecl	0x10	syntax	Expected: end of statement
+constdecl	10L	syntax	Expected: end of statement
+constdecl	10l	syntax	Expected: end of statement
+constdecl	"abc"	accepted	
+constdecl	""	accepted	
+constdecl	"a""b"	accepted	
+constdecl	"a"b"	syntax	Expected: end of statement
+constdecl	"abc	accepted	
+constdecl	"a" & "b"	accepted	
+constdecl	"a""	accepted	
+constdecl	""""	accepted	
+constdecl	#1/1/2000#	accepted	
+constdecl	#1/1/2000 12:00:00 AM#	accepted	
+constdecl	#12:00:00 AM#	accepted	
+constdecl	#13:00#	accepted	
+constdecl	#1-1-2000#	accepted	
+constdecl	#2000-01-01#	accepted	
+constdecl	#Jan 1, 2000#	accepted	
+constdecl	#1 January 2000#	accepted	
+constdecl	#1/1/100#	accepted	
+constdecl	#1/1/99#	accepted	
+constdecl	#12/31/9999#	accepted	
+constdecl	#1/1/10000#	syntax	Expected: expression
+constdecl	#2/29/2000#	accepted	
+constdecl	#2/29/1900#	syntax	Expected: expression
+constdecl	#2/30/2000#	syntax	Expected: expression
+constdecl	#0/1/2000#	syntax	Expected: expression
+constdecl	#13/1/2000#	accepted	
+constdecl	#25:00#	syntax	Expected: expression
+constdecl	#12:60#	syntax	Expected: expression
+constdecl	#12:00:60#	syntax	Expected: expression
+constdecl	#12:00 PM#	accepted	
+constdecl	#12:00 XM#	syntax	Expected: expression
+constdecl	##	syntax	Expected: expression
+constdecl	#abc#	syntax	Expected: expression
+constdecl	#1/1/2000	syntax	Expected: expression
+constdecl	True	accepted	
+constdecl	False	accepted	
+constdecl	Nothing	semantic	Invalid data type for constant
+constdecl	Empty	accepted	
+constdecl	Null	accepted	
+caseitem	0	accepted	
+caseitem	1	accepted	
+caseitem	-1	accepted	
+caseitem	007	accepted	
+caseitem	32767	accepted	
+caseitem	32768	accepted	
+caseitem	65535	accepted	
+caseitem	65536	accepted	
+caseitem	2147483647	accepted	
+caseitem	2147483648	accepted	
+caseitem	4294967295	accepted	
+caseitem	-2147483648	accepted	
+caseitem	&H0	accepted	
+caseitem	&H7FFF	accepted	
+caseitem	&H8000	accepted	
+caseitem	&HFFFF	accepted	
+caseitem	&H10000	accepted	
+caseitem	&HFFFFFFFF	accepted	
+caseitem	&H100000000	syntax	Syntax error
+caseitem	&H	syntax	Syntax error
+caseitem	&HG	syntax	Syntax error
+caseitem	&H1&	accepted	
+caseitem	&H1%	accepted	
+caseitem	&H1#	syntax	Syntax error
+caseitem	&H1!	syntax	Syntax error
+caseitem	&H1@	syntax	Syntax error
+caseitem	&O7	accepted	
+caseitem	&O17777	accepted	
+caseitem	&O177777	accepted	
+caseitem	&O20000000000	accepted	
+caseitem	&O37777777777	accepted	
+caseitem	&O40000000000	syntax	Syntax error
+caseitem	&O	syntax	Syntax error
+caseitem	&O8	syntax	Syntax error
+caseitem	&7	accepted	
+caseitem	&B1	syntax	Syntax error
+caseitem	1.5	accepted	
+caseitem	.5	accepted	
+caseitem	5.	accepted	
+caseitem	1.	accepted	
+caseitem	1.5E3	accepted	
+caseitem	1.5E+3	accepted	
+caseitem	1.5E-3	accepted	
+caseitem	1E3	accepted	
+caseitem	1E	syntax	Syntax error
+caseitem	1E+	syntax	Syntax error
+caseitem	1D3	accepted	
+caseitem	1d3	accepted	
+caseitem	1.5D+3	accepted	
+caseitem	1e400	syntax	Syntax error
+caseitem	1E-400	accepted	
+caseitem	1.7976931348623157E308	accepted	
+caseitem	1.7976931348623159E308	syntax	Syntax error
+caseitem	3.4028235E38	accepted	
+caseitem	3.5E38	accepted	
+caseitem	1.5!	accepted	
+caseitem	1.5#	accepted	
+caseitem	1.5@	accepted	
+caseitem	1.5%	syntax	Syntax error
+caseitem	1.5&	syntax	Syntax error
+caseitem	1.5$	syntax	Syntax error
+caseitem	1!	accepted	
+caseitem	1#	accepted	
+caseitem	1@	accepted	
+caseitem	1%	accepted	
+caseitem	1&	accepted	
+caseitem	1$	syntax	Syntax error
+caseitem	99999999999999@	accepted	
+caseitem	922337203685477.5807@	accepted	
+caseitem	922337203685477.5808@	syntax	Syntax error
+caseitem	32767%	accepted	
+caseitem	32768%	syntax	Syntax error
+caseitem	2147483647&	accepted	
+caseitem	2147483648&	syntax	Syntax error
+caseitem	1,5	accepted	
+caseitem	1..5	syntax	Syntax error
+caseitem	1.5.5	syntax	Syntax error
+caseitem	1_000	syntax	Syntax error
+caseitem	1 000	syntax	Syntax error
+caseitem	0x10	syntax	Syntax error
+caseitem	10L	syntax	Syntax error
+caseitem	10l	syntax	Syntax error
+caseitem	"abc"	accepted	
+caseitem	""	accepted	
+caseitem	"a""b"	accepted	
+caseitem	"a"b"	syntax	Syntax error
+caseitem	"abc	accepted	
+caseitem	"a" & "b"	accepted	
+caseitem	"a""	accepted	
+caseitem	""""	accepted	
+caseitem	#1/1/2000#	accepted	
+caseitem	#1/1/2000 12:00:00 AM#	accepted	
+caseitem	#12:00:00 AM#	accepted	
+caseitem	#13:00#	accepted	
+caseitem	#1-1-2000#	accepted	
+caseitem	#2000-01-01#	accepted	
+caseitem	#Jan 1, 2000#	accepted	
+caseitem	#1 January 2000#	accepted	
+caseitem	#1/1/100#	accepted	
+caseitem	#1/1/99#	accepted	
+caseitem	#12/31/9999#	accepted	
+caseitem	#1/1/10000#	syntax	Syntax error
+caseitem	#2/29/2000#	accepted	
+caseitem	#2/29/1900#	syntax	Syntax error
+caseitem	#2/30/2000#	syntax	Syntax error
+caseitem	#0/1/2000#	syntax	Syntax error
+caseitem	#13/1/2000#	accepted	
+caseitem	#25:00#	syntax	Syntax error
+caseitem	#12:60#	syntax	Syntax error
+caseitem	#12:00:60#	syntax	Syntax error
+caseitem	#12:00 PM#	accepted	
+caseitem	#12:00 XM#	syntax	Syntax error
+caseitem	##	syntax	Syntax error
+caseitem	#abc#	syntax	Syntax error
+caseitem	#1/1/2000	syntax	Syntax error
+caseitem	True	accepted	
+caseitem	False	accepted	
+caseitem	Nothing	accepted	
+caseitem	Empty	accepted	
+caseitem	Null	accepted	

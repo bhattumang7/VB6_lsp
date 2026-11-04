@@ -798,3 +798,24 @@ End Sub Attribute VB_Name = "m"
 x = Attribute
 Attribute Attribute
 Attribute Attribute Attribute
+x = a &7
+x = a & 7
+x = a &1
+x = a&7
+x = a& 7
+x = &8
+x = &9
+x = &07
+x = &17777
+x = &177777
+x = &200000
+x = &7&
+x = &7%
+x = &77777777777
+x = &1 + 2
+x = 1 + &7
+x = &7 & &7
+x = a &7 + 1
+f &7
+x = (&7)
+x = &

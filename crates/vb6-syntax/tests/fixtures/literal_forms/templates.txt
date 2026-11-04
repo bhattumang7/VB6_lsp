@@ -1,0 +1,21 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each word of words.txt.
+=== assign bas
+Sub Probe()
+    x = {k}
+End Sub
+=== arg bas
+Sub Probe()
+    f {k}, 1
+End Sub
+=== inexpr bas
+Sub Probe()
+    x = 1 + {k} * 2
+End Sub
+=== constdecl bas
+Const c = {k}
+=== caseitem bas
+Sub Probe()
+    Select Case x
+    Case {k}
+    End Select
+End Sub

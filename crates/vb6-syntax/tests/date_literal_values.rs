@@ -54,8 +54,14 @@ fn month_names_give_real_values() {
 }
 
 #[test]
+fn a_first_field_that_cannot_be_a_month_is_the_day() {
+    assert_eq!(date("13/1/2000"), Some(36538.0));
+    assert_eq!(date("31/12/1999"), date("12/31/1999"));
+}
+
+#[test]
 fn impossible_dates_are_not_literals() {
-    for t in ["2/30/2000", "2/29/1900", "13/1/2000", "0/1/2000", "1/32/2000", "1/1/10000", "1/1/99999"] {
+    for t in ["2/30/2000", "2/29/1900", "13/13/2000", "0/1/2000", "1/32/2000", "1/1/10000", "1/1/99999"] {
         assert_eq!(date(t), None, "{t}");
     }
 }

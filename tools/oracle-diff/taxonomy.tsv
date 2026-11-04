@@ -73,3 +73,5 @@ Exit Do not within Do...Loop	syntax
 Exit For not within For...Next	syntax
 Exit Function not allowed in Sub or Property	syntax
 Exit Property not allowed in Function or Sub	syntax
+Invalid data type for constant	semantic
+Overflow	syntax
