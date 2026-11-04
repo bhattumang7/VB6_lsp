@@ -78,3 +78,4 @@ Overflow	syntax
 External name not defined	semantic
 Missing end bracket	syntax
 Select Case without End Select	syntax
+Block If without End If	syntax

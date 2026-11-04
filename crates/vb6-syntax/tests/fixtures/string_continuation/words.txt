@@ -1,0 +1,20 @@
+x = "a \s_\ny = 2
+x = "a \s_\nEnd Sub
+x = "a \s_\n"
+x = "a \s_\ncd"
+x = "a \s_\ncd
+x = "a \s_\n+ 1
+x = "a \s_\n& "b"
+x = "a \s_\n"b"
+x = "a \s_\n\sy = 2
+x = "a \s_
+x = "a\s_\ny = 2
+x = "a"\s_\ny = 2
+x = [a \s_\ny = 2
+x = [a \s_\n+ 1
+x = [a\n]
+x = "a\t_\n+ "b"
+x = "a  \s_ \n+ "b"
+x = "a ""\s_\n+ "b"
+x = "a _x \s_\n+ "b"
+x = 1 + "a \s_\n+ "b"

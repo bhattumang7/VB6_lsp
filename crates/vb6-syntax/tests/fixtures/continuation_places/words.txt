@@ -1,0 +1,10 @@
+\s_\n
+_\n
+\s_\n\s
+\s\s_\n
+\t_\n
+\s_\s\n
+\s_\n\n
+\s_\n'c\n
+\s_ 'c\n
+\s_\n_\n

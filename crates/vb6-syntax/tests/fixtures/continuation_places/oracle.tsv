@@ -1,0 +1,271 @@
+# template	word	class	message
+instring	\s_\n	syntax	Syntax error
+instring	_\n	semantic	Sub or Function not defined
+instring	\s_\n\s	syntax	Syntax error
+instring	\s\s_\n	syntax	Syntax error
+instring	\t_\n	syntax	Syntax error
+instring	\s_\s\n	syntax	Syntax error
+instring	\s_\n\n	semantic	Sub or Function not defined
+instring	\s_\n'c\n	semantic	Sub or Function not defined
+instring	\s_ 'c\n	semantic	Sub or Function not defined
+instring	\s_\n_\n	syntax	Syntax error
+incomment	\s_\n	accepted	
+incomment	_\n	accepted	
+incomment	\s_\n\s	accepted	
+incomment	\s\s_\n	accepted	
+incomment	\t_\n	accepted	
+incomment	\s_\s\n	accepted	
+incomment	\s_\n\n	accepted	
+incomment	\s_\n'c\n	accepted	
+incomment	\s_ 'c\n	accepted	
+incomment	\s_\n_\n	accepted	
+inrem	\s_\n	accepted	
+inrem	_\n	accepted	
+inrem	\s_\n\s	accepted	
+inrem	\s\s_\n	accepted	
+inrem	\t_\n	accepted	
+inrem	\s_\s\n	accepted	
+inrem	\s_\n\n	accepted	
+inrem	\s_\n'c\n	accepted	
+inrem	\s_ 'c\n	accepted	
+inrem	\s_\n_\n	accepted	
+trailcomment	\s_\n	accepted	
+trailcomment	_\n	accepted	
+trailcomment	\s_\n\s	accepted	
+trailcomment	\s\s_\n	accepted	
+trailcomment	\t_\n	accepted	
+trailcomment	\s_\s\n	accepted	
+trailcomment	\s_\n\n	accepted	
+trailcomment	\s_\n'c\n	accepted	
+trailcomment	\s_ 'c\n	accepted	
+trailcomment	\s_\n_\n	accepted	
+innumber	\s_\n	syntax	Syntax error
+innumber	_\n	syntax	Syntax error
+innumber	\s_\n\s	syntax	Syntax error
+innumber	\s\s_\n	syntax	Syntax error
+innumber	\t_\n	syntax	Syntax error
+innumber	\s_\s\n	syntax	Syntax error
+innumber	\s_\n\n	accepted	
+innumber	\s_\n'c\n	accepted	
+innumber	\s_ 'c\n	syntax	Syntax error
+innumber	\s_\n_\n	syntax	Syntax error
+inhex	\s_\n	syntax	Syntax error
+inhex	_\n	syntax	Syntax error
+inhex	\s_\n\s	syntax	Syntax error
+inhex	\s\s_\n	syntax	Syntax error
+inhex	\t_\n	syntax	Syntax error
+inhex	\s_\s\n	syntax	Syntax error
+inhex	\s_\n\n	semantic	Sub or Function not defined
+inhex	\s_\n'c\n	semantic	Sub or Function not defined
+inhex	\s_ 'c\n	syntax	Syntax error
+inhex	\s_\n_\n	syntax	Syntax error
+inname	\s_\n	semantic	Sub or Function not defined
+inname	_\n	semantic	Sub or Function not defined
+inname	\s_\n\s	semantic	Sub or Function not defined
+inname	\s\s_\n	semantic	Sub or Function not defined
+inname	\t_\n	semantic	Sub or Function not defined
+inname	\s_\s\n	semantic	Sub or Function not defined
+inname	\s_\n\n	semantic	Sub or Function not defined
+inname	\s_\n'c\n	semantic	Sub or Function not defined
+inname	\s_ 'c\n	syntax	Syntax error
+inname	\s_\n_\n	syntax	Syntax error
+afterthen	\s_\n	accepted	
+afterthen	_\n	syntax	Syntax error
+afterthen	\s_\n\s	accepted	
+afterthen	\s\s_\n	accepted	
+afterthen	\t_\n	accepted	
+afterthen	\s_\s\n	accepted	
+afterthen	\s_\n\n	syntax	Block If without End If
+afterthen	\s_\n'c\n	syntax	Block If without End If
+afterthen	\s_ 'c\n	syntax	Syntax error
+afterthen	\s_\n_\n	syntax	Syntax error
+afterelse	\s_\n	accepted	
+afterelse	_\n	syntax	Syntax error
+afterelse	\s_\n\s	accepted	
+afterelse	\s\s_\n	accepted	
+afterelse	\t_\n	accepted	
+afterelse	\s_\s\n	accepted	
+afterelse	\s_\n\n	accepted	
+afterelse	\s_\n'c\n	accepted	
+afterelse	\s_ 'c\n	syntax	Syntax error
+afterelse	\s_\n_\n	syntax	Syntax error
+afterlabel	\s_\n	accepted	
+afterlabel	_\n	syntax	Syntax error
+afterlabel	\s_\n\s	accepted	
+afterlabel	\s\s_\n	accepted	
+afterlabel	\t_\n	accepted	
+afterlabel	\s_\s\n	accepted	
+afterlabel	\s_\n\n	accepted	
+afterlabel	\s_\n'c\n	accepted	
+afterlabel	\s_ 'c\n	syntax	Syntax error
+afterlabel	\s_\n_\n	syntax	Syntax error
+afterlinenum	\s_\n	accepted	
+afterlinenum	_\n	syntax	Syntax error
+afterlinenum	\s_\n\s	accepted	
+afterlinenum	\s\s_\n	accepted	
+afterlinenum	\t_\n	accepted	
+afterlinenum	\s_\s\n	accepted	
+afterlinenum	\s_\n\n	accepted	
+afterlinenum	\s_\n'c\n	accepted	
+afterlinenum	\s_ 'c\n	syntax	Syntax error
+afterlinenum	\s_\n_\n	syntax	Syntax error
+aftercolon	\s_\n	accepted	
+aftercolon	_\n	syntax	Syntax error
+aftercolon	\s_\n\s	accepted	
+aftercolon	\s\s_\n	accepted	
+aftercolon	\t_\n	accepted	
+aftercolon	\s_\s\n	accepted	
+aftercolon	\s_\n\n	accepted	
+aftercolon	\s_\n'c\n	accepted	
+aftercolon	\s_ 'c\n	syntax	Syntax error
+aftercolon	\s_\n_\n	syntax	Syntax error
+beforeeol	\s_\n	accepted	
+beforeeol	_\n	syntax	Syntax error
+beforeeol	\s_\n\s	accepted	
+beforeeol	\s\s_\n	accepted	
+beforeeol	\t_\n	accepted	
+beforeeol	\s_\s\n	accepted	
+beforeeol	\s_\n\n	accepted	
+beforeeol	\s_\n'c\n	accepted	
+beforeeol	\s_ 'c\n	syntax	Syntax error
+beforeeol	\s_\n_\n	syntax	Syntax error
+beforeendsub	\s_\n	accepted	
+beforeendsub	_\n	syntax	Syntax error
+beforeendsub	\s_\n\s	accepted	
+beforeendsub	\s\s_\n	accepted	
+beforeendsub	\t_\n	accepted	
+beforeendsub	\s_\s\n	accepted	
+beforeendsub	\s_\n\n	accepted	
+beforeendsub	\s_\n'c\n	accepted	
+beforeendsub	\s_ 'c\n	syntax	Syntax error
+beforeendsub	\s_\n_\n	syntax	Syntax error
+subheader	\s_\n	accepted	
+subheader	_\n	syntax	Invalid character
+subheader	\s_\n\s	accepted	
+subheader	\s\s_\n	accepted	
+subheader	\t_\n	accepted	
+subheader	\s_\s\n	accepted	
+subheader	\s_\n\n	syntax	Expected: identifier
+subheader	\s_\n'c\n	syntax	Expected: identifier
+subheader	\s_ 'c\n	syntax	Invalid character
+subheader	\s_\n_\n	syntax	Invalid character
+subheader2	\s_\n	accepted	
+subheader2	_\n	syntax	Expected: list separator or )
+subheader2	\s_\n\s	accepted	
+subheader2	\s\s_\n	accepted	
+subheader2	\t_\n	accepted	
+subheader2	\s_\s\n	accepted	
+subheader2	\s_\n\n	syntax	Expected: list separator or )
+subheader2	\s_\n'c\n	syntax	Expected: list separator or )
+subheader2	\s_ 'c\n	syntax	Invalid character
+subheader2	\s_\n_\n	syntax	Invalid character
+dimcomma	\s_\n	accepted	
+dimcomma	_\n	syntax	Invalid character
+dimcomma	\s_\n\s	accepted	
+dimcomma	\s\s_\n	accepted	
+dimcomma	\t_\n	accepted	
+dimcomma	\s_\s\n	accepted	
+dimcomma	\s_\n\n	syntax	Expected: variable
+dimcomma	\s_\n'c\n	syntax	Expected: variable
+dimcomma	\s_ 'c\n	syntax	Invalid character
+dimcomma	\s_\n_\n	syntax	Invalid character
+declstart	\s_\n	accepted	
+declstart	_\n	syntax	Invalid character
+declstart	\s_\n\s	accepted	
+declstart	\s\s_\n	accepted	
+declstart	\t_\n	accepted	
+declstart	\s_\s\n	accepted	
+declstart	\s_\n\n	accepted	
+declstart	\s_\n'c\n	accepted	
+declstart	\s_ 'c\n	syntax	Invalid character
+declstart	\s_\n_\n	syntax	Invalid character
+dateliteral	\s_\n	syntax	Syntax error
+dateliteral	_\n	syntax	Syntax error
+dateliteral	\s_\n\s	syntax	Syntax error
+dateliteral	\s\s_\n	syntax	Syntax error
+dateliteral	\t_\n	syntax	Syntax error
+dateliteral	\s_\s\n	syntax	Syntax error
+dateliteral	\s_\n\n	syntax	Syntax error
+dateliteral	\s_\n'c\n	syntax	Syntax error
+dateliteral	\s_ 'c\n	syntax	Syntax error
+dateliteral	\s_\n_\n	syntax	Syntax error
+typesuffix	\s_\n	syntax	Syntax error
+typesuffix	_\n	syntax	Syntax error
+typesuffix	\s_\n\s	syntax	Syntax error
+typesuffix	\s\s_\n	syntax	Syntax error
+typesuffix	\t_\n	syntax	Syntax error
+typesuffix	\s_\s\n	syntax	Syntax error
+typesuffix	\s_\n\n	syntax	Syntax error
+typesuffix	\s_\n'c\n	syntax	Syntax error
+typesuffix	\s_ 'c\n	syntax	Syntax error
+typesuffix	\s_\n_\n	syntax	Syntax error
+bracketname	\s_\n	syntax	Syntax error
+bracketname	_\n	syntax	Syntax error
+bracketname	\s_\n\s	syntax	Syntax error
+bracketname	\s\s_\n	syntax	Syntax error
+bracketname	\t_\n	syntax	Syntax error
+bracketname	\s_\s\n	syntax	Syntax error
+bracketname	\s_\n\n	syntax	Syntax error
+bracketname	\s_\n'c\n	syntax	Syntax error
+bracketname	\s_ 'c\n	syntax	Syntax error
+bracketname	\s_\n_\n	syntax	Syntax error
+callnl	\s_\n	semantic	Sub or Function not defined
+callnl	_\n	semantic	Sub or Function not defined
+callnl	\s_\n\s	semantic	Sub or Function not defined
+callnl	\s\s_\n	semantic	Sub or Function not defined
+callnl	\t_\n	semantic	Sub or Function not defined
+callnl	\s_\s\n	semantic	Sub or Function not defined
+callnl	\s_\n\n	syntax	Syntax error
+callnl	\s_\n'c\n	syntax	Syntax error
+callnl	\s_ 'c\n	syntax	Syntax error
+callnl	\s_\n_\n	syntax	Syntax error
+attrline	\s_\n	accepted	
+attrline	_\n	syntax	Syntax error
+attrline	\s_\n\s	accepted	
+attrline	\s\s_\n	accepted	
+attrline	\t_\n	accepted	
+attrline	\s_\s\n	accepted	
+attrline	\s_\n\n	syntax	Syntax error
+attrline	\s_\n'c\n	syntax	Syntax error
+attrline	\s_ 'c\n	syntax	Syntax error
+attrline	\s_\n_\n	syntax	Syntax error
+optionline	\s_\n	accepted	
+optionline	_\n	syntax	Invalid outside procedure
+optionline	\s_\n\s	accepted	
+optionline	\s\s_\n	accepted	
+optionline	\t_\n	accepted	
+optionline	\s_\s\n	accepted	
+optionline	\s_\n\n	syntax	Expected: Base or Compare or Explicit or Private
+optionline	\s_\n'c\n	syntax	Expected: Base or Compare or Explicit or Private
+optionline	\s_ 'c\n	syntax	Invalid character
+optionline	\s_\n_\n	syntax	Invalid character
+selectcase	\s_\n	accepted	
+selectcase	_\n	syntax	Syntax error
+selectcase	\s_\n\s	accepted	
+selectcase	\s\s_\n	accepted	
+selectcase	\t_\n	accepted	
+selectcase	\s_\s\n	accepted	
+selectcase	\s_\n\n	syntax	Syntax error
+selectcase	\s_\n'c\n	syntax	Syntax error
+selectcase	\s_ 'c\n	syntax	Syntax error
+selectcase	\s_\n_\n	syntax	Syntax error
+dotmember	\s_\n	accepted	
+dotmember	_\n	syntax	Syntax error
+dotmember	\s_\n\s	accepted	
+dotmember	\s\s_\n	accepted	
+dotmember	\t_\n	accepted	
+dotmember	\s_\s\n	accepted	
+dotmember	\s_\n\n	syntax	Syntax error
+dotmember	\s_\n'c\n	syntax	Syntax error
+dotmember	\s_ 'c\n	syntax	Syntax error
+dotmember	\s_\n_\n	syntax	Syntax error
+dotbefore	\s_\n	accepted	
+dotbefore	_\n	semantic	Invalid or unqualified reference
+dotbefore	\s_\n\s	accepted	
+dotbefore	\s\s_\n	accepted	
+dotbefore	\t_\n	accepted	
+dotbefore	\s_\s\n	accepted	
+dotbefore	\s_\n\n	semantic	Invalid or unqualified reference
+dotbefore	\s_\n'c\n	semantic	Invalid or unqualified reference
+dotbefore	\s_ 'c\n	syntax	Syntax error
+dotbefore	\s_\n_\n	syntax	Syntax error

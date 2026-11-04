@@ -3,6 +3,7 @@
 
 mod common;
 use common::{offset_of, parse};
+use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprNode};
 
 fn in_sub(stmt: &str) -> String {
     format!("Sub S(o As Object)\n    {stmt}\nEnd Sub\n")
@@ -70,4 +71,45 @@ fn enum_closing_words_split_by_a_continuation_are_invalid_inside_enum() {
     let src = "Enum E\n    A\nEnd _\n Enum\n";
     let p = parse(src);
     assert!(p.found.iter().any(|d| d.0 == 0xdeff), "{:?}", p.found);
+}
+
+#[test]
+fn a_string_on_a_line_ending_in_a_mark_loses_the_blanks_before_the_mark() {
+    for text in ["x = \"ab _
+ + \"z\"", "x = \"ab	  _ 
+ + \"z\""] {
+        let p = parse(&in_sub(text));
+        assert_eq!(p.found, vec![], "{text}");
+        let ExprNode::Assign { value, .. } = p.node(p.proc_body(0)[0]) else { panic!("assignment") };
+        let ExprNode::BinOp { op: BinOpKind::Add, lhs, rhs } = p.node(*value) else { panic!("sum") };
+        assert!(matches!(p.node(*lhs), ExprNode::Literal { lit: AstLit::Str(s) } if &**s == "ab"), "{text}");
+        assert!(matches!(p.node(*rhs), ExprNode::Literal { lit: AstLit::Str(s) } if &**s == "z"), "{text}");
+    }
+}
+
+#[test]
+fn blanks_that_do_not_lead_to_the_mark_stay_in_the_string() {
+    let p = parse(&in_sub("x = \"a _x \"
+"));
+    assert_eq!(p.found, vec![]);
+    let ExprNode::Assign { value, .. } = p.node(p.proc_body(0)[0]) else { panic!("assignment") };
+    assert!(matches!(p.node(*value), ExprNode::Literal { lit: AstLit::Str(s) } if &**s == "a _x "));
+}
+
+#[test]
+fn a_string_joined_to_the_next_line_leaves_that_line_as_more_operands() {
+    for text in ["x = \"ab _
+cd\"", "x = \"ab _
+y = 2"] {
+        assert!(!parse(&in_sub(text)).found.is_empty(), "{text}");
+    }
+}
+
+#[test]
+fn a_bracketed_name_cannot_span_lines() {
+    for text in ["x = [ab\ncd]", "x = [ab _\ncd]"] {
+        let src = in_sub(text);
+        let p = parse(&src);
+        assert!(p.found.iter().any(|d| d.1 == offset_of(&src, "[ab", 0)), "{text}: {:?}", p.found);
+    }
 }

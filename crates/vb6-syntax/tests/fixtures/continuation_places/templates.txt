@@ -1,0 +1,102 @@
+# One template per block; {k} is replaced by each word of words.txt.
+=== instring bas
+Sub P()
+x = "ab{k}cd"
+End Sub
+=== incomment bas
+Sub P()
+' note{k}x = 1
+End Sub
+=== inrem bas
+Sub P()
+Rem note{k}x = 1
+End Sub
+=== trailcomment bas
+Sub P()
+x = 1 ' note{k}
+y = 2
+End Sub
+=== innumber bas
+Sub P()
+x = 12{k}34
+End Sub
+=== inhex bas
+Sub P()
+x = &H1{k}F
+End Sub
+=== inname bas
+Sub P()
+xy{k}z = 1
+End Sub
+=== afterthen bas
+Sub P()
+If a Then{k}x = 1
+End Sub
+=== afterelse bas
+Sub P()
+If a Then x = 1 Else{k}x = 2
+End Sub
+=== afterlabel bas
+Sub P()
+L:{k}x = 1
+End Sub
+=== afterlinenum bas
+Sub P()
+10{k}x = 1
+End Sub
+=== aftercolon bas
+Sub P()
+x = 1:{k}y = 2
+End Sub
+=== beforeeol bas
+Sub P()
+x = 1{k}
+End Sub
+=== beforeendsub bas
+Sub P()
+x = 1
+End Sub{k}
+=== subheader bas
+Sub P({k}a As Long)
+End Sub
+=== subheader2 bas
+Sub P(a As Long{k})
+End Sub
+=== dimcomma bas
+Dim a As Long,{k}b As Long
+=== declstart bas
+{k}Dim a As Long
+=== dateliteral bas
+Sub P()
+x = #1/1/{k}2000#
+End Sub
+=== typesuffix bas
+Sub P()
+x = a{k}%
+End Sub
+=== bracketname bas
+Sub P()
+x = [a{k}b]
+End Sub
+=== callnl bas
+Sub P()
+Call{k}f
+End Sub
+=== attrline bas
+Attribute VB_Name{k}= "m"
+=== optionline bas
+Option{k}Explicit
+=== selectcase bas
+Sub P()
+Select Case a
+Case 1,{k}2
+End Select
+End Sub
+=== dotmember bas
+Sub P(o As Object)
+x = o.{k}p
+End Sub
+=== dotbefore bas
+Sub P(o As Object)
+x = o{k}.p
+End Sub

@@ -1,0 +1,5 @@
+# {k} is replaced by each word.
+=== one bas
+Sub P()
+{k}
+End Sub

@@ -804,8 +804,19 @@ impl<'a> Scanner<'a> {
             match self.advance() {
                 None | Some(0x00) => break,
                 Some(b'\r') | Some(b'\n') => {
-                    // A string stops at the end of its line.
+                    // A string stops at the end of its line. When the line ends in a
+                    // continuation mark, the string stops before the blanks that lead to
+                    // the mark and the mark joins the next line.
                     self.pos -= 1;
+                    if let Some(mark) = self.continuation_mark_at_end(start) {
+                        for _ in mark..self.pos {
+                            self.tok_buf.pop();
+                        }
+                        while self.tok_buf.ends_with([' ', '\t']) {
+                            self.tok_buf.pop();
+                        }
+                        self.pos = mark;
+                    }
                     break;
                 }
                 Some(b'"') => {
@@ -1184,6 +1195,16 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    /// The position of the continuation mark that ends the text from `start` to the current
+    /// position: an underscore after a blank, followed by blanks only.
+    fn continuation_mark_at_end(&self, start: usize) -> Option<usize> {
+        let mut end = self.pos;
+        while end > start && matches!(self.src[end - 1], b' ' | b'\t') {
+            end -= 1;
+        }
+        (end > start + 1 && self.src[end - 1] == b'_' && matches!(self.src[end - 2], b' ' | b'\t')).then(|| end - 1)
+    }
+
     /// Handle `'_'`: line-continuation marker or identifier start.
     fn scan_underscore(&mut self, first: u8, start: usize) -> Token {
         if self.peek().map_or(true, |b| !is_ident_continue(b)) {
@@ -1272,6 +1293,11 @@ impl<'a> Scanner<'a> {
         loop {
             match self.advance() {
                 None | Some(0x00) => return Token::error(self.span(start)),
+                // A bracketed name stops at the end of its line.
+                Some(b'\r') | Some(b'\n') => {
+                    self.pos -= 1;
+                    return Token::error(self.span(start));
+                }
                 Some(b']') => break,
                 // A bracket cannot hold another opening bracket.
                 Some(b'[') => return Token::error(self.span(start)),

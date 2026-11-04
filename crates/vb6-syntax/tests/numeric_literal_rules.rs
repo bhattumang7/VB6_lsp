@@ -132,8 +132,8 @@ fn string_ends_at_the_end_of_its_line() {
 }
 
 #[test]
-fn underscore_inside_an_open_string_is_not_a_continuation() {
-    let src = "Sub S()\n x = \"a _\n y = 2\nEnd Sub\n";
+fn underscore_inside_a_closed_string_is_not_a_continuation() {
+    let src = "Sub S()\n x = \"a _\"\n y = 2\nEnd Sub\n";
     let p = parse(src);
     assert_eq!(p.found, vec![]);
     assert_eq!(p.proc_body(0).len(), 2);

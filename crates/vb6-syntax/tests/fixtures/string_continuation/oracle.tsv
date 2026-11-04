@@ -1,0 +1,21 @@
+# template	word	class	message
+one	x = "a \s_\ny = 2	syntax	Syntax error
+one	x = "a \s_\nEnd Sub	syntax	Syntax error
+one	x = "a \s_\n"	syntax	Syntax error
+one	x = "a \s_\ncd"	syntax	Syntax error
+one	x = "a \s_\ncd	syntax	Syntax error
+one	x = "a \s_\n+ 1	accepted	
+one	x = "a \s_\n& "b"	accepted	
+one	x = "a \s_\n"b"	syntax	Syntax error
+one	x = "a \s_\n\sy = 2	syntax	Syntax error
+one	x = "a \s_	syntax	Syntax error
+one	x = "a\s_\ny = 2	syntax	Syntax error
+one	x = "a"\s_\ny = 2	syntax	Syntax error
+one	x = [a \s_\ny = 2	syntax	Syntax error
+one	x = [a \s_\n+ 1	syntax	Syntax error
+one	x = [a\n]	syntax	Syntax error
+one	x = "a\t_\n+ "b"	accepted	
+one	x = "a  \s_ \n+ "b"	accepted	
+one	x = "a ""\s_\n+ "b"	accepted	
+one	x = "a _x \s_\n+ "b"	accepted	
+one	x = 1 + "a \s_\n+ "b"	accepted	
