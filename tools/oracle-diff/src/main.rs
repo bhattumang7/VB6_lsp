@@ -145,7 +145,25 @@ fn main() -> ExitCode {
             .map_err(|e| format!("oracle setup: {e}"))
             .map(|o| if controls(&o) { ExitCode::SUCCESS } else { ExitCode::FAILURE }),
         Some("run") => run(&args[1..]),
-        _ => Err("usage: oracle-diff controls | run [--taxonomy F] [--report F] <path>...".into()),
+        Some("ours") => {
+            let mut inputs = Vec::new();
+            args[1..].iter().for_each(|a| collect(Path::new(a), &mut inputs));
+            for path in &inputs {
+                let kind = if path.extension().is_some_and(|e| e.eq_ignore_ascii_case("cls")) {
+                    ModuleKind::Cls
+                } else {
+                    ModuleKind::Bas
+                };
+                let source = std::fs::read(path).unwrap_or_default();
+                let diags = ours::diagnostics(&source, kind);
+                println!("{}: {} diagnostics", path.display(), diags.len());
+                for d in diags {
+                    println!("  line {}: {} ({:#x})", d.line, d.message, d.code);
+                }
+            }
+            Ok(ExitCode::SUCCESS)
+        }
+        _ => Err("usage: oracle-diff controls | ours <path>... | run [--taxonomy F] [--report F] <path>...".into()),
     };
     result.unwrap_or_else(|e| {
         eprintln!("{e}");

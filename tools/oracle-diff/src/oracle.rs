@@ -37,23 +37,32 @@ pub struct Case {
 impl Case {
     /// Builds a case from text, normalising every line break to CRLF.
     pub fn from_text(id: impl Into<String>, kind: ModuleKind, text: &str) -> Case {
-        let mut out = String::with_capacity(text.len() + 16);
-        let mut prev_cr = false;
-        for ch in text.chars() {
-            match ch {
-                '\r' => {
-                    out.push_str("\r\n");
-                    prev_cr = true;
-                    continue;
-                }
-                '\n' if !prev_cr => out.push_str("\r\n"),
-                '\n' => {}
-                other => out.push(other),
-            }
-            prev_cr = false;
-        }
-        Case { id: id.into(), kind, source: out.into_bytes() }
+        Case { id: id.into(), kind, source: normalize_crlf(text.as_bytes()) }
     }
+}
+
+/// Rewrites every line break (`LF`, `CR` or `CRLF`) as `CRLF`, the only form
+/// the compiler loads.
+pub fn normalize_crlf(bytes: &[u8]) -> Vec<u8> {
+    let mut out = Vec::with_capacity(bytes.len() + 16);
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\r' if bytes.get(i + 1) == Some(&b'\n') => {
+                out.extend_from_slice(b"\r\n");
+                i += 2;
+            }
+            b'\r' | b'\n' => {
+                out.extend_from_slice(b"\r\n");
+                i += 1;
+            }
+            other => {
+                out.push(other);
+                i += 1;
+            }
+        }
+    }
+    out
 }
 
 /// The compiler's answer for one case.
@@ -261,7 +270,7 @@ impl Oracle {
             "Type=Exe\r\n{module_line}\r\n{harness_line}Startup=\"Sub Main\"\r\nExeName32=\"p.exe\"\r\n"
         );
         if (!own_main && fs::write(dir.join("h.bas"), HARNESS_MAIN).is_err())
-            || fs::write(dir.join(&module), &case.source).is_err()
+            || fs::write(dir.join(&module), normalize_crlf(&case.source)).is_err()
             || fs::write(dir.join("p.vbp"), project).is_err()
         {
             return Verdict::Unrecognised { exit_code: None, log: "case files unwritable".into() };

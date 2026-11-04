@@ -1,5 +1,5 @@
 use oracle_diff::compare::{classify, Outcome, Taxonomy};
-use oracle_diff::oracle::{parse_log, Case, ModuleKind, Verdict};
+use oracle_diff::oracle::{normalize_crlf, parse_log, Case, ModuleKind, Verdict};
 use oracle_diff::ours::OurDiagnostic;
 
 fn diag(message: &str) -> OurDiagnostic {
@@ -93,4 +93,15 @@ fn every_outcome_is_reachable() {
         classify(&Verdict::ProjectError { message: "m".into() }, &[], &taxonomy),
         Outcome::NoVerdict
     );
+}
+
+#[test]
+fn normalize_crlf_handles_every_break_form_and_keeps_other_bytes() {
+    assert_eq!(normalize_crlf(b"a\nb"), b"a\r\nb".to_vec());
+    assert_eq!(normalize_crlf(b"a\rb"), b"a\r\nb".to_vec());
+    assert_eq!(normalize_crlf(b"a\r\nb"), b"a\r\nb".to_vec());
+    assert_eq!(normalize_crlf(b"\n\n"), b"\r\n\r\n".to_vec());
+    assert_eq!(normalize_crlf(b"\r\r\n"), b"\r\n\r\n".to_vec());
+    assert_eq!(normalize_crlf(&[0xff, b'\n', 0x80]), vec![0xff, b'\r', b'\n', 0x80]);
+    assert_eq!(normalize_crlf(b""), Vec::<u8>::new());
 }
