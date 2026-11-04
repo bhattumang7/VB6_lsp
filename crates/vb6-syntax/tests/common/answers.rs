@@ -40,7 +40,7 @@ pub fn templates(text: &str) -> BTreeMap<String, Template> {
 
 /// A word as the fixture writes it: `\n` and `\t` stand for a line break and a tab.
 pub fn unescape(word: &str) -> String {
-    word.replace("\\n", "\n").replace("\\t", "\t")
+    word.replace("\\n", "\n").replace("\\t", "\t").replace("\\s", " ")
 }
 
 /// The diagnostics that report a block left open at the end of the source. When the

@@ -1,0 +1,152 @@
+# One template per block; {k} is replaced by each separator of words.txt (\s space, \t tab, \n line break).
+=== endif bas
+If a Then
+End{k}If
+=== endsub bas
+Sub P()
+End{k}Sub
+=== exitsub bas
+Sub P()
+Exit{k}Sub
+End Sub
+=== exitdo bas
+Sub P()
+Do
+Exit{k}Do
+Loop
+End Sub
+=== onerror bas
+Sub P()
+On{k}Error{k}Resume{k}Next
+End Sub
+=== ongoto bas
+Sub P()
+On Error{k}GoTo{k}0
+End Sub
+=== goto bas
+Sub P()
+Go{k}To L
+L:
+End Sub
+=== gosub bas
+Sub P()
+Go{k}Sub L
+L:
+End Sub
+=== lineinput bas
+Sub P()
+Line{k}Input{k}#1, a
+End Sub
+=== dowhile bas
+Sub P()
+Do{k}While a
+Loop
+End Sub
+=== selectcase bas
+Sub P()
+Select{k}Case a
+Case 1
+End Select
+End Sub
+=== endselect bas
+Sub P()
+Select Case a
+Case 1
+End{k}Select
+End Sub
+=== endwith bas
+Sub P()
+With o
+End{k}With
+End Sub
+=== foreach bas
+Sub P()
+For{k}Each x In c
+Next
+End Sub
+=== propget bas
+Property{k}Get P() As Long
+End Property
+=== endprop bas
+Property Get P() As Long
+End{k}Property
+=== optexp bas
+Option{k}Explicit
+=== optcmp bas
+Option{k}Compare{k}Text
+=== declfn bas
+Declare{k}Function f Lib "k" () As Long
+=== dimas bas
+Dim a{k}As{k}Long
+=== rediml bas
+Sub P()
+ReDim{k}Preserve a(1)
+End Sub
+=== openfor bas
+Sub P()
+Open "f"{k}For{k}Input{k}As{k}#1
+End Sub
+=== typeend bas
+Type T
+a As Long
+End{k}Type
+=== enumend bas
+Enum E
+A
+End{k}Enum
+=== elseif bas
+Sub P()
+If a Then
+Else{k}If b Then
+End If
+End If
+End Sub
+=== endif1 bas
+Sub P()
+If a Then
+EndIf
+End Sub
+=== setnew bas
+Sub P()
+Set a ={k}New C
+End Sub
+=== callp bas
+Sub P()
+Call{k}f(1)
+End Sub
+=== assign bas
+Sub P()
+a{k}={k}1
+End Sub
+=== expr bas
+Sub P()
+x = a{k}+{k}b
+End Sub
+=== member bas
+Sub P(o As Object)
+x = o{k}.p
+End Sub
+=== memberbang bas
+Sub P(o As Object)
+x = o{k}!p
+End Sub
+=== callargs bas
+Sub P()
+x = f{k}(1)
+End Sub
+=== stmtargs bas
+Sub P()
+f{k}1, 2
+End Sub
+=== compare bas
+Sub P()
+x = a <{k}> b
+End Sub
+=== compare2 bas
+Sub P()
+x = a ={k}> b
+End Sub
+=== named bas
+Sub P()
+f a:{k}=1
+End Sub

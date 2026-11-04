@@ -1,0 +1,65 @@
+# template	word	class	message
+outside	!p	syntax	Syntax error
+outside	.p	semantic	Invalid or unqualified reference
+outside	!p = 1	semantic	Invalid or unqualified reference
+outside	.p = 1	semantic	Invalid or unqualified reference
+outside	!p 1	syntax	Syntax error
+outside	.p 1	semantic	Invalid or unqualified reference
+outside	!p.q	semantic	Invalid or unqualified reference
+outside	.p.q	semantic	Invalid or unqualified reference
+outside	!p!q	syntax	Syntax error
+outside	.p!q	syntax	Syntax error
+outside	!p(1)	syntax	Syntax error
+outside	.p(1)	semantic	Invalid or unqualified reference
+outside	Call !p	syntax	Syntax error
+outside	Call .p	semantic	Invalid or unqualified reference
+outside	x = !p	semantic	Invalid or unqualified reference
+outside	x = .p	semantic	Invalid or unqualified reference
+inwith	!p	syntax	Syntax error
+inwith	.p	accepted	
+inwith	!p = 1	accepted	
+inwith	.p = 1	accepted	
+inwith	!p 1	syntax	Syntax error
+inwith	.p 1	accepted	
+inwith	!p.q	accepted	
+inwith	.p.q	accepted	
+inwith	!p!q	syntax	Syntax error
+inwith	.p!q	syntax	Syntax error
+inwith	!p(1)	syntax	Syntax error
+inwith	.p(1)	accepted	
+inwith	Call !p	syntax	Syntax error
+inwith	Call .p	accepted	
+inwith	x = !p	accepted	
+inwith	x = .p	accepted	
+afterif	!p	syntax	Syntax error
+afterif	.p	semantic	Invalid or unqualified reference
+afterif	!p = 1	semantic	Invalid or unqualified reference
+afterif	.p = 1	semantic	Invalid or unqualified reference
+afterif	!p 1	syntax	Syntax error
+afterif	.p 1	semantic	Invalid or unqualified reference
+afterif	!p.q	semantic	Invalid or unqualified reference
+afterif	.p.q	semantic	Invalid or unqualified reference
+afterif	!p!q	syntax	Syntax error
+afterif	.p!q	syntax	Syntax error
+afterif	!p(1)	syntax	Syntax error
+afterif	.p(1)	semantic	Invalid or unqualified reference
+afterif	Call !p	syntax	Syntax error
+afterif	Call .p	semantic	Invalid or unqualified reference
+afterif	x = !p	semantic	Invalid or unqualified reference
+afterif	x = .p	semantic	Invalid or unqualified reference
+aftercolon	!p	syntax	Syntax error
+aftercolon	.p	accepted	
+aftercolon	!p = 1	accepted	
+aftercolon	.p = 1	accepted	
+aftercolon	!p 1	syntax	Syntax error
+aftercolon	.p 1	accepted	
+aftercolon	!p.q	accepted	
+aftercolon	.p.q	accepted	
+aftercolon	!p!q	syntax	Syntax error
+aftercolon	.p!q	syntax	Syntax error
+aftercolon	!p(1)	syntax	Syntax error
+aftercolon	.p(1)	accepted	
+aftercolon	Call !p	syntax	Syntax error
+aftercolon	Call .p	accepted	
+aftercolon	x = !p	accepted	
+aftercolon	x = .p	accepted	

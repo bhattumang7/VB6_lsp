@@ -1,0 +1,630 @@
+# template	word	class	message
+endif	\s	syntax	Invalid outside procedure
+endif	\s\s	syntax	Invalid outside procedure
+endif	\t	syntax	Invalid outside procedure
+endif	\s\t\s	syntax	Invalid outside procedure
+endif	\s_\n\s	syntax	Invalid outside procedure
+endif	\s_\n	syntax	Invalid outside procedure
+endif	_\n	syntax	Invalid outside procedure
+endif	\n	syntax	Invalid outside procedure
+endif	\s:\s	syntax	Invalid outside procedure
+endif	:	syntax	Invalid outside procedure
+endif	\s'c\n	syntax	Invalid outside procedure
+endif	\s_\s\n	syntax	Invalid outside procedure
+endif	\s_\s'c\n	syntax	Invalid outside procedure
+endif	\s\s_\n\s\s	syntax	Invalid outside procedure
+endif	\s_\n\n\s	syntax	Invalid outside procedure
+endif	\s_\n_\n\s	syntax	Invalid outside procedure
+endif	\s_x\s	syntax	Invalid outside procedure
+endsub	\s	accepted	
+endsub	\s\s	accepted	
+endsub	\t	accepted	
+endsub	\s\t\s	accepted	
+endsub	\s_\n\s	accepted	
+endsub	\s_\n	accepted	
+endsub	_\n	semantic	Sub or Function not defined
+endsub	\n	syntax	Syntax error
+endsub	\s:\s	syntax	Syntax error
+endsub	:	syntax	Syntax error
+endsub	\s'c\n	syntax	Syntax error
+endsub	\s_\s\n	accepted	
+endsub	\s_\s'c\n	syntax	Syntax error
+endsub	\s\s_\n\s\s	accepted	
+endsub	\s_\n\n\s	syntax	Syntax error
+endsub	\s_\n_\n\s	syntax	Syntax error
+endsub	\s_x\s	syntax	Syntax error
+exitsub	\s	accepted	
+exitsub	\s\s	accepted	
+exitsub	\t	accepted	
+exitsub	\s\t\s	accepted	
+exitsub	\s_\n\s	accepted	
+exitsub	\s_\n	accepted	
+exitsub	_\n	semantic	Sub or Function not defined
+exitsub	\n	syntax	Syntax error
+exitsub	\s:\s	syntax	Syntax error
+exitsub	:	syntax	Syntax error
+exitsub	\s'c\n	syntax	Syntax error
+exitsub	\s_\s\n	accepted	
+exitsub	\s_\s'c\n	syntax	Syntax error
+exitsub	\s\s_\n\s\s	accepted	
+exitsub	\s_\n\n\s	syntax	Syntax error
+exitsub	\s_\n_\n\s	syntax	Syntax error
+exitsub	\s_x\s	syntax	Syntax error
+exitdo	\s	accepted	
+exitdo	\s\s	accepted	
+exitdo	\t	accepted	
+exitdo	\s\t\s	accepted	
+exitdo	\s_\n\s	accepted	
+exitdo	\s_\n	accepted	
+exitdo	_\n	semantic	Sub or Function not defined
+exitdo	\n	syntax	Syntax error
+exitdo	\s:\s	syntax	Syntax error
+exitdo	:	syntax	Syntax error
+exitdo	\s'c\n	syntax	Syntax error
+exitdo	\s_\s\n	accepted	
+exitdo	\s_\s'c\n	syntax	Syntax error
+exitdo	\s\s_\n\s\s	accepted	
+exitdo	\s_\n\n\s	syntax	Syntax error
+exitdo	\s_\n_\n\s	syntax	Syntax error
+exitdo	\s_x\s	syntax	Syntax error
+onerror	\s	accepted	
+onerror	\s\s	accepted	
+onerror	\t	accepted	
+onerror	\s\t\s	accepted	
+onerror	\s_\n\s	accepted	
+onerror	\s_\n	accepted	
+onerror	_\n	semantic	Sub or Function not defined
+onerror	\n	syntax	Syntax error
+onerror	\s:\s	syntax	Syntax error
+onerror	:	syntax	Syntax error
+onerror	\s'c\n	syntax	Syntax error
+onerror	\s_\s\n	accepted	
+onerror	\s_\s'c\n	syntax	Syntax error
+onerror	\s\s_\n\s\s	accepted	
+onerror	\s_\n\n\s	syntax	Syntax error
+onerror	\s_\n_\n\s	syntax	Syntax error
+onerror	\s_x\s	syntax	Syntax error
+ongoto	\s	accepted	
+ongoto	\s\s	accepted	
+ongoto	\t	accepted	
+ongoto	\s\t\s	accepted	
+ongoto	\s_\n\s	accepted	
+ongoto	\s_\n	accepted	
+ongoto	_\n	syntax	Syntax error
+ongoto	\n	syntax	Syntax error
+ongoto	\s:\s	syntax	Syntax error
+ongoto	:	syntax	Syntax error
+ongoto	\s'c\n	syntax	Syntax error
+ongoto	\s_\s\n	accepted	
+ongoto	\s_\s'c\n	syntax	Syntax error
+ongoto	\s\s_\n\s\s	accepted	
+ongoto	\s_\n\n\s	syntax	Syntax error
+ongoto	\s_\n_\n\s	syntax	Syntax error
+ongoto	\s_x\s	syntax	Syntax error
+goto	\s	accepted	
+goto	\s\s	accepted	
+goto	\t	accepted	
+goto	\s\t\s	accepted	
+goto	\s_\n\s	accepted	
+goto	\s_\n	accepted	
+goto	_\n	semantic	Sub or Function not defined
+goto	\n	syntax	Syntax error
+goto	\s:\s	syntax	Syntax error
+goto	:	syntax	Syntax error
+goto	\s'c\n	syntax	Syntax error
+goto	\s_\s\n	accepted	
+goto	\s_\s'c\n	syntax	Syntax error
+goto	\s\s_\n\s\s	accepted	
+goto	\s_\n\n\s	syntax	Syntax error
+goto	\s_\n_\n\s	syntax	Syntax error
+goto	\s_x\s	syntax	Syntax error
+gosub	\s	accepted	
+gosub	\s\s	accepted	
+gosub	\t	accepted	
+gosub	\s\t\s	accepted	
+gosub	\s_\n\s	accepted	
+gosub	\s_\n	accepted	
+gosub	_\n	semantic	Sub or Function not defined
+gosub	\n	syntax	Syntax error
+gosub	\s:\s	syntax	Syntax error
+gosub	:	syntax	Syntax error
+gosub	\s'c\n	syntax	Syntax error
+gosub	\s_\s\n	accepted	
+gosub	\s_\s'c\n	syntax	Syntax error
+gosub	\s\s_\n\s\s	accepted	
+gosub	\s_\n\n\s	syntax	Syntax error
+gosub	\s_\n_\n\s	syntax	Syntax error
+gosub	\s_x\s	syntax	Syntax error
+lineinput	\s	accepted	
+lineinput	\s\s	accepted	
+lineinput	\t	accepted	
+lineinput	\s\t\s	accepted	
+lineinput	\s_\n\s	accepted	
+lineinput	\s_\n	accepted	
+lineinput	_\n	semantic	Sub or Function not defined
+lineinput	\n	syntax	Syntax error
+lineinput	\s:\s	syntax	Syntax error
+lineinput	:	syntax	Syntax error
+lineinput	\s'c\n	syntax	Syntax error
+lineinput	\s_\s\n	accepted	
+lineinput	\s_\s'c\n	syntax	Syntax error
+lineinput	\s\s_\n\s\s	accepted	
+lineinput	\s_\n\n\s	syntax	Syntax error
+lineinput	\s_\n_\n\s	syntax	Syntax error
+lineinput	\s_x\s	syntax	Syntax error
+dowhile	\s	accepted	
+dowhile	\s\s	accepted	
+dowhile	\t	accepted	
+dowhile	\s\t\s	accepted	
+dowhile	\s_\n\s	accepted	
+dowhile	\s_\n	accepted	
+dowhile	_\n	semantic	Sub or Function not defined
+dowhile	\n	syntax	Loop without Do
+dowhile	\s:\s	syntax	Loop without Do
+dowhile	:	syntax	Loop without Do
+dowhile	\s'c\n	syntax	Loop without Do
+dowhile	\s_\s\n	accepted	
+dowhile	\s_\s'c\n	syntax	Syntax error
+dowhile	\s\s_\n\s\s	accepted	
+dowhile	\s_\n\n\s	syntax	Loop without Do
+dowhile	\s_\n_\n\s	syntax	Syntax error
+dowhile	\s_x\s	syntax	Syntax error
+selectcase	\s	accepted	
+selectcase	\s\s	accepted	
+selectcase	\t	accepted	
+selectcase	\s\t\s	accepted	
+selectcase	\s_\n\s	accepted	
+selectcase	\s_\n	accepted	
+selectcase	_\n	semantic	Sub or Function not defined
+selectcase	\n	syntax	Syntax error
+selectcase	\s:\s	syntax	Syntax error
+selectcase	:	syntax	Syntax error
+selectcase	\s'c\n	syntax	Syntax error
+selectcase	\s_\s\n	accepted	
+selectcase	\s_\s'c\n	syntax	Syntax error
+selectcase	\s\s_\n\s\s	accepted	
+selectcase	\s_\n\n\s	syntax	Syntax error
+selectcase	\s_\n_\n\s	syntax	Syntax error
+selectcase	\s_x\s	syntax	Syntax error
+endselect	\s	accepted	
+endselect	\s\s	accepted	
+endselect	\t	accepted	
+endselect	\s\t\s	accepted	
+endselect	\s_\n\s	accepted	
+endselect	\s_\n	accepted	
+endselect	_\n	semantic	Sub or Function not defined
+endselect	\n	syntax	Syntax error
+endselect	\s:\s	syntax	Syntax error
+endselect	:	syntax	Syntax error
+endselect	\s'c\n	syntax	Syntax error
+endselect	\s_\s\n	accepted	
+endselect	\s_\s'c\n	syntax	Syntax error
+endselect	\s\s_\n\s\s	accepted	
+endselect	\s_\n\n\s	syntax	Syntax error
+endselect	\s_\n_\n\s	syntax	Syntax error
+endselect	\s_x\s	syntax	Syntax error
+endwith	\s	accepted	
+endwith	\s\s	accepted	
+endwith	\t	accepted	
+endwith	\s\t\s	accepted	
+endwith	\s_\n\s	accepted	
+endwith	\s_\n	accepted	
+endwith	_\n	semantic	Sub or Function not defined
+endwith	\n	syntax	Syntax error
+endwith	\s:\s	syntax	Syntax error
+endwith	:	syntax	Syntax error
+endwith	\s'c\n	syntax	Syntax error
+endwith	\s_\s\n	accepted	
+endwith	\s_\s'c\n	syntax	Syntax error
+endwith	\s\s_\n\s\s	accepted	
+endwith	\s_\n\n\s	syntax	Syntax error
+endwith	\s_\n_\n\s	syntax	Syntax error
+endwith	\s_x\s	syntax	Syntax error
+foreach	\s	accepted	
+foreach	\s\s	accepted	
+foreach	\t	accepted	
+foreach	\s\t\s	accepted	
+foreach	\s_\n\s	accepted	
+foreach	\s_\n	accepted	
+foreach	_\n	semantic	Sub or Function not defined
+foreach	\n	syntax	Syntax error
+foreach	\s:\s	syntax	Syntax error
+foreach	:	syntax	Syntax error
+foreach	\s'c\n	syntax	Syntax error
+foreach	\s_\s\n	accepted	
+foreach	\s_\s'c\n	syntax	Syntax error
+foreach	\s\s_\n\s\s	accepted	
+foreach	\s_\n\n\s	syntax	Syntax error
+foreach	\s_\n_\n\s	syntax	Syntax error
+foreach	\s_x\s	syntax	Syntax error
+propget	\s	accepted	
+propget	\s\s	accepted	
+propget	\t	accepted	
+propget	\s\t\s	accepted	
+propget	\s_\n\s	accepted	
+propget	\s_\n	accepted	
+propget	_\n	syntax	Invalid outside procedure
+propget	\n	syntax	Expected: Get or Let or Set
+propget	\s:\s	syntax	Expected: list separator
+propget	:	syntax	Expected: list separator
+propget	\s'c\n	syntax	Expected: Get or Let or Set
+propget	\s_\s\n	accepted	
+propget	\s_\s'c\n	syntax	Invalid character
+propget	\s\s_\n\s\s	accepted	
+propget	\s_\n\n\s	syntax	Expected: Get or Let or Set
+propget	\s_\n_\n\s	syntax	Invalid character
+propget	\s_x\s	syntax	Invalid character
+endprop	\s	accepted	
+endprop	\s\s	accepted	
+endprop	\t	accepted	
+endprop	\s\t\s	accepted	
+endprop	\s_\n\s	accepted	
+endprop	\s_\n	accepted	
+endprop	_\n	semantic	Sub or Function not defined
+endprop	\n	syntax	Syntax error
+endprop	\s:\s	syntax	Syntax error
+endprop	:	syntax	Syntax error
+endprop	\s'c\n	syntax	Syntax error
+endprop	\s_\s\n	accepted	
+endprop	\s_\s'c\n	syntax	Syntax error
+endprop	\s\s_\n\s\s	accepted	
+endprop	\s_\n\n\s	syntax	Syntax error
+endprop	\s_\n_\n\s	syntax	Syntax error
+endprop	\s_x\s	syntax	Syntax error
+optexp	\s	accepted	
+optexp	\s\s	accepted	
+optexp	\t	accepted	
+optexp	\s\t\s	accepted	
+optexp	\s_\n\s	accepted	
+optexp	\s_\n	accepted	
+optexp	_\n	syntax	Invalid outside procedure
+optexp	\n	syntax	Expected: Base or Compare or Explicit or Private
+optexp	\s:\s	syntax	Expected: Base or Compare or Explicit or Private
+optexp	:	syntax	Expected: Base or Compare or Explicit or Private
+optexp	\s'c\n	syntax	Expected: Base or Compare or Explicit or Private
+optexp	\s_\s\n	accepted	
+optexp	\s_\s'c\n	syntax	Invalid character
+optexp	\s\s_\n\s\s	accepted	
+optexp	\s_\n\n\s	syntax	Expected: Base or Compare or Explicit or Private
+optexp	\s_\n_\n\s	syntax	Invalid character
+optexp	\s_x\s	syntax	Invalid character
+optcmp	\s	accepted	
+optcmp	\s\s	accepted	
+optcmp	\t	accepted	
+optcmp	\s\t\s	accepted	
+optcmp	\s_\n\s	accepted	
+optcmp	\s_\n	accepted	
+optcmp	_\n	syntax	Invalid outside procedure
+optcmp	\n	syntax	Expected: Base or Compare or Explicit or Private
+optcmp	\s:\s	syntax	Expected: Base or Compare or Explicit or Private
+optcmp	:	syntax	Expected: Base or Compare or Explicit or Private
+optcmp	\s'c\n	syntax	Expected: Base or Compare or Explicit or Private
+optcmp	\s_\s\n	accepted	
+optcmp	\s_\s'c\n	syntax	Invalid character
+optcmp	\s\s_\n\s\s	accepted	
+optcmp	\s_\n\n\s	syntax	Expected: Base or Compare or Explicit or Private
+optcmp	\s_\n_\n\s	syntax	Invalid character
+optcmp	\s_x\s	syntax	Invalid character
+declfn	\s	accepted	
+declfn	\s\s	accepted	
+declfn	\t	accepted	
+declfn	\s\t\s	accepted	
+declfn	\s_\n\s	accepted	
+declfn	\s_\n	accepted	
+declfn	_\n	syntax	Invalid outside procedure
+declfn	\n	syntax	Expected: Sub or Function
+declfn	\s:\s	syntax	Expected: Sub or Function
+declfn	:	syntax	Expected: Sub or Function
+declfn	\s'c\n	syntax	Expected: Sub or Function
+declfn	\s_\s\n	accepted	
+declfn	\s_\s'c\n	syntax	Invalid character
+declfn	\s\s_\n\s\s	accepted	
+declfn	\s_\n\n\s	syntax	Expected: Sub or Function
+declfn	\s_\n_\n\s	syntax	Invalid character
+declfn	\s_x\s	syntax	Invalid character
+dimas	\s	accepted	
+dimas	\s\s	accepted	
+dimas	\t	accepted	
+dimas	\s\t\s	accepted	
+dimas	\s_\n\s	accepted	
+dimas	\s_\n	accepted	
+dimas	_\n	syntax	Invalid outside procedure
+dimas	\n	syntax	Expected: line number or label or statement or end of statement
+dimas	\s:\s	syntax	Expected: line number or label or statement or end of statement
+dimas	:	syntax	Expected: line number or label or statement or end of statement
+dimas	\s'c\n	syntax	Expected: line number or label or statement or end of statement
+dimas	\s_\s\n	accepted	
+dimas	\s_\s'c\n	syntax	Invalid character
+dimas	\s\s_\n\s\s	accepted	
+dimas	\s_\n\n\s	syntax	Expected: line number or label or statement or end of statement
+dimas	\s_\n_\n\s	syntax	Invalid character
+dimas	\s_x\s	syntax	Invalid character
+rediml	\s	semantic	Variable not defined
+rediml	\s\s	semantic	Variable not defined
+rediml	\t	semantic	Variable not defined
+rediml	\s\t\s	semantic	Variable not defined
+rediml	\s_\n\s	semantic	Variable not defined
+rediml	\s_\n	semantic	Variable not defined
+rediml	_\n	semantic	Sub or Function not defined
+rediml	\n	syntax	Syntax error
+rediml	\s:\s	syntax	Syntax error
+rediml	:	syntax	Syntax error
+rediml	\s'c\n	syntax	Syntax error
+rediml	\s_\s\n	semantic	Variable not defined
+rediml	\s_\s'c\n	syntax	Syntax error
+rediml	\s\s_\n\s\s	semantic	Variable not defined
+rediml	\s_\n\n\s	syntax	Syntax error
+rediml	\s_\n_\n\s	syntax	Syntax error
+rediml	\s_x\s	syntax	Syntax error
+openfor	\s	accepted	
+openfor	\s\s	accepted	
+openfor	\t	accepted	
+openfor	\s\t\s	accepted	
+openfor	\s_\n\s	accepted	
+openfor	\s_\n	accepted	
+openfor	_\n	syntax	Syntax error
+openfor	\n	syntax	Syntax error
+openfor	\s:\s	syntax	Syntax error
+openfor	:	syntax	Syntax error
+openfor	\s'c\n	syntax	Syntax error
+openfor	\s_\s\n	accepted	
+openfor	\s_\s'c\n	syntax	Syntax error
+openfor	\s\s_\n\s\s	accepted	
+openfor	\s_\n\n\s	syntax	Syntax error
+openfor	\s_\n_\n\s	syntax	Syntax error
+openfor	\s_x\s	syntax	Syntax error
+typeend	\s	accepted	
+typeend	\s\s	accepted	
+typeend	\t	accepted	
+typeend	\s\t\s	accepted	
+typeend	\s_\n\s	accepted	
+typeend	\s_\n	accepted	
+typeend	_\n	syntax	Statement invalid inside Type block
+typeend	\n	syntax	Statement invalid inside Type block
+typeend	\s:\s	syntax	Expected: identifier
+typeend	:	syntax	Expected: identifier
+typeend	\s'c\n	syntax	Statement invalid inside Type block
+typeend	\s_\s\n	accepted	
+typeend	\s_\s'c\n	syntax	Invalid character
+typeend	\s\s_\n\s\s	accepted	
+typeend	\s_\n\n\s	syntax	Statement invalid inside Type block
+typeend	\s_\n_\n\s	syntax	Invalid character
+typeend	\s_x\s	syntax	Invalid character
+enumend	\s	accepted	
+enumend	\s\s	accepted	
+enumend	\t	accepted	
+enumend	\s\t\s	accepted	
+enumend	\s_\n\s	syntax	Invalid inside Enum
+enumend	\s_\n	syntax	Invalid inside Enum
+enumend	_\n	syntax	Expected: identifier
+enumend	\n	syntax	Invalid inside Enum
+enumend	\s:\s	syntax	Expected: identifier
+enumend	:	syntax	Expected: identifier
+enumend	\s'c\n	syntax	Invalid inside Enum
+enumend	\s_\s\n	syntax	Invalid inside Enum
+enumend	\s_\s'c\n	syntax	Invalid character
+enumend	\s\s_\n\s\s	syntax	Invalid inside Enum
+enumend	\s_\n\n\s	syntax	Invalid inside Enum
+enumend	\s_\n_\n\s	syntax	Invalid inside Enum
+enumend	\s_x\s	syntax	Invalid character
+elseif	\s	syntax	Syntax error
+elseif	\s\s	syntax	Syntax error
+elseif	\t	syntax	Syntax error
+elseif	\s\t\s	syntax	Syntax error
+elseif	\s_\n\s	syntax	Syntax error
+elseif	\s_\n	syntax	Syntax error
+elseif	_\n	semantic	Sub or Function not defined
+elseif	\n	accepted	
+elseif	\s:\s	syntax	Syntax error
+elseif	:	syntax	Syntax error
+elseif	\s'c\n	accepted	
+elseif	\s_\s\n	syntax	Syntax error
+elseif	\s_\s'c\n	syntax	Syntax error
+elseif	\s\s_\n\s\s	syntax	Syntax error
+elseif	\s_\n\n\s	accepted	
+elseif	\s_\n_\n\s	syntax	Syntax error
+elseif	\s_x\s	syntax	Syntax error
+endif1	\s	accepted	
+endif1	\s\s	accepted	
+endif1	\t	accepted	
+endif1	\s\t\s	accepted	
+endif1	\s_\n\s	accepted	
+endif1	\s_\n	accepted	
+endif1	_\n	accepted	
+endif1	\n	accepted	
+endif1	\s:\s	accepted	
+endif1	:	accepted	
+endif1	\s'c\n	accepted	
+endif1	\s_\s\n	accepted	
+endif1	\s_\s'c\n	accepted	
+endif1	\s\s_\n\s\s	accepted	
+endif1	\s_\n\n\s	accepted	
+endif1	\s_\n_\n\s	accepted	
+endif1	\s_x\s	accepted	
+setnew	\s	semantic	User-defined type not defined
+setnew	\s\s	semantic	User-defined type not defined
+setnew	\t	semantic	User-defined type not defined
+setnew	\s\t\s	semantic	User-defined type not defined
+setnew	\s_\n\s	semantic	User-defined type not defined
+setnew	\s_\n	semantic	User-defined type not defined
+setnew	_\n	syntax	Syntax error
+setnew	\n	syntax	Syntax error
+setnew	\s:\s	syntax	Syntax error
+setnew	:	syntax	Syntax error
+setnew	\s'c\n	syntax	Syntax error
+setnew	\s_\s\n	semantic	User-defined type not defined
+setnew	\s_\s'c\n	syntax	Syntax error
+setnew	\s\s_\n\s\s	semantic	User-defined type not defined
+setnew	\s_\n\n\s	syntax	Syntax error
+setnew	\s_\n_\n\s	syntax	Syntax error
+setnew	\s_x\s	syntax	Syntax error
+callp	\s	semantic	Sub or Function not defined
+callp	\s\s	semantic	Sub or Function not defined
+callp	\t	semantic	Sub or Function not defined
+callp	\s\t\s	semantic	Sub or Function not defined
+callp	\s_\n\s	semantic	Sub or Function not defined
+callp	\s_\n	semantic	Sub or Function not defined
+callp	_\n	semantic	Sub or Function not defined
+callp	\n	syntax	Syntax error
+callp	\s:\s	syntax	Syntax error
+callp	:	syntax	Syntax error
+callp	\s'c\n	syntax	Syntax error
+callp	\s_\s\n	semantic	Sub or Function not defined
+callp	\s_\s'c\n	syntax	Syntax error
+callp	\s\s_\n\s\s	semantic	Sub or Function not defined
+callp	\s_\n\n\s	syntax	Syntax error
+callp	\s_\n_\n\s	syntax	Syntax error
+callp	\s_x\s	syntax	Syntax error
+assign	\s	accepted	
+assign	\s\s	accepted	
+assign	\t	accepted	
+assign	\s\t\s	accepted	
+assign	\s_\n\s	accepted	
+assign	\s_\n	accepted	
+assign	_\n	semantic	Sub or Function not defined
+assign	\n	semantic	Sub or Function not defined
+assign	\s:\s	syntax	Syntax error
+assign	:	syntax	Syntax error
+assign	\s'c\n	semantic	Sub or Function not defined
+assign	\s_\s\n	accepted	
+assign	\s_\s'c\n	syntax	Syntax error
+assign	\s\s_\n\s\s	accepted	
+assign	\s_\n\n\s	semantic	Sub or Function not defined
+assign	\s_\n_\n\s	syntax	Syntax error
+assign	\s_x\s	syntax	Syntax error
+expr	\s	accepted	
+expr	\s\s	accepted	
+expr	\t	accepted	
+expr	\s\t\s	accepted	
+expr	\s_\n\s	accepted	
+expr	\s_\n	accepted	
+expr	_\n	syntax	Syntax error
+expr	\n	syntax	Syntax error
+expr	\s:\s	syntax	Syntax error
+expr	:	syntax	Syntax error
+expr	\s'c\n	syntax	Syntax error
+expr	\s_\s\n	accepted	
+expr	\s_\s'c\n	syntax	Syntax error
+expr	\s\s_\n\s\s	accepted	
+expr	\s_\n\n\s	syntax	Syntax error
+expr	\s_\n_\n\s	syntax	Syntax error
+expr	\s_x\s	syntax	Syntax error
+member	\s	syntax	Syntax error
+member	\s\s	syntax	Syntax error
+member	\t	syntax	Syntax error
+member	\s\t\s	syntax	Syntax error
+member	\s_\n\s	accepted	
+member	\s_\n	accepted	
+member	_\n	semantic	Invalid or unqualified reference
+member	\n	semantic	Invalid or unqualified reference
+member	\s:\s	semantic	Invalid or unqualified reference
+member	:	semantic	Invalid or unqualified reference
+member	\s'c\n	semantic	Invalid or unqualified reference
+member	\s_\s\n	accepted	
+member	\s_\s'c\n	syntax	Syntax error
+member	\s\s_\n\s\s	accepted	
+member	\s_\n\n\s	semantic	Invalid or unqualified reference
+member	\s_\n_\n\s	syntax	Syntax error
+member	\s_x\s	syntax	Syntax error
+memberbang	\s	syntax	Syntax error
+memberbang	\s\s	syntax	Syntax error
+memberbang	\t	syntax	Syntax error
+memberbang	\s\t\s	syntax	Syntax error
+memberbang	\s_\n\s	accepted	
+memberbang	\s_\n	accepted	
+memberbang	_\n	syntax	Syntax error
+memberbang	\n	syntax	Syntax error
+memberbang	\s:\s	syntax	Syntax error
+memberbang	:	syntax	Syntax error
+memberbang	\s'c\n	syntax	Syntax error
+memberbang	\s_\s\n	accepted	
+memberbang	\s_\s'c\n	syntax	Syntax error
+memberbang	\s\s_\n\s\s	accepted	
+memberbang	\s_\n\n\s	syntax	Syntax error
+memberbang	\s_\n_\n\s	syntax	Syntax error
+memberbang	\s_x\s	syntax	Syntax error
+callargs	\s	semantic	Sub or Function not defined
+callargs	\s\s	semantic	Sub or Function not defined
+callargs	\t	semantic	Sub or Function not defined
+callargs	\s\t\s	semantic	Sub or Function not defined
+callargs	\s_\n\s	semantic	Sub or Function not defined
+callargs	\s_\n	semantic	Sub or Function not defined
+callargs	_\n	syntax	Syntax error
+callargs	\n	syntax	Syntax error
+callargs	\s:\s	syntax	Syntax error
+callargs	:	syntax	Syntax error
+callargs	\s'c\n	syntax	Syntax error
+callargs	\s_\s\n	semantic	Sub or Function not defined
+callargs	\s_\s'c\n	syntax	Syntax error
+callargs	\s\s_\n\s\s	semantic	Sub or Function not defined
+callargs	\s_\n\n\s	syntax	Syntax error
+callargs	\s_\n_\n\s	syntax	Syntax error
+callargs	\s_x\s	syntax	Syntax error
+stmtargs	\s	semantic	Sub or Function not defined
+stmtargs	\s\s	semantic	Sub or Function not defined
+stmtargs	\t	semantic	Sub or Function not defined
+stmtargs	\s\t\s	semantic	Sub or Function not defined
+stmtargs	\s_\n\s	semantic	Sub or Function not defined
+stmtargs	\s_\n	semantic	Sub or Function not defined
+stmtargs	_\n	semantic	Sub or Function not defined
+stmtargs	\n	semantic	Sub or Function not defined
+stmtargs	\s:\s	syntax	Syntax error
+stmtargs	:	syntax	Syntax error
+stmtargs	\s'c\n	semantic	Sub or Function not defined
+stmtargs	\s_\s\n	semantic	Sub or Function not defined
+stmtargs	\s_\s'c\n	syntax	Syntax error
+stmtargs	\s\s_\n\s\s	semantic	Sub or Function not defined
+stmtargs	\s_\n\n\s	semantic	Sub or Function not defined
+stmtargs	\s_\n_\n\s	syntax	Syntax error
+stmtargs	\s_x\s	syntax	Syntax error
+compare	\s	accepted	
+compare	\s\s	accepted	
+compare	\t	accepted	
+compare	\s\t\s	accepted	
+compare	\s_\n\s	syntax	Syntax error
+compare	\s_\n	syntax	Syntax error
+compare	_\n	syntax	Syntax error
+compare	\n	syntax	Syntax error
+compare	\s:\s	syntax	Syntax error
+compare	:	syntax	Syntax error
+compare	\s'c\n	syntax	Syntax error
+compare	\s_\s\n	syntax	Syntax error
+compare	\s_\s'c\n	syntax	Syntax error
+compare	\s\s_\n\s\s	syntax	Syntax error
+compare	\s_\n\n\s	syntax	Syntax error
+compare	\s_\n_\n\s	syntax	Syntax error
+compare	\s_x\s	syntax	Syntax error
+compare2	\s	accepted	
+compare2	\s\s	accepted	
+compare2	\t	accepted	
+compare2	\s\t\s	accepted	
+compare2	\s_\n\s	syntax	Syntax error
+compare2	\s_\n	syntax	Syntax error
+compare2	_\n	syntax	Syntax error
+compare2	\n	syntax	Syntax error
+compare2	\s:\s	syntax	Syntax error
+compare2	:	syntax	Syntax error
+compare2	\s'c\n	syntax	Syntax error
+compare2	\s_\s\n	syntax	Syntax error
+compare2	\s_\s'c\n	syntax	Syntax error
+compare2	\s\s_\n\s\s	syntax	Syntax error
+compare2	\s_\n\n\s	syntax	Syntax error
+compare2	\s_\n_\n\s	syntax	Syntax error
+compare2	\s_x\s	syntax	Syntax error
+named	\s	semantic	Sub or Function not defined
+named	\s\s	semantic	Sub or Function not defined
+named	\t	semantic	Sub or Function not defined
+named	\s\t\s	semantic	Sub or Function not defined
+named	\s_\n\s	syntax	Syntax error
+named	\s_\n	syntax	Syntax error
+named	_\n	syntax	Syntax error
+named	\n	semantic	Sub or Function not defined
+named	\s:\s	syntax	Syntax error
+named	:	syntax	Syntax error
+named	\s'c\n	semantic	Sub or Function not defined
+named	\s_\s\n	syntax	Syntax error
+named	\s_\s'c\n	syntax	Syntax error
+named	\s\s_\n\s\s	syntax	Syntax error
+named	\s_\n\n\s	semantic	Sub or Function not defined
+named	\s_\n_\n\s	syntax	Syntax error
+named	\s_x\s	syntax	Syntax error

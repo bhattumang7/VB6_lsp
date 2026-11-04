@@ -60,7 +60,7 @@ pub fn instantiate(template: &Template, word: &str) -> String {
 
 /// `\n` and `\t` in a word stand for a line break and a tab.
 pub fn unescape(word: &str) -> String {
-    word.replace("\\n", "\n").replace("\\t", "\t")
+    word.replace("\\n", "\n").replace("\\t", "\t").replace("\\s", " ")
 }
 
 /// What the compiler made of one instantiated template.

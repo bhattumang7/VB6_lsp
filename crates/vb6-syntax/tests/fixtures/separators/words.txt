@@ -1,0 +1,17 @@
+\s
+\s\s
+\t
+\s\t\s
+\s_\n\s
+\s_\n
+_\n
+\n
+\s:\s
+:
+\s'c\n
+\s_\s\n
+\s_\s'c\n
+\s\s_\n\s\s
+\s_\n\n\s
+\s_\n_\n\s
+\s_x\s

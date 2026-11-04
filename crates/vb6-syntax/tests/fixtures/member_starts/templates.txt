@@ -1,0 +1,21 @@
+# One template per block; {k} is replaced by each word of words.txt.
+=== outside bas
+Sub P(o As Object)
+{k}
+End Sub
+=== inwith bas
+Sub P(o As Object)
+With o
+{k}
+End With
+End Sub
+=== afterif bas
+Sub P(o As Object)
+If o Is Nothing Then {k}
+End Sub
+=== aftercolon bas
+Sub P(o As Object)
+With o
+x = 1: {k}
+End With
+End Sub

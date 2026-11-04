@@ -1187,7 +1187,14 @@ impl<'a> Scanner<'a> {
     /// Handle `'_'`: line-continuation marker or identifier start.
     fn scan_underscore(&mut self, first: u8, start: usize) -> Token {
         if self.peek().map_or(true, |b| !is_ident_continue(b)) {
-            Token::op(Kw::LineCont, self.span(start))
+            // A continuation mark must follow a blank; at the start of a line or against another
+            // token it is an invalid character.
+            let after_blank = start > 0 && matches!(self.src[start - 1], b' ' | b'\t');
+            if after_blank {
+                Token::op(Kw::LineCont, self.span(start))
+            } else {
+                Token::error(self.span(start))
+            }
         } else {
             // A name cannot begin with an underscore.
             self.scan_ident(first, start);

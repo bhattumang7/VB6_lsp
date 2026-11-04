@@ -1,0 +1,16 @@
+!p
+.p
+!p = 1
+.p = 1
+!p 1
+.p 1
+!p.q
+.p.q
+!p!q
+.p!q
+!p(1)
+.p(1)
+Call !p
+Call .p
+x = !p
+x = .p

@@ -2032,11 +2032,17 @@ impl<'src> Parser<'src> {
                 self.skip_line();
                 return lhs;
             }
-            // Bang access takes no arguments as a statement, and a bracketed reserved word is no
-            // callable name.
+            // A statement cannot end in a bang access, with or without arguments.
+            if self.ends_in_bang_member(arena, lhs) {
+                let span = if self.peek().is_stmt_end() { self.node_spans.get(lhs) } else { self.current_span() };
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                return lhs;
+            }
+            // A bracketed reserved word is no callable name.
             if !self.peek().is_stmt_end()
                 && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
-                && (self.is_bang_member(arena, lhs) || self.is_bracketed_reserved_word(arena, lhs))
+                && self.is_bracketed_reserved_word(arena, lhs)
             {
                 let span = self.current_span();
                 self.diagnostics.push(ERR_SYNTAX_ERROR, span);
@@ -2079,9 +2085,13 @@ impl<'src> Parser<'src> {
             if args.iter().any(|a| matches!(arena.get(*a), ExprNode::AddressOf { .. })))
     }
 
-    /// True when `target` ends in a `!` member access.
-    fn is_bang_member(&self, arena: &ExprArena, target: NodeId) -> bool {
-        matches!(arena.get(target), ExprNode::MemberAccess { bang: true, .. })
+    /// True when `target` is a `!` member access, or a call of one.
+    fn ends_in_bang_member(&self, arena: &ExprArena, target: NodeId) -> bool {
+        match arena.get(target) {
+            ExprNode::MemberAccess { bang: true, .. } => true,
+            ExprNode::Call { func, .. } => self.ends_in_bang_member(arena, *func),
+            _ => false,
+        }
     }
 
     /// True when `target` is a name written in brackets whose text is a reserved word.
@@ -2849,6 +2859,12 @@ impl<'src> Parser<'src> {
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
         let callee = self.parse_target_expr(arena);
+        if self.ends_in_bang_member(arena, callee) {
+            let span = self.node_spans.get(callee);
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         // `Call Foo(1, 2)`: the brackets were read with the callee, so nothing may follow them.
         let args = if matches!(arena.get(callee), ExprNode::Call { .. }) {
             arena.alloc(ExprNode::ArgList { args: Vec::new() })
@@ -4686,6 +4702,17 @@ impl<'src> Parser<'src> {
                 TokenKind::Kw(Kw::End) => {
                     let end_span = self.current_span();
                     self.advance();
+                    // Inside an Enum the closing words must share one physical line.
+                    let gap_start = (end_span.start + end_span.len) as usize;
+                    let gap_end = self.peek().span.start as usize;
+                    if self.peek().kind == TokenKind::Kw(Kw::Enum)
+                        && self.src.get(gap_start..gap_end).is_some_and(|gap| gap.iter().any(|&b| b == b'\n' || b == b'\r'))
+                    {
+                        let span = self.current_span();
+                        self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
+                        self.skip_line();
+                        continue;
+                    }
                     self.expect(TokenKind::Kw(Kw::Enum), ERR_UNEXPECTED_TOKEN);
                     if members.is_empty() {
                         self.diagnostics.push(ERR_ENUM_WITHOUT_MEMBERS, end_span);
