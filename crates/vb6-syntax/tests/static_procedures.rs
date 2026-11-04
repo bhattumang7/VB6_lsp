@@ -2,7 +2,7 @@
 //! locals static: `Private Static Sub`, `Friend Static Function`, …
 
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, NodeId, ProcKind};
-use vb6_syntax::frontend::parser::Parser;
+use vb6_syntax::frontend::parser::{ModuleKind, Parser};
 use vb6_syntax::frontend::scanner::ScannerContext;
 
 struct Out {
@@ -18,7 +18,7 @@ fn parse(src: &str) -> Out {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), ModuleKind::Class);
     let top = parser.parse_module(&mut arena);
     Out {
         diags: parser.diagnostics.items().len(),

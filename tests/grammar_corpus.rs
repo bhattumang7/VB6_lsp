@@ -11,7 +11,7 @@
 use std::path::PathBuf;
 
 use vb6_engine::frontend::ast::ExprArena;
-use vb6_engine::frontend::parser::Parser;
+use vb6_engine::frontend::parser::{ModuleKind, Parser};
 use vb6_engine::frontend::scanner::ScannerContext;
 
 // ── Corpus parsing ────────────────────────────────────────────────────────────
@@ -132,7 +132,8 @@ fn parse_errors(src: &str) -> Vec<u32> {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    // Snippets may use object-module constructs (`Friend`, `Event`).
+    let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), ModuleKind::Class);
     parser.parse_module(&mut arena);
     parser
         .diagnostics

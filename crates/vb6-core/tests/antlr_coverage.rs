@@ -110,6 +110,7 @@ fn kind_name(n: &ExprNode) -> &'static str {
         DeclareDecl { .. } => "DeclareDecl",
         FileIoStmt { .. } => "FileIoStmt",
         Label { .. } => "Label",
+        JumpTarget { .. } => "JumpTarget",
         DefType { .. } => "DefType",
         Attribute { .. } => "Attribute",
     }

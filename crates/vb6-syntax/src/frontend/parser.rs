@@ -1816,7 +1816,7 @@ impl<'src> Parser<'src> {
         let step = if self.eat(TokenKind::Kw(Kw::Step)) {
             Some(self.parse_expr(arena, 0))
         } else { None };
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
         self.finish_next();
@@ -1830,7 +1830,7 @@ impl<'src> Parser<'src> {
         let var_sym = self.for_variable(arena, var, var_span);
         self.expect(TokenKind::Kw(Kw::In), ERR_EXPECTED_IN);
         let collection = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
         self.finish_next();
@@ -1907,7 +1907,7 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Until) => { self.advance(); Some((DoKind::PreUntil, self.parse_expr(arena, 0))) }
             _ => None,
         };
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::Do { pre_test: pre.is_some() });
         let body = self.parse_block(arena);
         let loop_span = self.current_span();
@@ -1921,7 +1921,7 @@ impl<'src> Parser<'src> {
             if p.is_some() && pre.is_some() {
                 self.diagnostics.push(ERR_LOOP_WITHOUT_DO, loop_span);
             }
-            self.eat_eol();
+            self.end_stmt();
             p
         } else {
             None
@@ -1941,11 +1941,11 @@ impl<'src> Parser<'src> {
     fn parse_while_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume While
         let cond = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::While);
         let body = self.parse_block(arena);
         if self.close_block(ERR_WHILE_WITHOUT_WEND) {
-            self.eat_eol();
+            self.end_stmt();
         }
         self.blocks.pop();
         arena.alloc(ExprNode::While { cond, body })
@@ -1955,11 +1955,11 @@ impl<'src> Parser<'src> {
     fn parse_with_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume With
         let obj = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::With);
         let body = self.parse_block(arena);
         if self.close_block(ERR_EXPECTED_END_WITH) {
-            self.eat_eol();
+            self.end_stmt();
         }
         self.blocks.pop();
         arena.alloc(ExprNode::With { obj, body })
@@ -1999,12 +1999,12 @@ impl<'src> Parser<'src> {
         if not_first_on_line {
             self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
         }
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::If);
         let then_body = self.parse_block(arena);
         let else_body = self.parse_else_clause(arena);
         if self.close_block(ERR_BLOCK_IF_WITHOUT_END_IF) { // `End If` or the one-word `EndIf`
-            self.eat_eol();
+            self.end_stmt();
         }
         self.blocks.pop();
         arena.alloc(ExprNode::If { cond, then_body, else_body })
@@ -2068,7 +2068,7 @@ impl<'src> Parser<'src> {
         self.advance(); // consume Select
         self.expect(TokenKind::Kw(Kw::Case), ERR_EXPECTED_CASE);
         let subject = self.parse_expr(arena, 0);
-        self.eat_eol();
+        self.end_stmt();
         self.blocks.push(Block::Select);
         let mut pre = Vec::new();
         let mut cases = Vec::new();
@@ -2081,7 +2081,7 @@ impl<'src> Parser<'src> {
                 }
                 TokenKind::Kw(Kw::End) if self.terminator() == Some(Term::EndSelect) => {
                     self.close_block(ERR_SELECT_WITHOUT_END_SELECT);
-                    self.eat_eol();
+                    self.end_stmt();
                     break;
                 }
                 TokenKind::Eof => break,
@@ -2105,12 +2105,12 @@ impl<'src> Parser<'src> {
 
     fn parse_case_clause(&mut self, arena: &mut ExprArena) -> NodeId {
         if self.eat(TokenKind::Kw(Kw::Else)) {
-            self.eat_eol();
+            self.end_stmt();
             let body = self.parse_block(arena);
             arena.alloc(ExprNode::CaseElse { body })
         } else {
             let test = self.parse_case_test_expr(arena);
-            self.eat_eol();
+            self.end_stmt();
             let body = self.parse_block(arena);
             arena.alloc(ExprNode::CaseBlock { test, body })
         }

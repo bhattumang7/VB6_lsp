@@ -71,8 +71,8 @@ fn implements_in_standard_module_is_rejected_at_the_keyword() {
 }
 
 #[test]
-fn access_modified_event_in_class_module_is_accepted() {
-    for src in ["Public Event Changed()\n", "Private Event Changed()\n"] {
+fn public_event_in_class_module_is_accepted() {
+    for src in ["Public Event Changed()\n", "Event Changed()\n"] {
         assert_eq!(diags("Model.cls", src), vec![], "{src:?}");
     }
 }
