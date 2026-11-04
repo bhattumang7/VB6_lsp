@@ -39,6 +39,12 @@ pub const ERR_EVENT_NOT_FOUND: u16 = 57150;
 pub const ERR_UDT_PASSED_BYVAL: u16 = 40140;
 /// "Can't assign to read-only property" (57094).
 pub const ERR_READ_ONLY_PROPERTY: u16 = 57094;
+/// "Wrong number of arguments or invalid property assignment" (450).
+pub const ERR_WRONG_NUMBER_OF_ARGUMENTS: u16 = 450;
+/// "Argument not optional" (449).
+pub const ERR_ARGUMENT_NOT_OPTIONAL: u16 = 449;
+/// "Named argument not found" (448).
+pub const ERR_NAMED_ARGUMENT_NOT_FOUND: u16 = 448;
 /// "Invalid ReDim" (40149): `ReDim` of a constant.
 pub const ERR_INVALID_REDIM: u16 = 40149;
 
@@ -1531,7 +1537,23 @@ impl<'a> Binder<'a> {
                 let t = self.types.get(&operand.0).cloned().unwrap_or_default();
                 self.types.insert(id.0, t);
             }
-            ExprNode::Call { func, .. } => {
+            ExprNode::Block { stmts } => {
+                // A bare name that is a procedure is a call with no arguments.
+                for st in stmts.clone() {
+                    self.check_call_argument_nodes(st, Vec::new());
+                }
+            }
+            ExprNode::Assign { value, .. } => {
+                let value = *value;
+                self.check_call_argument_nodes(value, Vec::new());
+            }
+            ExprNode::CallStmt { callee, args } => {
+                let (callee, args) = (*callee, *args);
+                self.check_call_arguments(callee, args);
+            }
+            ExprNode::Call { func, args } => {
+                let (func0, args0) = (*func, *args);
+                self.check_call_arguments(func0, args0);
                 // Return type: the resolution of `func` if it names a proc; a
                 // type-conversion intrinsic returns (and is classified as) its
                 // target type.
@@ -2220,6 +2242,87 @@ impl<'a> Binder<'a> {
     }
 
     /// Whether `res` names a declared constant or an enum member.
+    /// Check the arguments of a call to a `Sub` or `Function` of this module
+    /// against its parameter list: too many positional arguments, a required
+    /// parameter left without an argument, or a named argument that names no
+    /// parameter.
+    fn check_call_arguments(&mut self, func: NodeId, args: NodeId) {
+        let arg_nodes = match self.arena.get(args) {
+            ExprNode::ArgList { args } => args.clone(),
+            _ => return,
+        };
+        self.check_call_argument_nodes(func, arg_nodes);
+    }
+
+    fn check_call_argument_nodes(&mut self, func: NodeId, arg_nodes: Vec<NodeId>) {
+        if !matches!(self.arena.get(func), ExprNode::NameRef { .. }) {
+            return;
+        }
+        let Some(NameResolution::Proc(pi)) = self.resolutions.get(&func.0).cloned() else { return };
+        if !matches!(self.procs[pi].kind, ProcKind::Sub | ProcKind::Function) {
+            return;
+        }
+        let params = self.procs[pi].params.clone();
+        let has_param_array = params.last().is_some_and(|p| p.flags.param_array);
+        let slots = if has_param_array { params.len() - 1 } else { params.len() };
+
+        let mut positional = 0usize;
+        let mut positional_filled: Vec<bool> = Vec::new();
+        let mut named: Vec<String> = Vec::new();
+        let mut errors: Vec<(u16, Span)> = Vec::new();
+        let call_span = self.spans.get(func);
+        for &a in &arg_nodes {
+            match self.arena.get(a) {
+                ExprNode::NamedArg { name, .. } => {
+                    let wanted = self.name_of(*name).to_ascii_lowercase();
+                    let known = params[..slots]
+                        .iter()
+                        .any(|p| self.name_of(p.sym_id).to_ascii_lowercase() == wanted);
+                    if !known {
+                        errors.push((ERR_NAMED_ARGUMENT_NOT_FOUND, self.spans.get(a)));
+                    }
+                    named.push(wanted);
+                }
+                ExprNode::MissingArg => {
+                    positional += 1;
+                    positional_filled.push(false);
+                }
+                _ => {
+                    positional += 1;
+                    positional_filled.push(true);
+                }
+            }
+        }
+        // The extra arguments of a function that returns an object, a
+        // Variant or an array index its result (`Items("k")`), so only a Sub
+        // or a function with a scalar result has a fixed argument count.
+        let result_takes_arguments = self.procs[pi].kind == ProcKind::Function
+            && matches!(
+                self.procs[pi].ret_type,
+                VbaType::Variant | VbaType::Object | VbaType::Array(_) | VbaType::UserDefined(_)
+            );
+        if positional > slots && !has_param_array {
+            if !result_takes_arguments {
+                errors.push((ERR_WRONG_NUMBER_OF_ARGUMENTS, call_span));
+            }
+        } else {
+            for (i, p) in params[..slots].iter().enumerate() {
+                if p.flags.optional {
+                    continue;
+                }
+                let by_position = positional_filled.get(i).copied().unwrap_or(false);
+                let pname = self.name_of(p.sym_id).to_ascii_lowercase();
+                if !by_position && !named.contains(&pname) {
+                    errors.push((ERR_ARGUMENT_NOT_OPTIONAL, call_span));
+                    break;
+                }
+            }
+        }
+        for (code, span) in errors {
+            self.diagnostics.push(code as u32, span);
+        }
+    }
+
     /// True when the property whose `Get` is procedure `pi` also has a `Let`
     /// or `Set` accessor.
     fn has_property_writer(&self, pi: usize) -> bool {
