@@ -1,0 +1,101 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each word of words.txt.
+=== args0 bas
+Sub Probe()
+    x = {k}()
+End Sub
+=== args1 bas
+Sub Probe()
+    x = {k}(1)
+End Sub
+=== args2 bas
+Sub Probe()
+    x = {k}(1, 2)
+End Sub
+=== args3 bas
+Sub Probe()
+    x = {k}(1, 2, 3)
+End Sub
+=== args4 bas
+Sub Probe()
+    x = {k}(1, 2, 3, 4)
+End Sub
+=== args5 bas
+Sub Probe()
+    x = {k}(1, 2, 3, 4, 5)
+End Sub
+=== leadgap bas
+Sub Probe()
+    x = {k}(, 1)
+End Sub
+=== trailgap bas
+Sub Probe()
+    x = {k}(1, )
+End Sub
+=== midgap bas
+Sub Probe()
+    x = {k}(1, , 2)
+End Sub
+=== bare bas
+Sub Probe()
+    x = {k}
+End Sub
+=== nobracket bas
+Sub Probe()
+    x = {k} 1
+End Sub
+=== stmt0 bas
+Sub Probe()
+    {k}()
+End Sub
+=== stmt1 bas
+Sub Probe()
+    {k}(1)
+End Sub
+=== callstmt bas
+Sub Probe()
+    Call {k}(1)
+End Sub
+=== operand bas
+Sub Probe()
+    x = 1 + {k}(1)
+End Sub
+=== member bas
+Sub Probe()
+    x = {k}(1).y
+End Sub
+=== named bas
+Sub Probe()
+    x = {k}(a:=1)
+End Sub
+=== namearg1 bas
+Sub Probe()
+    x = {k}(a)
+End Sub
+=== namearg2 bas
+Sub Probe()
+    x = {k}(a, 1)
+End Sub
+=== namearg3 bas
+Sub Probe()
+    x = {k}(a, 1, 2)
+End Sub
+=== namemember bas
+Sub Probe()
+    x = {k}(a).y
+End Sub
+=== namecallstmt bas
+Sub Probe()
+    Call {k}(a)
+End Sub
+=== namestmt bas
+Sub Probe()
+    {k}(a)
+End Sub
+=== nameargs bas
+Sub Probe()
+    {k} a, 1
+End Sub
+=== withparen bas
+Sub Probe()
+    x = ({k})
+End Sub

@@ -1,0 +1,4601 @@
+# template	word	class	message
+args0	Xor	syntax	Syntax error
+args0	Write	syntax	Syntax error
+args0	WithEvents	syntax	Syntax error
+args0	With	syntax	Syntax error
+args0	Width	semantic	Argument not optional
+args0	While	syntax	Syntax error
+args0	Wend	syntax	Syntax error
+args0	Variant	syntax	Syntax error
+args0	Until	syntax	Syntax error
+args0	Unknown	semantic	Sub or Function not defined
+args0	Unlock	syntax	Syntax error
+args0	Unload	semantic	Argument not optional
+args0	UBound	syntax	Syntax error
+args0	TypeOf	syntax	Syntax error
+args0	Type	syntax	Syntax error
+args0	True	syntax	Syntax error
+args0	To	syntax	Syntax error
+args0	Then	syntax	Syntax error
+args0	Text	semantic	Sub or Function not defined
+args0	Tab	syntax	Syntax error
+args0	Sub	syntax	Syntax error
+args0	String	syntax	Syntax error
+args0	StrComp	syntax	Syntax error
+args0	Stop	syntax	Syntax error
+args0	Step	semantic	Sub or Function not defined
+args0	Static	syntax	Syntax error
+args0	Spc	syntax	Syntax error
+args0	Single	syntax	Syntax error
+args0	Shared	syntax	Syntax error
+args0	Sgn	syntax	Syntax error
+args0	Set	syntax	Syntax error
+args0	Select	syntax	Syntax error
+args0	Seek	semantic	Argument not optional
+args0	Scale	syntax	Syntax error
+args0	RSet	syntax	Syntax error
+args0	RGB	semantic	Argument not optional
+args0	Return	syntax	Syntax error
+args0	Resume	syntax	Syntax error
+args0	Rem	syntax	Syntax error
+args0	ReDim	syntax	Syntax error
+args0	Read	semantic	Sub or Function not defined
+args0	Randomize	semantic	Expected Function or variable
+args0	Random	semantic	Sub or Function not defined
+args0	RaiseEvent	syntax	Syntax error
+args0	Put	syntax	Syntax error
+args0	Public	syntax	Syntax error
+args0	PSet	syntax	Syntax error
+args0	Property	semantic	Sub or Function not defined
+args0	Private	syntax	Syntax error
+args0	Print	syntax	Syntax error
+args0	Preserve	syntax	Syntax error
+args0	ParamArray	syntax	Syntax error
+args0	Output	semantic	Sub or Function not defined
+args0	Or	syntax	Syntax error
+args0	Optional	syntax	Syntax error
+args0	Option	syntax	Syntax error
+args0	Open	syntax	Syntax error
+args0	On	syntax	Syntax error
+args0	Object	semantic	Sub or Function not defined
+args0	Null	syntax	Syntax error
+args0	Nothing	syntax	Syntax error
+args0	Not	syntax	Syntax error
+args0	Next	syntax	Syntax error
+args0	New	syntax	Syntax error
+args0	Name	semantic	Sub or Function not defined
+args0	Module	semantic	Sub or Function not defined
+args0	Mod	syntax	Syntax error
+args0	MidB	semantic	Argument not optional
+args0	Mid	semantic	Argument not optional
+args0	Me	semantic	Invalid use of Me keyword
+args0	LSet	syntax	Syntax error
+args0	Loop	syntax	Syntax error
+args0	Long	syntax	Syntax error
+args0	Lock	syntax	Syntax error
+args0	Local	syntax	Syntax error
+args0	Load	semantic	Argument not optional
+args0	LINEINPUT	syntax	Syntax error
+args0	Line	semantic	Sub or Function not defined
+args0	Like	syntax	Syntax error
+args0	Lib	semantic	Sub or Function not defined
+args0	Let	syntax	Syntax error
+args0	LenB	syntax	Syntax error
+args0	Len	syntax	Syntax error
+args0	Left	semantic	Argument not optional
+args0	LBound	syntax	Syntax error
+args0	Is	syntax	Syntax error
+args0	Integer	syntax	Syntax error
+args0	Int	syntax	Syntax error
+args0	InStrB	syntax	Syntax error
+args0	InStr	syntax	Syntax error
+args0	InputB	syntax	Syntax error
+args0	Input	syntax	Syntax error
+args0	In	syntax	Syntax error
+args0	Implements	syntax	Syntax error
+args0	Imp	syntax	Syntax error
+args0	If	syntax	Syntax error
+args0	GoTo	syntax	Syntax error
+args0	GoSub	syntax	Syntax error
+args0	Go	semantic	Sub or Function not defined
+args0	Global	syntax	Syntax error
+args0	Get	syntax	Syntax error
+args0	Function	syntax	Syntax error
+args0	Friend	syntax	Syntax error
+args0	FreeFile	accepted	
+args0	Format	semantic	Argument not optional
+args0	For	syntax	Syntax error
+args0	Fix	syntax	Syntax error
+args0	False	syntax	Syntax error
+args0	Explicit	semantic	Sub or Function not defined
+args0	Exit	syntax	Syntax error
+args0	Event	syntax	Syntax error
+args0	Error	accepted	
+args0	Erase	syntax	Syntax error
+args0	Eqv	syntax	Syntax error
+args0	Enum	syntax	Syntax error
+args0	EndIf	syntax	Syntax error
+args0	End	syntax	Syntax error
+args0	Empty	syntax	Syntax error
+args0	ElseIf	syntax	Syntax error
+args0	Else	syntax	Syntax error
+args0	Each	syntax	Syntax error
+args0	Double	syntax	Syntax error
+args0	DoEvents	accepted	
+args0	Do	syntax	Syntax error
+args0	Dir	accepted	
+args0	Dim	syntax	Syntax error
+args0	DefVar	syntax	Syntax error
+args0	DefStr	syntax	Syntax error
+args0	DefSng	syntax	Syntax error
+args0	DefObj	syntax	Syntax error
+args0	DefLng	syntax	Syntax error
+args0	DefInt	syntax	Syntax error
+args0	DefDbl	syntax	Syntax error
+args0	DefDec	semantic	Sub or Function not defined
+args0	DefDate	syntax	Syntax error
+args0	DefCur	syntax	Syntax error
+args0	DefByte	syntax	Syntax error
+args0	DefBool	syntax	Syntax error
+args0	Declare	syntax	Syntax error
+args0	Decimal	semantic	Sub or Function not defined
+args0	Debug	syntax	Syntax error
+args0	Date	accepted	
+args0	Database	semantic	Sub or Function not defined
+args0	Currency	syntax	Syntax error
+args0	CVErr	syntax	Syntax error
+args0	CVDate	semantic	Argument not optional
+args0	CVar	syntax	Syntax error
+args0	CurDir	accepted	
+args0	CStr	syntax	Syntax error
+args0	CSng	syntax	Syntax error
+args0	Const	syntax	Syntax error
+args0	Compare	semantic	Sub or Function not defined
+args0	Close	syntax	Syntax error
+args0	CLng	syntax	Syntax error
+args0	Circle	syntax	Syntax error
+args0	CInt	syntax	Syntax error
+args0	ChDir	semantic	Argument not optional
+args0	CDecl	syntax	Syntax error
+args0	CDbl	syntax	Syntax error
+args0	CDec	semantic	Argument not optional
+args0	CDate	syntax	Syntax error
+args0	CCur	syntax	Syntax error
+args0	CByte	syntax	Syntax error
+args0	CBool	syntax	Syntax error
+args0	Case	syntax	Syntax error
+args0	Call	syntax	Syntax error
+args0	ByVal	syntax	Syntax error
+args0	Byte	syntax	Syntax error
+args0	ByRef	syntax	Syntax error
+args0	Boolean	syntax	Syntax error
+args0	Binary	semantic	Sub or Function not defined
+args0	BF	semantic	Sub or Function not defined
+args0	Base	semantic	Sub or Function not defined
+args0	Assert	semantic	Sub or Function not defined
+args0	As	syntax	Syntax error
+args0	Array	accepted	
+args0	Append	semantic	Sub or Function not defined
+args0	Any	syntax	Syntax error
+args0	And	syntax	Syntax error
+args0	Alias	semantic	Sub or Function not defined
+args0	AddressOf	syntax	Syntax error
+args0	Access	semantic	Sub or Function not defined
+args0	Abs	syntax	Syntax error
+args0	Zork	semantic	Sub or Function not defined
+args1	Xor	syntax	Syntax error
+args1	Write	syntax	Syntax error
+args1	WithEvents	syntax	Syntax error
+args1	With	syntax	Syntax error
+args1	Width	semantic	Argument not optional
+args1	While	syntax	Syntax error
+args1	Wend	syntax	Syntax error
+args1	Variant	syntax	Syntax error
+args1	Until	syntax	Syntax error
+args1	Unknown	semantic	Sub or Function not defined
+args1	Unlock	syntax	Syntax error
+args1	Unload	semantic	Type mismatch
+args1	UBound	syntax	Syntax error
+args1	TypeOf	syntax	Syntax error
+args1	Type	syntax	Syntax error
+args1	True	syntax	Syntax error
+args1	To	syntax	Syntax error
+args1	Then	syntax	Syntax error
+args1	Text	semantic	Sub or Function not defined
+args1	Tab	syntax	Syntax error
+args1	Sub	syntax	Syntax error
+args1	String	syntax	Syntax error
+args1	StrComp	syntax	Syntax error
+args1	Stop	syntax	Syntax error
+args1	Step	semantic	Sub or Function not defined
+args1	Static	syntax	Syntax error
+args1	Spc	syntax	Syntax error
+args1	Single	syntax	Syntax error
+args1	Shared	syntax	Syntax error
+args1	Sgn	accepted	
+args1	Set	syntax	Syntax error
+args1	Select	syntax	Syntax error
+args1	Seek	accepted	
+args1	Scale	syntax	Syntax error
+args1	RSet	syntax	Syntax error
+args1	RGB	semantic	Argument not optional
+args1	Return	syntax	Syntax error
+args1	Resume	syntax	Syntax error
+args1	Rem	syntax	Syntax error
+args1	ReDim	syntax	Syntax error
+args1	Read	semantic	Sub or Function not defined
+args1	Randomize	semantic	Expected Function or variable
+args1	Random	semantic	Sub or Function not defined
+args1	RaiseEvent	syntax	Syntax error
+args1	Put	syntax	Syntax error
+args1	Public	syntax	Syntax error
+args1	PSet	syntax	Syntax error
+args1	Property	semantic	Sub or Function not defined
+args1	Private	syntax	Syntax error
+args1	Print	syntax	Syntax error
+args1	Preserve	syntax	Syntax error
+args1	ParamArray	syntax	Syntax error
+args1	Output	semantic	Sub or Function not defined
+args1	Or	syntax	Syntax error
+args1	Optional	syntax	Syntax error
+args1	Option	syntax	Syntax error
+args1	Open	syntax	Syntax error
+args1	On	syntax	Syntax error
+args1	Object	semantic	Sub or Function not defined
+args1	Null	syntax	Syntax error
+args1	Nothing	syntax	Syntax error
+args1	Not	accepted	
+args1	Next	syntax	Syntax error
+args1	New	syntax	Syntax error
+args1	Name	semantic	Sub or Function not defined
+args1	Module	semantic	Sub or Function not defined
+args1	Mod	syntax	Syntax error
+args1	MidB	semantic	Argument not optional
+args1	Mid	semantic	Argument not optional
+args1	Me	semantic	Invalid use of Me keyword
+args1	LSet	syntax	Syntax error
+args1	Loop	syntax	Syntax error
+args1	Long	syntax	Syntax error
+args1	Lock	syntax	Syntax error
+args1	Local	syntax	Syntax error
+args1	Load	semantic	Type mismatch
+args1	LINEINPUT	syntax	Syntax error
+args1	Line	semantic	Sub or Function not defined
+args1	Like	syntax	Syntax error
+args1	Lib	semantic	Sub or Function not defined
+args1	Let	syntax	Syntax error
+args1	LenB	semantic	Variable required - can't assign to this expression
+args1	Len	semantic	Variable required - can't assign to this expression
+args1	Left	semantic	Argument not optional
+args1	LBound	syntax	Syntax error
+args1	Is	syntax	Syntax error
+args1	Integer	syntax	Syntax error
+args1	Int	accepted	
+args1	InStrB	syntax	Syntax error
+args1	InStr	syntax	Syntax error
+args1	InputB	syntax	Syntax error
+args1	Input	syntax	Syntax error
+args1	In	syntax	Syntax error
+args1	Implements	syntax	Syntax error
+args1	Imp	syntax	Syntax error
+args1	If	syntax	Syntax error
+args1	GoTo	syntax	Syntax error
+args1	GoSub	syntax	Syntax error
+args1	Go	semantic	Sub or Function not defined
+args1	Global	syntax	Syntax error
+args1	Get	syntax	Syntax error
+args1	Function	syntax	Syntax error
+args1	Friend	syntax	Syntax error
+args1	FreeFile	accepted	
+args1	Format	accepted	
+args1	For	syntax	Syntax error
+args1	Fix	accepted	
+args1	False	syntax	Syntax error
+args1	Explicit	semantic	Sub or Function not defined
+args1	Exit	syntax	Syntax error
+args1	Event	syntax	Syntax error
+args1	Error	accepted	
+args1	Erase	syntax	Syntax error
+args1	Eqv	syntax	Syntax error
+args1	Enum	syntax	Syntax error
+args1	EndIf	syntax	Syntax error
+args1	End	syntax	Syntax error
+args1	Empty	syntax	Syntax error
+args1	ElseIf	syntax	Syntax error
+args1	Else	syntax	Syntax error
+args1	Each	syntax	Syntax error
+args1	Double	syntax	Syntax error
+args1	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+args1	Do	syntax	Syntax error
+args1	Dir	accepted	
+args1	Dim	syntax	Syntax error
+args1	DefVar	syntax	Syntax error
+args1	DefStr	syntax	Syntax error
+args1	DefSng	syntax	Syntax error
+args1	DefObj	syntax	Syntax error
+args1	DefLng	syntax	Syntax error
+args1	DefInt	syntax	Syntax error
+args1	DefDbl	syntax	Syntax error
+args1	DefDec	semantic	Sub or Function not defined
+args1	DefDate	syntax	Syntax error
+args1	DefCur	syntax	Syntax error
+args1	DefByte	syntax	Syntax error
+args1	DefBool	syntax	Syntax error
+args1	Declare	syntax	Syntax error
+args1	Decimal	semantic	Sub or Function not defined
+args1	Debug	syntax	Syntax error
+args1	Date	syntax	Syntax error
+args1	Database	semantic	Sub or Function not defined
+args1	Currency	syntax	Syntax error
+args1	CVErr	accepted	
+args1	CVDate	accepted	
+args1	CVar	accepted	
+args1	CurDir	accepted	
+args1	CStr	accepted	
+args1	CSng	accepted	
+args1	Const	syntax	Syntax error
+args1	Compare	semantic	Sub or Function not defined
+args1	Close	syntax	Syntax error
+args1	CLng	accepted	
+args1	Circle	syntax	Syntax error
+args1	CInt	accepted	
+args1	ChDir	semantic	Expected Function or variable
+args1	CDecl	syntax	Syntax error
+args1	CDbl	accepted	
+args1	CDec	accepted	
+args1	CDate	accepted	
+args1	CCur	accepted	
+args1	CByte	accepted	
+args1	CBool	accepted	
+args1	Case	syntax	Syntax error
+args1	Call	syntax	Syntax error
+args1	ByVal	syntax	Syntax error
+args1	Byte	syntax	Syntax error
+args1	ByRef	syntax	Syntax error
+args1	Boolean	syntax	Syntax error
+args1	Binary	semantic	Sub or Function not defined
+args1	BF	semantic	Sub or Function not defined
+args1	Base	semantic	Sub or Function not defined
+args1	Assert	semantic	Sub or Function not defined
+args1	As	syntax	Syntax error
+args1	Array	accepted	
+args1	Append	semantic	Sub or Function not defined
+args1	Any	syntax	Syntax error
+args1	And	syntax	Syntax error
+args1	Alias	semantic	Sub or Function not defined
+args1	AddressOf	syntax	Syntax error
+args1	Access	semantic	Sub or Function not defined
+args1	Abs	accepted	
+args1	Zork	semantic	Sub or Function not defined
+args2	Xor	syntax	Syntax error
+args2	Write	syntax	Syntax error
+args2	WithEvents	syntax	Syntax error
+args2	With	syntax	Syntax error
+args2	Width	semantic	Expected Function or variable
+args2	While	syntax	Syntax error
+args2	Wend	syntax	Syntax error
+args2	Variant	syntax	Syntax error
+args2	Until	syntax	Syntax error
+args2	Unknown	semantic	Sub or Function not defined
+args2	Unlock	syntax	Syntax error
+args2	Unload	semantic	Type mismatch
+args2	UBound	syntax	Syntax error
+args2	TypeOf	syntax	Syntax error
+args2	Type	syntax	Syntax error
+args2	True	syntax	Syntax error
+args2	To	syntax	Syntax error
+args2	Then	syntax	Syntax error
+args2	Text	semantic	Sub or Function not defined
+args2	Tab	syntax	Syntax error
+args2	Sub	syntax	Syntax error
+args2	String	accepted	
+args2	StrComp	accepted	
+args2	Stop	syntax	Syntax error
+args2	Step	semantic	Sub or Function not defined
+args2	Static	syntax	Syntax error
+args2	Spc	syntax	Syntax error
+args2	Single	syntax	Syntax error
+args2	Shared	syntax	Syntax error
+args2	Sgn	syntax	Syntax error
+args2	Set	syntax	Syntax error
+args2	Select	syntax	Syntax error
+args2	Seek	semantic	Wrong number of arguments or invalid property assignment
+args2	Scale	syntax	Syntax error
+args2	RSet	syntax	Syntax error
+args2	RGB	semantic	Argument not optional
+args2	Return	syntax	Syntax error
+args2	Resume	syntax	Syntax error
+args2	Rem	syntax	Syntax error
+args2	ReDim	syntax	Syntax error
+args2	Read	semantic	Sub or Function not defined
+args2	Randomize	semantic	Wrong number of arguments or invalid property assignment
+args2	Random	semantic	Sub or Function not defined
+args2	RaiseEvent	syntax	Syntax error
+args2	Put	syntax	Syntax error
+args2	Public	syntax	Syntax error
+args2	PSet	syntax	Syntax error
+args2	Property	semantic	Sub or Function not defined
+args2	Private	syntax	Syntax error
+args2	Print	syntax	Syntax error
+args2	Preserve	syntax	Syntax error
+args2	ParamArray	syntax	Syntax error
+args2	Output	semantic	Sub or Function not defined
+args2	Or	syntax	Syntax error
+args2	Optional	syntax	Syntax error
+args2	Option	syntax	Syntax error
+args2	Open	syntax	Syntax error
+args2	On	syntax	Syntax error
+args2	Object	semantic	Sub or Function not defined
+args2	Null	syntax	Syntax error
+args2	Nothing	syntax	Syntax error
+args2	Not	syntax	Syntax error
+args2	Next	syntax	Syntax error
+args2	New	syntax	Syntax error
+args2	Name	semantic	Sub or Function not defined
+args2	Module	semantic	Sub or Function not defined
+args2	Mod	syntax	Syntax error
+args2	MidB	accepted	
+args2	Mid	accepted	
+args2	Me	semantic	Invalid use of Me keyword
+args2	LSet	syntax	Syntax error
+args2	Loop	syntax	Syntax error
+args2	Long	syntax	Syntax error
+args2	Lock	syntax	Syntax error
+args2	Local	syntax	Syntax error
+args2	Load	semantic	Type mismatch
+args2	LINEINPUT	syntax	Syntax error
+args2	Line	semantic	Sub or Function not defined
+args2	Like	syntax	Syntax error
+args2	Lib	semantic	Sub or Function not defined
+args2	Let	syntax	Syntax error
+args2	LenB	syntax	Syntax error
+args2	Len	syntax	Syntax error
+args2	Left	accepted	
+args2	LBound	syntax	Syntax error
+args2	Is	syntax	Syntax error
+args2	Integer	syntax	Syntax error
+args2	Int	syntax	Syntax error
+args2	InStrB	accepted	
+args2	InStr	accepted	
+args2	InputB	accepted	
+args2	Input	accepted	
+args2	In	syntax	Syntax error
+args2	Implements	syntax	Syntax error
+args2	Imp	syntax	Syntax error
+args2	If	syntax	Syntax error
+args2	GoTo	syntax	Syntax error
+args2	GoSub	syntax	Syntax error
+args2	Go	semantic	Sub or Function not defined
+args2	Global	syntax	Syntax error
+args2	Get	syntax	Syntax error
+args2	Function	syntax	Syntax error
+args2	Friend	syntax	Syntax error
+args2	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+args2	Format	accepted	
+args2	For	syntax	Syntax error
+args2	Fix	syntax	Syntax error
+args2	False	syntax	Syntax error
+args2	Explicit	semantic	Sub or Function not defined
+args2	Exit	syntax	Syntax error
+args2	Event	syntax	Syntax error
+args2	Error	semantic	Wrong number of arguments or invalid property assignment
+args2	Erase	syntax	Syntax error
+args2	Eqv	syntax	Syntax error
+args2	Enum	syntax	Syntax error
+args2	EndIf	syntax	Syntax error
+args2	End	syntax	Syntax error
+args2	Empty	syntax	Syntax error
+args2	ElseIf	syntax	Syntax error
+args2	Else	syntax	Syntax error
+args2	Each	syntax	Syntax error
+args2	Double	syntax	Syntax error
+args2	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+args2	Do	syntax	Syntax error
+args2	Dir	accepted	
+args2	Dim	syntax	Syntax error
+args2	DefVar	syntax	Syntax error
+args2	DefStr	syntax	Syntax error
+args2	DefSng	syntax	Syntax error
+args2	DefObj	syntax	Syntax error
+args2	DefLng	syntax	Syntax error
+args2	DefInt	syntax	Syntax error
+args2	DefDbl	syntax	Syntax error
+args2	DefDec	semantic	Sub or Function not defined
+args2	DefDate	syntax	Syntax error
+args2	DefCur	syntax	Syntax error
+args2	DefByte	syntax	Syntax error
+args2	DefBool	syntax	Syntax error
+args2	Declare	syntax	Syntax error
+args2	Decimal	semantic	Sub or Function not defined
+args2	Debug	syntax	Syntax error
+args2	Date	syntax	Syntax error
+args2	Database	semantic	Sub or Function not defined
+args2	Currency	syntax	Syntax error
+args2	CVErr	syntax	Syntax error
+args2	CVDate	semantic	Wrong number of arguments or invalid property assignment
+args2	CVar	syntax	Syntax error
+args2	CurDir	semantic	Wrong number of arguments or invalid property assignment
+args2	CStr	syntax	Syntax error
+args2	CSng	syntax	Syntax error
+args2	Const	syntax	Syntax error
+args2	Compare	semantic	Sub or Function not defined
+args2	Close	syntax	Syntax error
+args2	CLng	syntax	Syntax error
+args2	Circle	syntax	Syntax error
+args2	CInt	syntax	Syntax error
+args2	ChDir	semantic	Wrong number of arguments or invalid property assignment
+args2	CDecl	syntax	Syntax error
+args2	CDbl	syntax	Syntax error
+args2	CDec	semantic	Wrong number of arguments or invalid property assignment
+args2	CDate	syntax	Syntax error
+args2	CCur	syntax	Syntax error
+args2	CByte	syntax	Syntax error
+args2	CBool	syntax	Syntax error
+args2	Case	syntax	Syntax error
+args2	Call	syntax	Syntax error
+args2	ByVal	syntax	Syntax error
+args2	Byte	syntax	Syntax error
+args2	ByRef	syntax	Syntax error
+args2	Boolean	syntax	Syntax error
+args2	Binary	semantic	Sub or Function not defined
+args2	BF	semantic	Sub or Function not defined
+args2	Base	semantic	Sub or Function not defined
+args2	Assert	semantic	Sub or Function not defined
+args2	As	syntax	Syntax error
+args2	Array	accepted	
+args2	Append	semantic	Sub or Function not defined
+args2	Any	syntax	Syntax error
+args2	And	syntax	Syntax error
+args2	Alias	semantic	Sub or Function not defined
+args2	AddressOf	syntax	Syntax error
+args2	Access	semantic	Sub or Function not defined
+args2	Abs	syntax	Syntax error
+args2	Zork	semantic	Sub or Function not defined
+args3	Xor	syntax	Syntax error
+args3	Write	syntax	Syntax error
+args3	WithEvents	syntax	Syntax error
+args3	With	syntax	Syntax error
+args3	Width	semantic	Wrong number of arguments or invalid property assignment
+args3	While	syntax	Syntax error
+args3	Wend	syntax	Syntax error
+args3	Variant	syntax	Syntax error
+args3	Until	syntax	Syntax error
+args3	Unknown	semantic	Sub or Function not defined
+args3	Unlock	syntax	Syntax error
+args3	Unload	semantic	Type mismatch
+args3	UBound	syntax	Syntax error
+args3	TypeOf	syntax	Syntax error
+args3	Type	syntax	Syntax error
+args3	True	syntax	Syntax error
+args3	To	syntax	Syntax error
+args3	Then	syntax	Syntax error
+args3	Text	semantic	Sub or Function not defined
+args3	Tab	syntax	Syntax error
+args3	Sub	syntax	Syntax error
+args3	String	syntax	Syntax error
+args3	StrComp	accepted	
+args3	Stop	syntax	Syntax error
+args3	Step	semantic	Sub or Function not defined
+args3	Static	syntax	Syntax error
+args3	Spc	syntax	Syntax error
+args3	Single	syntax	Syntax error
+args3	Shared	syntax	Syntax error
+args3	Sgn	syntax	Syntax error
+args3	Set	syntax	Syntax error
+args3	Select	syntax	Syntax error
+args3	Seek	semantic	Wrong number of arguments or invalid property assignment
+args3	Scale	syntax	Syntax error
+args3	RSet	syntax	Syntax error
+args3	RGB	accepted	
+args3	Return	syntax	Syntax error
+args3	Resume	syntax	Syntax error
+args3	Rem	syntax	Syntax error
+args3	ReDim	syntax	Syntax error
+args3	Read	semantic	Sub or Function not defined
+args3	Randomize	semantic	Wrong number of arguments or invalid property assignment
+args3	Random	semantic	Sub or Function not defined
+args3	RaiseEvent	syntax	Syntax error
+args3	Put	syntax	Syntax error
+args3	Public	syntax	Syntax error
+args3	PSet	syntax	Syntax error
+args3	Property	semantic	Sub or Function not defined
+args3	Private	syntax	Syntax error
+args3	Print	syntax	Syntax error
+args3	Preserve	syntax	Syntax error
+args3	ParamArray	syntax	Syntax error
+args3	Output	semantic	Sub or Function not defined
+args3	Or	syntax	Syntax error
+args3	Optional	syntax	Syntax error
+args3	Option	syntax	Syntax error
+args3	Open	syntax	Syntax error
+args3	On	syntax	Syntax error
+args3	Object	semantic	Sub or Function not defined
+args3	Null	syntax	Syntax error
+args3	Nothing	syntax	Syntax error
+args3	Not	syntax	Syntax error
+args3	Next	syntax	Syntax error
+args3	New	syntax	Syntax error
+args3	Name	semantic	Sub or Function not defined
+args3	Module	semantic	Sub or Function not defined
+args3	Mod	syntax	Syntax error
+args3	MidB	accepted	
+args3	Mid	accepted	
+args3	Me	semantic	Invalid use of Me keyword
+args3	LSet	syntax	Syntax error
+args3	Loop	syntax	Syntax error
+args3	Long	syntax	Syntax error
+args3	Lock	syntax	Syntax error
+args3	Local	syntax	Syntax error
+args3	Load	semantic	Type mismatch
+args3	LINEINPUT	syntax	Syntax error
+args3	Line	semantic	Sub or Function not defined
+args3	Like	syntax	Syntax error
+args3	Lib	semantic	Sub or Function not defined
+args3	Let	syntax	Syntax error
+args3	LenB	syntax	Syntax error
+args3	Len	syntax	Syntax error
+args3	Left	semantic	Wrong number of arguments or invalid property assignment
+args3	LBound	syntax	Syntax error
+args3	Is	syntax	Syntax error
+args3	Integer	syntax	Syntax error
+args3	Int	syntax	Syntax error
+args3	InStrB	accepted	
+args3	InStr	accepted	
+args3	InputB	syntax	Syntax error
+args3	Input	syntax	Syntax error
+args3	In	syntax	Syntax error
+args3	Implements	syntax	Syntax error
+args3	Imp	syntax	Syntax error
+args3	If	syntax	Syntax error
+args3	GoTo	syntax	Syntax error
+args3	GoSub	syntax	Syntax error
+args3	Go	semantic	Sub or Function not defined
+args3	Global	syntax	Syntax error
+args3	Get	syntax	Syntax error
+args3	Function	syntax	Syntax error
+args3	Friend	syntax	Syntax error
+args3	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+args3	Format	accepted	
+args3	For	syntax	Syntax error
+args3	Fix	syntax	Syntax error
+args3	False	syntax	Syntax error
+args3	Explicit	semantic	Sub or Function not defined
+args3	Exit	syntax	Syntax error
+args3	Event	syntax	Syntax error
+args3	Error	semantic	Wrong number of arguments or invalid property assignment
+args3	Erase	syntax	Syntax error
+args3	Eqv	syntax	Syntax error
+args3	Enum	syntax	Syntax error
+args3	EndIf	syntax	Syntax error
+args3	End	syntax	Syntax error
+args3	Empty	syntax	Syntax error
+args3	ElseIf	syntax	Syntax error
+args3	Else	syntax	Syntax error
+args3	Each	syntax	Syntax error
+args3	Double	syntax	Syntax error
+args3	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+args3	Do	syntax	Syntax error
+args3	Dir	semantic	Wrong number of arguments or invalid property assignment
+args3	Dim	syntax	Syntax error
+args3	DefVar	syntax	Syntax error
+args3	DefStr	syntax	Syntax error
+args3	DefSng	syntax	Syntax error
+args3	DefObj	syntax	Syntax error
+args3	DefLng	syntax	Syntax error
+args3	DefInt	syntax	Syntax error
+args3	DefDbl	syntax	Syntax error
+args3	DefDec	semantic	Sub or Function not defined
+args3	DefDate	syntax	Syntax error
+args3	DefCur	syntax	Syntax error
+args3	DefByte	syntax	Syntax error
+args3	DefBool	syntax	Syntax error
+args3	Declare	syntax	Syntax error
+args3	Decimal	semantic	Sub or Function not defined
+args3	Debug	syntax	Syntax error
+args3	Date	syntax	Syntax error
+args3	Database	semantic	Sub or Function not defined
+args3	Currency	syntax	Syntax error
+args3	CVErr	syntax	Syntax error
+args3	CVDate	semantic	Wrong number of arguments or invalid property assignment
+args3	CVar	syntax	Syntax error
+args3	CurDir	semantic	Wrong number of arguments or invalid property assignment
+args3	CStr	syntax	Syntax error
+args3	CSng	syntax	Syntax error
+args3	Const	syntax	Syntax error
+args3	Compare	semantic	Sub or Function not defined
+args3	Close	syntax	Syntax error
+args3	CLng	syntax	Syntax error
+args3	Circle	syntax	Syntax error
+args3	CInt	syntax	Syntax error
+args3	ChDir	semantic	Wrong number of arguments or invalid property assignment
+args3	CDecl	syntax	Syntax error
+args3	CDbl	syntax	Syntax error
+args3	CDec	semantic	Wrong number of arguments or invalid property assignment
+args3	CDate	syntax	Syntax error
+args3	CCur	syntax	Syntax error
+args3	CByte	syntax	Syntax error
+args3	CBool	syntax	Syntax error
+args3	Case	syntax	Syntax error
+args3	Call	syntax	Syntax error
+args3	ByVal	syntax	Syntax error
+args3	Byte	syntax	Syntax error
+args3	ByRef	syntax	Syntax error
+args3	Boolean	syntax	Syntax error
+args3	Binary	semantic	Sub or Function not defined
+args3	BF	semantic	Sub or Function not defined
+args3	Base	semantic	Sub or Function not defined
+args3	Assert	semantic	Sub or Function not defined
+args3	As	syntax	Syntax error
+args3	Array	accepted	
+args3	Append	semantic	Sub or Function not defined
+args3	Any	syntax	Syntax error
+args3	And	syntax	Syntax error
+args3	Alias	semantic	Sub or Function not defined
+args3	AddressOf	syntax	Syntax error
+args3	Access	semantic	Sub or Function not defined
+args3	Abs	syntax	Syntax error
+args3	Zork	semantic	Sub or Function not defined
+args4	Xor	syntax	Syntax error
+args4	Write	syntax	Syntax error
+args4	WithEvents	syntax	Syntax error
+args4	With	syntax	Syntax error
+args4	Width	semantic	Wrong number of arguments or invalid property assignment
+args4	While	syntax	Syntax error
+args4	Wend	syntax	Syntax error
+args4	Variant	syntax	Syntax error
+args4	Until	syntax	Syntax error
+args4	Unknown	semantic	Sub or Function not defined
+args4	Unlock	syntax	Syntax error
+args4	Unload	semantic	Type mismatch
+args4	UBound	syntax	Syntax error
+args4	TypeOf	syntax	Syntax error
+args4	Type	syntax	Syntax error
+args4	True	syntax	Syntax error
+args4	To	syntax	Syntax error
+args4	Then	syntax	Syntax error
+args4	Text	semantic	Sub or Function not defined
+args4	Tab	syntax	Syntax error
+args4	Sub	syntax	Syntax error
+args4	String	syntax	Syntax error
+args4	StrComp	syntax	Syntax error
+args4	Stop	syntax	Syntax error
+args4	Step	semantic	Sub or Function not defined
+args4	Static	syntax	Syntax error
+args4	Spc	syntax	Syntax error
+args4	Single	syntax	Syntax error
+args4	Shared	syntax	Syntax error
+args4	Sgn	syntax	Syntax error
+args4	Set	syntax	Syntax error
+args4	Select	syntax	Syntax error
+args4	Seek	semantic	Wrong number of arguments or invalid property assignment
+args4	Scale	syntax	Syntax error
+args4	RSet	syntax	Syntax error
+args4	RGB	semantic	Wrong number of arguments or invalid property assignment
+args4	Return	syntax	Syntax error
+args4	Resume	syntax	Syntax error
+args4	Rem	syntax	Syntax error
+args4	ReDim	syntax	Syntax error
+args4	Read	semantic	Sub or Function not defined
+args4	Randomize	semantic	Wrong number of arguments or invalid property assignment
+args4	Random	semantic	Sub or Function not defined
+args4	RaiseEvent	syntax	Syntax error
+args4	Put	syntax	Syntax error
+args4	Public	syntax	Syntax error
+args4	PSet	syntax	Syntax error
+args4	Property	semantic	Sub or Function not defined
+args4	Private	syntax	Syntax error
+args4	Print	syntax	Syntax error
+args4	Preserve	syntax	Syntax error
+args4	ParamArray	syntax	Syntax error
+args4	Output	semantic	Sub or Function not defined
+args4	Or	syntax	Syntax error
+args4	Optional	syntax	Syntax error
+args4	Option	syntax	Syntax error
+args4	Open	syntax	Syntax error
+args4	On	syntax	Syntax error
+args4	Object	semantic	Sub or Function not defined
+args4	Null	syntax	Syntax error
+args4	Nothing	syntax	Syntax error
+args4	Not	syntax	Syntax error
+args4	Next	syntax	Syntax error
+args4	New	syntax	Syntax error
+args4	Name	semantic	Sub or Function not defined
+args4	Module	semantic	Sub or Function not defined
+args4	Mod	syntax	Syntax error
+args4	MidB	semantic	Wrong number of arguments or invalid property assignment
+args4	Mid	semantic	Wrong number of arguments or invalid property assignment
+args4	Me	semantic	Invalid use of Me keyword
+args4	LSet	syntax	Syntax error
+args4	Loop	syntax	Syntax error
+args4	Long	syntax	Syntax error
+args4	Lock	syntax	Syntax error
+args4	Local	syntax	Syntax error
+args4	Load	semantic	Type mismatch
+args4	LINEINPUT	syntax	Syntax error
+args4	Line	semantic	Sub or Function not defined
+args4	Like	syntax	Syntax error
+args4	Lib	semantic	Sub or Function not defined
+args4	Let	syntax	Syntax error
+args4	LenB	syntax	Syntax error
+args4	Len	syntax	Syntax error
+args4	Left	semantic	Wrong number of arguments or invalid property assignment
+args4	LBound	syntax	Syntax error
+args4	Is	syntax	Syntax error
+args4	Integer	syntax	Syntax error
+args4	Int	syntax	Syntax error
+args4	InStrB	accepted	
+args4	InStr	accepted	
+args4	InputB	syntax	Syntax error
+args4	Input	syntax	Syntax error
+args4	In	syntax	Syntax error
+args4	Implements	syntax	Syntax error
+args4	Imp	syntax	Syntax error
+args4	If	syntax	Syntax error
+args4	GoTo	syntax	Syntax error
+args4	GoSub	syntax	Syntax error
+args4	Go	semantic	Sub or Function not defined
+args4	Global	syntax	Syntax error
+args4	Get	syntax	Syntax error
+args4	Function	syntax	Syntax error
+args4	Friend	syntax	Syntax error
+args4	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+args4	Format	accepted	
+args4	For	syntax	Syntax error
+args4	Fix	syntax	Syntax error
+args4	False	syntax	Syntax error
+args4	Explicit	semantic	Sub or Function not defined
+args4	Exit	syntax	Syntax error
+args4	Event	syntax	Syntax error
+args4	Error	semantic	Wrong number of arguments or invalid property assignment
+args4	Erase	syntax	Syntax error
+args4	Eqv	syntax	Syntax error
+args4	Enum	syntax	Syntax error
+args4	EndIf	syntax	Syntax error
+args4	End	syntax	Syntax error
+args4	Empty	syntax	Syntax error
+args4	ElseIf	syntax	Syntax error
+args4	Else	syntax	Syntax error
+args4	Each	syntax	Syntax error
+args4	Double	syntax	Syntax error
+args4	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+args4	Do	syntax	Syntax error
+args4	Dir	semantic	Wrong number of arguments or invalid property assignment
+args4	Dim	syntax	Syntax error
+args4	DefVar	syntax	Syntax error
+args4	DefStr	syntax	Syntax error
+args4	DefSng	syntax	Syntax error
+args4	DefObj	syntax	Syntax error
+args4	DefLng	syntax	Syntax error
+args4	DefInt	syntax	Syntax error
+args4	DefDbl	syntax	Syntax error
+args4	DefDec	semantic	Sub or Function not defined
+args4	DefDate	syntax	Syntax error
+args4	DefCur	syntax	Syntax error
+args4	DefByte	syntax	Syntax error
+args4	DefBool	syntax	Syntax error
+args4	Declare	syntax	Syntax error
+args4	Decimal	semantic	Sub or Function not defined
+args4	Debug	syntax	Syntax error
+args4	Date	syntax	Syntax error
+args4	Database	semantic	Sub or Function not defined
+args4	Currency	syntax	Syntax error
+args4	CVErr	syntax	Syntax error
+args4	CVDate	semantic	Wrong number of arguments or invalid property assignment
+args4	CVar	syntax	Syntax error
+args4	CurDir	semantic	Wrong number of arguments or invalid property assignment
+args4	CStr	syntax	Syntax error
+args4	CSng	syntax	Syntax error
+args4	Const	syntax	Syntax error
+args4	Compare	semantic	Sub or Function not defined
+args4	Close	syntax	Syntax error
+args4	CLng	syntax	Syntax error
+args4	Circle	syntax	Syntax error
+args4	CInt	syntax	Syntax error
+args4	ChDir	semantic	Wrong number of arguments or invalid property assignment
+args4	CDecl	syntax	Syntax error
+args4	CDbl	syntax	Syntax error
+args4	CDec	semantic	Wrong number of arguments or invalid property assignment
+args4	CDate	syntax	Syntax error
+args4	CCur	syntax	Syntax error
+args4	CByte	syntax	Syntax error
+args4	CBool	syntax	Syntax error
+args4	Case	syntax	Syntax error
+args4	Call	syntax	Syntax error
+args4	ByVal	syntax	Syntax error
+args4	Byte	syntax	Syntax error
+args4	ByRef	syntax	Syntax error
+args4	Boolean	syntax	Syntax error
+args4	Binary	semantic	Sub or Function not defined
+args4	BF	semantic	Sub or Function not defined
+args4	Base	semantic	Sub or Function not defined
+args4	Assert	semantic	Sub or Function not defined
+args4	As	syntax	Syntax error
+args4	Array	accepted	
+args4	Append	semantic	Sub or Function not defined
+args4	Any	syntax	Syntax error
+args4	And	syntax	Syntax error
+args4	Alias	semantic	Sub or Function not defined
+args4	AddressOf	syntax	Syntax error
+args4	Access	semantic	Sub or Function not defined
+args4	Abs	syntax	Syntax error
+args4	Zork	semantic	Sub or Function not defined
+args5	Xor	syntax	Syntax error
+args5	Write	syntax	Syntax error
+args5	WithEvents	syntax	Syntax error
+args5	With	syntax	Syntax error
+args5	Width	semantic	Wrong number of arguments or invalid property assignment
+args5	While	syntax	Syntax error
+args5	Wend	syntax	Syntax error
+args5	Variant	syntax	Syntax error
+args5	Until	syntax	Syntax error
+args5	Unknown	semantic	Sub or Function not defined
+args5	Unlock	syntax	Syntax error
+args5	Unload	semantic	Type mismatch
+args5	UBound	syntax	Syntax error
+args5	TypeOf	syntax	Syntax error
+args5	Type	syntax	Syntax error
+args5	True	syntax	Syntax error
+args5	To	syntax	Syntax error
+args5	Then	syntax	Syntax error
+args5	Text	semantic	Sub or Function not defined
+args5	Tab	syntax	Syntax error
+args5	Sub	syntax	Syntax error
+args5	String	syntax	Syntax error
+args5	StrComp	syntax	Syntax error
+args5	Stop	syntax	Syntax error
+args5	Step	semantic	Sub or Function not defined
+args5	Static	syntax	Syntax error
+args5	Spc	syntax	Syntax error
+args5	Single	syntax	Syntax error
+args5	Shared	syntax	Syntax error
+args5	Sgn	syntax	Syntax error
+args5	Set	syntax	Syntax error
+args5	Select	syntax	Syntax error
+args5	Seek	semantic	Wrong number of arguments or invalid property assignment
+args5	Scale	syntax	Syntax error
+args5	RSet	syntax	Syntax error
+args5	RGB	semantic	Wrong number of arguments or invalid property assignment
+args5	Return	syntax	Syntax error
+args5	Resume	syntax	Syntax error
+args5	Rem	syntax	Syntax error
+args5	ReDim	syntax	Syntax error
+args5	Read	semantic	Sub or Function not defined
+args5	Randomize	semantic	Wrong number of arguments or invalid property assignment
+args5	Random	semantic	Sub or Function not defined
+args5	RaiseEvent	syntax	Syntax error
+args5	Put	syntax	Syntax error
+args5	Public	syntax	Syntax error
+args5	PSet	syntax	Syntax error
+args5	Property	semantic	Sub or Function not defined
+args5	Private	syntax	Syntax error
+args5	Print	syntax	Syntax error
+args5	Preserve	syntax	Syntax error
+args5	ParamArray	syntax	Syntax error
+args5	Output	semantic	Sub or Function not defined
+args5	Or	syntax	Syntax error
+args5	Optional	syntax	Syntax error
+args5	Option	syntax	Syntax error
+args5	Open	syntax	Syntax error
+args5	On	syntax	Syntax error
+args5	Object	semantic	Sub or Function not defined
+args5	Null	syntax	Syntax error
+args5	Nothing	syntax	Syntax error
+args5	Not	syntax	Syntax error
+args5	Next	syntax	Syntax error
+args5	New	syntax	Syntax error
+args5	Name	semantic	Sub or Function not defined
+args5	Module	semantic	Sub or Function not defined
+args5	Mod	syntax	Syntax error
+args5	MidB	semantic	Wrong number of arguments or invalid property assignment
+args5	Mid	semantic	Wrong number of arguments or invalid property assignment
+args5	Me	semantic	Invalid use of Me keyword
+args5	LSet	syntax	Syntax error
+args5	Loop	syntax	Syntax error
+args5	Long	syntax	Syntax error
+args5	Lock	syntax	Syntax error
+args5	Local	syntax	Syntax error
+args5	Load	semantic	Type mismatch
+args5	LINEINPUT	syntax	Syntax error
+args5	Line	semantic	Sub or Function not defined
+args5	Like	syntax	Syntax error
+args5	Lib	semantic	Sub or Function not defined
+args5	Let	syntax	Syntax error
+args5	LenB	syntax	Syntax error
+args5	Len	syntax	Syntax error
+args5	Left	semantic	Wrong number of arguments or invalid property assignment
+args5	LBound	syntax	Syntax error
+args5	Is	syntax	Syntax error
+args5	Integer	syntax	Syntax error
+args5	Int	syntax	Syntax error
+args5	InStrB	syntax	Syntax error
+args5	InStr	syntax	Syntax error
+args5	InputB	syntax	Syntax error
+args5	Input	syntax	Syntax error
+args5	In	syntax	Syntax error
+args5	Implements	syntax	Syntax error
+args5	Imp	syntax	Syntax error
+args5	If	syntax	Syntax error
+args5	GoTo	syntax	Syntax error
+args5	GoSub	syntax	Syntax error
+args5	Go	semantic	Sub or Function not defined
+args5	Global	syntax	Syntax error
+args5	Get	syntax	Syntax error
+args5	Function	syntax	Syntax error
+args5	Friend	syntax	Syntax error
+args5	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+args5	Format	semantic	Wrong number of arguments or invalid property assignment
+args5	For	syntax	Syntax error
+args5	Fix	syntax	Syntax error
+args5	False	syntax	Syntax error
+args5	Explicit	semantic	Sub or Function not defined
+args5	Exit	syntax	Syntax error
+args5	Event	syntax	Syntax error
+args5	Error	semantic	Wrong number of arguments or invalid property assignment
+args5	Erase	syntax	Syntax error
+args5	Eqv	syntax	Syntax error
+args5	Enum	syntax	Syntax error
+args5	EndIf	syntax	Syntax error
+args5	End	syntax	Syntax error
+args5	Empty	syntax	Syntax error
+args5	ElseIf	syntax	Syntax error
+args5	Else	syntax	Syntax error
+args5	Each	syntax	Syntax error
+args5	Double	syntax	Syntax error
+args5	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+args5	Do	syntax	Syntax error
+args5	Dir	semantic	Wrong number of arguments or invalid property assignment
+args5	Dim	syntax	Syntax error
+args5	DefVar	syntax	Syntax error
+args5	DefStr	syntax	Syntax error
+args5	DefSng	syntax	Syntax error
+args5	DefObj	syntax	Syntax error
+args5	DefLng	syntax	Syntax error
+args5	DefInt	syntax	Syntax error
+args5	DefDbl	syntax	Syntax error
+args5	DefDec	semantic	Sub or Function not defined
+args5	DefDate	syntax	Syntax error
+args5	DefCur	syntax	Syntax error
+args5	DefByte	syntax	Syntax error
+args5	DefBool	syntax	Syntax error
+args5	Declare	syntax	Syntax error
+args5	Decimal	semantic	Sub or Function not defined
+args5	Debug	syntax	Syntax error
+args5	Date	syntax	Syntax error
+args5	Database	semantic	Sub or Function not defined
+args5	Currency	syntax	Syntax error
+args5	CVErr	syntax	Syntax error
+args5	CVDate	semantic	Wrong number of arguments or invalid property assignment
+args5	CVar	syntax	Syntax error
+args5	CurDir	semantic	Wrong number of arguments or invalid property assignment
+args5	CStr	syntax	Syntax error
+args5	CSng	syntax	Syntax error
+args5	Const	syntax	Syntax error
+args5	Compare	semantic	Sub or Function not defined
+args5	Close	syntax	Syntax error
+args5	CLng	syntax	Syntax error
+args5	Circle	syntax	Syntax error
+args5	CInt	syntax	Syntax error
+args5	ChDir	semantic	Wrong number of arguments or invalid property assignment
+args5	CDecl	syntax	Syntax error
+args5	CDbl	syntax	Syntax error
+args5	CDec	semantic	Wrong number of arguments or invalid property assignment
+args5	CDate	syntax	Syntax error
+args5	CCur	syntax	Syntax error
+args5	CByte	syntax	Syntax error
+args5	CBool	syntax	Syntax error
+args5	Case	syntax	Syntax error
+args5	Call	syntax	Syntax error
+args5	ByVal	syntax	Syntax error
+args5	Byte	syntax	Syntax error
+args5	ByRef	syntax	Syntax error
+args5	Boolean	syntax	Syntax error
+args5	Binary	semantic	Sub or Function not defined
+args5	BF	semantic	Sub or Function not defined
+args5	Base	semantic	Sub or Function not defined
+args5	Assert	semantic	Sub or Function not defined
+args5	As	syntax	Syntax error
+args5	Array	accepted	
+args5	Append	semantic	Sub or Function not defined
+args5	Any	syntax	Syntax error
+args5	And	syntax	Syntax error
+args5	Alias	semantic	Sub or Function not defined
+args5	AddressOf	syntax	Syntax error
+args5	Access	semantic	Sub or Function not defined
+args5	Abs	syntax	Syntax error
+args5	Zork	semantic	Sub or Function not defined
+leadgap	Xor	syntax	Syntax error
+leadgap	Write	syntax	Syntax error
+leadgap	WithEvents	syntax	Syntax error
+leadgap	With	syntax	Syntax error
+leadgap	Width	semantic	Argument not optional
+leadgap	While	syntax	Syntax error
+leadgap	Wend	syntax	Syntax error
+leadgap	Variant	syntax	Syntax error
+leadgap	Until	syntax	Syntax error
+leadgap	Unknown	semantic	Sub or Function not defined
+leadgap	Unlock	syntax	Syntax error
+leadgap	Unload	semantic	Argument not optional
+leadgap	UBound	syntax	Syntax error
+leadgap	TypeOf	syntax	Syntax error
+leadgap	Type	syntax	Syntax error
+leadgap	True	syntax	Syntax error
+leadgap	To	syntax	Syntax error
+leadgap	Then	syntax	Syntax error
+leadgap	Text	semantic	Sub or Function not defined
+leadgap	Tab	syntax	Syntax error
+leadgap	Sub	syntax	Syntax error
+leadgap	String	syntax	Syntax error
+leadgap	StrComp	syntax	Syntax error
+leadgap	Stop	syntax	Syntax error
+leadgap	Step	semantic	Sub or Function not defined
+leadgap	Static	syntax	Syntax error
+leadgap	Spc	syntax	Syntax error
+leadgap	Single	syntax	Syntax error
+leadgap	Shared	syntax	Syntax error
+leadgap	Sgn	syntax	Syntax error
+leadgap	Set	syntax	Syntax error
+leadgap	Select	syntax	Syntax error
+leadgap	Seek	semantic	Argument not optional
+leadgap	Scale	syntax	Syntax error
+leadgap	RSet	syntax	Syntax error
+leadgap	RGB	semantic	Argument not optional
+leadgap	Return	syntax	Syntax error
+leadgap	Resume	syntax	Syntax error
+leadgap	Rem	syntax	Syntax error
+leadgap	ReDim	syntax	Syntax error
+leadgap	Read	semantic	Sub or Function not defined
+leadgap	Randomize	semantic	Wrong number of arguments or invalid property assignment
+leadgap	Random	semantic	Sub or Function not defined
+leadgap	RaiseEvent	syntax	Syntax error
+leadgap	Put	syntax	Syntax error
+leadgap	Public	syntax	Syntax error
+leadgap	PSet	syntax	Syntax error
+leadgap	Property	semantic	Sub or Function not defined
+leadgap	Private	syntax	Syntax error
+leadgap	Print	syntax	Syntax error
+leadgap	Preserve	syntax	Syntax error
+leadgap	ParamArray	syntax	Syntax error
+leadgap	Output	semantic	Sub or Function not defined
+leadgap	Or	syntax	Syntax error
+leadgap	Optional	syntax	Syntax error
+leadgap	Option	syntax	Syntax error
+leadgap	Open	syntax	Syntax error
+leadgap	On	syntax	Syntax error
+leadgap	Object	semantic	Sub or Function not defined
+leadgap	Null	syntax	Syntax error
+leadgap	Nothing	syntax	Syntax error
+leadgap	Not	syntax	Syntax error
+leadgap	Next	syntax	Syntax error
+leadgap	New	syntax	Syntax error
+leadgap	Name	semantic	Sub or Function not defined
+leadgap	Module	semantic	Sub or Function not defined
+leadgap	Mod	syntax	Syntax error
+leadgap	MidB	semantic	Argument not optional
+leadgap	Mid	semantic	Argument not optional
+leadgap	Me	semantic	Invalid use of Me keyword
+leadgap	LSet	syntax	Syntax error
+leadgap	Loop	syntax	Syntax error
+leadgap	Long	syntax	Syntax error
+leadgap	Lock	syntax	Syntax error
+leadgap	Local	syntax	Syntax error
+leadgap	Load	semantic	Argument not optional
+leadgap	LINEINPUT	syntax	Syntax error
+leadgap	Line	semantic	Sub or Function not defined
+leadgap	Like	syntax	Syntax error
+leadgap	Lib	semantic	Sub or Function not defined
+leadgap	Let	syntax	Syntax error
+leadgap	LenB	syntax	Syntax error
+leadgap	Len	syntax	Syntax error
+leadgap	Left	semantic	Argument not optional
+leadgap	LBound	syntax	Syntax error
+leadgap	Is	syntax	Syntax error
+leadgap	Integer	syntax	Syntax error
+leadgap	Int	syntax	Syntax error
+leadgap	InStrB	syntax	Syntax error
+leadgap	InStr	syntax	Syntax error
+leadgap	InputB	syntax	Syntax error
+leadgap	Input	syntax	Syntax error
+leadgap	In	syntax	Syntax error
+leadgap	Implements	syntax	Syntax error
+leadgap	Imp	syntax	Syntax error
+leadgap	If	syntax	Syntax error
+leadgap	GoTo	syntax	Syntax error
+leadgap	GoSub	syntax	Syntax error
+leadgap	Go	semantic	Sub or Function not defined
+leadgap	Global	syntax	Syntax error
+leadgap	Get	syntax	Syntax error
+leadgap	Function	syntax	Syntax error
+leadgap	Friend	syntax	Syntax error
+leadgap	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+leadgap	Format	semantic	Argument not optional
+leadgap	For	syntax	Syntax error
+leadgap	Fix	syntax	Syntax error
+leadgap	False	syntax	Syntax error
+leadgap	Explicit	semantic	Sub or Function not defined
+leadgap	Exit	syntax	Syntax error
+leadgap	Event	syntax	Syntax error
+leadgap	Error	semantic	Wrong number of arguments or invalid property assignment
+leadgap	Erase	syntax	Syntax error
+leadgap	Eqv	syntax	Syntax error
+leadgap	Enum	syntax	Syntax error
+leadgap	EndIf	syntax	Syntax error
+leadgap	End	syntax	Syntax error
+leadgap	Empty	syntax	Syntax error
+leadgap	ElseIf	syntax	Syntax error
+leadgap	Else	syntax	Syntax error
+leadgap	Each	syntax	Syntax error
+leadgap	Double	syntax	Syntax error
+leadgap	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+leadgap	Do	syntax	Syntax error
+leadgap	Dir	accepted	
+leadgap	Dim	syntax	Syntax error
+leadgap	DefVar	syntax	Syntax error
+leadgap	DefStr	syntax	Syntax error
+leadgap	DefSng	syntax	Syntax error
+leadgap	DefObj	syntax	Syntax error
+leadgap	DefLng	syntax	Syntax error
+leadgap	DefInt	syntax	Syntax error
+leadgap	DefDbl	syntax	Syntax error
+leadgap	DefDec	semantic	Sub or Function not defined
+leadgap	DefDate	syntax	Syntax error
+leadgap	DefCur	syntax	Syntax error
+leadgap	DefByte	syntax	Syntax error
+leadgap	DefBool	syntax	Syntax error
+leadgap	Declare	syntax	Syntax error
+leadgap	Decimal	semantic	Sub or Function not defined
+leadgap	Debug	syntax	Syntax error
+leadgap	Date	syntax	Syntax error
+leadgap	Database	semantic	Sub or Function not defined
+leadgap	Currency	syntax	Syntax error
+leadgap	CVErr	syntax	Syntax error
+leadgap	CVDate	semantic	Argument not optional
+leadgap	CVar	syntax	Syntax error
+leadgap	CurDir	semantic	Wrong number of arguments or invalid property assignment
+leadgap	CStr	syntax	Syntax error
+leadgap	CSng	syntax	Syntax error
+leadgap	Const	syntax	Syntax error
+leadgap	Compare	semantic	Sub or Function not defined
+leadgap	Close	syntax	Syntax error
+leadgap	CLng	syntax	Syntax error
+leadgap	Circle	syntax	Syntax error
+leadgap	CInt	syntax	Syntax error
+leadgap	ChDir	semantic	Argument not optional
+leadgap	CDecl	syntax	Syntax error
+leadgap	CDbl	syntax	Syntax error
+leadgap	CDec	semantic	Argument not optional
+leadgap	CDate	syntax	Syntax error
+leadgap	CCur	syntax	Syntax error
+leadgap	CByte	syntax	Syntax error
+leadgap	CBool	syntax	Syntax error
+leadgap	Case	syntax	Syntax error
+leadgap	Call	syntax	Syntax error
+leadgap	ByVal	syntax	Syntax error
+leadgap	Byte	syntax	Syntax error
+leadgap	ByRef	syntax	Syntax error
+leadgap	Boolean	syntax	Syntax error
+leadgap	Binary	semantic	Sub or Function not defined
+leadgap	BF	semantic	Sub or Function not defined
+leadgap	Base	semantic	Sub or Function not defined
+leadgap	Assert	semantic	Sub or Function not defined
+leadgap	As	syntax	Syntax error
+leadgap	Array	accepted	
+leadgap	Append	semantic	Sub or Function not defined
+leadgap	Any	syntax	Syntax error
+leadgap	And	syntax	Syntax error
+leadgap	Alias	semantic	Sub or Function not defined
+leadgap	AddressOf	syntax	Syntax error
+leadgap	Access	semantic	Sub or Function not defined
+leadgap	Abs	syntax	Syntax error
+leadgap	Zork	semantic	Sub or Function not defined
+trailgap	Xor	syntax	Syntax error
+trailgap	Write	syntax	Syntax error
+trailgap	WithEvents	syntax	Syntax error
+trailgap	With	syntax	Syntax error
+trailgap	Width	syntax	Syntax error
+trailgap	While	syntax	Syntax error
+trailgap	Wend	syntax	Syntax error
+trailgap	Variant	syntax	Syntax error
+trailgap	Until	syntax	Syntax error
+trailgap	Unknown	syntax	Syntax error
+trailgap	Unlock	syntax	Syntax error
+trailgap	Unload	syntax	Syntax error
+trailgap	UBound	syntax	Syntax error
+trailgap	TypeOf	syntax	Syntax error
+trailgap	Type	syntax	Syntax error
+trailgap	True	syntax	Syntax error
+trailgap	To	syntax	Syntax error
+trailgap	Then	syntax	Syntax error
+trailgap	Text	syntax	Syntax error
+trailgap	Tab	syntax	Syntax error
+trailgap	Sub	syntax	Syntax error
+trailgap	String	syntax	Syntax error
+trailgap	StrComp	syntax	Syntax error
+trailgap	Stop	syntax	Syntax error
+trailgap	Step	syntax	Syntax error
+trailgap	Static	syntax	Syntax error
+trailgap	Spc	syntax	Syntax error
+trailgap	Single	syntax	Syntax error
+trailgap	Shared	syntax	Syntax error
+trailgap	Sgn	syntax	Syntax error
+trailgap	Set	syntax	Syntax error
+trailgap	Select	syntax	Syntax error
+trailgap	Seek	syntax	Syntax error
+trailgap	Scale	syntax	Syntax error
+trailgap	RSet	syntax	Syntax error
+trailgap	RGB	syntax	Syntax error
+trailgap	Return	syntax	Syntax error
+trailgap	Resume	syntax	Syntax error
+trailgap	Rem	syntax	Syntax error
+trailgap	ReDim	syntax	Syntax error
+trailgap	Read	syntax	Syntax error
+trailgap	Randomize	syntax	Syntax error
+trailgap	Random	syntax	Syntax error
+trailgap	RaiseEvent	syntax	Syntax error
+trailgap	Put	syntax	Syntax error
+trailgap	Public	syntax	Syntax error
+trailgap	PSet	syntax	Syntax error
+trailgap	Property	syntax	Syntax error
+trailgap	Private	syntax	Syntax error
+trailgap	Print	syntax	Syntax error
+trailgap	Preserve	syntax	Syntax error
+trailgap	ParamArray	syntax	Syntax error
+trailgap	Output	syntax	Syntax error
+trailgap	Or	syntax	Syntax error
+trailgap	Optional	syntax	Syntax error
+trailgap	Option	syntax	Syntax error
+trailgap	Open	syntax	Syntax error
+trailgap	On	syntax	Syntax error
+trailgap	Object	syntax	Syntax error
+trailgap	Null	syntax	Syntax error
+trailgap	Nothing	syntax	Syntax error
+trailgap	Not	syntax	Syntax error
+trailgap	Next	syntax	Syntax error
+trailgap	New	syntax	Syntax error
+trailgap	Name	syntax	Syntax error
+trailgap	Module	syntax	Syntax error
+trailgap	Mod	syntax	Syntax error
+trailgap	MidB	syntax	Syntax error
+trailgap	Mid	syntax	Syntax error
+trailgap	Me	syntax	Syntax error
+trailgap	LSet	syntax	Syntax error
+trailgap	Loop	syntax	Syntax error
+trailgap	Long	syntax	Syntax error
+trailgap	Lock	syntax	Syntax error
+trailgap	Local	syntax	Syntax error
+trailgap	Load	syntax	Syntax error
+trailgap	LINEINPUT	syntax	Syntax error
+trailgap	Line	syntax	Syntax error
+trailgap	Like	syntax	Syntax error
+trailgap	Lib	syntax	Syntax error
+trailgap	Let	syntax	Syntax error
+trailgap	LenB	syntax	Syntax error
+trailgap	Len	syntax	Syntax error
+trailgap	Left	syntax	Syntax error
+trailgap	LBound	syntax	Syntax error
+trailgap	Is	syntax	Syntax error
+trailgap	Integer	syntax	Syntax error
+trailgap	Int	syntax	Syntax error
+trailgap	InStrB	syntax	Syntax error
+trailgap	InStr	syntax	Syntax error
+trailgap	InputB	syntax	Syntax error
+trailgap	Input	syntax	Syntax error
+trailgap	In	syntax	Syntax error
+trailgap	Implements	syntax	Syntax error
+trailgap	Imp	syntax	Syntax error
+trailgap	If	syntax	Syntax error
+trailgap	GoTo	syntax	Syntax error
+trailgap	GoSub	syntax	Syntax error
+trailgap	Go	syntax	Syntax error
+trailgap	Global	syntax	Syntax error
+trailgap	Get	syntax	Syntax error
+trailgap	Function	syntax	Syntax error
+trailgap	Friend	syntax	Syntax error
+trailgap	FreeFile	syntax	Syntax error
+trailgap	Format	syntax	Syntax error
+trailgap	For	syntax	Syntax error
+trailgap	Fix	syntax	Syntax error
+trailgap	False	syntax	Syntax error
+trailgap	Explicit	syntax	Syntax error
+trailgap	Exit	syntax	Syntax error
+trailgap	Event	syntax	Syntax error
+trailgap	Error	syntax	Syntax error
+trailgap	Erase	syntax	Syntax error
+trailgap	Eqv	syntax	Syntax error
+trailgap	Enum	syntax	Syntax error
+trailgap	EndIf	syntax	Syntax error
+trailgap	End	syntax	Syntax error
+trailgap	Empty	syntax	Syntax error
+trailgap	ElseIf	syntax	Syntax error
+trailgap	Else	syntax	Syntax error
+trailgap	Each	syntax	Syntax error
+trailgap	Double	syntax	Syntax error
+trailgap	DoEvents	syntax	Syntax error
+trailgap	Do	syntax	Syntax error
+trailgap	Dir	syntax	Syntax error
+trailgap	Dim	syntax	Syntax error
+trailgap	DefVar	syntax	Syntax error
+trailgap	DefStr	syntax	Syntax error
+trailgap	DefSng	syntax	Syntax error
+trailgap	DefObj	syntax	Syntax error
+trailgap	DefLng	syntax	Syntax error
+trailgap	DefInt	syntax	Syntax error
+trailgap	DefDbl	syntax	Syntax error
+trailgap	DefDec	syntax	Syntax error
+trailgap	DefDate	syntax	Syntax error
+trailgap	DefCur	syntax	Syntax error
+trailgap	DefByte	syntax	Syntax error
+trailgap	DefBool	syntax	Syntax error
+trailgap	Declare	syntax	Syntax error
+trailgap	Decimal	syntax	Syntax error
+trailgap	Debug	syntax	Syntax error
+trailgap	Date	syntax	Syntax error
+trailgap	Database	syntax	Syntax error
+trailgap	Currency	syntax	Syntax error
+trailgap	CVErr	syntax	Syntax error
+trailgap	CVDate	syntax	Syntax error
+trailgap	CVar	syntax	Syntax error
+trailgap	CurDir	syntax	Syntax error
+trailgap	CStr	syntax	Syntax error
+trailgap	CSng	syntax	Syntax error
+trailgap	Const	syntax	Syntax error
+trailgap	Compare	syntax	Syntax error
+trailgap	Close	syntax	Syntax error
+trailgap	CLng	syntax	Syntax error
+trailgap	Circle	syntax	Syntax error
+trailgap	CInt	syntax	Syntax error
+trailgap	ChDir	syntax	Syntax error
+trailgap	CDecl	syntax	Syntax error
+trailgap	CDbl	syntax	Syntax error
+trailgap	CDec	syntax	Syntax error
+trailgap	CDate	syntax	Syntax error
+trailgap	CCur	syntax	Syntax error
+trailgap	CByte	syntax	Syntax error
+trailgap	CBool	syntax	Syntax error
+trailgap	Case	syntax	Syntax error
+trailgap	Call	syntax	Syntax error
+trailgap	ByVal	syntax	Syntax error
+trailgap	Byte	syntax	Syntax error
+trailgap	ByRef	syntax	Syntax error
+trailgap	Boolean	syntax	Syntax error
+trailgap	Binary	syntax	Syntax error
+trailgap	BF	syntax	Syntax error
+trailgap	Base	syntax	Syntax error
+trailgap	Assert	syntax	Syntax error
+trailgap	As	syntax	Syntax error
+trailgap	Array	syntax	Syntax error
+trailgap	Append	syntax	Syntax error
+trailgap	Any	syntax	Syntax error
+trailgap	And	syntax	Syntax error
+trailgap	Alias	syntax	Syntax error
+trailgap	AddressOf	syntax	Syntax error
+trailgap	Access	syntax	Syntax error
+trailgap	Abs	syntax	Syntax error
+trailgap	Zork	syntax	Syntax error
+midgap	Xor	syntax	Syntax error
+midgap	Write	syntax	Syntax error
+midgap	WithEvents	syntax	Syntax error
+midgap	With	syntax	Syntax error
+midgap	Width	semantic	Argument not optional
+midgap	While	syntax	Syntax error
+midgap	Wend	syntax	Syntax error
+midgap	Variant	syntax	Syntax error
+midgap	Until	syntax	Syntax error
+midgap	Unknown	semantic	Sub or Function not defined
+midgap	Unlock	syntax	Syntax error
+midgap	Unload	semantic	Type mismatch
+midgap	UBound	syntax	Syntax error
+midgap	TypeOf	syntax	Syntax error
+midgap	Type	syntax	Syntax error
+midgap	True	syntax	Syntax error
+midgap	To	syntax	Syntax error
+midgap	Then	syntax	Syntax error
+midgap	Text	semantic	Sub or Function not defined
+midgap	Tab	syntax	Syntax error
+midgap	Sub	syntax	Syntax error
+midgap	String	syntax	Syntax error
+midgap	StrComp	syntax	Syntax error
+midgap	Stop	syntax	Syntax error
+midgap	Step	semantic	Sub or Function not defined
+midgap	Static	syntax	Syntax error
+midgap	Spc	syntax	Syntax error
+midgap	Single	syntax	Syntax error
+midgap	Shared	syntax	Syntax error
+midgap	Sgn	syntax	Syntax error
+midgap	Set	syntax	Syntax error
+midgap	Select	syntax	Syntax error
+midgap	Seek	semantic	Wrong number of arguments or invalid property assignment
+midgap	Scale	syntax	Syntax error
+midgap	RSet	syntax	Syntax error
+midgap	RGB	semantic	Argument not optional
+midgap	Return	syntax	Syntax error
+midgap	Resume	syntax	Syntax error
+midgap	Rem	syntax	Syntax error
+midgap	ReDim	syntax	Syntax error
+midgap	Read	semantic	Sub or Function not defined
+midgap	Randomize	semantic	Wrong number of arguments or invalid property assignment
+midgap	Random	semantic	Sub or Function not defined
+midgap	RaiseEvent	syntax	Syntax error
+midgap	Put	syntax	Syntax error
+midgap	Public	syntax	Syntax error
+midgap	PSet	syntax	Syntax error
+midgap	Property	semantic	Sub or Function not defined
+midgap	Private	syntax	Syntax error
+midgap	Print	syntax	Syntax error
+midgap	Preserve	syntax	Syntax error
+midgap	ParamArray	syntax	Syntax error
+midgap	Output	semantic	Sub or Function not defined
+midgap	Or	syntax	Syntax error
+midgap	Optional	syntax	Syntax error
+midgap	Option	syntax	Syntax error
+midgap	Open	syntax	Syntax error
+midgap	On	syntax	Syntax error
+midgap	Object	semantic	Sub or Function not defined
+midgap	Null	syntax	Syntax error
+midgap	Nothing	syntax	Syntax error
+midgap	Not	syntax	Syntax error
+midgap	Next	syntax	Syntax error
+midgap	New	syntax	Syntax error
+midgap	Name	semantic	Sub or Function not defined
+midgap	Module	semantic	Sub or Function not defined
+midgap	Mod	syntax	Syntax error
+midgap	MidB	semantic	Argument not optional
+midgap	Mid	semantic	Argument not optional
+midgap	Me	semantic	Invalid use of Me keyword
+midgap	LSet	syntax	Syntax error
+midgap	Loop	syntax	Syntax error
+midgap	Long	syntax	Syntax error
+midgap	Lock	syntax	Syntax error
+midgap	Local	syntax	Syntax error
+midgap	Load	semantic	Type mismatch
+midgap	LINEINPUT	syntax	Syntax error
+midgap	Line	semantic	Sub or Function not defined
+midgap	Like	syntax	Syntax error
+midgap	Lib	semantic	Sub or Function not defined
+midgap	Let	syntax	Syntax error
+midgap	LenB	syntax	Syntax error
+midgap	Len	syntax	Syntax error
+midgap	Left	semantic	Argument not optional
+midgap	LBound	syntax	Syntax error
+midgap	Is	syntax	Syntax error
+midgap	Integer	syntax	Syntax error
+midgap	Int	syntax	Syntax error
+midgap	InStrB	syntax	Syntax error
+midgap	InStr	syntax	Syntax error
+midgap	InputB	syntax	Syntax error
+midgap	Input	syntax	Syntax error
+midgap	In	syntax	Syntax error
+midgap	Implements	syntax	Syntax error
+midgap	Imp	syntax	Syntax error
+midgap	If	syntax	Syntax error
+midgap	GoTo	syntax	Syntax error
+midgap	GoSub	syntax	Syntax error
+midgap	Go	semantic	Sub or Function not defined
+midgap	Global	syntax	Syntax error
+midgap	Get	syntax	Syntax error
+midgap	Function	syntax	Syntax error
+midgap	Friend	syntax	Syntax error
+midgap	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+midgap	Format	accepted	
+midgap	For	syntax	Syntax error
+midgap	Fix	syntax	Syntax error
+midgap	False	syntax	Syntax error
+midgap	Explicit	semantic	Sub or Function not defined
+midgap	Exit	syntax	Syntax error
+midgap	Event	syntax	Syntax error
+midgap	Error	semantic	Wrong number of arguments or invalid property assignment
+midgap	Erase	syntax	Syntax error
+midgap	Eqv	syntax	Syntax error
+midgap	Enum	syntax	Syntax error
+midgap	EndIf	syntax	Syntax error
+midgap	End	syntax	Syntax error
+midgap	Empty	syntax	Syntax error
+midgap	ElseIf	syntax	Syntax error
+midgap	Else	syntax	Syntax error
+midgap	Each	syntax	Syntax error
+midgap	Double	syntax	Syntax error
+midgap	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+midgap	Do	syntax	Syntax error
+midgap	Dir	semantic	Wrong number of arguments or invalid property assignment
+midgap	Dim	syntax	Syntax error
+midgap	DefVar	syntax	Syntax error
+midgap	DefStr	syntax	Syntax error
+midgap	DefSng	syntax	Syntax error
+midgap	DefObj	syntax	Syntax error
+midgap	DefLng	syntax	Syntax error
+midgap	DefInt	syntax	Syntax error
+midgap	DefDbl	syntax	Syntax error
+midgap	DefDec	semantic	Sub or Function not defined
+midgap	DefDate	syntax	Syntax error
+midgap	DefCur	syntax	Syntax error
+midgap	DefByte	syntax	Syntax error
+midgap	DefBool	syntax	Syntax error
+midgap	Declare	syntax	Syntax error
+midgap	Decimal	semantic	Sub or Function not defined
+midgap	Debug	syntax	Syntax error
+midgap	Date	syntax	Syntax error
+midgap	Database	semantic	Sub or Function not defined
+midgap	Currency	syntax	Syntax error
+midgap	CVErr	syntax	Syntax error
+midgap	CVDate	semantic	Wrong number of arguments or invalid property assignment
+midgap	CVar	syntax	Syntax error
+midgap	CurDir	semantic	Wrong number of arguments or invalid property assignment
+midgap	CStr	syntax	Syntax error
+midgap	CSng	syntax	Syntax error
+midgap	Const	syntax	Syntax error
+midgap	Compare	semantic	Sub or Function not defined
+midgap	Close	syntax	Syntax error
+midgap	CLng	syntax	Syntax error
+midgap	Circle	syntax	Syntax error
+midgap	CInt	syntax	Syntax error
+midgap	ChDir	semantic	Wrong number of arguments or invalid property assignment
+midgap	CDecl	syntax	Syntax error
+midgap	CDbl	syntax	Syntax error
+midgap	CDec	semantic	Wrong number of arguments or invalid property assignment
+midgap	CDate	syntax	Syntax error
+midgap	CCur	syntax	Syntax error
+midgap	CByte	syntax	Syntax error
+midgap	CBool	syntax	Syntax error
+midgap	Case	syntax	Syntax error
+midgap	Call	syntax	Syntax error
+midgap	ByVal	syntax	Syntax error
+midgap	Byte	syntax	Syntax error
+midgap	ByRef	syntax	Syntax error
+midgap	Boolean	syntax	Syntax error
+midgap	Binary	semantic	Sub or Function not defined
+midgap	BF	semantic	Sub or Function not defined
+midgap	Base	semantic	Sub or Function not defined
+midgap	Assert	semantic	Sub or Function not defined
+midgap	As	syntax	Syntax error
+midgap	Array	accepted	
+midgap	Append	semantic	Sub or Function not defined
+midgap	Any	syntax	Syntax error
+midgap	And	syntax	Syntax error
+midgap	Alias	semantic	Sub or Function not defined
+midgap	AddressOf	syntax	Syntax error
+midgap	Access	semantic	Sub or Function not defined
+midgap	Abs	syntax	Syntax error
+midgap	Zork	semantic	Sub or Function not defined
+bare	Xor	syntax	Syntax error
+bare	Write	syntax	Syntax error
+bare	WithEvents	syntax	Syntax error
+bare	With	syntax	Syntax error
+bare	Width	semantic	Argument not optional
+bare	While	syntax	Syntax error
+bare	Wend	syntax	Syntax error
+bare	Variant	syntax	Syntax error
+bare	Until	syntax	Syntax error
+bare	Unknown	accepted	
+bare	Unlock	syntax	Syntax error
+bare	Unload	semantic	Argument not optional
+bare	UBound	syntax	Syntax error
+bare	TypeOf	syntax	Syntax error
+bare	Type	syntax	Syntax error
+bare	True	accepted	
+bare	To	syntax	Syntax error
+bare	Then	syntax	Syntax error
+bare	Text	accepted	
+bare	Tab	syntax	Syntax error
+bare	Sub	syntax	Syntax error
+bare	String	syntax	Syntax error
+bare	StrComp	syntax	Syntax error
+bare	Stop	syntax	Syntax error
+bare	Step	accepted	
+bare	Static	syntax	Syntax error
+bare	Spc	syntax	Syntax error
+bare	Single	syntax	Syntax error
+bare	Shared	syntax	Syntax error
+bare	Sgn	syntax	Syntax error
+bare	Set	syntax	Syntax error
+bare	Select	syntax	Syntax error
+bare	Seek	semantic	Argument not optional
+bare	Scale	syntax	Syntax error
+bare	RSet	syntax	Syntax error
+bare	RGB	semantic	Argument not optional
+bare	Return	syntax	Syntax error
+bare	Resume	syntax	Syntax error
+bare	Rem	syntax	Syntax error
+bare	ReDim	syntax	Syntax error
+bare	Read	accepted	
+bare	Randomize	semantic	Expected Function or variable
+bare	Random	accepted	
+bare	RaiseEvent	syntax	Syntax error
+bare	Put	syntax	Syntax error
+bare	Public	syntax	Syntax error
+bare	PSet	syntax	Syntax error
+bare	Property	accepted	
+bare	Private	syntax	Syntax error
+bare	Print	syntax	Syntax error
+bare	Preserve	syntax	Syntax error
+bare	ParamArray	syntax	Syntax error
+bare	Output	accepted	
+bare	Or	syntax	Syntax error
+bare	Optional	syntax	Syntax error
+bare	Option	syntax	Syntax error
+bare	Open	syntax	Syntax error
+bare	On	syntax	Syntax error
+bare	Object	accepted	
+bare	Null	accepted	
+bare	Nothing	accepted	
+bare	Not	syntax	Syntax error
+bare	Next	syntax	Syntax error
+bare	New	syntax	Syntax error
+bare	Name	accepted	
+bare	Module	accepted	
+bare	Mod	syntax	Syntax error
+bare	MidB	semantic	Argument not optional
+bare	Mid	semantic	Argument not optional
+bare	Me	semantic	Invalid use of Me keyword
+bare	LSet	syntax	Syntax error
+bare	Loop	syntax	Syntax error
+bare	Long	syntax	Syntax error
+bare	Lock	syntax	Syntax error
+bare	Local	syntax	Syntax error
+bare	Load	semantic	Argument not optional
+bare	LINEINPUT	syntax	Syntax error
+bare	Line	accepted	
+bare	Like	syntax	Syntax error
+bare	Lib	accepted	
+bare	Let	syntax	Syntax error
+bare	LenB	syntax	Syntax error
+bare	Len	syntax	Syntax error
+bare	Left	semantic	Argument not optional
+bare	LBound	syntax	Syntax error
+bare	Is	syntax	Syntax error
+bare	Integer	syntax	Syntax error
+bare	Int	syntax	Syntax error
+bare	InStrB	syntax	Syntax error
+bare	InStr	syntax	Syntax error
+bare	InputB	syntax	Syntax error
+bare	Input	syntax	Syntax error
+bare	In	syntax	Syntax error
+bare	Implements	syntax	Syntax error
+bare	Imp	syntax	Syntax error
+bare	If	syntax	Syntax error
+bare	GoTo	syntax	Syntax error
+bare	GoSub	syntax	Syntax error
+bare	Go	accepted	
+bare	Global	syntax	Syntax error
+bare	Get	syntax	Syntax error
+bare	Function	syntax	Syntax error
+bare	Friend	syntax	Syntax error
+bare	FreeFile	accepted	
+bare	Format	semantic	Argument not optional
+bare	For	syntax	Syntax error
+bare	Fix	syntax	Syntax error
+bare	False	accepted	
+bare	Explicit	accepted	
+bare	Exit	syntax	Syntax error
+bare	Event	syntax	Syntax error
+bare	Error	accepted	
+bare	Erase	syntax	Syntax error
+bare	Eqv	syntax	Syntax error
+bare	Enum	syntax	Syntax error
+bare	EndIf	syntax	Syntax error
+bare	End	syntax	Syntax error
+bare	Empty	accepted	
+bare	ElseIf	syntax	Syntax error
+bare	Else	syntax	Syntax error
+bare	Each	syntax	Syntax error
+bare	Double	syntax	Syntax error
+bare	DoEvents	accepted	
+bare	Do	syntax	Syntax error
+bare	Dir	accepted	
+bare	Dim	syntax	Syntax error
+bare	DefVar	syntax	Syntax error
+bare	DefStr	syntax	Syntax error
+bare	DefSng	syntax	Syntax error
+bare	DefObj	syntax	Syntax error
+bare	DefLng	syntax	Syntax error
+bare	DefInt	syntax	Syntax error
+bare	DefDbl	syntax	Syntax error
+bare	DefDec	accepted	
+bare	DefDate	syntax	Syntax error
+bare	DefCur	syntax	Syntax error
+bare	DefByte	syntax	Syntax error
+bare	DefBool	syntax	Syntax error
+bare	Declare	syntax	Syntax error
+bare	Decimal	accepted	
+bare	Debug	syntax	Syntax error
+bare	Date	accepted	
+bare	Database	accepted	
+bare	Currency	syntax	Syntax error
+bare	CVErr	syntax	Syntax error
+bare	CVDate	semantic	Argument not optional
+bare	CVar	syntax	Syntax error
+bare	CurDir	accepted	
+bare	CStr	syntax	Syntax error
+bare	CSng	syntax	Syntax error
+bare	Const	syntax	Syntax error
+bare	Compare	accepted	
+bare	Close	syntax	Syntax error
+bare	CLng	syntax	Syntax error
+bare	Circle	syntax	Syntax error
+bare	CInt	syntax	Syntax error
+bare	ChDir	semantic	Argument not optional
+bare	CDecl	syntax	Syntax error
+bare	CDbl	syntax	Syntax error
+bare	CDec	semantic	Argument not optional
+bare	CDate	syntax	Syntax error
+bare	CCur	syntax	Syntax error
+bare	CByte	syntax	Syntax error
+bare	CBool	syntax	Syntax error
+bare	Case	syntax	Syntax error
+bare	Call	syntax	Syntax error
+bare	ByVal	syntax	Syntax error
+bare	Byte	syntax	Syntax error
+bare	ByRef	syntax	Syntax error
+bare	Boolean	syntax	Syntax error
+bare	Binary	accepted	
+bare	BF	accepted	
+bare	Base	accepted	
+bare	Assert	accepted	
+bare	As	syntax	Syntax error
+bare	Array	syntax	Syntax error
+bare	Append	accepted	
+bare	Any	syntax	Syntax error
+bare	And	syntax	Syntax error
+bare	Alias	accepted	
+bare	AddressOf	syntax	Syntax error
+bare	Access	accepted	
+bare	Abs	syntax	Syntax error
+bare	Zork	accepted	
+nobracket	Xor	syntax	Syntax error
+nobracket	Write	syntax	Syntax error
+nobracket	WithEvents	syntax	Syntax error
+nobracket	With	syntax	Syntax error
+nobracket	Width	syntax	Syntax error
+nobracket	While	syntax	Syntax error
+nobracket	Wend	syntax	Syntax error
+nobracket	Variant	syntax	Syntax error
+nobracket	Until	syntax	Syntax error
+nobracket	Unknown	syntax	Syntax error
+nobracket	Unlock	syntax	Syntax error
+nobracket	Unload	syntax	Syntax error
+nobracket	UBound	syntax	Syntax error
+nobracket	TypeOf	syntax	Syntax error
+nobracket	Type	syntax	Syntax error
+nobracket	True	syntax	Syntax error
+nobracket	To	syntax	Syntax error
+nobracket	Then	syntax	Syntax error
+nobracket	Text	syntax	Syntax error
+nobracket	Tab	syntax	Syntax error
+nobracket	Sub	syntax	Syntax error
+nobracket	String	syntax	Syntax error
+nobracket	StrComp	syntax	Syntax error
+nobracket	Stop	syntax	Syntax error
+nobracket	Step	syntax	Syntax error
+nobracket	Static	syntax	Syntax error
+nobracket	Spc	syntax	Syntax error
+nobracket	Single	syntax	Syntax error
+nobracket	Shared	syntax	Syntax error
+nobracket	Sgn	syntax	Syntax error
+nobracket	Set	syntax	Syntax error
+nobracket	Select	syntax	Syntax error
+nobracket	Seek	syntax	Syntax error
+nobracket	Scale	syntax	Syntax error
+nobracket	RSet	syntax	Syntax error
+nobracket	RGB	syntax	Syntax error
+nobracket	Return	syntax	Syntax error
+nobracket	Resume	syntax	Syntax error
+nobracket	Rem	syntax	Syntax error
+nobracket	ReDim	syntax	Syntax error
+nobracket	Read	syntax	Syntax error
+nobracket	Randomize	syntax	Syntax error
+nobracket	Random	syntax	Syntax error
+nobracket	RaiseEvent	syntax	Syntax error
+nobracket	Put	syntax	Syntax error
+nobracket	Public	syntax	Syntax error
+nobracket	PSet	syntax	Syntax error
+nobracket	Property	syntax	Syntax error
+nobracket	Private	syntax	Syntax error
+nobracket	Print	syntax	Syntax error
+nobracket	Preserve	syntax	Syntax error
+nobracket	ParamArray	syntax	Syntax error
+nobracket	Output	syntax	Syntax error
+nobracket	Or	syntax	Syntax error
+nobracket	Optional	syntax	Syntax error
+nobracket	Option	syntax	Syntax error
+nobracket	Open	syntax	Syntax error
+nobracket	On	syntax	Syntax error
+nobracket	Object	syntax	Syntax error
+nobracket	Null	syntax	Syntax error
+nobracket	Nothing	syntax	Syntax error
+nobracket	Not	accepted	
+nobracket	Next	syntax	Syntax error
+nobracket	New	syntax	Syntax error
+nobracket	Name	syntax	Syntax error
+nobracket	Module	syntax	Syntax error
+nobracket	Mod	syntax	Syntax error
+nobracket	MidB	syntax	Syntax error
+nobracket	Mid	syntax	Syntax error
+nobracket	Me	syntax	Syntax error
+nobracket	LSet	syntax	Syntax error
+nobracket	Loop	syntax	Syntax error
+nobracket	Long	syntax	Syntax error
+nobracket	Lock	syntax	Syntax error
+nobracket	Local	syntax	Syntax error
+nobracket	Load	syntax	Syntax error
+nobracket	LINEINPUT	syntax	Syntax error
+nobracket	Line	syntax	Syntax error
+nobracket	Like	syntax	Syntax error
+nobracket	Lib	syntax	Syntax error
+nobracket	Let	syntax	Syntax error
+nobracket	LenB	syntax	Syntax error
+nobracket	Len	syntax	Syntax error
+nobracket	Left	syntax	Syntax error
+nobracket	LBound	syntax	Syntax error
+nobracket	Is	syntax	Syntax error
+nobracket	Integer	syntax	Syntax error
+nobracket	Int	syntax	Syntax error
+nobracket	InStrB	syntax	Syntax error
+nobracket	InStr	syntax	Syntax error
+nobracket	InputB	syntax	Syntax error
+nobracket	Input	syntax	Syntax error
+nobracket	In	syntax	Syntax error
+nobracket	Implements	syntax	Syntax error
+nobracket	Imp	syntax	Syntax error
+nobracket	If	syntax	Syntax error
+nobracket	GoTo	syntax	Syntax error
+nobracket	GoSub	syntax	Syntax error
+nobracket	Go	syntax	Syntax error
+nobracket	Global	syntax	Syntax error
+nobracket	Get	syntax	Syntax error
+nobracket	Function	syntax	Syntax error
+nobracket	Friend	syntax	Syntax error
+nobracket	FreeFile	syntax	Syntax error
+nobracket	Format	syntax	Syntax error
+nobracket	For	syntax	Syntax error
+nobracket	Fix	syntax	Syntax error
+nobracket	False	syntax	Syntax error
+nobracket	Explicit	syntax	Syntax error
+nobracket	Exit	syntax	Syntax error
+nobracket	Event	syntax	Syntax error
+nobracket	Error	syntax	Syntax error
+nobracket	Erase	syntax	Syntax error
+nobracket	Eqv	syntax	Syntax error
+nobracket	Enum	syntax	Syntax error
+nobracket	EndIf	syntax	Syntax error
+nobracket	End	syntax	Syntax error
+nobracket	Empty	syntax	Syntax error
+nobracket	ElseIf	syntax	Syntax error
+nobracket	Else	syntax	Syntax error
+nobracket	Each	syntax	Syntax error
+nobracket	Double	syntax	Syntax error
+nobracket	DoEvents	syntax	Syntax error
+nobracket	Do	syntax	Syntax error
+nobracket	Dir	syntax	Syntax error
+nobracket	Dim	syntax	Syntax error
+nobracket	DefVar	syntax	Syntax error
+nobracket	DefStr	syntax	Syntax error
+nobracket	DefSng	syntax	Syntax error
+nobracket	DefObj	syntax	Syntax error
+nobracket	DefLng	syntax	Syntax error
+nobracket	DefInt	syntax	Syntax error
+nobracket	DefDbl	syntax	Syntax error
+nobracket	DefDec	syntax	Syntax error
+nobracket	DefDate	syntax	Syntax error
+nobracket	DefCur	syntax	Syntax error
+nobracket	DefByte	syntax	Syntax error
+nobracket	DefBool	syntax	Syntax error
+nobracket	Declare	syntax	Syntax error
+nobracket	Decimal	syntax	Syntax error
+nobracket	Debug	syntax	Syntax error
+nobracket	Date	syntax	Syntax error
+nobracket	Database	syntax	Syntax error
+nobracket	Currency	syntax	Syntax error
+nobracket	CVErr	syntax	Syntax error
+nobracket	CVDate	syntax	Syntax error
+nobracket	CVar	syntax	Syntax error
+nobracket	CurDir	syntax	Syntax error
+nobracket	CStr	syntax	Syntax error
+nobracket	CSng	syntax	Syntax error
+nobracket	Const	syntax	Syntax error
+nobracket	Compare	syntax	Syntax error
+nobracket	Close	syntax	Syntax error
+nobracket	CLng	syntax	Syntax error
+nobracket	Circle	syntax	Syntax error
+nobracket	CInt	syntax	Syntax error
+nobracket	ChDir	syntax	Syntax error
+nobracket	CDecl	syntax	Syntax error
+nobracket	CDbl	syntax	Syntax error
+nobracket	CDec	syntax	Syntax error
+nobracket	CDate	syntax	Syntax error
+nobracket	CCur	syntax	Syntax error
+nobracket	CByte	syntax	Syntax error
+nobracket	CBool	syntax	Syntax error
+nobracket	Case	syntax	Syntax error
+nobracket	Call	syntax	Syntax error
+nobracket	ByVal	syntax	Syntax error
+nobracket	Byte	syntax	Syntax error
+nobracket	ByRef	syntax	Syntax error
+nobracket	Boolean	syntax	Syntax error
+nobracket	Binary	syntax	Syntax error
+nobracket	BF	syntax	Syntax error
+nobracket	Base	syntax	Syntax error
+nobracket	Assert	syntax	Syntax error
+nobracket	As	syntax	Syntax error
+nobracket	Array	syntax	Syntax error
+nobracket	Append	syntax	Syntax error
+nobracket	Any	syntax	Syntax error
+nobracket	And	syntax	Syntax error
+nobracket	Alias	syntax	Syntax error
+nobracket	AddressOf	syntax	Syntax error
+nobracket	Access	syntax	Syntax error
+nobracket	Abs	syntax	Syntax error
+nobracket	Zork	syntax	Syntax error
+stmt0	Xor	syntax	Syntax error
+stmt0	Write	syntax	Syntax error
+stmt0	WithEvents	syntax	Syntax error
+stmt0	With	syntax	Syntax error
+stmt0	Width	syntax	Syntax error
+stmt0	While	syntax	Syntax error
+stmt0	Wend	syntax	Syntax error
+stmt0	Variant	syntax	Syntax error
+stmt0	Until	syntax	Syntax error
+stmt0	Unknown	syntax	Syntax error
+stmt0	Unlock	syntax	Syntax error
+stmt0	Unload	syntax	Syntax error
+stmt0	UBound	syntax	Syntax error
+stmt0	TypeOf	syntax	Syntax error
+stmt0	Type	syntax	Syntax error
+stmt0	True	syntax	Syntax error
+stmt0	To	syntax	Syntax error
+stmt0	Then	syntax	Syntax error
+stmt0	Text	syntax	Syntax error
+stmt0	Tab	syntax	Syntax error
+stmt0	Sub	syntax	Syntax error
+stmt0	String	syntax	Syntax error
+stmt0	StrComp	syntax	Syntax error
+stmt0	Stop	syntax	Syntax error
+stmt0	Step	syntax	Syntax error
+stmt0	Static	syntax	Syntax error
+stmt0	Spc	syntax	Syntax error
+stmt0	Single	syntax	Syntax error
+stmt0	Shared	syntax	Syntax error
+stmt0	Sgn	syntax	Syntax error
+stmt0	Set	syntax	Syntax error
+stmt0	Select	syntax	Syntax error
+stmt0	Seek	syntax	Syntax error
+stmt0	Scale	syntax	Syntax error
+stmt0	RSet	syntax	Syntax error
+stmt0	RGB	syntax	Syntax error
+stmt0	Return	syntax	Syntax error
+stmt0	Resume	syntax	Syntax error
+stmt0	Rem	accepted	
+stmt0	ReDim	syntax	Syntax error
+stmt0	Read	syntax	Syntax error
+stmt0	Randomize	syntax	Syntax error
+stmt0	Random	syntax	Syntax error
+stmt0	RaiseEvent	syntax	Syntax error
+stmt0	Put	syntax	Syntax error
+stmt0	Public	syntax	Syntax error
+stmt0	PSet	syntax	Syntax error
+stmt0	Property	syntax	Syntax error
+stmt0	Private	syntax	Syntax error
+stmt0	Print	syntax	Syntax error
+stmt0	Preserve	syntax	Syntax error
+stmt0	ParamArray	syntax	Syntax error
+stmt0	Output	syntax	Syntax error
+stmt0	Or	syntax	Syntax error
+stmt0	Optional	syntax	Syntax error
+stmt0	Option	syntax	Syntax error
+stmt0	Open	syntax	Syntax error
+stmt0	On	syntax	Syntax error
+stmt0	Object	syntax	Syntax error
+stmt0	Null	syntax	Syntax error
+stmt0	Nothing	syntax	Syntax error
+stmt0	Not	syntax	Syntax error
+stmt0	Next	syntax	Syntax error
+stmt0	New	syntax	Syntax error
+stmt0	Name	syntax	Syntax error
+stmt0	Module	syntax	Syntax error
+stmt0	Mod	syntax	Syntax error
+stmt0	MidB	syntax	Syntax error
+stmt0	Mid	syntax	Syntax error
+stmt0	Me	syntax	Syntax error
+stmt0	LSet	syntax	Syntax error
+stmt0	Loop	syntax	Syntax error
+stmt0	Long	syntax	Syntax error
+stmt0	Lock	syntax	Syntax error
+stmt0	Local	syntax	Syntax error
+stmt0	Load	syntax	Syntax error
+stmt0	LINEINPUT	syntax	Syntax error
+stmt0	Line	syntax	Syntax error
+stmt0	Like	syntax	Syntax error
+stmt0	Lib	syntax	Syntax error
+stmt0	Let	syntax	Syntax error
+stmt0	LenB	syntax	Syntax error
+stmt0	Len	syntax	Syntax error
+stmt0	Left	syntax	Syntax error
+stmt0	LBound	syntax	Syntax error
+stmt0	Is	syntax	Syntax error
+stmt0	Integer	syntax	Syntax error
+stmt0	Int	syntax	Syntax error
+stmt0	InStrB	syntax	Syntax error
+stmt0	InStr	syntax	Syntax error
+stmt0	InputB	syntax	Syntax error
+stmt0	Input	syntax	Syntax error
+stmt0	In	syntax	Syntax error
+stmt0	Implements	syntax	Syntax error
+stmt0	Imp	syntax	Syntax error
+stmt0	If	syntax	Syntax error
+stmt0	GoTo	syntax	Syntax error
+stmt0	GoSub	syntax	Syntax error
+stmt0	Go	syntax	Syntax error
+stmt0	Global	syntax	Syntax error
+stmt0	Get	syntax	Syntax error
+stmt0	Function	syntax	Syntax error
+stmt0	Friend	syntax	Syntax error
+stmt0	FreeFile	syntax	Syntax error
+stmt0	Format	syntax	Syntax error
+stmt0	For	syntax	Syntax error
+stmt0	Fix	syntax	Syntax error
+stmt0	False	syntax	Syntax error
+stmt0	Explicit	syntax	Syntax error
+stmt0	Exit	syntax	Syntax error
+stmt0	Event	syntax	Syntax error
+stmt0	Error	syntax	Syntax error
+stmt0	Erase	syntax	Syntax error
+stmt0	Eqv	syntax	Syntax error
+stmt0	Enum	syntax	Syntax error
+stmt0	EndIf	syntax	Syntax error
+stmt0	End	syntax	Syntax error
+stmt0	Empty	syntax	Syntax error
+stmt0	ElseIf	syntax	Syntax error
+stmt0	Else	syntax	Syntax error
+stmt0	Each	syntax	Syntax error
+stmt0	Double	syntax	Syntax error
+stmt0	DoEvents	syntax	Syntax error
+stmt0	Do	syntax	Syntax error
+stmt0	Dir	syntax	Syntax error
+stmt0	Dim	syntax	Syntax error
+stmt0	DefVar	syntax	Syntax error
+stmt0	DefStr	syntax	Syntax error
+stmt0	DefSng	syntax	Syntax error
+stmt0	DefObj	syntax	Syntax error
+stmt0	DefLng	syntax	Syntax error
+stmt0	DefInt	syntax	Syntax error
+stmt0	DefDbl	syntax	Syntax error
+stmt0	DefDec	syntax	Syntax error
+stmt0	DefDate	syntax	Syntax error
+stmt0	DefCur	syntax	Syntax error
+stmt0	DefByte	syntax	Syntax error
+stmt0	DefBool	syntax	Syntax error
+stmt0	Declare	syntax	Syntax error
+stmt0	Decimal	syntax	Syntax error
+stmt0	Debug	syntax	Syntax error
+stmt0	Date	syntax	Syntax error
+stmt0	Database	syntax	Syntax error
+stmt0	Currency	syntax	Syntax error
+stmt0	CVErr	syntax	Syntax error
+stmt0	CVDate	syntax	Syntax error
+stmt0	CVar	syntax	Syntax error
+stmt0	CurDir	syntax	Syntax error
+stmt0	CStr	syntax	Syntax error
+stmt0	CSng	syntax	Syntax error
+stmt0	Const	syntax	Syntax error
+stmt0	Compare	syntax	Syntax error
+stmt0	Close	syntax	Syntax error
+stmt0	CLng	syntax	Syntax error
+stmt0	Circle	syntax	Syntax error
+stmt0	CInt	syntax	Syntax error
+stmt0	ChDir	syntax	Syntax error
+stmt0	CDecl	syntax	Syntax error
+stmt0	CDbl	syntax	Syntax error
+stmt0	CDec	syntax	Syntax error
+stmt0	CDate	syntax	Syntax error
+stmt0	CCur	syntax	Syntax error
+stmt0	CByte	syntax	Syntax error
+stmt0	CBool	syntax	Syntax error
+stmt0	Case	syntax	Syntax error
+stmt0	Call	syntax	Syntax error
+stmt0	ByVal	syntax	Syntax error
+stmt0	Byte	syntax	Syntax error
+stmt0	ByRef	syntax	Syntax error
+stmt0	Boolean	syntax	Syntax error
+stmt0	Binary	syntax	Syntax error
+stmt0	BF	syntax	Syntax error
+stmt0	Base	syntax	Syntax error
+stmt0	Assert	syntax	Syntax error
+stmt0	As	syntax	Syntax error
+stmt0	Array	syntax	Syntax error
+stmt0	Append	syntax	Syntax error
+stmt0	Any	syntax	Syntax error
+stmt0	And	syntax	Syntax error
+stmt0	Alias	syntax	Syntax error
+stmt0	AddressOf	syntax	Syntax error
+stmt0	Access	syntax	Syntax error
+stmt0	Abs	syntax	Syntax error
+stmt0	Zork	syntax	Syntax error
+stmt1	Xor	syntax	Syntax error
+stmt1	Write	syntax	Syntax error
+stmt1	WithEvents	syntax	Syntax error
+stmt1	With	semantic	With object must be user-defined type, Object, or Variant
+stmt1	Width	syntax	Syntax error
+stmt1	While	syntax	While without Wend
+stmt1	Wend	syntax	Syntax error
+stmt1	Variant	syntax	Syntax error
+stmt1	Until	syntax	Syntax error
+stmt1	Unknown	semantic	Sub or Function not defined
+stmt1	Unlock	accepted	
+stmt1	Unload	semantic	Type mismatch
+stmt1	UBound	syntax	Syntax error
+stmt1	TypeOf	syntax	Syntax error
+stmt1	Type	syntax	Syntax error
+stmt1	True	syntax	Syntax error
+stmt1	To	syntax	Syntax error
+stmt1	Then	syntax	Syntax error
+stmt1	Text	semantic	Sub or Function not defined
+stmt1	Tab	syntax	Syntax error
+stmt1	Sub	syntax	Syntax error
+stmt1	String	syntax	Syntax error
+stmt1	StrComp	semantic	Argument not optional
+stmt1	Stop	syntax	Syntax error
+stmt1	Step	semantic	Sub or Function not defined
+stmt1	Static	syntax	Syntax error
+stmt1	Spc	syntax	Syntax error
+stmt1	Single	syntax	Syntax error
+stmt1	Shared	syntax	Syntax error
+stmt1	Sgn	syntax	Syntax error
+stmt1	Set	syntax	Syntax error
+stmt1	Select	syntax	Syntax error
+stmt1	Seek	syntax	Syntax error
+stmt1	Scale	syntax	Syntax error
+stmt1	RSet	syntax	Syntax error
+stmt1	RGB	semantic	Argument not optional
+stmt1	Return	syntax	Syntax error
+stmt1	Resume	syntax	Syntax error
+stmt1	Rem	accepted	
+stmt1	ReDim	syntax	Syntax error
+stmt1	Read	semantic	Sub or Function not defined
+stmt1	Randomize	accepted	
+stmt1	Random	semantic	Sub or Function not defined
+stmt1	RaiseEvent	syntax	Syntax error
+stmt1	Put	syntax	Syntax error
+stmt1	Public	syntax	Syntax error
+stmt1	PSet	syntax	Syntax error
+stmt1	Property	syntax	Syntax error
+stmt1	Private	syntax	Syntax error
+stmt1	Print	semantic	Method not valid without suitable object
+stmt1	Preserve	syntax	Syntax error
+stmt1	ParamArray	syntax	Syntax error
+stmt1	Output	semantic	Sub or Function not defined
+stmt1	Or	syntax	Syntax error
+stmt1	Optional	syntax	Syntax error
+stmt1	Option	syntax	Syntax error
+stmt1	Open	syntax	Syntax error
+stmt1	On	syntax	Syntax error
+stmt1	Object	semantic	Sub or Function not defined
+stmt1	Null	syntax	Syntax error
+stmt1	Nothing	syntax	Syntax error
+stmt1	Not	syntax	Syntax error
+stmt1	Next	syntax	Syntax error
+stmt1	New	syntax	Syntax error
+stmt1	Name	syntax	Syntax error
+stmt1	Module	semantic	Sub or Function not defined
+stmt1	Mod	syntax	Syntax error
+stmt1	MidB	syntax	Syntax error
+stmt1	Mid	syntax	Syntax error
+stmt1	Me	semantic	Invalid use of Me keyword
+stmt1	LSet	syntax	Syntax error
+stmt1	Loop	syntax	Syntax error
+stmt1	Long	syntax	Syntax error
+stmt1	Lock	accepted	
+stmt1	Local	syntax	Syntax error
+stmt1	Load	semantic	Type mismatch
+stmt1	LINEINPUT	syntax	Syntax error
+stmt1	Line	syntax	Syntax error
+stmt1	Like	syntax	Syntax error
+stmt1	Lib	semantic	Sub or Function not defined
+stmt1	Let	syntax	Syntax error
+stmt1	LenB	syntax	Syntax error
+stmt1	Len	syntax	Syntax error
+stmt1	Left	semantic	Argument not optional
+stmt1	LBound	syntax	Syntax error
+stmt1	Is	syntax	Syntax error
+stmt1	Integer	syntax	Syntax error
+stmt1	Int	syntax	Syntax error
+stmt1	InStrB	accepted	
+stmt1	InStr	accepted	
+stmt1	InputB	syntax	Syntax error
+stmt1	Input	syntax	Syntax error
+stmt1	In	syntax	Syntax error
+stmt1	Implements	syntax	Syntax error
+stmt1	Imp	syntax	Syntax error
+stmt1	If	syntax	Syntax error
+stmt1	GoTo	syntax	Syntax error
+stmt1	GoSub	syntax	Syntax error
+stmt1	Go	syntax	Syntax error
+stmt1	Global	syntax	Syntax error
+stmt1	Get	syntax	Syntax error
+stmt1	Function	syntax	Syntax error
+stmt1	Friend	syntax	Syntax error
+stmt1	FreeFile	accepted	
+stmt1	Format	accepted	
+stmt1	For	syntax	Syntax error
+stmt1	Fix	syntax	Syntax error
+stmt1	False	syntax	Syntax error
+stmt1	Explicit	semantic	Sub or Function not defined
+stmt1	Exit	syntax	Syntax error
+stmt1	Event	syntax	Syntax error
+stmt1	Error	accepted	
+stmt1	Erase	syntax	Syntax error
+stmt1	Eqv	syntax	Syntax error
+stmt1	Enum	syntax	Syntax error
+stmt1	EndIf	syntax	Syntax error
+stmt1	End	syntax	Syntax error
+stmt1	Empty	syntax	Syntax error
+stmt1	ElseIf	syntax	Syntax error
+stmt1	Else	syntax	Syntax error
+stmt1	Each	syntax	Syntax error
+stmt1	Double	syntax	Syntax error
+stmt1	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+stmt1	Do	syntax	Syntax error
+stmt1	Dir	accepted	
+stmt1	Dim	syntax	Syntax error
+stmt1	DefVar	syntax	Syntax error
+stmt1	DefStr	syntax	Syntax error
+stmt1	DefSng	syntax	Syntax error
+stmt1	DefObj	syntax	Syntax error
+stmt1	DefLng	syntax	Syntax error
+stmt1	DefInt	syntax	Syntax error
+stmt1	DefDbl	syntax	Syntax error
+stmt1	DefDec	syntax	Syntax error
+stmt1	DefDate	syntax	Syntax error
+stmt1	DefCur	syntax	Syntax error
+stmt1	DefByte	syntax	Syntax error
+stmt1	DefBool	syntax	Syntax error
+stmt1	Declare	syntax	Syntax error
+stmt1	Decimal	syntax	Syntax error
+stmt1	Debug	syntax	Syntax error
+stmt1	Date	semantic	Invalid use of property
+stmt1	Database	semantic	Sub or Function not defined
+stmt1	Currency	syntax	Syntax error
+stmt1	CVErr	syntax	Syntax error
+stmt1	CVDate	accepted	
+stmt1	CVar	syntax	Syntax error
+stmt1	CurDir	accepted	
+stmt1	CStr	syntax	Syntax error
+stmt1	CSng	syntax	Syntax error
+stmt1	Const	syntax	Syntax error
+stmt1	Compare	semantic	Sub or Function not defined
+stmt1	Close	accepted	
+stmt1	CLng	syntax	Syntax error
+stmt1	Circle	syntax	Syntax error
+stmt1	CInt	syntax	Syntax error
+stmt1	ChDir	accepted	
+stmt1	CDecl	syntax	Syntax error
+stmt1	CDbl	syntax	Syntax error
+stmt1	CDec	accepted	
+stmt1	CDate	syntax	Syntax error
+stmt1	CCur	syntax	Syntax error
+stmt1	CByte	syntax	Syntax error
+stmt1	CBool	syntax	Syntax error
+stmt1	Case	syntax	Case without Select Case
+stmt1	Call	syntax	Syntax error
+stmt1	ByVal	syntax	Syntax error
+stmt1	Byte	syntax	Syntax error
+stmt1	ByRef	syntax	Syntax error
+stmt1	Boolean	syntax	Syntax error
+stmt1	Binary	semantic	Sub or Function not defined
+stmt1	BF	semantic	Sub or Function not defined
+stmt1	Base	semantic	Sub or Function not defined
+stmt1	Assert	semantic	Sub or Function not defined
+stmt1	As	syntax	Syntax error
+stmt1	Array	syntax	Syntax error
+stmt1	Append	semantic	Sub or Function not defined
+stmt1	Any	syntax	Syntax error
+stmt1	And	syntax	Syntax error
+stmt1	Alias	semantic	Sub or Function not defined
+stmt1	AddressOf	syntax	Syntax error
+stmt1	Access	semantic	Sub or Function not defined
+stmt1	Abs	syntax	Syntax error
+stmt1	Zork	semantic	Sub or Function not defined
+callstmt	Xor	syntax	Syntax error
+callstmt	Write	syntax	Syntax error
+callstmt	WithEvents	syntax	Syntax error
+callstmt	With	syntax	Syntax error
+callstmt	Width	semantic	Argument not optional
+callstmt	While	syntax	Syntax error
+callstmt	Wend	syntax	Syntax error
+callstmt	Variant	syntax	Syntax error
+callstmt	Until	syntax	Syntax error
+callstmt	Unknown	semantic	Sub or Function not defined
+callstmt	Unlock	syntax	Syntax error
+callstmt	Unload	semantic	Type mismatch
+callstmt	UBound	syntax	Syntax error
+callstmt	TypeOf	syntax	Syntax error
+callstmt	Type	syntax	Syntax error
+callstmt	True	syntax	Syntax error
+callstmt	To	syntax	Syntax error
+callstmt	Then	syntax	Syntax error
+callstmt	Text	semantic	Sub or Function not defined
+callstmt	Tab	syntax	Syntax error
+callstmt	Sub	syntax	Syntax error
+callstmt	String	syntax	Syntax error
+callstmt	StrComp	semantic	Argument not optional
+callstmt	Stop	syntax	Syntax error
+callstmt	Step	semantic	Sub or Function not defined
+callstmt	Static	syntax	Syntax error
+callstmt	Spc	syntax	Syntax error
+callstmt	Single	syntax	Syntax error
+callstmt	Shared	syntax	Syntax error
+callstmt	Sgn	syntax	Syntax error
+callstmt	Set	syntax	Syntax error
+callstmt	Select	syntax	Syntax error
+callstmt	Seek	syntax	Syntax error
+callstmt	Scale	syntax	Syntax error
+callstmt	RSet	syntax	Syntax error
+callstmt	RGB	semantic	Argument not optional
+callstmt	Return	syntax	Syntax error
+callstmt	Resume	syntax	Syntax error
+callstmt	Rem	syntax	Syntax error
+callstmt	ReDim	syntax	Syntax error
+callstmt	Read	semantic	Sub or Function not defined
+callstmt	Randomize	accepted	
+callstmt	Random	semantic	Sub or Function not defined
+callstmt	RaiseEvent	syntax	Syntax error
+callstmt	Put	syntax	Syntax error
+callstmt	Public	syntax	Syntax error
+callstmt	PSet	syntax	Syntax error
+callstmt	Property	semantic	Sub or Function not defined
+callstmt	Private	syntax	Syntax error
+callstmt	Print	syntax	Syntax error
+callstmt	Preserve	syntax	Syntax error
+callstmt	ParamArray	syntax	Syntax error
+callstmt	Output	semantic	Sub or Function not defined
+callstmt	Or	syntax	Syntax error
+callstmt	Optional	syntax	Syntax error
+callstmt	Option	syntax	Syntax error
+callstmt	Open	syntax	Syntax error
+callstmt	On	syntax	Syntax error
+callstmt	Object	semantic	Sub or Function not defined
+callstmt	Null	syntax	Syntax error
+callstmt	Nothing	syntax	Syntax error
+callstmt	Not	syntax	Syntax error
+callstmt	Next	syntax	Syntax error
+callstmt	New	syntax	Syntax error
+callstmt	Name	semantic	Sub or Function not defined
+callstmt	Module	semantic	Sub or Function not defined
+callstmt	Mod	syntax	Syntax error
+callstmt	MidB	semantic	Argument not optional
+callstmt	Mid	semantic	Argument not optional
+callstmt	Me	semantic	Invalid use of Me keyword
+callstmt	LSet	syntax	Syntax error
+callstmt	Loop	syntax	Syntax error
+callstmt	Long	syntax	Syntax error
+callstmt	Lock	syntax	Syntax error
+callstmt	Local	syntax	Syntax error
+callstmt	Load	semantic	Type mismatch
+callstmt	LINEINPUT	syntax	Syntax error
+callstmt	Line	semantic	Sub or Function not defined
+callstmt	Like	syntax	Syntax error
+callstmt	Lib	semantic	Sub or Function not defined
+callstmt	Let	syntax	Syntax error
+callstmt	LenB	syntax	Syntax error
+callstmt	Len	syntax	Syntax error
+callstmt	Left	semantic	Argument not optional
+callstmt	LBound	syntax	Syntax error
+callstmt	Is	syntax	Syntax error
+callstmt	Integer	syntax	Syntax error
+callstmt	Int	syntax	Syntax error
+callstmt	InStrB	accepted	
+callstmt	InStr	accepted	
+callstmt	InputB	syntax	Syntax error
+callstmt	Input	syntax	Syntax error
+callstmt	In	syntax	Syntax error
+callstmt	Implements	syntax	Syntax error
+callstmt	Imp	syntax	Syntax error
+callstmt	If	syntax	Syntax error
+callstmt	GoTo	syntax	Syntax error
+callstmt	GoSub	syntax	Syntax error
+callstmt	Go	semantic	Sub or Function not defined
+callstmt	Global	syntax	Syntax error
+callstmt	Get	syntax	Syntax error
+callstmt	Function	syntax	Syntax error
+callstmt	Friend	syntax	Syntax error
+callstmt	FreeFile	accepted	
+callstmt	Format	accepted	
+callstmt	For	syntax	Syntax error
+callstmt	Fix	syntax	Syntax error
+callstmt	False	syntax	Syntax error
+callstmt	Explicit	semantic	Sub or Function not defined
+callstmt	Exit	syntax	Syntax error
+callstmt	Event	syntax	Syntax error
+callstmt	Error	accepted	
+callstmt	Erase	syntax	Syntax error
+callstmt	Eqv	syntax	Syntax error
+callstmt	Enum	syntax	Syntax error
+callstmt	EndIf	syntax	Syntax error
+callstmt	End	syntax	Syntax error
+callstmt	Empty	syntax	Syntax error
+callstmt	ElseIf	syntax	Syntax error
+callstmt	Else	syntax	Syntax error
+callstmt	Each	syntax	Syntax error
+callstmt	Double	syntax	Syntax error
+callstmt	DoEvents	syntax	Syntax error
+callstmt	Do	syntax	Syntax error
+callstmt	Dir	accepted	
+callstmt	Dim	syntax	Syntax error
+callstmt	DefVar	syntax	Syntax error
+callstmt	DefStr	syntax	Syntax error
+callstmt	DefSng	syntax	Syntax error
+callstmt	DefObj	syntax	Syntax error
+callstmt	DefLng	syntax	Syntax error
+callstmt	DefInt	syntax	Syntax error
+callstmt	DefDbl	syntax	Syntax error
+callstmt	DefDec	syntax	Syntax error
+callstmt	DefDate	syntax	Syntax error
+callstmt	DefCur	syntax	Syntax error
+callstmt	DefByte	syntax	Syntax error
+callstmt	DefBool	syntax	Syntax error
+callstmt	Declare	syntax	Syntax error
+callstmt	Decimal	syntax	Syntax error
+callstmt	Debug	syntax	Syntax error
+callstmt	Date	syntax	Syntax error
+callstmt	Database	semantic	Sub or Function not defined
+callstmt	Currency	syntax	Syntax error
+callstmt	CVErr	syntax	Syntax error
+callstmt	CVDate	accepted	
+callstmt	CVar	syntax	Syntax error
+callstmt	CurDir	accepted	
+callstmt	CStr	syntax	Syntax error
+callstmt	CSng	syntax	Syntax error
+callstmt	Const	syntax	Syntax error
+callstmt	Compare	semantic	Sub or Function not defined
+callstmt	Close	syntax	Syntax error
+callstmt	CLng	syntax	Syntax error
+callstmt	Circle	syntax	Syntax error
+callstmt	CInt	syntax	Syntax error
+callstmt	ChDir	accepted	
+callstmt	CDecl	syntax	Syntax error
+callstmt	CDbl	syntax	Syntax error
+callstmt	CDec	syntax	Syntax error
+callstmt	CDate	syntax	Syntax error
+callstmt	CCur	syntax	Syntax error
+callstmt	CByte	syntax	Syntax error
+callstmt	CBool	syntax	Syntax error
+callstmt	Case	syntax	Syntax error
+callstmt	Call	syntax	Syntax error
+callstmt	ByVal	syntax	Syntax error
+callstmt	Byte	syntax	Syntax error
+callstmt	ByRef	syntax	Syntax error
+callstmt	Boolean	syntax	Syntax error
+callstmt	Binary	semantic	Sub or Function not defined
+callstmt	BF	semantic	Sub or Function not defined
+callstmt	Base	semantic	Sub or Function not defined
+callstmt	Assert	semantic	Sub or Function not defined
+callstmt	As	syntax	Syntax error
+callstmt	Array	syntax	Syntax error
+callstmt	Append	semantic	Sub or Function not defined
+callstmt	Any	syntax	Syntax error
+callstmt	And	syntax	Syntax error
+callstmt	Alias	semantic	Sub or Function not defined
+callstmt	AddressOf	syntax	Syntax error
+callstmt	Access	semantic	Sub or Function not defined
+callstmt	Abs	syntax	Syntax error
+callstmt	Zork	semantic	Sub or Function not defined
+operand	Xor	syntax	Syntax error
+operand	Write	syntax	Syntax error
+operand	WithEvents	syntax	Syntax error
+operand	With	syntax	Syntax error
+operand	Width	semantic	Argument not optional
+operand	While	syntax	Syntax error
+operand	Wend	syntax	Syntax error
+operand	Variant	syntax	Syntax error
+operand	Until	syntax	Syntax error
+operand	Unknown	semantic	Sub or Function not defined
+operand	Unlock	syntax	Syntax error
+operand	Unload	semantic	Type mismatch
+operand	UBound	syntax	Syntax error
+operand	TypeOf	syntax	Syntax error
+operand	Type	syntax	Syntax error
+operand	True	syntax	Syntax error
+operand	To	syntax	Syntax error
+operand	Then	syntax	Syntax error
+operand	Text	semantic	Sub or Function not defined
+operand	Tab	syntax	Syntax error
+operand	Sub	syntax	Syntax error
+operand	String	syntax	Syntax error
+operand	StrComp	syntax	Syntax error
+operand	Stop	syntax	Syntax error
+operand	Step	semantic	Sub or Function not defined
+operand	Static	syntax	Syntax error
+operand	Spc	syntax	Syntax error
+operand	Single	syntax	Syntax error
+operand	Shared	syntax	Syntax error
+operand	Sgn	accepted	
+operand	Set	syntax	Syntax error
+operand	Select	syntax	Syntax error
+operand	Seek	accepted	
+operand	Scale	syntax	Syntax error
+operand	RSet	syntax	Syntax error
+operand	RGB	semantic	Argument not optional
+operand	Return	syntax	Syntax error
+operand	Resume	syntax	Syntax error
+operand	Rem	syntax	Syntax error
+operand	ReDim	syntax	Syntax error
+operand	Read	semantic	Sub or Function not defined
+operand	Randomize	semantic	Expected Function or variable
+operand	Random	semantic	Sub or Function not defined
+operand	RaiseEvent	syntax	Syntax error
+operand	Put	syntax	Syntax error
+operand	Public	syntax	Syntax error
+operand	PSet	syntax	Syntax error
+operand	Property	semantic	Sub or Function not defined
+operand	Private	syntax	Syntax error
+operand	Print	syntax	Syntax error
+operand	Preserve	syntax	Syntax error
+operand	ParamArray	syntax	Syntax error
+operand	Output	semantic	Sub or Function not defined
+operand	Or	syntax	Syntax error
+operand	Optional	syntax	Syntax error
+operand	Option	syntax	Syntax error
+operand	Open	syntax	Syntax error
+operand	On	syntax	Syntax error
+operand	Object	semantic	Sub or Function not defined
+operand	Null	syntax	Syntax error
+operand	Nothing	syntax	Syntax error
+operand	Not	accepted	
+operand	Next	syntax	Syntax error
+operand	New	syntax	Syntax error
+operand	Name	semantic	Sub or Function not defined
+operand	Module	semantic	Sub or Function not defined
+operand	Mod	syntax	Syntax error
+operand	MidB	semantic	Argument not optional
+operand	Mid	semantic	Argument not optional
+operand	Me	semantic	Invalid use of Me keyword
+operand	LSet	syntax	Syntax error
+operand	Loop	syntax	Syntax error
+operand	Long	syntax	Syntax error
+operand	Lock	syntax	Syntax error
+operand	Local	syntax	Syntax error
+operand	Load	semantic	Type mismatch
+operand	LINEINPUT	syntax	Syntax error
+operand	Line	semantic	Sub or Function not defined
+operand	Like	syntax	Syntax error
+operand	Lib	semantic	Sub or Function not defined
+operand	Let	syntax	Syntax error
+operand	LenB	semantic	Variable required - can't assign to this expression
+operand	Len	semantic	Variable required - can't assign to this expression
+operand	Left	semantic	Argument not optional
+operand	LBound	syntax	Syntax error
+operand	Is	syntax	Syntax error
+operand	Integer	syntax	Syntax error
+operand	Int	accepted	
+operand	InStrB	syntax	Syntax error
+operand	InStr	syntax	Syntax error
+operand	InputB	syntax	Syntax error
+operand	Input	syntax	Syntax error
+operand	In	syntax	Syntax error
+operand	Implements	syntax	Syntax error
+operand	Imp	syntax	Syntax error
+operand	If	syntax	Syntax error
+operand	GoTo	syntax	Syntax error
+operand	GoSub	syntax	Syntax error
+operand	Go	semantic	Sub or Function not defined
+operand	Global	syntax	Syntax error
+operand	Get	syntax	Syntax error
+operand	Function	syntax	Syntax error
+operand	Friend	syntax	Syntax error
+operand	FreeFile	accepted	
+operand	Format	accepted	
+operand	For	syntax	Syntax error
+operand	Fix	accepted	
+operand	False	syntax	Syntax error
+operand	Explicit	semantic	Sub or Function not defined
+operand	Exit	syntax	Syntax error
+operand	Event	syntax	Syntax error
+operand	Error	accepted	
+operand	Erase	syntax	Syntax error
+operand	Eqv	syntax	Syntax error
+operand	Enum	syntax	Syntax error
+operand	EndIf	syntax	Syntax error
+operand	End	syntax	Syntax error
+operand	Empty	syntax	Syntax error
+operand	ElseIf	syntax	Syntax error
+operand	Else	syntax	Syntax error
+operand	Each	syntax	Syntax error
+operand	Double	syntax	Syntax error
+operand	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+operand	Do	syntax	Syntax error
+operand	Dir	accepted	
+operand	Dim	syntax	Syntax error
+operand	DefVar	syntax	Syntax error
+operand	DefStr	syntax	Syntax error
+operand	DefSng	syntax	Syntax error
+operand	DefObj	syntax	Syntax error
+operand	DefLng	syntax	Syntax error
+operand	DefInt	syntax	Syntax error
+operand	DefDbl	syntax	Syntax error
+operand	DefDec	semantic	Sub or Function not defined
+operand	DefDate	syntax	Syntax error
+operand	DefCur	syntax	Syntax error
+operand	DefByte	syntax	Syntax error
+operand	DefBool	syntax	Syntax error
+operand	Declare	syntax	Syntax error
+operand	Decimal	semantic	Sub or Function not defined
+operand	Debug	syntax	Syntax error
+operand	Date	syntax	Syntax error
+operand	Database	semantic	Sub or Function not defined
+operand	Currency	syntax	Syntax error
+operand	CVErr	accepted	
+operand	CVDate	accepted	
+operand	CVar	accepted	
+operand	CurDir	accepted	
+operand	CStr	accepted	
+operand	CSng	accepted	
+operand	Const	syntax	Syntax error
+operand	Compare	semantic	Sub or Function not defined
+operand	Close	syntax	Syntax error
+operand	CLng	accepted	
+operand	Circle	syntax	Syntax error
+operand	CInt	accepted	
+operand	ChDir	semantic	Expected Function or variable
+operand	CDecl	syntax	Syntax error
+operand	CDbl	accepted	
+operand	CDec	accepted	
+operand	CDate	accepted	
+operand	CCur	accepted	
+operand	CByte	accepted	
+operand	CBool	accepted	
+operand	Case	syntax	Syntax error
+operand	Call	syntax	Syntax error
+operand	ByVal	syntax	Syntax error
+operand	Byte	syntax	Syntax error
+operand	ByRef	syntax	Syntax error
+operand	Boolean	syntax	Syntax error
+operand	Binary	semantic	Sub or Function not defined
+operand	BF	semantic	Sub or Function not defined
+operand	Base	semantic	Sub or Function not defined
+operand	Assert	semantic	Sub or Function not defined
+operand	As	syntax	Syntax error
+operand	Array	accepted	
+operand	Append	semantic	Sub or Function not defined
+operand	Any	syntax	Syntax error
+operand	And	syntax	Syntax error
+operand	Alias	semantic	Sub or Function not defined
+operand	AddressOf	syntax	Syntax error
+operand	Access	semantic	Sub or Function not defined
+operand	Abs	accepted	
+operand	Zork	semantic	Sub or Function not defined
+member	Xor	syntax	Syntax error
+member	Write	syntax	Syntax error
+member	WithEvents	syntax	Syntax error
+member	With	syntax	Syntax error
+member	Width	semantic	Argument not optional
+member	While	syntax	Syntax error
+member	Wend	syntax	Syntax error
+member	Variant	syntax	Syntax error
+member	Until	syntax	Syntax error
+member	Unknown	semantic	Sub or Function not defined
+member	Unlock	syntax	Syntax error
+member	Unload	semantic	Type mismatch
+member	UBound	syntax	Syntax error
+member	TypeOf	syntax	Syntax error
+member	Type	syntax	Syntax error
+member	True	syntax	Syntax error
+member	To	syntax	Syntax error
+member	Then	syntax	Syntax error
+member	Text	semantic	Sub or Function not defined
+member	Tab	syntax	Syntax error
+member	Sub	syntax	Syntax error
+member	String	syntax	Syntax error
+member	StrComp	syntax	Syntax error
+member	Stop	syntax	Syntax error
+member	Step	semantic	Sub or Function not defined
+member	Static	syntax	Syntax error
+member	Spc	syntax	Syntax error
+member	Single	syntax	Syntax error
+member	Shared	syntax	Syntax error
+member	Sgn	syntax	Syntax error
+member	Set	syntax	Syntax error
+member	Select	syntax	Syntax error
+member	Seek	semantic	Invalid qualifier
+member	Scale	syntax	Syntax error
+member	RSet	syntax	Syntax error
+member	RGB	semantic	Argument not optional
+member	Return	syntax	Syntax error
+member	Resume	syntax	Syntax error
+member	Rem	syntax	Syntax error
+member	ReDim	syntax	Syntax error
+member	Read	semantic	Sub or Function not defined
+member	Randomize	semantic	Expected Function or variable
+member	Random	semantic	Sub or Function not defined
+member	RaiseEvent	syntax	Syntax error
+member	Put	syntax	Syntax error
+member	Public	syntax	Syntax error
+member	PSet	syntax	Syntax error
+member	Property	semantic	Sub or Function not defined
+member	Private	syntax	Syntax error
+member	Print	syntax	Syntax error
+member	Preserve	syntax	Syntax error
+member	ParamArray	syntax	Syntax error
+member	Output	semantic	Sub or Function not defined
+member	Or	syntax	Syntax error
+member	Optional	syntax	Syntax error
+member	Option	syntax	Syntax error
+member	Open	syntax	Syntax error
+member	On	syntax	Syntax error
+member	Object	semantic	Sub or Function not defined
+member	Null	syntax	Syntax error
+member	Nothing	syntax	Syntax error
+member	Not	syntax	Syntax error
+member	Next	syntax	Syntax error
+member	New	syntax	Syntax error
+member	Name	semantic	Sub or Function not defined
+member	Module	semantic	Sub or Function not defined
+member	Mod	syntax	Syntax error
+member	MidB	semantic	Argument not optional
+member	Mid	semantic	Argument not optional
+member	Me	semantic	Invalid use of Me keyword
+member	LSet	syntax	Syntax error
+member	Loop	syntax	Syntax error
+member	Long	syntax	Syntax error
+member	Lock	syntax	Syntax error
+member	Local	syntax	Syntax error
+member	Load	semantic	Type mismatch
+member	LINEINPUT	syntax	Syntax error
+member	Line	semantic	Sub or Function not defined
+member	Like	syntax	Syntax error
+member	Lib	semantic	Sub or Function not defined
+member	Let	syntax	Syntax error
+member	LenB	syntax	Syntax error
+member	Len	syntax	Syntax error
+member	Left	semantic	Argument not optional
+member	LBound	syntax	Syntax error
+member	Is	syntax	Syntax error
+member	Integer	syntax	Syntax error
+member	Int	syntax	Syntax error
+member	InStrB	syntax	Syntax error
+member	InStr	syntax	Syntax error
+member	InputB	syntax	Syntax error
+member	Input	syntax	Syntax error
+member	In	syntax	Syntax error
+member	Implements	syntax	Syntax error
+member	Imp	syntax	Syntax error
+member	If	syntax	Syntax error
+member	GoTo	syntax	Syntax error
+member	GoSub	syntax	Syntax error
+member	Go	semantic	Sub or Function not defined
+member	Global	syntax	Syntax error
+member	Get	syntax	Syntax error
+member	Function	syntax	Syntax error
+member	Friend	syntax	Syntax error
+member	FreeFile	semantic	Invalid qualifier
+member	Format	accepted	
+member	For	syntax	Syntax error
+member	Fix	syntax	Syntax error
+member	False	syntax	Syntax error
+member	Explicit	semantic	Sub or Function not defined
+member	Exit	syntax	Syntax error
+member	Event	syntax	Syntax error
+member	Error	accepted	
+member	Erase	syntax	Syntax error
+member	Eqv	syntax	Syntax error
+member	Enum	syntax	Syntax error
+member	EndIf	syntax	Syntax error
+member	End	syntax	Syntax error
+member	Empty	syntax	Syntax error
+member	ElseIf	syntax	Syntax error
+member	Else	syntax	Syntax error
+member	Each	syntax	Syntax error
+member	Double	syntax	Syntax error
+member	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+member	Do	syntax	Syntax error
+member	Dir	semantic	Invalid qualifier
+member	Dim	syntax	Syntax error
+member	DefVar	syntax	Syntax error
+member	DefStr	syntax	Syntax error
+member	DefSng	syntax	Syntax error
+member	DefObj	syntax	Syntax error
+member	DefLng	syntax	Syntax error
+member	DefInt	syntax	Syntax error
+member	DefDbl	syntax	Syntax error
+member	DefDec	semantic	Sub or Function not defined
+member	DefDate	syntax	Syntax error
+member	DefCur	syntax	Syntax error
+member	DefByte	syntax	Syntax error
+member	DefBool	syntax	Syntax error
+member	Declare	syntax	Syntax error
+member	Decimal	semantic	Sub or Function not defined
+member	Debug	syntax	Syntax error
+member	Date	syntax	Syntax error
+member	Database	semantic	Sub or Function not defined
+member	Currency	syntax	Syntax error
+member	CVErr	syntax	Syntax error
+member	CVDate	accepted	
+member	CVar	syntax	Syntax error
+member	CurDir	accepted	
+member	CStr	syntax	Syntax error
+member	CSng	syntax	Syntax error
+member	Const	syntax	Syntax error
+member	Compare	semantic	Sub or Function not defined
+member	Close	syntax	Syntax error
+member	CLng	syntax	Syntax error
+member	Circle	syntax	Syntax error
+member	CInt	syntax	Syntax error
+member	ChDir	semantic	Expected Function or variable
+member	CDecl	syntax	Syntax error
+member	CDbl	syntax	Syntax error
+member	CDec	accepted	
+member	CDate	syntax	Syntax error
+member	CCur	syntax	Syntax error
+member	CByte	syntax	Syntax error
+member	CBool	syntax	Syntax error
+member	Case	syntax	Syntax error
+member	Call	syntax	Syntax error
+member	ByVal	syntax	Syntax error
+member	Byte	syntax	Syntax error
+member	ByRef	syntax	Syntax error
+member	Boolean	syntax	Syntax error
+member	Binary	semantic	Sub or Function not defined
+member	BF	semantic	Sub or Function not defined
+member	Base	semantic	Sub or Function not defined
+member	Assert	semantic	Sub or Function not defined
+member	As	syntax	Syntax error
+member	Array	accepted	
+member	Append	semantic	Sub or Function not defined
+member	Any	syntax	Syntax error
+member	And	syntax	Syntax error
+member	Alias	semantic	Sub or Function not defined
+member	AddressOf	syntax	Syntax error
+member	Access	semantic	Sub or Function not defined
+member	Abs	syntax	Syntax error
+member	Zork	semantic	Sub or Function not defined
+named	Xor	syntax	Syntax error
+named	Write	syntax	Syntax error
+named	WithEvents	syntax	Syntax error
+named	With	syntax	Syntax error
+named	Width	semantic	Named argument not found
+named	While	syntax	Syntax error
+named	Wend	syntax	Syntax error
+named	Variant	syntax	Syntax error
+named	Until	syntax	Syntax error
+named	Unknown	semantic	Sub or Function not defined
+named	Unlock	syntax	Syntax error
+named	Unload	semantic	Named argument not found
+named	UBound	syntax	Syntax error
+named	TypeOf	syntax	Syntax error
+named	Type	syntax	Syntax error
+named	True	syntax	Syntax error
+named	To	syntax	Syntax error
+named	Then	syntax	Syntax error
+named	Text	semantic	Sub or Function not defined
+named	Tab	syntax	Syntax error
+named	Sub	syntax	Syntax error
+named	String	syntax	Syntax error
+named	StrComp	syntax	Syntax error
+named	Stop	syntax	Syntax error
+named	Step	semantic	Sub or Function not defined
+named	Static	syntax	Syntax error
+named	Spc	syntax	Syntax error
+named	Single	syntax	Syntax error
+named	Shared	syntax	Syntax error
+named	Sgn	syntax	Syntax error
+named	Set	syntax	Syntax error
+named	Select	syntax	Syntax error
+named	Seek	semantic	Named argument not found
+named	Scale	syntax	Syntax error
+named	RSet	syntax	Syntax error
+named	RGB	semantic	Named argument not found
+named	Return	syntax	Syntax error
+named	Resume	syntax	Syntax error
+named	Rem	syntax	Syntax error
+named	ReDim	syntax	Syntax error
+named	Read	semantic	Sub or Function not defined
+named	Randomize	semantic	Named argument not found
+named	Random	semantic	Sub or Function not defined
+named	RaiseEvent	syntax	Syntax error
+named	Put	syntax	Syntax error
+named	Public	syntax	Syntax error
+named	PSet	syntax	Syntax error
+named	Property	semantic	Sub or Function not defined
+named	Private	syntax	Syntax error
+named	Print	syntax	Syntax error
+named	Preserve	syntax	Syntax error
+named	ParamArray	syntax	Syntax error
+named	Output	semantic	Sub or Function not defined
+named	Or	syntax	Syntax error
+named	Optional	syntax	Syntax error
+named	Option	syntax	Syntax error
+named	Open	syntax	Syntax error
+named	On	syntax	Syntax error
+named	Object	semantic	Sub or Function not defined
+named	Null	syntax	Syntax error
+named	Nothing	syntax	Syntax error
+named	Not	syntax	Syntax error
+named	Next	syntax	Syntax error
+named	New	syntax	Syntax error
+named	Name	semantic	Sub or Function not defined
+named	Module	semantic	Sub or Function not defined
+named	Mod	syntax	Syntax error
+named	MidB	semantic	Named argument not found
+named	Mid	semantic	Named argument not found
+named	Me	semantic	Invalid use of Me keyword
+named	LSet	syntax	Syntax error
+named	Loop	syntax	Syntax error
+named	Long	syntax	Syntax error
+named	Lock	syntax	Syntax error
+named	Local	syntax	Syntax error
+named	Load	semantic	Named argument not found
+named	LINEINPUT	syntax	Syntax error
+named	Line	semantic	Sub or Function not defined
+named	Like	syntax	Syntax error
+named	Lib	semantic	Sub or Function not defined
+named	Let	syntax	Syntax error
+named	LenB	syntax	Syntax error
+named	Len	syntax	Syntax error
+named	Left	semantic	Named argument not found
+named	LBound	syntax	Syntax error
+named	Is	syntax	Syntax error
+named	Integer	syntax	Syntax error
+named	Int	syntax	Syntax error
+named	InStrB	syntax	Syntax error
+named	InStr	syntax	Syntax error
+named	InputB	syntax	Syntax error
+named	Input	syntax	Syntax error
+named	In	syntax	Syntax error
+named	Implements	syntax	Syntax error
+named	Imp	syntax	Syntax error
+named	If	syntax	Syntax error
+named	GoTo	syntax	Syntax error
+named	GoSub	syntax	Syntax error
+named	Go	semantic	Sub or Function not defined
+named	Global	syntax	Syntax error
+named	Get	syntax	Syntax error
+named	Function	syntax	Syntax error
+named	Friend	syntax	Syntax error
+named	FreeFile	semantic	Named argument not found
+named	Format	semantic	Named argument not found
+named	For	syntax	Syntax error
+named	Fix	syntax	Syntax error
+named	False	syntax	Syntax error
+named	Explicit	semantic	Sub or Function not defined
+named	Exit	syntax	Syntax error
+named	Event	syntax	Syntax error
+named	Error	semantic	Named argument not found
+named	Erase	syntax	Syntax error
+named	Eqv	syntax	Syntax error
+named	Enum	syntax	Syntax error
+named	EndIf	syntax	Syntax error
+named	End	syntax	Syntax error
+named	Empty	syntax	Syntax error
+named	ElseIf	syntax	Syntax error
+named	Else	syntax	Syntax error
+named	Each	syntax	Syntax error
+named	Double	syntax	Syntax error
+named	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+named	Do	syntax	Syntax error
+named	Dir	semantic	Named argument not found
+named	Dim	syntax	Syntax error
+named	DefVar	syntax	Syntax error
+named	DefStr	syntax	Syntax error
+named	DefSng	syntax	Syntax error
+named	DefObj	syntax	Syntax error
+named	DefLng	syntax	Syntax error
+named	DefInt	syntax	Syntax error
+named	DefDbl	syntax	Syntax error
+named	DefDec	semantic	Sub or Function not defined
+named	DefDate	syntax	Syntax error
+named	DefCur	syntax	Syntax error
+named	DefByte	syntax	Syntax error
+named	DefBool	syntax	Syntax error
+named	Declare	syntax	Syntax error
+named	Decimal	semantic	Sub or Function not defined
+named	Debug	syntax	Syntax error
+named	Date	syntax	Syntax error
+named	Database	semantic	Sub or Function not defined
+named	Currency	syntax	Syntax error
+named	CVErr	syntax	Syntax error
+named	CVDate	semantic	Named argument not found
+named	CVar	syntax	Syntax error
+named	CurDir	semantic	Named argument not found
+named	CStr	syntax	Syntax error
+named	CSng	syntax	Syntax error
+named	Const	syntax	Syntax error
+named	Compare	semantic	Sub or Function not defined
+named	Close	syntax	Syntax error
+named	CLng	syntax	Syntax error
+named	Circle	syntax	Syntax error
+named	CInt	syntax	Syntax error
+named	ChDir	semantic	Named argument not found
+named	CDecl	syntax	Syntax error
+named	CDbl	syntax	Syntax error
+named	CDec	semantic	Named argument not found
+named	CDate	syntax	Syntax error
+named	CCur	syntax	Syntax error
+named	CByte	syntax	Syntax error
+named	CBool	syntax	Syntax error
+named	Case	syntax	Syntax error
+named	Call	syntax	Syntax error
+named	ByVal	syntax	Syntax error
+named	Byte	syntax	Syntax error
+named	ByRef	syntax	Syntax error
+named	Boolean	syntax	Syntax error
+named	Binary	semantic	Sub or Function not defined
+named	BF	semantic	Sub or Function not defined
+named	Base	semantic	Sub or Function not defined
+named	Assert	semantic	Sub or Function not defined
+named	As	syntax	Syntax error
+named	Array	semantic	Argument in ParamArray may not be named
+named	Append	semantic	Sub or Function not defined
+named	Any	syntax	Syntax error
+named	And	syntax	Syntax error
+named	Alias	semantic	Sub or Function not defined
+named	AddressOf	syntax	Syntax error
+named	Access	semantic	Sub or Function not defined
+named	Abs	syntax	Syntax error
+named	Zork	semantic	Sub or Function not defined
+namearg1	Xor	syntax	Syntax error
+namearg1	Write	syntax	Syntax error
+namearg1	WithEvents	syntax	Syntax error
+namearg1	With	syntax	Syntax error
+namearg1	Width	semantic	Argument not optional
+namearg1	While	syntax	Syntax error
+namearg1	Wend	syntax	Syntax error
+namearg1	Variant	syntax	Syntax error
+namearg1	Until	syntax	Syntax error
+namearg1	Unknown	semantic	Sub or Function not defined
+namearg1	Unlock	syntax	Syntax error
+namearg1	Unload	semantic	Expected Function or variable
+namearg1	UBound	accepted	
+namearg1	TypeOf	syntax	Syntax error
+namearg1	Type	syntax	Syntax error
+namearg1	True	syntax	Syntax error
+namearg1	To	syntax	Syntax error
+namearg1	Then	syntax	Syntax error
+namearg1	Text	semantic	Sub or Function not defined
+namearg1	Tab	syntax	Syntax error
+namearg1	Sub	syntax	Syntax error
+namearg1	String	syntax	Syntax error
+namearg1	StrComp	syntax	Syntax error
+namearg1	Stop	syntax	Syntax error
+namearg1	Step	semantic	Sub or Function not defined
+namearg1	Static	syntax	Syntax error
+namearg1	Spc	syntax	Syntax error
+namearg1	Single	syntax	Syntax error
+namearg1	Shared	syntax	Syntax error
+namearg1	Sgn	accepted	
+namearg1	Set	syntax	Syntax error
+namearg1	Select	syntax	Syntax error
+namearg1	Seek	accepted	
+namearg1	Scale	syntax	Syntax error
+namearg1	RSet	syntax	Syntax error
+namearg1	RGB	semantic	Argument not optional
+namearg1	Return	syntax	Syntax error
+namearg1	Resume	syntax	Syntax error
+namearg1	Rem	syntax	Syntax error
+namearg1	ReDim	syntax	Syntax error
+namearg1	Read	semantic	Sub or Function not defined
+namearg1	Randomize	semantic	Expected Function or variable
+namearg1	Random	semantic	Sub or Function not defined
+namearg1	RaiseEvent	syntax	Syntax error
+namearg1	Put	syntax	Syntax error
+namearg1	Public	syntax	Syntax error
+namearg1	PSet	syntax	Syntax error
+namearg1	Property	semantic	Sub or Function not defined
+namearg1	Private	syntax	Syntax error
+namearg1	Print	syntax	Syntax error
+namearg1	Preserve	syntax	Syntax error
+namearg1	ParamArray	syntax	Syntax error
+namearg1	Output	semantic	Sub or Function not defined
+namearg1	Or	syntax	Syntax error
+namearg1	Optional	syntax	Syntax error
+namearg1	Option	syntax	Syntax error
+namearg1	Open	syntax	Syntax error
+namearg1	On	syntax	Syntax error
+namearg1	Object	semantic	Sub or Function not defined
+namearg1	Null	syntax	Syntax error
+namearg1	Nothing	syntax	Syntax error
+namearg1	Not	accepted	
+namearg1	Next	syntax	Syntax error
+namearg1	New	syntax	Syntax error
+namearg1	Name	semantic	Sub or Function not defined
+namearg1	Module	semantic	Sub or Function not defined
+namearg1	Mod	syntax	Syntax error
+namearg1	MidB	semantic	Argument not optional
+namearg1	Mid	semantic	Argument not optional
+namearg1	Me	semantic	Invalid use of Me keyword
+namearg1	LSet	syntax	Syntax error
+namearg1	Loop	syntax	Syntax error
+namearg1	Long	syntax	Syntax error
+namearg1	Lock	syntax	Syntax error
+namearg1	Local	syntax	Syntax error
+namearg1	Load	semantic	Expected Function or variable
+namearg1	LINEINPUT	syntax	Syntax error
+namearg1	Line	semantic	Sub or Function not defined
+namearg1	Like	syntax	Syntax error
+namearg1	Lib	semantic	Sub or Function not defined
+namearg1	Let	syntax	Syntax error
+namearg1	LenB	accepted	
+namearg1	Len	accepted	
+namearg1	Left	semantic	Argument not optional
+namearg1	LBound	accepted	
+namearg1	Is	syntax	Syntax error
+namearg1	Integer	syntax	Syntax error
+namearg1	Int	accepted	
+namearg1	InStrB	syntax	Syntax error
+namearg1	InStr	syntax	Syntax error
+namearg1	InputB	syntax	Syntax error
+namearg1	Input	syntax	Syntax error
+namearg1	In	syntax	Syntax error
+namearg1	Implements	syntax	Syntax error
+namearg1	Imp	syntax	Syntax error
+namearg1	If	syntax	Syntax error
+namearg1	GoTo	syntax	Syntax error
+namearg1	GoSub	syntax	Syntax error
+namearg1	Go	semantic	Sub or Function not defined
+namearg1	Global	syntax	Syntax error
+namearg1	Get	syntax	Syntax error
+namearg1	Function	syntax	Syntax error
+namearg1	Friend	syntax	Syntax error
+namearg1	FreeFile	accepted	
+namearg1	Format	accepted	
+namearg1	For	syntax	Syntax error
+namearg1	Fix	accepted	
+namearg1	False	syntax	Syntax error
+namearg1	Explicit	semantic	Sub or Function not defined
+namearg1	Exit	syntax	Syntax error
+namearg1	Event	syntax	Syntax error
+namearg1	Error	accepted	
+namearg1	Erase	syntax	Syntax error
+namearg1	Eqv	syntax	Syntax error
+namearg1	Enum	syntax	Syntax error
+namearg1	EndIf	syntax	Syntax error
+namearg1	End	syntax	Syntax error
+namearg1	Empty	syntax	Syntax error
+namearg1	ElseIf	syntax	Syntax error
+namearg1	Else	syntax	Syntax error
+namearg1	Each	syntax	Syntax error
+namearg1	Double	syntax	Syntax error
+namearg1	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+namearg1	Do	syntax	Syntax error
+namearg1	Dir	accepted	
+namearg1	Dim	syntax	Syntax error
+namearg1	DefVar	syntax	Syntax error
+namearg1	DefStr	syntax	Syntax error
+namearg1	DefSng	syntax	Syntax error
+namearg1	DefObj	syntax	Syntax error
+namearg1	DefLng	syntax	Syntax error
+namearg1	DefInt	syntax	Syntax error
+namearg1	DefDbl	syntax	Syntax error
+namearg1	DefDec	semantic	Sub or Function not defined
+namearg1	DefDate	syntax	Syntax error
+namearg1	DefCur	syntax	Syntax error
+namearg1	DefByte	syntax	Syntax error
+namearg1	DefBool	syntax	Syntax error
+namearg1	Declare	syntax	Syntax error
+namearg1	Decimal	semantic	Sub or Function not defined
+namearg1	Debug	syntax	Syntax error
+namearg1	Date	syntax	Syntax error
+namearg1	Database	semantic	Sub or Function not defined
+namearg1	Currency	syntax	Syntax error
+namearg1	CVErr	accepted	
+namearg1	CVDate	accepted	
+namearg1	CVar	accepted	
+namearg1	CurDir	accepted	
+namearg1	CStr	accepted	
+namearg1	CSng	accepted	
+namearg1	Const	syntax	Syntax error
+namearg1	Compare	semantic	Sub or Function not defined
+namearg1	Close	syntax	Syntax error
+namearg1	CLng	accepted	
+namearg1	Circle	syntax	Syntax error
+namearg1	CInt	accepted	
+namearg1	ChDir	semantic	Expected Function or variable
+namearg1	CDecl	syntax	Syntax error
+namearg1	CDbl	accepted	
+namearg1	CDec	accepted	
+namearg1	CDate	accepted	
+namearg1	CCur	accepted	
+namearg1	CByte	accepted	
+namearg1	CBool	accepted	
+namearg1	Case	syntax	Syntax error
+namearg1	Call	syntax	Syntax error
+namearg1	ByVal	syntax	Syntax error
+namearg1	Byte	syntax	Syntax error
+namearg1	ByRef	syntax	Syntax error
+namearg1	Boolean	syntax	Syntax error
+namearg1	Binary	semantic	Sub or Function not defined
+namearg1	BF	semantic	Sub or Function not defined
+namearg1	Base	semantic	Sub or Function not defined
+namearg1	Assert	semantic	Sub or Function not defined
+namearg1	As	syntax	Syntax error
+namearg1	Array	accepted	
+namearg1	Append	semantic	Sub or Function not defined
+namearg1	Any	syntax	Syntax error
+namearg1	And	syntax	Syntax error
+namearg1	Alias	semantic	Sub or Function not defined
+namearg1	AddressOf	syntax	Syntax error
+namearg1	Access	semantic	Sub or Function not defined
+namearg1	Abs	accepted	
+namearg1	Zork	semantic	Sub or Function not defined
+namearg2	Xor	syntax	Syntax error
+namearg2	Write	syntax	Syntax error
+namearg2	WithEvents	syntax	Syntax error
+namearg2	With	syntax	Syntax error
+namearg2	Width	semantic	Expected Function or variable
+namearg2	While	syntax	Syntax error
+namearg2	Wend	syntax	Syntax error
+namearg2	Variant	syntax	Syntax error
+namearg2	Until	syntax	Syntax error
+namearg2	Unknown	semantic	Sub or Function not defined
+namearg2	Unlock	syntax	Syntax error
+namearg2	Unload	semantic	Wrong number of arguments or invalid property assignment
+namearg2	UBound	accepted	
+namearg2	TypeOf	syntax	Syntax error
+namearg2	Type	syntax	Syntax error
+namearg2	True	syntax	Syntax error
+namearg2	To	syntax	Syntax error
+namearg2	Then	syntax	Syntax error
+namearg2	Text	semantic	Sub or Function not defined
+namearg2	Tab	syntax	Syntax error
+namearg2	Sub	syntax	Syntax error
+namearg2	String	accepted	
+namearg2	StrComp	accepted	
+namearg2	Stop	syntax	Syntax error
+namearg2	Step	semantic	Sub or Function not defined
+namearg2	Static	syntax	Syntax error
+namearg2	Spc	syntax	Syntax error
+namearg2	Single	syntax	Syntax error
+namearg2	Shared	syntax	Syntax error
+namearg2	Sgn	syntax	Syntax error
+namearg2	Set	syntax	Syntax error
+namearg2	Select	syntax	Syntax error
+namearg2	Seek	semantic	Wrong number of arguments or invalid property assignment
+namearg2	Scale	syntax	Syntax error
+namearg2	RSet	syntax	Syntax error
+namearg2	RGB	semantic	Argument not optional
+namearg2	Return	syntax	Syntax error
+namearg2	Resume	syntax	Syntax error
+namearg2	Rem	syntax	Syntax error
+namearg2	ReDim	syntax	Syntax error
+namearg2	Read	semantic	Sub or Function not defined
+namearg2	Randomize	semantic	Wrong number of arguments or invalid property assignment
+namearg2	Random	semantic	Sub or Function not defined
+namearg2	RaiseEvent	syntax	Syntax error
+namearg2	Put	syntax	Syntax error
+namearg2	Public	syntax	Syntax error
+namearg2	PSet	syntax	Syntax error
+namearg2	Property	semantic	Sub or Function not defined
+namearg2	Private	syntax	Syntax error
+namearg2	Print	syntax	Syntax error
+namearg2	Preserve	syntax	Syntax error
+namearg2	ParamArray	syntax	Syntax error
+namearg2	Output	semantic	Sub or Function not defined
+namearg2	Or	syntax	Syntax error
+namearg2	Optional	syntax	Syntax error
+namearg2	Option	syntax	Syntax error
+namearg2	Open	syntax	Syntax error
+namearg2	On	syntax	Syntax error
+namearg2	Object	semantic	Sub or Function not defined
+namearg2	Null	syntax	Syntax error
+namearg2	Nothing	syntax	Syntax error
+namearg2	Not	syntax	Syntax error
+namearg2	Next	syntax	Syntax error
+namearg2	New	syntax	Syntax error
+namearg2	Name	semantic	Sub or Function not defined
+namearg2	Module	semantic	Sub or Function not defined
+namearg2	Mod	syntax	Syntax error
+namearg2	MidB	accepted	
+namearg2	Mid	accepted	
+namearg2	Me	semantic	Invalid use of Me keyword
+namearg2	LSet	syntax	Syntax error
+namearg2	Loop	syntax	Syntax error
+namearg2	Long	syntax	Syntax error
+namearg2	Lock	syntax	Syntax error
+namearg2	Local	syntax	Syntax error
+namearg2	Load	semantic	Wrong number of arguments or invalid property assignment
+namearg2	LINEINPUT	syntax	Syntax error
+namearg2	Line	semantic	Sub or Function not defined
+namearg2	Like	syntax	Syntax error
+namearg2	Lib	semantic	Sub or Function not defined
+namearg2	Let	syntax	Syntax error
+namearg2	LenB	syntax	Syntax error
+namearg2	Len	syntax	Syntax error
+namearg2	Left	accepted	
+namearg2	LBound	accepted	
+namearg2	Is	syntax	Syntax error
+namearg2	Integer	syntax	Syntax error
+namearg2	Int	syntax	Syntax error
+namearg2	InStrB	accepted	
+namearg2	InStr	accepted	
+namearg2	InputB	accepted	
+namearg2	Input	accepted	
+namearg2	In	syntax	Syntax error
+namearg2	Implements	syntax	Syntax error
+namearg2	Imp	syntax	Syntax error
+namearg2	If	syntax	Syntax error
+namearg2	GoTo	syntax	Syntax error
+namearg2	GoSub	syntax	Syntax error
+namearg2	Go	semantic	Sub or Function not defined
+namearg2	Global	syntax	Syntax error
+namearg2	Get	syntax	Syntax error
+namearg2	Function	syntax	Syntax error
+namearg2	Friend	syntax	Syntax error
+namearg2	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+namearg2	Format	accepted	
+namearg2	For	syntax	Syntax error
+namearg2	Fix	syntax	Syntax error
+namearg2	False	syntax	Syntax error
+namearg2	Explicit	semantic	Sub or Function not defined
+namearg2	Exit	syntax	Syntax error
+namearg2	Event	syntax	Syntax error
+namearg2	Error	semantic	Wrong number of arguments or invalid property assignment
+namearg2	Erase	syntax	Syntax error
+namearg2	Eqv	syntax	Syntax error
+namearg2	Enum	syntax	Syntax error
+namearg2	EndIf	syntax	Syntax error
+namearg2	End	syntax	Syntax error
+namearg2	Empty	syntax	Syntax error
+namearg2	ElseIf	syntax	Syntax error
+namearg2	Else	syntax	Syntax error
+namearg2	Each	syntax	Syntax error
+namearg2	Double	syntax	Syntax error
+namearg2	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+namearg2	Do	syntax	Syntax error
+namearg2	Dir	accepted	
+namearg2	Dim	syntax	Syntax error
+namearg2	DefVar	syntax	Syntax error
+namearg2	DefStr	syntax	Syntax error
+namearg2	DefSng	syntax	Syntax error
+namearg2	DefObj	syntax	Syntax error
+namearg2	DefLng	syntax	Syntax error
+namearg2	DefInt	syntax	Syntax error
+namearg2	DefDbl	syntax	Syntax error
+namearg2	DefDec	semantic	Sub or Function not defined
+namearg2	DefDate	syntax	Syntax error
+namearg2	DefCur	syntax	Syntax error
+namearg2	DefByte	syntax	Syntax error
+namearg2	DefBool	syntax	Syntax error
+namearg2	Declare	syntax	Syntax error
+namearg2	Decimal	semantic	Sub or Function not defined
+namearg2	Debug	syntax	Syntax error
+namearg2	Date	syntax	Syntax error
+namearg2	Database	semantic	Sub or Function not defined
+namearg2	Currency	syntax	Syntax error
+namearg2	CVErr	syntax	Syntax error
+namearg2	CVDate	semantic	Wrong number of arguments or invalid property assignment
+namearg2	CVar	syntax	Syntax error
+namearg2	CurDir	semantic	Wrong number of arguments or invalid property assignment
+namearg2	CStr	syntax	Syntax error
+namearg2	CSng	syntax	Syntax error
+namearg2	Const	syntax	Syntax error
+namearg2	Compare	semantic	Sub or Function not defined
+namearg2	Close	syntax	Syntax error
+namearg2	CLng	syntax	Syntax error
+namearg2	Circle	syntax	Syntax error
+namearg2	CInt	syntax	Syntax error
+namearg2	ChDir	semantic	Wrong number of arguments or invalid property assignment
+namearg2	CDecl	syntax	Syntax error
+namearg2	CDbl	syntax	Syntax error
+namearg2	CDec	semantic	Wrong number of arguments or invalid property assignment
+namearg2	CDate	syntax	Syntax error
+namearg2	CCur	syntax	Syntax error
+namearg2	CByte	syntax	Syntax error
+namearg2	CBool	syntax	Syntax error
+namearg2	Case	syntax	Syntax error
+namearg2	Call	syntax	Syntax error
+namearg2	ByVal	syntax	Syntax error
+namearg2	Byte	syntax	Syntax error
+namearg2	ByRef	syntax	Syntax error
+namearg2	Boolean	syntax	Syntax error
+namearg2	Binary	semantic	Sub or Function not defined
+namearg2	BF	semantic	Sub or Function not defined
+namearg2	Base	semantic	Sub or Function not defined
+namearg2	Assert	semantic	Sub or Function not defined
+namearg2	As	syntax	Syntax error
+namearg2	Array	accepted	
+namearg2	Append	semantic	Sub or Function not defined
+namearg2	Any	syntax	Syntax error
+namearg2	And	syntax	Syntax error
+namearg2	Alias	semantic	Sub or Function not defined
+namearg2	AddressOf	syntax	Syntax error
+namearg2	Access	semantic	Sub or Function not defined
+namearg2	Abs	syntax	Syntax error
+namearg2	Zork	semantic	Sub or Function not defined
+namearg3	Xor	syntax	Syntax error
+namearg3	Write	syntax	Syntax error
+namearg3	WithEvents	syntax	Syntax error
+namearg3	With	syntax	Syntax error
+namearg3	Width	semantic	Wrong number of arguments or invalid property assignment
+namearg3	While	syntax	Syntax error
+namearg3	Wend	syntax	Syntax error
+namearg3	Variant	syntax	Syntax error
+namearg3	Until	syntax	Syntax error
+namearg3	Unknown	semantic	Sub or Function not defined
+namearg3	Unlock	syntax	Syntax error
+namearg3	Unload	semantic	Wrong number of arguments or invalid property assignment
+namearg3	UBound	syntax	Syntax error
+namearg3	TypeOf	syntax	Syntax error
+namearg3	Type	syntax	Syntax error
+namearg3	True	syntax	Syntax error
+namearg3	To	syntax	Syntax error
+namearg3	Then	syntax	Syntax error
+namearg3	Text	semantic	Sub or Function not defined
+namearg3	Tab	syntax	Syntax error
+namearg3	Sub	syntax	Syntax error
+namearg3	String	syntax	Syntax error
+namearg3	StrComp	accepted	
+namearg3	Stop	syntax	Syntax error
+namearg3	Step	semantic	Sub or Function not defined
+namearg3	Static	syntax	Syntax error
+namearg3	Spc	syntax	Syntax error
+namearg3	Single	syntax	Syntax error
+namearg3	Shared	syntax	Syntax error
+namearg3	Sgn	syntax	Syntax error
+namearg3	Set	syntax	Syntax error
+namearg3	Select	syntax	Syntax error
+namearg3	Seek	semantic	Wrong number of arguments or invalid property assignment
+namearg3	Scale	syntax	Syntax error
+namearg3	RSet	syntax	Syntax error
+namearg3	RGB	accepted	
+namearg3	Return	syntax	Syntax error
+namearg3	Resume	syntax	Syntax error
+namearg3	Rem	syntax	Syntax error
+namearg3	ReDim	syntax	Syntax error
+namearg3	Read	semantic	Sub or Function not defined
+namearg3	Randomize	semantic	Wrong number of arguments or invalid property assignment
+namearg3	Random	semantic	Sub or Function not defined
+namearg3	RaiseEvent	syntax	Syntax error
+namearg3	Put	syntax	Syntax error
+namearg3	Public	syntax	Syntax error
+namearg3	PSet	syntax	Syntax error
+namearg3	Property	semantic	Sub or Function not defined
+namearg3	Private	syntax	Syntax error
+namearg3	Print	syntax	Syntax error
+namearg3	Preserve	syntax	Syntax error
+namearg3	ParamArray	syntax	Syntax error
+namearg3	Output	semantic	Sub or Function not defined
+namearg3	Or	syntax	Syntax error
+namearg3	Optional	syntax	Syntax error
+namearg3	Option	syntax	Syntax error
+namearg3	Open	syntax	Syntax error
+namearg3	On	syntax	Syntax error
+namearg3	Object	semantic	Sub or Function not defined
+namearg3	Null	syntax	Syntax error
+namearg3	Nothing	syntax	Syntax error
+namearg3	Not	syntax	Syntax error
+namearg3	Next	syntax	Syntax error
+namearg3	New	syntax	Syntax error
+namearg3	Name	semantic	Sub or Function not defined
+namearg3	Module	semantic	Sub or Function not defined
+namearg3	Mod	syntax	Syntax error
+namearg3	MidB	accepted	
+namearg3	Mid	accepted	
+namearg3	Me	semantic	Invalid use of Me keyword
+namearg3	LSet	syntax	Syntax error
+namearg3	Loop	syntax	Syntax error
+namearg3	Long	syntax	Syntax error
+namearg3	Lock	syntax	Syntax error
+namearg3	Local	syntax	Syntax error
+namearg3	Load	semantic	Wrong number of arguments or invalid property assignment
+namearg3	LINEINPUT	syntax	Syntax error
+namearg3	Line	semantic	Sub or Function not defined
+namearg3	Like	syntax	Syntax error
+namearg3	Lib	semantic	Sub or Function not defined
+namearg3	Let	syntax	Syntax error
+namearg3	LenB	syntax	Syntax error
+namearg3	Len	syntax	Syntax error
+namearg3	Left	semantic	Wrong number of arguments or invalid property assignment
+namearg3	LBound	syntax	Syntax error
+namearg3	Is	syntax	Syntax error
+namearg3	Integer	syntax	Syntax error
+namearg3	Int	syntax	Syntax error
+namearg3	InStrB	accepted	
+namearg3	InStr	accepted	
+namearg3	InputB	syntax	Syntax error
+namearg3	Input	syntax	Syntax error
+namearg3	In	syntax	Syntax error
+namearg3	Implements	syntax	Syntax error
+namearg3	Imp	syntax	Syntax error
+namearg3	If	syntax	Syntax error
+namearg3	GoTo	syntax	Syntax error
+namearg3	GoSub	syntax	Syntax error
+namearg3	Go	semantic	Sub or Function not defined
+namearg3	Global	syntax	Syntax error
+namearg3	Get	syntax	Syntax error
+namearg3	Function	syntax	Syntax error
+namearg3	Friend	syntax	Syntax error
+namearg3	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+namearg3	Format	accepted	
+namearg3	For	syntax	Syntax error
+namearg3	Fix	syntax	Syntax error
+namearg3	False	syntax	Syntax error
+namearg3	Explicit	semantic	Sub or Function not defined
+namearg3	Exit	syntax	Syntax error
+namearg3	Event	syntax	Syntax error
+namearg3	Error	semantic	Wrong number of arguments or invalid property assignment
+namearg3	Erase	syntax	Syntax error
+namearg3	Eqv	syntax	Syntax error
+namearg3	Enum	syntax	Syntax error
+namearg3	EndIf	syntax	Syntax error
+namearg3	End	syntax	Syntax error
+namearg3	Empty	syntax	Syntax error
+namearg3	ElseIf	syntax	Syntax error
+namearg3	Else	syntax	Syntax error
+namearg3	Each	syntax	Syntax error
+namearg3	Double	syntax	Syntax error
+namearg3	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+namearg3	Do	syntax	Syntax error
+namearg3	Dir	semantic	Wrong number of arguments or invalid property assignment
+namearg3	Dim	syntax	Syntax error
+namearg3	DefVar	syntax	Syntax error
+namearg3	DefStr	syntax	Syntax error
+namearg3	DefSng	syntax	Syntax error
+namearg3	DefObj	syntax	Syntax error
+namearg3	DefLng	syntax	Syntax error
+namearg3	DefInt	syntax	Syntax error
+namearg3	DefDbl	syntax	Syntax error
+namearg3	DefDec	semantic	Sub or Function not defined
+namearg3	DefDate	syntax	Syntax error
+namearg3	DefCur	syntax	Syntax error
+namearg3	DefByte	syntax	Syntax error
+namearg3	DefBool	syntax	Syntax error
+namearg3	Declare	syntax	Syntax error
+namearg3	Decimal	semantic	Sub or Function not defined
+namearg3	Debug	syntax	Syntax error
+namearg3	Date	syntax	Syntax error
+namearg3	Database	semantic	Sub or Function not defined
+namearg3	Currency	syntax	Syntax error
+namearg3	CVErr	syntax	Syntax error
+namearg3	CVDate	semantic	Wrong number of arguments or invalid property assignment
+namearg3	CVar	syntax	Syntax error
+namearg3	CurDir	semantic	Wrong number of arguments or invalid property assignment
+namearg3	CStr	syntax	Syntax error
+namearg3	CSng	syntax	Syntax error
+namearg3	Const	syntax	Syntax error
+namearg3	Compare	semantic	Sub or Function not defined
+namearg3	Close	syntax	Syntax error
+namearg3	CLng	syntax	Syntax error
+namearg3	Circle	syntax	Syntax error
+namearg3	CInt	syntax	Syntax error
+namearg3	ChDir	semantic	Wrong number of arguments or invalid property assignment
+namearg3	CDecl	syntax	Syntax error
+namearg3	CDbl	syntax	Syntax error
+namearg3	CDec	semantic	Wrong number of arguments or invalid property assignment
+namearg3	CDate	syntax	Syntax error
+namearg3	CCur	syntax	Syntax error
+namearg3	CByte	syntax	Syntax error
+namearg3	CBool	syntax	Syntax error
+namearg3	Case	syntax	Syntax error
+namearg3	Call	syntax	Syntax error
+namearg3	ByVal	syntax	Syntax error
+namearg3	Byte	syntax	Syntax error
+namearg3	ByRef	syntax	Syntax error
+namearg3	Boolean	syntax	Syntax error
+namearg3	Binary	semantic	Sub or Function not defined
+namearg3	BF	semantic	Sub or Function not defined
+namearg3	Base	semantic	Sub or Function not defined
+namearg3	Assert	semantic	Sub or Function not defined
+namearg3	As	syntax	Syntax error
+namearg3	Array	accepted	
+namearg3	Append	semantic	Sub or Function not defined
+namearg3	Any	syntax	Syntax error
+namearg3	And	syntax	Syntax error
+namearg3	Alias	semantic	Sub or Function not defined
+namearg3	AddressOf	syntax	Syntax error
+namearg3	Access	semantic	Sub or Function not defined
+namearg3	Abs	syntax	Syntax error
+namearg3	Zork	semantic	Sub or Function not defined
+namemember	Xor	syntax	Syntax error
+namemember	Write	syntax	Syntax error
+namemember	WithEvents	syntax	Syntax error
+namemember	With	syntax	Syntax error
+namemember	Width	semantic	Argument not optional
+namemember	While	syntax	Syntax error
+namemember	Wend	syntax	Syntax error
+namemember	Variant	syntax	Syntax error
+namemember	Until	syntax	Syntax error
+namemember	Unknown	semantic	Sub or Function not defined
+namemember	Unlock	syntax	Syntax error
+namemember	Unload	semantic	Expected Function or variable
+namemember	UBound	syntax	Syntax error
+namemember	TypeOf	syntax	Syntax error
+namemember	Type	syntax	Syntax error
+namemember	True	syntax	Syntax error
+namemember	To	syntax	Syntax error
+namemember	Then	syntax	Syntax error
+namemember	Text	semantic	Sub or Function not defined
+namemember	Tab	syntax	Syntax error
+namemember	Sub	syntax	Syntax error
+namemember	String	syntax	Syntax error
+namemember	StrComp	syntax	Syntax error
+namemember	Stop	syntax	Syntax error
+namemember	Step	semantic	Sub or Function not defined
+namemember	Static	syntax	Syntax error
+namemember	Spc	syntax	Syntax error
+namemember	Single	syntax	Syntax error
+namemember	Shared	syntax	Syntax error
+namemember	Sgn	syntax	Syntax error
+namemember	Set	syntax	Syntax error
+namemember	Select	syntax	Syntax error
+namemember	Seek	semantic	Invalid qualifier
+namemember	Scale	syntax	Syntax error
+namemember	RSet	syntax	Syntax error
+namemember	RGB	semantic	Argument not optional
+namemember	Return	syntax	Syntax error
+namemember	Resume	syntax	Syntax error
+namemember	Rem	syntax	Syntax error
+namemember	ReDim	syntax	Syntax error
+namemember	Read	semantic	Sub or Function not defined
+namemember	Randomize	semantic	Expected Function or variable
+namemember	Random	semantic	Sub or Function not defined
+namemember	RaiseEvent	syntax	Syntax error
+namemember	Put	syntax	Syntax error
+namemember	Public	syntax	Syntax error
+namemember	PSet	syntax	Syntax error
+namemember	Property	semantic	Sub or Function not defined
+namemember	Private	syntax	Syntax error
+namemember	Print	syntax	Syntax error
+namemember	Preserve	syntax	Syntax error
+namemember	ParamArray	syntax	Syntax error
+namemember	Output	semantic	Sub or Function not defined
+namemember	Or	syntax	Syntax error
+namemember	Optional	syntax	Syntax error
+namemember	Option	syntax	Syntax error
+namemember	Open	syntax	Syntax error
+namemember	On	syntax	Syntax error
+namemember	Object	semantic	Sub or Function not defined
+namemember	Null	syntax	Syntax error
+namemember	Nothing	syntax	Syntax error
+namemember	Not	syntax	Syntax error
+namemember	Next	syntax	Syntax error
+namemember	New	syntax	Syntax error
+namemember	Name	semantic	Sub or Function not defined
+namemember	Module	semantic	Sub or Function not defined
+namemember	Mod	syntax	Syntax error
+namemember	MidB	semantic	Argument not optional
+namemember	Mid	semantic	Argument not optional
+namemember	Me	semantic	Invalid use of Me keyword
+namemember	LSet	syntax	Syntax error
+namemember	Loop	syntax	Syntax error
+namemember	Long	syntax	Syntax error
+namemember	Lock	syntax	Syntax error
+namemember	Local	syntax	Syntax error
+namemember	Load	semantic	Expected Function or variable
+namemember	LINEINPUT	syntax	Syntax error
+namemember	Line	semantic	Sub or Function not defined
+namemember	Like	syntax	Syntax error
+namemember	Lib	semantic	Sub or Function not defined
+namemember	Let	syntax	Syntax error
+namemember	LenB	syntax	Syntax error
+namemember	Len	syntax	Syntax error
+namemember	Left	semantic	Argument not optional
+namemember	LBound	syntax	Syntax error
+namemember	Is	syntax	Syntax error
+namemember	Integer	syntax	Syntax error
+namemember	Int	syntax	Syntax error
+namemember	InStrB	syntax	Syntax error
+namemember	InStr	syntax	Syntax error
+namemember	InputB	syntax	Syntax error
+namemember	Input	syntax	Syntax error
+namemember	In	syntax	Syntax error
+namemember	Implements	syntax	Syntax error
+namemember	Imp	syntax	Syntax error
+namemember	If	syntax	Syntax error
+namemember	GoTo	syntax	Syntax error
+namemember	GoSub	syntax	Syntax error
+namemember	Go	semantic	Sub or Function not defined
+namemember	Global	syntax	Syntax error
+namemember	Get	syntax	Syntax error
+namemember	Function	syntax	Syntax error
+namemember	Friend	syntax	Syntax error
+namemember	FreeFile	semantic	Invalid qualifier
+namemember	Format	accepted	
+namemember	For	syntax	Syntax error
+namemember	Fix	syntax	Syntax error
+namemember	False	syntax	Syntax error
+namemember	Explicit	semantic	Sub or Function not defined
+namemember	Exit	syntax	Syntax error
+namemember	Event	syntax	Syntax error
+namemember	Error	accepted	
+namemember	Erase	syntax	Syntax error
+namemember	Eqv	syntax	Syntax error
+namemember	Enum	syntax	Syntax error
+namemember	EndIf	syntax	Syntax error
+namemember	End	syntax	Syntax error
+namemember	Empty	syntax	Syntax error
+namemember	ElseIf	syntax	Syntax error
+namemember	Else	syntax	Syntax error
+namemember	Each	syntax	Syntax error
+namemember	Double	syntax	Syntax error
+namemember	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+namemember	Do	syntax	Syntax error
+namemember	Dir	semantic	Invalid qualifier
+namemember	Dim	syntax	Syntax error
+namemember	DefVar	syntax	Syntax error
+namemember	DefStr	syntax	Syntax error
+namemember	DefSng	syntax	Syntax error
+namemember	DefObj	syntax	Syntax error
+namemember	DefLng	syntax	Syntax error
+namemember	DefInt	syntax	Syntax error
+namemember	DefDbl	syntax	Syntax error
+namemember	DefDec	semantic	Sub or Function not defined
+namemember	DefDate	syntax	Syntax error
+namemember	DefCur	syntax	Syntax error
+namemember	DefByte	syntax	Syntax error
+namemember	DefBool	syntax	Syntax error
+namemember	Declare	syntax	Syntax error
+namemember	Decimal	semantic	Sub or Function not defined
+namemember	Debug	syntax	Syntax error
+namemember	Date	syntax	Syntax error
+namemember	Database	semantic	Sub or Function not defined
+namemember	Currency	syntax	Syntax error
+namemember	CVErr	syntax	Syntax error
+namemember	CVDate	accepted	
+namemember	CVar	syntax	Syntax error
+namemember	CurDir	accepted	
+namemember	CStr	syntax	Syntax error
+namemember	CSng	syntax	Syntax error
+namemember	Const	syntax	Syntax error
+namemember	Compare	semantic	Sub or Function not defined
+namemember	Close	syntax	Syntax error
+namemember	CLng	syntax	Syntax error
+namemember	Circle	syntax	Syntax error
+namemember	CInt	syntax	Syntax error
+namemember	ChDir	semantic	Expected Function or variable
+namemember	CDecl	syntax	Syntax error
+namemember	CDbl	syntax	Syntax error
+namemember	CDec	accepted	
+namemember	CDate	syntax	Syntax error
+namemember	CCur	syntax	Syntax error
+namemember	CByte	syntax	Syntax error
+namemember	CBool	syntax	Syntax error
+namemember	Case	syntax	Syntax error
+namemember	Call	syntax	Syntax error
+namemember	ByVal	syntax	Syntax error
+namemember	Byte	syntax	Syntax error
+namemember	ByRef	syntax	Syntax error
+namemember	Boolean	syntax	Syntax error
+namemember	Binary	semantic	Sub or Function not defined
+namemember	BF	semantic	Sub or Function not defined
+namemember	Base	semantic	Sub or Function not defined
+namemember	Assert	semantic	Sub or Function not defined
+namemember	As	syntax	Syntax error
+namemember	Array	accepted	
+namemember	Append	semantic	Sub or Function not defined
+namemember	Any	syntax	Syntax error
+namemember	And	syntax	Syntax error
+namemember	Alias	semantic	Sub or Function not defined
+namemember	AddressOf	syntax	Syntax error
+namemember	Access	semantic	Sub or Function not defined
+namemember	Abs	syntax	Syntax error
+namemember	Zork	semantic	Sub or Function not defined
+namecallstmt	Xor	syntax	Syntax error
+namecallstmt	Write	syntax	Syntax error
+namecallstmt	WithEvents	syntax	Syntax error
+namecallstmt	With	syntax	Syntax error
+namecallstmt	Width	semantic	Argument not optional
+namecallstmt	While	syntax	Syntax error
+namecallstmt	Wend	syntax	Syntax error
+namecallstmt	Variant	syntax	Syntax error
+namecallstmt	Until	syntax	Syntax error
+namecallstmt	Unknown	semantic	Sub or Function not defined
+namecallstmt	Unlock	syntax	Syntax error
+namecallstmt	Unload	accepted	
+namecallstmt	UBound	syntax	Syntax error
+namecallstmt	TypeOf	syntax	Syntax error
+namecallstmt	Type	syntax	Syntax error
+namecallstmt	True	syntax	Syntax error
+namecallstmt	To	syntax	Syntax error
+namecallstmt	Then	syntax	Syntax error
+namecallstmt	Text	semantic	Sub or Function not defined
+namecallstmt	Tab	syntax	Syntax error
+namecallstmt	Sub	syntax	Syntax error
+namecallstmt	String	syntax	Syntax error
+namecallstmt	StrComp	semantic	Argument not optional
+namecallstmt	Stop	syntax	Syntax error
+namecallstmt	Step	semantic	Sub or Function not defined
+namecallstmt	Static	syntax	Syntax error
+namecallstmt	Spc	syntax	Syntax error
+namecallstmt	Single	syntax	Syntax error
+namecallstmt	Shared	syntax	Syntax error
+namecallstmt	Sgn	syntax	Syntax error
+namecallstmt	Set	syntax	Syntax error
+namecallstmt	Select	syntax	Syntax error
+namecallstmt	Seek	syntax	Syntax error
+namecallstmt	Scale	syntax	Syntax error
+namecallstmt	RSet	syntax	Syntax error
+namecallstmt	RGB	semantic	Argument not optional
+namecallstmt	Return	syntax	Syntax error
+namecallstmt	Resume	syntax	Syntax error
+namecallstmt	Rem	syntax	Syntax error
+namecallstmt	ReDim	syntax	Syntax error
+namecallstmt	Read	semantic	Sub or Function not defined
+namecallstmt	Randomize	accepted	
+namecallstmt	Random	semantic	Sub or Function not defined
+namecallstmt	RaiseEvent	syntax	Syntax error
+namecallstmt	Put	syntax	Syntax error
+namecallstmt	Public	syntax	Syntax error
+namecallstmt	PSet	syntax	Syntax error
+namecallstmt	Property	semantic	Sub or Function not defined
+namecallstmt	Private	syntax	Syntax error
+namecallstmt	Print	syntax	Syntax error
+namecallstmt	Preserve	syntax	Syntax error
+namecallstmt	ParamArray	syntax	Syntax error
+namecallstmt	Output	semantic	Sub or Function not defined
+namecallstmt	Or	syntax	Syntax error
+namecallstmt	Optional	syntax	Syntax error
+namecallstmt	Option	syntax	Syntax error
+namecallstmt	Open	syntax	Syntax error
+namecallstmt	On	syntax	Syntax error
+namecallstmt	Object	semantic	Sub or Function not defined
+namecallstmt	Null	syntax	Syntax error
+namecallstmt	Nothing	syntax	Syntax error
+namecallstmt	Not	syntax	Syntax error
+namecallstmt	Next	syntax	Syntax error
+namecallstmt	New	syntax	Syntax error
+namecallstmt	Name	semantic	Sub or Function not defined
+namecallstmt	Module	semantic	Sub or Function not defined
+namecallstmt	Mod	syntax	Syntax error
+namecallstmt	MidB	semantic	Argument not optional
+namecallstmt	Mid	semantic	Argument not optional
+namecallstmt	Me	semantic	Invalid use of Me keyword
+namecallstmt	LSet	syntax	Syntax error
+namecallstmt	Loop	syntax	Syntax error
+namecallstmt	Long	syntax	Syntax error
+namecallstmt	Lock	syntax	Syntax error
+namecallstmt	Local	syntax	Syntax error
+namecallstmt	Load	accepted	
+namecallstmt	LINEINPUT	syntax	Syntax error
+namecallstmt	Line	semantic	Sub or Function not defined
+namecallstmt	Like	syntax	Syntax error
+namecallstmt	Lib	semantic	Sub or Function not defined
+namecallstmt	Let	syntax	Syntax error
+namecallstmt	LenB	syntax	Syntax error
+namecallstmt	Len	syntax	Syntax error
+namecallstmt	Left	semantic	Argument not optional
+namecallstmt	LBound	syntax	Syntax error
+namecallstmt	Is	syntax	Syntax error
+namecallstmt	Integer	syntax	Syntax error
+namecallstmt	Int	syntax	Syntax error
+namecallstmt	InStrB	accepted	
+namecallstmt	InStr	accepted	
+namecallstmt	InputB	syntax	Syntax error
+namecallstmt	Input	syntax	Syntax error
+namecallstmt	In	syntax	Syntax error
+namecallstmt	Implements	syntax	Syntax error
+namecallstmt	Imp	syntax	Syntax error
+namecallstmt	If	syntax	Syntax error
+namecallstmt	GoTo	syntax	Syntax error
+namecallstmt	GoSub	syntax	Syntax error
+namecallstmt	Go	semantic	Sub or Function not defined
+namecallstmt	Global	syntax	Syntax error
+namecallstmt	Get	syntax	Syntax error
+namecallstmt	Function	syntax	Syntax error
+namecallstmt	Friend	syntax	Syntax error
+namecallstmt	FreeFile	accepted	
+namecallstmt	Format	accepted	
+namecallstmt	For	syntax	Syntax error
+namecallstmt	Fix	syntax	Syntax error
+namecallstmt	False	syntax	Syntax error
+namecallstmt	Explicit	semantic	Sub or Function not defined
+namecallstmt	Exit	syntax	Syntax error
+namecallstmt	Event	syntax	Syntax error
+namecallstmt	Error	accepted	
+namecallstmt	Erase	syntax	Syntax error
+namecallstmt	Eqv	syntax	Syntax error
+namecallstmt	Enum	syntax	Syntax error
+namecallstmt	EndIf	syntax	Syntax error
+namecallstmt	End	syntax	Syntax error
+namecallstmt	Empty	syntax	Syntax error
+namecallstmt	ElseIf	syntax	Syntax error
+namecallstmt	Else	syntax	Syntax error
+namecallstmt	Each	syntax	Syntax error
+namecallstmt	Double	syntax	Syntax error
+namecallstmt	DoEvents	syntax	Syntax error
+namecallstmt	Do	syntax	Syntax error
+namecallstmt	Dir	accepted	
+namecallstmt	Dim	syntax	Syntax error
+namecallstmt	DefVar	syntax	Syntax error
+namecallstmt	DefStr	syntax	Syntax error
+namecallstmt	DefSng	syntax	Syntax error
+namecallstmt	DefObj	syntax	Syntax error
+namecallstmt	DefLng	syntax	Syntax error
+namecallstmt	DefInt	syntax	Syntax error
+namecallstmt	DefDbl	syntax	Syntax error
+namecallstmt	DefDec	syntax	Syntax error
+namecallstmt	DefDate	syntax	Syntax error
+namecallstmt	DefCur	syntax	Syntax error
+namecallstmt	DefByte	syntax	Syntax error
+namecallstmt	DefBool	syntax	Syntax error
+namecallstmt	Declare	syntax	Syntax error
+namecallstmt	Decimal	syntax	Syntax error
+namecallstmt	Debug	syntax	Syntax error
+namecallstmt	Date	syntax	Syntax error
+namecallstmt	Database	semantic	Sub or Function not defined
+namecallstmt	Currency	syntax	Syntax error
+namecallstmt	CVErr	syntax	Syntax error
+namecallstmt	CVDate	accepted	
+namecallstmt	CVar	syntax	Syntax error
+namecallstmt	CurDir	accepted	
+namecallstmt	CStr	syntax	Syntax error
+namecallstmt	CSng	syntax	Syntax error
+namecallstmt	Const	syntax	Syntax error
+namecallstmt	Compare	semantic	Sub or Function not defined
+namecallstmt	Close	syntax	Syntax error
+namecallstmt	CLng	syntax	Syntax error
+namecallstmt	Circle	syntax	Syntax error
+namecallstmt	CInt	syntax	Syntax error
+namecallstmt	ChDir	accepted	
+namecallstmt	CDecl	syntax	Syntax error
+namecallstmt	CDbl	syntax	Syntax error
+namecallstmt	CDec	syntax	Syntax error
+namecallstmt	CDate	syntax	Syntax error
+namecallstmt	CCur	syntax	Syntax error
+namecallstmt	CByte	syntax	Syntax error
+namecallstmt	CBool	syntax	Syntax error
+namecallstmt	Case	syntax	Syntax error
+namecallstmt	Call	syntax	Syntax error
+namecallstmt	ByVal	syntax	Syntax error
+namecallstmt	Byte	syntax	Syntax error
+namecallstmt	ByRef	syntax	Syntax error
+namecallstmt	Boolean	syntax	Syntax error
+namecallstmt	Binary	semantic	Sub or Function not defined
+namecallstmt	BF	semantic	Sub or Function not defined
+namecallstmt	Base	semantic	Sub or Function not defined
+namecallstmt	Assert	semantic	Sub or Function not defined
+namecallstmt	As	syntax	Syntax error
+namecallstmt	Array	syntax	Syntax error
+namecallstmt	Append	semantic	Sub or Function not defined
+namecallstmt	Any	syntax	Syntax error
+namecallstmt	And	syntax	Syntax error
+namecallstmt	Alias	semantic	Sub or Function not defined
+namecallstmt	AddressOf	syntax	Syntax error
+namecallstmt	Access	semantic	Sub or Function not defined
+namecallstmt	Abs	syntax	Syntax error
+namecallstmt	Zork	semantic	Sub or Function not defined
+namestmt	Xor	syntax	Syntax error
+namestmt	Write	syntax	Syntax error
+namestmt	WithEvents	syntax	Syntax error
+namestmt	With	syntax	Expected End With
+namestmt	Width	syntax	Syntax error
+namestmt	While	syntax	While without Wend
+namestmt	Wend	syntax	Syntax error
+namestmt	Variant	syntax	Syntax error
+namestmt	Until	syntax	Syntax error
+namestmt	Unknown	semantic	Sub or Function not defined
+namestmt	Unlock	accepted	
+namestmt	Unload	accepted	
+namestmt	UBound	syntax	Syntax error
+namestmt	TypeOf	syntax	Syntax error
+namestmt	Type	syntax	Syntax error
+namestmt	True	syntax	Syntax error
+namestmt	To	syntax	Syntax error
+namestmt	Then	syntax	Syntax error
+namestmt	Text	semantic	Sub or Function not defined
+namestmt	Tab	syntax	Syntax error
+namestmt	Sub	syntax	Syntax error
+namestmt	String	syntax	Syntax error
+namestmt	StrComp	semantic	Argument not optional
+namestmt	Stop	syntax	Syntax error
+namestmt	Step	semantic	Sub or Function not defined
+namestmt	Static	syntax	Syntax error
+namestmt	Spc	syntax	Syntax error
+namestmt	Single	syntax	Syntax error
+namestmt	Shared	syntax	Syntax error
+namestmt	Sgn	syntax	Syntax error
+namestmt	Set	syntax	Syntax error
+namestmt	Select	syntax	Syntax error
+namestmt	Seek	syntax	Syntax error
+namestmt	Scale	syntax	Syntax error
+namestmt	RSet	syntax	Syntax error
+namestmt	RGB	semantic	Argument not optional
+namestmt	Return	syntax	Syntax error
+namestmt	Resume	syntax	Syntax error
+namestmt	Rem	accepted	
+namestmt	ReDim	syntax	Syntax error
+namestmt	Read	semantic	Sub or Function not defined
+namestmt	Randomize	accepted	
+namestmt	Random	semantic	Sub or Function not defined
+namestmt	RaiseEvent	syntax	Syntax error
+namestmt	Put	syntax	Syntax error
+namestmt	Public	syntax	Syntax error
+namestmt	PSet	syntax	Syntax error
+namestmt	Property	syntax	Syntax error
+namestmt	Private	syntax	Syntax error
+namestmt	Print	semantic	Method not valid without suitable object
+namestmt	Preserve	syntax	Syntax error
+namestmt	ParamArray	syntax	Syntax error
+namestmt	Output	semantic	Sub or Function not defined
+namestmt	Or	syntax	Syntax error
+namestmt	Optional	syntax	Syntax error
+namestmt	Option	syntax	Syntax error
+namestmt	Open	syntax	Syntax error
+namestmt	On	syntax	Syntax error
+namestmt	Object	semantic	Sub or Function not defined
+namestmt	Null	syntax	Syntax error
+namestmt	Nothing	syntax	Syntax error
+namestmt	Not	syntax	Syntax error
+namestmt	Next	syntax	Syntax error
+namestmt	New	syntax	Syntax error
+namestmt	Name	syntax	Syntax error
+namestmt	Module	semantic	Sub or Function not defined
+namestmt	Mod	syntax	Syntax error
+namestmt	MidB	syntax	Syntax error
+namestmt	Mid	syntax	Syntax error
+namestmt	Me	semantic	Invalid use of Me keyword
+namestmt	LSet	syntax	Syntax error
+namestmt	Loop	syntax	Syntax error
+namestmt	Long	syntax	Syntax error
+namestmt	Lock	accepted	
+namestmt	Local	syntax	Syntax error
+namestmt	Load	accepted	
+namestmt	LINEINPUT	syntax	Syntax error
+namestmt	Line	syntax	Syntax error
+namestmt	Like	syntax	Syntax error
+namestmt	Lib	semantic	Sub or Function not defined
+namestmt	Let	syntax	Syntax error
+namestmt	LenB	syntax	Syntax error
+namestmt	Len	syntax	Syntax error
+namestmt	Left	semantic	Argument not optional
+namestmt	LBound	syntax	Syntax error
+namestmt	Is	syntax	Syntax error
+namestmt	Integer	syntax	Syntax error
+namestmt	Int	syntax	Syntax error
+namestmt	InStrB	accepted	
+namestmt	InStr	accepted	
+namestmt	InputB	syntax	Syntax error
+namestmt	Input	syntax	Syntax error
+namestmt	In	syntax	Syntax error
+namestmt	Implements	syntax	Syntax error
+namestmt	Imp	syntax	Syntax error
+namestmt	If	syntax	Syntax error
+namestmt	GoTo	syntax	Syntax error
+namestmt	GoSub	syntax	Syntax error
+namestmt	Go	syntax	Syntax error
+namestmt	Global	syntax	Syntax error
+namestmt	Get	syntax	Syntax error
+namestmt	Function	syntax	Syntax error
+namestmt	Friend	syntax	Syntax error
+namestmt	FreeFile	accepted	
+namestmt	Format	accepted	
+namestmt	For	syntax	Syntax error
+namestmt	Fix	syntax	Syntax error
+namestmt	False	syntax	Syntax error
+namestmt	Explicit	semantic	Sub or Function not defined
+namestmt	Exit	syntax	Syntax error
+namestmt	Event	syntax	Syntax error
+namestmt	Error	accepted	
+namestmt	Erase	syntax	Syntax error
+namestmt	Eqv	syntax	Syntax error
+namestmt	Enum	syntax	Syntax error
+namestmt	EndIf	syntax	Syntax error
+namestmt	End	syntax	Syntax error
+namestmt	Empty	syntax	Syntax error
+namestmt	ElseIf	syntax	Syntax error
+namestmt	Else	syntax	Syntax error
+namestmt	Each	syntax	Syntax error
+namestmt	Double	syntax	Syntax error
+namestmt	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+namestmt	Do	syntax	Syntax error
+namestmt	Dir	accepted	
+namestmt	Dim	syntax	Syntax error
+namestmt	DefVar	syntax	Syntax error
+namestmt	DefStr	syntax	Syntax error
+namestmt	DefSng	syntax	Syntax error
+namestmt	DefObj	syntax	Syntax error
+namestmt	DefLng	syntax	Syntax error
+namestmt	DefInt	syntax	Syntax error
+namestmt	DefDbl	syntax	Syntax error
+namestmt	DefDec	syntax	Syntax error
+namestmt	DefDate	syntax	Syntax error
+namestmt	DefCur	syntax	Syntax error
+namestmt	DefByte	syntax	Syntax error
+namestmt	DefBool	syntax	Syntax error
+namestmt	Declare	syntax	Syntax error
+namestmt	Decimal	syntax	Syntax error
+namestmt	Debug	syntax	Syntax error
+namestmt	Date	semantic	Invalid use of property
+namestmt	Database	semantic	Sub or Function not defined
+namestmt	Currency	syntax	Syntax error
+namestmt	CVErr	syntax	Syntax error
+namestmt	CVDate	accepted	
+namestmt	CVar	syntax	Syntax error
+namestmt	CurDir	accepted	
+namestmt	CStr	syntax	Syntax error
+namestmt	CSng	syntax	Syntax error
+namestmt	Const	syntax	Syntax error
+namestmt	Compare	semantic	Sub or Function not defined
+namestmt	Close	accepted	
+namestmt	CLng	syntax	Syntax error
+namestmt	Circle	syntax	Syntax error
+namestmt	CInt	syntax	Syntax error
+namestmt	ChDir	accepted	
+namestmt	CDecl	syntax	Syntax error
+namestmt	CDbl	syntax	Syntax error
+namestmt	CDec	accepted	
+namestmt	CDate	syntax	Syntax error
+namestmt	CCur	syntax	Syntax error
+namestmt	CByte	syntax	Syntax error
+namestmt	CBool	syntax	Syntax error
+namestmt	Case	syntax	Case without Select Case
+namestmt	Call	syntax	Syntax error
+namestmt	ByVal	syntax	Syntax error
+namestmt	Byte	syntax	Syntax error
+namestmt	ByRef	syntax	Syntax error
+namestmt	Boolean	syntax	Syntax error
+namestmt	Binary	semantic	Sub or Function not defined
+namestmt	BF	semantic	Sub or Function not defined
+namestmt	Base	semantic	Sub or Function not defined
+namestmt	Assert	semantic	Sub or Function not defined
+namestmt	As	syntax	Syntax error
+namestmt	Array	syntax	Syntax error
+namestmt	Append	semantic	Sub or Function not defined
+namestmt	Any	syntax	Syntax error
+namestmt	And	syntax	Syntax error
+namestmt	Alias	semantic	Sub or Function not defined
+namestmt	AddressOf	syntax	Syntax error
+namestmt	Access	semantic	Sub or Function not defined
+namestmt	Abs	syntax	Syntax error
+namestmt	Zork	semantic	Sub or Function not defined
+nameargs	Xor	syntax	Syntax error
+nameargs	Write	syntax	Syntax error
+nameargs	WithEvents	syntax	Syntax error
+nameargs	With	syntax	Syntax error
+nameargs	Width	syntax	Syntax error
+nameargs	While	syntax	Syntax error
+nameargs	Wend	syntax	Syntax error
+nameargs	Variant	syntax	Syntax error
+nameargs	Until	syntax	Syntax error
+nameargs	Unknown	semantic	Sub or Function not defined
+nameargs	Unlock	accepted	
+nameargs	Unload	semantic	Wrong number of arguments or invalid property assignment
+nameargs	UBound	syntax	Syntax error
+nameargs	TypeOf	syntax	Syntax error
+nameargs	Type	syntax	Syntax error
+nameargs	True	syntax	Syntax error
+nameargs	To	syntax	Syntax error
+nameargs	Then	syntax	Syntax error
+nameargs	Text	semantic	Sub or Function not defined
+nameargs	Tab	syntax	Syntax error
+nameargs	Sub	syntax	Syntax error
+nameargs	String	syntax	Syntax error
+nameargs	StrComp	accepted	
+nameargs	Stop	syntax	Syntax error
+nameargs	Step	semantic	Sub or Function not defined
+nameargs	Static	syntax	Syntax error
+nameargs	Spc	syntax	Syntax error
+nameargs	Single	syntax	Syntax error
+nameargs	Shared	syntax	Syntax error
+nameargs	Sgn	syntax	Syntax error
+nameargs	Set	syntax	Syntax error
+nameargs	Select	syntax	Syntax error
+nameargs	Seek	accepted	
+nameargs	Scale	syntax	Syntax error
+nameargs	RSet	syntax	Syntax error
+nameargs	RGB	semantic	Argument not optional
+nameargs	Return	syntax	Syntax error
+nameargs	Resume	syntax	Syntax error
+nameargs	Rem	accepted	
+nameargs	ReDim	syntax	Syntax error
+nameargs	Read	semantic	Sub or Function not defined
+nameargs	Randomize	semantic	Wrong number of arguments or invalid property assignment
+nameargs	Random	semantic	Sub or Function not defined
+nameargs	RaiseEvent	syntax	Syntax error
+nameargs	Put	syntax	Syntax error
+nameargs	Public	syntax	Syntax error
+nameargs	PSet	syntax	Syntax error
+nameargs	Property	syntax	Syntax error
+nameargs	Private	syntax	Syntax error
+nameargs	Print	semantic	Method not valid without suitable object
+nameargs	Preserve	syntax	Syntax error
+nameargs	ParamArray	syntax	Syntax error
+nameargs	Output	semantic	Sub or Function not defined
+nameargs	Or	syntax	Syntax error
+nameargs	Optional	syntax	Syntax error
+nameargs	Option	syntax	Syntax error
+nameargs	Open	syntax	Syntax error
+nameargs	On	syntax	Syntax error
+nameargs	Object	semantic	Sub or Function not defined
+nameargs	Null	syntax	Syntax error
+nameargs	Nothing	syntax	Syntax error
+nameargs	Not	syntax	Syntax error
+nameargs	Next	syntax	Syntax error
+nameargs	New	syntax	Syntax error
+nameargs	Name	syntax	Syntax error
+nameargs	Module	semantic	Sub or Function not defined
+nameargs	Mod	syntax	Syntax error
+nameargs	MidB	syntax	Syntax error
+nameargs	Mid	syntax	Syntax error
+nameargs	Me	syntax	Syntax error
+nameargs	LSet	syntax	Syntax error
+nameargs	Loop	syntax	Syntax error
+nameargs	Long	syntax	Syntax error
+nameargs	Lock	accepted	
+nameargs	Local	syntax	Syntax error
+nameargs	Load	semantic	Wrong number of arguments or invalid property assignment
+nameargs	LINEINPUT	syntax	Syntax error
+nameargs	Line	syntax	Syntax error
+nameargs	Like	syntax	Syntax error
+nameargs	Lib	semantic	Sub or Function not defined
+nameargs	Let	syntax	Syntax error
+nameargs	LenB	syntax	Syntax error
+nameargs	Len	syntax	Syntax error
+nameargs	Left	accepted	
+nameargs	LBound	syntax	Syntax error
+nameargs	Is	syntax	Syntax error
+nameargs	Integer	syntax	Syntax error
+nameargs	Int	syntax	Syntax error
+nameargs	InStrB	accepted	
+nameargs	InStr	accepted	
+nameargs	InputB	syntax	Syntax error
+nameargs	Input	syntax	Syntax error
+nameargs	In	syntax	Syntax error
+nameargs	Implements	syntax	Syntax error
+nameargs	Imp	syntax	Syntax error
+nameargs	If	syntax	Syntax error
+nameargs	GoTo	syntax	Syntax error
+nameargs	GoSub	syntax	Syntax error
+nameargs	Go	syntax	Syntax error
+nameargs	Global	syntax	Syntax error
+nameargs	Get	syntax	Syntax error
+nameargs	Function	syntax	Syntax error
+nameargs	Friend	syntax	Syntax error
+nameargs	FreeFile	semantic	Wrong number of arguments or invalid property assignment
+nameargs	Format	accepted	
+nameargs	For	syntax	Syntax error
+nameargs	Fix	syntax	Syntax error
+nameargs	False	syntax	Syntax error
+nameargs	Explicit	semantic	Sub or Function not defined
+nameargs	Exit	syntax	Syntax error
+nameargs	Event	syntax	Syntax error
+nameargs	Error	syntax	Syntax error
+nameargs	Erase	syntax	Syntax error
+nameargs	Eqv	syntax	Syntax error
+nameargs	Enum	syntax	Syntax error
+nameargs	EndIf	syntax	Syntax error
+nameargs	End	syntax	Syntax error
+nameargs	Empty	syntax	Syntax error
+nameargs	ElseIf	syntax	Syntax error
+nameargs	Else	syntax	Else without If
+nameargs	Each	syntax	Syntax error
+nameargs	Double	syntax	Syntax error
+nameargs	DoEvents	semantic	Wrong number of arguments or invalid property assignment
+nameargs	Do	syntax	Syntax error
+nameargs	Dir	accepted	
+nameargs	Dim	syntax	Syntax error
+nameargs	DefVar	syntax	Syntax error
+nameargs	DefStr	syntax	Syntax error
+nameargs	DefSng	syntax	Syntax error
+nameargs	DefObj	syntax	Syntax error
+nameargs	DefLng	syntax	Syntax error
+nameargs	DefInt	syntax	Syntax error
+nameargs	DefDbl	syntax	Syntax error
+nameargs	DefDec	syntax	Syntax error
+nameargs	DefDate	syntax	Syntax error
+nameargs	DefCur	syntax	Syntax error
+nameargs	DefByte	syntax	Syntax error
+nameargs	DefBool	syntax	Syntax error
+nameargs	Declare	syntax	Syntax error
+nameargs	Decimal	syntax	Syntax error
+nameargs	Debug	syntax	Syntax error
+nameargs	Date	semantic	Invalid use of property
+nameargs	Database	semantic	Sub or Function not defined
+nameargs	Currency	syntax	Syntax error
+nameargs	CVErr	syntax	Syntax error
+nameargs	CVDate	semantic	Wrong number of arguments or invalid property assignment
+nameargs	CVar	syntax	Syntax error
+nameargs	CurDir	semantic	Wrong number of arguments or invalid property assignment
+nameargs	CStr	syntax	Syntax error
+nameargs	CSng	syntax	Syntax error
+nameargs	Const	syntax	Syntax error
+nameargs	Compare	semantic	Sub or Function not defined
+nameargs	Close	accepted	
+nameargs	CLng	syntax	Syntax error
+nameargs	Circle	syntax	Syntax error
+nameargs	CInt	syntax	Syntax error
+nameargs	ChDir	semantic	Wrong number of arguments or invalid property assignment
+nameargs	CDecl	syntax	Syntax error
+nameargs	CDbl	syntax	Syntax error
+nameargs	CDec	semantic	Wrong number of arguments or invalid property assignment
+nameargs	CDate	syntax	Syntax error
+nameargs	CCur	syntax	Syntax error
+nameargs	CByte	syntax	Syntax error
+nameargs	CBool	syntax	Syntax error
+nameargs	Case	syntax	Case without Select Case
+nameargs	Call	syntax	Syntax error
+nameargs	ByVal	syntax	Syntax error
+nameargs	Byte	syntax	Syntax error
+nameargs	ByRef	syntax	Syntax error
+nameargs	Boolean	syntax	Syntax error
+nameargs	Binary	semantic	Sub or Function not defined
+nameargs	BF	semantic	Sub or Function not defined
+nameargs	Base	semantic	Sub or Function not defined
+nameargs	Assert	semantic	Sub or Function not defined
+nameargs	As	syntax	Syntax error
+nameargs	Array	syntax	Syntax error
+nameargs	Append	semantic	Sub or Function not defined
+nameargs	Any	syntax	Syntax error
+nameargs	And	syntax	Syntax error
+nameargs	Alias	semantic	Sub or Function not defined
+nameargs	AddressOf	syntax	Syntax error
+nameargs	Access	semantic	Sub or Function not defined
+nameargs	Abs	syntax	Syntax error
+nameargs	Zork	semantic	Sub or Function not defined
+withparen	Xor	syntax	Syntax error
+withparen	Write	syntax	Syntax error
+withparen	WithEvents	syntax	Syntax error
+withparen	With	syntax	Syntax error
+withparen	Width	semantic	Argument not optional
+withparen	While	syntax	Syntax error
+withparen	Wend	syntax	Syntax error
+withparen	Variant	syntax	Syntax error
+withparen	Until	syntax	Syntax error
+withparen	Unknown	accepted	
+withparen	Unlock	syntax	Syntax error
+withparen	Unload	semantic	Argument not optional
+withparen	UBound	syntax	Syntax error
+withparen	TypeOf	syntax	Syntax error
+withparen	Type	syntax	Syntax error
+withparen	True	accepted	
+withparen	To	syntax	Syntax error
+withparen	Then	syntax	Syntax error
+withparen	Text	accepted	
+withparen	Tab	syntax	Syntax error
+withparen	Sub	syntax	Syntax error
+withparen	String	syntax	Syntax error
+withparen	StrComp	syntax	Syntax error
+withparen	Stop	syntax	Syntax error
+withparen	Step	accepted	
+withparen	Static	syntax	Syntax error
+withparen	Spc	syntax	Syntax error
+withparen	Single	syntax	Syntax error
+withparen	Shared	syntax	Syntax error
+withparen	Sgn	syntax	Syntax error
+withparen	Set	syntax	Syntax error
+withparen	Select	syntax	Syntax error
+withparen	Seek	semantic	Argument not optional
+withparen	Scale	syntax	Syntax error
+withparen	RSet	syntax	Syntax error
+withparen	RGB	semantic	Argument not optional
+withparen	Return	syntax	Syntax error
+withparen	Resume	syntax	Syntax error
+withparen	Rem	syntax	Syntax error
+withparen	ReDim	syntax	Syntax error
+withparen	Read	accepted	
+withparen	Randomize	semantic	Expected Function or variable
+withparen	Random	accepted	
+withparen	RaiseEvent	syntax	Syntax error
+withparen	Put	syntax	Syntax error
+withparen	Public	syntax	Syntax error
+withparen	PSet	syntax	Syntax error
+withparen	Property	accepted	
+withparen	Private	syntax	Syntax error
+withparen	Print	syntax	Syntax error
+withparen	Preserve	syntax	Syntax error
+withparen	ParamArray	syntax	Syntax error
+withparen	Output	accepted	
+withparen	Or	syntax	Syntax error
+withparen	Optional	syntax	Syntax error
+withparen	Option	syntax	Syntax error
+withparen	Open	syntax	Syntax error
+withparen	On	syntax	Syntax error
+withparen	Object	accepted	
+withparen	Null	accepted	
+withparen	Nothing	semantic	Invalid use of object
+withparen	Not	syntax	Syntax error
+withparen	Next	syntax	Syntax error
+withparen	New	syntax	Syntax error
+withparen	Name	accepted	
+withparen	Module	accepted	
+withparen	Mod	syntax	Syntax error
+withparen	MidB	semantic	Argument not optional
+withparen	Mid	semantic	Argument not optional
+withparen	Me	semantic	Invalid use of Me keyword
+withparen	LSet	syntax	Syntax error
+withparen	Loop	syntax	Syntax error
+withparen	Long	syntax	Syntax error
+withparen	Lock	syntax	Syntax error
+withparen	Local	syntax	Syntax error
+withparen	Load	semantic	Argument not optional
+withparen	LINEINPUT	syntax	Syntax error
+withparen	Line	accepted	
+withparen	Like	syntax	Syntax error
+withparen	Lib	accepted	
+withparen	Let	syntax	Syntax error
+withparen	LenB	syntax	Syntax error
+withparen	Len	syntax	Syntax error
+withparen	Left	semantic	Argument not optional
+withparen	LBound	syntax	Syntax error
+withparen	Is	syntax	Syntax error
+withparen	Integer	syntax	Syntax error
+withparen	Int	syntax	Syntax error
+withparen	InStrB	syntax	Syntax error
+withparen	InStr	syntax	Syntax error
+withparen	InputB	syntax	Syntax error
+withparen	Input	syntax	Syntax error
+withparen	In	syntax	Syntax error
+withparen	Implements	syntax	Syntax error
+withparen	Imp	syntax	Syntax error
+withparen	If	syntax	Syntax error
+withparen	GoTo	syntax	Syntax error
+withparen	GoSub	syntax	Syntax error
+withparen	Go	accepted	
+withparen	Global	syntax	Syntax error
+withparen	Get	syntax	Syntax error
+withparen	Function	syntax	Syntax error
+withparen	Friend	syntax	Syntax error
+withparen	FreeFile	accepted	
+withparen	Format	semantic	Argument not optional
+withparen	For	syntax	Syntax error
+withparen	Fix	syntax	Syntax error
+withparen	False	accepted	
+withparen	Explicit	accepted	
+withparen	Exit	syntax	Syntax error
+withparen	Event	syntax	Syntax error
+withparen	Error	accepted	
+withparen	Erase	syntax	Syntax error
+withparen	Eqv	syntax	Syntax error
+withparen	Enum	syntax	Syntax error
+withparen	EndIf	syntax	Syntax error
+withparen	End	syntax	Syntax error
+withparen	Empty	accepted	
+withparen	ElseIf	syntax	Syntax error
+withparen	Else	syntax	Syntax error
+withparen	Each	syntax	Syntax error
+withparen	Double	syntax	Syntax error
+withparen	DoEvents	accepted	
+withparen	Do	syntax	Syntax error
+withparen	Dir	accepted	
+withparen	Dim	syntax	Syntax error
+withparen	DefVar	syntax	Syntax error
+withparen	DefStr	syntax	Syntax error
+withparen	DefSng	syntax	Syntax error
+withparen	DefObj	syntax	Syntax error
+withparen	DefLng	syntax	Syntax error
+withparen	DefInt	syntax	Syntax error
+withparen	DefDbl	syntax	Syntax error
+withparen	DefDec	accepted	
+withparen	DefDate	syntax	Syntax error
+withparen	DefCur	syntax	Syntax error
+withparen	DefByte	syntax	Syntax error
+withparen	DefBool	syntax	Syntax error
+withparen	Declare	syntax	Syntax error
+withparen	Decimal	accepted	
+withparen	Debug	syntax	Syntax error
+withparen	Date	accepted	
+withparen	Database	accepted	
+withparen	Currency	syntax	Syntax error
+withparen	CVErr	syntax	Syntax error
+withparen	CVDate	semantic	Argument not optional
+withparen	CVar	syntax	Syntax error
+withparen	CurDir	accepted	
+withparen	CStr	syntax	Syntax error
+withparen	CSng	syntax	Syntax error
+withparen	Const	syntax	Syntax error
+withparen	Compare	accepted	
+withparen	Close	syntax	Syntax error
+withparen	CLng	syntax	Syntax error
+withparen	Circle	syntax	Syntax error
+withparen	CInt	syntax	Syntax error
+withparen	ChDir	semantic	Argument not optional
+withparen	CDecl	syntax	Syntax error
+withparen	CDbl	syntax	Syntax error
+withparen	CDec	semantic	Argument not optional
+withparen	CDate	syntax	Syntax error
+withparen	CCur	syntax	Syntax error
+withparen	CByte	syntax	Syntax error
+withparen	CBool	syntax	Syntax error
+withparen	Case	syntax	Syntax error
+withparen	Call	syntax	Syntax error
+withparen	ByVal	syntax	Syntax error
+withparen	Byte	syntax	Syntax error
+withparen	ByRef	syntax	Syntax error
+withparen	Boolean	syntax	Syntax error
+withparen	Binary	accepted	
+withparen	BF	accepted	
+withparen	Base	accepted	
+withparen	Assert	accepted	
+withparen	As	syntax	Syntax error
+withparen	Array	syntax	Syntax error
+withparen	Append	accepted	
+withparen	Any	syntax	Syntax error
+withparen	And	syntax	Syntax error
+withparen	Alias	accepted	
+withparen	AddressOf	syntax	Syntax error
+withparen	Access	accepted	
+withparen	Abs	syntax	Syntax error
+withparen	Zork	accepted	

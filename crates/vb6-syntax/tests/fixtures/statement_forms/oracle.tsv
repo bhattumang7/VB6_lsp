@@ -313,6 +313,139 @@ body	Type T\n    y As\nEnd Type	syntax	Invalid inside procedure
 body	Declare Sub F% Lib "k" ()	syntax	Syntax error
 body	Declare Sub F Lib "k" (a, b%)	syntax	Only comments may appear after End Sub, End Function, or End Property
 body	Enum E\n    A\n    B = 2\nEnd Enum	syntax	Invalid inside procedure
+body	x = 1: 0	syntax	Syntax error
+body	x = 1: 10 y = 2	syntax	Syntax error
+body	x = 1\n10 y = 2	accepted	
+body	10 y = 2	accepted	
+body	10: y = 2	accepted	
+body	x = 1: 10: y = 2	syntax	Syntax error
+body	If x Then 10	syntax	Label not defined
+body	If x Then 10 y = 2	syntax	Syntax error
+body	If x Then y = 1 Else 10	syntax	Label not defined
+body	Type T!\n    a As Long\nEnd Type	syntax	Syntax error
+body	Type T%\n    a As Long\nEnd Type	syntax	Syntax error
+body	Type T$\n    a As Long\nEnd Type	syntax	Syntax error
+body	Enum E%\n    A\nEnd Enum	syntax	Syntax error
+body	Enum E$\n    A\nEnd Enum	syntax	Syntax error
+body	Event E%()	syntax	Syntax error
+body	Property Get P()%\nEnd Property	syntax	Syntax error
+body	Select Case x\n    Case <> "a"\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case < 5\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case = 5\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case >= 1\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case Is <> 1\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case Is < 5\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case Is\n        y = 1\nEnd Select	syntax	Syntax error
+body	Select Case x\n    Case 1 To 5\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case 1, 2 To 3, Is > 4\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case + 1\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case Else\n        y = 1\nEnd Select	accepted	
+body	ReDim a()	syntax	Syntax error
+body	ReDim a(1)	accepted	
+body	ReDim a(1 To 2)	accepted	
+body	ReDim a(,)	syntax	Syntax error
+body	ReDim a	syntax	Syntax error
+body	ReDim Preserve a()	syntax	Syntax error
+body	Call Foo(1)2	syntax	Syntax error
+body	Call Foo(1) 2	syntax	Syntax error
+body	Call Foo 1 2	syntax	Syntax error
+body	Call Foo(1), 2	syntax	Syntax error
+body	Call Foo (1), 2	syntax	Syntax error
+body	Call Foo(1, 2)	semantic	Sub or Function not defined
+body	Zork()	syntax	Syntax error
+body	o.Foo()	syntax	Syntax error
+body	Me.Foo()	syntax	Syntax error
+body	Foo.Bar()	syntax	Syntax error
+body	Foo().x = 1	semantic	Sub or Function not defined
+body	Foo()(1)	syntax	Syntax error
+body	x = Zork()	semantic	Sub or Function not defined
+body	x = o.Foo()	accepted	
+body	Call Zork()	semantic	Sub or Function not defined
+body	Call o.Foo()	accepted	
+body	Zork ()	syntax	Syntax error
+body	o.Foo ()	syntax	Syntax error
+body	Zork(), 1	syntax	Syntax error
+body	x = UBound(a)	accepted	
+body	x = UBound(a, 1)	accepted	
+body	x = UBound(a.b)	accepted	
+body	x = UBound(a(1))	semantic	Sub or Function not defined
+body	x = UBound(a, 1, 2)	syntax	Syntax error
+body	x = UBound(Me)	semantic	Invalid use of Me keyword
+body	x = UBound(a())	semantic	Sub or Function not defined
+body	x = LBound(a)	accepted	
+body	x = Len(a)	accepted	
+body	x = Len("a")	accepted	
+body	x = Len(a, b)	syntax	Syntax error
+body	x = Len a	syntax	Syntax error
+body	Len(a)	syntax	Syntax error
+body	InStr(a, b)	syntax	Syntax error
+body	InStr(a, b, c)	syntax	Syntax error
+body	x = InStr("a", "b")	accepted	
+body	x = InStr(1, "a", "b")	accepted	
+body	x = InStr(1, "a", "b", 1)	accepted	
+body	x = InStr(1, "a", "b", 1, 2)	syntax	Syntax error
+body	x = InStr("a")	syntax	Syntax error
+body	x = InStr(, "a", "b")	syntax	Syntax error
+body	x = StrComp(a, b)	accepted	
+body	x = StrComp(a)	syntax	Syntax error
+body	x = StrComp(a, b, c, d)	syntax	Syntax error
+body	x = String(3, "a")	accepted	
+body	x = String(3)	syntax	Syntax error
+body	x = String(3, "a", 1)	syntax	Syntax error
+body	x = Input(3, 1)	accepted	
+body	x = Input(3)	syntax	Syntax error
+body	x = Date	accepted	
+body	x = Date()	accepted	
+body	x = Date(1)	syntax	Syntax error
+body	x = Abs(1)	accepted	
+body	x = Abs(1, 2)	syntax	Syntax error
+body	x = Abs()	syntax	Syntax error
+body	x = Abs	syntax	Syntax error
+body	x = Abs(1).x	syntax	Syntax error
+body	x = CStr(1)	accepted	
+body	x = Array(1, 2)	accepted	
+body	x = Array()	accepted	
+body	x = Array	syntax	Syntax error
+body	x = Array(1)(0)	accepted	
+body	Call Foo 1	syntax	Syntax error
+body	Call Foo	semantic	Sub or Function not defined
+body	Call Foo, 1	syntax	Syntax error
+body	Call Foo 1, 2	syntax	Syntax error
+body	Call a, 1	syntax	Syntax error
+body	x = (1).y	syntax	Syntax error
+body	x = (a).y	syntax	Syntax error
+body	x = ("s").y	syntax	Syntax error
+body	x = (a + b).y	syntax	Syntax error
+body	x = (New Foo).y	syntax	Syntax error
+body	x = Not(1).y	syntax	Syntax error
+body	x = Not (a).y	syntax	Syntax error
+body	x = (a)(1)	syntax	Syntax error
+body	x = (a).y(1)	syntax	Syntax error
+body	x = AddressOf Foo	syntax	Syntax error
+body	x = AddressOf (Foo)	syntax	Syntax error
+body	x = AddressOf Foo.Bar	syntax	Syntax error
+body	x = AddressOf 1	syntax	Syntax error
+body	x = AddressOf	syntax	Syntax error
+body	Foo AddressOf Bar	semantic	Expected Sub, Function, or Property
+body	Foo AddressOf Bar, 1	semantic	Expected Sub, Function, or Property
+body	x = (Decimal)	accepted	
+body	x = Decimal(1)	semantic	Sub or Function not defined
+body	Foo(AddressOf Bar)	syntax	Syntax error
+body	x = Foo(AddressOf Bar)	semantic	Expected Sub, Function, or Property
+body	Call Foo(AddressOf Bar)	semantic	Expected Sub, Function, or Property
+body	Foo 1, AddressOf Bar	semantic	Expected Sub, Function, or Property
+body	x = 1 + AddressOf Bar	syntax	Syntax error
+body	x = Foo(1, AddressOf Bar)	semantic	Expected Sub, Function, or Property
+body	Foo AddressOf Bar.Baz	semantic	Invalid use of AddressOf operator
+body	Foo AddressOf (Bar)	syntax	Syntax error
+body	Foo AddressOf 1	syntax	Syntax error
+body	Foo AddressOf	syntax	Syntax error
+body	Foo (AddressOf Bar)	syntax	Syntax error
+body	Foo AddressOf Bar + 1	semantic	Sub or Function not defined
+body	Foo AddressOf Bar.Baz.Qux	semantic	Invalid use of AddressOf operator
+body	x = AddressOf Foo + 1	syntax	Syntax error
+body	Set x = AddressOf Foo	syntax	Syntax error
+body	y = Array(AddressOf Foo)	semantic	Expected Sub, Function, or Property
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -627,3 +760,136 @@ module	Type T\n    y As\nEnd Type	syntax	Expected: New or type name
 module	Declare Sub F% Lib "k" ()	syntax	Expected: Identifier without type suffix
 module	Declare Sub F Lib "k" (a, b%)	accepted	
 module	Enum E\n    A\n    B = 2\nEnd Enum	accepted	
+module	x = 1: 0	syntax	Expected: line number or label or statement or end of statement
+module	x = 1: 10 y = 2	syntax	Expected: line number or label or statement or end of statement
+module	x = 1\n10 y = 2	syntax	Invalid outside procedure
+module	10 y = 2	syntax	Invalid outside procedure
+module	10: y = 2	syntax	Invalid outside procedure
+module	x = 1: 10: y = 2	syntax	Expected: line number or label or statement or end of statement
+module	If x Then 10	syntax	Invalid outside procedure
+module	If x Then 10 y = 2	syntax	Expected: end of statement
+module	If x Then y = 1 Else 10	syntax	Invalid outside procedure
+module	Type T!\n    a As Long\nEnd Type	syntax	Expected: identifier
+module	Type T%\n    a As Long\nEnd Type	syntax	Expected: identifier
+module	Type T$\n    a As Long\nEnd Type	syntax	Expected: identifier
+module	Enum E%\n    A\nEnd Enum	syntax	Expected: identifier
+module	Enum E$\n    A\nEnd Enum	syntax	Expected: identifier
+module	Event E%()	syntax	Only valid in object module
+module	Property Get P()%\nEnd Property	syntax	Invalid character
+module	Select Case x\n    Case <> "a"\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case < 5\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case = 5\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case >= 1\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case Is <> 1\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case Is < 5\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case Is\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case 1 To 5\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case 1, 2 To 3, Is > 4\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case + 1\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case Else\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	ReDim a()	syntax	Syntax error
+module	ReDim a(1)	syntax	Invalid outside procedure
+module	ReDim a(1 To 2)	syntax	Invalid outside procedure
+module	ReDim a(,)	syntax	Expected: expression
+module	ReDim a	syntax	Syntax error
+module	ReDim Preserve a()	syntax	Syntax error
+module	Call Foo(1)2	syntax	Expected: end of statement
+module	Call Foo(1) 2	syntax	Expected: end of statement
+module	Call Foo 1 2	syntax	Expected: end of statement
+module	Call Foo(1), 2	syntax	Expected: end of statement
+module	Call Foo (1), 2	syntax	Expected: end of statement
+module	Call Foo(1, 2)	syntax	Invalid outside procedure
+module	Zork()	syntax	Expected: =
+module	o.Foo()	syntax	Expected: =
+module	Me.Foo()	syntax	Expected: =
+module	Foo.Bar()	syntax	Expected: =
+module	Foo().x = 1	syntax	Invalid outside procedure
+module	Foo()(1)	syntax	Expected: =
+module	x = Zork()	syntax	Invalid outside procedure
+module	x = o.Foo()	syntax	Invalid outside procedure
+module	Call Zork()	syntax	Invalid outside procedure
+module	Call o.Foo()	syntax	Invalid outside procedure
+module	Zork ()	syntax	Expected: =
+module	o.Foo ()	syntax	Expected: =
+module	Zork(), 1	syntax	Expected: =
+module	x = UBound(a)	syntax	Invalid outside procedure
+module	x = UBound(a, 1)	syntax	Invalid outside procedure
+module	x = UBound(a.b)	syntax	Invalid outside procedure
+module	x = UBound(a(1))	syntax	Invalid outside procedure
+module	x = UBound(a, 1, 2)	syntax	Expected: )
+module	x = UBound(Me)	syntax	Invalid outside procedure
+module	x = UBound(a())	syntax	Invalid outside procedure
+module	x = LBound(a)	syntax	Invalid outside procedure
+module	x = Len(a)	syntax	Invalid outside procedure
+module	x = Len("a")	syntax	Invalid outside procedure
+module	x = Len(a, b)	syntax	Expected: )
+module	x = Len a	syntax	Expected: (
+module	Len(a)	syntax	Expected: identifier
+module	InStr(a, b)	syntax	Expected: =
+module	InStr(a, b, c)	syntax	Expected: =
+module	x = InStr("a", "b")	syntax	Invalid outside procedure
+module	x = InStr(1, "a", "b")	syntax	Invalid outside procedure
+module	x = InStr(1, "a", "b", 1)	syntax	Invalid outside procedure
+module	x = InStr(1, "a", "b", 1, 2)	syntax	Expected: )
+module	x = InStr("a")	syntax	Expected: list separator
+module	x = InStr(, "a", "b")	syntax	Expected: expression
+module	x = StrComp(a, b)	syntax	Invalid outside procedure
+module	x = StrComp(a)	syntax	Expected: list separator
+module	x = StrComp(a, b, c, d)	syntax	Expected: )
+module	x = String(3, "a")	syntax	Invalid outside procedure
+module	x = String(3)	syntax	Expected: list separator
+module	x = String(3, "a", 1)	syntax	Expected: )
+module	x = Input(3, 1)	syntax	Invalid outside procedure
+module	x = Input(3)	syntax	Expected: list separator
+module	x = Date	syntax	Invalid outside procedure
+module	x = Date()	syntax	Invalid outside procedure
+module	x = Date(1)	syntax	Expected: )
+module	x = Abs(1)	syntax	Invalid outside procedure
+module	x = Abs(1, 2)	syntax	Expected: )
+module	x = Abs()	syntax	Expected: expression
+module	x = Abs	syntax	Expected: (
+module	x = Abs(1).x	syntax	Expected: end of statement
+module	x = CStr(1)	syntax	Invalid outside procedure
+module	x = Array(1, 2)	syntax	Invalid outside procedure
+module	x = Array()	syntax	Invalid outside procedure
+module	x = Array	syntax	Expected: (
+module	x = Array(1)(0)	syntax	Invalid outside procedure
+module	Call Foo 1	syntax	Expected: end of statement
+module	Call Foo	syntax	Invalid outside procedure
+module	Call Foo, 1	syntax	Expected: end of statement
+module	Call Foo 1, 2	syntax	Expected: end of statement
+module	Call a, 1	syntax	Expected: end of statement
+module	x = (1).y	syntax	Expected: end of statement
+module	x = (a).y	syntax	Expected: end of statement
+module	x = ("s").y	syntax	Expected: end of statement
+module	x = (a + b).y	syntax	Expected: end of statement
+module	x = (New Foo).y	syntax	Expected: end of statement
+module	x = Not(1).y	syntax	Expected: end of statement
+module	x = Not (a).y	syntax	Expected: end of statement
+module	x = (a)(1)	syntax	Expected: end of statement
+module	x = (a).y(1)	syntax	Expected: end of statement
+module	x = AddressOf Foo	syntax	Expected: expression
+module	x = AddressOf (Foo)	syntax	Expected: expression
+module	x = AddressOf Foo.Bar	syntax	Expected: expression
+module	x = AddressOf 1	syntax	Expected: expression
+module	x = AddressOf	syntax	Expected: expression
+module	Foo AddressOf Bar	syntax	Invalid outside procedure
+module	Foo AddressOf Bar, 1	syntax	Invalid outside procedure
+module	x = (Decimal)	syntax	Invalid outside procedure
+module	x = Decimal(1)	syntax	Invalid outside procedure
+module	Foo(AddressOf Bar)	syntax	Expected: =
+module	x = Foo(AddressOf Bar)	syntax	Invalid outside procedure
+module	Call Foo(AddressOf Bar)	syntax	Invalid outside procedure
+module	Foo 1, AddressOf Bar	syntax	Invalid outside procedure
+module	x = 1 + AddressOf Bar	syntax	Expected: expression
+module	x = Foo(1, AddressOf Bar)	syntax	Invalid outside procedure
+module	Foo AddressOf Bar.Baz	syntax	Invalid outside procedure
+module	Foo AddressOf (Bar)	syntax	Expected: identifier
+module	Foo AddressOf 1	syntax	Expected: identifier
+module	Foo AddressOf	syntax	Expected: identifier
+module	Foo (AddressOf Bar)	syntax	Expected: =
+module	Foo AddressOf Bar + 1	syntax	Invalid outside procedure
+module	Foo AddressOf Bar.Baz.Qux	syntax	Invalid outside procedure
+module	x = AddressOf Foo + 1	syntax	Expected: expression
+module	Set x = AddressOf Foo	syntax	Expected: expression
+module	y = Array(AddressOf Foo)	syntax	Invalid outside procedure

@@ -196,7 +196,16 @@ fn a_dot_after_blanks_following_a_call_or_a_group_is_an_error() {
 
 #[test]
 fn a_blank_between_a_bang_and_its_key_is_a_syntax_error() {
-    let src = "Sub S()\n    x = (o)! Name\nEnd Sub\n";
+    let src = "Sub S()\n    x = a(1)! Name\nEnd Sub\n";
     let p = parse(src);
     assert_eq!(p.found, vec![(0x9c70, offset_of(src, "Name", 0), 4)]);
+}
+
+#[test]
+fn nothing_joins_to_a_parenthesised_group() {
+    for (src, at) in [("x = (o) .Name", ".Name"), ("x = (o).Name", ".Name"), ("x = (o)(1)", "(1)")] {
+        let full = format!("Sub S()\n    {src}\nEnd Sub\n");
+        let p = parse(&full);
+        assert_eq!(p.found, vec![(0x9c6f, offset_of(&full, at, 0), 1)], "{src}");
+    }
 }

@@ -209,6 +209,10 @@ pub struct Parser<'src> {
     reserved_names_allowed: bool,
     /// The declaration item parsed last was given a type with `As`.
     last_item_had_as: bool,
+    /// An `AddressOf` is allowed where the next primary starts: the start of a call argument.
+    address_of_ok: bool,
+    /// A statement's target is being parsed, where built-in functions are plain names.
+    in_target: bool,
     /// Open block statements of the procedure being parsed, innermost last.
     blocks: Vec<Block>,
     /// The last token consumed was the end of a line.
@@ -330,6 +334,8 @@ impl<'src> Parser<'src> {
             in_procedure: false,
             reserved_names_allowed: false,
             last_item_had_as: false,
+            address_of_ok: false,
+            in_target: false,
             blocks: Vec::new(),
             last_was_eol: false,
             after_colon: false,
@@ -559,6 +565,13 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// The name of a `Type`, `Enum` or `Event` carries no type-declaration character.
+    fn reject_name_suffix(&mut self, name: &Token) {
+        if name.type_suffix != TypeSuffix::None {
+            self.report_expected(name.span, "identifier");
+        }
+    }
+
     /// A name that carries a type-declaration character cannot also be given a type with `As`.
     fn reject_suffix_with_as(&mut self, name: &Token, what: &'static str) {
         if name.type_suffix != TypeSuffix::None && self.peek().kind == TokenKind::Kw(Kw::As) {
@@ -623,6 +636,63 @@ impl<'src> Parser<'src> {
         let valued = self.peek2().kind == TokenKind::Kw(Kw::Eq);
         self.at_contextual_keyword()
             && (valued || !STATEMENT_WORDS.iter().any(|n| name.eq_ignore_ascii_case(n)))
+    }
+
+    /// The call of a built-in function whose arguments have a grammar of their own:
+    /// brackets (unless the function may stand bare), a fixed number of arguments,
+    /// none named or left out, and nothing joined to the result.
+    fn parse_shaped_intrinsic_call(
+        &mut self,
+        arena: &mut ExprArena,
+        base: NodeId,
+        span: Span,
+        shape: &IntrinsicShape,
+    ) -> NodeId {
+        if self.peek().kind != TokenKind::Kw(Kw::LParen) {
+            if !shape.bare_ok {
+                self.report_expected(span, "(");
+            }
+            return base;
+        }
+        self.advance(); // (
+        let mut args = Vec::new();
+        let mut bad = false;
+        if self.peek().kind != TokenKind::Kw(Kw::RParen) {
+            loop {
+                if matches!(self.peek().kind, TokenKind::Kw(Kw::Comma) | TokenKind::Kw(Kw::RParen)) {
+                    bad = true; // an argument left out
+                    break;
+                }
+                if let Some(named) = self.try_parse_named_arg(arena) {
+                    bad = true; // a named argument
+                    args.push(named);
+                } else {
+                    self.eat(TokenKind::Kw(Kw::ByVal));
+                    args.push(self.parse_expr(arena, 0));
+                }
+                if !self.eat(TokenKind::Kw(Kw::Comma)) {
+                    break;
+                }
+            }
+        }
+        self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
+        if args.len() < shape.min || args.len() > shape.max {
+            bad = true;
+        }
+        if shape.name_first {
+            // The first argument names the array: a variable, not a value.
+            bad |= args.first().is_some_and(|a| {
+                !matches!(
+                    arena.get(*a),
+                    ExprNode::NameRef { .. } | ExprNode::MemberAccess { .. } | ExprNode::Call { .. } | ExprNode::Me
+                )
+            });
+        }
+        if bad {
+            self.report_expected(span, "expression");
+        }
+        let args = arena.alloc(ExprNode::ArgList { args });
+        arena.alloc(ExprNode::Call { func: base, args })
     }
 
     /// A keyword that begins a statement of its own, met where that statement's
@@ -1667,6 +1737,13 @@ impl<'src> Parser<'src> {
             // as a `Label` node carrying the line number; any statement that
             // follows on the same line is parsed by the enclosing block loop.
             TokenKind::IntLit | TokenKind::LongLit => {
+                if self.after_colon {
+                    // A line number only starts a line.
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                    self.skip_line();
+                    return None;
+                }
                 let tok = self.advance(); // consume the line number
                 let line = line_label_value(&tok.lit);
                 if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
@@ -1776,6 +1853,15 @@ impl<'src> Parser<'src> {
             self.end_stmt();
             let args = arena.alloc(ExprNode::ArgList { args });
             arena.alloc(ExprNode::CallStmt { callee: lhs, args })
+        } else if self.has_empty_call(arena, lhs)
+            || self.call_with_address_of_argument(arena, lhs)
+            || self.call_with_several_arguments(arena, lhs)
+        {
+            // `Foo()`, `Foo(AddressOf Bar)` and `Foo(a, b)` are not statements: `Call` is needed for them.
+            let span = self.current_span();
+            self.report_expected(span, "end of statement");
+            self.skip_line();
+            lhs
         } else {
             // Implicit call with optional trailing arguments: `Foo a, b`. After
             // a parenthesised coordinate pair (`PSet (x, y), color`) the comma
@@ -1833,6 +1919,31 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::CallStmt { callee: lhs, args })
             }
         }
+    }
+
+    /// True when `lhs` is a call, or a call of a call, with empty brackets.
+    fn has_empty_call(&self, arena: &ExprArena, lhs: NodeId) -> bool {
+        let ExprNode::Call { func, args } = arena.get(lhs) else { return false };
+        let empty = matches!(arena.get(*args), ExprNode::ArgList { args } if args.is_empty());
+        empty || self.has_empty_call(arena, *func)
+    }
+
+    /// True when `lhs` is a bracketed call of two or more arguments, which only the
+    /// graphics statements (`PSet (x, y)`, ...) may be without `Call`.
+    fn call_with_several_arguments(&self, arena: &ExprArena, lhs: NodeId) -> bool {
+        let ExprNode::Call { args, .. } = arena.get(lhs) else { return false };
+        let several = matches!(arena.get(*args), ExprNode::ArgList { args } if args.len() >= 2);
+        several
+            && !["PSet", "Circle", "Line", "Scale"]
+                .iter()
+                .any(|name| self.graphics_target_is(arena, lhs, name))
+    }
+
+    /// True when `lhs` is a bracketed call that has an `AddressOf` argument.
+    fn call_with_address_of_argument(&self, arena: &ExprArena, lhs: NodeId) -> bool {
+        let ExprNode::Call { args, .. } = arena.get(lhs) else { return false };
+        matches!(arena.get(*args), ExprNode::ArgList { args }
+            if args.iter().any(|a| matches!(arena.get(*a), ExprNode::AddressOf { .. })))
     }
 
     /// If `lhs` is a call with exactly one plain argument and the statement
@@ -2085,6 +2196,14 @@ impl<'src> Parser<'src> {
                 if self.peek().kind == TokenKind::Kw(Kw::LParen) {
                     self.advance();
                     let list = self.parse_array_bounds(arena);
+                    let bounds_given = list.is_some_and(|l| {
+                        matches!(arena.get(l), ExprNode::ArgList { args }
+                            if !args.is_empty() && args.iter().all(|a| !matches!(arena.get(*a), ExprNode::MissingArg)))
+                    });
+                    if !bounds_given && self.peek().kind == TokenKind::Kw(Kw::RParen) {
+                        let span = self.current_span();
+                        self.report_expected(span, "expression");
+                    }
                     self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
                     if self.peek().kind != TokenKind::Kw(Kw::Dot) {
                         bounds = list;
@@ -2467,7 +2586,12 @@ impl<'src> Parser<'src> {
     fn parse_case_test_expr(&mut self, arena: &mut ExprArena) -> NodeId {
         let mut args = Vec::new();
         loop {
-            let t = if self.eat(TokenKind::Kw(Kw::Is)) {
+            let implicit_is = matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Eq) | TokenKind::Kw(Kw::Ne) | TokenKind::Kw(Kw::Lt)
+                    | TokenKind::Kw(Kw::Gt) | TokenKind::Kw(Kw::Le) | TokenKind::Kw(Kw::Ge)
+            );
+            let t = if implicit_is || self.eat(TokenKind::Kw(Kw::Is)) {
                 let op_tok = self.advance();
                 let op = match &op_tok.kind {
                     TokenKind::Kw(Kw::Eq) => BinOpKind::Eq,
@@ -2501,14 +2625,22 @@ impl<'src> Parser<'src> {
 
     fn parse_call_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Call
+        if self.at_reserved_word() && self.peek().kind != TokenKind::Kw(Kw::Me) {
+            self.reject_reserved_word();
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         let callee = self.parse_target_expr(arena);
-        let args = if self.eat(TokenKind::Kw(Kw::LParen)) {
+        // `Call Foo(1, 2)`: the brackets were read with the callee, so nothing may follow them.
+        let args = if matches!(arena.get(callee), ExprNode::Call { .. }) {
+            arena.alloc(ExprNode::ArgList { args: Vec::new() })
+        } else if self.eat(TokenKind::Kw(Kw::LParen)) {
             let a = self.parse_arg_list(arena);
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             a
         } else {
-            let args = self.parse_stmt_arg_list(arena);
-            arena.alloc(ExprNode::ArgList { args })
+            // `Call Foo` takes its arguments in brackets or not at all.
+            arena.alloc(ExprNode::ArgList { args: Vec::new() })
         };
         self.end_stmt();
         arena.alloc(ExprNode::CallStmt { callee, args })
@@ -3812,6 +3944,7 @@ impl<'src> Parser<'src> {
         self.reject_in_standard_module();
         self.advance(); // consume Event
         let name = self.expect_decl_name();
+        self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
         let params = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let p = self.parse_param_list(arena);
@@ -4166,6 +4299,7 @@ impl<'src> Parser<'src> {
     fn parse_type_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Type
         let name = self.expect_decl_name();
+        self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
         self.eat_eol();
         let mut members = Vec::new();
@@ -4240,6 +4374,7 @@ impl<'src> Parser<'src> {
     fn parse_enum_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Enum
         let name = self.expect_decl_name();
+        self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
         self.eat_eol();
         let mut members = Vec::new();
@@ -4375,14 +4510,8 @@ impl<'src> Parser<'src> {
                 self.advance();
                 let inner = self.parse_expr(arena, 0);
                 self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
-                let group = arena.alloc(ExprNode::Paren { inner });
-                // `(New Foo).Bar`, `(a).b(1)`: a grouped expression is an object
-                // value, so member access (and the calls that follow it) applies.
-                if matches!(self.peek().kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang)) {
-                    self.parse_postfix(arena, group)
-                } else {
-                    group
-                }
+                // Nothing joins to a group: `(a).b` and `(a)(1)` are not expressions.
+                arena.alloc(ExprNode::Paren { inner })
             }
             // Numeric / string / date literals
             TokenKind::IntLit
@@ -4434,8 +4563,11 @@ impl<'src> Parser<'src> {
             }
             // `AddressOf proc` — function-pointer operand.
             TokenKind::Kw(Kw::AddressOf) => {
-                self.advance();
-                let operand = self.parse_primary(arena);
+                let at = self.advance();
+                if !std::mem::take(&mut self.address_of_ok) {
+                    self.report_expected(at.span, "expression");
+                }
+                let operand = self.parse_procedure_name(arena);
                 arena.alloc(ExprNode::AddressOf { operand })
             }
             // Leading `.`/`!` — With-block member reference in expression
@@ -4459,10 +4591,26 @@ impl<'src> Parser<'src> {
                 let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
                 let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
                 self.set_span(base, tok.span);
+                let name = self.scanner.sym_name(sym_id).to_string();
+                if let Some(shape) = INTRINSIC_SHAPES
+                    .iter()
+                    .find(|s| !self.in_target && name.eq_ignore_ascii_case(s.name))
+                {
+                    return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
+                }
+                if name.eq_ignore_ascii_case("Array") && self.peek().kind != TokenKind::Kw(Kw::LParen) {
+                    // `Array` is a function: brackets are not optional.
+                    self.report_expected(tok.span, "(");
+                    return base;
+                }
                 let is_input_fn = matches!(k, Kw::Input | Kw::InputS | Kw::InputB | Kw::InputBS);
                 if is_input_fn && self.peek().kind == TokenKind::Kw(Kw::LParen) {
-                    let call = self.parse_input_fn_call(arena, base);
-                    self.parse_postfix(arena, call)
+                    // Nothing joins to the result of `Input(n, file)`.
+                    self.parse_input_fn_call(arena, base)
+                } else if is_input_fn {
+                    // `Input` is a function: its brackets are not optional.
+                    self.report_expected(tok.span, "(");
+                    base
                 } else {
                     self.parse_postfix(arena, base)
                 }
@@ -4532,6 +4680,27 @@ impl<'src> Parser<'src> {
         base
     }
 
+    /// The qualified name of a procedure after `AddressOf`: names joined by dots.
+    fn parse_procedure_name(&mut self, arena: &mut ExprArena) -> NodeId {
+        let first = self.expect_decl_name();
+        let sym = first.sym.map(|s| s as u32).unwrap_or(0);
+        let mut base = arena.alloc(ExprNode::NameRef { sym, suffix: first.type_suffix });
+        self.set_span(base, first.span);
+        while self.peek().kind == TokenKind::Kw(Kw::Dot) && !self.blank_before_next() {
+            self.advance();
+            let member = self.expect_ident();
+            let mid = member.sym.map(|s| s as u32).unwrap_or(0);
+            base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false });
+            self.set_span(base, member.span);
+        }
+        base
+    }
+
+    /// Notes that an `AddressOf` may start the argument that follows.
+    fn allow_address_of_here(&mut self) {
+        self.address_of_ok = self.peek().kind == TokenKind::Kw(Kw::AddressOf);
+    }
+
     /// Parses the LHS of an assignment.
     fn parse_target_expr(&mut self, arena: &mut ExprArena) -> NodeId {
         // A leading `.`/`!` is a With-block member reference: `.Member` / `!Key`.
@@ -4553,6 +4722,14 @@ impl<'src> Parser<'src> {
             self.skip_line();
             return self.parse_primary_placeholder(arena);
         }
+        let was_target = std::mem::replace(&mut self.in_target, true);
+        let target = self.parse_target_primary(arena);
+        self.in_target = was_target;
+        target
+    }
+
+    /// The part of a target that is not a leading member reference.
+    fn parse_target_primary(&mut self, arena: &mut ExprArena) -> NodeId {
         // A target names something: a literal does not.
         if matches!(
             self.peek().kind,
@@ -4624,6 +4801,7 @@ impl<'src> Parser<'src> {
             } else {
                 // A call-site `ByVal` qualifies the argument that follows.
                 self.eat(TokenKind::Kw(Kw::ByVal));
+                self.allow_address_of_here();
                 args.push(self.parse_expr(arena, 0));
             }
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
@@ -4643,6 +4821,7 @@ impl<'src> Parser<'src> {
             } else {
                 // A call-site `ByVal` qualifies the argument that follows.
                 self.eat(TokenKind::Kw(Kw::ByVal));
+                self.allow_address_of_here();
                 if let Some(expr) = self.try_parse_expr(arena) {
                     expr
                 } else {
@@ -4786,7 +4965,8 @@ fn keyword_starts_expression(k: Kw) -> bool {
     !reserved
         || value_or_function
         || matches!(entry.name, "Array" | "CDec" | "DoEvents" | "New" | "Not" | "TypeOf" | "AddressOf"
-                | "True" | "False" | "Nothing" | "Empty" | "Null" | "Me" | "Seek")
+                | "True" | "False" | "Nothing" | "Empty" | "Null" | "Me" | "Seek"
+                | "Decimal" | "DefDec")
 }
 
 /// True when the parameter `param` is declared without a type or as `Variant`.
@@ -4807,3 +4987,45 @@ fn is_header_word(name: &str) -> bool {
 /// Keywords that are not reserved but begin a statement of their own: used as a
 /// name they need something after them that says so.
 const STATEMENT_WORDS: [&str; 8] = ["Width", "Property", "Name", "Mid", "MidB", "Line", "Go", "Error"];
+
+/// The argument grammar of a built-in function: the number of arguments it
+/// takes, whether the first must be a variable, and whether the name may stand
+/// without brackets.
+struct IntrinsicShape {
+    name: &'static str,
+    min: usize,
+    max: usize,
+    name_first: bool,
+    bare_ok: bool,
+}
+
+const fn shape(name: &'static str, min: usize, max: usize) -> IntrinsicShape {
+    IntrinsicShape { name, min, max, name_first: false, bare_ok: false }
+}
+
+const INTRINSIC_SHAPES: &[IntrinsicShape] = &[
+    shape("Abs", 1, 1),
+    shape("CBool", 1, 1),
+    shape("CByte", 1, 1),
+    shape("CCur", 1, 1),
+    shape("CDate", 1, 1),
+    shape("CDbl", 1, 1),
+    shape("CInt", 1, 1),
+    shape("CLng", 1, 1),
+    shape("CSng", 1, 1),
+    shape("CStr", 1, 1),
+    shape("CVErr", 1, 1),
+    shape("CVar", 1, 1),
+    shape("Fix", 1, 1),
+    shape("Int", 1, 1),
+    shape("Len", 1, 1),
+    shape("LenB", 1, 1),
+    shape("Sgn", 1, 1),
+    shape("InStr", 2, 4),
+    shape("InStrB", 2, 4),
+    shape("StrComp", 2, 3),
+    shape("String", 2, 2),
+    IntrinsicShape { name: "UBound", min: 1, max: 2, name_first: true, bare_ok: false },
+    IntrinsicShape { name: "LBound", min: 1, max: 2, name_first: true, bare_ok: false },
+    IntrinsicShape { name: "Date", min: 0, max: 0, name_first: false, bare_ok: true },
+];

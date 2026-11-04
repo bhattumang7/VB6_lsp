@@ -314,3 +314,136 @@ Type T\n    y As\nEnd Type
 Declare Sub F% Lib "k" ()
 Declare Sub F Lib "k" (a, b%)
 Enum E\n    A\n    B = 2\nEnd Enum
+x = 1: 0
+x = 1: 10 y = 2
+x = 1\n10 y = 2
+10 y = 2
+10: y = 2
+x = 1: 10: y = 2
+If x Then 10
+If x Then 10 y = 2
+If x Then y = 1 Else 10
+Type T!\n    a As Long\nEnd Type
+Type T%\n    a As Long\nEnd Type
+Type T$\n    a As Long\nEnd Type
+Enum E%\n    A\nEnd Enum
+Enum E$\n    A\nEnd Enum
+Event E%()
+Property Get P()%\nEnd Property
+Select Case x\n    Case <> "a"\n        y = 1\nEnd Select
+Select Case x\n    Case < 5\n        y = 1\nEnd Select
+Select Case x\n    Case = 5\n        y = 1\nEnd Select
+Select Case x\n    Case >= 1\n        y = 1\nEnd Select
+Select Case x\n    Case Is <> 1\n        y = 1\nEnd Select
+Select Case x\n    Case Is < 5\n        y = 1\nEnd Select
+Select Case x\n    Case Is\n        y = 1\nEnd Select
+Select Case x\n    Case 1 To 5\n        y = 1\nEnd Select
+Select Case x\n    Case 1, 2 To 3, Is > 4\n        y = 1\nEnd Select
+Select Case x\n    Case + 1\n        y = 1\nEnd Select
+Select Case x\n    Case Else\n        y = 1\nEnd Select
+ReDim a()
+ReDim a(1)
+ReDim a(1 To 2)
+ReDim a(,)
+ReDim a
+ReDim Preserve a()
+Call Foo(1)2
+Call Foo(1) 2
+Call Foo 1 2
+Call Foo(1), 2
+Call Foo (1), 2
+Call Foo(1, 2)
+Zork()
+o.Foo()
+Me.Foo()
+Foo.Bar()
+Foo().x = 1
+Foo()(1)
+x = Zork()
+x = o.Foo()
+Call Zork()
+Call o.Foo()
+Zork () 
+o.Foo ()
+Zork(), 1
+x = UBound(a)
+x = UBound(a, 1)
+x = UBound(a.b)
+x = UBound(a(1))
+x = UBound(a, 1, 2)
+x = UBound(Me)
+x = UBound(a())
+x = LBound(a)
+x = Len(a)
+x = Len("a")
+x = Len(a, b)
+x = Len a
+Len(a)
+InStr(a, b)
+InStr(a, b, c)
+x = InStr("a", "b")
+x = InStr(1, "a", "b")
+x = InStr(1, "a", "b", 1)
+x = InStr(1, "a", "b", 1, 2)
+x = InStr("a")
+x = InStr(, "a", "b")
+x = StrComp(a, b)
+x = StrComp(a)
+x = StrComp(a, b, c, d)
+x = String(3, "a")
+x = String(3)
+x = String(3, "a", 1)
+x = Input(3, 1)
+x = Input(3)
+x = Date
+x = Date()
+x = Date(1)
+x = Abs(1)
+x = Abs(1, 2)
+x = Abs()
+x = Abs
+x = Abs(1).x
+x = CStr(1)
+x = Array(1, 2)
+x = Array()
+x = Array
+x = Array(1)(0)
+Call Foo 1
+Call Foo
+Call Foo, 1
+Call Foo 1, 2
+Call a, 1
+x = (1).y
+x = (a).y
+x = ("s").y
+x = (a + b).y
+x = (New Foo).y
+x = Not(1).y
+x = Not (a).y
+x = (a)(1)
+x = (a).y(1)
+x = AddressOf Foo
+x = AddressOf (Foo)
+x = AddressOf Foo.Bar
+x = AddressOf 1
+x = AddressOf
+Foo AddressOf Bar
+Foo AddressOf Bar, 1
+x = (Decimal)
+x = Decimal(1)
+Foo(AddressOf Bar)
+x = Foo(AddressOf Bar)
+Call Foo(AddressOf Bar)
+Foo 1, AddressOf Bar
+x = 1 + AddressOf Bar
+x = Foo(1, AddressOf Bar)
+Foo AddressOf Bar.Baz
+Foo AddressOf (Bar)
+Foo AddressOf 1
+Foo AddressOf
+Foo (AddressOf Bar)
+Foo AddressOf Bar + 1
+Foo AddressOf Bar.Baz.Qux
+x = AddressOf Foo + 1
+Set x = AddressOf Foo
+y = Array(AddressOf Foo)

@@ -53,3 +53,7 @@ Statement invalid inside Type block	syntax
 Only comments may appear after End Sub, End Function, or End Property	syntax
 Can't change data types of array elements	semantic
 Invalid use of object	semantic
+Argument in ParamArray may not be named	semantic
+Named argument not found	semantic
+Expected End With	syntax
+Invalid use of AddressOf operator	semantic
