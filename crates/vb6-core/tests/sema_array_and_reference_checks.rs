@@ -112,3 +112,17 @@ fn a_user_defined_type_cannot_be_passed_byval() {
     let src = "Type Pt\n    X As Long\nEnd Type\nSub A(ByVal p As Pt)\nEnd Sub\nSub B(ByRef p As Pt)\nEnd Sub\nSub C(p As Pt)\nEnd Sub\nSub D(ByVal n As Long)\nEnd Sub\n";
     assert_eq!(codes(src), vec![(UDT_BYVAL, at(src, "ByVal p As Pt", "p"), 1)]);
 }
+
+const READ_ONLY_PROPERTY: u32 = 57094;
+
+#[test]
+fn a_get_only_property_cannot_be_assigned() {
+    let src = "Private m As Long\nProperty Get Ro() As Long\n    Ro = m\nEnd Property\nProperty Get Rw() As Long\n    Rw = m\nEnd Property\nProperty Let Rw(v As Long)\n    m = v\nEnd Property\nSub Run()\n    Ro = 3\n    Rw = 3\nEnd Sub\n";
+    assert_eq!(class_codes(src), vec![(READ_ONLY_PROPERTY, at(src, "Ro = 3", "Ro"), 2)]);
+}
+
+#[test]
+fn a_property_with_a_set_accessor_can_be_assigned() {
+    let src = "Property Get Item()\nEnd Property\nProperty Set Item(o As Object)\nEnd Property\nSub Run(o As Object)\n    Item = o\nEnd Sub\n";
+    assert_eq!(class_codes(src), vec![]);
+}

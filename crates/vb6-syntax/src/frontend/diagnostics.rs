@@ -122,6 +122,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         40136 => "Invalid or unqualified reference",
         40140 => "User-defined type may not be passed ByVal",
         40149 => "Invalid ReDim",
+        57094 => "Can't assign to read-only property",
         57150 => "Event not found",
         ERR_LABEL_NOT_DEFINED => "Label not defined",
         ERR_SYNTAX_ERROR => "Syntax error",

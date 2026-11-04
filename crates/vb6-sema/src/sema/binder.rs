@@ -37,6 +37,8 @@ pub const ERR_INVALID_OR_UNQUALIFIED_REFERENCE: u16 = 40136;
 pub const ERR_EVENT_NOT_FOUND: u16 = 57150;
 /// "User-defined type may not be passed ByVal" (40140).
 pub const ERR_UDT_PASSED_BYVAL: u16 = 40140;
+/// "Can't assign to read-only property" (57094).
+pub const ERR_READ_ONLY_PROPERTY: u16 = 57094;
 /// "Invalid ReDim" (40149): `ReDim` of a constant.
 pub const ERR_INVALID_REDIM: u16 = 40149;
 
@@ -1489,6 +1491,19 @@ impl<'a> Binder<'a> {
                     let span = self.spans.get(id);
                     self.diagnostics.push(ERR_ASSIGNMENT_TO_CONSTANT as u32, span);
                 }
+                // A property with only a `Get` accessor cannot be assigned
+                // (outside its own body, where the name is the return value).
+                if assigned {
+                    if let NameResolution::Proc(pi) = &res {
+                        if self.procs[*pi].kind == ProcKind::PropGet
+                            && scope != Some(*pi)
+                            && !self.has_property_writer(*pi)
+                        {
+                            let span = self.spans.get(id);
+                            self.diagnostics.push(ERR_READ_ONLY_PROPERTY as u32, span);
+                        }
+                    }
+                }
                 self.resolutions.insert(id.0, res);
                 self.types.insert(id.0, ty);
                 if let Some(sem) = sem {
@@ -2205,6 +2220,15 @@ impl<'a> Binder<'a> {
     }
 
     /// Whether `res` names a declared constant or an enum member.
+    /// True when the property whose `Get` is procedure `pi` also has a `Let`
+    /// or `Set` accessor.
+    fn has_property_writer(&self, pi: usize) -> bool {
+        let name = self.name_of(self.procs[pi].sym_id);
+        self.procs.iter().any(|p| {
+            matches!(p.kind, ProcKind::PropLet | ProcKind::PropSet) && self.name_of(p.sym_id) == name
+        })
+    }
+
     /// `Erase` / `ReDim` need an array: report a plain name whose declared
     /// type is a scalar (a `Variant` may hold an array, so it is accepted).
     fn check_array_operand(&mut self, id: NodeId) {
