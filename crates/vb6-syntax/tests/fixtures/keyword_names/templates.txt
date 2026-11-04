@@ -1,0 +1,159 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each keyword.
+=== localdim bas
+Sub Probe()
+    Dim {k} As Long
+End Sub
+=== moddim bas
+Dim {k} As Long
+=== sub bas
+Sub {k}()
+End Sub
+=== func bas
+Function {k}() As Long
+End Function
+=== const bas
+Const {k} = 1
+=== type bas
+Type {k}
+    a As Long
+End Type
+=== enum bas
+Enum {k}
+    a
+End Enum
+=== tmember bas
+Type T
+    {k} As Long
+End Type
+=== emember bas
+Enum E
+    {k}
+End Enum
+=== param bas
+Sub Probe({k} As Long)
+End Sub
+=== label bas
+Sub Probe()
+    {k}:
+End Sub
+=== forvar bas
+Sub Probe()
+    Dim i As Long
+    For {k} = 1 To 2
+    Next
+End Sub
+=== declare bas
+Declare Sub {k} Lib "kernel32" ()
+=== propget bas
+Property Get {k}() As Long
+End Property
+=== staticdim bas
+Sub Probe()
+    Static {k} As Long
+End Sub
+=== redim bas
+Sub Probe()
+    ReDim {k}(1)
+End Sub
+=== withevents cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Private WithEvents {k} As Class1
+=== event cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Event {k}()
+=== implements cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Implements {k}
+=== propset bas
+Property Set {k}(v As Object)
+End Property
+=== proplet bas
+Property Let {k}(v As Long)
+End Property
+=== dimarray bas
+Dim {k}(1 To 2) As Long
+=== paramopt bas
+Sub Probe(Optional {k} As Long)
+End Sub
+=== parambyval bas
+Sub Probe(ByVal {k} As Long)
+End Sub
+=== paramarray bas
+Sub Probe(ParamArray {k}() As Variant)
+End Sub
+=== localconst bas
+Sub Probe()
+    Const {k} = 1
+End Sub
+=== lettarget bas
+Sub Probe()
+    {k} = 1
+End Sub
+=== startcall bas
+Sub Probe()
+    {k}
+End Sub
+=== startarg bas
+Sub Probe()
+    {k} 1
+End Sub
+=== startargs bas
+Sub Probe()
+    {k} 1, 2
+End Sub
+=== startparen bas
+Sub Probe()
+    {k}(1)
+End Sub
+=== startparens bas
+Sub Probe()
+    {k} (1)
+End Sub
+=== startdot bas
+Sub Probe()
+    {k}.x = 1
+End Sub
+=== startbang bas
+Sub Probe()
+    {k}!x = 1
+End Sub
+=== startcomma bas
+Sub Probe()
+    {k}, 1
+End Sub
+=== starthash bas
+Sub Probe()
+    {k} #1
+End Sub
+=== startcolonstmt bas
+Sub Probe()
+    {k}: x = 1
+End Sub
+=== startindexed bas
+Sub Probe()
+    {k}(1) = 2
+End Sub
