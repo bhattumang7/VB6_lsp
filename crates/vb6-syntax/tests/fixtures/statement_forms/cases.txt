@@ -1,0 +1,197 @@
+# One case per line. A line is used with every template, so cases that only make sense at module level
+# or inside a procedure are simply answered by the compiler for both.
+x = 1 +* 2
+x = (1
+x = 2 ^ 3 ^ 2
+x = o .Name
+x = o\t.Name
+x = o !Name
+x = o! Name
+x = (o) .Name
+x = (o)! Name
+x = o.Item! Name
+x = o.Item !Name
+x = o.Item ! Name
+x = o.Item(1) .Name
+x = o. Name
+x = o _\n        .Name
+x = o.Foo(1) _\n        .Bar
+x = o.Name _\n        .Name
+x = o. _\n        Name
+o.Foo _\n        .x0
+o.Foo .x0
+o.Foo .x0 & ", " & .y0
+o.Foo 1, .y0
+o .Foo
+o.Item .Name = 1
+o.Foo !Key
+x = o.Item!Name
+o.Item!Name = 1
+x = 1 2
+Dim x As Integer Integer
+x = (1 2)
+x = 1 +
+x = o.
+If True Then Probe Else x = False
+If True Then Me.Probe Else x = False
+If True Then Probe Else Probe 1
+If True Then Probe 1 Else Probe
+If True Then a = 1: Probe Else Probe
+Name "a" As "b"
+Name ("a") As ("b")
+Name("a") As "b"
+Name = 1
+Name.x = 1
+Name.x
+Name.x 1
+Name(1) = 2
+Width #1, 80
+Width 1, 80
+Width = 1
+Width (1) = 2
+Seek #1, 5
+Seek 1, 5
+Seek 1
+Line.x = 1
+Line (1,1)-(2,2)
+Line -(2,2)
+Line Input #1, x
+Line = 1
+Line (1)
+Resume
+Resume Next
+Resume :
+Resume Else
+Scale
+Scale (1,1)-(2,2)
+Scale 1
+Scale(1)
+Property = 1
+Property.x = 1
+Property
+Input #1, x
+Input #1
+Write #1, x
+Write #1
+Write #1,
+Print #1, x
+Print #1,
+Print #1
+Put #1, , x
+Get #1, , x
+Get F, offset, buf
+Mid(x, 1) = "a"
+Mid = 1
+Go To 10
+Go
+Go = 1
+Error 5
+Error = 1
+Lock #1
+Lock 1, 2
+Lock
+Unlock #1, 1 To 2
+Call #1
+Call (1)
+Call Probe
+Call Probe()
+(o).x = 1
+(o).x
+(1) = 2
+Set (o) = x
+Set o = x
+Let (x) = 1
+Erase (x)
+Erase x
+Erase x, y
+Me = 1
+Me.x = 1
+Me
+Me 1
+Date = #1/1/2000#
+Date
+DoEvents
+DoEvents 1
+CDec(1)
+Close: x = 1
+Close #1
+Close 1
+Close
+Close #1, #2
+PSet (1, 2), vbRed
+PSet Step(1,2)
+Circle (1,2), 3
+Circle Step(1,2), 3
+Line (0,0)-(1,1), vbRed, B
+Line Step(1,1)-Step(2,2)
+Line -Step(2,2)
+Print "a"; x;
+Cls
+PSet
+Circle
+Debug.PSet (1,2)
+Debug.Foo "a"
+Debug.Print "a"
+Debug.Assert True
+Const c(4) = 1
+Const c() = 1
+Foo(1) 2
+Foo(1), 2
+Foo (1), 2
+Foo 1,
+Foo 1, , 2
+Foo(1, )
+x = Foo(1, )
+x = Foo(, 1)
+Call Foo(1, )
+x = Foo(ByVal 1)
+Foo ByVal 1
+Call Foo(ByVal 1)
+Call Foo(ByRef x)
+Next
+For i = 1 To 2\n    Next i i
+For i = 1 To 2\n    Next i, i
+For i = 1 To 2\n    Next i,
+Sub S(ByVal Optional x As Long)\nEnd Sub
+Sub S(ByRef Optional x As Long)\nEnd Sub
+Sub S(Optional ByVal x As Long)\nEnd Sub
+Sub S(Optional ByRef x As Long)\nEnd Sub
+Sub S(ByVal ParamArray x() As Long)\nEnd Sub
+Sub S(ParamArray ByVal x() As Long)\nEnd Sub
+Sub S(Optional Optional x As Long)\nEnd Sub
+Sub S(ByVal ByVal x As Long)\nEnd Sub
+Sub S(ByVal ByRef x As Long)\nEnd Sub
+Sub S() Static\nEnd Sub
+Function F() As Long Static\nEnd Function
+Function F() As Long Long\nEnd Function
+Property Get F() As Long Long\nEnd Property
+Sub S() Long\nEnd Sub
+Type T\n    Xor(1) As Long\nEnd Type
+Type T\n    Private(1) As Long\nEnd Type
+Type T\n    Private As Long\nEnd Type
+Type T\n    Name(1) As Long\nEnd Type
+Type T\n    a(1) As Long\nEnd Type
+Dim s As String * 3 = "abc"
+Const MACRO_EXT As String * 3 = "pdm"
+Const c As String * 2 + 1 = "abc"
+Const c As String * (2 + 1) = "abc"
+Const c As String * 3 = 5
+Const c As String * 3
+Dim s As String * &H10
+Dim s As String * 3.0
+Dim s As String * 3&
+Dim s As String * 3%
+Dim s As String * "3"
+Dim s As String * 0
+Dim s As String * 65526
+Dim s As String * 65527
+Dim s As String * 1E1
+Dim s As String * True
+Dim s As String * Me
+Dim s As String * -1
+Dim s As String * 2 + 1
+Dim s As String * 2 * 3
+Dim s As String * 2 ^ 2
+Dim s As String * 7 Mod 3
+Dim s As String * 3 And 3
+Dim s As String * (2 + 1)

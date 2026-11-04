@@ -46,10 +46,17 @@ fn type_and_enum_with_members_are_clean() {
 
 #[test]
 fn a_member_may_be_named_like_a_keyword() {
-    let p = parse("Type T\nType As String\nName As String\nLine(3) As Long\nEnd Type\n");
+    let p = parse("Type T\nType As String\nName As String\nText(3) As Long\nEnd Type\n");
     assert_eq!(p.found, vec![]);
     let ExprNode::TypeDecl { members, .. } = p.node(p.top[0]) else { panic!("expected Type") };
     assert_eq!(members.len(), 3);
+}
+
+#[test]
+fn a_member_named_like_a_statement_cannot_take_bounds() {
+    let src = "Type T\nm As Long\nLine(3) As Long\nEnd Type\n";
+    let p = parse(src);
+    assert_eq!(p.found, vec![(0x9c6f, src.find("Line").unwrap() as u32, 4)]);
 }
 
 #[test]

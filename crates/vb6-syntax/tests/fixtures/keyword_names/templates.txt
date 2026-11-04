@@ -157,3 +157,18 @@ End Sub
 Sub Probe()
     {k}(1) = 2
 End Sub
+=== tmemberbounds bas
+Type T
+    {k}(1) As Long
+End Type
+=== enumvalue bas
+Enum E
+    {k} = 1
+End Enum
+=== constarr bas
+Const {k}(1) = 1
+=== dimas bas
+Dim a As {k}
+=== paramas bas
+Sub Probe(a As {k})
+End Sub

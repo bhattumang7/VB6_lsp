@@ -1,6 +1,8 @@
 //! Shared helpers for parser AST tests.
 #![allow(dead_code)]
 
+pub mod answers;
+
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, NodeId};
 use vb6_syntax::frontend::parser::Parser;
 use vb6_syntax::frontend::scanner::ScannerContext;

@@ -1,0 +1,391 @@
+# template	word	class	message
+body	x = 1 +* 2	syntax	Syntax error
+body	x = (1	syntax	Syntax error
+body	x = 2 ^ 3 ^ 2	accepted	
+body	x = o .Name	syntax	Syntax error
+body	x = o\t.Name	syntax	Syntax error
+body	x = o !Name	syntax	Syntax error
+body	x = o! Name	syntax	Syntax error
+body	x = (o) .Name	syntax	Syntax error
+body	x = (o)! Name	syntax	Syntax error
+body	x = o.Item! Name	syntax	Syntax error
+body	x = o.Item !Name	syntax	Syntax error
+body	x = o.Item ! Name	syntax	Syntax error
+body	x = o.Item(1) .Name	syntax	Syntax error
+body	x = o. Name	accepted	
+body	x = o _\n        .Name	accepted	
+body	x = o.Foo(1) _\n        .Bar	accepted	
+body	x = o.Name _\n        .Name	accepted	
+body	x = o. _\n        Name	accepted	
+body	o.Foo _\n        .x0	accepted	
+body	o.Foo .x0	semantic	Invalid or unqualified reference
+body	o.Foo .x0 & ", " & .y0	semantic	Invalid or unqualified reference
+body	o.Foo 1, .y0	semantic	Invalid or unqualified reference
+body	o .Foo	semantic	Invalid or unqualified reference
+body	o.Item .Name = 1	semantic	Invalid or unqualified reference
+body	o.Foo !Key	semantic	Invalid or unqualified reference
+body	x = o.Item!Name	accepted	
+body	o.Item!Name = 1	accepted	
+body	x = 1 2	syntax	Syntax error
+body	Dim x As Integer Integer	syntax	Syntax error
+body	x = (1 2)	syntax	Syntax error
+body	x = 1 +	syntax	Syntax error
+body	x = o.	syntax	Syntax error
+body	If True Then Probe Else x = False	accepted	
+body	If True Then Me.Probe Else x = False	semantic	Invalid use of Me keyword
+body	If True Then Probe Else Probe 1	semantic	Wrong number of arguments or invalid property assignment
+body	If True Then Probe 1 Else Probe	semantic	Wrong number of arguments or invalid property assignment
+body	If True Then a = 1: Probe Else Probe	accepted	
+body	Name "a" As "b"	accepted	
+body	Name ("a") As ("b")	accepted	
+body	Name("a") As "b"	accepted	
+body	Name = 1	accepted	
+body	Name.x = 1	accepted	
+body	Name.x	accepted	
+body	Name.x 1	accepted	
+body	Name(1) = 2	syntax	Syntax error
+body	Width #1, 80	accepted	
+body	Width 1, 80	syntax	Syntax error
+body	Width = 1	semantic	Argument not optional
+body	Width (1) = 2	syntax	Syntax error
+body	Seek #1, 5	accepted	
+body	Seek 1, 5	accepted	
+body	Seek 1	syntax	Syntax error
+body	Line.x = 1	accepted	
+body	Line (1,1)-(2,2)	semantic	Method not valid without suitable object
+body	Line -(2,2)	semantic	Method not valid without suitable object
+body	Line Input #1, x	accepted	
+body	Line = 1	accepted	
+body	Line (1)	syntax	Syntax error
+body	Resume	accepted	
+body	Resume Next	accepted	
+body	Resume :	accepted	
+body	Resume Else	syntax	Syntax error
+body	Scale	semantic	Method not valid without suitable object
+body	Scale (1,1)-(2,2)	semantic	Method not valid without suitable object
+body	Scale 1	syntax	Syntax error
+body	Scale(1)	syntax	Syntax error
+body	Property = 1	accepted	
+body	Property.x = 1	accepted	
+body	Property	syntax	Syntax error
+body	Input #1, x	accepted	
+body	Input #1	syntax	Syntax error
+body	Write #1, x	accepted	
+body	Write #1	syntax	Syntax error
+body	Write #1,	accepted	
+body	Print #1, x	accepted	
+body	Print #1,	accepted	
+body	Print #1	syntax	Syntax error
+body	Put #1, , x	accepted	
+body	Get #1, , x	accepted	
+body	Get F, offset, buf	accepted	
+body	Mid(x, 1) = "a"	accepted	
+body	Mid = 1	semantic	Argument not optional
+body	Go To 10	syntax	Label not defined
+body	Go	syntax	Syntax error
+body	Go = 1	accepted	
+body	Error 5	accepted	
+body	Error = 1	accepted	
+body	Lock #1	accepted	
+body	Lock 1, 2	accepted	
+body	Lock	syntax	Syntax error
+body	Unlock #1, 1 To 2	accepted	
+body	Call #1	syntax	Syntax error
+body	Call (1)	syntax	Syntax error
+body	Call Probe	accepted	
+body	Call Probe()	accepted	
+body	(o).x = 1	syntax	Syntax error
+body	(o).x	syntax	Syntax error
+body	(1) = 2	syntax	Syntax error
+body	Set (o) = x	syntax	Syntax error
+body	Set o = x	accepted	
+body	Let (x) = 1	syntax	Syntax error
+body	Erase (x)	syntax	Syntax error
+body	Erase x	accepted	
+body	Erase x, y	accepted	
+body	Me = 1	semantic	Invalid use of Me keyword
+body	Me.x = 1	semantic	Invalid use of Me keyword
+body	Me	syntax	Syntax error
+body	Me 1	syntax	Syntax error
+body	Date = #1/1/2000#	accepted	
+body	Date	semantic	Invalid use of property
+body	DoEvents	accepted	
+body	DoEvents 1	semantic	Wrong number of arguments or invalid property assignment
+body	CDec(1)	accepted	
+body	Close: x = 1	accepted	
+body	Close #1	accepted	
+body	Close 1	accepted	
+body	Close	accepted	
+body	Close #1, #2	accepted	
+body	PSet (1, 2), vbRed	semantic	Method not valid without suitable object
+body	PSet Step(1,2)	semantic	Method not valid without suitable object
+body	Circle (1,2), 3	semantic	Method not valid without suitable object
+body	Circle Step(1,2), 3	semantic	Method not valid without suitable object
+body	Line (0,0)-(1,1), vbRed, B	semantic	Method not valid without suitable object
+body	Line Step(1,1)-Step(2,2)	semantic	Method not valid without suitable object
+body	Line -Step(2,2)	semantic	Method not valid without suitable object
+body	Print "a"; x;	semantic	Method not valid without suitable object
+body	Cls	semantic	Sub or Function not defined
+body	PSet	syntax	Syntax error
+body	Circle	syntax	Syntax error
+body	Debug.PSet (1,2)	syntax	Syntax error
+body	Debug.Foo "a"	syntax	Syntax error
+body	Debug.Print "a"	accepted	
+body	Debug.Assert True	accepted	
+body	Const c(4) = 1	syntax	Syntax error
+body	Const c() = 1	syntax	Syntax error
+body	Foo(1) 2	syntax	Syntax error
+body	Foo(1), 2	semantic	Sub or Function not defined
+body	Foo (1), 2	semantic	Sub or Function not defined
+body	Foo 1,	syntax	Syntax error
+body	Foo 1, , 2	semantic	Sub or Function not defined
+body	Foo(1, )	syntax	Syntax error
+body	x = Foo(1, )	syntax	Syntax error
+body	x = Foo(, 1)	semantic	Sub or Function not defined
+body	Call Foo(1, )	syntax	Syntax error
+body	x = Foo(ByVal 1)	semantic	Sub or Function not defined
+body	Foo ByVal 1	semantic	Sub or Function not defined
+body	Call Foo(ByVal 1)	semantic	Sub or Function not defined
+body	Call Foo(ByRef x)	syntax	Syntax error
+body	Next	syntax	Next without For
+body	For i = 1 To 2\n    Next i i	syntax	Syntax error
+body	For i = 1 To 2\n    Next i, i	syntax	Next without For
+body	For i = 1 To 2\n    Next i,	syntax	Syntax error
+body	Sub S(ByVal Optional x As Long)\nEnd Sub	syntax	Expected End Sub
+body	Sub S(ByRef Optional x As Long)\nEnd Sub	syntax	Expected End Sub
+body	Sub S(Optional ByVal x As Long)\nEnd Sub	syntax	Expected End Sub
+body	Sub S(Optional ByRef x As Long)\nEnd Sub	syntax	Expected End Sub
+body	Sub S(ByVal ParamArray x() As Long)\nEnd Sub	syntax	Syntax error
+body	Sub S(ParamArray ByVal x() As Long)\nEnd Sub	syntax	Syntax error
+body	Sub S(Optional Optional x As Long)\nEnd Sub	syntax	Syntax error
+body	Sub S(ByVal ByVal x As Long)\nEnd Sub	syntax	Syntax error
+body	Sub S(ByVal ByRef x As Long)\nEnd Sub	syntax	Syntax error
+body	Sub S() Static\nEnd Sub	syntax	Expected End Sub
+body	Function F() As Long Static\nEnd Function	syntax	Expected End Sub
+body	Function F() As Long Long\nEnd Function	syntax	Syntax error
+body	Property Get F() As Long Long\nEnd Property	syntax	Syntax error
+body	Sub S() Long\nEnd Sub	syntax	Syntax error
+body	Type T\n    Xor(1) As Long\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    Private(1) As Long\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    Private As Long\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    Name(1) As Long\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    a(1) As Long\nEnd Type	syntax	Invalid inside procedure
+body	Dim s As String * 3 = "abc"	syntax	Syntax error
+body	Const MACRO_EXT As String * 3 = "pdm"	accepted	
+body	Const c As String * 2 + 1 = "abc"	syntax	Syntax error
+body	Const c As String * (2 + 1) = "abc"	syntax	Syntax error
+body	Const c As String * 3 = 5	accepted	
+body	Const c As String * 3	syntax	Syntax error
+body	Dim s As String * &H10	accepted	
+body	Dim s As String * 3.0	syntax	Syntax error
+body	Dim s As String * 3&	accepted	
+body	Dim s As String * 3%	accepted	
+body	Dim s As String * "3"	syntax	Syntax error
+body	Dim s As String * 0	syntax	Invalid length for fixed-length string
+body	Dim s As String * 65526	accepted	
+body	Dim s As String * 65527	syntax	Invalid length for fixed-length string
+body	Dim s As String * 1E1	syntax	Syntax error
+body	Dim s As String * True	syntax	Syntax error
+body	Dim s As String * Me	syntax	Syntax error
+body	Dim s As String * -1	syntax	Syntax error
+body	Dim s As String * 2 + 1	syntax	Syntax error
+body	Dim s As String * 2 * 3	syntax	Syntax error
+body	Dim s As String * 2 ^ 2	syntax	Syntax error
+body	Dim s As String * 7 Mod 3	syntax	Syntax error
+body	Dim s As String * 3 And 3	syntax	Syntax error
+body	Dim s As String * (2 + 1)	syntax	Syntax error
+module	x = 1 +* 2	syntax	Expected: expression
+module	x = (1	syntax	Expected: )
+module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
+module	x = o .Name	syntax	Expected: end of statement
+module	x = o\t.Name	syntax	Expected: end of statement
+module	x = o !Name	syntax	Expected: end of statement
+module	x = o! Name	syntax	Expected: end of statement
+module	x = (o) .Name	syntax	Expected: end of statement
+module	x = (o)! Name	syntax	Expected: end of statement
+module	x = o.Item! Name	syntax	Expected: end of statement
+module	x = o.Item !Name	syntax	Expected: end of statement
+module	x = o.Item ! Name	syntax	Expected: end of statement
+module	x = o.Item(1) .Name	syntax	Expected: end of statement
+module	x = o. Name	syntax	Invalid outside procedure
+module	x = o _\n        .Name	syntax	Invalid outside procedure
+module	x = o.Foo(1) _\n        .Bar	syntax	Invalid outside procedure
+module	x = o.Name _\n        .Name	syntax	Invalid outside procedure
+module	x = o. _\n        Name	syntax	Invalid outside procedure
+module	o.Foo _\n        .x0	syntax	Invalid outside procedure
+module	o.Foo .x0	syntax	Invalid outside procedure
+module	o.Foo .x0 & ", " & .y0	syntax	Invalid outside procedure
+module	o.Foo 1, .y0	syntax	Invalid outside procedure
+module	o .Foo	syntax	Invalid outside procedure
+module	o.Item .Name = 1	syntax	Invalid outside procedure
+module	o.Foo !Key	syntax	Invalid outside procedure
+module	x = o.Item!Name	syntax	Invalid outside procedure
+module	o.Item!Name = 1	syntax	Invalid outside procedure
+module	x = 1 2	syntax	Expected: end of statement
+module	Dim x As Integer Integer	syntax	Expected: end of statement
+module	x = (1 2)	syntax	Expected: )
+module	x = 1 +	syntax	Expected: expression
+module	x = o.	syntax	Expected: identifier or bracketed expression
+module	If True Then Probe Else x = False	syntax	Invalid outside procedure
+module	If True Then Me.Probe Else x = False	syntax	Invalid outside procedure
+module	If True Then Probe Else Probe 1	syntax	Invalid outside procedure
+module	If True Then Probe 1 Else Probe	syntax	Invalid outside procedure
+module	If True Then a = 1: Probe Else Probe	syntax	Invalid outside procedure
+module	Name "a" As "b"	syntax	Invalid outside procedure
+module	Name ("a") As ("b")	syntax	Invalid outside procedure
+module	Name("a") As "b"	syntax	Invalid outside procedure
+module	Name = 1	syntax	Invalid outside procedure
+module	Name.x = 1	syntax	Invalid outside procedure
+module	Name.x	syntax	Invalid outside procedure
+module	Name.x 1	syntax	Invalid outside procedure
+module	Name(1) = 2	syntax	Expected: As
+module	Width #1, 80	syntax	Invalid outside procedure
+module	Width 1, 80	syntax	Expected: #
+module	Width = 1	syntax	Invalid outside procedure
+module	Width (1) = 2	syntax	Expected: #
+module	Seek #1, 5	syntax	Invalid outside procedure
+module	Seek 1, 5	syntax	Invalid outside procedure
+module	Seek 1	syntax	Expected: list separator
+module	Line.x = 1	syntax	Invalid outside procedure
+module	Line (1,1)-(2,2)	syntax	Invalid outside procedure
+module	Line -(2,2)	syntax	Invalid outside procedure
+module	Line Input #1, x	syntax	Invalid outside procedure
+module	Line = 1	syntax	Invalid outside procedure
+module	Line (1)	syntax	Expected: list separator
+module	Resume	syntax	Invalid outside procedure
+module	Resume Next	syntax	Invalid outside procedure
+module	Resume :	syntax	Invalid outside procedure
+module	Resume Else	syntax	Expected: end of statement
+module	Scale	syntax	Invalid outside procedure
+module	Scale (1,1)-(2,2)	syntax	Invalid outside procedure
+module	Scale 1	syntax	Expected: (
+module	Scale(1)	syntax	Expected: list separator
+module	Property = 1	syntax	Invalid outside procedure
+module	Property.x = 1	syntax	Invalid outside procedure
+module	Property	syntax	Expected: Get or Let or Set
+module	Input #1, x	syntax	Invalid outside procedure
+module	Input #1	syntax	Expected: list separator
+module	Write #1, x	syntax	Invalid outside procedure
+module	Write #1	syntax	Expected: list separator
+module	Write #1,	syntax	Invalid outside procedure
+module	Print #1, x	syntax	Invalid outside procedure
+module	Print #1,	syntax	Invalid outside procedure
+module	Print #1	syntax	Expected: list separator
+module	Put #1, , x	syntax	Invalid outside procedure
+module	Get #1, , x	syntax	Invalid outside procedure
+module	Get F, offset, buf	syntax	Invalid outside procedure
+module	Mid(x, 1) = "a"	syntax	Invalid outside procedure
+module	Mid = 1	syntax	Invalid outside procedure
+module	Go To 10	syntax	Invalid outside procedure
+module	Go	syntax	Expected: To
+module	Go = 1	syntax	Invalid outside procedure
+module	Error 5	syntax	Invalid outside procedure
+module	Error = 1	syntax	Invalid outside procedure
+module	Lock #1	syntax	Invalid outside procedure
+module	Lock 1, 2	syntax	Invalid outside procedure
+module	Lock	syntax	Expected: expression
+module	Unlock #1, 1 To 2	syntax	Invalid outside procedure
+module	Call #1	syntax	Expected: identifier
+module	Call (1)	syntax	Expected: identifier
+module	Call Probe	syntax	Invalid outside procedure
+module	Call Probe()	syntax	Invalid outside procedure
+module	(o).x = 1	syntax	Expected: line number or label or statement or end of statement
+module	(o).x	syntax	Expected: line number or label or statement or end of statement
+module	(1) = 2	syntax	Expected: line number or label or statement or end of statement
+module	Set (o) = x	syntax	Expected: identifier
+module	Set o = x	syntax	Invalid outside procedure
+module	Let (x) = 1	syntax	Expected: identifier
+module	Erase (x)	syntax	Expected: variable
+module	Erase x	syntax	Invalid outside procedure
+module	Erase x, y	syntax	Invalid outside procedure
+module	Me = 1	syntax	Invalid outside procedure
+module	Me.x = 1	syntax	Invalid outside procedure
+module	Me	syntax	Expected: =
+module	Me 1	syntax	Expected: =
+module	Date = #1/1/2000#	syntax	Invalid outside procedure
+module	Date	syntax	Invalid outside procedure
+module	DoEvents	syntax	Invalid outside procedure
+module	DoEvents 1	syntax	Invalid outside procedure
+module	CDec(1)	syntax	Invalid outside procedure
+module	Close: x = 1	syntax	Invalid outside procedure
+module	Close #1	syntax	Invalid outside procedure
+module	Close 1	syntax	Invalid outside procedure
+module	Close	syntax	Invalid outside procedure
+module	Close #1, #2	syntax	Invalid outside procedure
+module	PSet (1, 2), vbRed	syntax	Invalid outside procedure
+module	PSet Step(1,2)	syntax	Invalid outside procedure
+module	Circle (1,2), 3	syntax	Invalid outside procedure
+module	Circle Step(1,2), 3	syntax	Invalid outside procedure
+module	Line (0,0)-(1,1), vbRed, B	syntax	Invalid outside procedure
+module	Line Step(1,1)-Step(2,2)	syntax	Invalid outside procedure
+module	Line -Step(2,2)	syntax	Invalid outside procedure
+module	Print "a"; x;	syntax	Invalid outside procedure
+module	Cls	syntax	Invalid outside procedure
+module	PSet	syntax	Expected: (
+module	Circle	syntax	Expected: (
+module	Debug.PSet (1,2)	syntax	Expected: Print or ? or Assert
+module	Debug.Foo "a"	syntax	Expected: Print or ? or Assert
+module	Debug.Print "a"	syntax	Invalid outside procedure
+module	Debug.Assert True	syntax	Invalid outside procedure
+module	Const c(4) = 1	syntax	Expected: As or =
+module	Const c() = 1	syntax	Expected: As or =
+module	Foo(1) 2	syntax	Expected: end of statement
+module	Foo(1), 2	syntax	Invalid outside procedure
+module	Foo (1), 2	syntax	Invalid outside procedure
+module	Foo 1,	syntax	Expected: expression
+module	Foo 1, , 2	syntax	Invalid outside procedure
+module	Foo(1, )	syntax	Expected: expression
+module	x = Foo(1, )	syntax	Expected: expression
+module	x = Foo(, 1)	syntax	Invalid outside procedure
+module	Call Foo(1, )	syntax	Expected: expression
+module	x = Foo(ByVal 1)	syntax	Invalid outside procedure
+module	Foo ByVal 1	syntax	Invalid outside procedure
+module	Call Foo(ByVal 1)	syntax	Invalid outside procedure
+module	Call Foo(ByRef x)	syntax	Expected: expression
+module	Next	syntax	Invalid outside procedure
+module	For i = 1 To 2\n    Next i i	syntax	Invalid outside procedure
+module	For i = 1 To 2\n    Next i, i	syntax	Invalid outside procedure
+module	For i = 1 To 2\n    Next i,	syntax	Invalid outside procedure
+module	Sub S(ByVal Optional x As Long)\nEnd Sub	accepted	
+module	Sub S(ByRef Optional x As Long)\nEnd Sub	accepted	
+module	Sub S(Optional ByVal x As Long)\nEnd Sub	accepted	
+module	Sub S(Optional ByRef x As Long)\nEnd Sub	accepted	
+module	Sub S(ByVal ParamArray x() As Long)\nEnd Sub	syntax	Expected: identifier
+module	Sub S(ParamArray ByVal x() As Long)\nEnd Sub	syntax	Expected: identifier
+module	Sub S(Optional Optional x As Long)\nEnd Sub	syntax	Expected: identifier
+module	Sub S(ByVal ByVal x As Long)\nEnd Sub	syntax	Expected: identifier
+module	Sub S(ByVal ByRef x As Long)\nEnd Sub	syntax	Expected: identifier
+module	Sub S() Static\nEnd Sub	accepted	
+module	Function F() As Long Static\nEnd Function	accepted	
+module	Function F() As Long Long\nEnd Function	syntax	Expected: end of statement
+module	Property Get F() As Long Long\nEnd Property	syntax	Expected: end of statement
+module	Sub S() Long\nEnd Sub	syntax	Expected: end of statement
+module	Type T\n    Xor(1) As Long\nEnd Type	syntax	Expected: line number or label or statement or end of statement
+module	Type T\n    Private(1) As Long\nEnd Type	syntax	Expected: identifier
+module	Type T\n    Private As Long\nEnd Type	accepted	
+module	Type T\n    Name(1) As Long\nEnd Type	syntax	Expected: expression
+module	Type T\n    a(1) As Long\nEnd Type	accepted	
+module	Dim s As String * 3 = "abc"	syntax	Expected: end of statement
+module	Const MACRO_EXT As String * 3 = "pdm"	accepted	
+module	Const c As String * 2 + 1 = "abc"	syntax	Expected: =
+module	Const c As String * (2 + 1) = "abc"	syntax	Expected: identifier
+module	Const c As String * 3 = 5	accepted	
+module	Const c As String * 3	syntax	Expected: =
+module	Dim s As String * &H10	accepted	
+module	Dim s As String * 3.0	syntax	Expected: identifier
+module	Dim s As String * 3&	accepted	
+module	Dim s As String * 3%	accepted	
+module	Dim s As String * "3"	syntax	Expected: identifier
+module	Dim s As String * 0	syntax	Invalid length for fixed-length string
+module	Dim s As String * 65526	accepted	
+module	Dim s As String * 65527	syntax	Invalid length for fixed-length string
+module	Dim s As String * 1E1	syntax	Expected: identifier
+module	Dim s As String * True	syntax	Expected: identifier
+module	Dim s As String * Me	syntax	Expected: identifier
+module	Dim s As String * -1	syntax	Expected: identifier
+module	Dim s As String * 2 + 1	syntax	Expected: end of statement
+module	Dim s As String * 2 * 3	syntax	Expected: end of statement
+module	Dim s As String * 2 ^ 2	syntax	Expected: end of statement
+module	Dim s As String * 7 Mod 3	syntax	Expected: end of statement
+module	Dim s As String * 3 And 3	syntax	Expected: end of statement
+module	Dim s As String * (2 + 1)	syntax	Expected: identifier

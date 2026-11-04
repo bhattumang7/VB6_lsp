@@ -1,0 +1,8 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each case
+# of cases.txt, where the two characters `\n` stand for a line break and `\t` for a tab.
+=== body bas
+Sub Probe()
+    {k}
+End Sub
+=== module bas
+{k}

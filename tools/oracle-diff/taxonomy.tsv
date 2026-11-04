@@ -41,3 +41,8 @@ Qualifier must be collection	semantic
 While without Wend	syntax
 Label not defined	syntax
 With object must be user-defined type, Object, or Variant	semantic
+Can't assign to array	semantic
+Invalid outside procedure	syntax
+Expected End Sub	syntax
+Invalid inside procedure	syntax
+Invalid length for fixed-length string	syntax

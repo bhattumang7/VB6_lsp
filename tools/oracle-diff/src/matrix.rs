@@ -54,7 +54,12 @@ pub fn parse_words(text: &str) -> Vec<String> {
 
 /// The source of `template` with `word` in place.
 pub fn instantiate(template: &Template, word: &str) -> String {
-    template.text.replace("{k}", word)
+    template.text.replace("{k}", &unescape(word))
+}
+
+/// `\n` and `\t` in a word stand for a line break and a tab.
+pub fn unescape(word: &str) -> String {
+    word.replace("\\n", "\n").replace("\\t", "\t")
 }
 
 /// What the compiler made of one instantiated template.

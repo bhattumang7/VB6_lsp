@@ -6953,3 +6953,918 @@ startindexed	Alias	semantic	Sub or Function not defined
 startindexed	AddressOf	syntax	Syntax error
 startindexed	Access	semantic	Sub or Function not defined
 startindexed	Abs	syntax	Syntax error
+tmemberbounds	Xor	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Write	syntax	Expected: #
+tmemberbounds	WithEvents	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	With	syntax	Expected: end of statement
+tmemberbounds	Width	syntax	Expected: #
+tmemberbounds	While	syntax	Expected: end of statement
+tmemberbounds	Wend	syntax	Expected: end of statement
+tmemberbounds	Variant	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Until	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Unknown	accepted	
+tmemberbounds	Unlock	syntax	Expected: end of statement
+tmemberbounds	Unload	accepted	
+tmemberbounds	UBound	syntax	Expected: identifier
+tmemberbounds	TypeOf	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Type	syntax	Expected: identifier
+tmemberbounds	True	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	To	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Then	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Text	accepted	
+tmemberbounds	Tab	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Sub	syntax	Expected: identifier
+tmemberbounds	String	syntax	Expected: identifier
+tmemberbounds	StrComp	accepted	
+tmemberbounds	Stop	syntax	Expected: end of statement
+tmemberbounds	Step	accepted	
+tmemberbounds	Static	syntax	Expected: identifier
+tmemberbounds	Spc	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Single	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Shared	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Sgn	syntax	Expected: identifier
+tmemberbounds	Set	syntax	Expected: identifier
+tmemberbounds	Select	syntax	Expected: Case
+tmemberbounds	Seek	syntax	Expected: list separator
+tmemberbounds	Scale	syntax	Expected: list separator
+tmemberbounds	RSet	syntax	Expected: variable
+tmemberbounds	RGB	accepted	
+tmemberbounds	Return	syntax	Expected: end of statement
+tmemberbounds	Resume	syntax	Expected: end of statement
+tmemberbounds	Rem	syntax	User-defined type without members not allowed
+tmemberbounds	ReDim	syntax	Expected: identifier
+tmemberbounds	Read	accepted	
+tmemberbounds	Randomize	accepted	
+tmemberbounds	Random	accepted	
+tmemberbounds	RaiseEvent	syntax	Only valid in object module
+tmemberbounds	Put	syntax	Expected: list separator
+tmemberbounds	Public	syntax	Expected: identifier
+tmemberbounds	PSet	syntax	Expected: list separator
+tmemberbounds	Property	syntax	Expected: Get or Let or Set
+tmemberbounds	Private	syntax	Expected: identifier
+tmemberbounds	Print	syntax	Expected: expression
+tmemberbounds	Preserve	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	ParamArray	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Output	accepted	
+tmemberbounds	Or	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Optional	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Option	syntax	Expected: Base or Compare or Explicit or Private
+tmemberbounds	Open	syntax	Expected: expression
+tmemberbounds	On	syntax	Expected: Go
+tmemberbounds	Object	accepted	
+tmemberbounds	Null	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Nothing	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Not	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Next	syntax	Expected: variable
+tmemberbounds	New	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Name	syntax	Expected: expression
+tmemberbounds	Module	accepted	
+tmemberbounds	Mod	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	MidB	syntax	Expected: variable
+tmemberbounds	Mid	syntax	Expected: variable
+tmemberbounds	Me	accepted	
+tmemberbounds	LSet	syntax	Expected: variable
+tmemberbounds	Loop	syntax	Expected: While or Until or end of statement
+tmemberbounds	Long	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Lock	syntax	Expected: end of statement
+tmemberbounds	Local	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Load	accepted	
+tmemberbounds	LINEINPUT	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Line	syntax	Expected: list separator
+tmemberbounds	Like	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Lib	accepted	
+tmemberbounds	Let	syntax	Expected: identifier
+tmemberbounds	LenB	syntax	Expected: identifier
+tmemberbounds	Len	syntax	Expected: identifier
+tmemberbounds	Left	accepted	
+tmemberbounds	LBound	syntax	Expected: identifier
+tmemberbounds	Is	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Integer	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Int	syntax	Expected: identifier
+tmemberbounds	InStrB	accepted	
+tmemberbounds	InStr	accepted	
+tmemberbounds	InputB	syntax	Expected: #
+tmemberbounds	Input	syntax	Expected: #
+tmemberbounds	In	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Implements	syntax	Only valid in object module
+tmemberbounds	Imp	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	If	syntax	Expected: Then or GoTo
+tmemberbounds	GoTo	syntax	Expected: line number or label
+tmemberbounds	GoSub	syntax	Expected: line number or label
+tmemberbounds	Go	syntax	Expected: To
+tmemberbounds	Global	syntax	Expected: identifier
+tmemberbounds	Get	syntax	Expected: list separator
+tmemberbounds	Function	syntax	Expected: identifier
+tmemberbounds	Friend	syntax	Only valid in object module
+tmemberbounds	FreeFile	accepted	
+tmemberbounds	Format	accepted	
+tmemberbounds	For	syntax	Expected: variable
+tmemberbounds	Fix	syntax	Expected: identifier
+tmemberbounds	False	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Explicit	accepted	
+tmemberbounds	Exit	syntax	Expected: Do or For or Sub or Function or Property
+tmemberbounds	Event	syntax	Only valid in object module
+tmemberbounds	Error	syntax	Expected: end of statement
+tmemberbounds	Erase	syntax	Expected: variable
+tmemberbounds	Eqv	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Enum	syntax	Expected: identifier
+tmemberbounds	EndIf	syntax	Expected: end of statement
+tmemberbounds	End	syntax	Expected: If or Select or Sub or Function or Property or Type or With or Enum or end of statement
+tmemberbounds	Empty	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	ElseIf	syntax	Expected: Then
+tmemberbounds	Else	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Each	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Double	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	DoEvents	accepted	
+tmemberbounds	Do	syntax	Expected: While or Until or end of statement
+tmemberbounds	Dir	accepted	
+tmemberbounds	Dim	syntax	Expected: identifier
+tmemberbounds	DefVar	syntax	Expected: letter
+tmemberbounds	DefStr	syntax	Expected: letter
+tmemberbounds	DefSng	syntax	Expected: letter
+tmemberbounds	DefObj	syntax	Expected: letter
+tmemberbounds	DefLng	syntax	Expected: letter
+tmemberbounds	DefInt	syntax	Expected: letter
+tmemberbounds	DefDbl	syntax	Expected: letter
+tmemberbounds	DefDec	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	DefDate	syntax	Expected: letter
+tmemberbounds	DefCur	syntax	Expected: letter
+tmemberbounds	DefByte	syntax	Expected: letter
+tmemberbounds	DefBool	syntax	Expected: letter
+tmemberbounds	Declare	syntax	Expected: Sub or Function
+tmemberbounds	Decimal	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Debug	syntax	Expected: .
+tmemberbounds	Date	accepted	
+tmemberbounds	Database	accepted	
+tmemberbounds	Currency	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	CVErr	syntax	Expected: identifier
+tmemberbounds	CVDate	accepted	
+tmemberbounds	CVar	syntax	Expected: identifier
+tmemberbounds	CurDir	accepted	
+tmemberbounds	CStr	syntax	Expected: identifier
+tmemberbounds	CSng	syntax	Expected: identifier
+tmemberbounds	Const	syntax	Expected: identifier
+tmemberbounds	Compare	accepted	
+tmemberbounds	Close	syntax	Expected: list separator or end of statement
+tmemberbounds	CLng	syntax	Expected: identifier
+tmemberbounds	Circle	syntax	Expected: list separator
+tmemberbounds	CInt	syntax	Expected: identifier
+tmemberbounds	ChDir	accepted	
+tmemberbounds	CDecl	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	CDbl	syntax	Expected: identifier
+tmemberbounds	CDec	accepted	
+tmemberbounds	CDate	syntax	Expected: identifier
+tmemberbounds	CCur	syntax	Expected: identifier
+tmemberbounds	CByte	syntax	Expected: identifier
+tmemberbounds	CBool	syntax	Expected: identifier
+tmemberbounds	Case	syntax	Expected: end of statement
+tmemberbounds	Call	syntax	Expected: identifier
+tmemberbounds	ByVal	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Byte	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	ByRef	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Boolean	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Binary	accepted	
+tmemberbounds	BF	accepted	
+tmemberbounds	Base	accepted	
+tmemberbounds	Assert	accepted	
+tmemberbounds	As	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Array	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Append	accepted	
+tmemberbounds	Any	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	And	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Alias	accepted	
+tmemberbounds	AddressOf	syntax	Expected: line number or label or statement or end of statement
+tmemberbounds	Access	accepted	
+tmemberbounds	Abs	syntax	Expected: identifier
+enumvalue	Xor	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Write	syntax	Expected: #
+enumvalue	WithEvents	syntax	Expected: line number or label or statement or end of statement
+enumvalue	With	syntax	Expected: expression
+enumvalue	Width	accepted	
+enumvalue	While	syntax	Expected: expression
+enumvalue	Wend	syntax	Expected: end of statement
+enumvalue	Variant	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Until	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Unknown	accepted	
+enumvalue	Unlock	syntax	Expected: expression
+enumvalue	Unload	accepted	
+enumvalue	UBound	syntax	Expected: identifier
+enumvalue	TypeOf	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Type	syntax	Expected: identifier
+enumvalue	True	syntax	Expected: line number or label or statement or end of statement
+enumvalue	To	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Then	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Text	accepted	
+enumvalue	Tab	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Sub	syntax	Expected: identifier
+enumvalue	String	syntax	Expected: identifier
+enumvalue	StrComp	accepted	
+enumvalue	Stop	syntax	Expected: end of statement
+enumvalue	Step	accepted	
+enumvalue	Static	syntax	Expected: identifier
+enumvalue	Spc	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Single	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Shared	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Sgn	syntax	Expected: identifier
+enumvalue	Set	syntax	Expected: identifier
+enumvalue	Select	syntax	Expected: Case
+enumvalue	Seek	syntax	Expected: expression
+enumvalue	Scale	syntax	Expected: (
+enumvalue	RSet	syntax	Expected: variable
+enumvalue	RGB	accepted	
+enumvalue	Return	syntax	Expected: end of statement
+enumvalue	Resume	syntax	Expected: end of statement
+enumvalue	Rem	syntax	Enum without members not allowed
+enumvalue	ReDim	syntax	Expected: identifier
+enumvalue	Read	accepted	
+enumvalue	Randomize	accepted	
+enumvalue	Random	accepted	
+enumvalue	RaiseEvent	syntax	Only valid in object module
+enumvalue	Put	syntax	Expected: expression
+enumvalue	Public	syntax	Expected: identifier
+enumvalue	PSet	syntax	Expected: (
+enumvalue	Property	accepted	
+enumvalue	Private	syntax	Expected: identifier
+enumvalue	Print	syntax	Expected: expression
+enumvalue	Preserve	syntax	Expected: line number or label or statement or end of statement
+enumvalue	ParamArray	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Output	accepted	
+enumvalue	Or	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Optional	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Option	syntax	Expected: Base or Compare or Explicit or Private
+enumvalue	Open	syntax	Expected: expression
+enumvalue	On	syntax	Expected: expression
+enumvalue	Object	accepted	
+enumvalue	Null	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Nothing	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Not	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Next	syntax	Expected: variable
+enumvalue	New	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Name	accepted	
+enumvalue	Module	accepted	
+enumvalue	Mod	syntax	Expected: line number or label or statement or end of statement
+enumvalue	MidB	accepted	
+enumvalue	Mid	accepted	
+enumvalue	Me	unanswered	compiler terminated abnormally, exit -1073741819
+enumvalue	LSet	syntax	Expected: variable
+enumvalue	Loop	syntax	Expected: While or Until or end of statement
+enumvalue	Long	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Lock	syntax	Expected: expression
+enumvalue	Local	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Load	accepted	
+enumvalue	LINEINPUT	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Line	accepted	
+enumvalue	Like	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Lib	accepted	
+enumvalue	Let	syntax	Expected: identifier
+enumvalue	LenB	syntax	Expected: identifier
+enumvalue	Len	syntax	Expected: identifier
+enumvalue	Left	accepted	
+enumvalue	LBound	syntax	Expected: identifier
+enumvalue	Is	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Integer	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Int	syntax	Expected: identifier
+enumvalue	InStrB	accepted	
+enumvalue	InStr	accepted	
+enumvalue	InputB	syntax	Expected: #
+enumvalue	Input	syntax	Expected: #
+enumvalue	In	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Implements	syntax	Only valid in object module
+enumvalue	Imp	syntax	Expected: line number or label or statement or end of statement
+enumvalue	If	syntax	Expected: expression
+enumvalue	GoTo	syntax	Expected: line number or label
+enumvalue	GoSub	syntax	Expected: line number or label
+enumvalue	Go	accepted	
+enumvalue	Global	syntax	Expected: identifier
+enumvalue	Get	syntax	Expected: expression
+enumvalue	Function	syntax	Expected: identifier
+enumvalue	Friend	syntax	Only valid in object module
+enumvalue	FreeFile	accepted	
+enumvalue	Format	accepted	
+enumvalue	For	syntax	Expected: variable
+enumvalue	Fix	syntax	Expected: identifier
+enumvalue	False	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Explicit	accepted	
+enumvalue	Exit	syntax	Expected: Do or For or Sub or Function or Property
+enumvalue	Event	syntax	Only valid in object module
+enumvalue	Error	accepted	
+enumvalue	Erase	syntax	Expected: variable
+enumvalue	Eqv	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Enum	syntax	Expected: identifier
+enumvalue	EndIf	syntax	Expected: end of statement
+enumvalue	End	syntax	Expected: If or Select or Sub or Function or Property or Type or With or Enum or end of statement
+enumvalue	Empty	syntax	Expected: line number or label or statement or end of statement
+enumvalue	ElseIf	syntax	Expected: expression
+enumvalue	Else	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Each	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Double	syntax	Expected: line number or label or statement or end of statement
+enumvalue	DoEvents	accepted	
+enumvalue	Do	syntax	Expected: While or Until or end of statement
+enumvalue	Dir	accepted	
+enumvalue	Dim	syntax	Expected: identifier
+enumvalue	DefVar	syntax	Expected: letter
+enumvalue	DefStr	syntax	Expected: letter
+enumvalue	DefSng	syntax	Expected: letter
+enumvalue	DefObj	syntax	Expected: letter
+enumvalue	DefLng	syntax	Expected: letter
+enumvalue	DefInt	syntax	Expected: letter
+enumvalue	DefDbl	syntax	Expected: letter
+enumvalue	DefDec	syntax	Expected: line number or label or statement or end of statement
+enumvalue	DefDate	syntax	Expected: letter
+enumvalue	DefCur	syntax	Expected: letter
+enumvalue	DefByte	syntax	Expected: letter
+enumvalue	DefBool	syntax	Expected: letter
+enumvalue	Declare	syntax	Expected: Sub or Function
+enumvalue	Decimal	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Debug	syntax	Expected: .
+enumvalue	Date	accepted	
+enumvalue	Database	accepted	
+enumvalue	Currency	syntax	Expected: line number or label or statement or end of statement
+enumvalue	CVErr	syntax	Expected: identifier
+enumvalue	CVDate	accepted	
+enumvalue	CVar	syntax	Expected: identifier
+enumvalue	CurDir	accepted	
+enumvalue	CStr	syntax	Expected: identifier
+enumvalue	CSng	syntax	Expected: identifier
+enumvalue	Const	syntax	Expected: identifier
+enumvalue	Compare	accepted	
+enumvalue	Close	syntax	Expected: expression
+enumvalue	CLng	syntax	Expected: identifier
+enumvalue	Circle	syntax	Expected: (
+enumvalue	CInt	syntax	Expected: identifier
+enumvalue	ChDir	accepted	
+enumvalue	CDecl	syntax	Expected: line number or label or statement or end of statement
+enumvalue	CDbl	syntax	Expected: identifier
+enumvalue	CDec	accepted	
+enumvalue	CDate	syntax	Expected: identifier
+enumvalue	CCur	syntax	Expected: identifier
+enumvalue	CByte	syntax	Expected: identifier
+enumvalue	CBool	syntax	Expected: identifier
+enumvalue	Case	syntax	Invalid inside Enum
+enumvalue	Call	syntax	Expected: identifier
+enumvalue	ByVal	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Byte	syntax	Expected: line number or label or statement or end of statement
+enumvalue	ByRef	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Boolean	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Binary	accepted	
+enumvalue	BF	accepted	
+enumvalue	Base	accepted	
+enumvalue	Assert	accepted	
+enumvalue	As	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Array	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Append	accepted	
+enumvalue	Any	syntax	Expected: line number or label or statement or end of statement
+enumvalue	And	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Alias	accepted	
+enumvalue	AddressOf	syntax	Expected: line number or label or statement or end of statement
+enumvalue	Access	accepted	
+enumvalue	Abs	syntax	Expected: identifier
+constarr	Xor	syntax	Expected: identifier
+constarr	Write	syntax	Expected: identifier
+constarr	WithEvents	syntax	Expected: identifier
+constarr	With	syntax	Expected: identifier
+constarr	Width	syntax	Expected: As or =
+constarr	While	syntax	Expected: identifier
+constarr	Wend	syntax	Expected: identifier
+constarr	Variant	syntax	Expected: identifier
+constarr	Until	syntax	Expected: identifier
+constarr	Unknown	syntax	Expected: As or =
+constarr	Unlock	syntax	Expected: identifier
+constarr	Unload	syntax	Expected: As or =
+constarr	UBound	syntax	Expected: identifier
+constarr	TypeOf	syntax	Expected: identifier
+constarr	Type	syntax	Expected: identifier
+constarr	True	syntax	Expected: identifier
+constarr	To	syntax	Expected: identifier
+constarr	Then	syntax	Expected: identifier
+constarr	Text	syntax	Expected: As or =
+constarr	Tab	syntax	Expected: identifier
+constarr	Sub	syntax	Expected: identifier
+constarr	String	syntax	Expected: identifier
+constarr	StrComp	syntax	Expected: As or =
+constarr	Stop	syntax	Expected: identifier
+constarr	Step	syntax	Expected: As or =
+constarr	Static	syntax	Expected: identifier
+constarr	Spc	syntax	Expected: identifier
+constarr	Single	syntax	Expected: identifier
+constarr	Shared	syntax	Expected: identifier
+constarr	Sgn	syntax	Expected: identifier
+constarr	Set	syntax	Expected: identifier
+constarr	Select	syntax	Expected: identifier
+constarr	Seek	syntax	Expected: identifier
+constarr	Scale	syntax	Expected: identifier
+constarr	RSet	syntax	Expected: identifier
+constarr	RGB	syntax	Expected: As or =
+constarr	Return	syntax	Expected: identifier
+constarr	Resume	syntax	Expected: identifier
+constarr	Rem	syntax	Expected: identifier
+constarr	ReDim	syntax	Expected: identifier
+constarr	Read	syntax	Expected: As or =
+constarr	Randomize	syntax	Expected: As or =
+constarr	Random	syntax	Expected: As or =
+constarr	RaiseEvent	syntax	Expected: identifier
+constarr	Put	syntax	Expected: identifier
+constarr	Public	syntax	Expected: identifier
+constarr	PSet	syntax	Expected: identifier
+constarr	Property	syntax	Expected: As or =
+constarr	Private	syntax	Expected: identifier
+constarr	Print	syntax	Expected: identifier
+constarr	Preserve	syntax	Expected: identifier
+constarr	ParamArray	syntax	Expected: identifier
+constarr	Output	syntax	Expected: As or =
+constarr	Or	syntax	Expected: identifier
+constarr	Optional	syntax	Expected: identifier
+constarr	Option	syntax	Expected: identifier
+constarr	Open	syntax	Expected: identifier
+constarr	On	syntax	Expected: identifier
+constarr	Object	syntax	Expected: As or =
+constarr	Null	syntax	Expected: identifier
+constarr	Nothing	syntax	Expected: identifier
+constarr	Not	syntax	Expected: identifier
+constarr	Next	syntax	Expected: identifier
+constarr	New	syntax	Expected: identifier
+constarr	Name	syntax	Expected: As or =
+constarr	Module	syntax	Expected: As or =
+constarr	Mod	syntax	Expected: identifier
+constarr	MidB	syntax	Expected: As or =
+constarr	Mid	syntax	Expected: As or =
+constarr	Me	syntax	Expected: identifier
+constarr	LSet	syntax	Expected: identifier
+constarr	Loop	syntax	Expected: identifier
+constarr	Long	syntax	Expected: identifier
+constarr	Lock	syntax	Expected: identifier
+constarr	Local	syntax	Expected: identifier
+constarr	Load	syntax	Expected: As or =
+constarr	LINEINPUT	syntax	Expected: identifier
+constarr	Line	syntax	Expected: As or =
+constarr	Like	syntax	Expected: identifier
+constarr	Lib	syntax	Expected: As or =
+constarr	Let	syntax	Expected: identifier
+constarr	LenB	syntax	Expected: identifier
+constarr	Len	syntax	Expected: identifier
+constarr	Left	syntax	Expected: As or =
+constarr	LBound	syntax	Expected: identifier
+constarr	Is	syntax	Expected: identifier
+constarr	Integer	syntax	Expected: identifier
+constarr	Int	syntax	Expected: identifier
+constarr	InStrB	syntax	Expected: As or =
+constarr	InStr	syntax	Expected: As or =
+constarr	InputB	syntax	Expected: identifier
+constarr	Input	syntax	Expected: identifier
+constarr	In	syntax	Expected: identifier
+constarr	Implements	syntax	Expected: identifier
+constarr	Imp	syntax	Expected: identifier
+constarr	If	syntax	Expected: identifier
+constarr	GoTo	syntax	Expected: identifier
+constarr	GoSub	syntax	Expected: identifier
+constarr	Go	syntax	Expected: As or =
+constarr	Global	syntax	Expected: identifier
+constarr	Get	syntax	Expected: identifier
+constarr	Function	syntax	Expected: identifier
+constarr	Friend	syntax	Expected: identifier
+constarr	FreeFile	syntax	Expected: As or =
+constarr	Format	syntax	Expected: As or =
+constarr	For	syntax	Expected: identifier
+constarr	Fix	syntax	Expected: identifier
+constarr	False	syntax	Expected: identifier
+constarr	Explicit	syntax	Expected: As or =
+constarr	Exit	syntax	Expected: identifier
+constarr	Event	syntax	Expected: identifier
+constarr	Error	syntax	Expected: As or =
+constarr	Erase	syntax	Expected: identifier
+constarr	Eqv	syntax	Expected: identifier
+constarr	Enum	syntax	Expected: identifier
+constarr	EndIf	syntax	Expected: identifier
+constarr	End	syntax	Expected: identifier
+constarr	Empty	syntax	Expected: identifier
+constarr	ElseIf	syntax	Expected: identifier
+constarr	Else	syntax	Expected: identifier
+constarr	Each	syntax	Expected: identifier
+constarr	Double	syntax	Expected: identifier
+constarr	DoEvents	syntax	Expected: identifier
+constarr	Do	syntax	Expected: identifier
+constarr	Dir	syntax	Expected: As or =
+constarr	Dim	syntax	Expected: identifier
+constarr	DefVar	syntax	Expected: identifier
+constarr	DefStr	syntax	Expected: identifier
+constarr	DefSng	syntax	Expected: identifier
+constarr	DefObj	syntax	Expected: identifier
+constarr	DefLng	syntax	Expected: identifier
+constarr	DefInt	syntax	Expected: identifier
+constarr	DefDbl	syntax	Expected: identifier
+constarr	DefDec	syntax	Expected: identifier
+constarr	DefDate	syntax	Expected: identifier
+constarr	DefCur	syntax	Expected: identifier
+constarr	DefByte	syntax	Expected: identifier
+constarr	DefBool	syntax	Expected: identifier
+constarr	Declare	syntax	Expected: identifier
+constarr	Decimal	syntax	Expected: identifier
+constarr	Debug	syntax	Expected: identifier
+constarr	Date	syntax	Expected: identifier
+constarr	Database	syntax	Expected: As or =
+constarr	Currency	syntax	Expected: identifier
+constarr	CVErr	syntax	Expected: identifier
+constarr	CVDate	syntax	Expected: As or =
+constarr	CVar	syntax	Expected: identifier
+constarr	CurDir	syntax	Expected: As or =
+constarr	CStr	syntax	Expected: identifier
+constarr	CSng	syntax	Expected: identifier
+constarr	Const	syntax	Expected: identifier
+constarr	Compare	syntax	Expected: As or =
+constarr	Close	syntax	Expected: identifier
+constarr	CLng	syntax	Expected: identifier
+constarr	Circle	syntax	Expected: identifier
+constarr	CInt	syntax	Expected: identifier
+constarr	ChDir	syntax	Expected: As or =
+constarr	CDecl	syntax	Expected: identifier
+constarr	CDbl	syntax	Expected: identifier
+constarr	CDec	syntax	Expected: identifier
+constarr	CDate	syntax	Expected: identifier
+constarr	CCur	syntax	Expected: identifier
+constarr	CByte	syntax	Expected: identifier
+constarr	CBool	syntax	Expected: identifier
+constarr	Case	syntax	Expected: identifier
+constarr	Call	syntax	Expected: identifier
+constarr	ByVal	syntax	Expected: identifier
+constarr	Byte	syntax	Expected: identifier
+constarr	ByRef	syntax	Expected: identifier
+constarr	Boolean	syntax	Expected: identifier
+constarr	Binary	syntax	Expected: As or =
+constarr	BF	syntax	Expected: As or =
+constarr	Base	syntax	Expected: As or =
+constarr	Assert	syntax	Expected: As or =
+constarr	As	syntax	Expected: New or type name
+constarr	Array	syntax	Expected: identifier
+constarr	Append	syntax	Expected: As or =
+constarr	Any	syntax	Expected: identifier
+constarr	And	syntax	Expected: identifier
+constarr	Alias	syntax	Expected: As or =
+constarr	AddressOf	syntax	Expected: identifier
+constarr	Access	syntax	Expected: As or =
+constarr	Abs	syntax	Expected: identifier
+dimas	Xor	syntax	Expected: New or type name
+dimas	Write	syntax	Expected: New or type name
+dimas	WithEvents	syntax	Expected: New or type name
+dimas	With	syntax	Expected: New or type name
+dimas	Width	semantic	User-defined type not defined
+dimas	While	syntax	Expected: New or type name
+dimas	Wend	syntax	Expected: New or type name
+dimas	Variant	accepted	
+dimas	Until	syntax	Expected: New or type name
+dimas	Unknown	semantic	User-defined type not defined
+dimas	Unlock	syntax	Expected: New or type name
+dimas	Unload	semantic	User-defined type not defined
+dimas	UBound	syntax	Expected: New or type name
+dimas	TypeOf	syntax	Expected: New or type name
+dimas	Type	syntax	Expected: New or type name
+dimas	True	syntax	Expected: New or type name
+dimas	To	syntax	Expected: New or type name
+dimas	Then	syntax	Expected: New or type name
+dimas	Text	semantic	User-defined type not defined
+dimas	Tab	syntax	Expected: New or type name
+dimas	Sub	syntax	Expected: New or type name
+dimas	String	accepted	
+dimas	StrComp	semantic	User-defined type not defined
+dimas	Stop	syntax	Expected: New or type name
+dimas	Step	semantic	User-defined type not defined
+dimas	Static	syntax	Expected: New or type name
+dimas	Spc	syntax	Expected: New or type name
+dimas	Single	accepted	
+dimas	Shared	syntax	Expected: New or type name
+dimas	Sgn	syntax	Expected: New or type name
+dimas	Set	syntax	Expected: New or type name
+dimas	Select	syntax	Expected: New or type name
+dimas	Seek	syntax	Expected: New or type name
+dimas	Scale	syntax	Expected: New or type name
+dimas	RSet	syntax	Expected: New or type name
+dimas	RGB	semantic	User-defined type not defined
+dimas	Return	syntax	Expected: New or type name
+dimas	Resume	syntax	Expected: New or type name
+dimas	Rem	syntax	Expected: New or type name
+dimas	ReDim	syntax	Expected: New or type name
+dimas	Read	semantic	User-defined type not defined
+dimas	Randomize	semantic	User-defined type not defined
+dimas	Random	semantic	User-defined type not defined
+dimas	RaiseEvent	syntax	Expected: New or type name
+dimas	Put	syntax	Expected: New or type name
+dimas	Public	syntax	Expected: New or type name
+dimas	PSet	syntax	Expected: New or type name
+dimas	Property	semantic	User-defined type not defined
+dimas	Private	syntax	Expected: New or type name
+dimas	Print	syntax	Expected: New or type name
+dimas	Preserve	syntax	Expected: New or type name
+dimas	ParamArray	syntax	Expected: New or type name
+dimas	Output	semantic	User-defined type not defined
+dimas	Or	syntax	Expected: New or type name
+dimas	Optional	syntax	Expected: New or type name
+dimas	Option	syntax	Expected: New or type name
+dimas	Open	syntax	Expected: New or type name
+dimas	On	syntax	Expected: New or type name
+dimas	Object	accepted	
+dimas	Null	syntax	Expected: New or type name
+dimas	Nothing	syntax	Expected: New or type name
+dimas	Not	syntax	Expected: New or type name
+dimas	Next	syntax	Expected: New or type name
+dimas	New	syntax	Expected: identifier
+dimas	Name	semantic	User-defined type not defined
+dimas	Module	semantic	User-defined type not defined
+dimas	Mod	syntax	Expected: New or type name
+dimas	MidB	semantic	User-defined type not defined
+dimas	Mid	semantic	User-defined type not defined
+dimas	Me	syntax	Expected: New or type name
+dimas	LSet	syntax	Expected: New or type name
+dimas	Loop	syntax	Expected: New or type name
+dimas	Long	accepted	
+dimas	Lock	syntax	Expected: New or type name
+dimas	Local	syntax	Expected: New or type name
+dimas	Load	semantic	User-defined type not defined
+dimas	LINEINPUT	syntax	Expected: New or type name
+dimas	Line	accepted	
+dimas	Like	syntax	Expected: New or type name
+dimas	Lib	semantic	User-defined type not defined
+dimas	Let	syntax	Expected: New or type name
+dimas	LenB	syntax	Expected: New or type name
+dimas	Len	syntax	Expected: New or type name
+dimas	Left	semantic	User-defined type not defined
+dimas	LBound	syntax	Expected: New or type name
+dimas	Is	syntax	Expected: New or type name
+dimas	Integer	accepted	
+dimas	Int	syntax	Expected: New or type name
+dimas	InStrB	semantic	User-defined type not defined
+dimas	InStr	semantic	User-defined type not defined
+dimas	InputB	syntax	Expected: New or type name
+dimas	Input	syntax	Expected: New or type name
+dimas	In	syntax	Expected: New or type name
+dimas	Implements	syntax	Expected: New or type name
+dimas	Imp	syntax	Expected: New or type name
+dimas	If	syntax	Expected: New or type name
+dimas	GoTo	syntax	Expected: New or type name
+dimas	GoSub	syntax	Expected: New or type name
+dimas	Go	semantic	User-defined type not defined
+dimas	Global	syntax	Expected: New or type name
+dimas	Get	syntax	Expected: New or type name
+dimas	Function	syntax	Expected: New or type name
+dimas	Friend	syntax	Expected: New or type name
+dimas	FreeFile	semantic	User-defined type not defined
+dimas	Format	semantic	User-defined type not defined
+dimas	For	syntax	Expected: New or type name
+dimas	Fix	syntax	Expected: New or type name
+dimas	False	syntax	Expected: New or type name
+dimas	Explicit	semantic	User-defined type not defined
+dimas	Exit	syntax	Expected: New or type name
+dimas	Event	syntax	Expected: New or type name
+dimas	Error	semantic	User-defined type not defined
+dimas	Erase	syntax	Expected: New or type name
+dimas	Eqv	syntax	Expected: New or type name
+dimas	Enum	syntax	Expected: New or type name
+dimas	EndIf	syntax	Expected: New or type name
+dimas	End	syntax	Expected: New or type name
+dimas	Empty	syntax	Expected: New or type name
+dimas	ElseIf	syntax	Expected: New or type name
+dimas	Else	syntax	Expected: New or type name
+dimas	Each	syntax	Expected: New or type name
+dimas	Double	accepted	
+dimas	DoEvents	syntax	Expected: New or type name
+dimas	Do	syntax	Expected: New or type name
+dimas	Dir	semantic	User-defined type not defined
+dimas	Dim	syntax	Expected: New or type name
+dimas	DefVar	syntax	Expected: New or type name
+dimas	DefStr	syntax	Expected: New or type name
+dimas	DefSng	syntax	Expected: New or type name
+dimas	DefObj	syntax	Expected: New or type name
+dimas	DefLng	syntax	Expected: New or type name
+dimas	DefInt	syntax	Expected: New or type name
+dimas	DefDbl	syntax	Expected: New or type name
+dimas	DefDec	syntax	Expected: New or type name
+dimas	DefDate	syntax	Expected: New or type name
+dimas	DefCur	syntax	Expected: New or type name
+dimas	DefByte	syntax	Expected: New or type name
+dimas	DefBool	syntax	Expected: New or type name
+dimas	Declare	syntax	Expected: New or type name
+dimas	Decimal	syntax	Expected: New or type name
+dimas	Debug	syntax	Expected: New or type name
+dimas	Date	accepted	
+dimas	Database	semantic	User-defined type not defined
+dimas	Currency	accepted	
+dimas	CVErr	syntax	Expected: New or type name
+dimas	CVDate	semantic	User-defined type not defined
+dimas	CVar	syntax	Expected: New or type name
+dimas	CurDir	semantic	User-defined type not defined
+dimas	CStr	syntax	Expected: New or type name
+dimas	CSng	syntax	Expected: New or type name
+dimas	Const	syntax	Expected: New or type name
+dimas	Compare	semantic	User-defined type not defined
+dimas	Close	syntax	Expected: New or type name
+dimas	CLng	syntax	Expected: New or type name
+dimas	Circle	syntax	Expected: New or type name
+dimas	CInt	syntax	Expected: New or type name
+dimas	ChDir	semantic	User-defined type not defined
+dimas	CDecl	syntax	Expected: New or type name
+dimas	CDbl	syntax	Expected: New or type name
+dimas	CDec	syntax	Expected: New or type name
+dimas	CDate	syntax	Expected: New or type name
+dimas	CCur	syntax	Expected: New or type name
+dimas	CByte	syntax	Expected: New or type name
+dimas	CBool	syntax	Expected: New or type name
+dimas	Case	syntax	Expected: New or type name
+dimas	Call	syntax	Expected: New or type name
+dimas	ByVal	syntax	Expected: New or type name
+dimas	Byte	accepted	
+dimas	ByRef	syntax	Expected: New or type name
+dimas	Boolean	accepted	
+dimas	Binary	semantic	User-defined type not defined
+dimas	BF	semantic	User-defined type not defined
+dimas	Base	semantic	User-defined type not defined
+dimas	Assert	semantic	User-defined type not defined
+dimas	As	syntax	Expected: New or type name
+dimas	Array	syntax	Expected: New or type name
+dimas	Append	semantic	User-defined type not defined
+dimas	Any	syntax	Expected: New or type name
+dimas	And	syntax	Expected: New or type name
+dimas	Alias	semantic	User-defined type not defined
+dimas	AddressOf	syntax	Expected: New or type name
+dimas	Access	semantic	User-defined type not defined
+dimas	Abs	syntax	Expected: New or type name
+paramas	Xor	syntax	Expected: type name
+paramas	Write	syntax	Expected: type name
+paramas	WithEvents	syntax	Expected: type name
+paramas	With	syntax	Expected: type name
+paramas	Width	semantic	User-defined type not defined
+paramas	While	syntax	Expected: type name
+paramas	Wend	syntax	Expected: type name
+paramas	Variant	accepted	
+paramas	Until	syntax	Expected: type name
+paramas	Unknown	semantic	User-defined type not defined
+paramas	Unlock	syntax	Expected: type name
+paramas	Unload	semantic	User-defined type not defined
+paramas	UBound	syntax	Expected: type name
+paramas	TypeOf	syntax	Expected: type name
+paramas	Type	syntax	Expected: type name
+paramas	True	syntax	Expected: type name
+paramas	To	syntax	Expected: type name
+paramas	Then	syntax	Expected: type name
+paramas	Text	semantic	User-defined type not defined
+paramas	Tab	syntax	Expected: type name
+paramas	Sub	syntax	Expected: type name
+paramas	String	accepted	
+paramas	StrComp	semantic	User-defined type not defined
+paramas	Stop	syntax	Expected: type name
+paramas	Step	semantic	User-defined type not defined
+paramas	Static	syntax	Expected: type name
+paramas	Spc	syntax	Expected: type name
+paramas	Single	accepted	
+paramas	Shared	syntax	Expected: type name
+paramas	Sgn	syntax	Expected: type name
+paramas	Set	syntax	Expected: type name
+paramas	Select	syntax	Expected: type name
+paramas	Seek	syntax	Expected: type name
+paramas	Scale	syntax	Expected: type name
+paramas	RSet	syntax	Expected: type name
+paramas	RGB	semantic	User-defined type not defined
+paramas	Return	syntax	Expected: type name
+paramas	Resume	syntax	Expected: type name
+paramas	Rem	syntax	Expected: type name
+paramas	ReDim	syntax	Expected: type name
+paramas	Read	semantic	User-defined type not defined
+paramas	Randomize	semantic	User-defined type not defined
+paramas	Random	semantic	User-defined type not defined
+paramas	RaiseEvent	syntax	Expected: type name
+paramas	Put	syntax	Expected: type name
+paramas	Public	syntax	Expected: type name
+paramas	PSet	syntax	Expected: type name
+paramas	Property	semantic	User-defined type not defined
+paramas	Private	syntax	Expected: type name
+paramas	Print	syntax	Expected: type name
+paramas	Preserve	syntax	Expected: type name
+paramas	ParamArray	syntax	Expected: type name
+paramas	Output	semantic	User-defined type not defined
+paramas	Or	syntax	Expected: type name
+paramas	Optional	syntax	Expected: type name
+paramas	Option	syntax	Expected: type name
+paramas	Open	syntax	Expected: type name
+paramas	On	syntax	Expected: type name
+paramas	Object	accepted	
+paramas	Null	syntax	Expected: type name
+paramas	Nothing	syntax	Expected: type name
+paramas	Not	syntax	Expected: type name
+paramas	Next	syntax	Expected: type name
+paramas	New	syntax	Expected: type name
+paramas	Name	semantic	User-defined type not defined
+paramas	Module	semantic	User-defined type not defined
+paramas	Mod	syntax	Expected: type name
+paramas	MidB	semantic	User-defined type not defined
+paramas	Mid	semantic	User-defined type not defined
+paramas	Me	syntax	Expected: type name
+paramas	LSet	syntax	Expected: type name
+paramas	Loop	syntax	Expected: type name
+paramas	Long	accepted	
+paramas	Lock	syntax	Expected: type name
+paramas	Local	syntax	Expected: type name
+paramas	Load	semantic	User-defined type not defined
+paramas	LINEINPUT	syntax	Expected: type name
+paramas	Line	accepted	
+paramas	Like	syntax	Expected: type name
+paramas	Lib	semantic	User-defined type not defined
+paramas	Let	syntax	Expected: type name
+paramas	LenB	syntax	Expected: type name
+paramas	Len	syntax	Expected: type name
+paramas	Left	semantic	User-defined type not defined
+paramas	LBound	syntax	Expected: type name
+paramas	Is	syntax	Expected: type name
+paramas	Integer	accepted	
+paramas	Int	syntax	Expected: type name
+paramas	InStrB	semantic	User-defined type not defined
+paramas	InStr	semantic	User-defined type not defined
+paramas	InputB	syntax	Expected: type name
+paramas	Input	syntax	Expected: type name
+paramas	In	syntax	Expected: type name
+paramas	Implements	syntax	Expected: type name
+paramas	Imp	syntax	Expected: type name
+paramas	If	syntax	Expected: type name
+paramas	GoTo	syntax	Expected: type name
+paramas	GoSub	syntax	Expected: type name
+paramas	Go	semantic	User-defined type not defined
+paramas	Global	syntax	Expected: type name
+paramas	Get	syntax	Expected: type name
+paramas	Function	syntax	Expected: type name
+paramas	Friend	syntax	Expected: type name
+paramas	FreeFile	semantic	User-defined type not defined
+paramas	Format	semantic	User-defined type not defined
+paramas	For	syntax	Expected: type name
+paramas	Fix	syntax	Expected: type name
+paramas	False	syntax	Expected: type name
+paramas	Explicit	semantic	User-defined type not defined
+paramas	Exit	syntax	Expected: type name
+paramas	Event	syntax	Expected: type name
+paramas	Error	semantic	User-defined type not defined
+paramas	Erase	syntax	Expected: type name
+paramas	Eqv	syntax	Expected: type name
+paramas	Enum	syntax	Expected: type name
+paramas	EndIf	syntax	Expected: type name
+paramas	End	syntax	Expected: type name
+paramas	Empty	syntax	Expected: type name
+paramas	ElseIf	syntax	Expected: type name
+paramas	Else	syntax	Expected: type name
+paramas	Each	syntax	Expected: type name
+paramas	Double	accepted	
+paramas	DoEvents	syntax	Expected: type name
+paramas	Do	syntax	Expected: type name
+paramas	Dir	semantic	User-defined type not defined
+paramas	Dim	syntax	Expected: type name
+paramas	DefVar	syntax	Expected: type name
+paramas	DefStr	syntax	Expected: type name
+paramas	DefSng	syntax	Expected: type name
+paramas	DefObj	syntax	Expected: type name
+paramas	DefLng	syntax	Expected: type name
+paramas	DefInt	syntax	Expected: type name
+paramas	DefDbl	syntax	Expected: type name
+paramas	DefDec	syntax	Expected: type name
+paramas	DefDate	syntax	Expected: type name
+paramas	DefCur	syntax	Expected: type name
+paramas	DefByte	syntax	Expected: type name
+paramas	DefBool	syntax	Expected: type name
+paramas	Declare	syntax	Expected: type name
+paramas	Decimal	syntax	Expected: type name
+paramas	Debug	syntax	Expected: type name
+paramas	Date	accepted	
+paramas	Database	semantic	User-defined type not defined
+paramas	Currency	accepted	
+paramas	CVErr	syntax	Expected: type name
+paramas	CVDate	semantic	User-defined type not defined
+paramas	CVar	syntax	Expected: type name
+paramas	CurDir	semantic	User-defined type not defined
+paramas	CStr	syntax	Expected: type name
+paramas	CSng	syntax	Expected: type name
+paramas	Const	syntax	Expected: type name
+paramas	Compare	semantic	User-defined type not defined
+paramas	Close	syntax	Expected: type name
+paramas	CLng	syntax	Expected: type name
+paramas	Circle	syntax	Expected: type name
+paramas	CInt	syntax	Expected: type name
+paramas	ChDir	semantic	User-defined type not defined
+paramas	CDecl	syntax	Expected: type name
+paramas	CDbl	syntax	Expected: type name
+paramas	CDec	syntax	Expected: type name
+paramas	CDate	syntax	Expected: type name
+paramas	CCur	syntax	Expected: type name
+paramas	CByte	syntax	Expected: type name
+paramas	CBool	syntax	Expected: type name
+paramas	Case	syntax	Expected: type name
+paramas	Call	syntax	Expected: type name
+paramas	ByVal	syntax	Expected: type name
+paramas	Byte	accepted	
+paramas	ByRef	syntax	Expected: type name
+paramas	Boolean	accepted	
+paramas	Binary	semantic	User-defined type not defined
+paramas	BF	semantic	User-defined type not defined
+paramas	Base	semantic	User-defined type not defined
+paramas	Assert	semantic	User-defined type not defined
+paramas	As	syntax	Expected: type name
+paramas	Array	syntax	Expected: type name
+paramas	Append	semantic	User-defined type not defined
+paramas	Any	syntax	Expected: type name
+paramas	And	syntax	Expected: type name
+paramas	Alias	semantic	User-defined type not defined
+paramas	AddressOf	syntax	Expected: type name
+paramas	Access	semantic	User-defined type not defined
+paramas	Abs	syntax	Expected: type name

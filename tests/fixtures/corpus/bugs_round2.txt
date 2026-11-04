@@ -158,11 +158,11 @@ End Sub
                     (identifier)))))))))))
 
 ==================
-Bug2r2 ByRef in parens call
+Bug2r2 ByVal in parens call
 ==================
 
 Sub S()
-  r = F(ByRef x)
+  r = F(ByVal x)
 End Sub
 
 ---
