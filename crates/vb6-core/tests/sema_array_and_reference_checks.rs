@@ -137,3 +137,32 @@ fn for_each_control_variable_and_source_types() {
     assert_eq!(found[1].1, at(src, "For Each s In a", "s"));
     assert_eq!(found[2].1, at(src, "In x", "x"));
 }
+
+const DUPLICATE_DECLARATION: u32 = 0x9c9f;
+
+#[test]
+fn module_level_names_of_different_kinds_collide() {
+    let src = "Dim Total As Long\nSub Total()\nEnd Sub\nEnum E\n    Red\nEnd Enum\nConst Red = 1\n";
+    let found = codes(src);
+    let spans: Vec<u32> = found.iter().map(|d| d.1).collect();
+    assert!(found.iter().all(|d| d.0 == DUPLICATE_DECLARATION));
+    assert_eq!(
+        spans,
+        vec![
+            at(src, "Sub Total", "Total"),
+            at(src, "Const Red", "Red"),
+        ]
+    );
+}
+
+#[test]
+fn same_member_names_in_different_enums_stay_silent() {
+    let src = "Enum A\n    Unknown = 0\n    One\nEnd Enum\nEnum B\n    Unknown = 0\n    Two\nEnd Enum\n";
+    assert_eq!(class_codes(src), vec![]);
+}
+
+#[test]
+fn property_accessors_and_locals_stay_silent() {
+    let src = "Private m As Long\nProperty Get P() As Long\nEnd Property\nProperty Let P(v As Long)\nEnd Property\nSub F()\n    Dim P As Long\nEnd Sub\nEnum E\n    A\n    B\nEnd Enum\n";
+    assert_eq!(class_codes(src), vec![]);
+}

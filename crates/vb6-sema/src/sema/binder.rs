@@ -644,6 +644,41 @@ impl<'a> Binder<'a> {
             }
         }
 
+        // ── Module-level names of different kinds share one namespace ───────
+        // Variables and constants, procedures and enum members cannot reuse
+        // each other's names. Enum members of different enums may share a
+        // name, since they are qualified by their enum.
+        {
+            // (name, position, span, class) with class 0 = variable,
+            // 1 = procedure, 2 = enum member.
+            let mut entries: Vec<(String, u32, Span, u8)> = Vec::new();
+            for v in &self.module_vars {
+                entries.push((self.name_of(v.sym_id), v.name_span.start, v.name_span, 0));
+            }
+            for p in &self.procs {
+                entries.push((self.name_of(p.sym_id), p.name_span.start, p.name_span, 1));
+            }
+            for e in &self.enum_decls {
+                for m in &e.members {
+                    entries.push((self.name_of(m.sym_id), m.name_span.start, m.name_span, 2));
+                }
+            }
+            entries.sort_by_key(|e| e.1);
+            let mut first_class: HashMap<String, u8> = HashMap::new();
+            for (name, _, span, class) in entries {
+                if name.is_empty() {
+                    continue;
+                }
+                match first_class.get(&name) {
+                    None => {
+                        first_class.insert(name, class);
+                    }
+                    Some(&first) if first != class => dups.push(span),
+                    Some(_) => {}
+                }
+            }
+        }
+
         for span in dups {
             self.diagnostics.push(ERR_DUPLICATE_DECLARATION as u32, span);
         }
