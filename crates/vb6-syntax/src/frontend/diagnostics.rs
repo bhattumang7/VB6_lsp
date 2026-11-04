@@ -54,6 +54,13 @@ pub const ERR_TOO_MANY_DIMENSIONS: u32 = 0x9c80; // 40064
 pub const ERR_INVALID_FIXED_STRING_LENGTH: u32 = 0x9cb0; // 40112
 pub const ERR_MUST_BE_FIRST_ON_LINE: u32 = 0x9c71; // 40049
 pub const ERR_INVALID_OUTSIDE_PROCEDURE: u32 = 0x9c73; // 40051
+pub const ERR_SYNTAX_ERROR: u32 = 0x9c70; // 40048
+pub const ERR_ARRAY_ARGUMENT_MUST_BE_BYREF: u32 = 0x9ca0; // 40096
+pub const ERR_PROPERTY_ARGUMENT_REQUIRED: u32 = 0x9cbd; // 40125
+pub const ERR_OPTIONAL_ARRAY: u32 = 0x9ccf; // 40143
+pub const ERR_PARAM_ARRAY_NOT_ARRAY: u32 = 0x9cd0; // 40144
+pub const ERR_INVALID_EVENT_NAME: u32 = 0xdefb; // 57083
+pub const ERR_PARAM_ARRAY_WITH_OPTIONAL: u32 = 0xdf00; // 57088
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -107,6 +114,13 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_SYNTAX_ERROR => "Syntax error",
+        ERR_ARRAY_ARGUMENT_MUST_BE_BYREF => "Array argument must be ByRef",
+        ERR_PROPERTY_ARGUMENT_REQUIRED => "Argument required for Property Let or Property Set",
+        ERR_OPTIONAL_ARRAY => "Optional argument must be Variant or intrinsic type with a default value",
+        ERR_PARAM_ARRAY_NOT_ARRAY => "ParamArray must be declared as an array of Variant",
+        ERR_INVALID_EVENT_NAME => "Invalid event name",
+        ERR_PARAM_ARRAY_WITH_OPTIONAL => "Can't have paramarrays with optional arguments",
         ERR_INVALID_OUTSIDE_PROCEDURE => "Invalid outside procedure",
         ERR_MUST_BE_FIRST_ON_LINE => "Must be first statement on the line",
         ERR_IDENTIFIER_TOO_LONG => "Identifier too long",

@@ -307,6 +307,15 @@ fn block_closed_by(top: Block, term: Term) -> bool {
     }
 }
 
+/// Which kind of declaration owns a parameter list (the rules differ).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ParamOwner {
+    Procedure,
+    /// `Property Let` / `Property Set`: the last parameter is the value.
+    PropertyValue,
+    Event,
+}
+
 /// State of one open `#If … #End If` block.
 #[derive(Clone, Copy)]
 struct CcFrame {
@@ -2993,6 +3002,7 @@ impl<'src> Parser<'src> {
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             Some(p)
         } else { None };
+        self.check_param_list(arena, params, ParamOwner::Procedure);
         // Return type.
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
             let t = self.parse_type_spec(arena, true);
@@ -3074,6 +3084,14 @@ impl<'src> Parser<'src> {
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             Some(p)
         } else { None };
+        let owner = if kind == ProcKind::PropGet { ParamOwner::Procedure } else { ParamOwner::PropertyValue };
+        self.check_param_list(arena, params, owner);
+        if owner == ParamOwner::PropertyValue {
+            let has_params = params.is_some_and(|p| matches!(arena.get(p), ExprNode::ArgList { args } if !args.is_empty()));
+            if !has_params {
+                self.diagnostics.push(ERR_PROPERTY_ARGUMENT_REQUIRED, name.span);
+            }
+        }
         let ret_type = if kind == ProcKind::PropGet && self.eat(TokenKind::Kw(Kw::As)) {
             let t = self.parse_type_spec(arena, true);
             if name.type_suffix != TypeSuffix::None {
@@ -3118,6 +3136,10 @@ impl<'src> Parser<'src> {
         } else {
             arena.alloc(ExprNode::ArgList { args: vec![] })
         };
+        if self.scanner.sym_name(nid).contains('_') {
+            self.diagnostics.push(ERR_INVALID_EVENT_NAME, name.span);
+        }
+        self.check_param_list(arena, Some(params), ParamOwner::Event);
         self.end_stmt();
         let id = arena.alloc(ExprNode::EventDecl { name: nid, params });
         self.set_span(id, name.span);
@@ -3174,6 +3196,74 @@ impl<'src> Parser<'src> {
         let id = arena.alloc(ExprNode::DeclareDecl { kind, name, lib, alias, params, ret_type });
         self.set_span(id, name_tok.span);
         id
+    }
+
+    /// The order and shape rules for a parameter list: `Optional` parameters
+    /// follow the required ones, `ParamArray` is last and an array, events
+    /// take neither, and an array cannot be `ByVal` or `Optional`. Only the
+    /// first violation of a list is reported, as the compiler stops at the
+    /// first error of a line.
+    fn check_param_list(&mut self, arena: &ExprArena, params: Option<NodeId>, owner: ParamOwner) {
+        let Some(list) = params else { return };
+        let ExprNode::ArgList { args } = arena.get(list) else { return };
+        // 0 = none yet, 1 = an Optional seen, 2 = a ParamArray seen.
+        let mut section = 0;
+        for (i, &param) in args.iter().enumerate() {
+            let ExprNode::ParamDef { flags, .. } = arena.get(param) else { continue };
+            let flags = *flags;
+            let span = self.node_spans.get(param);
+            let is_optional = flags & 0x01 != 0;
+            let is_param_array = flags & 0x20 != 0;
+            let is_array = flags & 0x08 != 0;
+            let value_param = owner == ParamOwner::PropertyValue && i + 1 == args.len();
+            let violation: Option<(u32, Option<&'static str>)> = if owner == ParamOwner::Event
+                && (is_optional || is_param_array)
+            {
+                Some((ERR_SYNTAX_ERROR, None))
+            } else if is_param_array {
+                if section == 2 {
+                    Some((ERR_UNEXPECTED_TOKEN, Some("identifier")))
+                } else if section == 1 {
+                    Some((ERR_PARAM_ARRAY_WITH_OPTIONAL, None))
+                } else if !is_array {
+                    Some((ERR_PARAM_ARRAY_NOT_ARRAY, None))
+                } else if i + 1 < args.len() && owner != ParamOwner::PropertyValue {
+                    Some((ERR_UNEXPECTED_TOKEN, Some(")")))
+                } else {
+                    None
+                }
+            } else if is_optional {
+                if section == 2 {
+                    Some((ERR_UNEXPECTED_TOKEN, Some(")")))
+                } else if is_array {
+                    Some((ERR_OPTIONAL_ARRAY, None))
+                } else {
+                    None
+                }
+            } else if section != 0 && !value_param {
+                Some((ERR_UNEXPECTED_TOKEN, Some(if section == 1 { "Optional" } else { ")" })))
+            } else if is_array && flags & 0x02 != 0 {
+                Some((ERR_ARRAY_ARGUMENT_MUST_BE_BYREF, None))
+            } else {
+                None
+            };
+            if let Some((code, label)) = violation {
+                match label {
+                    Some(label) => self.diagnostics.push_labeled(code, span, label),
+                    None => self.diagnostics.push(code, span),
+                }
+                return;
+            }
+            if is_array && flags & 0x02 != 0 {
+                self.diagnostics.push(ERR_ARRAY_ARGUMENT_MUST_BE_BYREF, span);
+                return;
+            }
+            if is_param_array {
+                section = 2;
+            } else if is_optional {
+                section = section.max(1);
+            }
+        }
     }
 
     /// Parses a procedure parameter list.
