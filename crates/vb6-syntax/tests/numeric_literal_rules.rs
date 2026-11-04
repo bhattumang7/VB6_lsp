@@ -156,3 +156,13 @@ fn values_and_builtin_functions_start_expressions() {
         assert_eq!(p.found, vec![], "{word}");
     }
 }
+
+#[test]
+fn punctuation_cannot_start_an_expression() {
+    for (text, at) in [(")", 0u32), (",", 0), ("1 + )", 4)] {
+        let src = format!("Sub S()\n x = {text}\nEnd Sub\n");
+        let base = offset_of(&src, &format!("= {text}"), 0) + 2;
+        let found = parse(&src).found;
+        assert_eq!(found[0], (ERR_UNEXPECTED_TOKEN, base + at, 1), "{text}");
+    }
+}

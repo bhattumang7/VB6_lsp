@@ -1215,10 +1215,11 @@ impl<'src> Parser<'src> {
             self.end_stmt();
             return Some(arena.alloc(ExprNode::EndStmt));
         }
-        // End If / End With / End Select / End Type / End Enum
-        self.advance(); // consume the sub-keyword
-        self.end_stmt();
-        None // structural: consumed by the block parser
+        // `End` takes no operand: anything else on the line is an error.
+        let span = self.current_span();
+        self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "end of statement");
+        self.skip_line();
+        None
     }
 
     /// `LSet`/`RSet target = expr` — range-copy assignment preserving justification.
@@ -1696,8 +1697,9 @@ impl<'src> Parser<'src> {
             // `Dim x%` ≡ `Dim x As Integer`
             (false, self.type_node_from_suffix(arena, name.type_suffix))
         };
-        let init = if is_const || self.peek().kind == TokenKind::Kw(Kw::Eq) {
-            if self.eat(TokenKind::Kw(Kw::Eq)) { Some(self.parse_expr(arena, 0)) } else { None }
+        // Only a constant has an initial value.
+        let init = if is_const && self.eat(TokenKind::Kw(Kw::Eq)) {
+            Some(self.parse_expr(arena, 0))
         } else { None };
         let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, with_events, bounds, type_node, init });
         self.set_span(id, name.span);
@@ -1724,7 +1726,6 @@ impl<'src> Parser<'src> {
             };
             args.push(node);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
-            if self.peek().kind == TokenKind::Kw(Kw::RParen) { break; }
         }
         if args.len() > MAX_DIMENSIONS {
             self.diagnostics.push(ERR_TOO_MANY_DIMENSIONS, list_span);
@@ -2656,14 +2657,18 @@ impl<'src> Parser<'src> {
                     self.diagnostics.push(ERR_ARRAY_ALREADY_DIMENSIONED, option_span);
                 }
                 self.advance();
-                let value = match self.peek().kind {
-                    TokenKind::IntLit => {
-                        let tok = self.advance();
-                        if let Some(crate::frontend::token::Lit::Int(n)) = tok.lit {
-                            n as u8
-                        } else { 0 }
+                // The base is the literal 0 or 1.
+                let value = match (self.peek().kind.clone(), self.peek().lit.clone()) {
+                    (TokenKind::IntLit, Some(crate::frontend::token::Lit::Int(n))) if n == 0 || n == 1 => {
+                        self.advance();
+                        n as u8
                     }
-                    _ => { self.advance(); 0 }
+                    _ => {
+                        let span = self.current_span();
+                        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                        self.skip_line();
+                        return arena.alloc(ExprNode::Block { stmts: vec![] });
+                    }
                 };
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionBase { value })
@@ -2677,11 +2682,12 @@ impl<'src> Parser<'src> {
                     TokenKind::Kw(Kw::Binary) => { self.advance(); 0u8 }
                     TokenKind::Kw(Kw::Text)   => { self.advance(); 1u8 }
                     TokenKind::Kw(Kw::Database) => { self.advance(); 2u8 }
-                    TokenKind::Ident => {
-                        self.advance();
-                        2u8
+                    _ => {
+                        let span = self.current_span();
+                        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                        self.skip_line();
+                        return arena.alloc(ExprNode::Block { stmts: vec![] });
                     }
-                    _ => 0,
                 };
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionCompare { mode })
@@ -2693,13 +2699,21 @@ impl<'src> Parser<'src> {
                 if self.module_kind != ModuleKind::Standard {
                     self.diagnostics.push(ERR_OPTION_PRIVATE_IN_OBJECT_MODULE, option_span);
                 }
-                self.skip_to_stmt_end();
-                self.end_stmt();
+                self.advance(); // consume Private
+                if self.peek().kind == TokenKind::Kw(Kw::Module) {
+                    self.advance();
+                    self.end_stmt();
+                } else {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                    self.skip_line();
+                }
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
             _ => {
-                self.skip_to_stmt_end();
-                self.end_stmt();
+                let span = self.current_span();
+                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                self.skip_line();
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
         }
@@ -2736,9 +2750,9 @@ impl<'src> Parser<'src> {
         let mut ranges = Vec::new();
         let mut letters = 0u32;
         loop {
-            let lo = self.expect_ident().sym.map(|s| s as u32).unwrap_or(0);
+            let lo = self.def_letter();
             let hi = if self.eat(TokenKind::Kw(Kw::Minus)) {
-                self.expect_ident().sym.map(|s| s as u32).unwrap_or(0)
+                self.def_letter()
             } else {
                 0
             };
@@ -2756,6 +2770,16 @@ impl<'src> Parser<'src> {
         self.deftype_letters |= letters;
         self.end_stmt();
         arena.alloc(ExprNode::DefType { type_kw, ranges })
+    }
+
+    /// A `Def<Type>` letter: an identifier of exactly one character.
+    fn def_letter(&mut self) -> u32 {
+        let tok = self.expect_ident();
+        let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
+        if tok.sym.is_some() && self.scanner.sym_name(sym).len() != 1 {
+            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
+        }
+        sym
     }
 
     /// Bit mask (bit 0 = `A`) of the letters from the first letter of the
@@ -2926,17 +2950,27 @@ impl<'src> Parser<'src> {
         self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
-        if self.eat(TokenKind::Kw(Kw::Comma)) {
-            // Optional record number.
+        // `Get/Put [#]file, [record], variable`: both commas are required.
+        if self.expect_comma() {
             if self.peek().kind != TokenKind::Kw(Kw::Comma) {
                 args.push(self.parse_expr(arena, 0));
             }
-            if self.eat(TokenKind::Kw(Kw::Comma)) {
+            if self.expect_comma() {
                 args.push(self.parse_expr(arena, 0));
             }
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
+    }
+
+    /// Consume a `,`, or report that one is expected; true when it was there.
+    fn expect_comma(&mut self) -> bool {
+        if self.eat(TokenKind::Kw(Kw::Comma)) {
+            return true;
+        }
+        let span = self.current_span();
+        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+        false
     }
 
     /// `Lock #filenum [, from [To to]]` or `Unlock ...`.
@@ -3544,10 +3578,12 @@ impl<'src> Parser<'src> {
                     let line_span = self.current_span();
                     let m = self.parse_dim_item(arena, false, false, false);
                     // `name = value` is a statement, not a member.
-                    if matches!(arena.get(m), ExprNode::DimItem { init: Some(_), .. }) {
+                    if self.peek().kind == TokenKind::Kw(Kw::Eq) {
                         self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+                        self.skip_line();
+                    } else {
+                        self.end_stmt();
                     }
-                    self.end_stmt();
                     members.push(m);
                 }
             }
@@ -4029,6 +4065,11 @@ fn token_kind_label(kind: &TokenKind) -> &'static str {
 fn keyword_starts_expression(k: Kw) -> bool {
     use super::keyword_table::KEYWORD_TABLE;
     let Some(entry) = KEYWORD_TABLE.get(k.token_id() as usize) else { return true };
+    // Operators and punctuation never start an operand, except the opening
+    // parenthesis and the member-access dot and bang.
+    if !entry.name.starts_with(|c: char| c.is_ascii_alphabetic()) {
+        return matches!(entry.name, "(" | "." | "!");
+    }
     let reserved = entry.w1 & 0x10 != 0;
     let value_or_function = (entry.w1 >> 6) & 3 != 0;
     !reserved
