@@ -9,6 +9,25 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+/// Starting a process without a console window of its own.
+trait NoWindow {
+    fn creation_flags_no_window(&mut self) -> &mut Self;
+}
+
+impl NoWindow for Command {
+    #[cfg(windows)]
+    fn creation_flags_no_window(&mut self) -> &mut Self {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        self.creation_flags(CREATE_NO_WINDOW)
+    }
+
+    #[cfg(not(windows))]
+    fn creation_flags_no_window(&mut self) -> &mut Self {
+        self
+    }
+}
+
 /// Kind of module a case is compiled as.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ModuleKind {
@@ -201,7 +220,13 @@ impl Oracle {
             vb6_exe,
             work_root,
             cache_dir,
-            workers: 8,
+            // `ORACLE_WORKERS` sets how many compiler instances run at once; the default
+            // is modest because every instance starts and stops many times a second.
+            workers: std::env::var("ORACLE_WORKERS")
+                .ok()
+                .and_then(|v| v.parse().ok())
+                .filter(|n| *n > 0)
+                .unwrap_or(3),
             timeout: Duration::from_secs(90),
             build_salt,
         })
@@ -285,6 +310,7 @@ impl Oracle {
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
+            .creation_flags_no_window()
             .spawn()
         {
             Ok(c) => c,

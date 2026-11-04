@@ -60,3 +60,10 @@ Invalid use of AddressOf operator	semantic
 For Each control variable must be Variant or Object	semantic
 Invalid Next control variable reference	semantic
 For Each may only iterate over a collection object or an array	semantic
+Argument required for Property Let or Property Set	syntax
+Array argument must be ByRef	syntax
+Can't have paramarrays with optional arguments	syntax
+Expected End Function	syntax
+Expected End Property	syntax
+Must be first statement on the line	syntax
+Statement invalid outside Type block	syntax

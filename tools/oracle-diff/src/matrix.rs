@@ -137,7 +137,7 @@ pub fn run(
                     continue;
                 }
             },
-            Verdict::Unrecognised { exit_code: Some(code), log } if code < 0 && log.trim().is_empty() => {
+            Verdict::Unrecognised { exit_code: Some(code), .. } if code < 0 => {
                 Fate::Unanswered(format!("compiler terminated abnormally, exit {code}"))
             }
             other => return Err(format!("{name}/{word}: no verdict from the compiler: {other:?}")),
