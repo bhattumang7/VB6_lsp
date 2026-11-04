@@ -2767,7 +2767,7 @@ fn binop_type(
         // the same arithmetic dispatch path as Add/Sub/Mul (RT_DISPATCH_FLAG bit
         // 0x10 clear → RT_TYPE_OFFSET[node.type_tag]). The node therefore carries
         // the operand-promoted type, not Boolean (Long Xor Long → Long).
-        B::And | B::Or | B::Xor | B::Eqv | B::Imp => numeric_promote(lhs, rhs),
+        B::And | B::Or | B::Xor | B::Eqv | B::Imp | B::Not => numeric_promote(lhs, rhs),
         // String concatenation always returns String
         B::Cat => VbaType::String,
         // Integer division and modulo round each operand to an integer type and

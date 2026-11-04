@@ -45,6 +45,9 @@ pub enum BinOpKind {
     Add, Sub, Mul, Div, IDiv, Mod, Pow, Cat,
     Eq, Ne, Lt, Gt, Le, Ge, Like, Is,
     And, Or, Xor, Eqv, Imp,
+    /// `Not` between two operands (`a Not b`): the operator table gives it a precedence, so
+    /// the expression parser takes it as an infix operator at the level of `And`.
+    Not,
 }
 
 /// Unary operator kinds for [`ExprNode::UnOp`].

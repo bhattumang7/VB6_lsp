@@ -1,0 +1,53 @@
+# One template per block; {k} is replaced by each word of words.txt.
+=== binary bas
+Sub Probe()
+    x = a {k} b
+End Sub
+=== unaryfirst bas
+Sub Probe()
+    x = {k} a
+End Sub
+=== trailing bas
+Sub Probe()
+    x = a {k}
+End Sub
+=== doubled bas
+Sub Probe()
+    x = a {k} {k} b
+End Sub
+=== afterminus bas
+Sub Probe()
+    x = a - {k} b
+End Sub
+=== beforeminus bas
+Sub Probe()
+    x = a {k} - b
+End Sub
+=== afternot bas
+Sub Probe()
+    x = a {k} Not b
+End Sub
+=== inparens bas
+Sub Probe()
+    x = ({k} a)
+End Sub
+=== inargs bas
+Sub Probe()
+    x = f(a {k} b, c)
+End Sub
+=== asarg bas
+Sub Probe()
+    f a, {k}
+End Sub
+=== instmt bas
+Sub Probe()
+    f {k} a
+End Sub
+=== condition bas
+Sub Probe()
+    If a {k} b Then c = 1
+End Sub
+=== plusprefix bas
+Sub Probe()
+    x = + {k} a
+End Sub

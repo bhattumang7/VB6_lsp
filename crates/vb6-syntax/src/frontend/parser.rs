@@ -52,6 +52,9 @@ fn infix_bp(kind: &TokenKind) -> Option<(u8, u8, BinOpKind)> {
         TokenKind::Kw(Kw::Minus)     => (16, 17, B::Sub),
         // & string concat, level 7
         TokenKind::Kw(Kw::Amp)       => (14, 15, B::Cat),
+        // Not, level 5 like And: it is also a prefix operator, but in the operator table it has a
+        // precedence, so between two operands it is taken as infix.
+        TokenKind::Kw(Kw::Not)       => (10, 11, B::Not),
         // comparison / Like / Is, level 6 (all same precedence)
         TokenKind::Kw(Kw::Eq)        => (12, 13, B::Eq),
         TokenKind::Kw(Kw::Ne)        => (12, 13, B::Ne),
@@ -1904,11 +1907,12 @@ impl<'src> Parser<'src> {
             let value = self.parse_expr(arena, 0);
             self.end_stmt();
             arena.alloc(ExprNode::Assign { target: lhs, value })
-        } else if self.eat(TokenKind::Kw(Kw::ColonEq)) {
-            // Named argument in a call — parse rest as expression
-            let value = self.parse_expr(arena, 0);
-            self.end_stmt();
-            arena.alloc(ExprNode::Assign { target: lhs, value })
+        } else if self.peek().kind == TokenKind::Kw(Kw::ColonEq) {
+            // A named argument is only meaningful inside an argument list, never as a statement.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            lhs
         } else if let Some((callee, arg)) = self.paren_first_argument(arena, lhs) {
             // `Foo (a) - (b), c` / `Foo (a), b`: in a call statement the
             // parenthesised group after the callee begins the first argument
@@ -5063,11 +5067,21 @@ impl<'src> Parser<'src> {
     // ── Argument lists ────────────────────────────────────────────────────────
 
     /// Parses a comma-separated list of arguments.
+    /// True when no argument expression follows: the list, the bracket or the statement ends.
+    fn at_argument_end(&mut self) -> bool {
+        self.peek().is_stmt_end()
+            || matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Comma) | TokenKind::Kw(Kw::RParen) | TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)
+            )
+    }
+
     fn parse_arg_list(&mut self, arena: &mut ExprArena) -> NodeId {
         if self.peek().kind == TokenKind::Kw(Kw::RParen) {
             return arena.alloc(ExprNode::ArgList { args: vec![] });
         }
         let mut args = Vec::new();
+        let mut seen_named = false;
         loop {
             // Missing argument.
             if self.peek().kind == TokenKind::Kw(Kw::Comma) {
@@ -5078,10 +5092,19 @@ impl<'src> Parser<'src> {
                 self.report_expected(span, "expression");
                 break;
             } else if let Some(named) = self.try_parse_named_arg(arena) {
+                seen_named = true;
                 args.push(named);
             } else {
+                if seen_named {
+                    // After a named argument every argument is named.
+                    let span = self.current_span();
+                    self.report_expected(span, "named argument");
+                }
                 // A call-site `ByVal` qualifies the argument that follows.
-                self.eat(TokenKind::Kw(Kw::ByVal));
+                if self.eat(TokenKind::Kw(Kw::ByVal)) && self.at_argument_end() {
+                    let span = self.current_span();
+                    self.report_expected(span, "expression");
+                }
                 self.allow_address_of_here();
                 args.push(self.parse_expr(arena, 0));
             }
@@ -5094,6 +5117,7 @@ impl<'src> Parser<'src> {
     /// An omitted argument (`MsgBox s, , title`) is a `MissingArg`.
     fn parse_stmt_arg_list(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
         let mut args = Vec::new();
+        let mut seen_named = false;
         while !self.peek().is_stmt_end() {
             if self.peek().kind == TokenKind::Kw(Kw::Else) {
                 break;
@@ -5101,10 +5125,19 @@ impl<'src> Parser<'src> {
             let a = if self.peek().kind == TokenKind::Kw(Kw::Comma) {
                 arena.alloc(ExprNode::MissingArg)
             } else if let Some(named) = self.try_parse_named_arg(arena) {
+                seen_named = true;
                 named
             } else {
+                if seen_named {
+                    // After a named argument every argument is named.
+                    let span = self.current_span();
+                    self.report_expected(span, "named argument");
+                }
                 // A call-site `ByVal` qualifies the argument that follows.
-                self.eat(TokenKind::Kw(Kw::ByVal));
+                if self.eat(TokenKind::Kw(Kw::ByVal)) && self.at_argument_end() {
+                    let span = self.current_span();
+                    self.report_expected(span, "expression");
+                }
                 self.allow_address_of_here();
                 if let Some(expr) = self.try_parse_expr(arena) {
                     expr

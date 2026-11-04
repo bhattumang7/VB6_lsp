@@ -1,0 +1,612 @@
+# template	word	class	message
+binary	+	accepted	
+binary	-	accepted	
+binary	*	accepted	
+binary	/	accepted	
+binary	\	accepted	
+binary	^	accepted	
+binary	&	accepted	
+binary	=	accepted	
+binary	<>	accepted	
+binary	<	accepted	
+binary	>	accepted	
+binary	<=	accepted	
+binary	>=	accepted	
+binary	=>	accepted	
+binary	=<	accepted	
+binary	><	accepted	
+binary	Mod	accepted	
+binary	And	accepted	
+binary	Or	accepted	
+binary	Xor	accepted	
+binary	Eqv	accepted	
+binary	Imp	accepted	
+binary	Like	accepted	
+binary	Is	accepted	
+binary	Not	accepted	
+binary	TypeOf	syntax	Syntax error
+binary	New	syntax	Syntax error
+binary	AddressOf	syntax	Syntax error
+binary	ByVal	syntax	Syntax error
+binary	ByRef	syntax	Syntax error
+binary	.	syntax	Syntax error
+binary	!	syntax	Syntax error
+binary	,	syntax	Syntax error
+binary	;	syntax	Syntax error
+binary	:	semantic	Sub or Function not defined
+binary	:=	syntax	Syntax error
+binary	(	syntax	Syntax error
+binary	)	syntax	Syntax error
+binary	$	syntax	Syntax error
+binary	%	syntax	Syntax error
+binary	@	syntax	Syntax error
+binary	&H10	syntax	Syntax error
+binary	&O7	syntax	Syntax error
+binary	1	syntax	Syntax error
+binary	1.5	syntax	Syntax error
+binary	"s"	syntax	Syntax error
+binary	#1/1/2000#	syntax	Syntax error
+unaryfirst	+	accepted	
+unaryfirst	-	accepted	
+unaryfirst	*	syntax	Syntax error
+unaryfirst	/	syntax	Syntax error
+unaryfirst	\	syntax	Syntax error
+unaryfirst	^	syntax	Syntax error
+unaryfirst	&	syntax	Syntax error
+unaryfirst	=	syntax	Syntax error
+unaryfirst	<>	syntax	Syntax error
+unaryfirst	<	syntax	Syntax error
+unaryfirst	>	syntax	Syntax error
+unaryfirst	<=	syntax	Syntax error
+unaryfirst	>=	syntax	Syntax error
+unaryfirst	=>	syntax	Syntax error
+unaryfirst	=<	syntax	Syntax error
+unaryfirst	><	syntax	Syntax error
+unaryfirst	Mod	syntax	Syntax error
+unaryfirst	And	syntax	Syntax error
+unaryfirst	Or	syntax	Syntax error
+unaryfirst	Xor	syntax	Syntax error
+unaryfirst	Eqv	syntax	Syntax error
+unaryfirst	Imp	syntax	Syntax error
+unaryfirst	Like	syntax	Syntax error
+unaryfirst	Is	syntax	Syntax error
+unaryfirst	Not	accepted	
+unaryfirst	TypeOf	syntax	Syntax error
+unaryfirst	New	semantic	User-defined type not defined
+unaryfirst	AddressOf	syntax	Syntax error
+unaryfirst	ByVal	syntax	Syntax error
+unaryfirst	ByRef	syntax	Syntax error
+unaryfirst	.	semantic	Invalid or unqualified reference
+unaryfirst	!	semantic	Invalid or unqualified reference
+unaryfirst	,	syntax	Syntax error
+unaryfirst	;	syntax	Syntax error
+unaryfirst	:	syntax	Syntax error
+unaryfirst	:=	syntax	Syntax error
+unaryfirst	(	syntax	Syntax error
+unaryfirst	)	syntax	Syntax error
+unaryfirst	$	syntax	Syntax error
+unaryfirst	%	syntax	Syntax error
+unaryfirst	@	syntax	Syntax error
+unaryfirst	&H10	syntax	Syntax error
+unaryfirst	&O7	syntax	Syntax error
+unaryfirst	1	syntax	Syntax error
+unaryfirst	1.5	syntax	Syntax error
+unaryfirst	"s"	syntax	Syntax error
+unaryfirst	#1/1/2000#	syntax	Syntax error
+trailing	+	syntax	Syntax error
+trailing	-	syntax	Syntax error
+trailing	*	syntax	Syntax error
+trailing	/	syntax	Syntax error
+trailing	\	syntax	Syntax error
+trailing	^	syntax	Syntax error
+trailing	&	syntax	Syntax error
+trailing	=	syntax	Syntax error
+trailing	<>	syntax	Syntax error
+trailing	<	syntax	Syntax error
+trailing	>	syntax	Syntax error
+trailing	<=	syntax	Syntax error
+trailing	>=	syntax	Syntax error
+trailing	=>	syntax	Syntax error
+trailing	=<	syntax	Syntax error
+trailing	><	syntax	Syntax error
+trailing	Mod	syntax	Syntax error
+trailing	And	syntax	Syntax error
+trailing	Or	syntax	Syntax error
+trailing	Xor	syntax	Syntax error
+trailing	Eqv	syntax	Syntax error
+trailing	Imp	syntax	Syntax error
+trailing	Like	syntax	Syntax error
+trailing	Is	syntax	Syntax error
+trailing	Not	syntax	Syntax error
+trailing	TypeOf	syntax	Syntax error
+trailing	New	syntax	Syntax error
+trailing	AddressOf	syntax	Syntax error
+trailing	ByVal	syntax	Syntax error
+trailing	ByRef	syntax	Syntax error
+trailing	.	syntax	Syntax error
+trailing	!	syntax	Syntax error
+trailing	,	syntax	Syntax error
+trailing	;	syntax	Syntax error
+trailing	:	accepted	
+trailing	:=	syntax	Syntax error
+trailing	(	syntax	Syntax error
+trailing	)	syntax	Syntax error
+trailing	$	syntax	Syntax error
+trailing	%	syntax	Syntax error
+trailing	@	syntax	Syntax error
+trailing	&H10	syntax	Syntax error
+trailing	&O7	syntax	Syntax error
+trailing	1	syntax	Syntax error
+trailing	1.5	syntax	Syntax error
+trailing	"s"	syntax	Syntax error
+trailing	#1/1/2000#	syntax	Syntax error
+doubled	+	accepted	
+doubled	-	accepted	
+doubled	*	syntax	Syntax error
+doubled	/	syntax	Syntax error
+doubled	\	syntax	Syntax error
+doubled	^	syntax	Syntax error
+doubled	&	syntax	Syntax error
+doubled	=	syntax	Syntax error
+doubled	<>	syntax	Syntax error
+doubled	<	syntax	Syntax error
+doubled	>	syntax	Syntax error
+doubled	<=	syntax	Syntax error
+doubled	>=	syntax	Syntax error
+doubled	=>	syntax	Syntax error
+doubled	=<	syntax	Syntax error
+doubled	><	syntax	Syntax error
+doubled	Mod	syntax	Syntax error
+doubled	And	syntax	Syntax error
+doubled	Or	syntax	Syntax error
+doubled	Xor	syntax	Syntax error
+doubled	Eqv	syntax	Syntax error
+doubled	Imp	syntax	Syntax error
+doubled	Like	syntax	Syntax error
+doubled	Is	syntax	Syntax error
+doubled	Not	accepted	
+doubled	TypeOf	syntax	Syntax error
+doubled	New	syntax	Syntax error
+doubled	AddressOf	syntax	Syntax error
+doubled	ByVal	syntax	Syntax error
+doubled	ByRef	syntax	Syntax error
+doubled	.	syntax	Syntax error
+doubled	!	syntax	Syntax error
+doubled	,	syntax	Syntax error
+doubled	;	syntax	Syntax error
+doubled	:	semantic	Sub or Function not defined
+doubled	:=	syntax	Syntax error
+doubled	(	syntax	Syntax error
+doubled	)	syntax	Syntax error
+doubled	$	syntax	Syntax error
+doubled	%	syntax	Syntax error
+doubled	@	syntax	Syntax error
+doubled	&H10	syntax	Syntax error
+doubled	&O7	syntax	Syntax error
+doubled	1	syntax	Syntax error
+doubled	1.5	syntax	Syntax error
+doubled	"s"	syntax	Syntax error
+doubled	#1/1/2000#	syntax	Syntax error
+afterminus	+	accepted	
+afterminus	-	accepted	
+afterminus	*	syntax	Syntax error
+afterminus	/	syntax	Syntax error
+afterminus	\	syntax	Syntax error
+afterminus	^	syntax	Syntax error
+afterminus	&	syntax	Syntax error
+afterminus	=	syntax	Syntax error
+afterminus	<>	syntax	Syntax error
+afterminus	<	syntax	Syntax error
+afterminus	>	syntax	Syntax error
+afterminus	<=	syntax	Syntax error
+afterminus	>=	syntax	Syntax error
+afterminus	=>	syntax	Syntax error
+afterminus	=<	syntax	Syntax error
+afterminus	><	syntax	Syntax error
+afterminus	Mod	syntax	Syntax error
+afterminus	And	syntax	Syntax error
+afterminus	Or	syntax	Syntax error
+afterminus	Xor	syntax	Syntax error
+afterminus	Eqv	syntax	Syntax error
+afterminus	Imp	syntax	Syntax error
+afterminus	Like	syntax	Syntax error
+afterminus	Is	syntax	Syntax error
+afterminus	Not	accepted	
+afterminus	TypeOf	syntax	Syntax error
+afterminus	New	semantic	User-defined type not defined
+afterminus	AddressOf	syntax	Syntax error
+afterminus	ByVal	syntax	Syntax error
+afterminus	ByRef	syntax	Syntax error
+afterminus	.	semantic	Invalid or unqualified reference
+afterminus	!	semantic	Invalid or unqualified reference
+afterminus	,	syntax	Syntax error
+afterminus	;	syntax	Syntax error
+afterminus	:	syntax	Syntax error
+afterminus	:=	syntax	Syntax error
+afterminus	(	syntax	Syntax error
+afterminus	)	syntax	Syntax error
+afterminus	$	syntax	Syntax error
+afterminus	%	syntax	Syntax error
+afterminus	@	syntax	Syntax error
+afterminus	&H10	syntax	Syntax error
+afterminus	&O7	syntax	Syntax error
+afterminus	1	syntax	Syntax error
+afterminus	1.5	syntax	Syntax error
+afterminus	"s"	syntax	Syntax error
+afterminus	#1/1/2000#	syntax	Syntax error
+beforeminus	+	accepted	
+beforeminus	-	accepted	
+beforeminus	*	accepted	
+beforeminus	/	accepted	
+beforeminus	\	accepted	
+beforeminus	^	accepted	
+beforeminus	&	accepted	
+beforeminus	=	accepted	
+beforeminus	<>	accepted	
+beforeminus	<	accepted	
+beforeminus	>	accepted	
+beforeminus	<=	accepted	
+beforeminus	>=	accepted	
+beforeminus	=>	accepted	
+beforeminus	=<	accepted	
+beforeminus	><	accepted	
+beforeminus	Mod	accepted	
+beforeminus	And	accepted	
+beforeminus	Or	accepted	
+beforeminus	Xor	accepted	
+beforeminus	Eqv	accepted	
+beforeminus	Imp	accepted	
+beforeminus	Like	accepted	
+beforeminus	Is	accepted	
+beforeminus	Not	accepted	
+beforeminus	TypeOf	syntax	Syntax error
+beforeminus	New	syntax	Syntax error
+beforeminus	AddressOf	syntax	Syntax error
+beforeminus	ByVal	syntax	Syntax error
+beforeminus	ByRef	syntax	Syntax error
+beforeminus	.	syntax	Syntax error
+beforeminus	!	syntax	Syntax error
+beforeminus	,	syntax	Syntax error
+beforeminus	;	syntax	Syntax error
+beforeminus	:	syntax	Syntax error
+beforeminus	:=	syntax	Syntax error
+beforeminus	(	syntax	Syntax error
+beforeminus	)	syntax	Syntax error
+beforeminus	$	syntax	Syntax error
+beforeminus	%	syntax	Syntax error
+beforeminus	@	syntax	Syntax error
+beforeminus	&H10	syntax	Syntax error
+beforeminus	&O7	syntax	Syntax error
+beforeminus	1	syntax	Syntax error
+beforeminus	1.5	syntax	Syntax error
+beforeminus	"s"	syntax	Syntax error
+beforeminus	#1/1/2000#	syntax	Syntax error
+afternot	+	accepted	
+afternot	-	accepted	
+afternot	*	accepted	
+afternot	/	accepted	
+afternot	\	accepted	
+afternot	^	accepted	
+afternot	&	accepted	
+afternot	=	accepted	
+afternot	<>	accepted	
+afternot	<	accepted	
+afternot	>	accepted	
+afternot	<=	accepted	
+afternot	>=	accepted	
+afternot	=>	accepted	
+afternot	=<	accepted	
+afternot	><	accepted	
+afternot	Mod	accepted	
+afternot	And	accepted	
+afternot	Or	accepted	
+afternot	Xor	accepted	
+afternot	Eqv	accepted	
+afternot	Imp	accepted	
+afternot	Like	accepted	
+afternot	Is	accepted	
+afternot	Not	accepted	
+afternot	TypeOf	syntax	Syntax error
+afternot	New	syntax	Syntax error
+afternot	AddressOf	syntax	Syntax error
+afternot	ByVal	syntax	Syntax error
+afternot	ByRef	syntax	Syntax error
+afternot	.	syntax	Syntax error
+afternot	!	syntax	Syntax error
+afternot	,	syntax	Syntax error
+afternot	;	syntax	Syntax error
+afternot	:	syntax	Syntax error
+afternot	:=	syntax	Syntax error
+afternot	(	syntax	Syntax error
+afternot	)	syntax	Syntax error
+afternot	$	syntax	Syntax error
+afternot	%	syntax	Syntax error
+afternot	@	syntax	Syntax error
+afternot	&H10	syntax	Syntax error
+afternot	&O7	syntax	Syntax error
+afternot	1	syntax	Syntax error
+afternot	1.5	syntax	Syntax error
+afternot	"s"	syntax	Syntax error
+afternot	#1/1/2000#	syntax	Syntax error
+inparens	+	accepted	
+inparens	-	accepted	
+inparens	*	syntax	Syntax error
+inparens	/	syntax	Syntax error
+inparens	\	syntax	Syntax error
+inparens	^	syntax	Syntax error
+inparens	&	syntax	Syntax error
+inparens	=	syntax	Syntax error
+inparens	<>	syntax	Syntax error
+inparens	<	syntax	Syntax error
+inparens	>	syntax	Syntax error
+inparens	<=	syntax	Syntax error
+inparens	>=	syntax	Syntax error
+inparens	=>	syntax	Syntax error
+inparens	=<	syntax	Syntax error
+inparens	><	syntax	Syntax error
+inparens	Mod	syntax	Syntax error
+inparens	And	syntax	Syntax error
+inparens	Or	syntax	Syntax error
+inparens	Xor	syntax	Syntax error
+inparens	Eqv	syntax	Syntax error
+inparens	Imp	syntax	Syntax error
+inparens	Like	syntax	Syntax error
+inparens	Is	syntax	Syntax error
+inparens	Not	accepted	
+inparens	TypeOf	syntax	Syntax error
+inparens	New	semantic	User-defined type not defined
+inparens	AddressOf	syntax	Syntax error
+inparens	ByVal	syntax	Syntax error
+inparens	ByRef	syntax	Syntax error
+inparens	.	semantic	Invalid or unqualified reference
+inparens	!	semantic	Invalid or unqualified reference
+inparens	,	syntax	Syntax error
+inparens	;	syntax	Syntax error
+inparens	:	syntax	Syntax error
+inparens	:=	syntax	Syntax error
+inparens	(	syntax	Syntax error
+inparens	)	syntax	Syntax error
+inparens	$	syntax	Syntax error
+inparens	%	syntax	Syntax error
+inparens	@	syntax	Syntax error
+inparens	&H10	syntax	Syntax error
+inparens	&O7	syntax	Syntax error
+inparens	1	syntax	Syntax error
+inparens	1.5	syntax	Syntax error
+inparens	"s"	syntax	Syntax error
+inparens	#1/1/2000#	syntax	Syntax error
+inargs	+	semantic	Sub or Function not defined
+inargs	-	semantic	Sub or Function not defined
+inargs	*	semantic	Sub or Function not defined
+inargs	/	semantic	Sub or Function not defined
+inargs	\	semantic	Sub or Function not defined
+inargs	^	semantic	Sub or Function not defined
+inargs	&	semantic	Sub or Function not defined
+inargs	=	semantic	Sub or Function not defined
+inargs	<>	semantic	Sub or Function not defined
+inargs	<	semantic	Sub or Function not defined
+inargs	>	semantic	Sub or Function not defined
+inargs	<=	semantic	Sub or Function not defined
+inargs	>=	semantic	Sub or Function not defined
+inargs	=>	semantic	Sub or Function not defined
+inargs	=<	semantic	Sub or Function not defined
+inargs	><	semantic	Sub or Function not defined
+inargs	Mod	semantic	Sub or Function not defined
+inargs	And	semantic	Sub or Function not defined
+inargs	Or	semantic	Sub or Function not defined
+inargs	Xor	semantic	Sub or Function not defined
+inargs	Eqv	semantic	Sub or Function not defined
+inargs	Imp	semantic	Sub or Function not defined
+inargs	Like	semantic	Sub or Function not defined
+inargs	Is	semantic	Sub or Function not defined
+inargs	Not	semantic	Sub or Function not defined
+inargs	TypeOf	syntax	Syntax error
+inargs	New	syntax	Syntax error
+inargs	AddressOf	syntax	Syntax error
+inargs	ByVal	syntax	Syntax error
+inargs	ByRef	syntax	Syntax error
+inargs	.	syntax	Syntax error
+inargs	!	syntax	Syntax error
+inargs	,	semantic	Sub or Function not defined
+inargs	;	syntax	Syntax error
+inargs	:	syntax	Syntax error
+inargs	:=	syntax	Syntax error
+inargs	(	syntax	Syntax error
+inargs	)	syntax	Syntax error
+inargs	$	syntax	Syntax error
+inargs	%	syntax	Syntax error
+inargs	@	syntax	Syntax error
+inargs	&H10	syntax	Syntax error
+inargs	&O7	syntax	Syntax error
+inargs	1	syntax	Syntax error
+inargs	1.5	syntax	Syntax error
+inargs	"s"	syntax	Syntax error
+inargs	#1/1/2000#	syntax	Syntax error
+asarg	+	syntax	Syntax error
+asarg	-	syntax	Syntax error
+asarg	*	syntax	Syntax error
+asarg	/	syntax	Syntax error
+asarg	\	syntax	Syntax error
+asarg	^	syntax	Syntax error
+asarg	&	syntax	Syntax error
+asarg	=	syntax	Syntax error
+asarg	<>	syntax	Syntax error
+asarg	<	syntax	Syntax error
+asarg	>	syntax	Syntax error
+asarg	<=	syntax	Syntax error
+asarg	>=	syntax	Syntax error
+asarg	=>	syntax	Syntax error
+asarg	=<	syntax	Syntax error
+asarg	><	syntax	Syntax error
+asarg	Mod	syntax	Syntax error
+asarg	And	syntax	Syntax error
+asarg	Or	syntax	Syntax error
+asarg	Xor	syntax	Syntax error
+asarg	Eqv	syntax	Syntax error
+asarg	Imp	syntax	Syntax error
+asarg	Like	syntax	Syntax error
+asarg	Is	syntax	Syntax error
+asarg	Not	syntax	Syntax error
+asarg	TypeOf	syntax	Syntax error
+asarg	New	syntax	Syntax error
+asarg	AddressOf	syntax	Syntax error
+asarg	ByVal	syntax	Syntax error
+asarg	ByRef	syntax	Syntax error
+asarg	.	syntax	Syntax error
+asarg	!	syntax	Syntax error
+asarg	,	syntax	Syntax error
+asarg	;	syntax	Syntax error
+asarg	:	syntax	Syntax error
+asarg	:=	syntax	Syntax error
+asarg	(	syntax	Syntax error
+asarg	)	syntax	Syntax error
+asarg	$	syntax	Syntax error
+asarg	%	syntax	Syntax error
+asarg	@	syntax	Syntax error
+asarg	&H10	semantic	Sub or Function not defined
+asarg	&O7	semantic	Sub or Function not defined
+asarg	1	semantic	Sub or Function not defined
+asarg	1.5	semantic	Sub or Function not defined
+asarg	"s"	semantic	Sub or Function not defined
+asarg	#1/1/2000#	semantic	Sub or Function not defined
+instmt	+	semantic	Sub or Function not defined
+instmt	-	semantic	Sub or Function not defined
+instmt	*	syntax	Syntax error
+instmt	/	syntax	Syntax error
+instmt	\	syntax	Syntax error
+instmt	^	syntax	Syntax error
+instmt	&	syntax	Syntax error
+instmt	=	accepted	
+instmt	<>	syntax	Syntax error
+instmt	<	syntax	Syntax error
+instmt	>	syntax	Syntax error
+instmt	<=	syntax	Syntax error
+instmt	>=	syntax	Syntax error
+instmt	=>	syntax	Syntax error
+instmt	=<	syntax	Syntax error
+instmt	><	syntax	Syntax error
+instmt	Mod	syntax	Syntax error
+instmt	And	syntax	Syntax error
+instmt	Or	syntax	Syntax error
+instmt	Xor	syntax	Syntax error
+instmt	Eqv	syntax	Syntax error
+instmt	Imp	syntax	Syntax error
+instmt	Like	syntax	Syntax error
+instmt	Is	syntax	Syntax error
+instmt	Not	semantic	Sub or Function not defined
+instmt	TypeOf	syntax	Syntax error
+instmt	New	semantic	User-defined type not defined
+instmt	AddressOf	semantic	Expected Sub, Function, or Property
+instmt	ByVal	semantic	Sub or Function not defined
+instmt	ByRef	syntax	Syntax error
+instmt	.	semantic	Invalid or unqualified reference
+instmt	!	semantic	Invalid or unqualified reference
+instmt	,	semantic	Sub or Function not defined
+instmt	;	syntax	Syntax error
+instmt	:	semantic	Sub or Function not defined
+instmt	:=	syntax	Syntax error
+instmt	(	syntax	Syntax error
+instmt	)	syntax	Syntax error
+instmt	$	syntax	Syntax error
+instmt	%	syntax	Syntax error
+instmt	@	syntax	Syntax error
+instmt	&H10	syntax	Syntax error
+instmt	&O7	syntax	Syntax error
+instmt	1	syntax	Syntax error
+instmt	1.5	syntax	Syntax error
+instmt	"s"	syntax	Syntax error
+instmt	#1/1/2000#	syntax	Syntax error
+condition	+	accepted	
+condition	-	accepted	
+condition	*	accepted	
+condition	/	accepted	
+condition	\	accepted	
+condition	^	accepted	
+condition	&	accepted	
+condition	=	accepted	
+condition	<>	accepted	
+condition	<	accepted	
+condition	>	accepted	
+condition	<=	accepted	
+condition	>=	accepted	
+condition	=>	accepted	
+condition	=<	accepted	
+condition	><	accepted	
+condition	Mod	accepted	
+condition	And	accepted	
+condition	Or	accepted	
+condition	Xor	accepted	
+condition	Eqv	accepted	
+condition	Imp	accepted	
+condition	Like	accepted	
+condition	Is	accepted	
+condition	Not	accepted	
+condition	TypeOf	syntax	Syntax error
+condition	New	syntax	Syntax error
+condition	AddressOf	syntax	Syntax error
+condition	ByVal	syntax	Syntax error
+condition	ByRef	syntax	Syntax error
+condition	.	syntax	Syntax error
+condition	!	syntax	Syntax error
+condition	,	syntax	Syntax error
+condition	;	syntax	Syntax error
+condition	:	syntax	Syntax error
+condition	:=	syntax	Syntax error
+condition	(	syntax	Syntax error
+condition	)	syntax	Syntax error
+condition	$	syntax	Syntax error
+condition	%	syntax	Syntax error
+condition	@	syntax	Syntax error
+condition	&H10	syntax	Syntax error
+condition	&O7	syntax	Syntax error
+condition	1	syntax	Syntax error
+condition	1.5	syntax	Syntax error
+condition	"s"	syntax	Syntax error
+condition	#1/1/2000#	syntax	Syntax error
+plusprefix	+	accepted	
+plusprefix	-	accepted	
+plusprefix	*	syntax	Syntax error
+plusprefix	/	syntax	Syntax error
+plusprefix	\	syntax	Syntax error
+plusprefix	^	syntax	Syntax error
+plusprefix	&	syntax	Syntax error
+plusprefix	=	syntax	Syntax error
+plusprefix	<>	syntax	Syntax error
+plusprefix	<	syntax	Syntax error
+plusprefix	>	syntax	Syntax error
+plusprefix	<=	syntax	Syntax error
+plusprefix	>=	syntax	Syntax error
+plusprefix	=>	syntax	Syntax error
+plusprefix	=<	syntax	Syntax error
+plusprefix	><	syntax	Syntax error
+plusprefix	Mod	syntax	Syntax error
+plusprefix	And	syntax	Syntax error
+plusprefix	Or	syntax	Syntax error
+plusprefix	Xor	syntax	Syntax error
+plusprefix	Eqv	syntax	Syntax error
+plusprefix	Imp	syntax	Syntax error
+plusprefix	Like	syntax	Syntax error
+plusprefix	Is	syntax	Syntax error
+plusprefix	Not	accepted	
+plusprefix	TypeOf	syntax	Syntax error
+plusprefix	New	semantic	User-defined type not defined
+plusprefix	AddressOf	syntax	Syntax error
+plusprefix	ByVal	syntax	Syntax error
+plusprefix	ByRef	syntax	Syntax error
+plusprefix	.	semantic	Invalid or unqualified reference
+plusprefix	!	semantic	Invalid or unqualified reference
+plusprefix	,	syntax	Syntax error
+plusprefix	;	syntax	Syntax error
+plusprefix	:	syntax	Syntax error
+plusprefix	:=	syntax	Syntax error
+plusprefix	(	syntax	Syntax error
+plusprefix	)	syntax	Syntax error
+plusprefix	$	syntax	Syntax error
+plusprefix	%	syntax	Syntax error
+plusprefix	@	syntax	Syntax error
+plusprefix	&H10	syntax	Syntax error
+plusprefix	&O7	syntax	Syntax error
+plusprefix	1	syntax	Syntax error
+plusprefix	1.5	syntax	Syntax error
+plusprefix	"s"	syntax	Syntax error
+plusprefix	#1/1/2000#	syntax	Syntax error
