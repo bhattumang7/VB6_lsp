@@ -58,3 +58,19 @@ fn exponent_still_binds_tighter_than_multiplication() {
     let (a, b) = binop(&p, lhs, BinOpKind::Pow);
     assert_eq!((int(&p, a), int(&p, b)), (3, 2));
 }
+
+#[test]
+fn reversed_and_spaced_comparison_operators_parse() {
+    for (text, want) in [
+        ("a =< b", BinOpKind::Le),
+        ("a => b", BinOpKind::Ge),
+        ("a >< b", BinOpKind::Ne),
+        ("a < > b", BinOpKind::Ne),
+        ("a > = b", BinOpKind::Ge),
+    ] {
+        let (p, v) = rhs_of_first_assignment(text);
+        let (lhs, rhs) = binop(&p, v, want);
+        assert!(matches!(p.node(lhs), ExprNode::NameRef { .. }), "{text}");
+        assert!(matches!(p.node(rhs), ExprNode::NameRef { .. }), "{text}");
+    }
+}

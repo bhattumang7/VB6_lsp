@@ -1071,10 +1071,32 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    /// The next byte after any blanks (spaces and tabs) and the offset just
+    /// past it, without consuming anything. Two-character operators may have
+    /// blanks between their characters.
+    fn peek_past_blanks(&self) -> Option<(u8, usize)> {
+        let mut i = self.pos;
+        while matches!(self.src.get(i), Some(b' ') | Some(b'\t')) {
+            i += 1;
+        }
+        self.src.get(i).map(|&b| (b, i + 1))
+    }
+
+    /// Consume the operator's second character when it is one of `wanted`
+    /// (blanks may precede it); returns which one.
+    fn eat_operator_tail(&mut self, wanted: &[u8]) -> Option<u8> {
+        match self.peek_past_blanks() {
+            Some((b, end)) if wanted.contains(&b) => {
+                self.pos = end;
+                Some(b)
+            }
+            _ => None,
+        }
+    }
+
     /// Handle `':'`: Colon or `:=`.
     fn scan_colon(&mut self, start: usize) -> Token {
-        if self.peek() == Some(b'=') {
-            self.pos += 1;
+        if self.eat_operator_tail(b"=").is_some() {
             Token::op(Kw::ColonEq, self.span(start))
         } else {
             Token::op(Kw::Colon, self.span(start))
@@ -1083,28 +1105,28 @@ impl<'a> Scanner<'a> {
 
     /// Handle `'<'`: Lt, Le, or Ne.
     fn scan_lt(&mut self, start: usize) -> Token {
-        match self.peek() {
-            Some(b'=') => { self.pos += 1; Token::op(Kw::Le,  self.span(start)) }
-            Some(b'>') => { self.pos += 1; Token::op(Kw::Ne,  self.span(start)) }
-            _           =>                 Token::op(Kw::Lt,  self.span(start)),
+        match self.eat_operator_tail(b"=>") {
+            Some(b'=') => Token::op(Kw::Le, self.span(start)),
+            Some(_) => Token::op(Kw::Ne, self.span(start)),
+            None => Token::op(Kw::Lt, self.span(start)),
         }
     }
 
-    /// Handle `'='`: Eq, EqLt, or EqGt.
+    /// Handle `'='`: Eq, or the reversed spellings `=<` (Le) and `=>` (Ge).
     fn scan_eq(&mut self, start: usize) -> Token {
-        match self.peek() {
-            Some(b'<') => { self.pos += 1; Token::op(Kw::EqLt, self.span(start)) }
-            Some(b'>') => { self.pos += 1; Token::op(Kw::EqGt, self.span(start)) }
-            _           =>                 Token::op(Kw::Eq,   self.span(start)),
+        match self.eat_operator_tail(b"<>") {
+            Some(b'<') => Token::op(Kw::Le, self.span(start)),
+            Some(_) => Token::op(Kw::Ge, self.span(start)),
+            None => Token::op(Kw::Eq, self.span(start)),
         }
     }
 
-    /// Handle `'>'`: Gt, Ge, or GtLt.
+    /// Handle `'>'`: Gt, Ge, or the reversed `><` (Ne).
     fn scan_gt(&mut self, start: usize) -> Token {
-        match self.peek() {
-            Some(b'=') => { self.pos += 1; Token::op(Kw::Ge,   self.span(start)) }
-            Some(b'<') => { self.pos += 1; Token::op(Kw::GtLt, self.span(start)) }
-            _           =>                 Token::op(Kw::Gt,   self.span(start)),
+        match self.eat_operator_tail(b"=<") {
+            Some(b'=') => Token::op(Kw::Ge, self.span(start)),
+            Some(_) => Token::op(Kw::Ne, self.span(start)),
+            None => Token::op(Kw::Gt, self.span(start)),
         }
     }
 

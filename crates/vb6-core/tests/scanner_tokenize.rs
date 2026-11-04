@@ -52,18 +52,50 @@ fn tokenize_literals() {
 
 #[test]
 fn tokenize_operators() {
-    let kinds = tokenize(b"+ - * / ^ = <> < > <= >=");
+    let kinds = tokenize(b"+ - * / ^ , = , <> , < , > , <= , >=");
     assert_eq!(kinds, vec![
         TokenKind::Kw(Kw::Plus),
         TokenKind::Kw(Kw::Minus),
         TokenKind::Kw(Kw::Star),
         TokenKind::Kw(Kw::Slash),
         TokenKind::Kw(Kw::Caret),
+        TokenKind::Kw(Kw::Comma),
         TokenKind::Kw(Kw::Eq),
+        TokenKind::Kw(Kw::Comma),
         TokenKind::Kw(Kw::Ne),
+        TokenKind::Kw(Kw::Comma),
         TokenKind::Kw(Kw::Lt),
+        TokenKind::Kw(Kw::Comma),
         TokenKind::Kw(Kw::Gt),
+        TokenKind::Kw(Kw::Comma),
         TokenKind::Kw(Kw::Le),
+        TokenKind::Kw(Kw::Comma),
         TokenKind::Kw(Kw::Ge),
     ]);
+}
+
+#[test]
+fn two_character_operators_allow_blanks_and_reversed_spellings() {
+    let cases: [(&[u8], Kw); 12] = [
+        (b"< =", Kw::Le),
+        (b"<\t=", Kw::Le),
+        (b"< >", Kw::Ne),
+        (b"> =", Kw::Ge),
+        (b"=<", Kw::Le),
+        (b"= <", Kw::Le),
+        (b"=>", Kw::Ge),
+        (b"= >", Kw::Ge),
+        (b"><", Kw::Ne),
+        (b"> <", Kw::Ne),
+        (b"<>", Kw::Ne),
+        (b": =", Kw::ColonEq),
+    ];
+    for (src, want) in cases {
+        assert_eq!(tokenize(src), vec![TokenKind::Kw(want)], "{:?}", String::from_utf8_lossy(src));
+    }
+    // A blank before a non-operator character leaves the first operator alone.
+    assert_eq!(
+        tokenize(b"< 1"),
+        vec![TokenKind::Kw(Kw::Lt), TokenKind::IntLit]
+    );
 }
