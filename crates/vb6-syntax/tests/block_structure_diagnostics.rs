@@ -168,9 +168,12 @@ fn only_a_comment_may_follow_the_procedure_end() {
     let src = "Sub S()\nEnd Sub: Dim a\n";
     assert_eq!(parse(src).found, vec![(0x9c91, offset_of(src, ":", 0), 1)]);
 
-    for ok in ["Sub S()\nEnd Sub ' done\n", "Sub S()\nEnd Sub\n", "Sub S()\nEnd Sub", "Sub S()\nEnd Sub Rem done\n"] {
+    for ok in ["Sub S()\nEnd Sub ' done\n", "Sub S()\nEnd Sub\n", "Sub S()\nEnd Sub"] {
         assert_eq!(parse(ok).found, vec![], "for {ok:?}");
     }
+    // `Rem` is a comment only where a statement can start, not after `End Sub`.
+    let src = "Sub S()\nEnd Sub Rem done\n";
+    assert_eq!(parse(src).found, vec![(0x9c91, offset_of(src, "Rem", 0), 8)]);
 }
 
 #[test]

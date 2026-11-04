@@ -211,6 +211,8 @@ pub struct Parser<'src> {
     last_item_had_as: bool,
     /// An `AddressOf` is allowed where the next primary starts: the start of a call argument.
     address_of_ok: bool,
+    /// The statements of a single-line `If` are being parsed: a `Rem` comment may follow one.
+    in_inline_if: bool,
     /// A statement's target is being parsed, where built-in functions are plain names.
     in_target: bool,
     /// Open block statements of the procedure being parsed, innermost last.
@@ -335,6 +337,7 @@ impl<'src> Parser<'src> {
             reserved_names_allowed: false,
             last_item_had_as: false,
             address_of_ok: false,
+            in_inline_if: false,
             in_target: false,
             blocks: Vec::new(),
             last_was_eol: false,
@@ -805,7 +808,7 @@ impl<'src> Parser<'src> {
     /// `If`. Anything else is an error: the rest of the line is skipped so
     /// parsing resumes at the next statement.
     fn end_stmt(&mut self) {
-        if self.peek().is_stmt_end() {
+        if self.peek().is_stmt_end() || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
             self.advance();
         } else if !matches!(
             self.peek().kind,
@@ -2317,6 +2320,7 @@ impl<'src> Parser<'src> {
         let mut names: Vec<(Option<u32>, Span)> = Vec::new();
         while !self.peek().is_stmt_end() {
             match self.peek().kind {
+                TokenKind::Kw(Kw::Rem) => break,
                 TokenKind::Ident | TokenKind::Kw(_) => {
                     let tok = self.advance();
                     names.push((tok.sym.map(|s| s as u32).filter(|_| tok.kind == TokenKind::Ident), tok.span));
@@ -2443,6 +2447,11 @@ impl<'src> Parser<'src> {
 
         // Single-line If: a `Then` followed immediately by a statement (not Eol),
         // or the legacy `GoTo` form.
+        if has_then && self.peek().kind == TokenKind::Kw(Kw::Rem) {
+            // A comment cannot stand in for the statement after `Then`.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        }
         if legacy_goto || (has_then && !self.peek().is_stmt_end()) {
             let stmts = self.parse_inline_statements(arena);
             let then_body = arena.alloc(ExprNode::Block { stmts });
@@ -2470,6 +2479,13 @@ impl<'src> Parser<'src> {
     /// The statements of one part of a single-line `If`: every statement
     /// (separated by `:`) up to the `Else` or the end of the line.
     fn parse_inline_statements(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
+        let was_inline = std::mem::replace(&mut self.in_inline_if, true);
+        let stmts = self.parse_inline_statement_list(arena);
+        self.in_inline_if = was_inline;
+        stmts
+    }
+
+    fn parse_inline_statement_list(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
         let mut stmts = Vec::new();
         // `If c Then 10`: a line number straight after `Then` / `Else` is a jump.
         if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
@@ -2485,6 +2501,7 @@ impl<'src> Parser<'src> {
             if self.last_was_eol
                 || self.peek().is_stmt_end()
                 || self.peek().kind == TokenKind::Kw(Kw::Else)
+                || (!stmts.is_empty() && self.peek().kind == TokenKind::Kw(Kw::Rem))
             {
                 break;
             }
@@ -2520,6 +2537,10 @@ impl<'src> Parser<'src> {
                 self.advance();
                 let cond = self.parse_expr(arena, 0);
                 self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
+                if self.peek().kind == TokenKind::Kw(Kw::Rem) {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                }
                 self.eat_eol();
                 let then_body = self.parse_block(arena);
                 let else_body = self.parse_else_clause(arena);
@@ -2625,6 +2646,12 @@ impl<'src> Parser<'src> {
 
     fn parse_call_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Call
+        if self.peek().kind == TokenKind::Kw(Kw::Rem) {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         if self.at_reserved_word() && self.peek().kind != TokenKind::Kw(Kw::Me) {
             self.reject_reserved_word();
             self.skip_line();

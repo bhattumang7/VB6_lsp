@@ -479,6 +479,118 @@ body	On x GoTo L M\nL:\nM:	syntax	Syntax error
 body	On x + 1 GoTo L\nL:	accepted	
 body	On x GoTo (L)	syntax	Syntax error
 body	On x GoTo -1	syntax	Syntax error
+body	Do\nLoop	accepted	
+body	Do While x\nLoop	accepted	
+body	Do Until x\nLoop	accepted	
+body	Do\nLoop While x	accepted	
+body	Do\nLoop Until x	accepted	
+body	Do While\nLoop	syntax	Syntax error
+body	Do Until\nLoop	syntax	Syntax error
+body	Do\nLoop While	syntax	Syntax error
+body	Do\nLoop Until	syntax	Syntax error
+body	Do x\nLoop	syntax	Syntax error
+body	Do\nLoop x	syntax	Syntax error
+body	Do: Loop	accepted	
+body	Do While x: Loop	accepted	
+body	Do: Loop While x	accepted	
+body	Do ' c\nLoop ' c	accepted	
+body	Do Rem c\nLoop	syntax	Syntax error
+body	Do While x Until y\nLoop	syntax	Syntax error
+body	Do While x\nLoop While y	syntax	Loop without Do
+body	Do While x\nLoop Until y	syntax	Loop without Do
+body	Do While x Then\nLoop	syntax	Syntax error
+body	Do While x, y\nLoop	syntax	Syntax error
+body	Do While (x)\nLoop	accepted	
+body	Do While x = 1 And y\nLoop	accepted	
+body	Do Else\nLoop	syntax	Syntax error
+body	Do While x Else\nLoop	syntax	Syntax error
+body	Do\nLoop Else	syntax	Syntax error
+body	Do _\nWhile x\nLoop	accepted	
+body	Do While x _\n And y\nLoop	accepted	
+body	Do While Not x\nLoop	accepted	
+body	Do While\nx\nLoop	syntax	Syntax error
+body	Do\nLoop\nWhile x	syntax	While without Wend
+body	Loop	syntax	Loop without Do
+body	Do\nLoop Loop	syntax	Syntax error
+body	Do Do\nLoop\nLoop	syntax	Syntax error
+body	Do While x:\nLoop	accepted	
+body	Do\nLoop:	accepted	
+body	Do\nLoop While x:	accepted	
+body	Do\nLoop While x Else	syntax	Syntax error
+body	Do Until 1\nLoop	accepted	
+body	Do While "s"\nLoop	accepted	
+body	Do While Foo()\nLoop	semantic	Sub or Function not defined
+body	Do While o.p\nLoop	accepted	
+body	While x\nWend	accepted	
+body	While\nWend	syntax	Syntax error
+body	While x\nWend x	syntax	Syntax error
+body	While x Until y\nWend	syntax	Syntax error
+body	While x: Wend	accepted	
+body	Wend	syntax	Wend without While
+body	Do\nLoop Rem c	syntax	Syntax error
+body	Do While x Rem c\nLoop	syntax	Syntax error
+body	Do Until x Rem c\nLoop	syntax	Syntax error
+body	Do\nLoop While x Rem c	syntax	Syntax error
+body	x = 1 Rem c	syntax	Syntax error
+body	x = 1: Rem c	accepted	
+body	Rem c	accepted	
+body	Dim a As Long Rem c	syntax	Syntax error
+body	Exit Sub Rem c	syntax	Syntax error
+body	Exit Do Rem c	syntax	Syntax error
+body	End Rem c	syntax	Syntax error
+body	Stop Rem c	syntax	Syntax error
+body	Foo Rem c	syntax	Syntax error
+body	Foo 1 Rem c	syntax	Syntax error
+body	Call Foo Rem c	syntax	Syntax error
+body	Return Rem c	syntax	Syntax error
+body	GoTo L Rem c\nL:	syntax	Syntax error
+body	If x Then Rem c	syntax	Syntax error
+body	If x Then y = 1 Rem c	accepted	
+body	If x Then\nEnd If Rem c	syntax	Syntax error
+body	For i = 1 To 2 Rem c\nNext	syntax	Syntax error
+body	For i = 1 To 2\nNext Rem c	syntax	Syntax error
+body	Next Rem c	syntax	Syntax error
+body	Select Case x Rem c\nEnd Select	syntax	Syntax error
+body	With o Rem c\nEnd With	syntax	Syntax error
+body	Set x = y Rem c	syntax	Syntax error
+body	Erase x Rem c	syntax	Syntax error
+body	Randomize Rem c	syntax	Syntax error
+body	Resume Rem c	syntax	Syntax error
+body	Resume Next Rem c	syntax	Syntax error
+body	On Error Resume Next Rem c	syntax	Syntax error
+body	On Error GoTo 0 Rem c	syntax	Syntax error
+body	Do ' c\nLoop	accepted	
+body	Do\nLoop ' c	accepted	
+body	x = 1 ' c	accepted	
+body	Rem	accepted	
+body	Do Rem\nLoop	syntax	Syntax error
+body	Do While x ' c\nLoop	accepted	
+body	Sub P()\nEnd Sub Rem c	syntax	Expected End Sub
+body	Sub P()\nEnd Sub ' c	syntax	Expected End Sub
+body	Sub P() Rem c\nEnd Sub	syntax	Syntax error
+body	If x Then\nEnd If Rem c	syntax	Syntax error
+body	If x Then\nElse Rem c\nEnd If	accepted	
+body	If x Then\nElseIf y Then Rem c\nEnd If	syntax	Syntax error
+body	If x Then Rem c\nEnd If	syntax	End If without block If
+body	If x Then y = 1 Rem c	accepted	
+body	If x Then y = 1: z = 2 Rem c	accepted	
+body	If x Then y = 1 Else z = 2 Rem c	accepted	
+body	If x Then y = 1 Else Rem c	accepted	
+body	If x Then Else y = 1 Rem c	accepted	
+body	If x Then y = 1 ' c	accepted	
+body	Select Case x\nCase 1 Rem c\nEnd Select	syntax	Syntax error
+body	Select Case x\nCase Else Rem c\nEnd Select	syntax	Syntax error
+body	Select Case x\nEnd Select Rem c	syntax	Syntax error
+body	Wend Rem c	syntax	Syntax error
+body	While x\nWend Rem c	syntax	Syntax error
+body	With o\nEnd With Rem c	syntax	Syntax error
+body	For i = 1 To 2\nNext i Rem c	syntax	Syntax error
+body	Dim a As Long: Rem c	accepted	
+body	Foo: Rem c	accepted	
+body	Rem c: x = 1	accepted	
+body	Call Rem	syntax	Syntax error
+body	Call Rem c	syntax	Syntax error
+body	Foo Rem	syntax	Syntax error
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -959,3 +1071,115 @@ module	On x GoTo L M\nL:\nM:	syntax	Expected: end of statement
 module	On x + 1 GoTo L\nL:	syntax	Invalid outside procedure
 module	On x GoTo (L)	syntax	Expected: line number or label
 module	On x GoTo -1	syntax	Expected: line number or label
+module	Do\nLoop	syntax	Invalid outside procedure
+module	Do While x\nLoop	syntax	Invalid outside procedure
+module	Do Until x\nLoop	syntax	Invalid outside procedure
+module	Do\nLoop While x	syntax	Invalid outside procedure
+module	Do\nLoop Until x	syntax	Invalid outside procedure
+module	Do While\nLoop	syntax	Expected: expression
+module	Do Until\nLoop	syntax	Expected: expression
+module	Do\nLoop While	syntax	Invalid outside procedure
+module	Do\nLoop Until	syntax	Invalid outside procedure
+module	Do x\nLoop	syntax	Expected: While or Until or end of statement
+module	Do\nLoop x	syntax	Invalid outside procedure
+module	Do: Loop	syntax	Invalid outside procedure
+module	Do While x: Loop	syntax	Invalid outside procedure
+module	Do: Loop While x	syntax	Invalid outside procedure
+module	Do ' c\nLoop ' c	syntax	Invalid outside procedure
+module	Do Rem c\nLoop	syntax	Expected: While or Until or end of statement
+module	Do While x Until y\nLoop	syntax	Expected: end of statement
+module	Do While x\nLoop While y	syntax	Invalid outside procedure
+module	Do While x\nLoop Until y	syntax	Invalid outside procedure
+module	Do While x Then\nLoop	syntax	Expected: end of statement
+module	Do While x, y\nLoop	syntax	Expected: end of statement
+module	Do While (x)\nLoop	syntax	Invalid outside procedure
+module	Do While x = 1 And y\nLoop	syntax	Invalid outside procedure
+module	Do Else\nLoop	syntax	Expected: While or Until or end of statement
+module	Do While x Else\nLoop	syntax	Expected: end of statement
+module	Do\nLoop Else	syntax	Invalid outside procedure
+module	Do _\nWhile x\nLoop	syntax	Invalid outside procedure
+module	Do While x _\n And y\nLoop	syntax	Invalid outside procedure
+module	Do While Not x\nLoop	syntax	Invalid outside procedure
+module	Do While\nx\nLoop	syntax	Expected: expression
+module	Do\nLoop\nWhile x	syntax	Invalid outside procedure
+module	Loop	syntax	Invalid outside procedure
+module	Do\nLoop Loop	syntax	Invalid outside procedure
+module	Do Do\nLoop\nLoop	syntax	Expected: While or Until or end of statement
+module	Do While x:\nLoop	syntax	Invalid outside procedure
+module	Do\nLoop:	syntax	Invalid outside procedure
+module	Do\nLoop While x:	syntax	Invalid outside procedure
+module	Do\nLoop While x Else	syntax	Invalid outside procedure
+module	Do Until 1\nLoop	syntax	Invalid outside procedure
+module	Do While "s"\nLoop	syntax	Invalid outside procedure
+module	Do While Foo()\nLoop	syntax	Invalid outside procedure
+module	Do While o.p\nLoop	syntax	Invalid outside procedure
+module	While x\nWend	syntax	Invalid outside procedure
+module	While\nWend	syntax	Expected: expression
+module	While x\nWend x	syntax	Invalid outside procedure
+module	While x Until y\nWend	syntax	Expected: end of statement
+module	While x: Wend	syntax	Invalid outside procedure
+module	Wend	syntax	Invalid outside procedure
+module	Do\nLoop Rem c	syntax	Invalid outside procedure
+module	Do While x Rem c\nLoop	syntax	Expected: end of statement
+module	Do Until x Rem c\nLoop	syntax	Expected: end of statement
+module	Do\nLoop While x Rem c	syntax	Invalid outside procedure
+module	x = 1 Rem c	syntax	Expected: end of statement
+module	x = 1: Rem c	syntax	Invalid outside procedure
+module	Rem c	accepted	
+module	Dim a As Long Rem c	syntax	Expected: end of statement
+module	Exit Sub Rem c	syntax	Expected: end of statement
+module	Exit Do Rem c	syntax	Expected: end of statement
+module	End Rem c	syntax	Expected: end of statement
+module	Stop Rem c	syntax	Expected: end of statement
+module	Foo Rem c	syntax	Expected: expression
+module	Foo 1 Rem c	syntax	Expected: end of statement
+module	Call Foo Rem c	syntax	Expected: end of statement
+module	Return Rem c	syntax	Expected: end of statement
+module	GoTo L Rem c\nL:	syntax	Expected: end of statement
+module	If x Then Rem c	syntax	Invalid outside procedure
+module	If x Then y = 1 Rem c	syntax	Invalid outside procedure
+module	If x Then\nEnd If Rem c	syntax	Invalid outside procedure
+module	For i = 1 To 2 Rem c\nNext	syntax	Expected: end of statement
+module	For i = 1 To 2\nNext Rem c	syntax	Invalid outside procedure
+module	Next Rem c	syntax	Expected: variable
+module	Select Case x Rem c\nEnd Select	syntax	Expected: end of statement
+module	With o Rem c\nEnd With	syntax	Expected: end of statement
+module	Set x = y Rem c	syntax	Expected: end of statement
+module	Erase x Rem c	syntax	Expected: list separator or end of statement
+module	Randomize Rem c	syntax	Expected: expression
+module	Resume Rem c	syntax	Expected: end of statement
+module	Resume Next Rem c	syntax	Expected: end of statement
+module	On Error Resume Next Rem c	syntax	Expected: end of statement
+module	On Error GoTo 0 Rem c	syntax	Expected: end of statement
+module	Do ' c\nLoop	syntax	Invalid outside procedure
+module	Do\nLoop ' c	syntax	Invalid outside procedure
+module	x = 1 ' c	syntax	Invalid outside procedure
+module	Rem	accepted	
+module	Do Rem\nLoop	syntax	Expected: While or Until or end of statement
+module	Do While x ' c\nLoop	syntax	Invalid outside procedure
+module	Sub P()\nEnd Sub Rem c	syntax	Syntax error
+module	Sub P()\nEnd Sub ' c	accepted	
+module	Sub P() Rem c\nEnd Sub	syntax	Expected: end of statement
+module	If x Then\nEnd If Rem c	syntax	Invalid outside procedure
+module	If x Then\nElse Rem c\nEnd If	syntax	Invalid outside procedure
+module	If x Then\nElseIf y Then Rem c\nEnd If	syntax	Invalid outside procedure
+module	If x Then Rem c\nEnd If	syntax	Invalid outside procedure
+module	If x Then y = 1 Rem c	syntax	Invalid outside procedure
+module	If x Then y = 1: z = 2 Rem c	syntax	Invalid outside procedure
+module	If x Then y = 1 Else z = 2 Rem c	syntax	Invalid outside procedure
+module	If x Then y = 1 Else Rem c	syntax	Invalid outside procedure
+module	If x Then Else y = 1 Rem c	syntax	Invalid outside procedure
+module	If x Then y = 1 ' c	syntax	Invalid outside procedure
+module	Select Case x\nCase 1 Rem c\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nCase Else Rem c\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\nEnd Select Rem c	syntax	Invalid outside procedure
+module	Wend Rem c	syntax	Expected: end of statement
+module	While x\nWend Rem c	syntax	Invalid outside procedure
+module	With o\nEnd With Rem c	syntax	Invalid outside procedure
+module	For i = 1 To 2\nNext i Rem c	syntax	Invalid outside procedure
+module	Dim a As Long: Rem c	accepted	
+module	Foo: Rem c	syntax	Invalid outside procedure
+module	Rem c: x = 1	accepted	
+module	Call Rem	syntax	Expected: identifier
+module	Call Rem c	syntax	Expected: identifier
+module	Foo Rem	syntax	Expected: expression

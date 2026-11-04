@@ -480,3 +480,115 @@ On x GoTo L M\nL:\nM:
 On x + 1 GoTo L\nL:
 On x GoTo (L)
 On x GoTo -1
+Do\nLoop
+Do While x\nLoop
+Do Until x\nLoop
+Do\nLoop While x
+Do\nLoop Until x
+Do While\nLoop
+Do Until\nLoop
+Do\nLoop While
+Do\nLoop Until
+Do x\nLoop
+Do\nLoop x
+Do: Loop
+Do While x: Loop
+Do: Loop While x
+Do ' c\nLoop ' c
+Do Rem c\nLoop
+Do While x Until y\nLoop
+Do While x\nLoop While y
+Do While x\nLoop Until y
+Do While x Then\nLoop
+Do While x, y\nLoop
+Do While (x)\nLoop
+Do While x = 1 And y\nLoop
+Do Else\nLoop
+Do While x Else\nLoop
+Do\nLoop Else
+Do _\nWhile x\nLoop
+Do While x _\n And y\nLoop
+Do While Not x\nLoop
+Do While\nx\nLoop
+Do\nLoop\nWhile x
+Loop
+Do\nLoop Loop
+Do Do\nLoop\nLoop
+Do While x:\nLoop
+Do\nLoop:
+Do\nLoop While x:
+Do\nLoop While x Else
+Do Until 1\nLoop
+Do While "s"\nLoop
+Do While Foo()\nLoop
+Do While o.p\nLoop
+While x\nWend
+While\nWend
+While x\nWend x
+While x Until y\nWend
+While x: Wend
+Wend
+Do\nLoop Rem c
+Do While x Rem c\nLoop
+Do Until x Rem c\nLoop
+Do\nLoop While x Rem c
+x = 1 Rem c
+x = 1: Rem c
+Rem c
+Dim a As Long Rem c
+Exit Sub Rem c
+Exit Do Rem c
+End Rem c
+Stop Rem c
+Foo Rem c
+Foo 1 Rem c
+Call Foo Rem c
+Return Rem c
+GoTo L Rem c\nL:
+If x Then Rem c
+If x Then y = 1 Rem c
+If x Then\nEnd If Rem c
+For i = 1 To 2 Rem c\nNext
+For i = 1 To 2\nNext Rem c
+Next Rem c
+Select Case x Rem c\nEnd Select
+With o Rem c\nEnd With
+Set x = y Rem c
+Erase x Rem c
+Randomize Rem c
+Resume Rem c
+Resume Next Rem c
+On Error Resume Next Rem c
+On Error GoTo 0 Rem c
+Do ' c\nLoop
+Do\nLoop ' c
+x = 1 ' c
+Rem
+Do Rem\nLoop
+Do While x ' c\nLoop
+Sub P()\nEnd Sub Rem c
+Sub P()\nEnd Sub ' c
+Sub P() Rem c\nEnd Sub
+If x Then\nEnd If Rem c
+If x Then\nElse Rem c\nEnd If
+If x Then\nElseIf y Then Rem c\nEnd If
+If x Then Rem c\nEnd If
+If x Then y = 1 Rem c
+If x Then y = 1: z = 2 Rem c
+If x Then y = 1 Else z = 2 Rem c
+If x Then y = 1 Else Rem c
+If x Then Else y = 1 Rem c
+If x Then y = 1 ' c
+Select Case x\nCase 1 Rem c\nEnd Select
+Select Case x\nCase Else Rem c\nEnd Select
+Select Case x\nEnd Select Rem c
+Wend Rem c
+While x\nWend Rem c
+With o\nEnd With Rem c
+For i = 1 To 2\nNext i Rem c
+Dim a As Long: Rem c
+Foo: Rem c
+Rem c: x = 1
+Call Rem
+Call Rem c
+Foo Rem

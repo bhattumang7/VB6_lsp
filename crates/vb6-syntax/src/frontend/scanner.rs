@@ -691,7 +691,7 @@ impl<'a> Scanner<'a> {
 
                 0x0b => return self.scan_amp(start),
 
-                0x0c => return self.consume_comment(start),
+                0x0c => return self.consume_comment(start, Kw::Apos),
 
                 0x0d => return Token::op(Kw::LParen, self.span(start)),
 
@@ -736,7 +736,7 @@ impl<'a> Scanner<'a> {
                 _ => {
                     let tok = self.scan_ident(b, start);
                     if matches!(tok.kind, TokenKind::Kw(Kw::Rem)) {
-                        return self.consume_comment(start);
+                        return self.consume_comment(start, Kw::Rem);
                     }
                     return tok;
                 }
@@ -747,7 +747,7 @@ impl<'a> Scanner<'a> {
     /// Consume the rest of the line as comment text. Tabs are part of the
     /// text. A comment whose last non-blank character is a line-continuation
     /// `_` (one not ending a word) continues on the next physical line.
-    fn consume_comment(&mut self, start: usize) -> Token {
+    fn consume_comment(&mut self, start: usize, kind: Kw) -> Token {
         loop {
             let line_start = self.pos;
             while let Some(b) = self.peek() {
@@ -766,7 +766,7 @@ impl<'a> Scanner<'a> {
                 _ => break,
             }
         }
-        Token::op(Kw::Apos, self.span(start))
+        Token::op(kind, self.span(start))
     }
 
     /// True if `text` ends (ignoring trailing spaces and tabs) with a `_` that

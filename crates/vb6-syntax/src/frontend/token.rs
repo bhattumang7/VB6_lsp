@@ -693,15 +693,16 @@ impl Token {
         Self { kind: TokenKind::Kw(kw), sym: None, lit: None, type_suffix: TypeSuffix::None, span }
     }
 
-    /// Returns `true` for the two statement-terminator tokens: `Eol` and the
-    /// `Apos` (`'`) keyword.  The parser loop exits on `0x10f` or `0xf7`.
+    /// Returns `true` for the statement-terminator tokens: the end of a line or
+    /// file and the `Apos` (`'`) comment. `Rem` is not one: it is a comment only
+    /// where a statement can start, and in the middle of a statement it is an
+    /// error.
     pub fn is_stmt_end(&self) -> bool {
         matches!(
             &self.kind,
             TokenKind::Eol
                 | TokenKind::Eof
                 | TokenKind::Kw(Kw::Apos)
-                | TokenKind::Kw(Kw::Rem)
         )
     }
 }
