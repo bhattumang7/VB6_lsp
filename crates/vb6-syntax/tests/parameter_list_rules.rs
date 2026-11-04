@@ -133,3 +133,17 @@ fn events_take_no_optional_or_param_array_and_no_underscore_name() {
     assert_eq!(labelled(src), vec![(INVALID_EVENT_NAME, None, offset_of(src, "Bad_Name", 0), 8)]);
     assert_eq!(labelled("Event Good(xx As Long, yy)\n"), vec![]);
 }
+
+#[test]
+fn param_array_element_type_must_be_variant() {
+    for ok in ["Sub S(ParamArray p() As Variant)\nEnd Sub\n", "Sub S(ParamArray p())\nEnd Sub\n"] {
+        assert_eq!(labelled(ok), vec![], "{ok:?}");
+    }
+    for ty in ["Long", "String", "Object", "MyType"] {
+        let src = format!("Sub S(ParamArray p() As {ty})\nEnd Sub\n");
+        let found = labelled(&src);
+        assert_eq!(found.len(), 1, "{ty}");
+        assert_eq!(found[0].0, 0x9cd0, "{ty}");
+        assert_eq!(found[0].2, src.find("p()").unwrap() as u32, "{ty}");
+    }
+}

@@ -23,6 +23,18 @@ pub const ERR_VARIABLE_NOT_DEFINED: u16 = 0x9caf;
 /// "Assignment to constant not permitted" (57082).
 pub const ERR_ASSIGNMENT_TO_CONSTANT: u16 = 0xdefa;
 
+/// "Expected array" (40074): `Erase` or `ReDim` of a variable declared with a
+/// non-array type.
+pub const ERR_EXPECTED_ARRAY: u16 = 40074;
+/// "Range has no values" (40109): a `Case lo To hi` whose bounds are reversed.
+pub const ERR_RANGE_HAS_NO_VALUES: u16 = 40109;
+/// "Named argument already specified" (40128).
+pub const ERR_NAMED_ARGUMENT_ALREADY_SPECIFIED: u16 = 40128;
+/// "Invalid or unqualified reference" (40136): `.member` outside a `With`.
+pub const ERR_INVALID_OR_UNQUALIFIED_REFERENCE: u16 = 40136;
+/// "Invalid ReDim" (40149): `ReDim` of a constant.
+pub const ERR_INVALID_REDIM: u16 = 40149;
+
 /// `0x9c9f` = 40095 = "Duplicate declaration in current scope"
 ///
 /// Emitted when a name is inserted into a symbol or type table that already
@@ -255,6 +267,8 @@ struct Binder<'a> {
     callable: HashMap<u32, Arity>,
     /// Static types of the `With` objects in force, innermost last.
     with_stack: Vec<SemType>,
+    /// Number of `With` bodies enclosing the node being bound.
+    with_depth: u32,
     /// Declared type names of each procedure's parameters, aligned with `procs`.
     param_names: Vec<Vec<Option<TypeName>>>,
     /// The inferred type of procedure locals of the procedure being bound,
@@ -313,6 +327,7 @@ impl<'a> Binder<'a> {
             access_ctx: HashMap::new(),
             callable: HashMap::new(),
             with_stack: Vec::new(),
+            with_depth: 0,
             param_names: Vec::new(),
             inference: HashMap::new(),
             inferred_nodes: std::collections::HashSet::new(),
@@ -1289,11 +1304,21 @@ impl<'a> Binder<'a> {
                 self.bind_node(scope, obj);
                 let sem = self.sem_of_node(obj);
                 self.with_stack.push(sem);
+                self.with_depth += 1;
                 self.bind_node(scope, body);
+                self.with_depth -= 1;
                 self.with_stack.pop();
                 self.bind_local(scope, id);
                 return;
             }
+        } else if let ExprNode::With { obj, body } = self.arena.get(id) {
+            let (obj, body) = (*obj, *body);
+            self.bind_node(scope, obj);
+            self.with_depth += 1;
+            self.bind_node(scope, body);
+            self.with_depth -= 1;
+            self.bind_local(scope, id);
+            return;
         }
         self.mark_assignment_targets(id);
         let mut kids: Vec<NodeId> = Vec::new();
@@ -1369,6 +1394,10 @@ impl<'a> Binder<'a> {
                 }
             }
             ExprNode::WithContext => {
+                if self.with_depth == 0 {
+                    let span = self.spans.get(id);
+                    self.diagnostics.push(ERR_INVALID_OR_UNQUALIFIED_REFERENCE as u32, span);
+                }
                 if self.project.is_some() {
                     let sem = self.with_stack.last().cloned().unwrap_or(SemType::Unresolved);
                     self.sem_types.insert(id.0, sem);
@@ -1559,6 +1588,15 @@ impl<'a> Binder<'a> {
                                     if self.procs[*proc_idx].locals[*local_idx].name_span
                                         == self.spans.get(id)
                             );
+                            if !declares {
+                                if self.names_a_constant(&res) {
+                                    let span = self.spans.get(id);
+                                    self.diagnostics.push(ERR_INVALID_REDIM as u32, span);
+                                } else if self.is_scalar_variable(&res) {
+                                    let span = self.spans.get(id);
+                                    self.diagnostics.push(ERR_EXPECTED_ARRAY as u32, span);
+                                }
+                            }
                             if res != NameResolution::Unresolved && !declares {
                                 self.resolutions.insert(id.0, res);
                             }
@@ -1604,6 +1642,42 @@ impl<'a> Binder<'a> {
             ExprNode::Attribute { target, name, values } => {
                 let (target, name, first) = (*target, *name, values.first().copied());
                 self.record_attribute(target, name, first);
+            }
+
+            ExprNode::CaseBlock { test, .. } => {
+                let items = match self.arena.get(*test) {
+                    ExprNode::ArgList { args } => args.clone(),
+                    _ => Vec::new(),
+                };
+                for item in items {
+                    if let ExprNode::RangeTo { lo, hi } = self.arena.get(item) {
+                        if let (Some(a), Some(b)) = (self.eval_const_i64(*lo), self.eval_const_i64(*hi)) {
+                            if a > b {
+                                let span = self.spans.get(item);
+                                self.diagnostics.push(ERR_RANGE_HAS_NO_VALUES as u32, span);
+                            }
+                        }
+                    }
+                }
+            }
+            ExprNode::Erase { vars } => {
+                for v in vars.clone() {
+                    self.check_array_operand(v);
+                }
+            }
+            ExprNode::ArgList { args } => {
+                // A named argument may be given once.
+                let mut seen: Vec<u32> = Vec::new();
+                for a in args.clone() {
+                    if let ExprNode::NamedArg { name, .. } = self.arena.get(a) {
+                        if seen.contains(name) {
+                            let span = self.spans.get(a);
+                            self.diagnostics.push(ERR_NAMED_ARGUMENT_ALREADY_SPECIFIED as u32, span);
+                        } else {
+                            seen.push(*name);
+                        }
+                    }
+                }
             }
 
             // Everything else carries no node-local type/resolution work; its
@@ -2091,6 +2165,30 @@ impl<'a> Binder<'a> {
     }
 
     /// Whether `res` names a declared constant or an enum member.
+    /// `Erase` / `ReDim` need an array: report a plain name whose declared
+    /// type is a scalar (a `Variant` may hold an array, so it is accepted).
+    fn check_array_operand(&mut self, id: NodeId) {
+        if !matches!(self.arena.get(id), ExprNode::NameRef { .. }) {
+            return;
+        }
+        let Some(res) = self.resolutions.get(&id.0).cloned() else { return };
+        if self.is_scalar_variable(&res) {
+            let span = self.spans.get(id);
+            self.diagnostics.push(ERR_EXPECTED_ARRAY as u32, span);
+        }
+    }
+
+    /// True when `res` is a variable or parameter declared with a type that
+    /// can never hold an array.
+    fn is_scalar_variable(&self, res: &NameResolution) -> bool {
+        match res {
+            NameResolution::Local { .. } | NameResolution::Param { .. } | NameResolution::ModuleVar(_) => {
+                !matches!(self.type_of_resolution(None, res), VbaType::Variant | VbaType::Array(_))
+            }
+            _ => false,
+        }
+    }
+
     fn names_a_constant(&self, res: &NameResolution) -> bool {
         match res {
             NameResolution::Local { proc_idx, local_idx } => self

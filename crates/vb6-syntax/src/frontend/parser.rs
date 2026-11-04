@@ -242,6 +242,8 @@ pub struct Parser<'src> {
     module_decl_seen: bool,
     /// A module-level array variable has been declared.
     module_array_seen: bool,
+    /// Byte offset just past the most recently consumed token.
+    last_token_end: u32,
     /// `Option Base`, `Option Compare`, `Option Explicit`, `Option Private`
     /// already given.
     seen_option_base: bool,
@@ -353,6 +355,7 @@ impl<'src> Parser<'src> {
             after_colon: false,
             module_decl_seen: false,
             module_array_seen: false,
+            last_token_end: 0,
             seen_option_base: false,
             seen_option_compare: false,
             seen_option_explicit: false,
@@ -412,6 +415,7 @@ impl<'src> Parser<'src> {
             None    => self.peeked2.take().unwrap_or_else(|| self.next_logical()),
         };
         self.last_was_eol = tok.kind == TokenKind::Eol;
+        self.last_token_end = tok.span.start + tok.span.len;
         match tok.kind {
             TokenKind::Kw(Kw::Colon) => self.after_colon = true,
             TokenKind::Eol => self.after_colon = false,
@@ -2193,10 +2197,14 @@ impl<'src> Parser<'src> {
                 let rhs = self.parse_expr(arena, 0);
                 arena.alloc(ExprNode::CaseIs { op, rhs })
             } else {
+                let start = self.current_span().start;
                 let lo = self.parse_expr(arena, 0);
                 if self.eat(TokenKind::Kw(Kw::To)) {
                     let hi = self.parse_expr(arena, 0);
-                    arena.alloc(ExprNode::RangeTo { lo, hi })
+                    let range = arena.alloc(ExprNode::RangeTo { lo, hi });
+                    let len = self.last_token_end.saturating_sub(start);
+                    self.set_span(range, Span { start, len });
+                    range
                 } else {
                     lo
                 }
@@ -3443,7 +3451,7 @@ impl<'src> Parser<'src> {
                     Some((ERR_UNEXPECTED_TOKEN, Some("identifier")))
                 } else if section == 1 {
                     Some((ERR_PARAM_ARRAY_WITH_OPTIONAL, None))
-                } else if !is_array {
+                } else if !is_array || !param_type_is_variant(arena, param) {
                     Some((ERR_PARAM_ARRAY_NOT_ARRAY, None))
                 } else if i + 1 < args.len() && owner != ParamOwner::PropertyValue {
                     Some((ERR_UNEXPECTED_TOKEN, Some(")")))
@@ -4188,4 +4196,13 @@ fn keyword_starts_expression(k: Kw) -> bool {
         || value_or_function
         || matches!(entry.name, "Array" | "CDec" | "DoEvents" | "New" | "Not" | "TypeOf" | "AddressOf"
                 | "True" | "False" | "Nothing" | "Empty" | "Null" | "Me" | "Seek")
+}
+
+/// True when the parameter `param` is declared without a type or as `Variant`.
+fn param_type_is_variant(arena: &ExprArena, param: NodeId) -> bool {
+    let ExprNode::ParamDef { type_node, .. } = arena.get(param) else { return true };
+    match type_node {
+        None => true,
+        Some(t) => matches!(arena.get(*t), ExprNode::BuiltinType { kind: 12 }),
+    }
 }
