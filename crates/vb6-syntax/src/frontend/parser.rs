@@ -223,6 +223,18 @@ pub struct Parser<'src> {
     blocks: Vec<Block>,
     /// The last token consumed was the end of a line.
     last_was_eol: bool,
+    /// A module-level variable, procedure or `Declare` has been parsed.
+    module_decl_seen: bool,
+    /// A module-level array variable has been declared.
+    module_array_seen: bool,
+    /// `Option Base`, `Option Compare`, `Option Explicit`, `Option Private`
+    /// already given.
+    seen_option_base: bool,
+    seen_option_compare: bool,
+    seen_option_explicit: bool,
+    seen_option_private: bool,
+    /// Letters (bit 0 = A) already given a type by a `DefType` statement.
+    deftype_letters: u32,
     /// Kind of the procedure being parsed.
     proc_kind: Option<ProcKind>,
     /// An unclosed block has been reported in the current procedure; VB6
@@ -283,6 +295,10 @@ fn block_closed_by(top: Block, term: Term) -> bool {
 /// State of one open `#If … #End If` block.
 #[derive(Clone, Copy)]
 struct CcFrame {
+    /// Where the `#If` is.
+    open: Span,
+    /// An `#Else` has been seen: only `#End If` may follow.
+    else_seen: bool,
     /// The enclosing region is active.
     parent_active: bool,
     /// The current branch is active.
@@ -307,6 +323,13 @@ impl<'src> Parser<'src> {
             in_procedure: false,
             blocks: Vec::new(),
             last_was_eol: false,
+            module_decl_seen: false,
+            module_array_seen: false,
+            seen_option_base: false,
+            seen_option_compare: false,
+            seen_option_explicit: false,
+            seen_option_private: false,
+            deftype_letters: 0,
             proc_kind: None,
             block_error_reported: false,
             next_carry: Vec::new(),
@@ -393,8 +416,11 @@ impl<'src> Parser<'src> {
             if let TokenKind::Kw(kw @ (Kw::CcIf | Kw::CcElseIf | Kw::CcElse | Kw::CcEnd | Kw::CcConst)) =
                 tok.kind
             {
-                self.cc_directive(kw);
+                self.cc_directive(kw, tok.span);
                 continue;
+            }
+            if tok.kind == TokenKind::Eof {
+                self.report_open_cc_blocks();
             }
             if !self.cc_active() {
                 if tok.kind == TokenKind::Eof {
@@ -1549,6 +1575,10 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
+        if !self.in_procedure && !is_const {
+            self.module_decl_seen = true;
+            self.module_array_seen |= bounds.is_some();
+        }
         let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
             let is_new = self.eat(TokenKind::Kw(Kw::New));
             (is_new, Some(self.parse_type_spec(arena, array_suffix_ok)))
@@ -2267,7 +2297,7 @@ impl<'src> Parser<'src> {
 
     /// Handle the directive token `kind` (already consumed). Returns after the
     /// directive's whole line has been consumed.
-    fn cc_directive(&mut self, kind: Kw) {
+    fn cc_directive(&mut self, kind: Kw, span: Span) {
         match kind {
             Kw::CcConst => {
                 if self.cc_active() {
@@ -2290,13 +2320,19 @@ impl<'src> Parser<'src> {
             Kw::CcIf => {
                 let parent_active = self.cc_active();
                 let taken = self.cc_condition(parent_active);
-                self.cc_stack.push(CcFrame { parent_active, active: taken, taken });
+                self.cc_stack.push(CcFrame { open: span, else_seen: false, parent_active, active: taken, taken });
             }
             Kw::CcElseIf => {
                 let Some(frame) = self.cc_stack.last().copied() else {
+                    self.diagnostics.push(ERR_CC_WITHOUT_IF, span);
                     self.cc_skip_line();
                     return;
                 };
+                if frame.else_seen {
+                    self.diagnostics.push(ERR_CC_ELSEIF_AFTER_ELSE, span);
+                    self.cc_skip_line();
+                    return;
+                }
                 let evaluate = frame.parent_active && !frame.taken;
                 let cond = self.cc_condition(evaluate);
                 let top = self.cc_stack.last_mut().unwrap();
@@ -2305,9 +2341,14 @@ impl<'src> Parser<'src> {
             }
             Kw::CcElse => {
                 self.cc_skip_line();
-                if let Some(top) = self.cc_stack.last_mut() {
-                    top.active = top.parent_active && !top.taken;
-                    top.taken = true;
+                match self.cc_stack.last_mut() {
+                    None => self.diagnostics.push(ERR_CC_WITHOUT_IF, span),
+                    Some(top) if top.else_seen => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
+                    Some(top) => {
+                        top.else_seen = true;
+                        top.active = top.parent_active && !top.taken;
+                        top.taken = true;
+                    }
                 }
             }
             _ => {
@@ -2316,8 +2357,19 @@ impl<'src> Parser<'src> {
                     self.cc_advance();
                 }
                 self.cc_skip_line();
-                self.cc_stack.pop();
+                if self.cc_stack.pop().is_none() {
+                    self.diagnostics.push(ERR_CC_WITHOUT_IF, span);
+                }
             }
+        }
+    }
+
+    /// At the end of the module, report the innermost `#If` that was never
+    /// closed (once).
+    fn report_open_cc_blocks(&mut self) {
+        if let Some(frame) = self.cc_stack.last().copied() {
+            self.diagnostics.push(ERR_CC_IF_NOT_TERMINATED, frame.open);
+            self.cc_stack.clear();
         }
     }
 
@@ -2433,14 +2485,23 @@ impl<'src> Parser<'src> {
     // ── Option statement parser ───────────────────────────────────────────────
 
     fn parse_option_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let option_span = self.current_span();
         self.advance(); // consume Option
         match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Explicit) => {
+                if std::mem::replace(&mut self.seen_option_explicit, true) {
+                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
+                }
                 self.advance();
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionExplicit)
             }
             TokenKind::Kw(Kw::Base) => {
+                if std::mem::replace(&mut self.seen_option_base, true) {
+                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
+                } else if self.module_array_seen {
+                    self.diagnostics.push(ERR_ARRAY_ALREADY_DIMENSIONED, option_span);
+                }
                 self.advance();
                 let value = match self.peek().kind {
                     TokenKind::IntLit => {
@@ -2455,6 +2516,9 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::OptionBase { value })
             }
             TokenKind::Kw(Kw::Compare) => {
+                if std::mem::replace(&mut self.seen_option_compare, true) {
+                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
+                }
                 self.advance();
                 let mode = match self.peek().kind.clone() {
                     TokenKind::Kw(Kw::Binary) => { self.advance(); 0u8 }
@@ -2468,6 +2532,17 @@ impl<'src> Parser<'src> {
                 };
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionCompare { mode })
+            }
+            TokenKind::Kw(Kw::Private) => {
+                if std::mem::replace(&mut self.seen_option_private, true) {
+                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
+                }
+                if self.module_kind != ModuleKind::Standard {
+                    self.diagnostics.push(ERR_OPTION_PRIVATE_IN_OBJECT_MODULE, option_span);
+                }
+                self.skip_to_stmt_end();
+                self.end_stmt();
+                arena.alloc(ExprNode::Block { stmts: vec![] })
             }
             _ => {
                 self.skip_to_stmt_end();
@@ -2503,8 +2578,10 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(k) => k as u16,
             _ => 0,
         };
+        let def_span = self.current_span();
         self.advance(); // consume the Def<Type> keyword
         let mut ranges = Vec::new();
+        let mut letters = 0u32;
         loop {
             let lo = self.expect_ident().sym.map(|s| s as u32).unwrap_or(0);
             let hi = if self.eat(TokenKind::Kw(Kw::Minus)) {
@@ -2512,13 +2589,38 @@ impl<'src> Parser<'src> {
             } else {
                 0
             };
+            letters |= self.letter_range_mask(lo, if hi == 0 { lo } else { hi });
             ranges.push((lo, hi));
             if !self.eat(TokenKind::Kw(Kw::Comma)) {
                 break;
             }
         }
+        if self.module_decl_seen {
+            self.diagnostics.push(ERR_DEFTYPE_AFTER_DECLARATION, def_span);
+        } else if letters & self.deftype_letters != 0 {
+            self.diagnostics.push(ERR_DUPLICATE_DEFTYPE, def_span);
+        }
+        self.deftype_letters |= letters;
         self.end_stmt();
         arena.alloc(ExprNode::DefType { type_kw, ranges })
+    }
+
+    /// Bit mask (bit 0 = `A`) of the letters from the first letter of the
+    /// name `lo` to that of `hi`; empty when either is not a letter or the
+    /// range runs backwards.
+    fn letter_range_mask(&self, lo: u32, hi: u32) -> u32 {
+        let letter = |sym: u32| {
+            self.scanner
+                .sym_name(sym)
+                .bytes()
+                .next()
+                .filter(u8::is_ascii_alphabetic)
+                .map(|b| b.to_ascii_lowercase() - b'a')
+        };
+        match (letter(lo), letter(hi)) {
+            (Some(a), Some(b)) if a <= b => ((1u32 << (b + 1)) - 1) & !((1u32 << a) - 1),
+            _ => 0,
+        }
     }
 
     /// `Attribute name = value[, value…]` metadata line.
@@ -2780,6 +2882,7 @@ impl<'src> Parser<'src> {
     /// Parses Sub or Function body.
     fn parse_proc_decl(&mut self, arena: &mut ExprArena, kind: ProcKind) -> NodeId {
         self.advance(); // consume Sub / Function
+        self.module_decl_seen = true;
         self.error_var_local = false;
         let name = self.expect_ident();
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -2851,6 +2954,7 @@ impl<'src> Parser<'src> {
     /// Parses Property Get/Let/Set.
     fn parse_property_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Property
+        self.module_decl_seen = true;
         self.error_var_local = false;
         let kind = match self.peek().kind {
             TokenKind::Kw(Kw::Get) => { self.advance(); ProcKind::PropGet }
@@ -2922,6 +3026,7 @@ impl<'src> Parser<'src> {
     /// Parse `Declare [Function|Sub] name Lib "lib" [Alias "alias"] ([params]) [As type]`
     fn parse_declare_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // Declare
+        self.module_decl_seen = true;
         let kind = match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Function) => { self.advance(); ProcKind::Function }
             TokenKind::Kw(Kw::Sub)      => { self.advance(); ProcKind::Sub }

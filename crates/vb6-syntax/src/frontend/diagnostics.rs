@@ -36,6 +36,15 @@ pub const ERR_END_WITH_WITHOUT_WITH: u32 = 0x9cc6; // 40134
 pub const ERR_EXPECTED_END_WITH: u32 = 0x9cc7; // 40135
 pub const ERR_INVALID_NEXT_VARIABLE: u32 = 0x9ccd; // 40141
 pub const ERR_FOR_VARIABLE_IN_USE: u32 = 0x9cce; // 40142
+pub const ERR_ARRAY_ALREADY_DIMENSIONED: u32 = 0x9c77; // 40055
+pub const ERR_DUPLICATE_OPTION: u32 = 0x9c78; // 40056
+pub const ERR_DEFTYPE_AFTER_DECLARATION: u32 = 0x9c79; // 40057
+pub const ERR_DUPLICATE_DEFTYPE: u32 = 0x9c7a; // 40058
+pub const ERR_OPTION_PRIVATE_IN_OBJECT_MODULE: u32 = 0xdec9; // 57033
+pub const ERR_CC_WITHOUT_IF: u32 = 0xdebd; // 57021
+pub const ERR_CC_DUPLICATE_ELSE: u32 = 0xdebe; // 57022
+pub const ERR_CC_ELSEIF_AFTER_ELSE: u32 = 0xdebf; // 57023
+pub const ERR_CC_IF_NOT_TERMINATED: u32 = 0xdec0; // 57024
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -89,6 +98,15 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_ARRAY_ALREADY_DIMENSIONED => "Array already dimensioned",
+        ERR_DUPLICATE_OPTION => "Duplicate Option statement",
+        ERR_DEFTYPE_AFTER_DECLARATION => "Deftype statements must precede declarations",
+        ERR_DUPLICATE_DEFTYPE => "Duplicate Deftype statement",
+        ERR_OPTION_PRIVATE_IN_OBJECT_MODULE => "Option Private Module not permitted in a object module",
+        ERR_CC_WITHOUT_IF => "An # ElseIf, # Else, or # EndIf must be preceded by an # If clause",
+        ERR_CC_DUPLICATE_ELSE => "An # Else clause must be preceded by an # If",
+        ERR_CC_ELSEIF_AFTER_ELSE => "An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf",
+        ERR_CC_IF_NOT_TERMINATED => "You must terminate the # If block with an # EndIf",
         ERR_EXPECTED_END_SUB => "Expected End Sub",
         ERR_EXPECTED_END_FUNCTION => "Expected End Function",
         ERR_AFTER_END_OF_PROCEDURE => "Only comments may appear after End Sub, End Function, or End Property",

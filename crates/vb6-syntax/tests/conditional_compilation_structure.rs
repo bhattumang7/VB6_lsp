@@ -2,7 +2,7 @@
 //! active branch parses in whatever construct surrounds the directives.
 
 mod common;
-use common::parse;
+use common::{offset_of, parse};
 use vb6_syntax::frontend::ast::{ExprNode, NodeId};
 
 fn case_bodies(p: &common::Parsed, select: NodeId) -> Vec<usize> {
@@ -99,7 +99,9 @@ fn const_inside_inactive_branch_is_not_applied() {
 
 #[test]
 fn directive_with_trailing_comment_and_unterminated_block() {
-    let p = parse("Sub A()\n #If 1 Then ' comment\n x = 1\n #End If ' done\n y = 2\nEnd Sub\n #If 0 Then\nSub Z()\n");
-    assert_eq!(p.diags, 0);
+    let src = "Sub A()\n #If 1 Then ' comment\n x = 1\n #End If ' done\n y = 2\nEnd Sub\n #If 0 Then\nSub Z()\n";
+    let p = parse(src);
+    // The unterminated `#If` is reported once, at its directive.
+    assert_eq!(p.found, vec![(0xdec0, offset_of(src, "#If 0", 0), 3)]);
     assert_eq!(p.proc_body(0).len(), 2);
 }
