@@ -4372,7 +4372,7 @@ impl<'src> Parser<'src> {
         let name = self.expect_decl_name();
         self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-        self.eat_eol();
+        self.end_stmt();
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
@@ -4390,12 +4390,12 @@ impl<'src> Parser<'src> {
                     if members.is_empty() {
                         self.diagnostics.push(ERR_TYPE_WITHOUT_MEMBERS, end_span);
                     }
-                    self.eat_eol();
+                    self.end_stmt();
                     break;
                 }
                 TokenKind::Eof => break,
-                // A comment line between members is a blank line.
-                TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) => { self.advance(); }
+                // A comment line between members is a blank line, and so is a lone colon.
+                TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => { self.advance(); }
                 // A statement keyword cannot start a member. A keyword followed by
                 // `As` is a member that happens to be named like one, and so is one of
                 // the few reserved words that also name callable things when bounds follow.
@@ -4447,7 +4447,7 @@ impl<'src> Parser<'src> {
         let name = self.expect_decl_name();
         self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-        self.eat_eol();
+        self.end_stmt();
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
@@ -4459,7 +4459,7 @@ impl<'src> Parser<'src> {
                     if members.is_empty() {
                         self.diagnostics.push(ERR_ENUM_WITHOUT_MEMBERS, end_span);
                     }
-                    self.eat_eol();
+                    self.end_stmt();
                     break;
                 }
                 TokenKind::Eof => break,
