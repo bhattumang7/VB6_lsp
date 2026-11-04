@@ -993,6 +993,13 @@ impl<'src> Parser<'src> {
             self.skip_module_blank_lines();
             if self.peek().kind == TokenKind::Eof { break; }
 
+            // A colon that starts the line cannot precede the declaration of a procedure,
+            // a `Declare` or an `Event`.
+            if self.after_colon && self.starts_procedure_like_declaration() {
+                let span = self.current_span();
+                self.diagnostics.push_labeled(0x9c6f, span, "statement or end of statement");
+            }
+
             match self.peek().kind.clone() {
                 // Procedure declarations
                 TokenKind::Kw(Kw::Sub)      => {
@@ -1094,6 +1101,29 @@ impl<'src> Parser<'src> {
             }
         }
         nodes
+    }
+
+    /// True when the next tokens begin the declaration of a procedure, a `Declare` or an
+    /// `Event`, with or without an access modifier before it.
+    fn starts_procedure_like_declaration(&mut self) -> bool {
+        let is_decl_word = |k: &TokenKind| {
+            matches!(
+                k,
+                TokenKind::Kw(Kw::Sub)
+                    | TokenKind::Kw(Kw::Function)
+                    | TokenKind::Kw(Kw::Property)
+                    | TokenKind::Kw(Kw::Declare)
+                    | TokenKind::Kw(Kw::Event)
+            )
+        };
+        let first = self.peek().kind.clone();
+        if is_decl_word(&first) {
+            return true;
+        }
+        matches!(
+            first,
+            TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Friend) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Static)
+        ) && is_decl_word(&self.peek2().kind.clone())
     }
 
     /// An executable statement outside any procedure: report it once, at its
