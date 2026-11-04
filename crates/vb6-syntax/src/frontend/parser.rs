@@ -1731,6 +1731,11 @@ impl<'src> Parser<'src> {
         }
         let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
             let is_new = self.eat(TokenKind::Kw(Kw::New));
+            // `Object` is not a creatable class.
+            if is_new && self.peek().kind == TokenKind::Kw(Kw::Object) {
+                let span = self.current_span();
+                self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "type name");
+            }
             (is_new, Some(self.parse_type_spec(arena, array_suffix_ok)))
         } else {
             // `Dim x%` ≡ `Dim x As Integer`
@@ -3340,10 +3345,17 @@ impl<'src> Parser<'src> {
         };
         let name_tok = self.expect_ident();
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
-        // Lib "libname"
+        // The calling-convention word may precede `Lib`.
+        self.eat(TokenKind::Kw(Kw::CDecl));
+        // Lib "libname": the library is a string literal.
         let lib = if self.eat(TokenKind::Kw(Kw::Lib)) {
-            let s = self.parse_expr(arena, 0);
-            s
+            match self.declare_string_operand(arena) {
+                Some(s) => s,
+                None => {
+                    self.skip_line();
+                    return arena.alloc(ExprNode::Block { stmts: vec![] });
+                }
+            }
         } else {
             let span = self.current_span();
             self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
@@ -3351,7 +3363,13 @@ impl<'src> Parser<'src> {
         };
         // Optional Alias "aliasname"
         let alias = if self.eat(TokenKind::Kw(Kw::Alias)) {
-            Some(self.parse_expr(arena, 0))
+            match self.declare_string_operand(arena) {
+                Some(s) => Some(s),
+                None => {
+                    self.skip_line();
+                    return arena.alloc(ExprNode::Block { stmts: vec![] });
+                }
+            }
         } else {
             None
         };
@@ -3373,6 +3391,20 @@ impl<'src> Parser<'src> {
         let id = arena.alloc(ExprNode::DeclareDecl { kind, name, lib, alias, params, ret_type });
         self.set_span(id, name_tok.span);
         id
+    }
+
+    /// The string literal operand of `Lib` / `Alias`; anything else is reported.
+    fn declare_string_operand(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        if self.peek().kind == TokenKind::StrLit {
+            let tok = self.advance();
+            let n = arena.alloc(ExprNode::Literal { lit: ast_lit_from_token(&tok) });
+            self.set_span(n, tok.span);
+            Some(n)
+        } else {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "string constant");
+            None
+        }
     }
 
     /// The order and shape rules for a parameter list: `Optional` parameters
