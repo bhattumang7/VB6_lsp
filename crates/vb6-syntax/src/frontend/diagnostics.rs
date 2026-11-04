@@ -45,6 +45,10 @@ pub const ERR_CC_WITHOUT_IF: u32 = 0xdebd; // 57021
 pub const ERR_CC_DUPLICATE_ELSE: u32 = 0xdebe; // 57022
 pub const ERR_CC_ELSEIF_AFTER_ELSE: u32 = 0xdebf; // 57023
 pub const ERR_CC_IF_NOT_TERMINATED: u32 = 0xdec0; // 57024
+pub const ERR_END_TYPE_OUTSIDE_TYPE: u32 = 0x9c75; // 40053
+pub const ERR_STATEMENT_IN_TYPE: u32 = 0x9c76; // 40054
+pub const ERR_TYPE_WITHOUT_MEMBERS: u32 = 0x9cfc; // 40188
+pub const ERR_ENUM_WITHOUT_MEMBERS: u32 = 0xdf43; // 57155
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -98,6 +102,10 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_END_TYPE_OUTSIDE_TYPE => "Statement invalid outside Type block",
+        ERR_STATEMENT_IN_TYPE => "Statement invalid inside Type block",
+        ERR_TYPE_WITHOUT_MEMBERS => "User-defined type without members not allowed",
+        ERR_ENUM_WITHOUT_MEMBERS => "Enum without members not allowed",
         ERR_ARRAY_ALREADY_DIMENSIONED => "Array already dimensioned",
         ERR_DUPLICATE_OPTION => "Duplicate Option statement",
         ERR_DEFTYPE_AFTER_DECLARATION => "Deftype statements must precede declarations",

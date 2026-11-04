@@ -788,6 +788,12 @@ impl<'src> Parser<'src> {
                         self.recover_module_unexpected();
                     }
                 }
+                // `End Type` with no `Type` block open.
+                TokenKind::Kw(Kw::End) if self.peek2().kind == TokenKind::Kw(Kw::Type) => {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_END_TYPE_OUTSIDE_TYPE, span);
+                    self.skip_line();
+                }
                 _ => self.recover_module_unexpected(),
             }
         }
@@ -3215,19 +3221,41 @@ impl<'src> Parser<'src> {
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
-            match self.peek().kind {
+            match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::End) => {
+                    let end_span = self.current_span();
                     self.advance();
                     self.expect(TokenKind::Kw(Kw::Type), ERR_UNEXPECTED_TOKEN);
+                    if members.is_empty() {
+                        self.diagnostics.push(ERR_TYPE_WITHOUT_MEMBERS, end_span);
+                    }
                     self.eat_eol();
                     break;
                 }
                 TokenKind::Eof => break,
                 // A comment line between members is a blank line.
                 TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) => { self.advance(); }
+                // A statement keyword cannot start a member. A keyword followed by
+                // `As` or `(` is a member that happens to be named like one.
+                TokenKind::Kw(_)
+                    if !self.at_contextual_keyword()
+                        && !matches!(
+                            self.peek2().kind,
+                            TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen)
+                        ) =>
+                {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_STATEMENT_IN_TYPE, span);
+                    self.skip_line();
+                }
                 _ => {
+                    let line_span = self.current_span();
                     let m = self.parse_dim_item(arena, false, false, false);
-                    self.eat_eol();
+                    // `name = value` is a statement, not a member.
+                    if matches!(arena.get(m), ExprNode::DimItem { init: Some(_), .. }) {
+                        self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+                    }
+                    self.end_stmt();
                     members.push(m);
                 }
             }
@@ -3248,8 +3276,12 @@ impl<'src> Parser<'src> {
             while self.eat(TokenKind::Eol) {}
             match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::End) => {
+                    let end_span = self.current_span();
                     self.advance();
                     self.expect(TokenKind::Kw(Kw::Enum), ERR_UNEXPECTED_TOKEN);
+                    if members.is_empty() {
+                        self.diagnostics.push(ERR_ENUM_WITHOUT_MEMBERS, end_span);
+                    }
                     self.eat_eol();
                     break;
                 }
