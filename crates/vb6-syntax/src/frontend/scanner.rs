@@ -715,7 +715,12 @@ impl<'a> Scanner<'a> {
         self.tok_buf.clear();
         loop {
             match self.advance() {
-                None | Some(0x00) => return Token::error(self.span(start)),
+                None | Some(0x00) => break,
+                Some(b'\r') | Some(b'\n') => {
+                    // A string stops at the end of its line.
+                    self.pos -= 1;
+                    break;
+                }
                 Some(b'"') => {
                     if self.peek() == Some(b'"') {
                         self.pos += 1;
@@ -802,42 +807,71 @@ impl<'a> Scanner<'a> {
         match self.src.get(self.pos).copied() {
             Some(b'%') => {
                 self.pos += 1;
-                let v: i32 = self.tok_buf.parse().unwrap_or(0);
-                Token::lit(TokenKind::IntLit, Lit::Int(v), span)
+                let span = Span { len: span.len + 1, ..span };
+                match self.tok_buf.parse::<f64>() {
+                    Ok(v) if !is_float && v >= i16::MIN as f64 && v <= i16::MAX as f64 => {
+                        Token::lit(TokenKind::IntLit, Lit::Int(v as i32), span)
+                    }
+                    _ => self.number_error(span),
+                }
             }
             Some(b'&') if !is_float => {
                 self.pos += 1;
-                let v: i32 = self.tok_buf.parse().unwrap_or(0);
-                Token::lit(TokenKind::LongLit, Lit::Long(v), span)
+                let span = Span { len: span.len + 1, ..span };
+                match self.tok_buf.parse::<i64>() {
+                    Ok(v) if v >= i32::MIN as i64 && v <= i32::MAX as i64 => {
+                        Token::lit(TokenKind::LongLit, Lit::Long(v as i32), span)
+                    }
+                    _ => self.number_error(span),
+                }
             }
             Some(b'!') => {
                 self.pos += 1;
-                let v: f32 = self.tok_buf.parse().unwrap_or(0.0);
-                Token::lit(TokenKind::SngLit, Lit::Single(v), span)
+                let span = Span { len: span.len + 1, ..span };
+                match self.tok_buf.parse::<f32>() {
+                    Ok(v) if v.is_finite() => Token::lit(TokenKind::SngLit, Lit::Single(v), span),
+                    _ => self.number_error(span),
+                }
             }
             Some(b'#') => {
                 self.pos += 1;
-                let v: f64 = self.tok_buf.parse().unwrap_or(0.0);
-                Token::lit(TokenKind::DblLit, Lit::Double(v), span)
+                let span = Span { len: span.len + 1, ..span };
+                self.finish_double(span)
             }
             Some(b'@') => {
                 self.pos += 1;
-                let v: f64 = self.tok_buf.parse().unwrap_or(0.0);
-                Token::lit(TokenKind::CurLit, Lit::Currency((v * 10_000.0) as i64), span)
-            }
-            _ if is_float => {
-                let v: f64 = self.tok_buf.parse().unwrap_or(0.0);
-                Token::lit(TokenKind::DblLit, Lit::Double(v), span)
-            }
-            _ => {
-                let v: i64 = self.tok_buf.parse().unwrap_or(0);
-                if v >= i16::MIN as i64 && v <= i16::MAX as i64 {
-                    Token::lit(TokenKind::IntLit, Lit::Int(v as i32), span)
-                } else {
-                    Token::lit(TokenKind::LongLit, Lit::Long(v as i32), span)
+                let span = Span { len: span.len + 1, ..span };
+                match currency_units(&self.tok_buf) {
+                    Some(v) => Token::lit(TokenKind::CurLit, Lit::Currency(v), span),
+                    None => self.number_error(span),
                 }
             }
+            _ if is_float => self.finish_double(span),
+            _ => match self.tok_buf.parse::<i64>() {
+                Ok(v) if v >= i16::MIN as i64 && v <= i16::MAX as i64 => {
+                    Token::lit(TokenKind::IntLit, Lit::Int(v as i32), span)
+                }
+                Ok(v) if v >= i32::MIN as i64 && v <= i32::MAX as i64 => {
+                    Token::lit(TokenKind::LongLit, Lit::Long(v as i32), span)
+                }
+                // A whole number too large for a Long is a Double.
+                _ => self.finish_double(span),
+            },
         }
+    }
+
+    /// A Double literal from `tok_buf`; a magnitude beyond the Double range
+    /// is an error token.
+    fn finish_double(&mut self, span: Span) -> Token {
+        match self.tok_buf.parse::<f64>() {
+            Ok(v) if v.is_finite() => Token::lit(TokenKind::DblLit, Lit::Double(v), span),
+            _ => self.number_error(span),
+        }
+    }
+
+    /// A numeric literal that does not fit its type is a token error.
+    fn number_error(&mut self, span: Span) -> Token {
+        Token::error(span)
     }
 
     /// Handle `'#'`: conditional-compile directives or date literals.
@@ -914,60 +948,54 @@ impl<'a> Scanner<'a> {
         match self.peek() {
             Some(b'H') | Some(b'h') => {
                 self.pos += 1;
-                let val = self.scan_hex_digits();
+                let val = self.scan_radix_digits(16);
                 self.finish_radix_literal(val, start)
             }
             Some(b'O') | Some(b'o') => {
                 self.pos += 1;
-                let val = self.scan_octal_digits();
+                let val = self.scan_radix_digits(8);
                 self.finish_radix_literal(val, start)
             }
             _ => Token::op(Kw::Amp, self.span(start)),
         }
     }
 
-    /// Accumulate hexadecimal digits from the current position.
-    fn scan_hex_digits(&mut self) -> i64 {
-        let mut val: i64 = 0;
+    /// Accumulate digits of the given radix from the current position.
+    /// `None` when there is no digit or the value exceeds 32 bits.
+    fn scan_radix_digits(&mut self, radix: u32) -> Option<u32> {
+        let mut val: u64 = 0;
+        let mut count = 0usize;
+        let mut overflow = false;
         while let Some(&b) = self.src.get(self.pos) {
-            let d = match b {
-                b'0'..=b'9' => (b - b'0') as i64,
-                b'a'..=b'f' => (b - b'a' + 10) as i64,
-                b'A'..=b'F' => (b - b'A' + 10) as i64,
-                _ => break,
-            };
-            val = val * 16 + d;
-            self.pos += 1;
-        }
-        val
-    }
-
-    /// Accumulate octal digits from the current position.
-    fn scan_octal_digits(&mut self) -> i64 {
-        let mut val: i64 = 0;
-        while let Some(&b) = self.src.get(self.pos) {
-            match b {
-                b'0'..=b'7' => {
-                    val = val * 8 + (b - b'0') as i64;
-                    self.pos += 1;
-                }
-                _ => break,
+            let Some(d) = (b as char).to_digit(radix) else { break };
+            val = val * radix as u64 + d as u64;
+            if val > u32::MAX as u64 {
+                overflow = true;
+                val &= u32::MAX as u64;
             }
+            count += 1;
+            self.pos += 1;
         }
-        val
+        if count == 0 || overflow { None } else { Some(val as u32) }
     }
 
-    /// Finish a `&H`/`&O` literal: honor a trailing `&` (Long) or size by range.
-    fn finish_radix_literal(&mut self, val: i64, start: usize) -> Token {
-        let span = self.span(start);
-        if self.src.get(self.pos) == Some(&b'&') {
+    /// Finish a `&H`/`&O` literal. Without a suffix a value that fits 16 bits
+    /// is an Integer (its bit pattern, so `&HFFFF` is -1) and a larger one is
+    /// a Long; `&` makes it a Long; `%` requires 16 bits.
+    fn finish_radix_literal(&mut self, val: Option<u32>, start: usize) -> Token {
+        let suffix = self.src.get(self.pos).copied();
+        if suffix == Some(b'&') || suffix == Some(b'%') {
             self.pos += 1;
-            return Token::lit(TokenKind::LongLit, Lit::Long(val as i32), span);
         }
-        if val >= i16::MIN as i64 && val <= i16::MAX as i64 {
-            Token::lit(TokenKind::IntLit, Lit::Int(val as i32), span)
-        } else {
-            Token::lit(TokenKind::LongLit, Lit::Long(val as i32), span)
+        let span = self.span(start);
+        let Some(val) = val else { return self.number_error(span) };
+        match suffix {
+            Some(b'&') => Token::lit(TokenKind::LongLit, Lit::Long(val as i32), span),
+            Some(b'%') if val > 0xFFFF => self.number_error(span),
+            _ if val <= 0xFFFF => {
+                Token::lit(TokenKind::IntLit, Lit::Int(val as u16 as i16 as i32), span)
+            }
+            _ => Token::lit(TokenKind::LongLit, Lit::Long(val as i32), span),
         }
     }
 
@@ -1123,4 +1151,26 @@ impl<'a> Scanner<'a> {
     fn span(&self, start: usize) -> Span {
         Span { start: start as u32, len: (self.pos - start) as u32 }
     }
+}
+
+/// The value of a decimal literal in ten-thousandths (Currency units), exact
+/// for any digits and exponent; `None` when it does not fit 64 bits.
+fn currency_units(text: &str) -> Option<i64> {
+    let (mantissa, exp) = match text.split_once('e') {
+        Some((m, e)) => (m, e.parse::<i32>().ok()?),
+        None => (text, 0),
+    };
+    let (int_part, frac_part) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    let mut digits: i128 = 0;
+    for c in int_part.chars().chain(frac_part.chars()) {
+        digits = digits.checked_mul(10)?.checked_add(c.to_digit(10)? as i128)?;
+    }
+    let shift = 4 + exp - frac_part.len() as i32;
+    let units = if shift >= 0 {
+        digits.checked_mul(10i128.checked_pow(shift as u32)?)?
+    } else {
+        let div = 10i128.checked_pow((-shift) as u32)?;
+        (digits + div / 2) / div
+    };
+    i64::try_from(units).ok()
 }

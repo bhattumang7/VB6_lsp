@@ -3587,6 +3587,12 @@ impl<'src> Parser<'src> {
             self.parse_typeof_expr(arena)
         } else if self.peek().kind == TokenKind::Kw(Kw::New) {
             self.parse_new_expr(arena)
+        } else if matches!(self.peek().kind, TokenKind::Kw(k) if !keyword_starts_expression(k)) {
+            // A reserved word that is not a value or a built-in function
+            // cannot start an expression.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_EXPECTED_EXPR, span);
+            arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
         } else {
             self.parse_primary(arena)
         }
@@ -3697,6 +3703,13 @@ impl<'src> Parser<'src> {
                     .try_parse_leading_with_member(arena)
                     .expect("peek was Dot/Bang");
                 self.parse_postfix(arena, access)
+            }
+            // A literal the scanner rejected (out of range, no digits).
+            TokenKind::Error => {
+                let span = self.current_span();
+                self.advance();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
             }
             // Keyword that can start a primary (e.g. built-in functions)
             TokenKind::Kw(k) => {
@@ -3954,4 +3967,17 @@ fn token_kind_label(kind: &TokenKind) -> &'static str {
         TokenKind::Ident             => "Identifier",
         _                            => "token",
     }
+}
+
+/// True when keyword `k` may begin an expression: it is not reserved, or it
+/// is a value or built-in function word (`Date`, `Len`, `Array`, ...).
+fn keyword_starts_expression(k: Kw) -> bool {
+    use super::keyword_table::KEYWORD_TABLE;
+    let Some(entry) = KEYWORD_TABLE.get(k.token_id() as usize) else { return true };
+    let reserved = entry.w1 & 0x10 != 0;
+    let value_or_function = (entry.w1 >> 6) & 3 != 0;
+    !reserved
+        || value_or_function
+        || matches!(entry.name, "Array" | "CDec" | "DoEvents" | "New" | "Not" | "TypeOf" | "AddressOf"
+                | "True" | "False" | "Nothing" | "Empty" | "Null" | "Me")
 }
