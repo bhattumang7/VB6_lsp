@@ -223,6 +223,8 @@ pub struct Parser<'src> {
     blocks: Vec<Block>,
     /// The last token consumed was the end of a line.
     last_was_eol: bool,
+    /// A `:` statement separator has been consumed on the current line.
+    after_colon: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
     /// A module-level array variable has been declared.
@@ -323,6 +325,7 @@ impl<'src> Parser<'src> {
             in_procedure: false,
             blocks: Vec::new(),
             last_was_eol: false,
+            after_colon: false,
             module_decl_seen: false,
             module_array_seen: false,
             seen_option_base: false,
@@ -382,6 +385,11 @@ impl<'src> Parser<'src> {
             None    => self.peeked2.take().unwrap_or_else(|| self.next_logical()),
         };
         self.last_was_eol = tok.kind == TokenKind::Eol;
+        match tok.kind {
+            TokenKind::Kw(Kw::Colon) => self.after_colon = true,
+            TokenKind::Eol => self.after_colon = false,
+            _ => {}
+        }
         tok
     }
 
@@ -1308,6 +1316,7 @@ impl<'src> Parser<'src> {
             TokenKind::Ident if self.peek2().kind == TokenKind::Kw(Kw::Colon) => {
                 let name = self.advance(); // identifier
                 self.advance();            // colon
+                self.after_colon = false;  // the colon belongs to the label
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
                 self.set_span(id, name.span);
@@ -1328,7 +1337,9 @@ impl<'src> Parser<'src> {
             TokenKind::IntLit | TokenKind::LongLit => {
                 let tok = self.advance(); // consume the line number
                 let line = line_label_value(&tok.lit);
-                let _ = self.eat(TokenKind::Kw(Kw::Colon)); // optional colon
+                if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
+                    self.after_colon = false;
+                }
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Line(line) });
                 self.set_span(id, tok.span);
                 id
@@ -1871,6 +1882,8 @@ impl<'src> Parser<'src> {
 
     /// Parses an If statement.
     fn parse_if_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let if_span = self.current_span();
+        let not_first_on_line = self.after_colon;
         self.advance(); // consume If
         let cond = self.parse_expr(arena, 0);
 
@@ -1896,6 +1909,10 @@ impl<'src> Parser<'src> {
                 Some(arena.alloc(ExprNode::Block { stmts }))
             } else { None };
             return arena.alloc(ExprNode::If { cond, then_body, else_body });
+        }
+        // A block `If` (`Then` ends the line) must start its line.
+        if not_first_on_line {
+            self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
         }
         self.eat_eol();
         self.blocks.push(Block::If);
@@ -1933,6 +1950,10 @@ impl<'src> Parser<'src> {
     fn parse_else_clause(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
         match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Else) => {
+                if self.after_colon {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
+                }
                 self.advance();
                 self.eat_eol();
                 if let Some(top) = self.blocks.last_mut() {
@@ -1941,6 +1962,10 @@ impl<'src> Parser<'src> {
                 Some(self.parse_block(arena))
             }
             TokenKind::Kw(Kw::ElseIf) => {
+                if self.after_colon {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
+                }
                 self.advance();
                 let cond = self.parse_expr(arena, 0);
                 self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
