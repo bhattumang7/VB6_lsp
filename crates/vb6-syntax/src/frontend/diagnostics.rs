@@ -121,6 +121,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         40128 => "Named argument already specified",
         40136 => "Invalid or unqualified reference",
         40149 => "Invalid ReDim",
+        57150 => "Event not found",
         ERR_LABEL_NOT_DEFINED => "Label not defined",
         ERR_SYNTAX_ERROR => "Syntax error",
         ERR_ARRAY_ARGUMENT_MUST_BE_BYREF => "Array argument must be ByRef",

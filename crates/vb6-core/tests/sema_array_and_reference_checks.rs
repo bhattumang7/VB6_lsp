@@ -85,3 +85,22 @@ fn messages_are_the_compiler_texts() {
     let s = session(src);
     assert_eq!(s.diagnostics(0)[0].message().as_deref(), Some("Invalid or unqualified reference"));
 }
+
+const EVENT_NOT_FOUND: u32 = 57150;
+
+fn class_codes(src: &str) -> Vec<(u32, u32, u32)> {
+    let s = Session::from_sources(vec![("c.cls".to_string(), src.as_bytes().to_vec())]);
+    s.diagnostics(0).iter().map(|d| (d.code, d.span.start, d.span.len)).collect()
+}
+
+#[test]
+fn raising_an_undeclared_event_is_reported() {
+    let src = "Public Event Done(ByVal n As Long)\nSub Run()\n    RaiseEvent Done(1)\n    RaiseEvent Nope\nEnd Sub\n";
+    assert_eq!(class_codes(src), vec![(EVENT_NOT_FOUND, at(src, "RaiseEvent Nope", "Nope"), 4)]);
+}
+
+#[test]
+fn an_event_declared_after_its_use_is_found() {
+    let src = "Sub Run()\n    RaiseEvent done\nEnd Sub\nEvent Done()\n";
+    assert_eq!(class_codes(src), vec![]);
+}

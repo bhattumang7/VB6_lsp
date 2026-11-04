@@ -2442,7 +2442,9 @@ impl<'src> Parser<'src> {
             arena.alloc(ExprNode::ArgList { args: vec![] })
         };
         self.end_stmt();
-        arena.alloc(ExprNode::RaiseEvent { name: nid, args })
+        let id = arena.alloc(ExprNode::RaiseEvent { name: nid, args });
+        self.set_span(id, name.span);
+        id
     }
 
     fn parse_debug_stmt(&mut self, arena: &mut ExprArena) -> NodeId {

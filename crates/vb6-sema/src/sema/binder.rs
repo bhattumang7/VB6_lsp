@@ -32,6 +32,9 @@ pub const ERR_RANGE_HAS_NO_VALUES: u16 = 40109;
 pub const ERR_NAMED_ARGUMENT_ALREADY_SPECIFIED: u16 = 40128;
 /// "Invalid or unqualified reference" (40136): `.member` outside a `With`.
 pub const ERR_INVALID_OR_UNQUALIFIED_REFERENCE: u16 = 40136;
+/// "Event not found" (57150): `RaiseEvent` of an event the module does not
+/// declare.
+pub const ERR_EVENT_NOT_FOUND: u16 = 57150;
 /// "Invalid ReDim" (40149): `ReDim` of a constant.
 pub const ERR_INVALID_REDIM: u16 = 40149;
 
@@ -269,6 +272,8 @@ struct Binder<'a> {
     with_stack: Vec<SemType>,
     /// Number of `With` bodies enclosing the node being bound.
     with_depth: u32,
+    /// Lower-cased names of the events this module declares.
+    event_names: std::collections::HashSet<String>,
     /// Declared type names of each procedure's parameters, aligned with `procs`.
     param_names: Vec<Vec<Option<TypeName>>>,
     /// The inferred type of procedure locals of the procedure being bound,
@@ -328,6 +333,7 @@ impl<'a> Binder<'a> {
             callable: HashMap::new(),
             with_stack: Vec::new(),
             with_depth: 0,
+            event_names: std::collections::HashSet::new(),
             param_names: Vec::new(),
             inference: HashMap::new(),
             inferred_nodes: std::collections::HashSet::new(),
@@ -679,7 +685,11 @@ impl<'a> Binder<'a> {
                     }
                 }
             }
-            // Ignored at module level: Implements, EventDecl, empty Block, Generic
+            ExprNode::EventDecl { name, .. } => {
+                let name = self.name_of(*name).to_ascii_lowercase();
+                self.event_names.insert(name);
+            }
+            // Ignored at module level: Implements, empty Block, Generic
             _ => {}
         }
     }
@@ -1658,6 +1668,13 @@ impl<'a> Binder<'a> {
                             }
                         }
                     }
+                }
+            }
+            ExprNode::RaiseEvent { name, .. } => {
+                let lower = self.name_of(*name).to_ascii_lowercase();
+                if !self.event_names.contains(&lower) {
+                    let span = self.spans.get(id);
+                    self.diagnostics.push(ERR_EVENT_NOT_FOUND as u32, span);
                 }
             }
             ExprNode::Erase { vars } => {
