@@ -381,7 +381,7 @@ fn exit_do_accepts() {
 
 #[test]
 fn goto_accepts() {
-    let (_, arena, errors) = parse_stmts(b"GoTo myLabel");
+    let (_, arena, errors) = parse_stmts(b"GoTo myLabel\nmyLabel:");
     assert!(!errors);
     let g = find_node(&arena, |n| matches!(n, ExprNode::GoTo { .. })).expect("must build a GoTo");
     assert!(matches!(g, ExprNode::GoTo { target: LabelRef::Name(_) }));
@@ -400,7 +400,7 @@ fn on_error_resume_next() {
 
 #[test]
 fn on_error_goto_label() {
-    let (_, arena, errors) = parse_stmts(b"On Error GoTo errHandler");
+    let (_, arena, errors) = parse_stmts(b"On Error GoTo errHandler\nerrHandler:");
     assert!(!errors);
     assert!(find_node(&arena, |n| matches!(
         n,

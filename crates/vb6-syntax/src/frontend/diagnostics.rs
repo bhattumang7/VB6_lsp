@@ -61,6 +61,7 @@ pub const ERR_OPTIONAL_ARRAY: u32 = 0x9ccf; // 40143
 pub const ERR_PARAM_ARRAY_NOT_ARRAY: u32 = 0x9cd0; // 40144
 pub const ERR_INVALID_EVENT_NAME: u32 = 0xdefb; // 57083
 pub const ERR_PARAM_ARRAY_WITH_OPTIONAL: u32 = 0xdf00; // 57088
+pub const ERR_LABEL_NOT_DEFINED: u32 = 0x9ca4; // 40100
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -114,6 +115,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_LABEL_NOT_DEFINED => "Label not defined",
         ERR_SYNTAX_ERROR => "Syntax error",
         ERR_ARRAY_ARGUMENT_MUST_BE_BYREF => "Array argument must be ByRef",
         ERR_PROPERTY_ARGUMENT_REQUIRED => "Argument required for Property Let or Property Set",

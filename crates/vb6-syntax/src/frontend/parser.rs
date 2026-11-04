@@ -250,6 +250,9 @@ pub struct Parser<'src> {
     seen_option_private: bool,
     /// Letters (bit 0 = A) already given a type by a `DefType` statement.
     deftype_letters: u32,
+    /// Labels defined, and label references made, in the procedure being parsed.
+    labels_defined: Vec<LabelRef>,
+    label_refs: Vec<(LabelRef, Span)>,
     /// Kind of the procedure being parsed.
     proc_kind: Option<ProcKind>,
     /// An unclosed block has been reported in the current procedure; VB6
@@ -355,6 +358,8 @@ impl<'src> Parser<'src> {
             seen_option_explicit: false,
             seen_option_private: false,
             deftype_letters: 0,
+            labels_defined: Vec::new(),
+            label_refs: Vec::new(),
             proc_kind: None,
             block_error_reported: false,
             next_carry: Vec::new(),
@@ -1279,6 +1284,17 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Go)     => self.parse_goto_stmt(arena, false),
             TokenKind::Kw(Kw::Resume) => self.parse_resume_stmt(arena),
             TokenKind::Kw(Kw::On)     => self.parse_on_stmt(arena),
+            // `Error:` is a line label: the `Error` statement needs an operand.
+            TokenKind::Kw(Kw::Error) if self.peek2().kind == TokenKind::Kw(Kw::Colon) => {
+                let name = self.advance();
+                self.advance(); // colon
+                self.after_colon = false; // the colon belongs to the label
+                let sym = name.sym.map(|s| s as u32).unwrap_or(0);
+                self.labels_defined.push(LabelRef::Name(sym));
+                let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
+                self.set_span(id, name.span);
+                id
+            }
             // Error
             TokenKind::Kw(Kw::Error) if self.error_starts_target() => self.parse_ident_stmt(arena),
             TokenKind::Kw(Kw::Error) => {
@@ -1385,6 +1401,7 @@ impl<'src> Parser<'src> {
                 self.advance();            // colon
                 self.after_colon = false;  // the colon belongs to the label
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
+                self.labels_defined.push(LabelRef::Name(sym));
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
                 self.set_span(id, name.span);
                 id
@@ -1407,6 +1424,7 @@ impl<'src> Parser<'src> {
                 if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
                     self.after_colon = false;
                 }
+                self.labels_defined.push(LabelRef::Line(line));
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Line(line) });
                 self.set_span(id, tok.span);
                 id
@@ -2209,12 +2227,14 @@ impl<'src> Parser<'src> {
         } else {
             is_gosub
         };
+        let target_span = self.current_span();
         let target = if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
             let tok = self.advance();
             LabelRef::Line(line_label_value(&tok.lit))
         } else {
             LabelRef::Name(self.expect_ident().sym.map(|s| s as u32).unwrap_or(0))
         };
+        self.label_refs.push((target, target_span));
         self.end_stmt();
         if is_gosub {
             arena.alloc(ExprNode::GoSub { target })
@@ -2232,10 +2252,17 @@ impl<'src> Parser<'src> {
             ResumeTarget::Next
         } else if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
             let tok = self.advance();
-            ResumeTarget::At(LabelRef::Line(line_label_value(&tok.lit)))
+            let line = line_label_value(&tok.lit);
+            // `Resume 0` is `Resume`: it names no label.
+            if line != 0 {
+                self.label_refs.push((LabelRef::Line(line), tok.span));
+            }
+            ResumeTarget::At(LabelRef::Line(line))
         } else if !self.peek().is_stmt_end() {
             let lbl = self.expect_ident();
-            ResumeTarget::At(LabelRef::Name(lbl.sym.map(|s| s as u32).unwrap_or(0)))
+            let sym = lbl.sym.map(|s| s as u32).unwrap_or(0);
+            self.label_refs.push((LabelRef::Name(sym), lbl.span));
+            ResumeTarget::At(LabelRef::Name(sym))
         } else {
             ResumeTarget::Retry
         };
@@ -2265,12 +2292,14 @@ impl<'src> Parser<'src> {
                     let kind = if line == 0 {
                         OnErrorKind::Disable
                     } else {
+                        self.label_refs.push((LabelRef::Line(line), tok.span));
                         OnErrorKind::Goto(LabelRef::Line(line))
                     };
                     return arena.alloc(ExprNode::OnError { kind });
                 }
                 let lbl = self.expect_ident();
                 let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
+                self.label_refs.push((LabelRef::Name(lid), lbl.span));
                 self.end_stmt();
                 return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Goto(LabelRef::Name(lid)) });
             }
@@ -2292,12 +2321,14 @@ impl<'src> Parser<'src> {
         loop {
             let lref = if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
                 let tok = self.advance();
+                self.label_refs.push((LabelRef::Line(line_label_value(&tok.lit)), tok.span));
                 let n = arena.alloc(ExprNode::Literal { lit: AstLit::Int(line_label_value(&tok.lit)) });
                 self.set_span(n, tok.span);
                 n
             } else {
                 let lbl = self.expect_ident();
                 let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
+                self.label_refs.push((LabelRef::Name(lid), lbl.span));
                 let nref = arena.alloc(ExprNode::NameRef { sym: lid, suffix: TypeSuffix::None });
                 self.set_span(nref, lbl.span);
                 nref
@@ -3031,9 +3062,12 @@ impl<'src> Parser<'src> {
     fn parse_procedure_body(&mut self, arena: &mut ExprArena, kind: ProcKind) -> NodeId {
         let outer_kind = self.proc_kind.replace(kind);
         let outer_reported = std::mem::replace(&mut self.block_error_reported, false);
+        self.labels_defined.clear();
+        self.label_refs.clear();
         let body = self.parse_block_proc(arena);
         self.proc_kind = outer_kind;
         self.block_error_reported = outer_reported;
+        self.report_undefined_labels();
 
         let (closer, expected_code) = match kind {
             ProcKind::Sub => (Kw::Sub, ERR_EXPECTED_END_SUB),
@@ -3060,6 +3094,16 @@ impl<'src> Parser<'src> {
             self.skip_line();
         }
         body
+    }
+
+    /// Every label a jump names must be defined in the same procedure.
+    fn report_undefined_labels(&mut self) {
+        for (target, span) in std::mem::take(&mut self.label_refs) {
+            if !self.labels_defined.contains(&target) {
+                self.diagnostics.push(ERR_LABEL_NOT_DEFINED, span);
+            }
+        }
+        self.labels_defined.clear();
     }
 
     /// Parses Property Get/Let/Set.
