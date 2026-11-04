@@ -49,6 +49,9 @@ pub const ERR_END_TYPE_OUTSIDE_TYPE: u32 = 0x9c75; // 40053
 pub const ERR_STATEMENT_IN_TYPE: u32 = 0x9c76; // 40054
 pub const ERR_TYPE_WITHOUT_MEMBERS: u32 = 0x9cfc; // 40188
 pub const ERR_ENUM_WITHOUT_MEMBERS: u32 = 0xdf43; // 57155
+pub const ERR_IDENTIFIER_TOO_LONG: u32 = 0x9c6d; // 40045
+pub const ERR_TOO_MANY_DIMENSIONS: u32 = 0x9c80; // 40064
+pub const ERR_INVALID_FIXED_STRING_LENGTH: u32 = 0x9cb0; // 40112
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -102,6 +105,9 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
+        ERR_IDENTIFIER_TOO_LONG => "Identifier too long",
+        ERR_TOO_MANY_DIMENSIONS => "Too many dimensions",
+        ERR_INVALID_FIXED_STRING_LENGTH => "Invalid length for fixed-length string",
         ERR_END_TYPE_OUTSIDE_TYPE => "Statement invalid outside Type block",
         ERR_STATEMENT_IN_TYPE => "Statement invalid inside Type block",
         ERR_TYPE_WITHOUT_MEMBERS => "User-defined type without members not allowed",

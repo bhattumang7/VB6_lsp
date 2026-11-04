@@ -1145,12 +1145,13 @@ fn addressof_builds_typed_node() {
 }
 
 #[test]
-fn ident_300_chars_accepts() {
-    // The parser must accept identifiers longer than 255 chars without truncation.
+fn ident_300_chars_is_reported_and_kept() {
+    // An identifier over 255 bytes is an error, but the declaration is still
+    // built with the full name.
     let name: String = std::iter::repeat('a').take(300).collect();
     let src = format!("Dim {name} As Integer");
     let (_, arena, errors) = parse_stmts(src.as_bytes());
-    assert!(!errors, "300-char identifier must parse without errors");
+    assert!(errors, "300-char identifier must be reported");
     assert!(find_node(&arena, |n| matches!(n, ExprNode::DimItem { .. })).is_some());
 }
 

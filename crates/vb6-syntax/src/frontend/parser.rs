@@ -428,6 +428,14 @@ impl<'src> Parser<'src> {
                 }
                 continue;
             }
+            if tok.kind == TokenKind::Ident {
+                let too_long = tok
+                    .sym
+                    .is_some_and(|id| self.scanner.sym_name(id as u32).len() > MAX_IDENTIFIER_LEN);
+                if too_long {
+                    self.diagnostics.push(ERR_IDENTIFIER_TOO_LONG, tok.span);
+                }
+            }
             return tok;
         }
     }
@@ -1608,6 +1616,7 @@ impl<'src> Parser<'src> {
         if self.peek().kind == TokenKind::Kw(Kw::RParen) {
             return Some(arena.alloc(ExprNode::ArgList { args: Vec::new() }));
         }
+        let list_span = self.current_span();
         let mut args = Vec::new();
         loop {
             let lo = self.parse_expr(arena, 0);
@@ -1620,6 +1629,9 @@ impl<'src> Parser<'src> {
             args.push(node);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             if self.peek().kind == TokenKind::Kw(Kw::RParen) { break; }
+        }
+        if args.len() > MAX_DIMENSIONS {
+            self.diagnostics.push(ERR_TOO_MANY_DIMENSIONS, list_span);
         }
         Some(arena.alloc(ExprNode::ArgList { args }))
     }
@@ -3183,7 +3195,15 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::String) | TokenKind::Kw(Kw::StringS) => {
                 self.advance();
                 let fixed_len = if self.eat(TokenKind::Kw(Kw::Star)) {
-                    Some(self.parse_expr(arena, 0))
+                    let len_span = self.current_span();
+                    let len = self.parse_expr(arena, 0);
+                    // A literal length must be 1 up to (not including) 65527.
+                    if let ExprNode::Literal { lit: AstLit::Int(n) | AstLit::Long(n) } = arena.get(len) {
+                        if *n <= 0 || *n >= FIXED_STRING_LIMIT {
+                            self.diagnostics.push(ERR_INVALID_FIXED_STRING_LENGTH, len_span);
+                        }
+                    }
+                    Some(len)
                 } else { None };
                 arena.alloc(ExprNode::StringType { fixed_len })
             }
@@ -3664,6 +3684,13 @@ impl<'src> Parser<'src> {
 // 0x9c70 = 40048 "Syntax error"
 //
 // 0xdee1 = 57057 "Only valid in object module"
+/// Longest identifier, in bytes.
+const MAX_IDENTIFIER_LEN: usize = 255;
+/// Most dimensions an array declaration may list.
+const MAX_DIMENSIONS: usize = 60;
+/// A fixed-length string holds 1 to this many characters, exclusive.
+const FIXED_STRING_LIMIT: i32 = 0xfff7;
+
 const ERR_EXPECTED_EXPR:        u32 = 0x9c6f;
 const ERR_EXPECTED_IDENT:       u32 = 0x9c6f;
 const ERR_OBJECT_MODULE_ONLY:   u32 = 0xdee1;
