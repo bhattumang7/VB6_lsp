@@ -77,6 +77,13 @@ fn every_outcome_is_reachable() {
     let taxonomy = Taxonomy::parse("Syntax error\tsyntax\nVariable not defined\tsemantic\n").unwrap();
     assert_eq!(classify(&Verdict::Accepted, &[], &taxonomy), Outcome::AgreeAccept);
     assert_eq!(classify(&Verdict::Accepted, &[diag("x")], &taxonomy), Outcome::FalseReject);
+    // A semantic stop gives no verdict on a parser diagnostic, wherever it is.
+    let late = OurDiagnostic { code: 1, line: 5, message: "Expected: =".to_string() };
+    assert_eq!(
+        classify(&rejected("Variable not defined"), &[diag("Expected: =")], &taxonomy),
+        Outcome::Unverifiable
+    );
+    assert_eq!(classify(&rejected("Variable not defined"), &[late], &taxonomy), Outcome::Unverifiable);
     assert_eq!(
         classify(&rejected("Syntax error"), &[diag("Syntax error")], &taxonomy),
         Outcome::AgreeRejectSameMessage

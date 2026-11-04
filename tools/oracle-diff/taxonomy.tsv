@@ -1,7 +1,43 @@
-# message	class
+# Compiler message<TAB>class. A trailing * matches every message starting with the text before it.
+# syntax: the compiler rejected the form of the source. semantic: it read the form fine and
+# rejected what the names or types mean.
+Syntax error	syntax
+Expected: *	syntax
 Sub or Function not defined	semantic
 User-defined type not defined	semantic
 Variable not defined	semantic
 Method or data member not found	semantic
 Constant expression required	semantic
-Syntax error	syntax
+Invalid use of Me keyword	semantic
+Invalid or unqualified reference	semantic
+Wrong number of arguments or invalid property assignment	semantic
+Type mismatch	semantic
+Argument not optional	semantic
+ByRef argument type mismatch	semantic
+Expected Sub, Function, or Property	semantic
+Expected procedure, not variable	semantic
+Object required	semantic
+Type-declaration character does not match declared data type	semantic
+Variable required - can't assign to this expression	semantic
+Case without Select Case	syntax
+Do without Loop	syntax
+Else without If	syntax
+End If without block If	syntax
+Loop without Do	syntax
+Next without For	syntax
+Wend without While	syntax
+Enum without members not allowed	syntax
+User-defined type without members not allowed	syntax
+Invalid inside Enum	syntax
+Only valid in object module	syntax
+Bad interface for Implements: method has underscore in name	semantic
+Expected Function or variable	semantic
+Function call on left-hand side of assignment must return Variant or Object	semantic
+Invalid use of property	semantic
+Method not valid without suitable object	semantic
+Object does not source automation events	semantic
+Invalid qualifier	semantic
+Qualifier must be collection	semantic
+While without Wend	syntax
+Label not defined	syntax
+With object must be user-defined type, Object, or Variant	semantic

@@ -14,8 +14,14 @@ pub enum Outcome {
     AgreeRejectSameMessage,
     /// Both rejected but no parser message equals the compiler's.
     AgreeRejectDifferentMessage,
-    /// Compiler accepted, parser reported diagnostics.
+    /// Compiler accepted the whole module, parser reported diagnostics.
     FalseReject,
+    /// The compiler stopped at a semantic error and the parser reported a
+    /// diagnostic. The compiler does not read declarations and bodies in
+    /// source order, so its stop does not show that it read the parser's
+    /// position without a syntax error: it gives no verdict on the diagnostic.
+    /// Needs a closer look.
+    Unverifiable,
     /// Compiler rejected with a message classed as syntax, parser reported nothing.
     FalseAccept,
     /// Compiler rejected with a message the taxonomy classes as semantic; the
@@ -29,7 +35,8 @@ pub enum Outcome {
 }
 
 /// Message class table: compiler message text to `syntax` / `semantic` /
-/// `project`. Loaded from a checked-in TSV (`message<TAB>class`).
+/// `project`. Loaded from a checked-in TSV (`message<TAB>class`); a message
+/// ending in `*` stands for every message that begins with the text before it.
 #[derive(Default)]
 pub struct Taxonomy {
     classes: HashMap<String, String>,
@@ -55,8 +62,17 @@ impl Taxonomy {
         Ok(Taxonomy { classes })
     }
 
+    /// The class of `message`: an exact entry wins, otherwise the longest entry
+    /// ending in `*` that is a prefix of the message.
     pub fn class_of(&self, message: &str) -> Option<&str> {
-        self.classes.get(message).map(String::as_str)
+        if let Some(class) = self.classes.get(message) {
+            return Some(class);
+        }
+        self.classes
+            .iter()
+            .filter(|(key, _)| key.strip_suffix('*').is_some_and(|prefix| message.starts_with(prefix)))
+            .max_by_key(|(key, _)| key.len())
+            .map(|(_, class)| class.as_str())
     }
 }
 
@@ -67,6 +83,8 @@ pub fn classify(verdict: &Verdict, ours: &[OurDiagnostic], taxonomy: &Taxonomy) 
         (Verdict::Rejected { message, .. }, false) => {
             if ours.iter().any(|d| &d.message == message) {
                 Outcome::AgreeRejectSameMessage
+            } else if taxonomy.class_of(message) == Some("semantic") {
+                Outcome::Unverifiable
             } else {
                 Outcome::AgreeRejectDifferentMessage
             }
