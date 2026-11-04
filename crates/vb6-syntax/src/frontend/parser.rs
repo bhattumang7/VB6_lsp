@@ -1028,11 +1028,28 @@ impl<'src> Parser<'src> {
             if self.eat(TokenKind::Kw(Kw::Semi)) || self.eat(TokenKind::Kw(Kw::Comma)) {
                 continue;
             }
-            match self.try_parse_expr(arena) {
+            let before = self.peek().span.start;
+            match self.try_parse_print_item(arena) {
                 Some(expr) => args.push(expr),
                 None => break,
             }
+            if self.peek().span.start == before {
+                break;
+            }
         }
+    }
+
+    /// One item of a `Print`-family list: an expression, or the `Tab[(n)]` /
+    /// `Spc(n)` positioning directives.
+    fn try_parse_print_item(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        if matches!(self.peek().kind, TokenKind::Kw(Kw::Tab) | TokenKind::Kw(Kw::Spc)) {
+            let tok = self.advance();
+            let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
+            let base = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
+            self.set_span(base, tok.span);
+            return Some(self.parse_postfix(arena, base));
+        }
+        self.try_parse_expr(arena)
     }
 
     /// `Step (x, y)` as a single [`ExprNode::GraphicsPoint`].
@@ -1627,7 +1644,7 @@ impl<'src> Parser<'src> {
     fn parse_print_list(&mut self, arena: &mut ExprArena, channel: Option<NodeId>) -> NodeId {
         let mut args = Vec::new();
         while !self.peek().is_stmt_end() {
-            if let Some(n) = self.try_parse_expr(arena) { args.push(n); }
+            if let Some(n) = self.try_parse_print_item(arena) { args.push(n); }
             if !self.eat(TokenKind::Kw(Kw::Comma)) && !self.eat(TokenKind::Kw(Kw::Semi)) {
                 break;
             }
@@ -2412,7 +2429,7 @@ impl<'src> Parser<'src> {
         self.advance(); // consume Print / Assert etc.
         let mut args = Vec::new();
         while !self.peek().is_stmt_end() {
-            if let Some(n) = self.try_parse_expr(arena) {
+            if let Some(n) = self.try_parse_print_item(arena) {
                 args.push(n);
             }
             if !self.eat(TokenKind::Kw(Kw::Semi)) && !self.eat(TokenKind::Kw(Kw::Comma)) {
@@ -2949,7 +2966,7 @@ impl<'src> Parser<'src> {
         let mut args = Vec::new();
         if self.eat(TokenKind::Kw(Kw::Comma)) {
             while !self.peek().is_stmt_end() {
-                if let Some(n) = self.try_parse_expr(arena) { args.push(n); }
+                if let Some(n) = self.try_parse_print_item(arena) { args.push(n); }
                 if !self.eat(TokenKind::Kw(Kw::Comma)) && !self.eat(TokenKind::Kw(Kw::Semi)) { break; }
             }
         }
@@ -3707,9 +3724,11 @@ impl<'src> Parser<'src> {
             self.parse_new_expr(arena)
         } else if matches!(self.peek().kind, TokenKind::Kw(k) if !keyword_starts_expression(k)) {
             // A reserved word that is not a value or a built-in function
-            // cannot start an expression.
+            // cannot start an expression. It is consumed so that callers
+            // looping over items always advance.
             let span = self.current_span();
             self.diagnostics.push(ERR_EXPECTED_EXPR, span);
+            self.advance();
             arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
         } else {
             self.parse_primary(arena)
@@ -4127,5 +4146,5 @@ fn keyword_starts_expression(k: Kw) -> bool {
     !reserved
         || value_or_function
         || matches!(entry.name, "Array" | "CDec" | "DoEvents" | "New" | "Not" | "TypeOf" | "AddressOf"
-                | "True" | "False" | "Nothing" | "Empty" | "Null" | "Me")
+                | "True" | "False" | "Nothing" | "Empty" | "Null" | "Me" | "Seek")
 }
