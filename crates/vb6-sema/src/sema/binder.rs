@@ -35,6 +35,8 @@ pub const ERR_INVALID_OR_UNQUALIFIED_REFERENCE: u16 = 40136;
 /// "Event not found" (57150): `RaiseEvent` of an event the module does not
 /// declare.
 pub const ERR_EVENT_NOT_FOUND: u16 = 57150;
+/// "User-defined type may not be passed ByVal" (40140).
+pub const ERR_UDT_PASSED_BYVAL: u16 = 40140;
 /// "Invalid ReDim" (40149): `ReDim` of a constant.
 pub const ERR_INVALID_REDIM: u16 = 40149;
 
@@ -516,6 +518,27 @@ impl<'a> Binder<'a> {
 
         // Pass 4: module-local semantic diagnostics (locals are now collected).
         self.check_duplicate_declarations();
+        self.check_byval_user_types();
+    }
+
+    /// A user-defined type cannot be passed `ByVal`.
+    fn check_byval_user_types(&mut self) {
+        let udts: Vec<u32> = self.type_decls.iter().map(|t| t.sym_id).collect();
+        let mut found = Vec::new();
+        for proc in &self.procs {
+            for param in &proc.params {
+                if param.flags.by_val {
+                    if let VbaType::UserDefined(sym) = &param.vba_type {
+                        if udts.contains(sym) {
+                            found.push(param.name_span);
+                        }
+                    }
+                }
+            }
+        }
+        for span in found {
+            self.diagnostics.push(ERR_UDT_PASSED_BYVAL as u32, span);
+        }
     }
 
     /// Bind a top-level node's expressions in module scope, skipping procedures

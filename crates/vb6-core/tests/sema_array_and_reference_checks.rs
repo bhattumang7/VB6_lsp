@@ -104,3 +104,11 @@ fn an_event_declared_after_its_use_is_found() {
     let src = "Sub Run()\n    RaiseEvent done\nEnd Sub\nEvent Done()\n";
     assert_eq!(class_codes(src), vec![]);
 }
+
+const UDT_BYVAL: u32 = 40140;
+
+#[test]
+fn a_user_defined_type_cannot_be_passed_byval() {
+    let src = "Type Pt\n    X As Long\nEnd Type\nSub A(ByVal p As Pt)\nEnd Sub\nSub B(ByRef p As Pt)\nEnd Sub\nSub C(p As Pt)\nEnd Sub\nSub D(ByVal n As Long)\nEnd Sub\n";
+    assert_eq!(codes(src), vec![(UDT_BYVAL, at(src, "ByVal p As Pt", "p"), 1)]);
+}
