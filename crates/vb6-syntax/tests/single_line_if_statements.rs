@@ -76,3 +76,18 @@ fn nested_single_line_if_takes_the_else() {
     assert_eq!(p.block(*then_body).len(), 1);
     assert_eq!(p.block(else_body.unwrap()).len(), 1);
 }
+
+#[test]
+fn a_line_number_after_then_or_else_is_a_jump() {
+    use vb6_syntax::frontend::ast::LabelRef;
+    let p = parse("Sub S()\n If a Then 10 Else 20\n10 x = 1\n20 x = 2\nEnd Sub\n");
+    assert_eq!(p.found, vec![]);
+    let body = p.proc_body(0);
+    let ExprNode::If { then_body, else_body, .. } = p.node(body[0]) else { panic!("not an If") };
+    let then_stmts = p.block(*then_body);
+    assert_eq!(then_stmts.len(), 1);
+    assert!(matches!(p.node(then_stmts[0]), ExprNode::GoTo { target: LabelRef::Line(10) }));
+    let else_stmts = p.block(else_body.expect("else"));
+    assert_eq!(else_stmts.len(), 1);
+    assert!(matches!(p.node(else_stmts[0]), ExprNode::GoTo { target: LabelRef::Line(20) }));
+}

@@ -2064,6 +2064,15 @@ impl<'src> Parser<'src> {
     /// (separated by `:`) up to the `Else` or the end of the line.
     fn parse_inline_statements(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
         let mut stmts = Vec::new();
+        // `If c Then 10`: a line number straight after `Then` / `Else` is a jump.
+        if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
+            let tok = self.advance();
+            let target = LabelRef::Line(line_label_value(&tok.lit));
+            self.label_refs.push((target, tok.span));
+            let jump = arena.alloc(ExprNode::GoTo { target });
+            self.set_span(jump, tok.span);
+            stmts.push(jump);
+        }
         loop {
             while self.eat(TokenKind::Kw(Kw::Colon)) {}
             if self.last_was_eol
