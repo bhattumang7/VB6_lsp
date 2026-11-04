@@ -1,0 +1,1847 @@
+If c Then
+ElseIf c Then
+Else
+End If
+For i = 1 To 2
+Next
+Do
+Loop
+Do While c
+Loop Until c
+While c
+Wend
+Select Case x
+Case 1
+Case Else
+End Select
+With o
+End With
+Exit For
+Exit Do
+Exit Sub
+GoTo L
+L:
+x = 1
+If c Then x = 1
+If c Then x = 1 Else x = 2
+Next i
+On Error GoTo 0
+Resume Next
+Return
+If c Then\nIf c Then
+If c Then\nElseIf c Then
+If c Then\nElse
+If c Then\nEnd If
+If c Then\nFor i = 1 To 2
+If c Then\nNext
+If c Then\nDo
+If c Then\nLoop
+If c Then\nDo While c
+If c Then\nLoop Until c
+If c Then\nWhile c
+If c Then\nWend
+If c Then\nSelect Case x
+If c Then\nCase 1
+If c Then\nCase Else
+If c Then\nEnd Select
+If c Then\nWith o
+If c Then\nEnd With
+If c Then\nExit For
+If c Then\nExit Do
+If c Then\nExit Sub
+If c Then\nGoTo L
+If c Then\nL:
+If c Then\nx = 1
+If c Then\nIf c Then x = 1
+If c Then\nIf c Then x = 1 Else x = 2
+If c Then\nNext i
+If c Then\nOn Error GoTo 0
+If c Then\nResume Next
+If c Then\nReturn
+ElseIf c Then\nIf c Then
+ElseIf c Then\nElseIf c Then
+ElseIf c Then\nElse
+ElseIf c Then\nEnd If
+ElseIf c Then\nFor i = 1 To 2
+ElseIf c Then\nNext
+ElseIf c Then\nDo
+ElseIf c Then\nLoop
+ElseIf c Then\nDo While c
+ElseIf c Then\nLoop Until c
+ElseIf c Then\nWhile c
+ElseIf c Then\nWend
+ElseIf c Then\nSelect Case x
+ElseIf c Then\nCase 1
+ElseIf c Then\nCase Else
+ElseIf c Then\nEnd Select
+ElseIf c Then\nWith o
+ElseIf c Then\nEnd With
+ElseIf c Then\nExit For
+ElseIf c Then\nExit Do
+ElseIf c Then\nExit Sub
+ElseIf c Then\nGoTo L
+ElseIf c Then\nL:
+ElseIf c Then\nx = 1
+ElseIf c Then\nIf c Then x = 1
+ElseIf c Then\nIf c Then x = 1 Else x = 2
+ElseIf c Then\nNext i
+ElseIf c Then\nOn Error GoTo 0
+ElseIf c Then\nResume Next
+ElseIf c Then\nReturn
+Else\nIf c Then
+Else\nElseIf c Then
+Else\nElse
+Else\nEnd If
+Else\nFor i = 1 To 2
+Else\nNext
+Else\nDo
+Else\nLoop
+Else\nDo While c
+Else\nLoop Until c
+Else\nWhile c
+Else\nWend
+Else\nSelect Case x
+Else\nCase 1
+Else\nCase Else
+Else\nEnd Select
+Else\nWith o
+Else\nEnd With
+Else\nExit For
+Else\nExit Do
+Else\nExit Sub
+Else\nGoTo L
+Else\nL:
+Else\nx = 1
+Else\nIf c Then x = 1
+Else\nIf c Then x = 1 Else x = 2
+Else\nNext i
+Else\nOn Error GoTo 0
+Else\nResume Next
+Else\nReturn
+End If\nIf c Then
+End If\nElseIf c Then
+End If\nElse
+End If\nEnd If
+End If\nFor i = 1 To 2
+End If\nNext
+End If\nDo
+End If\nLoop
+End If\nDo While c
+End If\nLoop Until c
+End If\nWhile c
+End If\nWend
+End If\nSelect Case x
+End If\nCase 1
+End If\nCase Else
+End If\nEnd Select
+End If\nWith o
+End If\nEnd With
+End If\nExit For
+End If\nExit Do
+End If\nExit Sub
+End If\nGoTo L
+End If\nL:
+End If\nx = 1
+End If\nIf c Then x = 1
+End If\nIf c Then x = 1 Else x = 2
+End If\nNext i
+End If\nOn Error GoTo 0
+End If\nResume Next
+End If\nReturn
+For i = 1 To 2\nIf c Then
+For i = 1 To 2\nElseIf c Then
+For i = 1 To 2\nElse
+For i = 1 To 2\nEnd If
+For i = 1 To 2\nFor i = 1 To 2
+For i = 1 To 2\nNext
+For i = 1 To 2\nDo
+For i = 1 To 2\nLoop
+For i = 1 To 2\nDo While c
+For i = 1 To 2\nLoop Until c
+For i = 1 To 2\nWhile c
+For i = 1 To 2\nWend
+For i = 1 To 2\nSelect Case x
+For i = 1 To 2\nCase 1
+For i = 1 To 2\nCase Else
+For i = 1 To 2\nEnd Select
+For i = 1 To 2\nWith o
+For i = 1 To 2\nEnd With
+For i = 1 To 2\nExit For
+For i = 1 To 2\nExit Do
+For i = 1 To 2\nExit Sub
+For i = 1 To 2\nGoTo L
+For i = 1 To 2\nL:
+For i = 1 To 2\nx = 1
+For i = 1 To 2\nIf c Then x = 1
+For i = 1 To 2\nIf c Then x = 1 Else x = 2
+For i = 1 To 2\nNext i
+For i = 1 To 2\nOn Error GoTo 0
+For i = 1 To 2\nResume Next
+For i = 1 To 2\nReturn
+Next\nIf c Then
+Next\nElseIf c Then
+Next\nElse
+Next\nEnd If
+Next\nFor i = 1 To 2
+Next\nNext
+Next\nDo
+Next\nLoop
+Next\nDo While c
+Next\nLoop Until c
+Next\nWhile c
+Next\nWend
+Next\nSelect Case x
+Next\nCase 1
+Next\nCase Else
+Next\nEnd Select
+Next\nWith o
+Next\nEnd With
+Next\nExit For
+Next\nExit Do
+Next\nExit Sub
+Next\nGoTo L
+Next\nL:
+Next\nx = 1
+Next\nIf c Then x = 1
+Next\nIf c Then x = 1 Else x = 2
+Next\nNext i
+Next\nOn Error GoTo 0
+Next\nResume Next
+Next\nReturn
+Do\nIf c Then
+Do\nElseIf c Then
+Do\nElse
+Do\nEnd If
+Do\nFor i = 1 To 2
+Do\nNext
+Do\nDo
+Do\nLoop
+Do\nDo While c
+Do\nLoop Until c
+Do\nWhile c
+Do\nWend
+Do\nSelect Case x
+Do\nCase 1
+Do\nCase Else
+Do\nEnd Select
+Do\nWith o
+Do\nEnd With
+Do\nExit For
+Do\nExit Do
+Do\nExit Sub
+Do\nGoTo L
+Do\nL:
+Do\nx = 1
+Do\nIf c Then x = 1
+Do\nIf c Then x = 1 Else x = 2
+Do\nNext i
+Do\nOn Error GoTo 0
+Do\nResume Next
+Do\nReturn
+Loop\nIf c Then
+Loop\nElseIf c Then
+Loop\nElse
+Loop\nEnd If
+Loop\nFor i = 1 To 2
+Loop\nNext
+Loop\nDo
+Loop\nLoop
+Loop\nDo While c
+Loop\nLoop Until c
+Loop\nWhile c
+Loop\nWend
+Loop\nSelect Case x
+Loop\nCase 1
+Loop\nCase Else
+Loop\nEnd Select
+Loop\nWith o
+Loop\nEnd With
+Loop\nExit For
+Loop\nExit Do
+Loop\nExit Sub
+Loop\nGoTo L
+Loop\nL:
+Loop\nx = 1
+Loop\nIf c Then x = 1
+Loop\nIf c Then x = 1 Else x = 2
+Loop\nNext i
+Loop\nOn Error GoTo 0
+Loop\nResume Next
+Loop\nReturn
+Do While c\nIf c Then
+Do While c\nElseIf c Then
+Do While c\nElse
+Do While c\nEnd If
+Do While c\nFor i = 1 To 2
+Do While c\nNext
+Do While c\nDo
+Do While c\nLoop
+Do While c\nDo While c
+Do While c\nLoop Until c
+Do While c\nWhile c
+Do While c\nWend
+Do While c\nSelect Case x
+Do While c\nCase 1
+Do While c\nCase Else
+Do While c\nEnd Select
+Do While c\nWith o
+Do While c\nEnd With
+Do While c\nExit For
+Do While c\nExit Do
+Do While c\nExit Sub
+Do While c\nGoTo L
+Do While c\nL:
+Do While c\nx = 1
+Do While c\nIf c Then x = 1
+Do While c\nIf c Then x = 1 Else x = 2
+Do While c\nNext i
+Do While c\nOn Error GoTo 0
+Do While c\nResume Next
+Do While c\nReturn
+Loop Until c\nIf c Then
+Loop Until c\nElseIf c Then
+Loop Until c\nElse
+Loop Until c\nEnd If
+Loop Until c\nFor i = 1 To 2
+Loop Until c\nNext
+Loop Until c\nDo
+Loop Until c\nLoop
+Loop Until c\nDo While c
+Loop Until c\nLoop Until c
+Loop Until c\nWhile c
+Loop Until c\nWend
+Loop Until c\nSelect Case x
+Loop Until c\nCase 1
+Loop Until c\nCase Else
+Loop Until c\nEnd Select
+Loop Until c\nWith o
+Loop Until c\nEnd With
+Loop Until c\nExit For
+Loop Until c\nExit Do
+Loop Until c\nExit Sub
+Loop Until c\nGoTo L
+Loop Until c\nL:
+Loop Until c\nx = 1
+Loop Until c\nIf c Then x = 1
+Loop Until c\nIf c Then x = 1 Else x = 2
+Loop Until c\nNext i
+Loop Until c\nOn Error GoTo 0
+Loop Until c\nResume Next
+Loop Until c\nReturn
+While c\nIf c Then
+While c\nElseIf c Then
+While c\nElse
+While c\nEnd If
+While c\nFor i = 1 To 2
+While c\nNext
+While c\nDo
+While c\nLoop
+While c\nDo While c
+While c\nLoop Until c
+While c\nWhile c
+While c\nWend
+While c\nSelect Case x
+While c\nCase 1
+While c\nCase Else
+While c\nEnd Select
+While c\nWith o
+While c\nEnd With
+While c\nExit For
+While c\nExit Do
+While c\nExit Sub
+While c\nGoTo L
+While c\nL:
+While c\nx = 1
+While c\nIf c Then x = 1
+While c\nIf c Then x = 1 Else x = 2
+While c\nNext i
+While c\nOn Error GoTo 0
+While c\nResume Next
+While c\nReturn
+Wend\nIf c Then
+Wend\nElseIf c Then
+Wend\nElse
+Wend\nEnd If
+Wend\nFor i = 1 To 2
+Wend\nNext
+Wend\nDo
+Wend\nLoop
+Wend\nDo While c
+Wend\nLoop Until c
+Wend\nWhile c
+Wend\nWend
+Wend\nSelect Case x
+Wend\nCase 1
+Wend\nCase Else
+Wend\nEnd Select
+Wend\nWith o
+Wend\nEnd With
+Wend\nExit For
+Wend\nExit Do
+Wend\nExit Sub
+Wend\nGoTo L
+Wend\nL:
+Wend\nx = 1
+Wend\nIf c Then x = 1
+Wend\nIf c Then x = 1 Else x = 2
+Wend\nNext i
+Wend\nOn Error GoTo 0
+Wend\nResume Next
+Wend\nReturn
+Select Case x\nIf c Then
+Select Case x\nElseIf c Then
+Select Case x\nElse
+Select Case x\nEnd If
+Select Case x\nFor i = 1 To 2
+Select Case x\nNext
+Select Case x\nDo
+Select Case x\nLoop
+Select Case x\nDo While c
+Select Case x\nLoop Until c
+Select Case x\nWhile c
+Select Case x\nWend
+Select Case x\nSelect Case x
+Select Case x\nCase 1
+Select Case x\nCase Else
+Select Case x\nEnd Select
+Select Case x\nWith o
+Select Case x\nEnd With
+Select Case x\nExit For
+Select Case x\nExit Do
+Select Case x\nExit Sub
+Select Case x\nGoTo L
+Select Case x\nL:
+Select Case x\nx = 1
+Select Case x\nIf c Then x = 1
+Select Case x\nIf c Then x = 1 Else x = 2
+Select Case x\nNext i
+Select Case x\nOn Error GoTo 0
+Select Case x\nResume Next
+Select Case x\nReturn
+Case 1\nIf c Then
+Case 1\nElseIf c Then
+Case 1\nElse
+Case 1\nEnd If
+Case 1\nFor i = 1 To 2
+Case 1\nNext
+Case 1\nDo
+Case 1\nLoop
+Case 1\nDo While c
+Case 1\nLoop Until c
+Case 1\nWhile c
+Case 1\nWend
+Case 1\nSelect Case x
+Case 1\nCase 1
+Case 1\nCase Else
+Case 1\nEnd Select
+Case 1\nWith o
+Case 1\nEnd With
+Case 1\nExit For
+Case 1\nExit Do
+Case 1\nExit Sub
+Case 1\nGoTo L
+Case 1\nL:
+Case 1\nx = 1
+Case 1\nIf c Then x = 1
+Case 1\nIf c Then x = 1 Else x = 2
+Case 1\nNext i
+Case 1\nOn Error GoTo 0
+Case 1\nResume Next
+Case 1\nReturn
+Case Else\nIf c Then
+Case Else\nElseIf c Then
+Case Else\nElse
+Case Else\nEnd If
+Case Else\nFor i = 1 To 2
+Case Else\nNext
+Case Else\nDo
+Case Else\nLoop
+Case Else\nDo While c
+Case Else\nLoop Until c
+Case Else\nWhile c
+Case Else\nWend
+Case Else\nSelect Case x
+Case Else\nCase 1
+Case Else\nCase Else
+Case Else\nEnd Select
+Case Else\nWith o
+Case Else\nEnd With
+Case Else\nExit For
+Case Else\nExit Do
+Case Else\nExit Sub
+Case Else\nGoTo L
+Case Else\nL:
+Case Else\nx = 1
+Case Else\nIf c Then x = 1
+Case Else\nIf c Then x = 1 Else x = 2
+Case Else\nNext i
+Case Else\nOn Error GoTo 0
+Case Else\nResume Next
+Case Else\nReturn
+End Select\nIf c Then
+End Select\nElseIf c Then
+End Select\nElse
+End Select\nEnd If
+End Select\nFor i = 1 To 2
+End Select\nNext
+End Select\nDo
+End Select\nLoop
+End Select\nDo While c
+End Select\nLoop Until c
+End Select\nWhile c
+End Select\nWend
+End Select\nSelect Case x
+End Select\nCase 1
+End Select\nCase Else
+End Select\nEnd Select
+End Select\nWith o
+End Select\nEnd With
+End Select\nExit For
+End Select\nExit Do
+End Select\nExit Sub
+End Select\nGoTo L
+End Select\nL:
+End Select\nx = 1
+End Select\nIf c Then x = 1
+End Select\nIf c Then x = 1 Else x = 2
+End Select\nNext i
+End Select\nOn Error GoTo 0
+End Select\nResume Next
+End Select\nReturn
+With o\nIf c Then
+With o\nElseIf c Then
+With o\nElse
+With o\nEnd If
+With o\nFor i = 1 To 2
+With o\nNext
+With o\nDo
+With o\nLoop
+With o\nDo While c
+With o\nLoop Until c
+With o\nWhile c
+With o\nWend
+With o\nSelect Case x
+With o\nCase 1
+With o\nCase Else
+With o\nEnd Select
+With o\nWith o
+With o\nEnd With
+With o\nExit For
+With o\nExit Do
+With o\nExit Sub
+With o\nGoTo L
+With o\nL:
+With o\nx = 1
+With o\nIf c Then x = 1
+With o\nIf c Then x = 1 Else x = 2
+With o\nNext i
+With o\nOn Error GoTo 0
+With o\nResume Next
+With o\nReturn
+End With\nIf c Then
+End With\nElseIf c Then
+End With\nElse
+End With\nEnd If
+End With\nFor i = 1 To 2
+End With\nNext
+End With\nDo
+End With\nLoop
+End With\nDo While c
+End With\nLoop Until c
+End With\nWhile c
+End With\nWend
+End With\nSelect Case x
+End With\nCase 1
+End With\nCase Else
+End With\nEnd Select
+End With\nWith o
+End With\nEnd With
+End With\nExit For
+End With\nExit Do
+End With\nExit Sub
+End With\nGoTo L
+End With\nL:
+End With\nx = 1
+End With\nIf c Then x = 1
+End With\nIf c Then x = 1 Else x = 2
+End With\nNext i
+End With\nOn Error GoTo 0
+End With\nResume Next
+End With\nReturn
+Exit For\nIf c Then
+Exit For\nElseIf c Then
+Exit For\nElse
+Exit For\nEnd If
+Exit For\nFor i = 1 To 2
+Exit For\nNext
+Exit For\nDo
+Exit For\nLoop
+Exit For\nDo While c
+Exit For\nLoop Until c
+Exit For\nWhile c
+Exit For\nWend
+Exit For\nSelect Case x
+Exit For\nCase 1
+Exit For\nCase Else
+Exit For\nEnd Select
+Exit For\nWith o
+Exit For\nEnd With
+Exit For\nExit For
+Exit For\nExit Do
+Exit For\nExit Sub
+Exit For\nGoTo L
+Exit For\nL:
+Exit For\nx = 1
+Exit For\nIf c Then x = 1
+Exit For\nIf c Then x = 1 Else x = 2
+Exit For\nNext i
+Exit For\nOn Error GoTo 0
+Exit For\nResume Next
+Exit For\nReturn
+Exit Do\nIf c Then
+Exit Do\nElseIf c Then
+Exit Do\nElse
+Exit Do\nEnd If
+Exit Do\nFor i = 1 To 2
+Exit Do\nNext
+Exit Do\nDo
+Exit Do\nLoop
+Exit Do\nDo While c
+Exit Do\nLoop Until c
+Exit Do\nWhile c
+Exit Do\nWend
+Exit Do\nSelect Case x
+Exit Do\nCase 1
+Exit Do\nCase Else
+Exit Do\nEnd Select
+Exit Do\nWith o
+Exit Do\nEnd With
+Exit Do\nExit For
+Exit Do\nExit Do
+Exit Do\nExit Sub
+Exit Do\nGoTo L
+Exit Do\nL:
+Exit Do\nx = 1
+Exit Do\nIf c Then x = 1
+Exit Do\nIf c Then x = 1 Else x = 2
+Exit Do\nNext i
+Exit Do\nOn Error GoTo 0
+Exit Do\nResume Next
+Exit Do\nReturn
+Exit Sub\nIf c Then
+Exit Sub\nElseIf c Then
+Exit Sub\nElse
+Exit Sub\nEnd If
+Exit Sub\nFor i = 1 To 2
+Exit Sub\nNext
+Exit Sub\nDo
+Exit Sub\nLoop
+Exit Sub\nDo While c
+Exit Sub\nLoop Until c
+Exit Sub\nWhile c
+Exit Sub\nWend
+Exit Sub\nSelect Case x
+Exit Sub\nCase 1
+Exit Sub\nCase Else
+Exit Sub\nEnd Select
+Exit Sub\nWith o
+Exit Sub\nEnd With
+Exit Sub\nExit For
+Exit Sub\nExit Do
+Exit Sub\nExit Sub
+Exit Sub\nGoTo L
+Exit Sub\nL:
+Exit Sub\nx = 1
+Exit Sub\nIf c Then x = 1
+Exit Sub\nIf c Then x = 1 Else x = 2
+Exit Sub\nNext i
+Exit Sub\nOn Error GoTo 0
+Exit Sub\nResume Next
+Exit Sub\nReturn
+GoTo L\nIf c Then
+GoTo L\nElseIf c Then
+GoTo L\nElse
+GoTo L\nEnd If
+GoTo L\nFor i = 1 To 2
+GoTo L\nNext
+GoTo L\nDo
+GoTo L\nLoop
+GoTo L\nDo While c
+GoTo L\nLoop Until c
+GoTo L\nWhile c
+GoTo L\nWend
+GoTo L\nSelect Case x
+GoTo L\nCase 1
+GoTo L\nCase Else
+GoTo L\nEnd Select
+GoTo L\nWith o
+GoTo L\nEnd With
+GoTo L\nExit For
+GoTo L\nExit Do
+GoTo L\nExit Sub
+GoTo L\nGoTo L
+GoTo L\nL:
+GoTo L\nx = 1
+GoTo L\nIf c Then x = 1
+GoTo L\nIf c Then x = 1 Else x = 2
+GoTo L\nNext i
+GoTo L\nOn Error GoTo 0
+GoTo L\nResume Next
+GoTo L\nReturn
+L:\nIf c Then
+L:\nElseIf c Then
+L:\nElse
+L:\nEnd If
+L:\nFor i = 1 To 2
+L:\nNext
+L:\nDo
+L:\nLoop
+L:\nDo While c
+L:\nLoop Until c
+L:\nWhile c
+L:\nWend
+L:\nSelect Case x
+L:\nCase 1
+L:\nCase Else
+L:\nEnd Select
+L:\nWith o
+L:\nEnd With
+L:\nExit For
+L:\nExit Do
+L:\nExit Sub
+L:\nGoTo L
+L:\nL:
+L:\nx = 1
+L:\nIf c Then x = 1
+L:\nIf c Then x = 1 Else x = 2
+L:\nNext i
+L:\nOn Error GoTo 0
+L:\nResume Next
+L:\nReturn
+x = 1\nIf c Then
+x = 1\nElseIf c Then
+x = 1\nElse
+x = 1\nEnd If
+x = 1\nFor i = 1 To 2
+x = 1\nNext
+x = 1\nDo
+x = 1\nLoop
+x = 1\nDo While c
+x = 1\nLoop Until c
+x = 1\nWhile c
+x = 1\nWend
+x = 1\nSelect Case x
+x = 1\nCase 1
+x = 1\nCase Else
+x = 1\nEnd Select
+x = 1\nWith o
+x = 1\nEnd With
+x = 1\nExit For
+x = 1\nExit Do
+x = 1\nExit Sub
+x = 1\nGoTo L
+x = 1\nL:
+x = 1\nx = 1
+x = 1\nIf c Then x = 1
+x = 1\nIf c Then x = 1 Else x = 2
+x = 1\nNext i
+x = 1\nOn Error GoTo 0
+x = 1\nResume Next
+x = 1\nReturn
+If c Then x = 1\nIf c Then
+If c Then x = 1\nElseIf c Then
+If c Then x = 1\nElse
+If c Then x = 1\nEnd If
+If c Then x = 1\nFor i = 1 To 2
+If c Then x = 1\nNext
+If c Then x = 1\nDo
+If c Then x = 1\nLoop
+If c Then x = 1\nDo While c
+If c Then x = 1\nLoop Until c
+If c Then x = 1\nWhile c
+If c Then x = 1\nWend
+If c Then x = 1\nSelect Case x
+If c Then x = 1\nCase 1
+If c Then x = 1\nCase Else
+If c Then x = 1\nEnd Select
+If c Then x = 1\nWith o
+If c Then x = 1\nEnd With
+If c Then x = 1\nExit For
+If c Then x = 1\nExit Do
+If c Then x = 1\nExit Sub
+If c Then x = 1\nGoTo L
+If c Then x = 1\nL:
+If c Then x = 1\nx = 1
+If c Then x = 1\nIf c Then x = 1
+If c Then x = 1\nIf c Then x = 1 Else x = 2
+If c Then x = 1\nNext i
+If c Then x = 1\nOn Error GoTo 0
+If c Then x = 1\nResume Next
+If c Then x = 1\nReturn
+If c Then x = 1 Else x = 2\nIf c Then
+If c Then x = 1 Else x = 2\nElseIf c Then
+If c Then x = 1 Else x = 2\nElse
+If c Then x = 1 Else x = 2\nEnd If
+If c Then x = 1 Else x = 2\nFor i = 1 To 2
+If c Then x = 1 Else x = 2\nNext
+If c Then x = 1 Else x = 2\nDo
+If c Then x = 1 Else x = 2\nLoop
+If c Then x = 1 Else x = 2\nDo While c
+If c Then x = 1 Else x = 2\nLoop Until c
+If c Then x = 1 Else x = 2\nWhile c
+If c Then x = 1 Else x = 2\nWend
+If c Then x = 1 Else x = 2\nSelect Case x
+If c Then x = 1 Else x = 2\nCase 1
+If c Then x = 1 Else x = 2\nCase Else
+If c Then x = 1 Else x = 2\nEnd Select
+If c Then x = 1 Else x = 2\nWith o
+If c Then x = 1 Else x = 2\nEnd With
+If c Then x = 1 Else x = 2\nExit For
+If c Then x = 1 Else x = 2\nExit Do
+If c Then x = 1 Else x = 2\nExit Sub
+If c Then x = 1 Else x = 2\nGoTo L
+If c Then x = 1 Else x = 2\nL:
+If c Then x = 1 Else x = 2\nx = 1
+If c Then x = 1 Else x = 2\nIf c Then x = 1
+If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2
+If c Then x = 1 Else x = 2\nNext i
+If c Then x = 1 Else x = 2\nOn Error GoTo 0
+If c Then x = 1 Else x = 2\nResume Next
+If c Then x = 1 Else x = 2\nReturn
+Next i\nIf c Then
+Next i\nElseIf c Then
+Next i\nElse
+Next i\nEnd If
+Next i\nFor i = 1 To 2
+Next i\nNext
+Next i\nDo
+Next i\nLoop
+Next i\nDo While c
+Next i\nLoop Until c
+Next i\nWhile c
+Next i\nWend
+Next i\nSelect Case x
+Next i\nCase 1
+Next i\nCase Else
+Next i\nEnd Select
+Next i\nWith o
+Next i\nEnd With
+Next i\nExit For
+Next i\nExit Do
+Next i\nExit Sub
+Next i\nGoTo L
+Next i\nL:
+Next i\nx = 1
+Next i\nIf c Then x = 1
+Next i\nIf c Then x = 1 Else x = 2
+Next i\nNext i
+Next i\nOn Error GoTo 0
+Next i\nResume Next
+Next i\nReturn
+On Error GoTo 0\nIf c Then
+On Error GoTo 0\nElseIf c Then
+On Error GoTo 0\nElse
+On Error GoTo 0\nEnd If
+On Error GoTo 0\nFor i = 1 To 2
+On Error GoTo 0\nNext
+On Error GoTo 0\nDo
+On Error GoTo 0\nLoop
+On Error GoTo 0\nDo While c
+On Error GoTo 0\nLoop Until c
+On Error GoTo 0\nWhile c
+On Error GoTo 0\nWend
+On Error GoTo 0\nSelect Case x
+On Error GoTo 0\nCase 1
+On Error GoTo 0\nCase Else
+On Error GoTo 0\nEnd Select
+On Error GoTo 0\nWith o
+On Error GoTo 0\nEnd With
+On Error GoTo 0\nExit For
+On Error GoTo 0\nExit Do
+On Error GoTo 0\nExit Sub
+On Error GoTo 0\nGoTo L
+On Error GoTo 0\nL:
+On Error GoTo 0\nx = 1
+On Error GoTo 0\nIf c Then x = 1
+On Error GoTo 0\nIf c Then x = 1 Else x = 2
+On Error GoTo 0\nNext i
+On Error GoTo 0\nOn Error GoTo 0
+On Error GoTo 0\nResume Next
+On Error GoTo 0\nReturn
+Resume Next\nIf c Then
+Resume Next\nElseIf c Then
+Resume Next\nElse
+Resume Next\nEnd If
+Resume Next\nFor i = 1 To 2
+Resume Next\nNext
+Resume Next\nDo
+Resume Next\nLoop
+Resume Next\nDo While c
+Resume Next\nLoop Until c
+Resume Next\nWhile c
+Resume Next\nWend
+Resume Next\nSelect Case x
+Resume Next\nCase 1
+Resume Next\nCase Else
+Resume Next\nEnd Select
+Resume Next\nWith o
+Resume Next\nEnd With
+Resume Next\nExit For
+Resume Next\nExit Do
+Resume Next\nExit Sub
+Resume Next\nGoTo L
+Resume Next\nL:
+Resume Next\nx = 1
+Resume Next\nIf c Then x = 1
+Resume Next\nIf c Then x = 1 Else x = 2
+Resume Next\nNext i
+Resume Next\nOn Error GoTo 0
+Resume Next\nResume Next
+Resume Next\nReturn
+Return\nIf c Then
+Return\nElseIf c Then
+Return\nElse
+Return\nEnd If
+Return\nFor i = 1 To 2
+Return\nNext
+Return\nDo
+Return\nLoop
+Return\nDo While c
+Return\nLoop Until c
+Return\nWhile c
+Return\nWend
+Return\nSelect Case x
+Return\nCase 1
+Return\nCase Else
+Return\nEnd Select
+Return\nWith o
+Return\nEnd With
+Return\nExit For
+Return\nExit Do
+Return\nExit Sub
+Return\nGoTo L
+Return\nL:
+Return\nx = 1
+Return\nIf c Then x = 1
+Return\nIf c Then x = 1 Else x = 2
+Return\nNext i
+Return\nOn Error GoTo 0
+Return\nResume Next
+Return\nReturn
+Case 1\nCase 1\nIf c Then
+Case 1\nDo\nWith o
+Case 1\nElse\nLoop
+Case 1\nEnd If\nSelect Case x
+Case 1\nExit Sub\nL:
+Case 1\nGoTo L\nNext
+Case 1\nIf c Then\nCase 1
+Case 1\nIf c Then\nWith o
+Case 1\nIf c Then x = 1 Else x = 2\nExit Sub
+Case 1\nL:\nIf c Then x = 1
+Case 1\nLoop\nIf c Then x = 1 Else x = 2
+Case 1\nLoop Until c\nOn Error GoTo 0
+Case 1\nNext\nIf c Then x = 1
+Case 1\nOn Error GoTo 0\nDo
+Case 1\nOn Error GoTo 0\nReturn
+Case 1\nResume Next\nElse
+Case 1\nResume Next\nEnd If
+Case 1\nResume Next\nIf c Then
+Case 1\nReturn\nReturn
+Case 1\nReturn\nWend
+Case 1\nSelect Case x\nGoTo L
+Case 1\nWend\nGoTo L
+Case 1\nWend\nSelect Case x
+Case 1\nWhile c\nLoop Until c
+Case 1\nWith o\nSelect Case x
+Case 1\nWith o\nWend
+Case 1\nx = 1\nL:
+Case 1\nx = 1\nLoop
+Case 1\nx = 1\nReturn
+Case 1\nx = 1\nWith o
+Case Else\nCase 1\nFor i = 1 To 2
+Case Else\nCase Else\nL:
+Case Else\nElse\nNext i
+Case Else\nElse\nx = 1
+Case Else\nEnd With\nIf c Then
+Case Else\nExit Do\nIf c Then x = 1
+Case Else\nExit Do\nResume Next
+Case Else\nExit Sub\nResume Next
+Case Else\nGoTo L\nEnd With
+Case Else\nIf c Then\nExit Do
+Case Else\nIf c Then x = 1\nEnd If
+Case Else\nIf c Then x = 1 Else x = 2\nReturn
+Case Else\nL:\nIf c Then
+Case Else\nLoop\nCase Else
+Case Else\nLoop\nNext
+Case Else\nLoop Until c\nExit Do
+Case Else\nLoop Until c\nIf c Then x = 1
+Case Else\nLoop Until c\nL:
+Case Else\nNext\nIf c Then
+Case Else\nNext\nNext
+Case Else\nWhile c\nElse
+Case Else\nWith o\nGoTo L
+Case Else\nWith o\nWith o
+Do\nCase Else\nNext
+Do\nDo While c\nElseIf c Then
+Do\nDo While c\nLoop Until c
+Do\nElse\nDo While c
+Do\nElse\nExit Do
+Do\nElse\nResume Next
+Do\nElseIf c Then\nIf c Then x = 1 Else x = 2
+Do\nEnd Select\nDo
+Do\nEnd Select\nGoTo L
+Do\nExit Do\nSelect Case x
+Do\nGoTo L\nEnd Select
+Do\nIf c Then\nCase 1
+Do\nIf c Then x = 1\nLoop Until c
+Do\nL:\nEnd Select
+Do\nL:\nIf c Then
+Do\nL:\nLoop
+Do\nL:\nOn Error GoTo 0
+Do\nLoop\nCase Else
+Do\nLoop\nx = 1
+Do\nLoop Until c\nFor i = 1 To 2
+Do\nLoop Until c\nIf c Then x = 1
+Do\nLoop Until c\nWhile c
+Do\nNext\nL:
+Do\nNext i\nIf c Then
+Do\nReturn\nElse
+Do\nReturn\nLoop Until c
+Do\nSelect Case x\nDo While c
+Do\nSelect Case x\nFor i = 1 To 2
+Do\nWend\nEnd If
+Do\nWend\nEnd With
+Do\nWend\nExit Do
+Do\nWend\nNext
+Do\nWith o\nEnd Select
+Do While c\nCase 1\nLoop Until c
+Do While c\nCase 1\nResume Next
+Do While c\nCase Else\nIf c Then
+Do While c\nCase Else\nWith o
+Do While c\nDo\nEnd If
+Do While c\nDo\nResume Next
+Do While c\nDo\nx = 1
+Do While c\nDo While c\nSelect Case x
+Do While c\nElse\nWend
+Do While c\nElseIf c Then\nExit Do
+Do While c\nElseIf c Then\nNext
+Do While c\nElseIf c Then\nResume Next
+Do While c\nEnd If\nElseIf c Then
+Do While c\nEnd If\nLoop
+Do While c\nEnd Select\nNext i
+Do While c\nEnd With\nCase 1
+Do While c\nEnd With\nExit Sub
+Do While c\nExit Do\nEnd If
+Do While c\nExit Do\nFor i = 1 To 2
+Do While c\nIf c Then\nElseIf c Then
+Do While c\nIf c Then\nExit Sub
+Do While c\nIf c Then x = 1\nIf c Then x = 1
+Do While c\nLoop\nGoTo L
+Do While c\nLoop Until c\nIf c Then
+Do While c\nNext\nWhile c
+Do While c\nOn Error GoTo 0\nElseIf c Then
+Do While c\nResume Next\nEnd If
+Do While c\nResume Next\nLoop
+Do While c\nSelect Case x\nIf c Then x = 1 Else x = 2
+Do While c\nWend\nDo While c
+Do While c\nWend\nElse
+Do While c\nWend\nWhile c
+Do While c\nWith o\nExit Sub
+Do While c\nx = 1\nEnd If
+Do While c\nx = 1\nL:
+Else\nCase 1\nEnd If
+Else\nCase 1\nReturn
+Else\nCase Else\nWhile c
+Else\nDo\nGoTo L
+Else\nDo\nWith o
+Else\nDo While c\nElseIf c Then
+Else\nElseIf c Then\nIf c Then x = 1
+Else\nElseIf c Then\nx = 1
+Else\nEnd If\nReturn
+Else\nEnd If\nWith o
+Else\nEnd Select\nDo While c
+Else\nEnd With\nCase 1
+Else\nExit Do\nOn Error GoTo 0
+Else\nExit For\nWith o
+Else\nExit Sub\nFor i = 1 To 2
+Else\nExit Sub\nLoop Until c
+Else\nExit Sub\nx = 1
+Else\nFor i = 1 To 2\nEnd If
+Else\nGoTo L\nWith o
+Else\nIf c Then\nNext i
+Else\nIf c Then x = 1 Else x = 2\nDo While c
+Else\nLoop\nEnd If
+Else\nNext\nWhile c
+Else\nOn Error GoTo 0\nDo While c
+Else\nResume Next\nExit Do
+Else\nReturn\nNext
+Else\nSelect Case x\nDo While c
+Else\nWith o\nDo
+Else\nx = 1\nReturn
+Else\nx = 1\nx = 1
+ElseIf c Then\nCase Else\nElse
+ElseIf c Then\nDo\nElse
+ElseIf c Then\nDo\nIf c Then
+ElseIf c Then\nDo While c\nEnd With
+ElseIf c Then\nDo While c\nExit Sub
+ElseIf c Then\nElse\nCase 1
+ElseIf c Then\nElseIf c Then\nEnd With
+ElseIf c Then\nEnd If\nIf c Then
+ElseIf c Then\nEnd Select\nDo While c
+ElseIf c Then\nEnd With\nExit For
+ElseIf c Then\nEnd With\nFor i = 1 To 2
+ElseIf c Then\nExit Sub\nIf c Then
+ElseIf c Then\nExit Sub\nL:
+ElseIf c Then\nFor i = 1 To 2\nExit Sub
+ElseIf c Then\nGoTo L\nNext i
+ElseIf c Then\nIf c Then\nDo
+ElseIf c Then\nIf c Then\nExit For
+ElseIf c Then\nIf c Then\nIf c Then
+ElseIf c Then\nL:\nElse
+ElseIf c Then\nL:\nElseIf c Then
+ElseIf c Then\nL:\nEnd Select
+ElseIf c Then\nLoop\nElseIf c Then
+ElseIf c Then\nLoop Until c\nx = 1
+ElseIf c Then\nNext i\nExit For
+ElseIf c Then\nResume Next\nEnd With
+ElseIf c Then\nResume Next\nLoop Until c
+ElseIf c Then\nWend\nWhile c
+ElseIf c Then\nWith o\nL:
+End If\nCase 1\nEnd Select
+End If\nCase Else\nCase 1
+End If\nElse\nDo While c
+End If\nElseIf c Then\nDo
+End If\nElseIf c Then\nElseIf c Then
+End If\nEnd If\nElse
+End If\nEnd If\nExit Do
+End If\nEnd Select\nElseIf c Then
+End If\nExit Sub\nCase Else
+End If\nFor i = 1 To 2\nEnd If
+End If\nGoTo L\nNext i
+End If\nIf c Then\nElse
+End If\nLoop\nExit Sub
+End If\nNext i\nElse
+End If\nSelect Case x\nReturn
+End If\nWend\nExit Do
+End If\nWhile c\nExit Do
+End If\nWhile c\nResume Next
+End If\nx = 1\nExit Do
+End Select\nCase 1\nElseIf c Then
+End Select\nCase 1\nExit Do
+End Select\nCase 1\nReturn
+End Select\nDo While c\nDo
+End Select\nDo While c\nExit For
+End Select\nDo While c\nIf c Then x = 1 Else x = 2
+End Select\nEnd If\nEnd If
+End Select\nEnd Select\nLoop Until c
+End Select\nEnd With\nEnd Select
+End Select\nEnd With\nNext i
+End Select\nExit Sub\nEnd With
+End Select\nExit Sub\nSelect Case x
+End Select\nFor i = 1 To 2\nReturn
+End Select\nGoTo L\nReturn
+End Select\nIf c Then\nElse
+End Select\nIf c Then\nIf c Then x = 1 Else x = 2
+End Select\nIf c Then\nLoop Until c
+End Select\nIf c Then x = 1 Else x = 2\nL:
+End Select\nL:\nEnd With
+End Select\nL:\nGoTo L
+End Select\nL:\nIf c Then x = 1 Else x = 2
+End Select\nL:\nWhile c
+End Select\nLoop\nExit Do
+End Select\nNext\nEnd If
+End Select\nNext\nIf c Then
+End Select\nNext i\nExit For
+End Select\nResume Next\nGoTo L
+End Select\nResume Next\nNext
+End Select\nResume Next\nNext i
+End Select\nResume Next\nResume Next
+End Select\nReturn\nEnd If
+End Select\nReturn\nGoTo L
+End Select\nSelect Case x\nIf c Then
+End Select\nWhile c\nElseIf c Then
+End With\nCase 1\nIf c Then x = 1
+End With\nDo\nLoop
+End With\nDo While c\nResume Next
+End With\nElse\nExit Sub
+End With\nElse\nWhile c
+End With\nElseIf c Then\nLoop
+End With\nElseIf c Then\nWhile c
+End With\nEnd If\nExit For
+End With\nEnd Select\nEnd Select
+End With\nEnd Select\nIf c Then x = 1 Else x = 2
+End With\nEnd With\nDo
+End With\nEnd With\nWhile c
+End With\nExit Do\nIf c Then x = 1
+End With\nExit For\nIf c Then x = 1 Else x = 2
+End With\nExit Sub\nFor i = 1 To 2
+End With\nFor i = 1 To 2\nExit Sub
+End With\nFor i = 1 To 2\nIf c Then
+End With\nGoTo L\nCase 1
+End With\nIf c Then x = 1\nDo
+End With\nIf c Then x = 1\nElseIf c Then
+End With\nIf c Then x = 1 Else x = 2\nEnd If
+End With\nIf c Then x = 1 Else x = 2\nEnd Select
+End With\nL:\nElse
+End With\nLoop\nCase Else
+End With\nOn Error GoTo 0\nFor i = 1 To 2
+End With\nOn Error GoTo 0\nIf c Then x = 1
+End With\nResume Next\nDo
+End With\nReturn\nIf c Then
+End With\nSelect Case x\nSelect Case x
+End With\nWend\nExit Do
+End With\nWhile c\nLoop
+End With\nWith o\nNext
+Exit Do\nCase Else\nEnd With
+Exit Do\nElse\nDo
+Exit Do\nEnd Select\nExit Do
+Exit Do\nEnd Select\nExit For
+Exit Do\nExit For\nElse
+Exit Do\nExit Sub\nCase 1
+Exit Do\nExit Sub\nExit Sub
+Exit Do\nExit Sub\nGoTo L
+Exit Do\nExit Sub\nWith o
+Exit Do\nFor i = 1 To 2\nCase 1
+Exit Do\nLoop Until c\nElse
+Exit Do\nLoop Until c\nWith o
+Exit Do\nNext i\nExit Do
+Exit Do\nNext i\nExit For
+Exit Do\nOn Error GoTo 0\nDo
+Exit Do\nResume Next\nExit Do
+Exit Do\nReturn\nExit Sub
+Exit Do\nReturn\nWend
+Exit Do\nReturn\nWith o
+Exit Do\nWend\nDo
+Exit Do\nWith o\nEnd Select
+Exit Do\nWith o\nExit Do
+Exit Do\nx = 1\nEnd If
+Exit Do\nx = 1\nL:
+Exit For\nCase Else\nEnd With
+Exit For\nDo\nElseIf c Then
+Exit For\nDo\nWhile c
+Exit For\nDo While c\nExit Do
+Exit For\nElse\nFor i = 1 To 2
+Exit For\nElse\nWend
+Exit For\nElseIf c Then\nExit Do
+Exit For\nExit For\nExit Sub
+Exit For\nExit For\nSelect Case x
+Exit For\nExit For\nx = 1
+Exit For\nFor i = 1 To 2\nEnd With
+Exit For\nFor i = 1 To 2\nOn Error GoTo 0
+Exit For\nGoTo L\nNext i
+Exit For\nNext i\nResume Next
+Exit For\nOn Error GoTo 0\nLoop
+Exit For\nResume Next\nCase Else
+Exit For\nResume Next\nLoop Until c
+Exit For\nResume Next\nWend
+Exit For\nReturn\nGoTo L
+Exit For\nReturn\nNext
+Exit For\nWend\nNext i
+Exit For\nWhile c\nFor i = 1 To 2
+Exit For\nWhile c\nWith o
+Exit Sub\nCase 1\nElse
+Exit Sub\nCase 1\nGoTo L
+Exit Sub\nCase 1\nLoop
+Exit Sub\nCase 1\nOn Error GoTo 0
+Exit Sub\nCase Else\nEnd Select
+Exit Sub\nCase Else\nNext
+Exit Sub\nElse\nGoTo L
+Exit Sub\nElseIf c Then\nElse
+Exit Sub\nElseIf c Then\nEnd Select
+Exit Sub\nElseIf c Then\nIf c Then
+Exit Sub\nElseIf c Then\nWend
+Exit Sub\nEnd If\nWith o
+Exit Sub\nEnd With\nGoTo L
+Exit Sub\nExit Do\nL:
+Exit Sub\nExit For\nCase Else
+Exit Sub\nExit For\nElseIf c Then
+Exit Sub\nExit For\nIf c Then
+Exit Sub\nExit Sub\nCase 1
+Exit Sub\nFor i = 1 To 2\nElse
+Exit Sub\nFor i = 1 To 2\nElseIf c Then
+Exit Sub\nIf c Then x = 1\nElse
+Exit Sub\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2
+Exit Sub\nIf c Then x = 1 Else x = 2\nOn Error GoTo 0
+Exit Sub\nIf c Then x = 1 Else x = 2\nReturn
+Exit Sub\nLoop\nExit Do
+Exit Sub\nLoop Until c\nEnd Select
+Exit Sub\nLoop Until c\nWith o
+Exit Sub\nNext\nDo While c
+Exit Sub\nNext i\nEnd With
+Exit Sub\nNext i\nNext i
+Exit Sub\nOn Error GoTo 0\nElse
+Exit Sub\nOn Error GoTo 0\nIf c Then x = 1
+Exit Sub\nOn Error GoTo 0\nWend
+Exit Sub\nResume Next\nResume Next
+Exit Sub\nReturn\nDo While c
+Exit Sub\nReturn\nEnd If
+Exit Sub\nReturn\nFor i = 1 To 2
+Exit Sub\nReturn\nResume Next
+Exit Sub\nReturn\nWith o
+Exit Sub\nWhile c\nIf c Then x = 1
+Exit Sub\nWhile c\nWend
+Exit Sub\nx = 1\nL:
+For i = 1 To 2\nCase Else\nEnd If
+For i = 1 To 2\nDo While c\nExit Do
+For i = 1 To 2\nDo While c\nWith o
+For i = 1 To 2\nElseIf c Then\nCase 1
+For i = 1 To 2\nElseIf c Then\nDo
+For i = 1 To 2\nElseIf c Then\nIf c Then
+For i = 1 To 2\nEnd With\nFor i = 1 To 2
+For i = 1 To 2\nExit Sub\nDo While c
+For i = 1 To 2\nExit Sub\nOn Error GoTo 0
+For i = 1 To 2\nIf c Then\nEnd Select
+For i = 1 To 2\nIf c Then\nFor i = 1 To 2
+For i = 1 To 2\nIf c Then\nReturn
+For i = 1 To 2\nIf c Then x = 1 Else x = 2\nLoop Until c
+For i = 1 To 2\nL:\nIf c Then
+For i = 1 To 2\nLoop\nx = 1
+For i = 1 To 2\nNext\nEnd Select
+For i = 1 To 2\nNext i\nCase 1
+For i = 1 To 2\nOn Error GoTo 0\nNext i
+For i = 1 To 2\nResume Next\nEnd Select
+For i = 1 To 2\nReturn\nSelect Case x
+For i = 1 To 2\nWend\nCase 1
+For i = 1 To 2\nWend\nGoTo L
+For i = 1 To 2\nWend\nLoop Until c
+For i = 1 To 2\nWend\nWhile c
+For i = 1 To 2\nWhile c\nDo While c
+For i = 1 To 2\nx = 1\nLoop
+GoTo L\nCase Else\nSelect Case x
+GoTo L\nDo\nFor i = 1 To 2
+GoTo L\nElse\nIf c Then x = 1
+GoTo L\nElse\nResume Next
+GoTo L\nElseIf c Then\nElseIf c Then
+GoTo L\nElseIf c Then\nExit Do
+GoTo L\nEnd If\nL:
+GoTo L\nGoTo L\nReturn
+GoTo L\nIf c Then\nDo
+GoTo L\nIf c Then\nEnd If
+GoTo L\nIf c Then x = 1\nEnd If
+GoTo L\nIf c Then x = 1 Else x = 2\nReturn
+GoTo L\nL:\nExit Sub
+GoTo L\nLoop\nCase 1
+GoTo L\nLoop\nIf c Then
+GoTo L\nLoop\nx = 1
+GoTo L\nLoop Until c\nCase 1
+GoTo L\nNext\nEnd If
+GoTo L\nNext\nExit Sub
+GoTo L\nNext\nSelect Case x
+GoTo L\nNext i\nDo While c
+GoTo L\nNext i\nSelect Case x
+GoTo L\nResume Next\nL:
+GoTo L\nResume Next\nSelect Case x
+GoTo L\nSelect Case x\nEnd If
+GoTo L\nWend\nExit For
+GoTo L\nWend\nNext
+GoTo L\nWhile c\nResume Next
+GoTo L\nWith o\nWith o
+If c Then\nCase Else\nIf c Then x = 1 Else x = 2
+If c Then\nDo\nWith o
+If c Then\nDo While c\nDo
+If c Then\nElse\nDo While c
+If c Then\nElse\nOn Error GoTo 0
+If c Then\nElseIf c Then\nFor i = 1 To 2
+If c Then\nExit Do\nEnd Select
+If c Then\nExit Do\nEnd With
+If c Then\nFor i = 1 To 2\nCase 1
+If c Then\nIf c Then\nEnd With
+If c Then\nIf c Then x = 1 Else x = 2\nDo While c
+If c Then\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2
+If c Then\nIf c Then x = 1 Else x = 2\nx = 1
+If c Then\nOn Error GoTo 0\nElse
+If c Then\nOn Error GoTo 0\nIf c Then
+If c Then\nSelect Case x\nNext
+If c Then\nSelect Case x\nNext i
+If c Then\nSelect Case x\nOn Error GoTo 0
+If c Then\nWend\nDo While c
+If c Then\nWhile c\nEnd With
+If c Then\nWhile c\nSelect Case x
+If c Then\nx = 1\nElseIf c Then
+If c Then x = 1\nDo\nLoop Until c
+If c Then x = 1\nDo While c\nExit For
+If c Then x = 1\nElse\nCase Else
+If c Then x = 1\nElse\nIf c Then x = 1 Else x = 2
+If c Then x = 1\nElseIf c Then\nIf c Then
+If c Then x = 1\nEnd If\nResume Next
+If c Then x = 1\nEnd If\nWith o
+If c Then x = 1\nExit Do\nIf c Then x = 1
+If c Then x = 1\nExit For\nWhile c
+If c Then x = 1\nExit Sub\nElse
+If c Then x = 1\nExit Sub\nL:
+If c Then x = 1\nFor i = 1 To 2\nExit Do
+If c Then x = 1\nFor i = 1 To 2\nNext i
+If c Then x = 1\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2
+If c Then x = 1\nL:\nNext i
+If c Then x = 1\nNext\nDo While c
+If c Then x = 1\nNext i\nEnd Select
+If c Then x = 1\nNext i\nLoop Until c
+If c Then x = 1\nResume Next\nReturn
+If c Then x = 1\nWend\nIf c Then x = 1 Else x = 2
+If c Then x = 1\nWhile c\nNext i
+If c Then x = 1\nWith o\nElseIf c Then
+If c Then x = 1\nWith o\nLoop Until c
+If c Then x = 1\nWith o\nWhile c
+If c Then x = 1\nx = 1\nWith o
+If c Then x = 1 Else x = 2\nCase 1\nElse
+If c Then x = 1 Else x = 2\nCase 1\nL:
+If c Then x = 1 Else x = 2\nCase Else\nElse
+If c Then x = 1 Else x = 2\nDo\nSelect Case x
+If c Then x = 1 Else x = 2\nDo\nWith o
+If c Then x = 1 Else x = 2\nDo While c\nEnd If
+If c Then x = 1 Else x = 2\nEnd Select\nExit For
+If c Then x = 1 Else x = 2\nExit For\nDo
+If c Then x = 1 Else x = 2\nExit Sub\nDo
+If c Then x = 1 Else x = 2\nExit Sub\nElse
+If c Then x = 1 Else x = 2\nExit Sub\nFor i = 1 To 2
+If c Then x = 1 Else x = 2\nExit Sub\nIf c Then x = 1
+If c Then x = 1 Else x = 2\nIf c Then\nDo While c
+If c Then x = 1 Else x = 2\nIf c Then x = 1\nExit Sub
+If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2\nExit Do
+If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2\nIf c Then x = 1
+If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2
+If c Then x = 1 Else x = 2\nL:\nNext
+If c Then x = 1 Else x = 2\nLoop\nL:
+If c Then x = 1 Else x = 2\nLoop\nResume Next
+If c Then x = 1 Else x = 2\nLoop Until c\nx = 1
+If c Then x = 1 Else x = 2\nNext\nGoTo L
+If c Then x = 1 Else x = 2\nNext i\nCase 1
+If c Then x = 1 Else x = 2\nNext i\nWend
+If c Then x = 1 Else x = 2\nOn Error GoTo 0\nOn Error GoTo 0
+If c Then x = 1 Else x = 2\nResume Next\nExit Do
+If c Then x = 1 Else x = 2\nResume Next\nL:
+If c Then x = 1 Else x = 2\nReturn\nElseIf c Then
+If c Then x = 1 Else x = 2\nReturn\nx = 1
+If c Then x = 1 Else x = 2\nSelect Case x\nGoTo L
+If c Then x = 1 Else x = 2\nWend\nDo While c
+If c Then x = 1 Else x = 2\nWith o\nFor i = 1 To 2
+If c Then x = 1 Else x = 2\nx = 1\nReturn
+L:\nCase 1\nWend
+L:\nCase Else\nIf c Then x = 1
+L:\nCase Else\nNext
+L:\nEnd If\nResume Next
+L:\nExit Do\nL:
+L:\nExit Do\nWend
+L:\nExit Sub\nExit Sub
+L:\nExit Sub\nGoTo L
+L:\nExit Sub\nLoop Until c
+L:\nGoTo L\nNext i
+L:\nIf c Then x = 1\nDo
+L:\nIf c Then x = 1\nExit Do
+L:\nIf c Then x = 1\nResume Next
+L:\nIf c Then x = 1\nWend
+L:\nLoop\nWith o
+L:\nLoop Until c\nElseIf c Then
+L:\nLoop Until c\nExit Sub
+L:\nNext\nWith o
+L:\nOn Error GoTo 0\nDo While c
+L:\nOn Error GoTo 0\nWith o
+L:\nSelect Case x\nEnd If
+L:\nWend\nLoop
+L:\nWhile c\nL:
+L:\nWhile c\nReturn
+Loop\nCase 1\nElse
+Loop\nCase 1\nExit For
+Loop\nCase Else\nFor i = 1 To 2
+Loop\nDo\nDo
+Loop\nDo While c\nCase 1
+Loop\nDo While c\nIf c Then x = 1
+Loop\nDo While c\nL:
+Loop\nElse\nDo While c
+Loop\nElse\nExit For
+Loop\nElse\nIf c Then
+Loop\nElse\nNext i
+Loop\nEnd If\nDo While c
+Loop\nEnd If\nEnd Select
+Loop\nEnd If\nNext
+Loop\nEnd Select\nDo
+Loop\nEnd Select\nDo While c
+Loop\nEnd Select\nElseIf c Then
+Loop\nEnd With\nEnd With
+Loop\nExit Do\nSelect Case x
+Loop\nExit For\nReturn
+Loop\nExit Sub\nElseIf c Then
+Loop\nExit Sub\nIf c Then x = 1 Else x = 2
+Loop\nFor i = 1 To 2\nCase 1
+Loop\nFor i = 1 To 2\nElse
+Loop\nFor i = 1 To 2\nFor i = 1 To 2
+Loop\nFor i = 1 To 2\nLoop Until c
+Loop\nFor i = 1 To 2\nWhile c
+Loop\nGoTo L\nx = 1
+Loop\nIf c Then\nCase 1
+Loop\nIf c Then x = 1 Else x = 2\nEnd If
+Loop\nIf c Then x = 1 Else x = 2\nExit Do
+Loop\nLoop\nFor i = 1 To 2
+Loop\nNext\nElseIf c Then
+Loop\nNext\nExit Do
+Loop\nNext\nIf c Then x = 1
+Loop\nNext\nL:
+Loop\nNext i\nCase Else
+Loop\nNext i\nSelect Case x
+Loop\nReturn\nCase Else
+Loop\nSelect Case x\nReturn
+Loop\nWend\nDo While c
+Loop\nWhile c\nDo
+Loop\nWhile c\nOn Error GoTo 0
+Loop\nWith o\nExit Sub
+Loop\nWith o\nIf c Then x = 1
+Loop\nWith o\nWith o
+Loop\nx = 1\nEnd If
+Loop\nx = 1\nIf c Then x = 1
+Loop Until c\nCase 1\nFor i = 1 To 2
+Loop Until c\nCase Else\nCase Else
+Loop Until c\nCase Else\nDo While c
+Loop Until c\nCase Else\nIf c Then
+Loop Until c\nDo While c\nExit For
+Loop Until c\nDo While c\nx = 1
+Loop Until c\nElse\nReturn
+Loop Until c\nEnd Select\nElseIf c Then
+Loop Until c\nEnd Select\nEnd With
+Loop Until c\nEnd With\nNext i
+Loop Until c\nExit Do\nExit For
+Loop Until c\nExit Do\nLoop
+Loop Until c\nExit For\nFor i = 1 To 2
+Loop Until c\nExit For\nLoop
+Loop Until c\nExit Sub\nCase 1
+Loop Until c\nExit Sub\nElseIf c Then
+Loop Until c\nExit Sub\nLoop
+Loop Until c\nExit Sub\nOn Error GoTo 0
+Loop Until c\nFor i = 1 To 2\nExit Sub
+Loop Until c\nGoTo L\nx = 1
+Loop Until c\nIf c Then x = 1\nElseIf c Then
+Loop Until c\nIf c Then x = 1\nNext i
+Loop Until c\nIf c Then x = 1 Else x = 2\nEnd If
+Loop Until c\nIf c Then x = 1 Else x = 2\nReturn
+Loop Until c\nL:\nDo
+Loop Until c\nL:\nWith o
+Loop Until c\nLoop\nIf c Then x = 1 Else x = 2
+Loop Until c\nNext i\nL:
+Loop Until c\nResume Next\nReturn
+Loop Until c\nWhile c\nEnd Select
+Loop Until c\nWith o\nEnd Select
+Loop Until c\nWith o\nExit For
+Loop Until c\nWith o\nLoop
+Loop Until c\nx = 1\nExit Do
+Loop Until c\nx = 1\nFor i = 1 To 2
+Loop Until c\nx = 1\nSelect Case x
+Next\nCase 1\nResume Next
+Next\nCase Else\nExit Do
+Next\nCase Else\nSelect Case x
+Next\nDo While c\nLoop Until c
+Next\nDo While c\nWend
+Next\nElseIf c Then\nElse
+Next\nExit Do\nIf c Then
+Next\nExit Sub\nNext
+Next\nFor i = 1 To 2\nEnd Select
+Next\nFor i = 1 To 2\nIf c Then
+Next\nFor i = 1 To 2\nLoop
+Next\nFor i = 1 To 2\nReturn
+Next\nGoTo L\nEnd If
+Next\nGoTo L\nNext i
+Next\nIf c Then\nEnd Select
+Next\nIf c Then x = 1 Else x = 2\nEnd Select
+Next\nL:\nIf c Then x = 1
+Next\nLoop Until c\nNext i
+Next\nResume Next\nIf c Then
+Next\nResume Next\nLoop
+Next\nSelect Case x\nCase Else
+Next\nSelect Case x\nL:
+Next\nSelect Case x\nNext
+Next\nWend\nIf c Then x = 1
+Next\nWith o\nNext
+Next\nx = 1\nReturn
+Next i\nCase Else\nEnd With
+Next i\nCase Else\nFor i = 1 To 2
+Next i\nCase Else\nNext i
+Next i\nElse\nDo While c
+Next i\nElse\nExit For
+Next i\nElse\nFor i = 1 To 2
+Next i\nElseIf c Then\nReturn
+Next i\nEnd If\nDo
+Next i\nEnd Select\nNext
+Next i\nEnd With\nEnd If
+Next i\nEnd With\nResume Next
+Next i\nExit Do\nFor i = 1 To 2
+Next i\nExit Do\nNext
+Next i\nExit For\nResume Next
+Next i\nExit Sub\nWith o
+Next i\nFor i = 1 To 2\nElseIf c Then
+Next i\nFor i = 1 To 2\nIf c Then
+Next i\nGoTo L\nEnd If
+Next i\nGoTo L\nExit For
+Next i\nGoTo L\nLoop Until c
+Next i\nIf c Then\nEnd Select
+Next i\nIf c Then x = 1\nExit Sub
+Next i\nIf c Then x = 1\nGoTo L
+Next i\nIf c Then x = 1 Else x = 2\nIf c Then
+Next i\nLoop Until c\nNext
+Next i\nLoop Until c\nNext i
+Next i\nNext\nEnd Select
+Next i\nNext i\nL:
+Next i\nOn Error GoTo 0\nDo
+Next i\nOn Error GoTo 0\nIf c Then
+Next i\nResume Next\nDo
+Next i\nResume Next\nL:
+Next i\nResume Next\nNext
+Next i\nWhile c\nCase 1
+Next i\nWith o\nDo While c
+Next i\nWith o\nL:
+Next i\nx = 1\nDo
+Next i\nx = 1\nL:
+On Error GoTo 0\nCase 1\nEnd Select
+On Error GoTo 0\nCase 1\nL:
+On Error GoTo 0\nCase 1\nSelect Case x
+On Error GoTo 0\nCase 1\nWith o
+On Error GoTo 0\nCase Else\nCase Else
+On Error GoTo 0\nCase Else\nEnd With
+On Error GoTo 0\nCase Else\nIf c Then x = 1
+On Error GoTo 0\nDo\nIf c Then x = 1 Else x = 2
+On Error GoTo 0\nDo While c\nL:
+On Error GoTo 0\nEnd If\nCase Else
+On Error GoTo 0\nEnd Select\nCase Else
+On Error GoTo 0\nEnd Select\nElse
+On Error GoTo 0\nEnd With\nDo While c
+On Error GoTo 0\nExit For\nIf c Then x = 1
+On Error GoTo 0\nExit Sub\nIf c Then x = 1
+On Error GoTo 0\nExit Sub\nReturn
+On Error GoTo 0\nGoTo L\nIf c Then x = 1 Else x = 2
+On Error GoTo 0\nIf c Then x = 1\nFor i = 1 To 2
+On Error GoTo 0\nIf c Then x = 1\nIf c Then x = 1 Else x = 2
+On Error GoTo 0\nIf c Then x = 1\nReturn
+On Error GoTo 0\nLoop Until c\nExit Do
+On Error GoTo 0\nNext\nResume Next
+On Error GoTo 0\nReturn\nIf c Then x = 1 Else x = 2
+On Error GoTo 0\nSelect Case x\nElse
+On Error GoTo 0\nSelect Case x\nx = 1
+On Error GoTo 0\nWith o\nElse
+On Error GoTo 0\nWith o\nGoTo L
+Resume Next\nCase Else\nElse
+Resume Next\nCase Else\nGoTo L
+Resume Next\nDo While c\nCase 1
+Resume Next\nElseIf c Then\nFor i = 1 To 2
+Resume Next\nEnd Select\nIf c Then
+Resume Next\nEnd With\nDo
+Resume Next\nExit Do\nDo While c
+Resume Next\nExit Sub\nIf c Then
+Resume Next\nFor i = 1 To 2\nCase Else
+Resume Next\nIf c Then\nx = 1
+Resume Next\nIf c Then x = 1\nFor i = 1 To 2
+Resume Next\nIf c Then x = 1 Else x = 2\nEnd Select
+Resume Next\nL:\nResume Next
+Resume Next\nLoop\nEnd Select
+Resume Next\nLoop\nSelect Case x
+Resume Next\nLoop Until c\nEnd If
+Resume Next\nLoop Until c\nLoop
+Resume Next\nNext\nCase 1
+Resume Next\nNext i\nCase Else
+Resume Next\nNext i\nWhile c
+Resume Next\nOn Error GoTo 0\nIf c Then x = 1
+Resume Next\nResume Next\nEnd If
+Resume Next\nSelect Case x\nWith o
+Resume Next\nWend\nExit Do
+Resume Next\nWend\nFor i = 1 To 2
+Resume Next\nWhile c\nx = 1
+Resume Next\nWith o\nExit Sub
+Resume Next\nx = 1\nIf c Then x = 1 Else x = 2
+Resume Next\nx = 1\nLoop Until c
+Return\nCase 1\nIf c Then x = 1
+Return\nCase 1\nNext i
+Return\nCase Else\nDo
+Return\nCase Else\nWend
+Return\nDo\nElse
+Return\nDo While c\nReturn
+Return\nElse\nEnd If
+Return\nEnd Select\nDo
+Return\nExit Sub\nWend
+Return\nIf c Then x = 1\nEnd If
+Return\nIf c Then x = 1 Else x = 2\nExit Sub
+Return\nLoop Until c\nElseIf c Then
+Return\nLoop Until c\nOn Error GoTo 0
+Return\nNext\nWend
+Return\nNext i\nWith o
+Return\nResume Next\nWith o
+Return\nReturn\nEnd With
+Return\nSelect Case x\nIf c Then x = 1 Else x = 2
+Return\nWend\nElseIf c Then
+Return\nWhile c\nIf c Then x = 1
+Return\nWith o\nDo
+Return\nWith o\nExit For
+Return\nWith o\nIf c Then x = 1
+Return\nx = 1\nCase 1
+Return\nx = 1\nWend
+Return\nx = 1\nWhile c
+Select Case x\nCase Else\nDo
+Select Case x\nCase Else\nElseIf c Then
+Select Case x\nDo\nIf c Then
+Select Case x\nDo\nReturn
+Select Case x\nElse\nExit For
+Select Case x\nElse\nResume Next
+Select Case x\nElseIf c Then\nElse
+Select Case x\nElseIf c Then\nIf c Then
+Select Case x\nElseIf c Then\nSelect Case x
+Select Case x\nEnd If\nElse
+Select Case x\nEnd If\nReturn
+Select Case x\nEnd Select\nIf c Then x = 1
+Select Case x\nExit For\nElseIf c Then
+Select Case x\nExit For\nResume Next
+Select Case x\nExit Sub\nCase Else
+Select Case x\nExit Sub\nLoop
+Select Case x\nFor i = 1 To 2\nEnd With
+Select Case x\nGoTo L\nDo While c
+Select Case x\nIf c Then\nLoop Until c
+Select Case x\nIf c Then x = 1\nNext
+Select Case x\nIf c Then x = 1\nWhile c
+Select Case x\nIf c Then x = 1 Else x = 2\nDo While c
+Select Case x\nL:\nL:
+Select Case x\nNext\nIf c Then x = 1 Else x = 2
+Select Case x\nNext i\nWend
+Select Case x\nResume Next\nEnd Select
+Select Case x\nResume Next\nExit Sub
+Select Case x\nResume Next\nGoTo L
+Select Case x\nResume Next\nResume Next
+Select Case x\nReturn\nResume Next
+Select Case x\nReturn\nReturn
+Select Case x\nSelect Case x\nEnd If
+Select Case x\nSelect Case x\nOn Error GoTo 0
+Select Case x\nSelect Case x\nReturn
+Select Case x\nWend\nElseIf c Then
+Select Case x\nWend\nEnd If
+Select Case x\nWend\nExit For
+Select Case x\nWend\nIf c Then x = 1
+Select Case x\nWhile c\nExit Do
+Select Case x\nWhile c\nWith o
+Select Case x\nWith o\nNext
+Select Case x\nx = 1\nElse
+Select Case x\nx = 1\nSelect Case x
+Wend\nCase Else\nIf c Then x = 1
+Wend\nCase Else\nWith o
+Wend\nDo\nLoop Until c
+Wend\nDo\nNext i
+Wend\nElse\nIf c Then x = 1 Else x = 2
+Wend\nElseIf c Then\nDo
+Wend\nEnd If\nOn Error GoTo 0
+Wend\nEnd If\nSelect Case x
+Wend\nEnd Select\nEnd If
+Wend\nEnd Select\nL:
+Wend\nExit Do\nIf c Then x = 1
+Wend\nExit Do\nWend
+Wend\nExit For\nElseIf c Then
+Wend\nExit Sub\nDo
+Wend\nExit Sub\nElseIf c Then
+Wend\nFor i = 1 To 2\nDo While c
+Wend\nFor i = 1 To 2\nEnd With
+Wend\nFor i = 1 To 2\nExit Do
+Wend\nFor i = 1 To 2\nGoTo L
+Wend\nFor i = 1 To 2\nL:
+Wend\nIf c Then\nCase Else
+Wend\nIf c Then x = 1 Else x = 2\nOn Error GoTo 0
+Wend\nLoop\nExit Sub
+Wend\nLoop Until c\nEnd If
+Wend\nNext\nExit Do
+Wend\nWhile c\nElse
+Wend\nWith o\nOn Error GoTo 0
+Wend\nx = 1\nIf c Then
+While c\nCase 1\nDo
+While c\nCase 1\nDo While c
+While c\nCase Else\nExit For
+While c\nCase Else\nNext
+While c\nCase Else\nWend
+While c\nDo\nEnd Select
+While c\nDo\nNext
+While c\nDo\nResume Next
+While c\nDo While c\nExit Sub
+While c\nElse\nIf c Then x = 1 Else x = 2
+While c\nEnd If\nNext i
+While c\nEnd If\nSelect Case x
+While c\nEnd With\nCase Else
+While c\nExit Do\nElseIf c Then
+While c\nExit Sub\nNext i
+While c\nFor i = 1 To 2\nReturn
+While c\nFor i = 1 To 2\nSelect Case x
+While c\nIf c Then\nWhile c
+While c\nIf c Then x = 1\nElseIf c Then
+While c\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2
+While c\nL:\nWend
+While c\nWend\nDo While c
+While c\nWend\nx = 1
+While c\nx = 1\nEnd If
+With o\nCase 1\nNext i
+With o\nCase Else\nDo While c
+With o\nDo\nL:
+With o\nDo While c\nExit For
+With o\nDo While c\nLoop Until c
+With o\nExit For\nL:
+With o\nExit For\nNext i
+With o\nExit Sub\nDo
+With o\nGoTo L\nEnd If
+With o\nIf c Then\nExit Sub
+With o\nIf c Then\nNext
+With o\nIf c Then x = 1\nEnd If
+With o\nIf c Then x = 1\nReturn
+With o\nLoop\nEnd With
+With o\nLoop\nIf c Then x = 1 Else x = 2
+With o\nLoop\nL:
+With o\nLoop\nWhile c
+With o\nLoop Until c\nElse
+With o\nNext i\nWend
+With o\nResume Next\nEnd With
+With o\nResume Next\nResume Next
+With o\nResume Next\nSelect Case x
+With o\nWend\nEnd With
+With o\nWend\nNext
+With o\nWend\nReturn
+With o\nWhile c\nCase 1
+With o\nWhile c\nDo
+With o\nWith o\nExit Sub
+With o\nWith o\nIf c Then
+x = 1\nCase Else\nDo
+x = 1\nCase Else\nElseIf c Then
+x = 1\nDo While c\nDo
+x = 1\nElse\nCase 1
+x = 1\nElse\nElseIf c Then
+x = 1\nElseIf c Then\nCase Else
+x = 1\nElseIf c Then\nElse
+x = 1\nElseIf c Then\nLoop Until c
+x = 1\nEnd Select\nFor i = 1 To 2
+x = 1\nEnd Select\nLoop
+x = 1\nExit Sub\nDo While c
+x = 1\nExit Sub\nFor i = 1 To 2
+x = 1\nExit Sub\nReturn
+x = 1\nFor i = 1 To 2\nLoop
+x = 1\nIf c Then\nIf c Then x = 1 Else x = 2
+x = 1\nIf c Then x = 1\nExit Do
+x = 1\nIf c Then x = 1 Else x = 2\nDo While c
+x = 1\nIf c Then x = 1 Else x = 2\nLoop
+x = 1\nLoop\nNext i
+x = 1\nLoop\nReturn
+x = 1\nLoop Until c\nCase 1
+x = 1\nNext\nNext
+x = 1\nReturn\nFor i = 1 To 2
+x = 1\nReturn\nL:
+x = 1\nSelect Case x\nCase Else
+x = 1\nSelect Case x\nIf c Then
+x = 1\nWend\nIf c Then
+x = 1\nWend\nWend
+x = 1\nWhile c\nExit Do
+x = 1\nWhile c\nNext
+x = 1\nWhile c\nx = 1
+x = 1\nWith o\nDo While c
+x = 1\nWith o\nEnd With
+x = 1\nWith o\nNext
+If c Then\nx = 1\nEnd If
+If c Then\nElse\nEnd If
+If c Then\nElseIf c Then\nElse\nEnd If
+Select Case x\nCase 1\nCase Else\nEnd Select
+Do\nExit Do\nLoop
+For i = 1 To 2\nExit For\nNext i
+If c Then\nFor i = 1 To 2\nEnd If\nNext
+For i = 1 To 2\nIf c Then\nNext\nEnd If
+Select Case x\nCase 1\nIf c Then\nCase Else\nEnd If\nEnd Select
+L:\nL:
+10\n10
+10 x = 1\n10 x = 2
+L:\nl:
+L:\nGoTo L\nL:
+10\n20\n10
+L:\n10
+L: x = 1\nL: x = 2

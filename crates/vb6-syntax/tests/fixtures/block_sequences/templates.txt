@@ -1,0 +1,6 @@
+# {k} is replaced by each run of lines (\n separates lines).
+=== body bas
+Sub P(c, x, o As Object)
+Dim i
+{k}
+End Sub

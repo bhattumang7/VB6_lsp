@@ -92,3 +92,8 @@ ParamArray must be declared as an array of Variant	syntax
 Division by zero	semantic
 Invalid use of Null	semantic
 Fixed or static data can't be larger than 64K	semantic
+Case Else outside Select Case	syntax
+End Select without Select Case	syntax
+End With without With	syntax
+For control variable already in use	syntax
+For without Next	syntax

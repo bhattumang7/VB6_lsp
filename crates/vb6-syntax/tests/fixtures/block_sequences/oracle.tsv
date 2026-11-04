@@ -1,0 +1,1848 @@
+# template	word	class	message
+body	If c Then	syntax	Block If without End If
+body	ElseIf c Then	syntax	Else without If
+body	Else	syntax	Else without If
+body	End If	syntax	End If without block If
+body	For i = 1 To 2	syntax	For without Next
+body	Next	syntax	Next without For
+body	Do	syntax	Do without Loop
+body	Loop	syntax	Loop without Do
+body	Do While c	syntax	Do without Loop
+body	Loop Until c	syntax	Loop without Do
+body	While c	syntax	While without Wend
+body	Wend	syntax	Wend without While
+body	Select Case x	syntax	Select Case without End Select
+body	Case 1	syntax	Case without Select Case
+body	Case Else	syntax	Case Else outside Select Case
+body	End Select	syntax	End Select without Select Case
+body	With o	syntax	Expected End With
+body	End With	syntax	End With without With
+body	Exit For	syntax	Exit For not within For...Next
+body	Exit Do	syntax	Exit Do not within Do...Loop
+body	Exit Sub	accepted	
+body	GoTo L	syntax	Label not defined
+body	L:	accepted	
+body	x = 1	accepted	
+body	If c Then x = 1	accepted	
+body	If c Then x = 1 Else x = 2	accepted	
+body	Next i	syntax	Next without For
+body	On Error GoTo 0	accepted	
+body	Resume Next	accepted	
+body	Return	accepted	
+body	If c Then\nIf c Then	syntax	Block If without End If
+body	If c Then\nElseIf c Then	syntax	Block If without End If
+body	If c Then\nElse	syntax	Block If without End If
+body	If c Then\nEnd If	accepted	
+body	If c Then\nFor i = 1 To 2	syntax	For without Next
+body	If c Then\nNext	syntax	Next without For
+body	If c Then\nDo	syntax	Do without Loop
+body	If c Then\nLoop	syntax	Loop without Do
+body	If c Then\nDo While c	syntax	Do without Loop
+body	If c Then\nLoop Until c	syntax	Loop without Do
+body	If c Then\nWhile c	syntax	While without Wend
+body	If c Then\nWend	syntax	Wend without While
+body	If c Then\nSelect Case x	syntax	Select Case without End Select
+body	If c Then\nCase 1	syntax	Case without Select Case
+body	If c Then\nCase Else	syntax	Case Else outside Select Case
+body	If c Then\nEnd Select	syntax	End Select without Select Case
+body	If c Then\nWith o	syntax	Expected End With
+body	If c Then\nEnd With	syntax	End With without With
+body	If c Then\nExit For	syntax	Exit For not within For...Next
+body	If c Then\nExit Do	syntax	Exit Do not within Do...Loop
+body	If c Then\nExit Sub	syntax	Block If without End If
+body	If c Then\nGoTo L	syntax	Block If without End If
+body	If c Then\nL:	syntax	Block If without End If
+body	If c Then\nx = 1	syntax	Block If without End If
+body	If c Then\nIf c Then x = 1	syntax	Block If without End If
+body	If c Then\nIf c Then x = 1 Else x = 2	syntax	Block If without End If
+body	If c Then\nNext i	syntax	Next without For
+body	If c Then\nOn Error GoTo 0	syntax	Block If without End If
+body	If c Then\nResume Next	syntax	Block If without End If
+body	If c Then\nReturn	syntax	Block If without End If
+body	ElseIf c Then\nIf c Then	syntax	Else without If
+body	ElseIf c Then\nElseIf c Then	syntax	Else without If
+body	ElseIf c Then\nElse	syntax	Else without If
+body	ElseIf c Then\nEnd If	syntax	Else without If
+body	ElseIf c Then\nFor i = 1 To 2	syntax	Else without If
+body	ElseIf c Then\nNext	syntax	Else without If
+body	ElseIf c Then\nDo	syntax	Else without If
+body	ElseIf c Then\nLoop	syntax	Else without If
+body	ElseIf c Then\nDo While c	syntax	Else without If
+body	ElseIf c Then\nLoop Until c	syntax	Else without If
+body	ElseIf c Then\nWhile c	syntax	Else without If
+body	ElseIf c Then\nWend	syntax	Else without If
+body	ElseIf c Then\nSelect Case x	syntax	Else without If
+body	ElseIf c Then\nCase 1	syntax	Else without If
+body	ElseIf c Then\nCase Else	syntax	Else without If
+body	ElseIf c Then\nEnd Select	syntax	Else without If
+body	ElseIf c Then\nWith o	syntax	Else without If
+body	ElseIf c Then\nEnd With	syntax	Else without If
+body	ElseIf c Then\nExit For	syntax	Else without If
+body	ElseIf c Then\nExit Do	syntax	Else without If
+body	ElseIf c Then\nExit Sub	syntax	Else without If
+body	ElseIf c Then\nGoTo L	syntax	Else without If
+body	ElseIf c Then\nL:	syntax	Else without If
+body	ElseIf c Then\nx = 1	syntax	Else without If
+body	ElseIf c Then\nIf c Then x = 1	syntax	Else without If
+body	ElseIf c Then\nIf c Then x = 1 Else x = 2	syntax	Else without If
+body	ElseIf c Then\nNext i	syntax	Else without If
+body	ElseIf c Then\nOn Error GoTo 0	syntax	Else without If
+body	ElseIf c Then\nResume Next	syntax	Else without If
+body	ElseIf c Then\nReturn	syntax	Else without If
+body	Else\nIf c Then	syntax	Else without If
+body	Else\nElseIf c Then	syntax	Else without If
+body	Else\nElse	syntax	Else without If
+body	Else\nEnd If	syntax	Else without If
+body	Else\nFor i = 1 To 2	syntax	Else without If
+body	Else\nNext	syntax	Else without If
+body	Else\nDo	syntax	Else without If
+body	Else\nLoop	syntax	Else without If
+body	Else\nDo While c	syntax	Else without If
+body	Else\nLoop Until c	syntax	Else without If
+body	Else\nWhile c	syntax	Else without If
+body	Else\nWend	syntax	Else without If
+body	Else\nSelect Case x	syntax	Else without If
+body	Else\nCase 1	syntax	Else without If
+body	Else\nCase Else	syntax	Else without If
+body	Else\nEnd Select	syntax	Else without If
+body	Else\nWith o	syntax	Else without If
+body	Else\nEnd With	syntax	Else without If
+body	Else\nExit For	syntax	Else without If
+body	Else\nExit Do	syntax	Else without If
+body	Else\nExit Sub	syntax	Else without If
+body	Else\nGoTo L	syntax	Else without If
+body	Else\nL:	syntax	Else without If
+body	Else\nx = 1	syntax	Else without If
+body	Else\nIf c Then x = 1	syntax	Else without If
+body	Else\nIf c Then x = 1 Else x = 2	syntax	Else without If
+body	Else\nNext i	syntax	Else without If
+body	Else\nOn Error GoTo 0	syntax	Else without If
+body	Else\nResume Next	syntax	Else without If
+body	Else\nReturn	syntax	Else without If
+body	End If\nIf c Then	syntax	End If without block If
+body	End If\nElseIf c Then	syntax	End If without block If
+body	End If\nElse	syntax	End If without block If
+body	End If\nEnd If	syntax	End If without block If
+body	End If\nFor i = 1 To 2	syntax	End If without block If
+body	End If\nNext	syntax	End If without block If
+body	End If\nDo	syntax	End If without block If
+body	End If\nLoop	syntax	End If without block If
+body	End If\nDo While c	syntax	End If without block If
+body	End If\nLoop Until c	syntax	End If without block If
+body	End If\nWhile c	syntax	End If without block If
+body	End If\nWend	syntax	End If without block If
+body	End If\nSelect Case x	syntax	End If without block If
+body	End If\nCase 1	syntax	End If without block If
+body	End If\nCase Else	syntax	End If without block If
+body	End If\nEnd Select	syntax	End If without block If
+body	End If\nWith o	syntax	End If without block If
+body	End If\nEnd With	syntax	End If without block If
+body	End If\nExit For	syntax	End If without block If
+body	End If\nExit Do	syntax	End If without block If
+body	End If\nExit Sub	syntax	End If without block If
+body	End If\nGoTo L	syntax	End If without block If
+body	End If\nL:	syntax	End If without block If
+body	End If\nx = 1	syntax	End If without block If
+body	End If\nIf c Then x = 1	syntax	End If without block If
+body	End If\nIf c Then x = 1 Else x = 2	syntax	End If without block If
+body	End If\nNext i	syntax	End If without block If
+body	End If\nOn Error GoTo 0	syntax	End If without block If
+body	End If\nResume Next	syntax	End If without block If
+body	End If\nReturn	syntax	End If without block If
+body	For i = 1 To 2\nIf c Then	syntax	Block If without End If
+body	For i = 1 To 2\nElseIf c Then	syntax	Else without If
+body	For i = 1 To 2\nElse	syntax	Else without If
+body	For i = 1 To 2\nEnd If	syntax	End If without block If
+body	For i = 1 To 2\nFor i = 1 To 2	syntax	For control variable already in use
+body	For i = 1 To 2\nNext	accepted	
+body	For i = 1 To 2\nDo	syntax	Do without Loop
+body	For i = 1 To 2\nLoop	syntax	Loop without Do
+body	For i = 1 To 2\nDo While c	syntax	Do without Loop
+body	For i = 1 To 2\nLoop Until c	syntax	Loop without Do
+body	For i = 1 To 2\nWhile c	syntax	While without Wend
+body	For i = 1 To 2\nWend	syntax	Wend without While
+body	For i = 1 To 2\nSelect Case x	syntax	Select Case without End Select
+body	For i = 1 To 2\nCase 1	syntax	Case without Select Case
+body	For i = 1 To 2\nCase Else	syntax	Case Else outside Select Case
+body	For i = 1 To 2\nEnd Select	syntax	End Select without Select Case
+body	For i = 1 To 2\nWith o	syntax	Expected End With
+body	For i = 1 To 2\nEnd With	syntax	End With without With
+body	For i = 1 To 2\nExit For	syntax	For without Next
+body	For i = 1 To 2\nExit Do	syntax	Exit Do not within Do...Loop
+body	For i = 1 To 2\nExit Sub	syntax	For without Next
+body	For i = 1 To 2\nGoTo L	syntax	For without Next
+body	For i = 1 To 2\nL:	syntax	For without Next
+body	For i = 1 To 2\nx = 1	syntax	For without Next
+body	For i = 1 To 2\nIf c Then x = 1	syntax	For without Next
+body	For i = 1 To 2\nIf c Then x = 1 Else x = 2	syntax	For without Next
+body	For i = 1 To 2\nNext i	accepted	
+body	For i = 1 To 2\nOn Error GoTo 0	syntax	For without Next
+body	For i = 1 To 2\nResume Next	syntax	For without Next
+body	For i = 1 To 2\nReturn	syntax	For without Next
+body	Next\nIf c Then	syntax	Next without For
+body	Next\nElseIf c Then	syntax	Next without For
+body	Next\nElse	syntax	Next without For
+body	Next\nEnd If	syntax	Next without For
+body	Next\nFor i = 1 To 2	syntax	Next without For
+body	Next\nNext	syntax	Next without For
+body	Next\nDo	syntax	Next without For
+body	Next\nLoop	syntax	Next without For
+body	Next\nDo While c	syntax	Next without For
+body	Next\nLoop Until c	syntax	Next without For
+body	Next\nWhile c	syntax	Next without For
+body	Next\nWend	syntax	Next without For
+body	Next\nSelect Case x	syntax	Next without For
+body	Next\nCase 1	syntax	Next without For
+body	Next\nCase Else	syntax	Next without For
+body	Next\nEnd Select	syntax	Next without For
+body	Next\nWith o	syntax	Next without For
+body	Next\nEnd With	syntax	Next without For
+body	Next\nExit For	syntax	Next without For
+body	Next\nExit Do	syntax	Next without For
+body	Next\nExit Sub	syntax	Next without For
+body	Next\nGoTo L	syntax	Next without For
+body	Next\nL:	syntax	Next without For
+body	Next\nx = 1	syntax	Next without For
+body	Next\nIf c Then x = 1	syntax	Next without For
+body	Next\nIf c Then x = 1 Else x = 2	syntax	Next without For
+body	Next\nNext i	syntax	Next without For
+body	Next\nOn Error GoTo 0	syntax	Next without For
+body	Next\nResume Next	syntax	Next without For
+body	Next\nReturn	syntax	Next without For
+body	Do\nIf c Then	syntax	Block If without End If
+body	Do\nElseIf c Then	syntax	Else without If
+body	Do\nElse	syntax	Else without If
+body	Do\nEnd If	syntax	End If without block If
+body	Do\nFor i = 1 To 2	syntax	For without Next
+body	Do\nNext	syntax	Next without For
+body	Do\nDo	syntax	Do without Loop
+body	Do\nLoop	accepted	
+body	Do\nDo While c	syntax	Do without Loop
+body	Do\nLoop Until c	accepted	
+body	Do\nWhile c	syntax	While without Wend
+body	Do\nWend	syntax	Wend without While
+body	Do\nSelect Case x	syntax	Select Case without End Select
+body	Do\nCase 1	syntax	Case without Select Case
+body	Do\nCase Else	syntax	Case Else outside Select Case
+body	Do\nEnd Select	syntax	End Select without Select Case
+body	Do\nWith o	syntax	Expected End With
+body	Do\nEnd With	syntax	End With without With
+body	Do\nExit For	syntax	Exit For not within For...Next
+body	Do\nExit Do	syntax	Do without Loop
+body	Do\nExit Sub	syntax	Do without Loop
+body	Do\nGoTo L	syntax	Do without Loop
+body	Do\nL:	syntax	Do without Loop
+body	Do\nx = 1	syntax	Do without Loop
+body	Do\nIf c Then x = 1	syntax	Do without Loop
+body	Do\nIf c Then x = 1 Else x = 2	syntax	Do without Loop
+body	Do\nNext i	syntax	Next without For
+body	Do\nOn Error GoTo 0	syntax	Do without Loop
+body	Do\nResume Next	syntax	Do without Loop
+body	Do\nReturn	syntax	Do without Loop
+body	Loop\nIf c Then	syntax	Loop without Do
+body	Loop\nElseIf c Then	syntax	Loop without Do
+body	Loop\nElse	syntax	Loop without Do
+body	Loop\nEnd If	syntax	Loop without Do
+body	Loop\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop\nNext	syntax	Loop without Do
+body	Loop\nDo	syntax	Loop without Do
+body	Loop\nLoop	syntax	Loop without Do
+body	Loop\nDo While c	syntax	Loop without Do
+body	Loop\nLoop Until c	syntax	Loop without Do
+body	Loop\nWhile c	syntax	Loop without Do
+body	Loop\nWend	syntax	Loop without Do
+body	Loop\nSelect Case x	syntax	Loop without Do
+body	Loop\nCase 1	syntax	Loop without Do
+body	Loop\nCase Else	syntax	Loop without Do
+body	Loop\nEnd Select	syntax	Loop without Do
+body	Loop\nWith o	syntax	Loop without Do
+body	Loop\nEnd With	syntax	Loop without Do
+body	Loop\nExit For	syntax	Loop without Do
+body	Loop\nExit Do	syntax	Loop without Do
+body	Loop\nExit Sub	syntax	Loop without Do
+body	Loop\nGoTo L	syntax	Loop without Do
+body	Loop\nL:	syntax	Loop without Do
+body	Loop\nx = 1	syntax	Loop without Do
+body	Loop\nIf c Then x = 1	syntax	Loop without Do
+body	Loop\nIf c Then x = 1 Else x = 2	syntax	Loop without Do
+body	Loop\nNext i	syntax	Loop without Do
+body	Loop\nOn Error GoTo 0	syntax	Loop without Do
+body	Loop\nResume Next	syntax	Loop without Do
+body	Loop\nReturn	syntax	Loop without Do
+body	Do While c\nIf c Then	syntax	Block If without End If
+body	Do While c\nElseIf c Then	syntax	Else without If
+body	Do While c\nElse	syntax	Else without If
+body	Do While c\nEnd If	syntax	End If without block If
+body	Do While c\nFor i = 1 To 2	syntax	For without Next
+body	Do While c\nNext	syntax	Next without For
+body	Do While c\nDo	syntax	Do without Loop
+body	Do While c\nLoop	accepted	
+body	Do While c\nDo While c	syntax	Do without Loop
+body	Do While c\nLoop Until c	syntax	Loop without Do
+body	Do While c\nWhile c	syntax	While without Wend
+body	Do While c\nWend	syntax	Wend without While
+body	Do While c\nSelect Case x	syntax	Select Case without End Select
+body	Do While c\nCase 1	syntax	Case without Select Case
+body	Do While c\nCase Else	syntax	Case Else outside Select Case
+body	Do While c\nEnd Select	syntax	End Select without Select Case
+body	Do While c\nWith o	syntax	Expected End With
+body	Do While c\nEnd With	syntax	End With without With
+body	Do While c\nExit For	syntax	Exit For not within For...Next
+body	Do While c\nExit Do	syntax	Do without Loop
+body	Do While c\nExit Sub	syntax	Do without Loop
+body	Do While c\nGoTo L	syntax	Do without Loop
+body	Do While c\nL:	syntax	Do without Loop
+body	Do While c\nx = 1	syntax	Do without Loop
+body	Do While c\nIf c Then x = 1	syntax	Do without Loop
+body	Do While c\nIf c Then x = 1 Else x = 2	syntax	Do without Loop
+body	Do While c\nNext i	syntax	Next without For
+body	Do While c\nOn Error GoTo 0	syntax	Do without Loop
+body	Do While c\nResume Next	syntax	Do without Loop
+body	Do While c\nReturn	syntax	Do without Loop
+body	Loop Until c\nIf c Then	syntax	Loop without Do
+body	Loop Until c\nElseIf c Then	syntax	Loop without Do
+body	Loop Until c\nElse	syntax	Loop without Do
+body	Loop Until c\nEnd If	syntax	Loop without Do
+body	Loop Until c\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop Until c\nNext	syntax	Loop without Do
+body	Loop Until c\nDo	syntax	Loop without Do
+body	Loop Until c\nLoop	syntax	Loop without Do
+body	Loop Until c\nDo While c	syntax	Loop without Do
+body	Loop Until c\nLoop Until c	syntax	Loop without Do
+body	Loop Until c\nWhile c	syntax	Loop without Do
+body	Loop Until c\nWend	syntax	Loop without Do
+body	Loop Until c\nSelect Case x	syntax	Loop without Do
+body	Loop Until c\nCase 1	syntax	Loop without Do
+body	Loop Until c\nCase Else	syntax	Loop without Do
+body	Loop Until c\nEnd Select	syntax	Loop without Do
+body	Loop Until c\nWith o	syntax	Loop without Do
+body	Loop Until c\nEnd With	syntax	Loop without Do
+body	Loop Until c\nExit For	syntax	Loop without Do
+body	Loop Until c\nExit Do	syntax	Loop without Do
+body	Loop Until c\nExit Sub	syntax	Loop without Do
+body	Loop Until c\nGoTo L	syntax	Loop without Do
+body	Loop Until c\nL:	syntax	Loop without Do
+body	Loop Until c\nx = 1	syntax	Loop without Do
+body	Loop Until c\nIf c Then x = 1	syntax	Loop without Do
+body	Loop Until c\nIf c Then x = 1 Else x = 2	syntax	Loop without Do
+body	Loop Until c\nNext i	syntax	Loop without Do
+body	Loop Until c\nOn Error GoTo 0	syntax	Loop without Do
+body	Loop Until c\nResume Next	syntax	Loop without Do
+body	Loop Until c\nReturn	syntax	Loop without Do
+body	While c\nIf c Then	syntax	Block If without End If
+body	While c\nElseIf c Then	syntax	Else without If
+body	While c\nElse	syntax	Else without If
+body	While c\nEnd If	syntax	End If without block If
+body	While c\nFor i = 1 To 2	syntax	For without Next
+body	While c\nNext	syntax	Next without For
+body	While c\nDo	syntax	Do without Loop
+body	While c\nLoop	syntax	Loop without Do
+body	While c\nDo While c	syntax	Do without Loop
+body	While c\nLoop Until c	syntax	Loop without Do
+body	While c\nWhile c	syntax	While without Wend
+body	While c\nWend	accepted	
+body	While c\nSelect Case x	syntax	Select Case without End Select
+body	While c\nCase 1	syntax	Case without Select Case
+body	While c\nCase Else	syntax	Case Else outside Select Case
+body	While c\nEnd Select	syntax	End Select without Select Case
+body	While c\nWith o	syntax	Expected End With
+body	While c\nEnd With	syntax	End With without With
+body	While c\nExit For	syntax	Exit For not within For...Next
+body	While c\nExit Do	syntax	Exit Do not within Do...Loop
+body	While c\nExit Sub	syntax	While without Wend
+body	While c\nGoTo L	syntax	While without Wend
+body	While c\nL:	syntax	While without Wend
+body	While c\nx = 1	syntax	While without Wend
+body	While c\nIf c Then x = 1	syntax	While without Wend
+body	While c\nIf c Then x = 1 Else x = 2	syntax	While without Wend
+body	While c\nNext i	syntax	Next without For
+body	While c\nOn Error GoTo 0	syntax	While without Wend
+body	While c\nResume Next	syntax	While without Wend
+body	While c\nReturn	syntax	While without Wend
+body	Wend\nIf c Then	syntax	Wend without While
+body	Wend\nElseIf c Then	syntax	Wend without While
+body	Wend\nElse	syntax	Wend without While
+body	Wend\nEnd If	syntax	Wend without While
+body	Wend\nFor i = 1 To 2	syntax	Wend without While
+body	Wend\nNext	syntax	Wend without While
+body	Wend\nDo	syntax	Wend without While
+body	Wend\nLoop	syntax	Wend without While
+body	Wend\nDo While c	syntax	Wend without While
+body	Wend\nLoop Until c	syntax	Wend without While
+body	Wend\nWhile c	syntax	Wend without While
+body	Wend\nWend	syntax	Wend without While
+body	Wend\nSelect Case x	syntax	Wend without While
+body	Wend\nCase 1	syntax	Wend without While
+body	Wend\nCase Else	syntax	Wend without While
+body	Wend\nEnd Select	syntax	Wend without While
+body	Wend\nWith o	syntax	Wend without While
+body	Wend\nEnd With	syntax	Wend without While
+body	Wend\nExit For	syntax	Wend without While
+body	Wend\nExit Do	syntax	Wend without While
+body	Wend\nExit Sub	syntax	Wend without While
+body	Wend\nGoTo L	syntax	Wend without While
+body	Wend\nL:	syntax	Wend without While
+body	Wend\nx = 1	syntax	Wend without While
+body	Wend\nIf c Then x = 1	syntax	Wend without While
+body	Wend\nIf c Then x = 1 Else x = 2	syntax	Wend without While
+body	Wend\nNext i	syntax	Wend without While
+body	Wend\nOn Error GoTo 0	syntax	Wend without While
+body	Wend\nResume Next	syntax	Wend without While
+body	Wend\nReturn	syntax	Wend without While
+body	Select Case x\nIf c Then	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nElseIf c Then	syntax	Else without If
+body	Select Case x\nElse	syntax	Else without If
+body	Select Case x\nEnd If	syntax	End If without block If
+body	Select Case x\nFor i = 1 To 2	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nNext	syntax	Next without For
+body	Select Case x\nDo	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nLoop	syntax	Loop without Do
+body	Select Case x\nDo While c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nLoop Until c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nWhile c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nWend	syntax	Wend without While
+body	Select Case x\nSelect Case x	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nCase 1	syntax	Select Case without End Select
+body	Select Case x\nCase Else	syntax	Select Case without End Select
+body	Select Case x\nEnd Select	accepted	
+body	Select Case x\nWith o	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nEnd With	syntax	End With without With
+body	Select Case x\nExit For	syntax	Exit For not within For...Next
+body	Select Case x\nExit Do	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nExit Sub	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nGoTo L	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nL:	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nx = 1	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nIf c Then x = 1	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nIf c Then x = 1 Else x = 2	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nNext i	syntax	Next without For
+body	Select Case x\nOn Error GoTo 0	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nResume Next	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nReturn	syntax	Statements and labels invalid between Select Case and first Case
+body	Case 1\nIf c Then	syntax	Case without Select Case
+body	Case 1\nElseIf c Then	syntax	Case without Select Case
+body	Case 1\nElse	syntax	Case without Select Case
+body	Case 1\nEnd If	syntax	Case without Select Case
+body	Case 1\nFor i = 1 To 2	syntax	Case without Select Case
+body	Case 1\nNext	syntax	Case without Select Case
+body	Case 1\nDo	syntax	Case without Select Case
+body	Case 1\nLoop	syntax	Case without Select Case
+body	Case 1\nDo While c	syntax	Case without Select Case
+body	Case 1\nLoop Until c	syntax	Case without Select Case
+body	Case 1\nWhile c	syntax	Case without Select Case
+body	Case 1\nWend	syntax	Case without Select Case
+body	Case 1\nSelect Case x	syntax	Case without Select Case
+body	Case 1\nCase 1	syntax	Case without Select Case
+body	Case 1\nCase Else	syntax	Case without Select Case
+body	Case 1\nEnd Select	syntax	Case without Select Case
+body	Case 1\nWith o	syntax	Case without Select Case
+body	Case 1\nEnd With	syntax	Case without Select Case
+body	Case 1\nExit For	syntax	Case without Select Case
+body	Case 1\nExit Do	syntax	Case without Select Case
+body	Case 1\nExit Sub	syntax	Case without Select Case
+body	Case 1\nGoTo L	syntax	Case without Select Case
+body	Case 1\nL:	syntax	Case without Select Case
+body	Case 1\nx = 1	syntax	Case without Select Case
+body	Case 1\nIf c Then x = 1	syntax	Case without Select Case
+body	Case 1\nIf c Then x = 1 Else x = 2	syntax	Case without Select Case
+body	Case 1\nNext i	syntax	Case without Select Case
+body	Case 1\nOn Error GoTo 0	syntax	Case without Select Case
+body	Case 1\nResume Next	syntax	Case without Select Case
+body	Case 1\nReturn	syntax	Case without Select Case
+body	Case Else\nIf c Then	syntax	Case Else outside Select Case
+body	Case Else\nElseIf c Then	syntax	Case Else outside Select Case
+body	Case Else\nElse	syntax	Case Else outside Select Case
+body	Case Else\nEnd If	syntax	Case Else outside Select Case
+body	Case Else\nFor i = 1 To 2	syntax	Case Else outside Select Case
+body	Case Else\nNext	syntax	Case Else outside Select Case
+body	Case Else\nDo	syntax	Case Else outside Select Case
+body	Case Else\nLoop	syntax	Case Else outside Select Case
+body	Case Else\nDo While c	syntax	Case Else outside Select Case
+body	Case Else\nLoop Until c	syntax	Case Else outside Select Case
+body	Case Else\nWhile c	syntax	Case Else outside Select Case
+body	Case Else\nWend	syntax	Case Else outside Select Case
+body	Case Else\nSelect Case x	syntax	Case Else outside Select Case
+body	Case Else\nCase 1	syntax	Case Else outside Select Case
+body	Case Else\nCase Else	syntax	Case Else outside Select Case
+body	Case Else\nEnd Select	syntax	Case Else outside Select Case
+body	Case Else\nWith o	syntax	Case Else outside Select Case
+body	Case Else\nEnd With	syntax	Case Else outside Select Case
+body	Case Else\nExit For	syntax	Case Else outside Select Case
+body	Case Else\nExit Do	syntax	Case Else outside Select Case
+body	Case Else\nExit Sub	syntax	Case Else outside Select Case
+body	Case Else\nGoTo L	syntax	Case Else outside Select Case
+body	Case Else\nL:	syntax	Case Else outside Select Case
+body	Case Else\nx = 1	syntax	Case Else outside Select Case
+body	Case Else\nIf c Then x = 1	syntax	Case Else outside Select Case
+body	Case Else\nIf c Then x = 1 Else x = 2	syntax	Case Else outside Select Case
+body	Case Else\nNext i	syntax	Case Else outside Select Case
+body	Case Else\nOn Error GoTo 0	syntax	Case Else outside Select Case
+body	Case Else\nResume Next	syntax	Case Else outside Select Case
+body	Case Else\nReturn	syntax	Case Else outside Select Case
+body	End Select\nIf c Then	syntax	End Select without Select Case
+body	End Select\nElseIf c Then	syntax	End Select without Select Case
+body	End Select\nElse	syntax	End Select without Select Case
+body	End Select\nEnd If	syntax	End Select without Select Case
+body	End Select\nFor i = 1 To 2	syntax	End Select without Select Case
+body	End Select\nNext	syntax	End Select without Select Case
+body	End Select\nDo	syntax	End Select without Select Case
+body	End Select\nLoop	syntax	End Select without Select Case
+body	End Select\nDo While c	syntax	End Select without Select Case
+body	End Select\nLoop Until c	syntax	End Select without Select Case
+body	End Select\nWhile c	syntax	End Select without Select Case
+body	End Select\nWend	syntax	End Select without Select Case
+body	End Select\nSelect Case x	syntax	End Select without Select Case
+body	End Select\nCase 1	syntax	End Select without Select Case
+body	End Select\nCase Else	syntax	End Select without Select Case
+body	End Select\nEnd Select	syntax	End Select without Select Case
+body	End Select\nWith o	syntax	End Select without Select Case
+body	End Select\nEnd With	syntax	End Select without Select Case
+body	End Select\nExit For	syntax	End Select without Select Case
+body	End Select\nExit Do	syntax	End Select without Select Case
+body	End Select\nExit Sub	syntax	End Select without Select Case
+body	End Select\nGoTo L	syntax	End Select without Select Case
+body	End Select\nL:	syntax	End Select without Select Case
+body	End Select\nx = 1	syntax	End Select without Select Case
+body	End Select\nIf c Then x = 1	syntax	End Select without Select Case
+body	End Select\nIf c Then x = 1 Else x = 2	syntax	End Select without Select Case
+body	End Select\nNext i	syntax	End Select without Select Case
+body	End Select\nOn Error GoTo 0	syntax	End Select without Select Case
+body	End Select\nResume Next	syntax	End Select without Select Case
+body	End Select\nReturn	syntax	End Select without Select Case
+body	With o\nIf c Then	syntax	Block If without End If
+body	With o\nElseIf c Then	syntax	Else without If
+body	With o\nElse	syntax	Else without If
+body	With o\nEnd If	syntax	End If without block If
+body	With o\nFor i = 1 To 2	syntax	For without Next
+body	With o\nNext	syntax	Next without For
+body	With o\nDo	syntax	Do without Loop
+body	With o\nLoop	syntax	Loop without Do
+body	With o\nDo While c	syntax	Do without Loop
+body	With o\nLoop Until c	syntax	Loop without Do
+body	With o\nWhile c	syntax	While without Wend
+body	With o\nWend	syntax	Wend without While
+body	With o\nSelect Case x	syntax	Select Case without End Select
+body	With o\nCase 1	syntax	Case without Select Case
+body	With o\nCase Else	syntax	Case Else outside Select Case
+body	With o\nEnd Select	syntax	End Select without Select Case
+body	With o\nWith o	syntax	Expected End With
+body	With o\nEnd With	accepted	
+body	With o\nExit For	syntax	Exit For not within For...Next
+body	With o\nExit Do	syntax	Exit Do not within Do...Loop
+body	With o\nExit Sub	syntax	Expected End With
+body	With o\nGoTo L	syntax	Expected End With
+body	With o\nL:	syntax	Expected End With
+body	With o\nx = 1	syntax	Expected End With
+body	With o\nIf c Then x = 1	syntax	Expected End With
+body	With o\nIf c Then x = 1 Else x = 2	syntax	Expected End With
+body	With o\nNext i	syntax	Next without For
+body	With o\nOn Error GoTo 0	syntax	Expected End With
+body	With o\nResume Next	syntax	Expected End With
+body	With o\nReturn	syntax	Expected End With
+body	End With\nIf c Then	syntax	End With without With
+body	End With\nElseIf c Then	syntax	End With without With
+body	End With\nElse	syntax	End With without With
+body	End With\nEnd If	syntax	End With without With
+body	End With\nFor i = 1 To 2	syntax	End With without With
+body	End With\nNext	syntax	End With without With
+body	End With\nDo	syntax	End With without With
+body	End With\nLoop	syntax	End With without With
+body	End With\nDo While c	syntax	End With without With
+body	End With\nLoop Until c	syntax	End With without With
+body	End With\nWhile c	syntax	End With without With
+body	End With\nWend	syntax	End With without With
+body	End With\nSelect Case x	syntax	End With without With
+body	End With\nCase 1	syntax	End With without With
+body	End With\nCase Else	syntax	End With without With
+body	End With\nEnd Select	syntax	End With without With
+body	End With\nWith o	syntax	End With without With
+body	End With\nEnd With	syntax	End With without With
+body	End With\nExit For	syntax	End With without With
+body	End With\nExit Do	syntax	End With without With
+body	End With\nExit Sub	syntax	End With without With
+body	End With\nGoTo L	syntax	End With without With
+body	End With\nL:	syntax	End With without With
+body	End With\nx = 1	syntax	End With without With
+body	End With\nIf c Then x = 1	syntax	End With without With
+body	End With\nIf c Then x = 1 Else x = 2	syntax	End With without With
+body	End With\nNext i	syntax	End With without With
+body	End With\nOn Error GoTo 0	syntax	End With without With
+body	End With\nResume Next	syntax	End With without With
+body	End With\nReturn	syntax	End With without With
+body	Exit For\nIf c Then	syntax	Exit For not within For...Next
+body	Exit For\nElseIf c Then	syntax	Exit For not within For...Next
+body	Exit For\nElse	syntax	Exit For not within For...Next
+body	Exit For\nEnd If	syntax	Exit For not within For...Next
+body	Exit For\nFor i = 1 To 2	syntax	Exit For not within For...Next
+body	Exit For\nNext	syntax	Exit For not within For...Next
+body	Exit For\nDo	syntax	Exit For not within For...Next
+body	Exit For\nLoop	syntax	Exit For not within For...Next
+body	Exit For\nDo While c	syntax	Exit For not within For...Next
+body	Exit For\nLoop Until c	syntax	Exit For not within For...Next
+body	Exit For\nWhile c	syntax	Exit For not within For...Next
+body	Exit For\nWend	syntax	Exit For not within For...Next
+body	Exit For\nSelect Case x	syntax	Exit For not within For...Next
+body	Exit For\nCase 1	syntax	Exit For not within For...Next
+body	Exit For\nCase Else	syntax	Exit For not within For...Next
+body	Exit For\nEnd Select	syntax	Exit For not within For...Next
+body	Exit For\nWith o	syntax	Exit For not within For...Next
+body	Exit For\nEnd With	syntax	Exit For not within For...Next
+body	Exit For\nExit For	syntax	Exit For not within For...Next
+body	Exit For\nExit Do	syntax	Exit For not within For...Next
+body	Exit For\nExit Sub	syntax	Exit For not within For...Next
+body	Exit For\nGoTo L	syntax	Exit For not within For...Next
+body	Exit For\nL:	syntax	Exit For not within For...Next
+body	Exit For\nx = 1	syntax	Exit For not within For...Next
+body	Exit For\nIf c Then x = 1	syntax	Exit For not within For...Next
+body	Exit For\nIf c Then x = 1 Else x = 2	syntax	Exit For not within For...Next
+body	Exit For\nNext i	syntax	Exit For not within For...Next
+body	Exit For\nOn Error GoTo 0	syntax	Exit For not within For...Next
+body	Exit For\nResume Next	syntax	Exit For not within For...Next
+body	Exit For\nReturn	syntax	Exit For not within For...Next
+body	Exit Do\nIf c Then	syntax	Exit Do not within Do...Loop
+body	Exit Do\nElseIf c Then	syntax	Exit Do not within Do...Loop
+body	Exit Do\nElse	syntax	Exit Do not within Do...Loop
+body	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+body	Exit Do\nFor i = 1 To 2	syntax	Exit Do not within Do...Loop
+body	Exit Do\nNext	syntax	Exit Do not within Do...Loop
+body	Exit Do\nDo	syntax	Exit Do not within Do...Loop
+body	Exit Do\nLoop	syntax	Exit Do not within Do...Loop
+body	Exit Do\nDo While c	syntax	Exit Do not within Do...Loop
+body	Exit Do\nLoop Until c	syntax	Exit Do not within Do...Loop
+body	Exit Do\nWhile c	syntax	Exit Do not within Do...Loop
+body	Exit Do\nWend	syntax	Exit Do not within Do...Loop
+body	Exit Do\nSelect Case x	syntax	Exit Do not within Do...Loop
+body	Exit Do\nCase 1	syntax	Exit Do not within Do...Loop
+body	Exit Do\nCase Else	syntax	Exit Do not within Do...Loop
+body	Exit Do\nEnd Select	syntax	Exit Do not within Do...Loop
+body	Exit Do\nWith o	syntax	Exit Do not within Do...Loop
+body	Exit Do\nEnd With	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit For	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit Do	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit Sub	syntax	Exit Do not within Do...Loop
+body	Exit Do\nGoTo L	syntax	Exit Do not within Do...Loop
+body	Exit Do\nL:	syntax	Exit Do not within Do...Loop
+body	Exit Do\nx = 1	syntax	Exit Do not within Do...Loop
+body	Exit Do\nIf c Then x = 1	syntax	Exit Do not within Do...Loop
+body	Exit Do\nIf c Then x = 1 Else x = 2	syntax	Exit Do not within Do...Loop
+body	Exit Do\nNext i	syntax	Exit Do not within Do...Loop
+body	Exit Do\nOn Error GoTo 0	syntax	Exit Do not within Do...Loop
+body	Exit Do\nResume Next	syntax	Exit Do not within Do...Loop
+body	Exit Do\nReturn	syntax	Exit Do not within Do...Loop
+body	Exit Sub\nIf c Then	syntax	Block If without End If
+body	Exit Sub\nElseIf c Then	syntax	Else without If
+body	Exit Sub\nElse	syntax	Else without If
+body	Exit Sub\nEnd If	syntax	End If without block If
+body	Exit Sub\nFor i = 1 To 2	syntax	For without Next
+body	Exit Sub\nNext	syntax	Next without For
+body	Exit Sub\nDo	syntax	Do without Loop
+body	Exit Sub\nLoop	syntax	Loop without Do
+body	Exit Sub\nDo While c	syntax	Do without Loop
+body	Exit Sub\nLoop Until c	syntax	Loop without Do
+body	Exit Sub\nWhile c	syntax	While without Wend
+body	Exit Sub\nWend	syntax	Wend without While
+body	Exit Sub\nSelect Case x	syntax	Select Case without End Select
+body	Exit Sub\nCase 1	syntax	Case without Select Case
+body	Exit Sub\nCase Else	syntax	Case Else outside Select Case
+body	Exit Sub\nEnd Select	syntax	End Select without Select Case
+body	Exit Sub\nWith o	syntax	Expected End With
+body	Exit Sub\nEnd With	syntax	End With without With
+body	Exit Sub\nExit For	syntax	Exit For not within For...Next
+body	Exit Sub\nExit Do	syntax	Exit Do not within Do...Loop
+body	Exit Sub\nExit Sub	accepted	
+body	Exit Sub\nGoTo L	syntax	Label not defined
+body	Exit Sub\nL:	accepted	
+body	Exit Sub\nx = 1	accepted	
+body	Exit Sub\nIf c Then x = 1	accepted	
+body	Exit Sub\nIf c Then x = 1 Else x = 2	accepted	
+body	Exit Sub\nNext i	syntax	Next without For
+body	Exit Sub\nOn Error GoTo 0	accepted	
+body	Exit Sub\nResume Next	accepted	
+body	Exit Sub\nReturn	accepted	
+body	GoTo L\nIf c Then	syntax	Block If without End If
+body	GoTo L\nElseIf c Then	syntax	Else without If
+body	GoTo L\nElse	syntax	Else without If
+body	GoTo L\nEnd If	syntax	End If without block If
+body	GoTo L\nFor i = 1 To 2	syntax	For without Next
+body	GoTo L\nNext	syntax	Next without For
+body	GoTo L\nDo	syntax	Do without Loop
+body	GoTo L\nLoop	syntax	Loop without Do
+body	GoTo L\nDo While c	syntax	Do without Loop
+body	GoTo L\nLoop Until c	syntax	Loop without Do
+body	GoTo L\nWhile c	syntax	While without Wend
+body	GoTo L\nWend	syntax	Wend without While
+body	GoTo L\nSelect Case x	syntax	Select Case without End Select
+body	GoTo L\nCase 1	syntax	Case without Select Case
+body	GoTo L\nCase Else	syntax	Case Else outside Select Case
+body	GoTo L\nEnd Select	syntax	End Select without Select Case
+body	GoTo L\nWith o	syntax	Expected End With
+body	GoTo L\nEnd With	syntax	End With without With
+body	GoTo L\nExit For	syntax	Exit For not within For...Next
+body	GoTo L\nExit Do	syntax	Exit Do not within Do...Loop
+body	GoTo L\nExit Sub	syntax	Label not defined
+body	GoTo L\nGoTo L	syntax	Label not defined
+body	GoTo L\nL:	accepted	
+body	GoTo L\nx = 1	syntax	Label not defined
+body	GoTo L\nIf c Then x = 1	syntax	Label not defined
+body	GoTo L\nIf c Then x = 1 Else x = 2	syntax	Label not defined
+body	GoTo L\nNext i	syntax	Next without For
+body	GoTo L\nOn Error GoTo 0	syntax	Label not defined
+body	GoTo L\nResume Next	syntax	Label not defined
+body	GoTo L\nReturn	syntax	Label not defined
+body	L:\nIf c Then	syntax	Block If without End If
+body	L:\nElseIf c Then	syntax	Else without If
+body	L:\nElse	syntax	Else without If
+body	L:\nEnd If	syntax	End If without block If
+body	L:\nFor i = 1 To 2	syntax	For without Next
+body	L:\nNext	syntax	Next without For
+body	L:\nDo	syntax	Do without Loop
+body	L:\nLoop	syntax	Loop without Do
+body	L:\nDo While c	syntax	Do without Loop
+body	L:\nLoop Until c	syntax	Loop without Do
+body	L:\nWhile c	syntax	While without Wend
+body	L:\nWend	syntax	Wend without While
+body	L:\nSelect Case x	syntax	Select Case without End Select
+body	L:\nCase 1	syntax	Case without Select Case
+body	L:\nCase Else	syntax	Case Else outside Select Case
+body	L:\nEnd Select	syntax	End Select without Select Case
+body	L:\nWith o	syntax	Expected End With
+body	L:\nEnd With	syntax	End With without With
+body	L:\nExit For	syntax	Exit For not within For...Next
+body	L:\nExit Do	syntax	Exit Do not within Do...Loop
+body	L:\nExit Sub	accepted	
+body	L:\nGoTo L	accepted	
+body	L:\nL:	syntax	Duplicate declaration in current scope
+body	L:\nx = 1	accepted	
+body	L:\nIf c Then x = 1	accepted	
+body	L:\nIf c Then x = 1 Else x = 2	accepted	
+body	L:\nNext i	syntax	Next without For
+body	L:\nOn Error GoTo 0	accepted	
+body	L:\nResume Next	accepted	
+body	L:\nReturn	accepted	
+body	x = 1\nIf c Then	syntax	Block If without End If
+body	x = 1\nElseIf c Then	syntax	Else without If
+body	x = 1\nElse	syntax	Else without If
+body	x = 1\nEnd If	syntax	End If without block If
+body	x = 1\nFor i = 1 To 2	syntax	For without Next
+body	x = 1\nNext	syntax	Next without For
+body	x = 1\nDo	syntax	Do without Loop
+body	x = 1\nLoop	syntax	Loop without Do
+body	x = 1\nDo While c	syntax	Do without Loop
+body	x = 1\nLoop Until c	syntax	Loop without Do
+body	x = 1\nWhile c	syntax	While without Wend
+body	x = 1\nWend	syntax	Wend without While
+body	x = 1\nSelect Case x	syntax	Select Case without End Select
+body	x = 1\nCase 1	syntax	Case without Select Case
+body	x = 1\nCase Else	syntax	Case Else outside Select Case
+body	x = 1\nEnd Select	syntax	End Select without Select Case
+body	x = 1\nWith o	syntax	Expected End With
+body	x = 1\nEnd With	syntax	End With without With
+body	x = 1\nExit For	syntax	Exit For not within For...Next
+body	x = 1\nExit Do	syntax	Exit Do not within Do...Loop
+body	x = 1\nExit Sub	accepted	
+body	x = 1\nGoTo L	syntax	Label not defined
+body	x = 1\nL:	accepted	
+body	x = 1\nx = 1	accepted	
+body	x = 1\nIf c Then x = 1	accepted	
+body	x = 1\nIf c Then x = 1 Else x = 2	accepted	
+body	x = 1\nNext i	syntax	Next without For
+body	x = 1\nOn Error GoTo 0	accepted	
+body	x = 1\nResume Next	accepted	
+body	x = 1\nReturn	accepted	
+body	If c Then x = 1\nIf c Then	syntax	Block If without End If
+body	If c Then x = 1\nElseIf c Then	syntax	Else without If
+body	If c Then x = 1\nElse	syntax	Else without If
+body	If c Then x = 1\nEnd If	syntax	End If without block If
+body	If c Then x = 1\nFor i = 1 To 2	syntax	For without Next
+body	If c Then x = 1\nNext	syntax	Next without For
+body	If c Then x = 1\nDo	syntax	Do without Loop
+body	If c Then x = 1\nLoop	syntax	Loop without Do
+body	If c Then x = 1\nDo While c	syntax	Do without Loop
+body	If c Then x = 1\nLoop Until c	syntax	Loop without Do
+body	If c Then x = 1\nWhile c	syntax	While without Wend
+body	If c Then x = 1\nWend	syntax	Wend without While
+body	If c Then x = 1\nSelect Case x	syntax	Select Case without End Select
+body	If c Then x = 1\nCase 1	syntax	Case without Select Case
+body	If c Then x = 1\nCase Else	syntax	Case Else outside Select Case
+body	If c Then x = 1\nEnd Select	syntax	End Select without Select Case
+body	If c Then x = 1\nWith o	syntax	Expected End With
+body	If c Then x = 1\nEnd With	syntax	End With without With
+body	If c Then x = 1\nExit For	syntax	Exit For not within For...Next
+body	If c Then x = 1\nExit Do	syntax	Exit Do not within Do...Loop
+body	If c Then x = 1\nExit Sub	accepted	
+body	If c Then x = 1\nGoTo L	syntax	Label not defined
+body	If c Then x = 1\nL:	accepted	
+body	If c Then x = 1\nx = 1	accepted	
+body	If c Then x = 1\nIf c Then x = 1	accepted	
+body	If c Then x = 1\nIf c Then x = 1 Else x = 2	accepted	
+body	If c Then x = 1\nNext i	syntax	Next without For
+body	If c Then x = 1\nOn Error GoTo 0	accepted	
+body	If c Then x = 1\nResume Next	accepted	
+body	If c Then x = 1\nReturn	accepted	
+body	If c Then x = 1 Else x = 2\nIf c Then	syntax	Block If without End If
+body	If c Then x = 1 Else x = 2\nElseIf c Then	syntax	Else without If
+body	If c Then x = 1 Else x = 2\nElse	syntax	Else without If
+body	If c Then x = 1 Else x = 2\nEnd If	syntax	End If without block If
+body	If c Then x = 1 Else x = 2\nFor i = 1 To 2	syntax	For without Next
+body	If c Then x = 1 Else x = 2\nNext	syntax	Next without For
+body	If c Then x = 1 Else x = 2\nDo	syntax	Do without Loop
+body	If c Then x = 1 Else x = 2\nLoop	syntax	Loop without Do
+body	If c Then x = 1 Else x = 2\nDo While c	syntax	Do without Loop
+body	If c Then x = 1 Else x = 2\nLoop Until c	syntax	Loop without Do
+body	If c Then x = 1 Else x = 2\nWhile c	syntax	While without Wend
+body	If c Then x = 1 Else x = 2\nWend	syntax	Wend without While
+body	If c Then x = 1 Else x = 2\nSelect Case x	syntax	Select Case without End Select
+body	If c Then x = 1 Else x = 2\nCase 1	syntax	Case without Select Case
+body	If c Then x = 1 Else x = 2\nCase Else	syntax	Case Else outside Select Case
+body	If c Then x = 1 Else x = 2\nEnd Select	syntax	End Select without Select Case
+body	If c Then x = 1 Else x = 2\nWith o	syntax	Expected End With
+body	If c Then x = 1 Else x = 2\nEnd With	syntax	End With without With
+body	If c Then x = 1 Else x = 2\nExit For	syntax	Exit For not within For...Next
+body	If c Then x = 1 Else x = 2\nExit Do	syntax	Exit Do not within Do...Loop
+body	If c Then x = 1 Else x = 2\nExit Sub	accepted	
+body	If c Then x = 1 Else x = 2\nGoTo L	syntax	Label not defined
+body	If c Then x = 1 Else x = 2\nL:	accepted	
+body	If c Then x = 1 Else x = 2\nx = 1	accepted	
+body	If c Then x = 1 Else x = 2\nIf c Then x = 1	accepted	
+body	If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2	accepted	
+body	If c Then x = 1 Else x = 2\nNext i	syntax	Next without For
+body	If c Then x = 1 Else x = 2\nOn Error GoTo 0	accepted	
+body	If c Then x = 1 Else x = 2\nResume Next	accepted	
+body	If c Then x = 1 Else x = 2\nReturn	accepted	
+body	Next i\nIf c Then	syntax	Next without For
+body	Next i\nElseIf c Then	syntax	Next without For
+body	Next i\nElse	syntax	Next without For
+body	Next i\nEnd If	syntax	Next without For
+body	Next i\nFor i = 1 To 2	syntax	Next without For
+body	Next i\nNext	syntax	Next without For
+body	Next i\nDo	syntax	Next without For
+body	Next i\nLoop	syntax	Next without For
+body	Next i\nDo While c	syntax	Next without For
+body	Next i\nLoop Until c	syntax	Next without For
+body	Next i\nWhile c	syntax	Next without For
+body	Next i\nWend	syntax	Next without For
+body	Next i\nSelect Case x	syntax	Next without For
+body	Next i\nCase 1	syntax	Next without For
+body	Next i\nCase Else	syntax	Next without For
+body	Next i\nEnd Select	syntax	Next without For
+body	Next i\nWith o	syntax	Next without For
+body	Next i\nEnd With	syntax	Next without For
+body	Next i\nExit For	syntax	Next without For
+body	Next i\nExit Do	syntax	Next without For
+body	Next i\nExit Sub	syntax	Next without For
+body	Next i\nGoTo L	syntax	Next without For
+body	Next i\nL:	syntax	Next without For
+body	Next i\nx = 1	syntax	Next without For
+body	Next i\nIf c Then x = 1	syntax	Next without For
+body	Next i\nIf c Then x = 1 Else x = 2	syntax	Next without For
+body	Next i\nNext i	syntax	Next without For
+body	Next i\nOn Error GoTo 0	syntax	Next without For
+body	Next i\nResume Next	syntax	Next without For
+body	Next i\nReturn	syntax	Next without For
+body	On Error GoTo 0\nIf c Then	syntax	Block If without End If
+body	On Error GoTo 0\nElseIf c Then	syntax	Else without If
+body	On Error GoTo 0\nElse	syntax	Else without If
+body	On Error GoTo 0\nEnd If	syntax	End If without block If
+body	On Error GoTo 0\nFor i = 1 To 2	syntax	For without Next
+body	On Error GoTo 0\nNext	syntax	Next without For
+body	On Error GoTo 0\nDo	syntax	Do without Loop
+body	On Error GoTo 0\nLoop	syntax	Loop without Do
+body	On Error GoTo 0\nDo While c	syntax	Do without Loop
+body	On Error GoTo 0\nLoop Until c	syntax	Loop without Do
+body	On Error GoTo 0\nWhile c	syntax	While without Wend
+body	On Error GoTo 0\nWend	syntax	Wend without While
+body	On Error GoTo 0\nSelect Case x	syntax	Select Case without End Select
+body	On Error GoTo 0\nCase 1	syntax	Case without Select Case
+body	On Error GoTo 0\nCase Else	syntax	Case Else outside Select Case
+body	On Error GoTo 0\nEnd Select	syntax	End Select without Select Case
+body	On Error GoTo 0\nWith o	syntax	Expected End With
+body	On Error GoTo 0\nEnd With	syntax	End With without With
+body	On Error GoTo 0\nExit For	syntax	Exit For not within For...Next
+body	On Error GoTo 0\nExit Do	syntax	Exit Do not within Do...Loop
+body	On Error GoTo 0\nExit Sub	accepted	
+body	On Error GoTo 0\nGoTo L	syntax	Label not defined
+body	On Error GoTo 0\nL:	accepted	
+body	On Error GoTo 0\nx = 1	accepted	
+body	On Error GoTo 0\nIf c Then x = 1	accepted	
+body	On Error GoTo 0\nIf c Then x = 1 Else x = 2	accepted	
+body	On Error GoTo 0\nNext i	syntax	Next without For
+body	On Error GoTo 0\nOn Error GoTo 0	accepted	
+body	On Error GoTo 0\nResume Next	accepted	
+body	On Error GoTo 0\nReturn	accepted	
+body	Resume Next\nIf c Then	syntax	Block If without End If
+body	Resume Next\nElseIf c Then	syntax	Else without If
+body	Resume Next\nElse	syntax	Else without If
+body	Resume Next\nEnd If	syntax	End If without block If
+body	Resume Next\nFor i = 1 To 2	syntax	For without Next
+body	Resume Next\nNext	syntax	Next without For
+body	Resume Next\nDo	syntax	Do without Loop
+body	Resume Next\nLoop	syntax	Loop without Do
+body	Resume Next\nDo While c	syntax	Do without Loop
+body	Resume Next\nLoop Until c	syntax	Loop without Do
+body	Resume Next\nWhile c	syntax	While without Wend
+body	Resume Next\nWend	syntax	Wend without While
+body	Resume Next\nSelect Case x	syntax	Select Case without End Select
+body	Resume Next\nCase 1	syntax	Case without Select Case
+body	Resume Next\nCase Else	syntax	Case Else outside Select Case
+body	Resume Next\nEnd Select	syntax	End Select without Select Case
+body	Resume Next\nWith o	syntax	Expected End With
+body	Resume Next\nEnd With	syntax	End With without With
+body	Resume Next\nExit For	syntax	Exit For not within For...Next
+body	Resume Next\nExit Do	syntax	Exit Do not within Do...Loop
+body	Resume Next\nExit Sub	accepted	
+body	Resume Next\nGoTo L	syntax	Label not defined
+body	Resume Next\nL:	accepted	
+body	Resume Next\nx = 1	accepted	
+body	Resume Next\nIf c Then x = 1	accepted	
+body	Resume Next\nIf c Then x = 1 Else x = 2	accepted	
+body	Resume Next\nNext i	syntax	Next without For
+body	Resume Next\nOn Error GoTo 0	accepted	
+body	Resume Next\nResume Next	accepted	
+body	Resume Next\nReturn	accepted	
+body	Return\nIf c Then	syntax	Block If without End If
+body	Return\nElseIf c Then	syntax	Else without If
+body	Return\nElse	syntax	Else without If
+body	Return\nEnd If	syntax	End If without block If
+body	Return\nFor i = 1 To 2	syntax	For without Next
+body	Return\nNext	syntax	Next without For
+body	Return\nDo	syntax	Do without Loop
+body	Return\nLoop	syntax	Loop without Do
+body	Return\nDo While c	syntax	Do without Loop
+body	Return\nLoop Until c	syntax	Loop without Do
+body	Return\nWhile c	syntax	While without Wend
+body	Return\nWend	syntax	Wend without While
+body	Return\nSelect Case x	syntax	Select Case without End Select
+body	Return\nCase 1	syntax	Case without Select Case
+body	Return\nCase Else	syntax	Case Else outside Select Case
+body	Return\nEnd Select	syntax	End Select without Select Case
+body	Return\nWith o	syntax	Expected End With
+body	Return\nEnd With	syntax	End With without With
+body	Return\nExit For	syntax	Exit For not within For...Next
+body	Return\nExit Do	syntax	Exit Do not within Do...Loop
+body	Return\nExit Sub	accepted	
+body	Return\nGoTo L	syntax	Label not defined
+body	Return\nL:	accepted	
+body	Return\nx = 1	accepted	
+body	Return\nIf c Then x = 1	accepted	
+body	Return\nIf c Then x = 1 Else x = 2	accepted	
+body	Return\nNext i	syntax	Next without For
+body	Return\nOn Error GoTo 0	accepted	
+body	Return\nResume Next	accepted	
+body	Return\nReturn	accepted	
+body	Case 1\nCase 1\nIf c Then	syntax	Case without Select Case
+body	Case 1\nDo\nWith o	syntax	Case without Select Case
+body	Case 1\nElse\nLoop	syntax	Case without Select Case
+body	Case 1\nEnd If\nSelect Case x	syntax	Case without Select Case
+body	Case 1\nExit Sub\nL:	syntax	Case without Select Case
+body	Case 1\nGoTo L\nNext	syntax	Case without Select Case
+body	Case 1\nIf c Then\nCase 1	syntax	Case without Select Case
+body	Case 1\nIf c Then\nWith o	syntax	Case without Select Case
+body	Case 1\nIf c Then x = 1 Else x = 2\nExit Sub	syntax	Case without Select Case
+body	Case 1\nL:\nIf c Then x = 1	syntax	Case without Select Case
+body	Case 1\nLoop\nIf c Then x = 1 Else x = 2	syntax	Case without Select Case
+body	Case 1\nLoop Until c\nOn Error GoTo 0	syntax	Case without Select Case
+body	Case 1\nNext\nIf c Then x = 1	syntax	Case without Select Case
+body	Case 1\nOn Error GoTo 0\nDo	syntax	Case without Select Case
+body	Case 1\nOn Error GoTo 0\nReturn	syntax	Case without Select Case
+body	Case 1\nResume Next\nElse	syntax	Case without Select Case
+body	Case 1\nResume Next\nEnd If	syntax	Case without Select Case
+body	Case 1\nResume Next\nIf c Then	syntax	Case without Select Case
+body	Case 1\nReturn\nReturn	syntax	Case without Select Case
+body	Case 1\nReturn\nWend	syntax	Case without Select Case
+body	Case 1\nSelect Case x\nGoTo L	syntax	Case without Select Case
+body	Case 1\nWend\nGoTo L	syntax	Case without Select Case
+body	Case 1\nWend\nSelect Case x	syntax	Case without Select Case
+body	Case 1\nWhile c\nLoop Until c	syntax	Case without Select Case
+body	Case 1\nWith o\nSelect Case x	syntax	Case without Select Case
+body	Case 1\nWith o\nWend	syntax	Case without Select Case
+body	Case 1\nx = 1\nL:	syntax	Case without Select Case
+body	Case 1\nx = 1\nLoop	syntax	Case without Select Case
+body	Case 1\nx = 1\nReturn	syntax	Case without Select Case
+body	Case 1\nx = 1\nWith o	syntax	Case without Select Case
+body	Case Else\nCase 1\nFor i = 1 To 2	syntax	Case Else outside Select Case
+body	Case Else\nCase Else\nL:	syntax	Case Else outside Select Case
+body	Case Else\nElse\nNext i	syntax	Case Else outside Select Case
+body	Case Else\nElse\nx = 1	syntax	Case Else outside Select Case
+body	Case Else\nEnd With\nIf c Then	syntax	Case Else outside Select Case
+body	Case Else\nExit Do\nIf c Then x = 1	syntax	Case Else outside Select Case
+body	Case Else\nExit Do\nResume Next	syntax	Case Else outside Select Case
+body	Case Else\nExit Sub\nResume Next	syntax	Case Else outside Select Case
+body	Case Else\nGoTo L\nEnd With	syntax	Case Else outside Select Case
+body	Case Else\nIf c Then\nExit Do	syntax	Case Else outside Select Case
+body	Case Else\nIf c Then x = 1\nEnd If	syntax	Case Else outside Select Case
+body	Case Else\nIf c Then x = 1 Else x = 2\nReturn	syntax	Case Else outside Select Case
+body	Case Else\nL:\nIf c Then	syntax	Case Else outside Select Case
+body	Case Else\nLoop\nCase Else	syntax	Case Else outside Select Case
+body	Case Else\nLoop\nNext	syntax	Case Else outside Select Case
+body	Case Else\nLoop Until c\nExit Do	syntax	Case Else outside Select Case
+body	Case Else\nLoop Until c\nIf c Then x = 1	syntax	Case Else outside Select Case
+body	Case Else\nLoop Until c\nL:	syntax	Case Else outside Select Case
+body	Case Else\nNext\nIf c Then	syntax	Case Else outside Select Case
+body	Case Else\nNext\nNext	syntax	Case Else outside Select Case
+body	Case Else\nWhile c\nElse	syntax	Case Else outside Select Case
+body	Case Else\nWith o\nGoTo L	syntax	Case Else outside Select Case
+body	Case Else\nWith o\nWith o	syntax	Case Else outside Select Case
+body	Do\nCase Else\nNext	syntax	Case Else outside Select Case
+body	Do\nDo While c\nElseIf c Then	syntax	Else without If
+body	Do\nDo While c\nLoop Until c	syntax	Loop without Do
+body	Do\nElse\nDo While c	syntax	Else without If
+body	Do\nElse\nExit Do	syntax	Else without If
+body	Do\nElse\nResume Next	syntax	Else without If
+body	Do\nElseIf c Then\nIf c Then x = 1 Else x = 2	syntax	Else without If
+body	Do\nEnd Select\nDo	syntax	End Select without Select Case
+body	Do\nEnd Select\nGoTo L	syntax	End Select without Select Case
+body	Do\nExit Do\nSelect Case x	syntax	Select Case without End Select
+body	Do\nGoTo L\nEnd Select	syntax	End Select without Select Case
+body	Do\nIf c Then\nCase 1	syntax	Case without Select Case
+body	Do\nIf c Then x = 1\nLoop Until c	accepted	
+body	Do\nL:\nEnd Select	syntax	End Select without Select Case
+body	Do\nL:\nIf c Then	syntax	Block If without End If
+body	Do\nL:\nLoop	accepted	
+body	Do\nL:\nOn Error GoTo 0	syntax	Do without Loop
+body	Do\nLoop\nCase Else	syntax	Case Else outside Select Case
+body	Do\nLoop\nx = 1	accepted	
+body	Do\nLoop Until c\nFor i = 1 To 2	syntax	For without Next
+body	Do\nLoop Until c\nIf c Then x = 1	accepted	
+body	Do\nLoop Until c\nWhile c	syntax	While without Wend
+body	Do\nNext\nL:	syntax	Next without For
+body	Do\nNext i\nIf c Then	syntax	Next without For
+body	Do\nReturn\nElse	syntax	Else without If
+body	Do\nReturn\nLoop Until c	accepted	
+body	Do\nSelect Case x\nDo While c	syntax	Statements and labels invalid between Select Case and first Case
+body	Do\nSelect Case x\nFor i = 1 To 2	syntax	Statements and labels invalid between Select Case and first Case
+body	Do\nWend\nEnd If	syntax	Wend without While
+body	Do\nWend\nEnd With	syntax	Wend without While
+body	Do\nWend\nExit Do	syntax	Wend without While
+body	Do\nWend\nNext	syntax	Wend without While
+body	Do\nWith o\nEnd Select	syntax	End Select without Select Case
+body	Do While c\nCase 1\nLoop Until c	syntax	Case without Select Case
+body	Do While c\nCase 1\nResume Next	syntax	Case without Select Case
+body	Do While c\nCase Else\nIf c Then	syntax	Case Else outside Select Case
+body	Do While c\nCase Else\nWith o	syntax	Case Else outside Select Case
+body	Do While c\nDo\nEnd If	syntax	End If without block If
+body	Do While c\nDo\nResume Next	syntax	Do without Loop
+body	Do While c\nDo\nx = 1	syntax	Do without Loop
+body	Do While c\nDo While c\nSelect Case x	syntax	Select Case without End Select
+body	Do While c\nElse\nWend	syntax	Else without If
+body	Do While c\nElseIf c Then\nExit Do	syntax	Else without If
+body	Do While c\nElseIf c Then\nNext	syntax	Else without If
+body	Do While c\nElseIf c Then\nResume Next	syntax	Else without If
+body	Do While c\nEnd If\nElseIf c Then	syntax	End If without block If
+body	Do While c\nEnd If\nLoop	syntax	End If without block If
+body	Do While c\nEnd Select\nNext i	syntax	End Select without Select Case
+body	Do While c\nEnd With\nCase 1	syntax	End With without With
+body	Do While c\nEnd With\nExit Sub	syntax	End With without With
+body	Do While c\nExit Do\nEnd If	syntax	End If without block If
+body	Do While c\nExit Do\nFor i = 1 To 2	syntax	For without Next
+body	Do While c\nIf c Then\nElseIf c Then	syntax	Block If without End If
+body	Do While c\nIf c Then\nExit Sub	syntax	Block If without End If
+body	Do While c\nIf c Then x = 1\nIf c Then x = 1	syntax	Do without Loop
+body	Do While c\nLoop\nGoTo L	syntax	Label not defined
+body	Do While c\nLoop Until c\nIf c Then	syntax	Loop without Do
+body	Do While c\nNext\nWhile c	syntax	Next without For
+body	Do While c\nOn Error GoTo 0\nElseIf c Then	syntax	Else without If
+body	Do While c\nResume Next\nEnd If	syntax	End If without block If
+body	Do While c\nResume Next\nLoop	accepted	
+body	Do While c\nSelect Case x\nIf c Then x = 1 Else x = 2	syntax	Statements and labels invalid between Select Case and first Case
+body	Do While c\nWend\nDo While c	syntax	Wend without While
+body	Do While c\nWend\nElse	syntax	Wend without While
+body	Do While c\nWend\nWhile c	syntax	Wend without While
+body	Do While c\nWith o\nExit Sub	syntax	Expected End With
+body	Do While c\nx = 1\nEnd If	syntax	End If without block If
+body	Do While c\nx = 1\nL:	syntax	Do without Loop
+body	Else\nCase 1\nEnd If	syntax	Else without If
+body	Else\nCase 1\nReturn	syntax	Else without If
+body	Else\nCase Else\nWhile c	syntax	Else without If
+body	Else\nDo\nGoTo L	syntax	Else without If
+body	Else\nDo\nWith o	syntax	Else without If
+body	Else\nDo While c\nElseIf c Then	syntax	Else without If
+body	Else\nElseIf c Then\nIf c Then x = 1	syntax	Else without If
+body	Else\nElseIf c Then\nx = 1	syntax	Else without If
+body	Else\nEnd If\nReturn	syntax	Else without If
+body	Else\nEnd If\nWith o	syntax	Else without If
+body	Else\nEnd Select\nDo While c	syntax	Else without If
+body	Else\nEnd With\nCase 1	syntax	Else without If
+body	Else\nExit Do\nOn Error GoTo 0	syntax	Else without If
+body	Else\nExit For\nWith o	syntax	Else without If
+body	Else\nExit Sub\nFor i = 1 To 2	syntax	Else without If
+body	Else\nExit Sub\nLoop Until c	syntax	Else without If
+body	Else\nExit Sub\nx = 1	syntax	Else without If
+body	Else\nFor i = 1 To 2\nEnd If	syntax	Else without If
+body	Else\nGoTo L\nWith o	syntax	Else without If
+body	Else\nIf c Then\nNext i	syntax	Else without If
+body	Else\nIf c Then x = 1 Else x = 2\nDo While c	syntax	Else without If
+body	Else\nLoop\nEnd If	syntax	Else without If
+body	Else\nNext\nWhile c	syntax	Else without If
+body	Else\nOn Error GoTo 0\nDo While c	syntax	Else without If
+body	Else\nResume Next\nExit Do	syntax	Else without If
+body	Else\nReturn\nNext	syntax	Else without If
+body	Else\nSelect Case x\nDo While c	syntax	Else without If
+body	Else\nWith o\nDo	syntax	Else without If
+body	Else\nx = 1\nReturn	syntax	Else without If
+body	Else\nx = 1\nx = 1	syntax	Else without If
+body	ElseIf c Then\nCase Else\nElse	syntax	Else without If
+body	ElseIf c Then\nDo\nElse	syntax	Else without If
+body	ElseIf c Then\nDo\nIf c Then	syntax	Else without If
+body	ElseIf c Then\nDo While c\nEnd With	syntax	Else without If
+body	ElseIf c Then\nDo While c\nExit Sub	syntax	Else without If
+body	ElseIf c Then\nElse\nCase 1	syntax	Else without If
+body	ElseIf c Then\nElseIf c Then\nEnd With	syntax	Else without If
+body	ElseIf c Then\nEnd If\nIf c Then	syntax	Else without If
+body	ElseIf c Then\nEnd Select\nDo While c	syntax	Else without If
+body	ElseIf c Then\nEnd With\nExit For	syntax	Else without If
+body	ElseIf c Then\nEnd With\nFor i = 1 To 2	syntax	Else without If
+body	ElseIf c Then\nExit Sub\nIf c Then	syntax	Else without If
+body	ElseIf c Then\nExit Sub\nL:	syntax	Else without If
+body	ElseIf c Then\nFor i = 1 To 2\nExit Sub	syntax	Else without If
+body	ElseIf c Then\nGoTo L\nNext i	syntax	Else without If
+body	ElseIf c Then\nIf c Then\nDo	syntax	Else without If
+body	ElseIf c Then\nIf c Then\nExit For	syntax	Else without If
+body	ElseIf c Then\nIf c Then\nIf c Then	syntax	Else without If
+body	ElseIf c Then\nL:\nElse	syntax	Else without If
+body	ElseIf c Then\nL:\nElseIf c Then	syntax	Else without If
+body	ElseIf c Then\nL:\nEnd Select	syntax	Else without If
+body	ElseIf c Then\nLoop\nElseIf c Then	syntax	Else without If
+body	ElseIf c Then\nLoop Until c\nx = 1	syntax	Else without If
+body	ElseIf c Then\nNext i\nExit For	syntax	Else without If
+body	ElseIf c Then\nResume Next\nEnd With	syntax	Else without If
+body	ElseIf c Then\nResume Next\nLoop Until c	syntax	Else without If
+body	ElseIf c Then\nWend\nWhile c	syntax	Else without If
+body	ElseIf c Then\nWith o\nL:	syntax	Else without If
+body	End If\nCase 1\nEnd Select	syntax	End If without block If
+body	End If\nCase Else\nCase 1	syntax	End If without block If
+body	End If\nElse\nDo While c	syntax	End If without block If
+body	End If\nElseIf c Then\nDo	syntax	End If without block If
+body	End If\nElseIf c Then\nElseIf c Then	syntax	End If without block If
+body	End If\nEnd If\nElse	syntax	End If without block If
+body	End If\nEnd If\nExit Do	syntax	End If without block If
+body	End If\nEnd Select\nElseIf c Then	syntax	End If without block If
+body	End If\nExit Sub\nCase Else	syntax	End If without block If
+body	End If\nFor i = 1 To 2\nEnd If	syntax	End If without block If
+body	End If\nGoTo L\nNext i	syntax	End If without block If
+body	End If\nIf c Then\nElse	syntax	End If without block If
+body	End If\nLoop\nExit Sub	syntax	End If without block If
+body	End If\nNext i\nElse	syntax	End If without block If
+body	End If\nSelect Case x\nReturn	syntax	End If without block If
+body	End If\nWend\nExit Do	syntax	End If without block If
+body	End If\nWhile c\nExit Do	syntax	End If without block If
+body	End If\nWhile c\nResume Next	syntax	End If without block If
+body	End If\nx = 1\nExit Do	syntax	End If without block If
+body	End Select\nCase 1\nElseIf c Then	syntax	End Select without Select Case
+body	End Select\nCase 1\nExit Do	syntax	End Select without Select Case
+body	End Select\nCase 1\nReturn	syntax	End Select without Select Case
+body	End Select\nDo While c\nDo	syntax	End Select without Select Case
+body	End Select\nDo While c\nExit For	syntax	End Select without Select Case
+body	End Select\nDo While c\nIf c Then x = 1 Else x = 2	syntax	End Select without Select Case
+body	End Select\nEnd If\nEnd If	syntax	End Select without Select Case
+body	End Select\nEnd Select\nLoop Until c	syntax	End Select without Select Case
+body	End Select\nEnd With\nEnd Select	syntax	End Select without Select Case
+body	End Select\nEnd With\nNext i	syntax	End Select without Select Case
+body	End Select\nExit Sub\nEnd With	syntax	End Select without Select Case
+body	End Select\nExit Sub\nSelect Case x	syntax	End Select without Select Case
+body	End Select\nFor i = 1 To 2\nReturn	syntax	End Select without Select Case
+body	End Select\nGoTo L\nReturn	syntax	End Select without Select Case
+body	End Select\nIf c Then\nElse	syntax	End Select without Select Case
+body	End Select\nIf c Then\nIf c Then x = 1 Else x = 2	syntax	End Select without Select Case
+body	End Select\nIf c Then\nLoop Until c	syntax	End Select without Select Case
+body	End Select\nIf c Then x = 1 Else x = 2\nL:	syntax	End Select without Select Case
+body	End Select\nL:\nEnd With	syntax	End Select without Select Case
+body	End Select\nL:\nGoTo L	syntax	End Select without Select Case
+body	End Select\nL:\nIf c Then x = 1 Else x = 2	syntax	End Select without Select Case
+body	End Select\nL:\nWhile c	syntax	End Select without Select Case
+body	End Select\nLoop\nExit Do	syntax	End Select without Select Case
+body	End Select\nNext\nEnd If	syntax	End Select without Select Case
+body	End Select\nNext\nIf c Then	syntax	End Select without Select Case
+body	End Select\nNext i\nExit For	syntax	End Select without Select Case
+body	End Select\nResume Next\nGoTo L	syntax	End Select without Select Case
+body	End Select\nResume Next\nNext	syntax	End Select without Select Case
+body	End Select\nResume Next\nNext i	syntax	End Select without Select Case
+body	End Select\nResume Next\nResume Next	syntax	End Select without Select Case
+body	End Select\nReturn\nEnd If	syntax	End Select without Select Case
+body	End Select\nReturn\nGoTo L	syntax	End Select without Select Case
+body	End Select\nSelect Case x\nIf c Then	syntax	End Select without Select Case
+body	End Select\nWhile c\nElseIf c Then	syntax	End Select without Select Case
+body	End With\nCase 1\nIf c Then x = 1	syntax	End With without With
+body	End With\nDo\nLoop	syntax	End With without With
+body	End With\nDo While c\nResume Next	syntax	End With without With
+body	End With\nElse\nExit Sub	syntax	End With without With
+body	End With\nElse\nWhile c	syntax	End With without With
+body	End With\nElseIf c Then\nLoop	syntax	End With without With
+body	End With\nElseIf c Then\nWhile c	syntax	End With without With
+body	End With\nEnd If\nExit For	syntax	End With without With
+body	End With\nEnd Select\nEnd Select	syntax	End With without With
+body	End With\nEnd Select\nIf c Then x = 1 Else x = 2	syntax	End With without With
+body	End With\nEnd With\nDo	syntax	End With without With
+body	End With\nEnd With\nWhile c	syntax	End With without With
+body	End With\nExit Do\nIf c Then x = 1	syntax	End With without With
+body	End With\nExit For\nIf c Then x = 1 Else x = 2	syntax	End With without With
+body	End With\nExit Sub\nFor i = 1 To 2	syntax	End With without With
+body	End With\nFor i = 1 To 2\nExit Sub	syntax	End With without With
+body	End With\nFor i = 1 To 2\nIf c Then	syntax	End With without With
+body	End With\nGoTo L\nCase 1	syntax	End With without With
+body	End With\nIf c Then x = 1\nDo	syntax	End With without With
+body	End With\nIf c Then x = 1\nElseIf c Then	syntax	End With without With
+body	End With\nIf c Then x = 1 Else x = 2\nEnd If	syntax	End With without With
+body	End With\nIf c Then x = 1 Else x = 2\nEnd Select	syntax	End With without With
+body	End With\nL:\nElse	syntax	End With without With
+body	End With\nLoop\nCase Else	syntax	End With without With
+body	End With\nOn Error GoTo 0\nFor i = 1 To 2	syntax	End With without With
+body	End With\nOn Error GoTo 0\nIf c Then x = 1	syntax	End With without With
+body	End With\nResume Next\nDo	syntax	End With without With
+body	End With\nReturn\nIf c Then	syntax	End With without With
+body	End With\nSelect Case x\nSelect Case x	syntax	End With without With
+body	End With\nWend\nExit Do	syntax	End With without With
+body	End With\nWhile c\nLoop	syntax	End With without With
+body	End With\nWith o\nNext	syntax	End With without With
+body	Exit Do\nCase Else\nEnd With	syntax	Exit Do not within Do...Loop
+body	Exit Do\nElse\nDo	syntax	Exit Do not within Do...Loop
+body	Exit Do\nEnd Select\nExit Do	syntax	Exit Do not within Do...Loop
+body	Exit Do\nEnd Select\nExit For	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit For\nElse	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit Sub\nCase 1	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit Sub\nExit Sub	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit Sub\nGoTo L	syntax	Exit Do not within Do...Loop
+body	Exit Do\nExit Sub\nWith o	syntax	Exit Do not within Do...Loop
+body	Exit Do\nFor i = 1 To 2\nCase 1	syntax	Exit Do not within Do...Loop
+body	Exit Do\nLoop Until c\nElse	syntax	Exit Do not within Do...Loop
+body	Exit Do\nLoop Until c\nWith o	syntax	Exit Do not within Do...Loop
+body	Exit Do\nNext i\nExit Do	syntax	Exit Do not within Do...Loop
+body	Exit Do\nNext i\nExit For	syntax	Exit Do not within Do...Loop
+body	Exit Do\nOn Error GoTo 0\nDo	syntax	Exit Do not within Do...Loop
+body	Exit Do\nResume Next\nExit Do	syntax	Exit Do not within Do...Loop
+body	Exit Do\nReturn\nExit Sub	syntax	Exit Do not within Do...Loop
+body	Exit Do\nReturn\nWend	syntax	Exit Do not within Do...Loop
+body	Exit Do\nReturn\nWith o	syntax	Exit Do not within Do...Loop
+body	Exit Do\nWend\nDo	syntax	Exit Do not within Do...Loop
+body	Exit Do\nWith o\nEnd Select	syntax	Exit Do not within Do...Loop
+body	Exit Do\nWith o\nExit Do	syntax	Exit Do not within Do...Loop
+body	Exit Do\nx = 1\nEnd If	syntax	Exit Do not within Do...Loop
+body	Exit Do\nx = 1\nL:	syntax	Exit Do not within Do...Loop
+body	Exit For\nCase Else\nEnd With	syntax	Exit For not within For...Next
+body	Exit For\nDo\nElseIf c Then	syntax	Exit For not within For...Next
+body	Exit For\nDo\nWhile c	syntax	Exit For not within For...Next
+body	Exit For\nDo While c\nExit Do	syntax	Exit For not within For...Next
+body	Exit For\nElse\nFor i = 1 To 2	syntax	Exit For not within For...Next
+body	Exit For\nElse\nWend	syntax	Exit For not within For...Next
+body	Exit For\nElseIf c Then\nExit Do	syntax	Exit For not within For...Next
+body	Exit For\nExit For\nExit Sub	syntax	Exit For not within For...Next
+body	Exit For\nExit For\nSelect Case x	syntax	Exit For not within For...Next
+body	Exit For\nExit For\nx = 1	syntax	Exit For not within For...Next
+body	Exit For\nFor i = 1 To 2\nEnd With	syntax	Exit For not within For...Next
+body	Exit For\nFor i = 1 To 2\nOn Error GoTo 0	syntax	Exit For not within For...Next
+body	Exit For\nGoTo L\nNext i	syntax	Exit For not within For...Next
+body	Exit For\nNext i\nResume Next	syntax	Exit For not within For...Next
+body	Exit For\nOn Error GoTo 0\nLoop	syntax	Exit For not within For...Next
+body	Exit For\nResume Next\nCase Else	syntax	Exit For not within For...Next
+body	Exit For\nResume Next\nLoop Until c	syntax	Exit For not within For...Next
+body	Exit For\nResume Next\nWend	syntax	Exit For not within For...Next
+body	Exit For\nReturn\nGoTo L	syntax	Exit For not within For...Next
+body	Exit For\nReturn\nNext	syntax	Exit For not within For...Next
+body	Exit For\nWend\nNext i	syntax	Exit For not within For...Next
+body	Exit For\nWhile c\nFor i = 1 To 2	syntax	Exit For not within For...Next
+body	Exit For\nWhile c\nWith o	syntax	Exit For not within For...Next
+body	Exit Sub\nCase 1\nElse	syntax	Case without Select Case
+body	Exit Sub\nCase 1\nGoTo L	syntax	Case without Select Case
+body	Exit Sub\nCase 1\nLoop	syntax	Case without Select Case
+body	Exit Sub\nCase 1\nOn Error GoTo 0	syntax	Case without Select Case
+body	Exit Sub\nCase Else\nEnd Select	syntax	Case Else outside Select Case
+body	Exit Sub\nCase Else\nNext	syntax	Case Else outside Select Case
+body	Exit Sub\nElse\nGoTo L	syntax	Else without If
+body	Exit Sub\nElseIf c Then\nElse	syntax	Else without If
+body	Exit Sub\nElseIf c Then\nEnd Select	syntax	Else without If
+body	Exit Sub\nElseIf c Then\nIf c Then	syntax	Else without If
+body	Exit Sub\nElseIf c Then\nWend	syntax	Else without If
+body	Exit Sub\nEnd If\nWith o	syntax	End If without block If
+body	Exit Sub\nEnd With\nGoTo L	syntax	End With without With
+body	Exit Sub\nExit Do\nL:	syntax	Exit Do not within Do...Loop
+body	Exit Sub\nExit For\nCase Else	syntax	Exit For not within For...Next
+body	Exit Sub\nExit For\nElseIf c Then	syntax	Exit For not within For...Next
+body	Exit Sub\nExit For\nIf c Then	syntax	Exit For not within For...Next
+body	Exit Sub\nExit Sub\nCase 1	syntax	Case without Select Case
+body	Exit Sub\nFor i = 1 To 2\nElse	syntax	Else without If
+body	Exit Sub\nFor i = 1 To 2\nElseIf c Then	syntax	Else without If
+body	Exit Sub\nIf c Then x = 1\nElse	syntax	Else without If
+body	Exit Sub\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2	syntax	For without Next
+body	Exit Sub\nIf c Then x = 1 Else x = 2\nOn Error GoTo 0	accepted	
+body	Exit Sub\nIf c Then x = 1 Else x = 2\nReturn	accepted	
+body	Exit Sub\nLoop\nExit Do	syntax	Loop without Do
+body	Exit Sub\nLoop Until c\nEnd Select	syntax	Loop without Do
+body	Exit Sub\nLoop Until c\nWith o	syntax	Loop without Do
+body	Exit Sub\nNext\nDo While c	syntax	Next without For
+body	Exit Sub\nNext i\nEnd With	syntax	Next without For
+body	Exit Sub\nNext i\nNext i	syntax	Next without For
+body	Exit Sub\nOn Error GoTo 0\nElse	syntax	Else without If
+body	Exit Sub\nOn Error GoTo 0\nIf c Then x = 1	accepted	
+body	Exit Sub\nOn Error GoTo 0\nWend	syntax	Wend without While
+body	Exit Sub\nResume Next\nResume Next	accepted	
+body	Exit Sub\nReturn\nDo While c	syntax	Do without Loop
+body	Exit Sub\nReturn\nEnd If	syntax	End If without block If
+body	Exit Sub\nReturn\nFor i = 1 To 2	syntax	For without Next
+body	Exit Sub\nReturn\nResume Next	accepted	
+body	Exit Sub\nReturn\nWith o	syntax	Expected End With
+body	Exit Sub\nWhile c\nIf c Then x = 1	syntax	While without Wend
+body	Exit Sub\nWhile c\nWend	accepted	
+body	Exit Sub\nx = 1\nL:	accepted	
+body	For i = 1 To 2\nCase Else\nEnd If	syntax	Case Else outside Select Case
+body	For i = 1 To 2\nDo While c\nExit Do	syntax	Do without Loop
+body	For i = 1 To 2\nDo While c\nWith o	syntax	Expected End With
+body	For i = 1 To 2\nElseIf c Then\nCase 1	syntax	Else without If
+body	For i = 1 To 2\nElseIf c Then\nDo	syntax	Else without If
+body	For i = 1 To 2\nElseIf c Then\nIf c Then	syntax	Else without If
+body	For i = 1 To 2\nEnd With\nFor i = 1 To 2	syntax	End With without With
+body	For i = 1 To 2\nExit Sub\nDo While c	syntax	Do without Loop
+body	For i = 1 To 2\nExit Sub\nOn Error GoTo 0	syntax	For without Next
+body	For i = 1 To 2\nIf c Then\nEnd Select	syntax	End Select without Select Case
+body	For i = 1 To 2\nIf c Then\nFor i = 1 To 2	syntax	For control variable already in use
+body	For i = 1 To 2\nIf c Then\nReturn	syntax	Block If without End If
+body	For i = 1 To 2\nIf c Then x = 1 Else x = 2\nLoop Until c	syntax	Loop without Do
+body	For i = 1 To 2\nL:\nIf c Then	syntax	Block If without End If
+body	For i = 1 To 2\nLoop\nx = 1	syntax	Loop without Do
+body	For i = 1 To 2\nNext\nEnd Select	syntax	End Select without Select Case
+body	For i = 1 To 2\nNext i\nCase 1	syntax	Case without Select Case
+body	For i = 1 To 2\nOn Error GoTo 0\nNext i	accepted	
+body	For i = 1 To 2\nResume Next\nEnd Select	syntax	End Select without Select Case
+body	For i = 1 To 2\nReturn\nSelect Case x	syntax	Select Case without End Select
+body	For i = 1 To 2\nWend\nCase 1	syntax	Wend without While
+body	For i = 1 To 2\nWend\nGoTo L	syntax	Wend without While
+body	For i = 1 To 2\nWend\nLoop Until c	syntax	Wend without While
+body	For i = 1 To 2\nWend\nWhile c	syntax	Wend without While
+body	For i = 1 To 2\nWhile c\nDo While c	syntax	Do without Loop
+body	For i = 1 To 2\nx = 1\nLoop	syntax	Loop without Do
+body	GoTo L\nCase Else\nSelect Case x	syntax	Case Else outside Select Case
+body	GoTo L\nDo\nFor i = 1 To 2	syntax	For without Next
+body	GoTo L\nElse\nIf c Then x = 1	syntax	Else without If
+body	GoTo L\nElse\nResume Next	syntax	Else without If
+body	GoTo L\nElseIf c Then\nElseIf c Then	syntax	Else without If
+body	GoTo L\nElseIf c Then\nExit Do	syntax	Else without If
+body	GoTo L\nEnd If\nL:	syntax	End If without block If
+body	GoTo L\nGoTo L\nReturn	syntax	Label not defined
+body	GoTo L\nIf c Then\nDo	syntax	Do without Loop
+body	GoTo L\nIf c Then\nEnd If	syntax	Label not defined
+body	GoTo L\nIf c Then x = 1\nEnd If	syntax	End If without block If
+body	GoTo L\nIf c Then x = 1 Else x = 2\nReturn	syntax	Label not defined
+body	GoTo L\nL:\nExit Sub	accepted	
+body	GoTo L\nLoop\nCase 1	syntax	Loop without Do
+body	GoTo L\nLoop\nIf c Then	syntax	Loop without Do
+body	GoTo L\nLoop\nx = 1	syntax	Loop without Do
+body	GoTo L\nLoop Until c\nCase 1	syntax	Loop without Do
+body	GoTo L\nNext\nEnd If	syntax	Next without For
+body	GoTo L\nNext\nExit Sub	syntax	Next without For
+body	GoTo L\nNext\nSelect Case x	syntax	Next without For
+body	GoTo L\nNext i\nDo While c	syntax	Next without For
+body	GoTo L\nNext i\nSelect Case x	syntax	Next without For
+body	GoTo L\nResume Next\nL:	accepted	
+body	GoTo L\nResume Next\nSelect Case x	syntax	Select Case without End Select
+body	GoTo L\nSelect Case x\nEnd If	syntax	End If without block If
+body	GoTo L\nWend\nExit For	syntax	Wend without While
+body	GoTo L\nWend\nNext	syntax	Wend without While
+body	GoTo L\nWhile c\nResume Next	syntax	While without Wend
+body	GoTo L\nWith o\nWith o	syntax	Expected End With
+body	If c Then\nCase Else\nIf c Then x = 1 Else x = 2	syntax	Case Else outside Select Case
+body	If c Then\nDo\nWith o	syntax	Expected End With
+body	If c Then\nDo While c\nDo	syntax	Do without Loop
+body	If c Then\nElse\nDo While c	syntax	Do without Loop
+body	If c Then\nElse\nOn Error GoTo 0	syntax	Block If without End If
+body	If c Then\nElseIf c Then\nFor i = 1 To 2	syntax	For without Next
+body	If c Then\nExit Do\nEnd Select	syntax	Exit Do not within Do...Loop
+body	If c Then\nExit Do\nEnd With	syntax	Exit Do not within Do...Loop
+body	If c Then\nFor i = 1 To 2\nCase 1	syntax	Case without Select Case
+body	If c Then\nIf c Then\nEnd With	syntax	End With without With
+body	If c Then\nIf c Then x = 1 Else x = 2\nDo While c	syntax	Do without Loop
+body	If c Then\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2	syntax	For without Next
+body	If c Then\nIf c Then x = 1 Else x = 2\nx = 1	syntax	Block If without End If
+body	If c Then\nOn Error GoTo 0\nElse	syntax	Block If without End If
+body	If c Then\nOn Error GoTo 0\nIf c Then	syntax	Block If without End If
+body	If c Then\nSelect Case x\nNext	syntax	Next without For
+body	If c Then\nSelect Case x\nNext i	syntax	Next without For
+body	If c Then\nSelect Case x\nOn Error GoTo 0	syntax	Statements and labels invalid between Select Case and first Case
+body	If c Then\nWend\nDo While c	syntax	Wend without While
+body	If c Then\nWhile c\nEnd With	syntax	End With without With
+body	If c Then\nWhile c\nSelect Case x	syntax	Select Case without End Select
+body	If c Then\nx = 1\nElseIf c Then	syntax	Block If without End If
+body	If c Then x = 1\nDo\nLoop Until c	accepted	
+body	If c Then x = 1\nDo While c\nExit For	syntax	Exit For not within For...Next
+body	If c Then x = 1\nElse\nCase Else	syntax	Else without If
+body	If c Then x = 1\nElse\nIf c Then x = 1 Else x = 2	syntax	Else without If
+body	If c Then x = 1\nElseIf c Then\nIf c Then	syntax	Else without If
+body	If c Then x = 1\nEnd If\nResume Next	syntax	End If without block If
+body	If c Then x = 1\nEnd If\nWith o	syntax	End If without block If
+body	If c Then x = 1\nExit Do\nIf c Then x = 1	syntax	Exit Do not within Do...Loop
+body	If c Then x = 1\nExit For\nWhile c	syntax	Exit For not within For...Next
+body	If c Then x = 1\nExit Sub\nElse	syntax	Else without If
+body	If c Then x = 1\nExit Sub\nL:	accepted	
+body	If c Then x = 1\nFor i = 1 To 2\nExit Do	syntax	Exit Do not within Do...Loop
+body	If c Then x = 1\nFor i = 1 To 2\nNext i	accepted	
+body	If c Then x = 1\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2	syntax	For without Next
+body	If c Then x = 1\nL:\nNext i	syntax	Next without For
+body	If c Then x = 1\nNext\nDo While c	syntax	Next without For
+body	If c Then x = 1\nNext i\nEnd Select	syntax	Next without For
+body	If c Then x = 1\nNext i\nLoop Until c	syntax	Next without For
+body	If c Then x = 1\nResume Next\nReturn	accepted	
+body	If c Then x = 1\nWend\nIf c Then x = 1 Else x = 2	syntax	Wend without While
+body	If c Then x = 1\nWhile c\nNext i	syntax	Next without For
+body	If c Then x = 1\nWith o\nElseIf c Then	syntax	Else without If
+body	If c Then x = 1\nWith o\nLoop Until c	syntax	Loop without Do
+body	If c Then x = 1\nWith o\nWhile c	syntax	While without Wend
+body	If c Then x = 1\nx = 1\nWith o	syntax	Expected End With
+body	If c Then x = 1 Else x = 2\nCase 1\nElse	syntax	Case without Select Case
+body	If c Then x = 1 Else x = 2\nCase 1\nL:	syntax	Case without Select Case
+body	If c Then x = 1 Else x = 2\nCase Else\nElse	syntax	Case Else outside Select Case
+body	If c Then x = 1 Else x = 2\nDo\nSelect Case x	syntax	Select Case without End Select
+body	If c Then x = 1 Else x = 2\nDo\nWith o	syntax	Expected End With
+body	If c Then x = 1 Else x = 2\nDo While c\nEnd If	syntax	End If without block If
+body	If c Then x = 1 Else x = 2\nEnd Select\nExit For	syntax	End Select without Select Case
+body	If c Then x = 1 Else x = 2\nExit For\nDo	syntax	Exit For not within For...Next
+body	If c Then x = 1 Else x = 2\nExit Sub\nDo	syntax	Do without Loop
+body	If c Then x = 1 Else x = 2\nExit Sub\nElse	syntax	Else without If
+body	If c Then x = 1 Else x = 2\nExit Sub\nFor i = 1 To 2	syntax	For without Next
+body	If c Then x = 1 Else x = 2\nExit Sub\nIf c Then x = 1	accepted	
+body	If c Then x = 1 Else x = 2\nIf c Then\nDo While c	syntax	Do without Loop
+body	If c Then x = 1 Else x = 2\nIf c Then x = 1\nExit Sub	accepted	
+body	If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2\nExit Do	syntax	Exit Do not within Do...Loop
+body	If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2\nIf c Then x = 1	accepted	
+body	If c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2\nIf c Then x = 1 Else x = 2	accepted	
+body	If c Then x = 1 Else x = 2\nL:\nNext	syntax	Next without For
+body	If c Then x = 1 Else x = 2\nLoop\nL:	syntax	Loop without Do
+body	If c Then x = 1 Else x = 2\nLoop\nResume Next	syntax	Loop without Do
+body	If c Then x = 1 Else x = 2\nLoop Until c\nx = 1	syntax	Loop without Do
+body	If c Then x = 1 Else x = 2\nNext\nGoTo L	syntax	Next without For
+body	If c Then x = 1 Else x = 2\nNext i\nCase 1	syntax	Next without For
+body	If c Then x = 1 Else x = 2\nNext i\nWend	syntax	Next without For
+body	If c Then x = 1 Else x = 2\nOn Error GoTo 0\nOn Error GoTo 0	accepted	
+body	If c Then x = 1 Else x = 2\nResume Next\nExit Do	syntax	Exit Do not within Do...Loop
+body	If c Then x = 1 Else x = 2\nResume Next\nL:	accepted	
+body	If c Then x = 1 Else x = 2\nReturn\nElseIf c Then	syntax	Else without If
+body	If c Then x = 1 Else x = 2\nReturn\nx = 1	accepted	
+body	If c Then x = 1 Else x = 2\nSelect Case x\nGoTo L	syntax	Statements and labels invalid between Select Case and first Case
+body	If c Then x = 1 Else x = 2\nWend\nDo While c	syntax	Wend without While
+body	If c Then x = 1 Else x = 2\nWith o\nFor i = 1 To 2	syntax	For without Next
+body	If c Then x = 1 Else x = 2\nx = 1\nReturn	accepted	
+body	L:\nCase 1\nWend	syntax	Case without Select Case
+body	L:\nCase Else\nIf c Then x = 1	syntax	Case Else outside Select Case
+body	L:\nCase Else\nNext	syntax	Case Else outside Select Case
+body	L:\nEnd If\nResume Next	syntax	End If without block If
+body	L:\nExit Do\nL:	syntax	Exit Do not within Do...Loop
+body	L:\nExit Do\nWend	syntax	Exit Do not within Do...Loop
+body	L:\nExit Sub\nExit Sub	accepted	
+body	L:\nExit Sub\nGoTo L	accepted	
+body	L:\nExit Sub\nLoop Until c	syntax	Loop without Do
+body	L:\nGoTo L\nNext i	syntax	Next without For
+body	L:\nIf c Then x = 1\nDo	syntax	Do without Loop
+body	L:\nIf c Then x = 1\nExit Do	syntax	Exit Do not within Do...Loop
+body	L:\nIf c Then x = 1\nResume Next	accepted	
+body	L:\nIf c Then x = 1\nWend	syntax	Wend without While
+body	L:\nLoop\nWith o	syntax	Loop without Do
+body	L:\nLoop Until c\nElseIf c Then	syntax	Loop without Do
+body	L:\nLoop Until c\nExit Sub	syntax	Loop without Do
+body	L:\nNext\nWith o	syntax	Next without For
+body	L:\nOn Error GoTo 0\nDo While c	syntax	Do without Loop
+body	L:\nOn Error GoTo 0\nWith o	syntax	Expected End With
+body	L:\nSelect Case x\nEnd If	syntax	End If without block If
+body	L:\nWend\nLoop	syntax	Wend without While
+body	L:\nWhile c\nL:	syntax	Duplicate declaration in current scope
+body	L:\nWhile c\nReturn	syntax	While without Wend
+body	Loop\nCase 1\nElse	syntax	Loop without Do
+body	Loop\nCase 1\nExit For	syntax	Loop without Do
+body	Loop\nCase Else\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop\nDo\nDo	syntax	Loop without Do
+body	Loop\nDo While c\nCase 1	syntax	Loop without Do
+body	Loop\nDo While c\nIf c Then x = 1	syntax	Loop without Do
+body	Loop\nDo While c\nL:	syntax	Loop without Do
+body	Loop\nElse\nDo While c	syntax	Loop without Do
+body	Loop\nElse\nExit For	syntax	Loop without Do
+body	Loop\nElse\nIf c Then	syntax	Loop without Do
+body	Loop\nElse\nNext i	syntax	Loop without Do
+body	Loop\nEnd If\nDo While c	syntax	Loop without Do
+body	Loop\nEnd If\nEnd Select	syntax	Loop without Do
+body	Loop\nEnd If\nNext	syntax	Loop without Do
+body	Loop\nEnd Select\nDo	syntax	Loop without Do
+body	Loop\nEnd Select\nDo While c	syntax	Loop without Do
+body	Loop\nEnd Select\nElseIf c Then	syntax	Loop without Do
+body	Loop\nEnd With\nEnd With	syntax	Loop without Do
+body	Loop\nExit Do\nSelect Case x	syntax	Loop without Do
+body	Loop\nExit For\nReturn	syntax	Loop without Do
+body	Loop\nExit Sub\nElseIf c Then	syntax	Loop without Do
+body	Loop\nExit Sub\nIf c Then x = 1 Else x = 2	syntax	Loop without Do
+body	Loop\nFor i = 1 To 2\nCase 1	syntax	Loop without Do
+body	Loop\nFor i = 1 To 2\nElse	syntax	Loop without Do
+body	Loop\nFor i = 1 To 2\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop\nFor i = 1 To 2\nLoop Until c	syntax	Loop without Do
+body	Loop\nFor i = 1 To 2\nWhile c	syntax	Loop without Do
+body	Loop\nGoTo L\nx = 1	syntax	Loop without Do
+body	Loop\nIf c Then\nCase 1	syntax	Loop without Do
+body	Loop\nIf c Then x = 1 Else x = 2\nEnd If	syntax	Loop without Do
+body	Loop\nIf c Then x = 1 Else x = 2\nExit Do	syntax	Loop without Do
+body	Loop\nLoop\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop\nNext\nElseIf c Then	syntax	Loop without Do
+body	Loop\nNext\nExit Do	syntax	Loop without Do
+body	Loop\nNext\nIf c Then x = 1	syntax	Loop without Do
+body	Loop\nNext\nL:	syntax	Loop without Do
+body	Loop\nNext i\nCase Else	syntax	Loop without Do
+body	Loop\nNext i\nSelect Case x	syntax	Loop without Do
+body	Loop\nReturn\nCase Else	syntax	Loop without Do
+body	Loop\nSelect Case x\nReturn	syntax	Loop without Do
+body	Loop\nWend\nDo While c	syntax	Loop without Do
+body	Loop\nWhile c\nDo	syntax	Loop without Do
+body	Loop\nWhile c\nOn Error GoTo 0	syntax	Loop without Do
+body	Loop\nWith o\nExit Sub	syntax	Loop without Do
+body	Loop\nWith o\nIf c Then x = 1	syntax	Loop without Do
+body	Loop\nWith o\nWith o	syntax	Loop without Do
+body	Loop\nx = 1\nEnd If	syntax	Loop without Do
+body	Loop\nx = 1\nIf c Then x = 1	syntax	Loop without Do
+body	Loop Until c\nCase 1\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop Until c\nCase Else\nCase Else	syntax	Loop without Do
+body	Loop Until c\nCase Else\nDo While c	syntax	Loop without Do
+body	Loop Until c\nCase Else\nIf c Then	syntax	Loop without Do
+body	Loop Until c\nDo While c\nExit For	syntax	Loop without Do
+body	Loop Until c\nDo While c\nx = 1	syntax	Loop without Do
+body	Loop Until c\nElse\nReturn	syntax	Loop without Do
+body	Loop Until c\nEnd Select\nElseIf c Then	syntax	Loop without Do
+body	Loop Until c\nEnd Select\nEnd With	syntax	Loop without Do
+body	Loop Until c\nEnd With\nNext i	syntax	Loop without Do
+body	Loop Until c\nExit Do\nExit For	syntax	Loop without Do
+body	Loop Until c\nExit Do\nLoop	syntax	Loop without Do
+body	Loop Until c\nExit For\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop Until c\nExit For\nLoop	syntax	Loop without Do
+body	Loop Until c\nExit Sub\nCase 1	syntax	Loop without Do
+body	Loop Until c\nExit Sub\nElseIf c Then	syntax	Loop without Do
+body	Loop Until c\nExit Sub\nLoop	syntax	Loop without Do
+body	Loop Until c\nExit Sub\nOn Error GoTo 0	syntax	Loop without Do
+body	Loop Until c\nFor i = 1 To 2\nExit Sub	syntax	Loop without Do
+body	Loop Until c\nGoTo L\nx = 1	syntax	Loop without Do
+body	Loop Until c\nIf c Then x = 1\nElseIf c Then	syntax	Loop without Do
+body	Loop Until c\nIf c Then x = 1\nNext i	syntax	Loop without Do
+body	Loop Until c\nIf c Then x = 1 Else x = 2\nEnd If	syntax	Loop without Do
+body	Loop Until c\nIf c Then x = 1 Else x = 2\nReturn	syntax	Loop without Do
+body	Loop Until c\nL:\nDo	syntax	Loop without Do
+body	Loop Until c\nL:\nWith o	syntax	Loop without Do
+body	Loop Until c\nLoop\nIf c Then x = 1 Else x = 2	syntax	Loop without Do
+body	Loop Until c\nNext i\nL:	syntax	Loop without Do
+body	Loop Until c\nResume Next\nReturn	syntax	Loop without Do
+body	Loop Until c\nWhile c\nEnd Select	syntax	Loop without Do
+body	Loop Until c\nWith o\nEnd Select	syntax	Loop without Do
+body	Loop Until c\nWith o\nExit For	syntax	Loop without Do
+body	Loop Until c\nWith o\nLoop	syntax	Loop without Do
+body	Loop Until c\nx = 1\nExit Do	syntax	Loop without Do
+body	Loop Until c\nx = 1\nFor i = 1 To 2	syntax	Loop without Do
+body	Loop Until c\nx = 1\nSelect Case x	syntax	Loop without Do
+body	Next\nCase 1\nResume Next	syntax	Next without For
+body	Next\nCase Else\nExit Do	syntax	Next without For
+body	Next\nCase Else\nSelect Case x	syntax	Next without For
+body	Next\nDo While c\nLoop Until c	syntax	Next without For
+body	Next\nDo While c\nWend	syntax	Next without For
+body	Next\nElseIf c Then\nElse	syntax	Next without For
+body	Next\nExit Do\nIf c Then	syntax	Next without For
+body	Next\nExit Sub\nNext	syntax	Next without For
+body	Next\nFor i = 1 To 2\nEnd Select	syntax	Next without For
+body	Next\nFor i = 1 To 2\nIf c Then	syntax	Next without For
+body	Next\nFor i = 1 To 2\nLoop	syntax	Next without For
+body	Next\nFor i = 1 To 2\nReturn	syntax	Next without For
+body	Next\nGoTo L\nEnd If	syntax	Next without For
+body	Next\nGoTo L\nNext i	syntax	Next without For
+body	Next\nIf c Then\nEnd Select	syntax	Next without For
+body	Next\nIf c Then x = 1 Else x = 2\nEnd Select	syntax	Next without For
+body	Next\nL:\nIf c Then x = 1	syntax	Next without For
+body	Next\nLoop Until c\nNext i	syntax	Next without For
+body	Next\nResume Next\nIf c Then	syntax	Next without For
+body	Next\nResume Next\nLoop	syntax	Next without For
+body	Next\nSelect Case x\nCase Else	syntax	Next without For
+body	Next\nSelect Case x\nL:	syntax	Next without For
+body	Next\nSelect Case x\nNext	syntax	Next without For
+body	Next\nWend\nIf c Then x = 1	syntax	Next without For
+body	Next\nWith o\nNext	syntax	Next without For
+body	Next\nx = 1\nReturn	syntax	Next without For
+body	Next i\nCase Else\nEnd With	syntax	Next without For
+body	Next i\nCase Else\nFor i = 1 To 2	syntax	Next without For
+body	Next i\nCase Else\nNext i	syntax	Next without For
+body	Next i\nElse\nDo While c	syntax	Next without For
+body	Next i\nElse\nExit For	syntax	Next without For
+body	Next i\nElse\nFor i = 1 To 2	syntax	Next without For
+body	Next i\nElseIf c Then\nReturn	syntax	Next without For
+body	Next i\nEnd If\nDo	syntax	Next without For
+body	Next i\nEnd Select\nNext	syntax	Next without For
+body	Next i\nEnd With\nEnd If	syntax	Next without For
+body	Next i\nEnd With\nResume Next	syntax	Next without For
+body	Next i\nExit Do\nFor i = 1 To 2	syntax	Next without For
+body	Next i\nExit Do\nNext	syntax	Next without For
+body	Next i\nExit For\nResume Next	syntax	Next without For
+body	Next i\nExit Sub\nWith o	syntax	Next without For
+body	Next i\nFor i = 1 To 2\nElseIf c Then	syntax	Next without For
+body	Next i\nFor i = 1 To 2\nIf c Then	syntax	Next without For
+body	Next i\nGoTo L\nEnd If	syntax	Next without For
+body	Next i\nGoTo L\nExit For	syntax	Next without For
+body	Next i\nGoTo L\nLoop Until c	syntax	Next without For
+body	Next i\nIf c Then\nEnd Select	syntax	Next without For
+body	Next i\nIf c Then x = 1\nExit Sub	syntax	Next without For
+body	Next i\nIf c Then x = 1\nGoTo L	syntax	Next without For
+body	Next i\nIf c Then x = 1 Else x = 2\nIf c Then	syntax	Next without For
+body	Next i\nLoop Until c\nNext	syntax	Next without For
+body	Next i\nLoop Until c\nNext i	syntax	Next without For
+body	Next i\nNext\nEnd Select	syntax	Next without For
+body	Next i\nNext i\nL:	syntax	Next without For
+body	Next i\nOn Error GoTo 0\nDo	syntax	Next without For
+body	Next i\nOn Error GoTo 0\nIf c Then	syntax	Next without For
+body	Next i\nResume Next\nDo	syntax	Next without For
+body	Next i\nResume Next\nL:	syntax	Next without For
+body	Next i\nResume Next\nNext	syntax	Next without For
+body	Next i\nWhile c\nCase 1	syntax	Next without For
+body	Next i\nWith o\nDo While c	syntax	Next without For
+body	Next i\nWith o\nL:	syntax	Next without For
+body	Next i\nx = 1\nDo	syntax	Next without For
+body	Next i\nx = 1\nL:	syntax	Next without For
+body	On Error GoTo 0\nCase 1\nEnd Select	syntax	Case without Select Case
+body	On Error GoTo 0\nCase 1\nL:	syntax	Case without Select Case
+body	On Error GoTo 0\nCase 1\nSelect Case x	syntax	Case without Select Case
+body	On Error GoTo 0\nCase 1\nWith o	syntax	Case without Select Case
+body	On Error GoTo 0\nCase Else\nCase Else	syntax	Case Else outside Select Case
+body	On Error GoTo 0\nCase Else\nEnd With	syntax	Case Else outside Select Case
+body	On Error GoTo 0\nCase Else\nIf c Then x = 1	syntax	Case Else outside Select Case
+body	On Error GoTo 0\nDo\nIf c Then x = 1 Else x = 2	syntax	Do without Loop
+body	On Error GoTo 0\nDo While c\nL:	syntax	Do without Loop
+body	On Error GoTo 0\nEnd If\nCase Else	syntax	End If without block If
+body	On Error GoTo 0\nEnd Select\nCase Else	syntax	End Select without Select Case
+body	On Error GoTo 0\nEnd Select\nElse	syntax	End Select without Select Case
+body	On Error GoTo 0\nEnd With\nDo While c	syntax	End With without With
+body	On Error GoTo 0\nExit For\nIf c Then x = 1	syntax	Exit For not within For...Next
+body	On Error GoTo 0\nExit Sub\nIf c Then x = 1	accepted	
+body	On Error GoTo 0\nExit Sub\nReturn	accepted	
+body	On Error GoTo 0\nGoTo L\nIf c Then x = 1 Else x = 2	syntax	Label not defined
+body	On Error GoTo 0\nIf c Then x = 1\nFor i = 1 To 2	syntax	For without Next
+body	On Error GoTo 0\nIf c Then x = 1\nIf c Then x = 1 Else x = 2	accepted	
+body	On Error GoTo 0\nIf c Then x = 1\nReturn	accepted	
+body	On Error GoTo 0\nLoop Until c\nExit Do	syntax	Loop without Do
+body	On Error GoTo 0\nNext\nResume Next	syntax	Next without For
+body	On Error GoTo 0\nReturn\nIf c Then x = 1 Else x = 2	accepted	
+body	On Error GoTo 0\nSelect Case x\nElse	syntax	Else without If
+body	On Error GoTo 0\nSelect Case x\nx = 1	syntax	Statements and labels invalid between Select Case and first Case
+body	On Error GoTo 0\nWith o\nElse	syntax	Else without If
+body	On Error GoTo 0\nWith o\nGoTo L	syntax	Expected End With
+body	Resume Next\nCase Else\nElse	syntax	Case Else outside Select Case
+body	Resume Next\nCase Else\nGoTo L	syntax	Case Else outside Select Case
+body	Resume Next\nDo While c\nCase 1	syntax	Case without Select Case
+body	Resume Next\nElseIf c Then\nFor i = 1 To 2	syntax	Else without If
+body	Resume Next\nEnd Select\nIf c Then	syntax	End Select without Select Case
+body	Resume Next\nEnd With\nDo	syntax	End With without With
+body	Resume Next\nExit Do\nDo While c	syntax	Exit Do not within Do...Loop
+body	Resume Next\nExit Sub\nIf c Then	syntax	Block If without End If
+body	Resume Next\nFor i = 1 To 2\nCase Else	syntax	Case Else outside Select Case
+body	Resume Next\nIf c Then\nx = 1	syntax	Block If without End If
+body	Resume Next\nIf c Then x = 1\nFor i = 1 To 2	syntax	For without Next
+body	Resume Next\nIf c Then x = 1 Else x = 2\nEnd Select	syntax	End Select without Select Case
+body	Resume Next\nL:\nResume Next	accepted	
+body	Resume Next\nLoop\nEnd Select	syntax	Loop without Do
+body	Resume Next\nLoop\nSelect Case x	syntax	Loop without Do
+body	Resume Next\nLoop Until c\nEnd If	syntax	Loop without Do
+body	Resume Next\nLoop Until c\nLoop	syntax	Loop without Do
+body	Resume Next\nNext\nCase 1	syntax	Next without For
+body	Resume Next\nNext i\nCase Else	syntax	Next without For
+body	Resume Next\nNext i\nWhile c	syntax	Next without For
+body	Resume Next\nOn Error GoTo 0\nIf c Then x = 1	accepted	
+body	Resume Next\nResume Next\nEnd If	syntax	End If without block If
+body	Resume Next\nSelect Case x\nWith o	syntax	Statements and labels invalid between Select Case and first Case
+body	Resume Next\nWend\nExit Do	syntax	Wend without While
+body	Resume Next\nWend\nFor i = 1 To 2	syntax	Wend without While
+body	Resume Next\nWhile c\nx = 1	syntax	While without Wend
+body	Resume Next\nWith o\nExit Sub	syntax	Expected End With
+body	Resume Next\nx = 1\nIf c Then x = 1 Else x = 2	accepted	
+body	Resume Next\nx = 1\nLoop Until c	syntax	Loop without Do
+body	Return\nCase 1\nIf c Then x = 1	syntax	Case without Select Case
+body	Return\nCase 1\nNext i	syntax	Case without Select Case
+body	Return\nCase Else\nDo	syntax	Case Else outside Select Case
+body	Return\nCase Else\nWend	syntax	Case Else outside Select Case
+body	Return\nDo\nElse	syntax	Else without If
+body	Return\nDo While c\nReturn	syntax	Do without Loop
+body	Return\nElse\nEnd If	syntax	Else without If
+body	Return\nEnd Select\nDo	syntax	End Select without Select Case
+body	Return\nExit Sub\nWend	syntax	Wend without While
+body	Return\nIf c Then x = 1\nEnd If	syntax	End If without block If
+body	Return\nIf c Then x = 1 Else x = 2\nExit Sub	accepted	
+body	Return\nLoop Until c\nElseIf c Then	syntax	Loop without Do
+body	Return\nLoop Until c\nOn Error GoTo 0	syntax	Loop without Do
+body	Return\nNext\nWend	syntax	Next without For
+body	Return\nNext i\nWith o	syntax	Next without For
+body	Return\nResume Next\nWith o	syntax	Expected End With
+body	Return\nReturn\nEnd With	syntax	End With without With
+body	Return\nSelect Case x\nIf c Then x = 1 Else x = 2	syntax	Statements and labels invalid between Select Case and first Case
+body	Return\nWend\nElseIf c Then	syntax	Wend without While
+body	Return\nWhile c\nIf c Then x = 1	syntax	While without Wend
+body	Return\nWith o\nDo	syntax	Do without Loop
+body	Return\nWith o\nExit For	syntax	Exit For not within For...Next
+body	Return\nWith o\nIf c Then x = 1	syntax	Expected End With
+body	Return\nx = 1\nCase 1	syntax	Case without Select Case
+body	Return\nx = 1\nWend	syntax	Wend without While
+body	Return\nx = 1\nWhile c	syntax	While without Wend
+body	Select Case x\nCase Else\nDo	syntax	Do without Loop
+body	Select Case x\nCase Else\nElseIf c Then	syntax	Else without If
+body	Select Case x\nDo\nIf c Then	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nDo\nReturn	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nElse\nExit For	syntax	Else without If
+body	Select Case x\nElse\nResume Next	syntax	Else without If
+body	Select Case x\nElseIf c Then\nElse	syntax	Else without If
+body	Select Case x\nElseIf c Then\nIf c Then	syntax	Else without If
+body	Select Case x\nElseIf c Then\nSelect Case x	syntax	Else without If
+body	Select Case x\nEnd If\nElse	syntax	End If without block If
+body	Select Case x\nEnd If\nReturn	syntax	End If without block If
+body	Select Case x\nEnd Select\nIf c Then x = 1	accepted	
+body	Select Case x\nExit For\nElseIf c Then	syntax	Exit For not within For...Next
+body	Select Case x\nExit For\nResume Next	syntax	Exit For not within For...Next
+body	Select Case x\nExit Sub\nCase Else	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nExit Sub\nLoop	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nFor i = 1 To 2\nEnd With	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nGoTo L\nDo While c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nIf c Then\nLoop Until c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nIf c Then x = 1\nNext	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nIf c Then x = 1\nWhile c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nIf c Then x = 1 Else x = 2\nDo While c	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nL:\nL:	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nNext\nIf c Then x = 1 Else x = 2	syntax	Next without For
+body	Select Case x\nNext i\nWend	syntax	Next without For
+body	Select Case x\nResume Next\nEnd Select	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nResume Next\nExit Sub	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nResume Next\nGoTo L	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nResume Next\nResume Next	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nReturn\nResume Next	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nReturn\nReturn	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nSelect Case x\nEnd If	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nSelect Case x\nOn Error GoTo 0	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nSelect Case x\nReturn	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nWend\nElseIf c Then	syntax	Wend without While
+body	Select Case x\nWend\nEnd If	syntax	Wend without While
+body	Select Case x\nWend\nExit For	syntax	Wend without While
+body	Select Case x\nWend\nIf c Then x = 1	syntax	Wend without While
+body	Select Case x\nWhile c\nExit Do	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nWhile c\nWith o	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nWith o\nNext	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nx = 1\nElse	syntax	Statements and labels invalid between Select Case and first Case
+body	Select Case x\nx = 1\nSelect Case x	syntax	Statements and labels invalid between Select Case and first Case
+body	Wend\nCase Else\nIf c Then x = 1	syntax	Wend without While
+body	Wend\nCase Else\nWith o	syntax	Wend without While
+body	Wend\nDo\nLoop Until c	syntax	Wend without While
+body	Wend\nDo\nNext i	syntax	Wend without While
+body	Wend\nElse\nIf c Then x = 1 Else x = 2	syntax	Wend without While
+body	Wend\nElseIf c Then\nDo	syntax	Wend without While
+body	Wend\nEnd If\nOn Error GoTo 0	syntax	Wend without While
+body	Wend\nEnd If\nSelect Case x	syntax	Wend without While
+body	Wend\nEnd Select\nEnd If	syntax	Wend without While
+body	Wend\nEnd Select\nL:	syntax	Wend without While
+body	Wend\nExit Do\nIf c Then x = 1	syntax	Wend without While
+body	Wend\nExit Do\nWend	syntax	Wend without While
+body	Wend\nExit For\nElseIf c Then	syntax	Wend without While
+body	Wend\nExit Sub\nDo	syntax	Wend without While
+body	Wend\nExit Sub\nElseIf c Then	syntax	Wend without While
+body	Wend\nFor i = 1 To 2\nDo While c	syntax	Wend without While
+body	Wend\nFor i = 1 To 2\nEnd With	syntax	Wend without While
+body	Wend\nFor i = 1 To 2\nExit Do	syntax	Wend without While
+body	Wend\nFor i = 1 To 2\nGoTo L	syntax	Wend without While
+body	Wend\nFor i = 1 To 2\nL:	syntax	Wend without While
+body	Wend\nIf c Then\nCase Else	syntax	Wend without While
+body	Wend\nIf c Then x = 1 Else x = 2\nOn Error GoTo 0	syntax	Wend without While
+body	Wend\nLoop\nExit Sub	syntax	Wend without While
+body	Wend\nLoop Until c\nEnd If	syntax	Wend without While
+body	Wend\nNext\nExit Do	syntax	Wend without While
+body	Wend\nWhile c\nElse	syntax	Wend without While
+body	Wend\nWith o\nOn Error GoTo 0	syntax	Wend without While
+body	Wend\nx = 1\nIf c Then	syntax	Wend without While
+body	While c\nCase 1\nDo	syntax	Case without Select Case
+body	While c\nCase 1\nDo While c	syntax	Case without Select Case
+body	While c\nCase Else\nExit For	syntax	Case Else outside Select Case
+body	While c\nCase Else\nNext	syntax	Case Else outside Select Case
+body	While c\nCase Else\nWend	syntax	Case Else outside Select Case
+body	While c\nDo\nEnd Select	syntax	End Select without Select Case
+body	While c\nDo\nNext	syntax	Next without For
+body	While c\nDo\nResume Next	syntax	Do without Loop
+body	While c\nDo While c\nExit Sub	syntax	Do without Loop
+body	While c\nElse\nIf c Then x = 1 Else x = 2	syntax	Else without If
+body	While c\nEnd If\nNext i	syntax	End If without block If
+body	While c\nEnd If\nSelect Case x	syntax	End If without block If
+body	While c\nEnd With\nCase Else	syntax	End With without With
+body	While c\nExit Do\nElseIf c Then	syntax	Exit Do not within Do...Loop
+body	While c\nExit Sub\nNext i	syntax	Next without For
+body	While c\nFor i = 1 To 2\nReturn	syntax	For without Next
+body	While c\nFor i = 1 To 2\nSelect Case x	syntax	Select Case without End Select
+body	While c\nIf c Then\nWhile c	syntax	While without Wend
+body	While c\nIf c Then x = 1\nElseIf c Then	syntax	Else without If
+body	While c\nIf c Then x = 1 Else x = 2\nFor i = 1 To 2	syntax	For without Next
+body	While c\nL:\nWend	accepted	
+body	While c\nWend\nDo While c	syntax	Do without Loop
+body	While c\nWend\nx = 1	accepted	
+body	While c\nx = 1\nEnd If	syntax	End If without block If
+body	With o\nCase 1\nNext i	syntax	Case without Select Case
+body	With o\nCase Else\nDo While c	syntax	Case Else outside Select Case
+body	With o\nDo\nL:	syntax	Do without Loop
+body	With o\nDo While c\nExit For	syntax	Exit For not within For...Next
+body	With o\nDo While c\nLoop Until c	syntax	Loop without Do
+body	With o\nExit For\nL:	syntax	Exit For not within For...Next
+body	With o\nExit For\nNext i	syntax	Exit For not within For...Next
+body	With o\nExit Sub\nDo	syntax	Do without Loop
+body	With o\nGoTo L\nEnd If	syntax	End If without block If
+body	With o\nIf c Then\nExit Sub	syntax	Block If without End If
+body	With o\nIf c Then\nNext	syntax	Next without For
+body	With o\nIf c Then x = 1\nEnd If	syntax	End If without block If
+body	With o\nIf c Then x = 1\nReturn	syntax	Expected End With
+body	With o\nLoop\nEnd With	syntax	Loop without Do
+body	With o\nLoop\nIf c Then x = 1 Else x = 2	syntax	Loop without Do
+body	With o\nLoop\nL:	syntax	Loop without Do
+body	With o\nLoop\nWhile c	syntax	Loop without Do
+body	With o\nLoop Until c\nElse	syntax	Loop without Do
+body	With o\nNext i\nWend	syntax	Next without For
+body	With o\nResume Next\nEnd With	accepted	
+body	With o\nResume Next\nResume Next	syntax	Expected End With
+body	With o\nResume Next\nSelect Case x	syntax	Select Case without End Select
+body	With o\nWend\nEnd With	syntax	Wend without While
+body	With o\nWend\nNext	syntax	Wend without While
+body	With o\nWend\nReturn	syntax	Wend without While
+body	With o\nWhile c\nCase 1	syntax	Case without Select Case
+body	With o\nWhile c\nDo	syntax	Do without Loop
+body	With o\nWith o\nExit Sub	syntax	Expected End With
+body	With o\nWith o\nIf c Then	syntax	Block If without End If
+body	x = 1\nCase Else\nDo	syntax	Case Else outside Select Case
+body	x = 1\nCase Else\nElseIf c Then	syntax	Case Else outside Select Case
+body	x = 1\nDo While c\nDo	syntax	Do without Loop
+body	x = 1\nElse\nCase 1	syntax	Else without If
+body	x = 1\nElse\nElseIf c Then	syntax	Else without If
+body	x = 1\nElseIf c Then\nCase Else	syntax	Else without If
+body	x = 1\nElseIf c Then\nElse	syntax	Else without If
+body	x = 1\nElseIf c Then\nLoop Until c	syntax	Else without If
+body	x = 1\nEnd Select\nFor i = 1 To 2	syntax	End Select without Select Case
+body	x = 1\nEnd Select\nLoop	syntax	End Select without Select Case
+body	x = 1\nExit Sub\nDo While c	syntax	Do without Loop
+body	x = 1\nExit Sub\nFor i = 1 To 2	syntax	For without Next
+body	x = 1\nExit Sub\nReturn	accepted	
+body	x = 1\nFor i = 1 To 2\nLoop	syntax	Loop without Do
+body	x = 1\nIf c Then\nIf c Then x = 1 Else x = 2	syntax	Block If without End If
+body	x = 1\nIf c Then x = 1\nExit Do	syntax	Exit Do not within Do...Loop
+body	x = 1\nIf c Then x = 1 Else x = 2\nDo While c	syntax	Do without Loop
+body	x = 1\nIf c Then x = 1 Else x = 2\nLoop	syntax	Loop without Do
+body	x = 1\nLoop\nNext i	syntax	Loop without Do
+body	x = 1\nLoop\nReturn	syntax	Loop without Do
+body	x = 1\nLoop Until c\nCase 1	syntax	Loop without Do
+body	x = 1\nNext\nNext	syntax	Next without For
+body	x = 1\nReturn\nFor i = 1 To 2	syntax	For without Next
+body	x = 1\nReturn\nL:	accepted	
+body	x = 1\nSelect Case x\nCase Else	syntax	Select Case without End Select
+body	x = 1\nSelect Case x\nIf c Then	syntax	Statements and labels invalid between Select Case and first Case
+body	x = 1\nWend\nIf c Then	syntax	Wend without While
+body	x = 1\nWend\nWend	syntax	Wend without While
+body	x = 1\nWhile c\nExit Do	syntax	Exit Do not within Do...Loop
+body	x = 1\nWhile c\nNext	syntax	Next without For
+body	x = 1\nWhile c\nx = 1	syntax	While without Wend
+body	x = 1\nWith o\nDo While c	syntax	Do without Loop
+body	x = 1\nWith o\nEnd With	accepted	
+body	x = 1\nWith o\nNext	syntax	Next without For
+body	If c Then\nx = 1\nEnd If	accepted	
+body	If c Then\nElse\nEnd If	accepted	
+body	If c Then\nElseIf c Then\nElse\nEnd If	accepted	
+body	Select Case x\nCase 1\nCase Else\nEnd Select	accepted	
+body	Do\nExit Do\nLoop	accepted	
+body	For i = 1 To 2\nExit For\nNext i	accepted	
+body	If c Then\nFor i = 1 To 2\nEnd If\nNext	syntax	End If without block If
+body	For i = 1 To 2\nIf c Then\nNext\nEnd If	syntax	Next without For
+body	Select Case x\nCase 1\nIf c Then\nCase Else\nEnd If\nEnd Select	syntax	Case Else outside Select Case
+body	L:\nL:	syntax	Duplicate declaration in current scope
+body	10\n10	syntax	Duplicate declaration in current scope
+body	10 x = 1\n10 x = 2	syntax	Duplicate declaration in current scope
+body	L:\nl:	syntax	Duplicate declaration in current scope
+body	L:\nGoTo L\nL:	syntax	Duplicate declaration in current scope
+body	10\n20\n10	syntax	Duplicate declaration in current scope
+body	L:\n10	accepted	
+body	L: x = 1\nL: x = 2	syntax	Duplicate declaration in current scope

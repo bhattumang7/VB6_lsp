@@ -1629,7 +1629,7 @@ impl<'src> Parser<'src> {
                 self.advance(); // colon
                 self.after_colon = false; // the colon belongs to the label
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
-                self.labels_defined.push(LabelRef::Name(sym));
+                self.define_label(LabelRef::Name(sym), name.span);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
                 self.set_span(id, name.span);
                 id
@@ -1824,7 +1824,7 @@ impl<'src> Parser<'src> {
                 self.advance();            // colon
                 self.after_colon = false;  // the colon belongs to the label
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
-                self.labels_defined.push(LabelRef::Name(sym));
+                self.define_label(LabelRef::Name(sym), name.span);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
                 self.set_span(id, name.span);
                 id
@@ -1860,7 +1860,7 @@ impl<'src> Parser<'src> {
                 if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
                     self.after_colon = false;
                 }
-                self.labels_defined.push(LabelRef::Line(line));
+                self.define_label(LabelRef::Line(line), tok.span);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Line(line) });
                 self.set_span(id, tok.span);
                 id
@@ -4246,6 +4246,14 @@ impl<'src> Parser<'src> {
             self.skip_line();
         }
         body
+    }
+
+    /// Records a label of the procedure; a second definition of the same label is reported.
+    fn define_label(&mut self, label: LabelRef, span: Span) {
+        if self.labels_defined.contains(&label) {
+            self.diagnostics.push(ERR_DUPLICATE_DECLARATION, span);
+        }
+        self.labels_defined.push(label);
     }
 
     /// Every label a jump names must be defined in the same procedure.
