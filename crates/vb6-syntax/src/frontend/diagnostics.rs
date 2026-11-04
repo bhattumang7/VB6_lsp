@@ -116,6 +116,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x9c74 => "Invalid inside procedure",               // 40052
         0xdeff => "Invalid inside Enum",                    // 57087
         0xdefa => "Assignment to constant not permitted",   // 57082
+        54 => "Bad file mode",
         40074 => "Expected array",
         40109 => "Range has no values",
         40128 => "Named argument already specified",

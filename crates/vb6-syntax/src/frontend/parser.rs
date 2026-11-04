@@ -914,7 +914,7 @@ impl<'src> Parser<'src> {
     /// leaving a comment here would spin the loop forever.
     fn skip_module_blank_lines(&mut self) {
         loop {
-            if self.eat(TokenKind::Eol) { continue; }
+            if self.eat(TokenKind::Eol) || self.eat(TokenKind::Kw(Kw::Colon)) { continue; }
             if matches!(self.peek().kind, TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem)) {
                 self.advance();
                 self.eat(TokenKind::Eol);
@@ -1143,10 +1143,27 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// True when the token after a reserved file-statement keyword (`Lock`,
+    /// `Unlock`, `Seek`) begins its channel operand, rather than the keyword
+    /// standing for a member name (`Seek = 1`, `Seek.x`, `Seek(2)`).
+    fn starts_file_operand(&mut self) -> bool {
+        !(self.peek().is_stmt_end()
+            || matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Eq)
+                    | TokenKind::Kw(Kw::Dot)
+                    | TokenKind::Kw(Kw::Bang)
+                    | TokenKind::Kw(Kw::LParen)
+                    | TokenKind::Kw(Kw::Colon)
+                    | TokenKind::Kw(Kw::Comma)
+                    | TokenKind::Eof
+            ))
+    }
+
     /// `Lock`/`Unlock`: `#n, …`; otherwise an implicit call.
     fn parse_lock_keyword_stmt(&mut self, arena: &mut ExprArena, kind: FileIoKind) -> NodeId {
         let t = self.advance();
-        if self.peek().kind == TokenKind::Kw(Kw::Hash) {
+        if self.starts_file_operand() {
             self.parse_file_lock_after_keyword(arena, kind)
         } else {
             self.parse_ident_stmt_with_tok(arena, t)
@@ -1161,7 +1178,14 @@ impl<'src> Parser<'src> {
         kind: FileIoKind,
     ) -> NodeId {
         let t = self.advance();
-        if self.peek().kind == TokenKind::Kw(Kw::Hash) {
+        // `Seek` is reserved, so its channel may omit the `#`; `Width` is an
+        // ordinary name unless the `#` is written.
+        let has_channel = if kind == FileIoKind::Seek {
+            self.starts_file_operand()
+        } else {
+            self.peek().kind == TokenKind::Kw(Kw::Hash)
+        };
+        if has_channel {
             self.eat(TokenKind::Kw(Kw::Hash));
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
@@ -2923,9 +2947,19 @@ impl<'src> Parser<'src> {
         }
 
         let mut access_code: u8 = 0;
+        let access_span = self.current_span();
         if self.eat(TokenKind::Kw(Kw::Access)) {
             let has_read = self.eat(TokenKind::Kw(Kw::Read));
             let has_write = self.eat(TokenKind::Kw(Kw::Write));
+            // The access must be possible in the open mode: Read is not
+            // available to Output, Write not to Input, and Read Write to
+            // neither Input nor Output.
+            let conflict = (has_read && open_mode == 2)
+                || (has_write && open_mode == 1)
+                || (has_read && has_write && open_mode == 2);
+            if conflict {
+                self.diagnostics.push(ERR_BAD_FILE_MODE, access_span);
+            }
             access_code = match (has_read, has_write) {
                 (true, true) => 3,
                 (true, false) => 1,
@@ -2957,7 +2991,7 @@ impl<'src> Parser<'src> {
         let ch = self.parse_expr(arena, 0);
         let mut args = vec![path];
         if self.eat(TokenKind::Kw(Kw::Len)) {
-            self.eat(TokenKind::Kw(Kw::Eq));
+            self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
             args.push(self.parse_expr(arena, 0)); // `Len = <expr>` is a real use site
         }
         self.end_stmt();
@@ -3047,9 +3081,16 @@ impl<'src> Parser<'src> {
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
         if self.eat(TokenKind::Kw(Kw::Comma)) {
-            args.push(self.parse_expr(arena, 0));
-            if self.eat(TokenKind::Kw(Kw::To)) {
+            if self.peek().kind == TokenKind::Kw(Kw::To) {
+                // `Lock #1, To 10`: the range starts at the first record.
+                self.advance();
+                args.push(arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) }));
                 args.push(self.parse_expr(arena, 0));
+            } else {
+                args.push(self.parse_expr(arena, 0));
+                if self.eat(TokenKind::Kw(Kw::To)) {
+                    args.push(self.parse_expr(arena, 0));
+                }
             }
         }
         self.end_stmt();
@@ -4138,6 +4179,8 @@ const ERR_EXPECTED_EXPR:        u32 = 0x9c6f;
 const ERR_EXPECTED_IDENT:       u32 = 0x9c6f;
 const ERR_OBJECT_MODULE_ONLY:   u32 = 0xdee1;
 const ERR_UNEXPECTED_TOKEN:     u32 = 0x9c6f;
+/// "Bad file mode" (54): an `Open` access the file mode cannot have.
+const ERR_BAD_FILE_MODE:        u32 = 54;
 /// "Invalid inside procedure".
 const ERR_INVALID_IN_PROCEDURE: u32 = 0x9c74;
 /// "Invalid inside Enum".
