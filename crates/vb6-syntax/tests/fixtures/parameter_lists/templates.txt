@@ -1,0 +1,58 @@
+# {k} is replaced by each parameter text.
+=== sub bas
+Sub P({k})
+End Sub
+=== func bas
+Function P({k}) As Long
+End Function
+=== propget cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Property Get P({k}) As Long
+End Property
+=== proplet cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Property Let P({k})
+End Property
+=== propset cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Property Set P({k})
+End Property
+=== declare bas
+Declare Function f Lib "k" ({k}) As Long
+=== declsub bas
+Declare Sub f Lib "k" ({k})
+=== event cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Event E({k})

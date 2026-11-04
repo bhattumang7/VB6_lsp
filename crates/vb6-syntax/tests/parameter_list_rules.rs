@@ -110,7 +110,8 @@ fn property_let_and_set_need_a_value_parameter() {
             let ExprNode::ProcDecl { kind: got, .. } = p.node(p.top[0]) else { panic!("expected property") };
             assert_eq!(*got, kind);
         }
-        let src = format!("{head}(v As Long)\nEnd Property\n");
+        let ty = if kind == ProcKind::PropSet { "Object" } else { "Long" };
+        let src = format!("{head}(v As {ty})\nEnd Property\n");
         assert_eq!(parse(&src).found, vec![], "for {src:?}");
     }
     // Property Get takes none.

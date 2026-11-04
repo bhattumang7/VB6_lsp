@@ -234,6 +234,8 @@ pub struct Parser<'src> {
     after_colon: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
+    /// True while the parameter list of a `Property Let` or `Property Set` is being read.
+    value_owner_params: bool,
     /// True once the header marks the class as exposed outside its project.
     class_exposed: bool,
     /// A module-level array variable has been declared.
@@ -312,8 +314,12 @@ fn block_closed_by(top: Block, term: Term) -> bool {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum ParamOwner {
     Procedure,
-    /// `Property Let` / `Property Set`: the last parameter is the value.
+    /// `Property Let`: the last parameter is the value.
     PropertyValue,
+    /// `Property Set`: the last parameter is the object value and has an object type.
+    PropertySet,
+    /// `Declare`: as a procedure, but parameter names may repeat.
+    External,
     Event,
 }
 
@@ -359,6 +365,7 @@ impl<'src> Parser<'src> {
             after_colon: false,
             module_decl_seen: false,
             class_exposed: false,
+            value_owner_params: false,
             module_array_seen: false,
             last_token_end: 0,
             seen_option_base: false,
@@ -4258,13 +4265,19 @@ impl<'src> Parser<'src> {
         let name = self.expect_decl_name();
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         let params = if self.eat(TokenKind::Kw(Kw::LParen)) {
+            self.value_owner_params = kind != ProcKind::PropGet;
             let p = self.parse_param_list(arena);
+            self.value_owner_params = false;
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             Some(p)
         } else { None };
-        let owner = if kind == ProcKind::PropGet { ParamOwner::Procedure } else { ParamOwner::PropertyValue };
+        let owner = match kind {
+            ProcKind::PropGet => ParamOwner::Procedure,
+            ProcKind::PropSet => ParamOwner::PropertySet,
+            _ => ParamOwner::PropertyValue,
+        };
         self.check_param_list(arena, params, owner);
-        if owner == ParamOwner::PropertyValue {
+        if owner != ParamOwner::Procedure {
             let has_params = params.is_some_and(|p| matches!(arena.get(p), ExprNode::ArgList { args } if !args.is_empty()));
             if !has_params {
                 self.diagnostics.push(ERR_PROPERTY_ARGUMENT_REQUIRED, name.span);
@@ -4386,6 +4399,7 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
+        self.check_param_list(arena, params, ParamOwner::External);
         // Optional return type.
         if kind == ProcKind::Function {
             self.reject_suffix_with_as(&name_tok, "end of statement");
@@ -4432,7 +4446,28 @@ impl<'src> Parser<'src> {
             let is_optional = flags & 0x01 != 0;
             let is_param_array = flags & 0x20 != 0;
             let is_array = flags & 0x08 != 0;
-            let value_param = owner == ParamOwner::PropertyValue && i + 1 == args.len();
+            let is_value_owner = matches!(owner, ParamOwner::PropertyValue | ParamOwner::PropertySet);
+            let value_param = is_value_owner && i + 1 == args.len();
+            // A name already used by an earlier parameter.
+            let ExprNode::ParamDef { name: param_name, type_node: param_type, .. } = arena.get(param) else { continue };
+            if matches!(owner, ParamOwner::Procedure | ParamOwner::PropertyValue | ParamOwner::PropertySet)
+                && args[..i].iter().any(|&earlier| {
+                matches!(arena.get(earlier), ExprNode::ParamDef { name, .. } if name == param_name)
+            }) {
+                self.diagnostics.push(ERR_DUPLICATE_DECLARATION, span);
+                return;
+            }
+            // The value of a `Property Set` is an object: untyped, Variant, Object or a class.
+            if owner == ParamOwner::PropertySet && value_param && !is_optional && !is_param_array {
+                let object_typed = !is_array
+                    && param_type.map_or(true, |t| {
+                        matches!(arena.get(t), ExprNode::BuiltinType { kind: 12 | 9 } | ExprNode::UserType { .. })
+                    });
+                if !object_typed {
+                    self.diagnostics.push(ERR_PROPERTY_PROCEDURES_INCONSISTENT, span);
+                    return;
+                }
+            }
             let violation: Option<(u32, Option<&'static str>)> = if owner == ParamOwner::Event
                 && (is_optional || is_param_array)
             {
@@ -4442,9 +4477,9 @@ impl<'src> Parser<'src> {
                     Some((ERR_UNEXPECTED_TOKEN, Some("identifier")))
                 } else if section == 1 {
                     Some((ERR_PARAM_ARRAY_WITH_OPTIONAL, None))
-                } else if !is_array || !param_type_is_variant(arena, param) {
+                } else if !is_array || (!is_value_owner && !param_type_is_variant(arena, param)) {
                     Some((ERR_PARAM_ARRAY_NOT_ARRAY, None))
-                } else if i + 1 < args.len() && owner != ParamOwner::PropertyValue {
+                } else if i + 1 < args.len() && !is_value_owner {
                     Some((ERR_UNEXPECTED_TOKEN, Some(")")))
                 } else {
                     None
@@ -4521,8 +4556,9 @@ impl<'src> Parser<'src> {
             _ => by_first = false,
         }
         if self.eat(TokenKind::Kw(Kw::Optional)) { flags |= 0x01; }
-        // ParamArray must precede the parameter name; mutually exclusive with ByVal/ByRef.
-        if by_first {
+        // ParamArray must precede the parameter name; mutually exclusive with ByVal/ByRef and
+        // with Optional.
+        if by_first || flags & 0x01 != 0 && self.peek().kind != TokenKind::Kw(Kw::ByVal) && self.peek().kind != TokenKind::Kw(Kw::ByRef) {
             // The pass-mode word was given already.
         } else if self.eat(TokenKind::Kw(Kw::ParamArray)) {
             flags |= 0x20;
@@ -4542,14 +4578,24 @@ impl<'src> Parser<'src> {
         }
         self.reject_suffix_with_as(&name, "list separator or )");
         let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
-            if self.eat(TokenKind::Kw(Kw::New)) {
+            if self.peek().kind == TokenKind::Kw(Kw::New) {
+                // A parameter cannot be a new object.
+                let span = self.current_span();
+                self.report_expected(span, "type name");
+                self.advance();
                 flags |= 0x10;
                 self.require_class_name_after_new();
             }
             if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
                 Some(arena.alloc(ExprNode::AnyType))
             } else {
-                Some(self.parse_type_spec(arena, false))
+                let type_span = self.current_span();
+                let t = self.parse_type_spec(arena, false);
+                // A fixed-length string can only be passed as an array.
+                if flags & 0x08 == 0 && matches!(arena.get(t), ExprNode::StringType { fixed_len: Some(_) }) {
+                    self.diagnostics.push(ERR_EXPECTED_ARRAY, type_span);
+                }
+                Some(t)
             }
         } else {
             // `Sub F(count%)` ≡ `count As Integer`
@@ -4561,6 +4607,21 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
+        // In a property assignment an Optional parameter is an error once its type and default
+        // are read; whatever else stands in the parameter is not read.
+        if self.value_owner_params && flags & 0x01 != 0 {
+            let mut depth = 0;
+            while !self.peek().is_stmt_end()
+                && !(depth == 0 && matches!(self.peek().kind, TokenKind::Kw(Kw::RParen) | TokenKind::Kw(Kw::Comma)))
+            {
+                match self.peek().kind {
+                    TokenKind::Kw(Kw::LParen) => depth += 1,
+                    TokenKind::Kw(Kw::RParen) => depth -= 1,
+                    _ => {}
+                }
+                self.advance();
+            }
+        }
         let id = arena.alloc(ExprNode::ParamDef { flags, name: nid, type_node, default });
         self.set_span(id, name.span);
         id

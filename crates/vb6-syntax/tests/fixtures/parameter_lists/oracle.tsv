@@ -1,0 +1,2385 @@
+# template	word	class	message
+sub	a	accepted	
+sub	a As Long	accepted	
+sub	a()	accepted	
+sub	a() As Long	accepted	
+sub	a As Long()	syntax	Expected: list separator or )
+sub	a As Variant	accepted	
+sub	a As Object	accepted	
+sub	a As String	accepted	
+sub	a As String * 3	syntax	Expected array
+sub	a As Class1	semantic	User-defined type not defined
+sub	a As New Class1	syntax	Expected: type name
+sub	a$	accepted	
+sub	a%	accepted	
+sub	a$ As String	syntax	Expected: list separator or )
+sub	a = 1	syntax	Expected: list separator or )
+sub	a As Long = 1	syntax	Expected: list separator or )
+sub	a As Variant = 1	syntax	Expected: list separator or )
+sub	a As Object = Nothing	syntax	Expected: list separator or )
+sub	a As String = "x"	syntax	Expected: list separator or )
+sub	a As Long = 1 + 1	syntax	Expected: list separator or )
+sub	a As Long = x	syntax	Expected: list separator or )
+sub	a As Long =	syntax	Expected: list separator or )
+sub	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+sub	a As Byte = 300	syntax	Expected: list separator or )
+sub	a() = 1	syntax	Expected: list separator or )
+sub	ByVal a	accepted	
+sub	ByVal a As Long	accepted	
+sub	ByVal a()	syntax	Array argument must be ByRef
+sub	ByVal a() As Long	syntax	Array argument must be ByRef
+sub	ByVal a As Long()	syntax	Expected: list separator or )
+sub	ByVal a As Variant	accepted	
+sub	ByVal a As Object	accepted	
+sub	ByVal a As String	accepted	
+sub	ByVal a As String * 3	syntax	Expected array
+sub	ByVal a As Class1	semantic	User-defined type not defined
+sub	ByVal a As New Class1	syntax	Expected: type name
+sub	ByVal a$	accepted	
+sub	ByVal a%	accepted	
+sub	ByVal a$ As String	syntax	Expected: list separator or )
+sub	ByVal a = 1	syntax	Expected: list separator or )
+sub	ByVal a As Long = 1	syntax	Expected: list separator or )
+sub	ByVal a As Variant = 1	syntax	Expected: list separator or )
+sub	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+sub	ByVal a As String = "x"	syntax	Expected: list separator or )
+sub	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+sub	ByVal a As Long = x	syntax	Expected: list separator or )
+sub	ByVal a As Long =	syntax	Expected: list separator or )
+sub	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+sub	ByVal a As Byte = 300	syntax	Expected: list separator or )
+sub	ByVal a() = 1	syntax	Array argument must be ByRef
+sub	ByRef a	accepted	
+sub	ByRef a As Long	accepted	
+sub	ByRef a()	accepted	
+sub	ByRef a() As Long	accepted	
+sub	ByRef a As Long()	syntax	Expected: list separator or )
+sub	ByRef a As Variant	accepted	
+sub	ByRef a As Object	accepted	
+sub	ByRef a As String	accepted	
+sub	ByRef a As String * 3	syntax	Expected array
+sub	ByRef a As Class1	semantic	User-defined type not defined
+sub	ByRef a As New Class1	syntax	Expected: type name
+sub	ByRef a$	accepted	
+sub	ByRef a%	accepted	
+sub	ByRef a$ As String	syntax	Expected: list separator or )
+sub	ByRef a = 1	syntax	Expected: list separator or )
+sub	ByRef a As Long = 1	syntax	Expected: list separator or )
+sub	ByRef a As Variant = 1	syntax	Expected: list separator or )
+sub	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+sub	ByRef a As String = "x"	syntax	Expected: list separator or )
+sub	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+sub	ByRef a As Long = x	syntax	Expected: list separator or )
+sub	ByRef a As Long =	syntax	Expected: list separator or )
+sub	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+sub	ByRef a As Byte = 300	syntax	Expected: list separator or )
+sub	ByRef a() = 1	syntax	Expected: list separator or )
+sub	Optional a	accepted	
+sub	Optional a As Long	accepted	
+sub	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+sub	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+sub	Optional a As Long()	syntax	Expected: list separator or )
+sub	Optional a As Variant	accepted	
+sub	Optional a As Object	accepted	
+sub	Optional a As String	accepted	
+sub	Optional a As String * 3	syntax	Expected array
+sub	Optional a As Class1	semantic	User-defined type not defined
+sub	Optional a As New Class1	syntax	Expected: type name
+sub	Optional a$	accepted	
+sub	Optional a%	accepted	
+sub	Optional a$ As String	syntax	Expected: list separator or )
+sub	Optional a = 1	accepted	
+sub	Optional a As Long = 1	accepted	
+sub	Optional a As Variant = 1	accepted	
+sub	Optional a As Object = Nothing	accepted	
+sub	Optional a As String = "x"	accepted	
+sub	Optional a As Long = 1 + 1	accepted	
+sub	Optional a As Long = x	semantic	Constant expression required
+sub	Optional a As Long =	syntax	Expected: expression
+sub	Optional a As Date = #1/1/2000#	accepted	
+sub	Optional a As Byte = 300	syntax	Overflow
+sub	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+sub	Optional ByVal a	accepted	
+sub	Optional ByVal a As Long	accepted	
+sub	Optional ByVal a()	syntax	Array argument must be ByRef
+sub	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+sub	Optional ByVal a As Long()	syntax	Expected: list separator or )
+sub	Optional ByVal a As Variant	accepted	
+sub	Optional ByVal a As Object	accepted	
+sub	Optional ByVal a As String	accepted	
+sub	Optional ByVal a As String * 3	syntax	Expected array
+sub	Optional ByVal a As Class1	semantic	User-defined type not defined
+sub	Optional ByVal a As New Class1	syntax	Expected: type name
+sub	Optional ByVal a$	accepted	
+sub	Optional ByVal a%	accepted	
+sub	Optional ByVal a$ As String	syntax	Expected: list separator or )
+sub	Optional ByVal a = 1	accepted	
+sub	Optional ByVal a As Long = 1	accepted	
+sub	Optional ByVal a As Variant = 1	accepted	
+sub	Optional ByVal a As Object = Nothing	accepted	
+sub	Optional ByVal a As String = "x"	accepted	
+sub	Optional ByVal a As Long = 1 + 1	accepted	
+sub	Optional ByVal a As Long = x	semantic	Constant expression required
+sub	Optional ByVal a As Long =	syntax	Expected: expression
+sub	Optional ByVal a As Date = #1/1/2000#	accepted	
+sub	Optional ByVal a As Byte = 300	syntax	Overflow
+sub	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+sub	Optional ByRef a	accepted	
+sub	Optional ByRef a As Long	accepted	
+sub	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+sub	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+sub	Optional ByRef a As Long()	syntax	Expected: list separator or )
+sub	Optional ByRef a As Variant	accepted	
+sub	Optional ByRef a As Object	accepted	
+sub	Optional ByRef a As String	accepted	
+sub	Optional ByRef a As String * 3	syntax	Expected array
+sub	Optional ByRef a As Class1	semantic	User-defined type not defined
+sub	Optional ByRef a As New Class1	syntax	Expected: type name
+sub	Optional ByRef a$	accepted	
+sub	Optional ByRef a%	accepted	
+sub	Optional ByRef a$ As String	syntax	Expected: list separator or )
+sub	Optional ByRef a = 1	accepted	
+sub	Optional ByRef a As Long = 1	accepted	
+sub	Optional ByRef a As Variant = 1	accepted	
+sub	Optional ByRef a As Object = Nothing	accepted	
+sub	Optional ByRef a As String = "x"	accepted	
+sub	Optional ByRef a As Long = 1 + 1	accepted	
+sub	Optional ByRef a As Long = x	semantic	Constant expression required
+sub	Optional ByRef a As Long =	syntax	Expected: expression
+sub	Optional ByRef a As Date = #1/1/2000#	accepted	
+sub	Optional ByRef a As Byte = 300	syntax	Overflow
+sub	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+sub	ByVal Optional a	accepted	
+sub	ByVal Optional a As Long	accepted	
+sub	ByVal Optional a()	syntax	Array argument must be ByRef
+sub	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+sub	ByVal Optional a As Long()	syntax	Expected: list separator or )
+sub	ByVal Optional a As Variant	accepted	
+sub	ByVal Optional a As Object	accepted	
+sub	ByVal Optional a As String	accepted	
+sub	ByVal Optional a As String * 3	syntax	Expected array
+sub	ByVal Optional a As Class1	semantic	User-defined type not defined
+sub	ByVal Optional a As New Class1	syntax	Expected: type name
+sub	ByVal Optional a$	accepted	
+sub	ByVal Optional a%	accepted	
+sub	ByVal Optional a$ As String	syntax	Expected: list separator or )
+sub	ByVal Optional a = 1	accepted	
+sub	ByVal Optional a As Long = 1	accepted	
+sub	ByVal Optional a As Variant = 1	accepted	
+sub	ByVal Optional a As Object = Nothing	accepted	
+sub	ByVal Optional a As String = "x"	accepted	
+sub	ByVal Optional a As Long = 1 + 1	accepted	
+sub	ByVal Optional a As Long = x	semantic	Constant expression required
+sub	ByVal Optional a As Long =	syntax	Expected: expression
+sub	ByVal Optional a As Date = #1/1/2000#	accepted	
+sub	ByVal Optional a As Byte = 300	syntax	Overflow
+sub	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+sub	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a()	accepted	
+sub	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As String * 3	syntax	Expected array
+sub	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As New Class1	syntax	Expected: type name
+sub	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a$ As String	syntax	Expected: list separator or )
+sub	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a() = 1	syntax	Expected: list separator or )
+sub	ByVal ParamArray a	syntax	Expected: identifier
+sub	ByVal ParamArray a As Long	syntax	Expected: identifier
+sub	ByVal ParamArray a()	syntax	Expected: identifier
+sub	ByVal ParamArray a() As Long	syntax	Expected: identifier
+sub	ByVal ParamArray a As Long()	syntax	Expected: identifier
+sub	ByVal ParamArray a As Variant	syntax	Expected: identifier
+sub	ByVal ParamArray a As Object	syntax	Expected: identifier
+sub	ByVal ParamArray a As String	syntax	Expected: identifier
+sub	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+sub	ByVal ParamArray a As Class1	syntax	Expected: identifier
+sub	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+sub	ByVal ParamArray a$	syntax	Expected: identifier
+sub	ByVal ParamArray a%	syntax	Expected: identifier
+sub	ByVal ParamArray a$ As String	syntax	Expected: identifier
+sub	ByVal ParamArray a = 1	syntax	Expected: identifier
+sub	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+sub	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+sub	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+sub	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+sub	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+sub	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+sub	ByVal ParamArray a As Long =	syntax	Expected: identifier
+sub	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+sub	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+sub	ByVal ParamArray a() = 1	syntax	Expected: identifier
+sub	ParamArray ByVal a	syntax	Expected: identifier
+sub	ParamArray ByVal a As Long	syntax	Expected: identifier
+sub	ParamArray ByVal a()	syntax	Expected: identifier
+sub	ParamArray ByVal a() As Long	syntax	Expected: identifier
+sub	ParamArray ByVal a As Long()	syntax	Expected: identifier
+sub	ParamArray ByVal a As Variant	syntax	Expected: identifier
+sub	ParamArray ByVal a As Object	syntax	Expected: identifier
+sub	ParamArray ByVal a As String	syntax	Expected: identifier
+sub	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+sub	ParamArray ByVal a As Class1	syntax	Expected: identifier
+sub	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+sub	ParamArray ByVal a$	syntax	Expected: identifier
+sub	ParamArray ByVal a%	syntax	Expected: identifier
+sub	ParamArray ByVal a$ As String	syntax	Expected: identifier
+sub	ParamArray ByVal a = 1	syntax	Expected: identifier
+sub	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+sub	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+sub	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+sub	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+sub	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+sub	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+sub	ParamArray ByVal a As Long =	syntax	Expected: identifier
+sub	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+sub	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+sub	ParamArray ByVal a() = 1	syntax	Expected: identifier
+sub	Optional ParamArray a	syntax	Expected: identifier
+sub	Optional ParamArray a As Long	syntax	Expected: identifier
+sub	Optional ParamArray a()	syntax	Expected: identifier
+sub	Optional ParamArray a() As Long	syntax	Expected: identifier
+sub	Optional ParamArray a As Long()	syntax	Expected: identifier
+sub	Optional ParamArray a As Variant	syntax	Expected: identifier
+sub	Optional ParamArray a As Object	syntax	Expected: identifier
+sub	Optional ParamArray a As String	syntax	Expected: identifier
+sub	Optional ParamArray a As String * 3	syntax	Expected: identifier
+sub	Optional ParamArray a As Class1	syntax	Expected: identifier
+sub	Optional ParamArray a As New Class1	syntax	Expected: identifier
+sub	Optional ParamArray a$	syntax	Expected: identifier
+sub	Optional ParamArray a%	syntax	Expected: identifier
+sub	Optional ParamArray a$ As String	syntax	Expected: identifier
+sub	Optional ParamArray a = 1	syntax	Expected: identifier
+sub	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+sub	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+sub	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+sub	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+sub	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+sub	Optional ParamArray a As Long = x	syntax	Expected: identifier
+sub	Optional ParamArray a As Long =	syntax	Expected: identifier
+sub	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+sub	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+sub	Optional ParamArray a() = 1	syntax	Expected: identifier
+sub	a, b	accepted	
+sub	a As Long, b As Long	accepted	
+sub	Optional a, b	syntax	Expected: Optional
+sub	Optional a, ByVal b	syntax	Expected: Optional
+sub	a, Optional b	accepted	
+sub	Optional a As Long, b As Long	syntax	Expected: Optional
+sub	ParamArray a(), b	syntax	Expected: )
+sub	ParamArray a(), ParamArray b()	syntax	Expected: )
+sub	ParamArray a() As Variant	accepted	
+sub	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+sub	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+sub	a, , b	syntax	Expected: identifier
+sub	a,	syntax	Expected: identifier
+sub	()	syntax	Expected: identifier
+sub	ByVal	syntax	Expected: identifier
+sub	Optional	syntax	Expected: identifier
+sub	a As	syntax	Expected: type name
+sub	a As As	syntax	Expected: type name
+sub	Me	syntax	Expected: identifier
+sub	Sub As Long	syntax	Expected: identifier
+sub	Error As Long	accepted	
+sub	a, a	syntax	Duplicate declaration in current scope
+sub	a As Long, a As Long	syntax	Duplicate declaration in current scope
+func	a	accepted	
+func	a As Long	accepted	
+func	a()	accepted	
+func	a() As Long	accepted	
+func	a As Long()	syntax	Expected: list separator or )
+func	a As Variant	accepted	
+func	a As Object	accepted	
+func	a As String	accepted	
+func	a As String * 3	syntax	Expected array
+func	a As Class1	semantic	User-defined type not defined
+func	a As New Class1	syntax	Expected: type name
+func	a$	accepted	
+func	a%	accepted	
+func	a$ As String	syntax	Expected: list separator or )
+func	a = 1	syntax	Expected: list separator or )
+func	a As Long = 1	syntax	Expected: list separator or )
+func	a As Variant = 1	syntax	Expected: list separator or )
+func	a As Object = Nothing	syntax	Expected: list separator or )
+func	a As String = "x"	syntax	Expected: list separator or )
+func	a As Long = 1 + 1	syntax	Expected: list separator or )
+func	a As Long = x	syntax	Expected: list separator or )
+func	a As Long =	syntax	Expected: list separator or )
+func	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+func	a As Byte = 300	syntax	Expected: list separator or )
+func	a() = 1	syntax	Expected: list separator or )
+func	ByVal a	accepted	
+func	ByVal a As Long	accepted	
+func	ByVal a()	syntax	Array argument must be ByRef
+func	ByVal a() As Long	syntax	Array argument must be ByRef
+func	ByVal a As Long()	syntax	Expected: list separator or )
+func	ByVal a As Variant	accepted	
+func	ByVal a As Object	accepted	
+func	ByVal a As String	accepted	
+func	ByVal a As String * 3	syntax	Expected array
+func	ByVal a As Class1	semantic	User-defined type not defined
+func	ByVal a As New Class1	syntax	Expected: type name
+func	ByVal a$	accepted	
+func	ByVal a%	accepted	
+func	ByVal a$ As String	syntax	Expected: list separator or )
+func	ByVal a = 1	syntax	Expected: list separator or )
+func	ByVal a As Long = 1	syntax	Expected: list separator or )
+func	ByVal a As Variant = 1	syntax	Expected: list separator or )
+func	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+func	ByVal a As String = "x"	syntax	Expected: list separator or )
+func	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+func	ByVal a As Long = x	syntax	Expected: list separator or )
+func	ByVal a As Long =	syntax	Expected: list separator or )
+func	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+func	ByVal a As Byte = 300	syntax	Expected: list separator or )
+func	ByVal a() = 1	syntax	Array argument must be ByRef
+func	ByRef a	accepted	
+func	ByRef a As Long	accepted	
+func	ByRef a()	accepted	
+func	ByRef a() As Long	accepted	
+func	ByRef a As Long()	syntax	Expected: list separator or )
+func	ByRef a As Variant	accepted	
+func	ByRef a As Object	accepted	
+func	ByRef a As String	accepted	
+func	ByRef a As String * 3	syntax	Expected array
+func	ByRef a As Class1	semantic	User-defined type not defined
+func	ByRef a As New Class1	syntax	Expected: type name
+func	ByRef a$	accepted	
+func	ByRef a%	accepted	
+func	ByRef a$ As String	syntax	Expected: list separator or )
+func	ByRef a = 1	syntax	Expected: list separator or )
+func	ByRef a As Long = 1	syntax	Expected: list separator or )
+func	ByRef a As Variant = 1	syntax	Expected: list separator or )
+func	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+func	ByRef a As String = "x"	syntax	Expected: list separator or )
+func	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+func	ByRef a As Long = x	syntax	Expected: list separator or )
+func	ByRef a As Long =	syntax	Expected: list separator or )
+func	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+func	ByRef a As Byte = 300	syntax	Expected: list separator or )
+func	ByRef a() = 1	syntax	Expected: list separator or )
+func	Optional a	accepted	
+func	Optional a As Long	accepted	
+func	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+func	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+func	Optional a As Long()	syntax	Expected: list separator or )
+func	Optional a As Variant	accepted	
+func	Optional a As Object	accepted	
+func	Optional a As String	accepted	
+func	Optional a As String * 3	syntax	Expected array
+func	Optional a As Class1	semantic	User-defined type not defined
+func	Optional a As New Class1	syntax	Expected: type name
+func	Optional a$	accepted	
+func	Optional a%	accepted	
+func	Optional a$ As String	syntax	Expected: list separator or )
+func	Optional a = 1	accepted	
+func	Optional a As Long = 1	accepted	
+func	Optional a As Variant = 1	accepted	
+func	Optional a As Object = Nothing	accepted	
+func	Optional a As String = "x"	accepted	
+func	Optional a As Long = 1 + 1	accepted	
+func	Optional a As Long = x	semantic	Constant expression required
+func	Optional a As Long =	syntax	Expected: expression
+func	Optional a As Date = #1/1/2000#	accepted	
+func	Optional a As Byte = 300	syntax	Overflow
+func	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+func	Optional ByVal a	accepted	
+func	Optional ByVal a As Long	accepted	
+func	Optional ByVal a()	syntax	Array argument must be ByRef
+func	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+func	Optional ByVal a As Long()	syntax	Expected: list separator or )
+func	Optional ByVal a As Variant	accepted	
+func	Optional ByVal a As Object	accepted	
+func	Optional ByVal a As String	accepted	
+func	Optional ByVal a As String * 3	syntax	Expected array
+func	Optional ByVal a As Class1	semantic	User-defined type not defined
+func	Optional ByVal a As New Class1	syntax	Expected: type name
+func	Optional ByVal a$	accepted	
+func	Optional ByVal a%	accepted	
+func	Optional ByVal a$ As String	syntax	Expected: list separator or )
+func	Optional ByVal a = 1	accepted	
+func	Optional ByVal a As Long = 1	accepted	
+func	Optional ByVal a As Variant = 1	accepted	
+func	Optional ByVal a As Object = Nothing	accepted	
+func	Optional ByVal a As String = "x"	accepted	
+func	Optional ByVal a As Long = 1 + 1	accepted	
+func	Optional ByVal a As Long = x	semantic	Constant expression required
+func	Optional ByVal a As Long =	syntax	Expected: expression
+func	Optional ByVal a As Date = #1/1/2000#	accepted	
+func	Optional ByVal a As Byte = 300	syntax	Overflow
+func	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+func	Optional ByRef a	accepted	
+func	Optional ByRef a As Long	accepted	
+func	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+func	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+func	Optional ByRef a As Long()	syntax	Expected: list separator or )
+func	Optional ByRef a As Variant	accepted	
+func	Optional ByRef a As Object	accepted	
+func	Optional ByRef a As String	accepted	
+func	Optional ByRef a As String * 3	syntax	Expected array
+func	Optional ByRef a As Class1	semantic	User-defined type not defined
+func	Optional ByRef a As New Class1	syntax	Expected: type name
+func	Optional ByRef a$	accepted	
+func	Optional ByRef a%	accepted	
+func	Optional ByRef a$ As String	syntax	Expected: list separator or )
+func	Optional ByRef a = 1	accepted	
+func	Optional ByRef a As Long = 1	accepted	
+func	Optional ByRef a As Variant = 1	accepted	
+func	Optional ByRef a As Object = Nothing	accepted	
+func	Optional ByRef a As String = "x"	accepted	
+func	Optional ByRef a As Long = 1 + 1	accepted	
+func	Optional ByRef a As Long = x	semantic	Constant expression required
+func	Optional ByRef a As Long =	syntax	Expected: expression
+func	Optional ByRef a As Date = #1/1/2000#	accepted	
+func	Optional ByRef a As Byte = 300	syntax	Overflow
+func	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+func	ByVal Optional a	accepted	
+func	ByVal Optional a As Long	accepted	
+func	ByVal Optional a()	syntax	Array argument must be ByRef
+func	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+func	ByVal Optional a As Long()	syntax	Expected: list separator or )
+func	ByVal Optional a As Variant	accepted	
+func	ByVal Optional a As Object	accepted	
+func	ByVal Optional a As String	accepted	
+func	ByVal Optional a As String * 3	syntax	Expected array
+func	ByVal Optional a As Class1	semantic	User-defined type not defined
+func	ByVal Optional a As New Class1	syntax	Expected: type name
+func	ByVal Optional a$	accepted	
+func	ByVal Optional a%	accepted	
+func	ByVal Optional a$ As String	syntax	Expected: list separator or )
+func	ByVal Optional a = 1	accepted	
+func	ByVal Optional a As Long = 1	accepted	
+func	ByVal Optional a As Variant = 1	accepted	
+func	ByVal Optional a As Object = Nothing	accepted	
+func	ByVal Optional a As String = "x"	accepted	
+func	ByVal Optional a As Long = 1 + 1	accepted	
+func	ByVal Optional a As Long = x	semantic	Constant expression required
+func	ByVal Optional a As Long =	syntax	Expected: expression
+func	ByVal Optional a As Date = #1/1/2000#	accepted	
+func	ByVal Optional a As Byte = 300	syntax	Overflow
+func	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+func	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a()	accepted	
+func	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As String * 3	syntax	Expected array
+func	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As New Class1	syntax	Expected: type name
+func	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a$ As String	syntax	Expected: list separator or )
+func	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a() = 1	syntax	Expected: list separator or )
+func	ByVal ParamArray a	syntax	Expected: identifier
+func	ByVal ParamArray a As Long	syntax	Expected: identifier
+func	ByVal ParamArray a()	syntax	Expected: identifier
+func	ByVal ParamArray a() As Long	syntax	Expected: identifier
+func	ByVal ParamArray a As Long()	syntax	Expected: identifier
+func	ByVal ParamArray a As Variant	syntax	Expected: identifier
+func	ByVal ParamArray a As Object	syntax	Expected: identifier
+func	ByVal ParamArray a As String	syntax	Expected: identifier
+func	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+func	ByVal ParamArray a As Class1	syntax	Expected: identifier
+func	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+func	ByVal ParamArray a$	syntax	Expected: identifier
+func	ByVal ParamArray a%	syntax	Expected: identifier
+func	ByVal ParamArray a$ As String	syntax	Expected: identifier
+func	ByVal ParamArray a = 1	syntax	Expected: identifier
+func	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+func	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+func	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+func	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+func	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+func	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+func	ByVal ParamArray a As Long =	syntax	Expected: identifier
+func	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+func	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+func	ByVal ParamArray a() = 1	syntax	Expected: identifier
+func	ParamArray ByVal a	syntax	Expected: identifier
+func	ParamArray ByVal a As Long	syntax	Expected: identifier
+func	ParamArray ByVal a()	syntax	Expected: identifier
+func	ParamArray ByVal a() As Long	syntax	Expected: identifier
+func	ParamArray ByVal a As Long()	syntax	Expected: identifier
+func	ParamArray ByVal a As Variant	syntax	Expected: identifier
+func	ParamArray ByVal a As Object	syntax	Expected: identifier
+func	ParamArray ByVal a As String	syntax	Expected: identifier
+func	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+func	ParamArray ByVal a As Class1	syntax	Expected: identifier
+func	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+func	ParamArray ByVal a$	syntax	Expected: identifier
+func	ParamArray ByVal a%	syntax	Expected: identifier
+func	ParamArray ByVal a$ As String	syntax	Expected: identifier
+func	ParamArray ByVal a = 1	syntax	Expected: identifier
+func	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+func	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+func	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+func	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+func	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+func	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+func	ParamArray ByVal a As Long =	syntax	Expected: identifier
+func	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+func	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+func	ParamArray ByVal a() = 1	syntax	Expected: identifier
+func	Optional ParamArray a	syntax	Expected: identifier
+func	Optional ParamArray a As Long	syntax	Expected: identifier
+func	Optional ParamArray a()	syntax	Expected: identifier
+func	Optional ParamArray a() As Long	syntax	Expected: identifier
+func	Optional ParamArray a As Long()	syntax	Expected: identifier
+func	Optional ParamArray a As Variant	syntax	Expected: identifier
+func	Optional ParamArray a As Object	syntax	Expected: identifier
+func	Optional ParamArray a As String	syntax	Expected: identifier
+func	Optional ParamArray a As String * 3	syntax	Expected: identifier
+func	Optional ParamArray a As Class1	syntax	Expected: identifier
+func	Optional ParamArray a As New Class1	syntax	Expected: identifier
+func	Optional ParamArray a$	syntax	Expected: identifier
+func	Optional ParamArray a%	syntax	Expected: identifier
+func	Optional ParamArray a$ As String	syntax	Expected: identifier
+func	Optional ParamArray a = 1	syntax	Expected: identifier
+func	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+func	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+func	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+func	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+func	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+func	Optional ParamArray a As Long = x	syntax	Expected: identifier
+func	Optional ParamArray a As Long =	syntax	Expected: identifier
+func	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+func	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+func	Optional ParamArray a() = 1	syntax	Expected: identifier
+func	a, b	accepted	
+func	a As Long, b As Long	accepted	
+func	Optional a, b	syntax	Expected: Optional
+func	Optional a, ByVal b	syntax	Expected: Optional
+func	a, Optional b	accepted	
+func	Optional a As Long, b As Long	syntax	Expected: Optional
+func	ParamArray a(), b	syntax	Expected: )
+func	ParamArray a(), ParamArray b()	syntax	Expected: )
+func	ParamArray a() As Variant	accepted	
+func	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+func	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+func	a, , b	syntax	Expected: identifier
+func	a,	syntax	Expected: identifier
+func	()	syntax	Expected: identifier
+func	ByVal	syntax	Expected: identifier
+func	Optional	syntax	Expected: identifier
+func	a As	syntax	Expected: type name
+func	a As As	syntax	Expected: type name
+func	Me	syntax	Expected: identifier
+func	Sub As Long	syntax	Expected: identifier
+func	Error As Long	accepted	
+func	a, a	syntax	Duplicate declaration in current scope
+func	a As Long, a As Long	syntax	Duplicate declaration in current scope
+propget	a	accepted	
+propget	a As Long	accepted	
+propget	a()	accepted	
+propget	a() As Long	accepted	
+propget	a As Long()	syntax	Expected: list separator or )
+propget	a As Variant	accepted	
+propget	a As Object	accepted	
+propget	a As String	accepted	
+propget	a As String * 3	syntax	Expected array
+propget	a As Class1	accepted	
+propget	a As New Class1	syntax	Expected: type name
+propget	a$	accepted	
+propget	a%	accepted	
+propget	a$ As String	syntax	Expected: list separator or )
+propget	a = 1	syntax	Expected: list separator or )
+propget	a As Long = 1	syntax	Expected: list separator or )
+propget	a As Variant = 1	syntax	Expected: list separator or )
+propget	a As Object = Nothing	syntax	Expected: list separator or )
+propget	a As String = "x"	syntax	Expected: list separator or )
+propget	a As Long = 1 + 1	syntax	Expected: list separator or )
+propget	a As Long = x	syntax	Expected: list separator or )
+propget	a As Long =	syntax	Expected: list separator or )
+propget	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+propget	a As Byte = 300	syntax	Expected: list separator or )
+propget	a() = 1	syntax	Expected: list separator or )
+propget	ByVal a	accepted	
+propget	ByVal a As Long	accepted	
+propget	ByVal a()	syntax	Array argument must be ByRef
+propget	ByVal a() As Long	syntax	Array argument must be ByRef
+propget	ByVal a As Long()	syntax	Expected: list separator or )
+propget	ByVal a As Variant	accepted	
+propget	ByVal a As Object	accepted	
+propget	ByVal a As String	accepted	
+propget	ByVal a As String * 3	syntax	Expected array
+propget	ByVal a As Class1	accepted	
+propget	ByVal a As New Class1	syntax	Expected: type name
+propget	ByVal a$	accepted	
+propget	ByVal a%	accepted	
+propget	ByVal a$ As String	syntax	Expected: list separator or )
+propget	ByVal a = 1	syntax	Expected: list separator or )
+propget	ByVal a As Long = 1	syntax	Expected: list separator or )
+propget	ByVal a As Variant = 1	syntax	Expected: list separator or )
+propget	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+propget	ByVal a As String = "x"	syntax	Expected: list separator or )
+propget	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+propget	ByVal a As Long = x	syntax	Expected: list separator or )
+propget	ByVal a As Long =	syntax	Expected: list separator or )
+propget	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+propget	ByVal a As Byte = 300	syntax	Expected: list separator or )
+propget	ByVal a() = 1	syntax	Array argument must be ByRef
+propget	ByRef a	accepted	
+propget	ByRef a As Long	accepted	
+propget	ByRef a()	accepted	
+propget	ByRef a() As Long	accepted	
+propget	ByRef a As Long()	syntax	Expected: list separator or )
+propget	ByRef a As Variant	accepted	
+propget	ByRef a As Object	accepted	
+propget	ByRef a As String	accepted	
+propget	ByRef a As String * 3	syntax	Expected array
+propget	ByRef a As Class1	accepted	
+propget	ByRef a As New Class1	syntax	Expected: type name
+propget	ByRef a$	accepted	
+propget	ByRef a%	accepted	
+propget	ByRef a$ As String	syntax	Expected: list separator or )
+propget	ByRef a = 1	syntax	Expected: list separator or )
+propget	ByRef a As Long = 1	syntax	Expected: list separator or )
+propget	ByRef a As Variant = 1	syntax	Expected: list separator or )
+propget	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+propget	ByRef a As String = "x"	syntax	Expected: list separator or )
+propget	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+propget	ByRef a As Long = x	syntax	Expected: list separator or )
+propget	ByRef a As Long =	syntax	Expected: list separator or )
+propget	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+propget	ByRef a As Byte = 300	syntax	Expected: list separator or )
+propget	ByRef a() = 1	syntax	Expected: list separator or )
+propget	Optional a	accepted	
+propget	Optional a As Long	accepted	
+propget	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+propget	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+propget	Optional a As Long()	syntax	Expected: list separator or )
+propget	Optional a As Variant	accepted	
+propget	Optional a As Object	accepted	
+propget	Optional a As String	accepted	
+propget	Optional a As String * 3	syntax	Expected array
+propget	Optional a As Class1	accepted	
+propget	Optional a As New Class1	syntax	Expected: type name
+propget	Optional a$	accepted	
+propget	Optional a%	accepted	
+propget	Optional a$ As String	syntax	Expected: list separator or )
+propget	Optional a = 1	accepted	
+propget	Optional a As Long = 1	accepted	
+propget	Optional a As Variant = 1	accepted	
+propget	Optional a As Object = Nothing	accepted	
+propget	Optional a As String = "x"	accepted	
+propget	Optional a As Long = 1 + 1	accepted	
+propget	Optional a As Long = x	semantic	Constant expression required
+propget	Optional a As Long =	syntax	Expected: expression
+propget	Optional a As Date = #1/1/2000#	accepted	
+propget	Optional a As Byte = 300	syntax	Overflow
+propget	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+propget	Optional ByVal a	accepted	
+propget	Optional ByVal a As Long	accepted	
+propget	Optional ByVal a()	syntax	Array argument must be ByRef
+propget	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+propget	Optional ByVal a As Long()	syntax	Expected: list separator or )
+propget	Optional ByVal a As Variant	accepted	
+propget	Optional ByVal a As Object	accepted	
+propget	Optional ByVal a As String	accepted	
+propget	Optional ByVal a As String * 3	syntax	Expected array
+propget	Optional ByVal a As Class1	accepted	
+propget	Optional ByVal a As New Class1	syntax	Expected: type name
+propget	Optional ByVal a$	accepted	
+propget	Optional ByVal a%	accepted	
+propget	Optional ByVal a$ As String	syntax	Expected: list separator or )
+propget	Optional ByVal a = 1	accepted	
+propget	Optional ByVal a As Long = 1	accepted	
+propget	Optional ByVal a As Variant = 1	accepted	
+propget	Optional ByVal a As Object = Nothing	accepted	
+propget	Optional ByVal a As String = "x"	accepted	
+propget	Optional ByVal a As Long = 1 + 1	accepted	
+propget	Optional ByVal a As Long = x	semantic	Constant expression required
+propget	Optional ByVal a As Long =	syntax	Expected: expression
+propget	Optional ByVal a As Date = #1/1/2000#	accepted	
+propget	Optional ByVal a As Byte = 300	syntax	Overflow
+propget	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+propget	Optional ByRef a	accepted	
+propget	Optional ByRef a As Long	accepted	
+propget	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+propget	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+propget	Optional ByRef a As Long()	syntax	Expected: list separator or )
+propget	Optional ByRef a As Variant	accepted	
+propget	Optional ByRef a As Object	accepted	
+propget	Optional ByRef a As String	accepted	
+propget	Optional ByRef a As String * 3	syntax	Expected array
+propget	Optional ByRef a As Class1	accepted	
+propget	Optional ByRef a As New Class1	syntax	Expected: type name
+propget	Optional ByRef a$	accepted	
+propget	Optional ByRef a%	accepted	
+propget	Optional ByRef a$ As String	syntax	Expected: list separator or )
+propget	Optional ByRef a = 1	accepted	
+propget	Optional ByRef a As Long = 1	accepted	
+propget	Optional ByRef a As Variant = 1	accepted	
+propget	Optional ByRef a As Object = Nothing	accepted	
+propget	Optional ByRef a As String = "x"	accepted	
+propget	Optional ByRef a As Long = 1 + 1	accepted	
+propget	Optional ByRef a As Long = x	semantic	Constant expression required
+propget	Optional ByRef a As Long =	syntax	Expected: expression
+propget	Optional ByRef a As Date = #1/1/2000#	accepted	
+propget	Optional ByRef a As Byte = 300	syntax	Overflow
+propget	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+propget	ByVal Optional a	accepted	
+propget	ByVal Optional a As Long	accepted	
+propget	ByVal Optional a()	syntax	Array argument must be ByRef
+propget	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+propget	ByVal Optional a As Long()	syntax	Expected: list separator or )
+propget	ByVal Optional a As Variant	accepted	
+propget	ByVal Optional a As Object	accepted	
+propget	ByVal Optional a As String	accepted	
+propget	ByVal Optional a As String * 3	syntax	Expected array
+propget	ByVal Optional a As Class1	accepted	
+propget	ByVal Optional a As New Class1	syntax	Expected: type name
+propget	ByVal Optional a$	accepted	
+propget	ByVal Optional a%	accepted	
+propget	ByVal Optional a$ As String	syntax	Expected: list separator or )
+propget	ByVal Optional a = 1	accepted	
+propget	ByVal Optional a As Long = 1	accepted	
+propget	ByVal Optional a As Variant = 1	accepted	
+propget	ByVal Optional a As Object = Nothing	accepted	
+propget	ByVal Optional a As String = "x"	accepted	
+propget	ByVal Optional a As Long = 1 + 1	accepted	
+propget	ByVal Optional a As Long = x	semantic	Constant expression required
+propget	ByVal Optional a As Long =	syntax	Expected: expression
+propget	ByVal Optional a As Date = #1/1/2000#	accepted	
+propget	ByVal Optional a As Byte = 300	syntax	Overflow
+propget	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+propget	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a()	accepted	
+propget	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As String * 3	syntax	Expected array
+propget	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As New Class1	syntax	Expected: type name
+propget	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a$ As String	syntax	Expected: list separator or )
+propget	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a() = 1	syntax	Expected: list separator or )
+propget	ByVal ParamArray a	syntax	Expected: identifier
+propget	ByVal ParamArray a As Long	syntax	Expected: identifier
+propget	ByVal ParamArray a()	syntax	Expected: identifier
+propget	ByVal ParamArray a() As Long	syntax	Expected: identifier
+propget	ByVal ParamArray a As Long()	syntax	Expected: identifier
+propget	ByVal ParamArray a As Variant	syntax	Expected: identifier
+propget	ByVal ParamArray a As Object	syntax	Expected: identifier
+propget	ByVal ParamArray a As String	syntax	Expected: identifier
+propget	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+propget	ByVal ParamArray a As Class1	syntax	Expected: identifier
+propget	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+propget	ByVal ParamArray a$	syntax	Expected: identifier
+propget	ByVal ParamArray a%	syntax	Expected: identifier
+propget	ByVal ParamArray a$ As String	syntax	Expected: identifier
+propget	ByVal ParamArray a = 1	syntax	Expected: identifier
+propget	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+propget	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+propget	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+propget	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+propget	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+propget	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+propget	ByVal ParamArray a As Long =	syntax	Expected: identifier
+propget	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+propget	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+propget	ByVal ParamArray a() = 1	syntax	Expected: identifier
+propget	ParamArray ByVal a	syntax	Expected: identifier
+propget	ParamArray ByVal a As Long	syntax	Expected: identifier
+propget	ParamArray ByVal a()	syntax	Expected: identifier
+propget	ParamArray ByVal a() As Long	syntax	Expected: identifier
+propget	ParamArray ByVal a As Long()	syntax	Expected: identifier
+propget	ParamArray ByVal a As Variant	syntax	Expected: identifier
+propget	ParamArray ByVal a As Object	syntax	Expected: identifier
+propget	ParamArray ByVal a As String	syntax	Expected: identifier
+propget	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+propget	ParamArray ByVal a As Class1	syntax	Expected: identifier
+propget	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+propget	ParamArray ByVal a$	syntax	Expected: identifier
+propget	ParamArray ByVal a%	syntax	Expected: identifier
+propget	ParamArray ByVal a$ As String	syntax	Expected: identifier
+propget	ParamArray ByVal a = 1	syntax	Expected: identifier
+propget	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+propget	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+propget	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+propget	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+propget	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+propget	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+propget	ParamArray ByVal a As Long =	syntax	Expected: identifier
+propget	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+propget	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+propget	ParamArray ByVal a() = 1	syntax	Expected: identifier
+propget	Optional ParamArray a	syntax	Expected: identifier
+propget	Optional ParamArray a As Long	syntax	Expected: identifier
+propget	Optional ParamArray a()	syntax	Expected: identifier
+propget	Optional ParamArray a() As Long	syntax	Expected: identifier
+propget	Optional ParamArray a As Long()	syntax	Expected: identifier
+propget	Optional ParamArray a As Variant	syntax	Expected: identifier
+propget	Optional ParamArray a As Object	syntax	Expected: identifier
+propget	Optional ParamArray a As String	syntax	Expected: identifier
+propget	Optional ParamArray a As String * 3	syntax	Expected: identifier
+propget	Optional ParamArray a As Class1	syntax	Expected: identifier
+propget	Optional ParamArray a As New Class1	syntax	Expected: identifier
+propget	Optional ParamArray a$	syntax	Expected: identifier
+propget	Optional ParamArray a%	syntax	Expected: identifier
+propget	Optional ParamArray a$ As String	syntax	Expected: identifier
+propget	Optional ParamArray a = 1	syntax	Expected: identifier
+propget	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+propget	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+propget	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+propget	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+propget	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+propget	Optional ParamArray a As Long = x	syntax	Expected: identifier
+propget	Optional ParamArray a As Long =	syntax	Expected: identifier
+propget	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+propget	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+propget	Optional ParamArray a() = 1	syntax	Expected: identifier
+propget	a, b	accepted	
+propget	a As Long, b As Long	accepted	
+propget	Optional a, b	syntax	Expected: Optional
+propget	Optional a, ByVal b	syntax	Expected: Optional
+propget	a, Optional b	accepted	
+propget	Optional a As Long, b As Long	syntax	Expected: Optional
+propget	ParamArray a(), b	syntax	Expected: )
+propget	ParamArray a(), ParamArray b()	syntax	Expected: )
+propget	ParamArray a() As Variant	accepted	
+propget	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+propget	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+propget	a, , b	syntax	Expected: identifier
+propget	a,	syntax	Expected: identifier
+propget	()	syntax	Expected: identifier
+propget	ByVal	syntax	Expected: identifier
+propget	Optional	syntax	Expected: identifier
+propget	a As	syntax	Expected: type name
+propget	a As As	syntax	Expected: type name
+propget	Me	syntax	Expected: identifier
+propget	Sub As Long	syntax	Expected: identifier
+propget	Error As Long	accepted	
+propget	a, a	syntax	Duplicate declaration in current scope
+propget	a As Long, a As Long	syntax	Duplicate declaration in current scope
+proplet	a	accepted	
+proplet	a As Long	accepted	
+proplet	a()	accepted	
+proplet	a() As Long	accepted	
+proplet	a As Long()	syntax	Expected: list separator or )
+proplet	a As Variant	accepted	
+proplet	a As Object	accepted	
+proplet	a As String	accepted	
+proplet	a As String * 3	syntax	Expected array
+proplet	a As Class1	accepted	
+proplet	a As New Class1	syntax	Expected: type name
+proplet	a$	accepted	
+proplet	a%	accepted	
+proplet	a$ As String	syntax	Expected: list separator or )
+proplet	a = 1	syntax	Expected: list separator or )
+proplet	a As Long = 1	syntax	Expected: list separator or )
+proplet	a As Variant = 1	syntax	Expected: list separator or )
+proplet	a As Object = Nothing	syntax	Expected: list separator or )
+proplet	a As String = "x"	syntax	Expected: list separator or )
+proplet	a As Long = 1 + 1	syntax	Expected: list separator or )
+proplet	a As Long = x	syntax	Expected: list separator or )
+proplet	a As Long =	syntax	Expected: list separator or )
+proplet	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+proplet	a As Byte = 300	syntax	Expected: list separator or )
+proplet	a() = 1	syntax	Expected: list separator or )
+proplet	ByVal a	accepted	
+proplet	ByVal a As Long	accepted	
+proplet	ByVal a()	syntax	Array argument must be ByRef
+proplet	ByVal a() As Long	syntax	Array argument must be ByRef
+proplet	ByVal a As Long()	syntax	Expected: list separator or )
+proplet	ByVal a As Variant	accepted	
+proplet	ByVal a As Object	accepted	
+proplet	ByVal a As String	accepted	
+proplet	ByVal a As String * 3	syntax	Expected array
+proplet	ByVal a As Class1	accepted	
+proplet	ByVal a As New Class1	syntax	Expected: type name
+proplet	ByVal a$	accepted	
+proplet	ByVal a%	accepted	
+proplet	ByVal a$ As String	syntax	Expected: list separator or )
+proplet	ByVal a = 1	syntax	Expected: list separator or )
+proplet	ByVal a As Long = 1	syntax	Expected: list separator or )
+proplet	ByVal a As Variant = 1	syntax	Expected: list separator or )
+proplet	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+proplet	ByVal a As String = "x"	syntax	Expected: list separator or )
+proplet	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+proplet	ByVal a As Long = x	syntax	Expected: list separator or )
+proplet	ByVal a As Long =	syntax	Expected: list separator or )
+proplet	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+proplet	ByVal a As Byte = 300	syntax	Expected: list separator or )
+proplet	ByVal a() = 1	syntax	Array argument must be ByRef
+proplet	ByRef a	accepted	
+proplet	ByRef a As Long	accepted	
+proplet	ByRef a()	accepted	
+proplet	ByRef a() As Long	accepted	
+proplet	ByRef a As Long()	syntax	Expected: list separator or )
+proplet	ByRef a As Variant	accepted	
+proplet	ByRef a As Object	accepted	
+proplet	ByRef a As String	accepted	
+proplet	ByRef a As String * 3	syntax	Expected array
+proplet	ByRef a As Class1	accepted	
+proplet	ByRef a As New Class1	syntax	Expected: type name
+proplet	ByRef a$	accepted	
+proplet	ByRef a%	accepted	
+proplet	ByRef a$ As String	syntax	Expected: list separator or )
+proplet	ByRef a = 1	syntax	Expected: list separator or )
+proplet	ByRef a As Long = 1	syntax	Expected: list separator or )
+proplet	ByRef a As Variant = 1	syntax	Expected: list separator or )
+proplet	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+proplet	ByRef a As String = "x"	syntax	Expected: list separator or )
+proplet	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+proplet	ByRef a As Long = x	syntax	Expected: list separator or )
+proplet	ByRef a As Long =	syntax	Expected: list separator or )
+proplet	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+proplet	ByRef a As Byte = 300	syntax	Expected: list separator or )
+proplet	ByRef a() = 1	syntax	Expected: list separator or )
+proplet	Optional a	semantic	Argument not optional
+proplet	Optional a As Long	semantic	Argument not optional
+proplet	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+proplet	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+proplet	Optional a As Long()	semantic	Argument not optional
+proplet	Optional a As Variant	semantic	Argument not optional
+proplet	Optional a As Object	semantic	Argument not optional
+proplet	Optional a As String	semantic	Argument not optional
+proplet	Optional a As String * 3	syntax	Expected array
+proplet	Optional a As Class1	semantic	Argument not optional
+proplet	Optional a As New Class1	syntax	Expected: type name
+proplet	Optional a$	semantic	Argument not optional
+proplet	Optional a%	semantic	Argument not optional
+proplet	Optional a$ As String	syntax	Expected: list separator or )
+proplet	Optional a = 1	semantic	Argument not optional
+proplet	Optional a As Long = 1	semantic	Argument not optional
+proplet	Optional a As Variant = 1	semantic	Argument not optional
+proplet	Optional a As Object = Nothing	semantic	Argument not optional
+proplet	Optional a As String = "x"	semantic	Argument not optional
+proplet	Optional a As Long = 1 + 1	semantic	Argument not optional
+proplet	Optional a As Long = x	semantic	Argument not optional
+proplet	Optional a As Long =	syntax	Expected: expression
+proplet	Optional a As Date = #1/1/2000#	semantic	Argument not optional
+proplet	Optional a As Byte = 300	semantic	Argument not optional
+proplet	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+proplet	Optional ByVal a	semantic	Argument not optional
+proplet	Optional ByVal a As Long	semantic	Argument not optional
+proplet	Optional ByVal a()	syntax	Array argument must be ByRef
+proplet	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+proplet	Optional ByVal a As Long()	semantic	Argument not optional
+proplet	Optional ByVal a As Variant	semantic	Argument not optional
+proplet	Optional ByVal a As Object	semantic	Argument not optional
+proplet	Optional ByVal a As String	semantic	Argument not optional
+proplet	Optional ByVal a As String * 3	syntax	Expected array
+proplet	Optional ByVal a As Class1	semantic	Argument not optional
+proplet	Optional ByVal a As New Class1	syntax	Expected: type name
+proplet	Optional ByVal a$	semantic	Argument not optional
+proplet	Optional ByVal a%	semantic	Argument not optional
+proplet	Optional ByVal a$ As String	syntax	Expected: list separator or )
+proplet	Optional ByVal a = 1	semantic	Argument not optional
+proplet	Optional ByVal a As Long = 1	semantic	Argument not optional
+proplet	Optional ByVal a As Variant = 1	semantic	Argument not optional
+proplet	Optional ByVal a As Object = Nothing	semantic	Argument not optional
+proplet	Optional ByVal a As String = "x"	semantic	Argument not optional
+proplet	Optional ByVal a As Long = 1 + 1	semantic	Argument not optional
+proplet	Optional ByVal a As Long = x	semantic	Argument not optional
+proplet	Optional ByVal a As Long =	syntax	Expected: expression
+proplet	Optional ByVal a As Date = #1/1/2000#	semantic	Argument not optional
+proplet	Optional ByVal a As Byte = 300	semantic	Argument not optional
+proplet	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+proplet	Optional ByRef a	semantic	Argument not optional
+proplet	Optional ByRef a As Long	semantic	Argument not optional
+proplet	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+proplet	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+proplet	Optional ByRef a As Long()	semantic	Argument not optional
+proplet	Optional ByRef a As Variant	semantic	Argument not optional
+proplet	Optional ByRef a As Object	semantic	Argument not optional
+proplet	Optional ByRef a As String	semantic	Argument not optional
+proplet	Optional ByRef a As String * 3	syntax	Expected array
+proplet	Optional ByRef a As Class1	semantic	Argument not optional
+proplet	Optional ByRef a As New Class1	syntax	Expected: type name
+proplet	Optional ByRef a$	semantic	Argument not optional
+proplet	Optional ByRef a%	semantic	Argument not optional
+proplet	Optional ByRef a$ As String	syntax	Expected: list separator or )
+proplet	Optional ByRef a = 1	semantic	Argument not optional
+proplet	Optional ByRef a As Long = 1	semantic	Argument not optional
+proplet	Optional ByRef a As Variant = 1	semantic	Argument not optional
+proplet	Optional ByRef a As Object = Nothing	semantic	Argument not optional
+proplet	Optional ByRef a As String = "x"	semantic	Argument not optional
+proplet	Optional ByRef a As Long = 1 + 1	semantic	Argument not optional
+proplet	Optional ByRef a As Long = x	semantic	Argument not optional
+proplet	Optional ByRef a As Long =	syntax	Expected: expression
+proplet	Optional ByRef a As Date = #1/1/2000#	semantic	Argument not optional
+proplet	Optional ByRef a As Byte = 300	semantic	Argument not optional
+proplet	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+proplet	ByVal Optional a	semantic	Argument not optional
+proplet	ByVal Optional a As Long	semantic	Argument not optional
+proplet	ByVal Optional a()	syntax	Array argument must be ByRef
+proplet	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+proplet	ByVal Optional a As Long()	semantic	Argument not optional
+proplet	ByVal Optional a As Variant	semantic	Argument not optional
+proplet	ByVal Optional a As Object	semantic	Argument not optional
+proplet	ByVal Optional a As String	semantic	Argument not optional
+proplet	ByVal Optional a As String * 3	syntax	Expected array
+proplet	ByVal Optional a As Class1	semantic	Argument not optional
+proplet	ByVal Optional a As New Class1	syntax	Expected: type name
+proplet	ByVal Optional a$	semantic	Argument not optional
+proplet	ByVal Optional a%	semantic	Argument not optional
+proplet	ByVal Optional a$ As String	syntax	Expected: list separator or )
+proplet	ByVal Optional a = 1	semantic	Argument not optional
+proplet	ByVal Optional a As Long = 1	semantic	Argument not optional
+proplet	ByVal Optional a As Variant = 1	semantic	Argument not optional
+proplet	ByVal Optional a As Object = Nothing	semantic	Argument not optional
+proplet	ByVal Optional a As String = "x"	semantic	Argument not optional
+proplet	ByVal Optional a As Long = 1 + 1	semantic	Argument not optional
+proplet	ByVal Optional a As Long = x	semantic	Argument not optional
+proplet	ByVal Optional a As Long =	syntax	Expected: expression
+proplet	ByVal Optional a As Date = #1/1/2000#	semantic	Argument not optional
+proplet	ByVal Optional a As Byte = 300	semantic	Argument not optional
+proplet	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+proplet	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a()	semantic	Argument not optional
+proplet	ParamArray a() As Long	semantic	Argument not optional
+proplet	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As String * 3	syntax	Expected array
+proplet	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As New Class1	syntax	Expected: type name
+proplet	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a$ As String	syntax	Expected: list separator or )
+proplet	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+proplet	ParamArray a() = 1	syntax	Expected: list separator or )
+proplet	ByVal ParamArray a	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Long	syntax	Expected: identifier
+proplet	ByVal ParamArray a()	syntax	Expected: identifier
+proplet	ByVal ParamArray a() As Long	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Long()	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Variant	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Object	syntax	Expected: identifier
+proplet	ByVal ParamArray a As String	syntax	Expected: identifier
+proplet	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Class1	syntax	Expected: identifier
+proplet	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+proplet	ByVal ParamArray a$	syntax	Expected: identifier
+proplet	ByVal ParamArray a%	syntax	Expected: identifier
+proplet	ByVal ParamArray a$ As String	syntax	Expected: identifier
+proplet	ByVal ParamArray a = 1	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+proplet	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Long =	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+proplet	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+proplet	ByVal ParamArray a() = 1	syntax	Expected: identifier
+proplet	ParamArray ByVal a	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Long	syntax	Expected: identifier
+proplet	ParamArray ByVal a()	syntax	Expected: identifier
+proplet	ParamArray ByVal a() As Long	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Long()	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Variant	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Object	syntax	Expected: identifier
+proplet	ParamArray ByVal a As String	syntax	Expected: identifier
+proplet	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Class1	syntax	Expected: identifier
+proplet	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+proplet	ParamArray ByVal a$	syntax	Expected: identifier
+proplet	ParamArray ByVal a%	syntax	Expected: identifier
+proplet	ParamArray ByVal a$ As String	syntax	Expected: identifier
+proplet	ParamArray ByVal a = 1	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+proplet	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Long =	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+proplet	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+proplet	ParamArray ByVal a() = 1	syntax	Expected: identifier
+proplet	Optional ParamArray a	syntax	Expected: identifier
+proplet	Optional ParamArray a As Long	syntax	Expected: identifier
+proplet	Optional ParamArray a()	syntax	Expected: identifier
+proplet	Optional ParamArray a() As Long	syntax	Expected: identifier
+proplet	Optional ParamArray a As Long()	syntax	Expected: identifier
+proplet	Optional ParamArray a As Variant	syntax	Expected: identifier
+proplet	Optional ParamArray a As Object	syntax	Expected: identifier
+proplet	Optional ParamArray a As String	syntax	Expected: identifier
+proplet	Optional ParamArray a As String * 3	syntax	Expected: identifier
+proplet	Optional ParamArray a As Class1	syntax	Expected: identifier
+proplet	Optional ParamArray a As New Class1	syntax	Expected: identifier
+proplet	Optional ParamArray a$	syntax	Expected: identifier
+proplet	Optional ParamArray a%	syntax	Expected: identifier
+proplet	Optional ParamArray a$ As String	syntax	Expected: identifier
+proplet	Optional ParamArray a = 1	syntax	Expected: identifier
+proplet	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+proplet	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+proplet	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+proplet	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+proplet	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+proplet	Optional ParamArray a As Long = x	syntax	Expected: identifier
+proplet	Optional ParamArray a As Long =	syntax	Expected: identifier
+proplet	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+proplet	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+proplet	Optional ParamArray a() = 1	syntax	Expected: identifier
+proplet	a, b	accepted	
+proplet	a As Long, b As Long	accepted	
+proplet	Optional a, b	accepted	
+proplet	Optional a, ByVal b	accepted	
+proplet	a, Optional b	semantic	Argument not optional
+proplet	Optional a As Long, b As Long	accepted	
+proplet	ParamArray a(), b	accepted	
+proplet	ParamArray a(), ParamArray b()	syntax	Expected: identifier
+proplet	ParamArray a() As Variant	semantic	Argument not optional
+proplet	ParamArray a() As Long	semantic	Argument not optional
+proplet	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+proplet	a, , b	syntax	Expected: identifier
+proplet	a,	syntax	Expected: identifier
+proplet	()	syntax	Expected: identifier
+proplet	ByVal	syntax	Expected: identifier
+proplet	Optional	syntax	Expected: identifier
+proplet	a As	syntax	Expected: type name
+proplet	a As As	syntax	Expected: type name
+proplet	Me	syntax	Expected: identifier
+proplet	Sub As Long	syntax	Expected: identifier
+proplet	Error As Long	accepted	
+proplet	a, a	syntax	Duplicate declaration in current scope
+proplet	a As Long, a As Long	syntax	Duplicate declaration in current scope
+propset	a	accepted	
+propset	a As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a()	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a() As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a As Long()	syntax	Expected: list separator or )
+propset	a As Variant	accepted	
+propset	a As Object	accepted	
+propset	a As String	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a As String * 3	syntax	Expected array
+propset	a As Class1	accepted	
+propset	a As New Class1	syntax	Expected: type name
+propset	a$	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a%	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a$ As String	syntax	Expected: list separator or )
+propset	a = 1	syntax	Expected: list separator or )
+propset	a As Long = 1	syntax	Expected: list separator or )
+propset	a As Variant = 1	syntax	Expected: list separator or )
+propset	a As Object = Nothing	syntax	Expected: list separator or )
+propset	a As String = "x"	syntax	Expected: list separator or )
+propset	a As Long = 1 + 1	syntax	Expected: list separator or )
+propset	a As Long = x	syntax	Expected: list separator or )
+propset	a As Long =	syntax	Expected: list separator or )
+propset	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+propset	a As Byte = 300	syntax	Expected: list separator or )
+propset	a() = 1	syntax	Expected: list separator or )
+propset	ByVal a	accepted	
+propset	ByVal a As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByVal a()	syntax	Array argument must be ByRef
+propset	ByVal a() As Long	syntax	Array argument must be ByRef
+propset	ByVal a As Long()	syntax	Expected: list separator or )
+propset	ByVal a As Variant	accepted	
+propset	ByVal a As Object	accepted	
+propset	ByVal a As String	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByVal a As String * 3	syntax	Expected array
+propset	ByVal a As Class1	accepted	
+propset	ByVal a As New Class1	syntax	Expected: type name
+propset	ByVal a$	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByVal a%	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByVal a$ As String	syntax	Expected: list separator or )
+propset	ByVal a = 1	syntax	Expected: list separator or )
+propset	ByVal a As Long = 1	syntax	Expected: list separator or )
+propset	ByVal a As Variant = 1	syntax	Expected: list separator or )
+propset	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+propset	ByVal a As String = "x"	syntax	Expected: list separator or )
+propset	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+propset	ByVal a As Long = x	syntax	Expected: list separator or )
+propset	ByVal a As Long =	syntax	Expected: list separator or )
+propset	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+propset	ByVal a As Byte = 300	syntax	Expected: list separator or )
+propset	ByVal a() = 1	syntax	Array argument must be ByRef
+propset	ByRef a	accepted	
+propset	ByRef a As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByRef a()	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByRef a() As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByRef a As Long()	syntax	Expected: list separator or )
+propset	ByRef a As Variant	accepted	
+propset	ByRef a As Object	accepted	
+propset	ByRef a As String	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByRef a As String * 3	syntax	Expected array
+propset	ByRef a As Class1	accepted	
+propset	ByRef a As New Class1	syntax	Expected: type name
+propset	ByRef a$	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByRef a%	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ByRef a$ As String	syntax	Expected: list separator or )
+propset	ByRef a = 1	syntax	Expected: list separator or )
+propset	ByRef a As Long = 1	syntax	Expected: list separator or )
+propset	ByRef a As Variant = 1	syntax	Expected: list separator or )
+propset	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+propset	ByRef a As String = "x"	syntax	Expected: list separator or )
+propset	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+propset	ByRef a As Long = x	syntax	Expected: list separator or )
+propset	ByRef a As Long =	syntax	Expected: list separator or )
+propset	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+propset	ByRef a As Byte = 300	syntax	Expected: list separator or )
+propset	ByRef a() = 1	syntax	Expected: list separator or )
+propset	Optional a	semantic	Argument not optional
+propset	Optional a As Long	semantic	Argument not optional
+propset	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+propset	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+propset	Optional a As Long()	semantic	Argument not optional
+propset	Optional a As Variant	semantic	Argument not optional
+propset	Optional a As Object	semantic	Argument not optional
+propset	Optional a As String	semantic	Argument not optional
+propset	Optional a As String * 3	syntax	Expected array
+propset	Optional a As Class1	semantic	Argument not optional
+propset	Optional a As New Class1	syntax	Expected: type name
+propset	Optional a$	semantic	Argument not optional
+propset	Optional a%	semantic	Argument not optional
+propset	Optional a$ As String	syntax	Expected: list separator or )
+propset	Optional a = 1	semantic	Argument not optional
+propset	Optional a As Long = 1	semantic	Argument not optional
+propset	Optional a As Variant = 1	semantic	Argument not optional
+propset	Optional a As Object = Nothing	semantic	Argument not optional
+propset	Optional a As String = "x"	semantic	Argument not optional
+propset	Optional a As Long = 1 + 1	semantic	Argument not optional
+propset	Optional a As Long = x	semantic	Argument not optional
+propset	Optional a As Long =	syntax	Expected: expression
+propset	Optional a As Date = #1/1/2000#	semantic	Argument not optional
+propset	Optional a As Byte = 300	semantic	Argument not optional
+propset	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+propset	Optional ByVal a	semantic	Argument not optional
+propset	Optional ByVal a As Long	semantic	Argument not optional
+propset	Optional ByVal a()	syntax	Array argument must be ByRef
+propset	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+propset	Optional ByVal a As Long()	semantic	Argument not optional
+propset	Optional ByVal a As Variant	semantic	Argument not optional
+propset	Optional ByVal a As Object	semantic	Argument not optional
+propset	Optional ByVal a As String	semantic	Argument not optional
+propset	Optional ByVal a As String * 3	syntax	Expected array
+propset	Optional ByVal a As Class1	semantic	Argument not optional
+propset	Optional ByVal a As New Class1	syntax	Expected: type name
+propset	Optional ByVal a$	semantic	Argument not optional
+propset	Optional ByVal a%	semantic	Argument not optional
+propset	Optional ByVal a$ As String	syntax	Expected: list separator or )
+propset	Optional ByVal a = 1	semantic	Argument not optional
+propset	Optional ByVal a As Long = 1	semantic	Argument not optional
+propset	Optional ByVal a As Variant = 1	semantic	Argument not optional
+propset	Optional ByVal a As Object = Nothing	semantic	Argument not optional
+propset	Optional ByVal a As String = "x"	semantic	Argument not optional
+propset	Optional ByVal a As Long = 1 + 1	semantic	Argument not optional
+propset	Optional ByVal a As Long = x	semantic	Argument not optional
+propset	Optional ByVal a As Long =	syntax	Expected: expression
+propset	Optional ByVal a As Date = #1/1/2000#	semantic	Argument not optional
+propset	Optional ByVal a As Byte = 300	semantic	Argument not optional
+propset	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+propset	Optional ByRef a	semantic	Argument not optional
+propset	Optional ByRef a As Long	semantic	Argument not optional
+propset	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+propset	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+propset	Optional ByRef a As Long()	semantic	Argument not optional
+propset	Optional ByRef a As Variant	semantic	Argument not optional
+propset	Optional ByRef a As Object	semantic	Argument not optional
+propset	Optional ByRef a As String	semantic	Argument not optional
+propset	Optional ByRef a As String * 3	syntax	Expected array
+propset	Optional ByRef a As Class1	semantic	Argument not optional
+propset	Optional ByRef a As New Class1	syntax	Expected: type name
+propset	Optional ByRef a$	semantic	Argument not optional
+propset	Optional ByRef a%	semantic	Argument not optional
+propset	Optional ByRef a$ As String	syntax	Expected: list separator or )
+propset	Optional ByRef a = 1	semantic	Argument not optional
+propset	Optional ByRef a As Long = 1	semantic	Argument not optional
+propset	Optional ByRef a As Variant = 1	semantic	Argument not optional
+propset	Optional ByRef a As Object = Nothing	semantic	Argument not optional
+propset	Optional ByRef a As String = "x"	semantic	Argument not optional
+propset	Optional ByRef a As Long = 1 + 1	semantic	Argument not optional
+propset	Optional ByRef a As Long = x	semantic	Argument not optional
+propset	Optional ByRef a As Long =	syntax	Expected: expression
+propset	Optional ByRef a As Date = #1/1/2000#	semantic	Argument not optional
+propset	Optional ByRef a As Byte = 300	semantic	Argument not optional
+propset	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+propset	ByVal Optional a	semantic	Argument not optional
+propset	ByVal Optional a As Long	semantic	Argument not optional
+propset	ByVal Optional a()	syntax	Array argument must be ByRef
+propset	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+propset	ByVal Optional a As Long()	semantic	Argument not optional
+propset	ByVal Optional a As Variant	semantic	Argument not optional
+propset	ByVal Optional a As Object	semantic	Argument not optional
+propset	ByVal Optional a As String	semantic	Argument not optional
+propset	ByVal Optional a As String * 3	syntax	Expected array
+propset	ByVal Optional a As Class1	semantic	Argument not optional
+propset	ByVal Optional a As New Class1	syntax	Expected: type name
+propset	ByVal Optional a$	semantic	Argument not optional
+propset	ByVal Optional a%	semantic	Argument not optional
+propset	ByVal Optional a$ As String	syntax	Expected: list separator or )
+propset	ByVal Optional a = 1	semantic	Argument not optional
+propset	ByVal Optional a As Long = 1	semantic	Argument not optional
+propset	ByVal Optional a As Variant = 1	semantic	Argument not optional
+propset	ByVal Optional a As Object = Nothing	semantic	Argument not optional
+propset	ByVal Optional a As String = "x"	semantic	Argument not optional
+propset	ByVal Optional a As Long = 1 + 1	semantic	Argument not optional
+propset	ByVal Optional a As Long = x	semantic	Argument not optional
+propset	ByVal Optional a As Long =	syntax	Expected: expression
+propset	ByVal Optional a As Date = #1/1/2000#	semantic	Argument not optional
+propset	ByVal Optional a As Byte = 300	semantic	Argument not optional
+propset	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+propset	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a()	semantic	Argument not optional
+propset	ParamArray a() As Long	semantic	Argument not optional
+propset	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As String * 3	syntax	Expected array
+propset	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As New Class1	syntax	Expected: type name
+propset	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a$ As String	syntax	Expected: list separator or )
+propset	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+propset	ParamArray a() = 1	syntax	Expected: list separator or )
+propset	ByVal ParamArray a	syntax	Expected: identifier
+propset	ByVal ParamArray a As Long	syntax	Expected: identifier
+propset	ByVal ParamArray a()	syntax	Expected: identifier
+propset	ByVal ParamArray a() As Long	syntax	Expected: identifier
+propset	ByVal ParamArray a As Long()	syntax	Expected: identifier
+propset	ByVal ParamArray a As Variant	syntax	Expected: identifier
+propset	ByVal ParamArray a As Object	syntax	Expected: identifier
+propset	ByVal ParamArray a As String	syntax	Expected: identifier
+propset	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+propset	ByVal ParamArray a As Class1	syntax	Expected: identifier
+propset	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+propset	ByVal ParamArray a$	syntax	Expected: identifier
+propset	ByVal ParamArray a%	syntax	Expected: identifier
+propset	ByVal ParamArray a$ As String	syntax	Expected: identifier
+propset	ByVal ParamArray a = 1	syntax	Expected: identifier
+propset	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+propset	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+propset	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+propset	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+propset	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+propset	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+propset	ByVal ParamArray a As Long =	syntax	Expected: identifier
+propset	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+propset	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+propset	ByVal ParamArray a() = 1	syntax	Expected: identifier
+propset	ParamArray ByVal a	syntax	Expected: identifier
+propset	ParamArray ByVal a As Long	syntax	Expected: identifier
+propset	ParamArray ByVal a()	syntax	Expected: identifier
+propset	ParamArray ByVal a() As Long	syntax	Expected: identifier
+propset	ParamArray ByVal a As Long()	syntax	Expected: identifier
+propset	ParamArray ByVal a As Variant	syntax	Expected: identifier
+propset	ParamArray ByVal a As Object	syntax	Expected: identifier
+propset	ParamArray ByVal a As String	syntax	Expected: identifier
+propset	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+propset	ParamArray ByVal a As Class1	syntax	Expected: identifier
+propset	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+propset	ParamArray ByVal a$	syntax	Expected: identifier
+propset	ParamArray ByVal a%	syntax	Expected: identifier
+propset	ParamArray ByVal a$ As String	syntax	Expected: identifier
+propset	ParamArray ByVal a = 1	syntax	Expected: identifier
+propset	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+propset	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+propset	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+propset	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+propset	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+propset	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+propset	ParamArray ByVal a As Long =	syntax	Expected: identifier
+propset	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+propset	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+propset	ParamArray ByVal a() = 1	syntax	Expected: identifier
+propset	Optional ParamArray a	syntax	Expected: identifier
+propset	Optional ParamArray a As Long	syntax	Expected: identifier
+propset	Optional ParamArray a()	syntax	Expected: identifier
+propset	Optional ParamArray a() As Long	syntax	Expected: identifier
+propset	Optional ParamArray a As Long()	syntax	Expected: identifier
+propset	Optional ParamArray a As Variant	syntax	Expected: identifier
+propset	Optional ParamArray a As Object	syntax	Expected: identifier
+propset	Optional ParamArray a As String	syntax	Expected: identifier
+propset	Optional ParamArray a As String * 3	syntax	Expected: identifier
+propset	Optional ParamArray a As Class1	syntax	Expected: identifier
+propset	Optional ParamArray a As New Class1	syntax	Expected: identifier
+propset	Optional ParamArray a$	syntax	Expected: identifier
+propset	Optional ParamArray a%	syntax	Expected: identifier
+propset	Optional ParamArray a$ As String	syntax	Expected: identifier
+propset	Optional ParamArray a = 1	syntax	Expected: identifier
+propset	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+propset	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+propset	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+propset	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+propset	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+propset	Optional ParamArray a As Long = x	syntax	Expected: identifier
+propset	Optional ParamArray a As Long =	syntax	Expected: identifier
+propset	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+propset	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+propset	Optional ParamArray a() = 1	syntax	Expected: identifier
+propset	a, b	accepted	
+propset	a As Long, b As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	Optional a, b	accepted	
+propset	Optional a, ByVal b	accepted	
+propset	a, Optional b	semantic	Argument not optional
+propset	Optional a As Long, b As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	ParamArray a(), b	accepted	
+propset	ParamArray a(), ParamArray b()	syntax	Expected: identifier
+propset	ParamArray a() As Variant	semantic	Argument not optional
+propset	ParamArray a() As Long	semantic	Argument not optional
+propset	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+propset	a, , b	syntax	Expected: identifier
+propset	a,	syntax	Expected: identifier
+propset	()	syntax	Expected: identifier
+propset	ByVal	syntax	Expected: identifier
+propset	Optional	syntax	Expected: identifier
+propset	a As	syntax	Expected: type name
+propset	a As As	syntax	Expected: type name
+propset	Me	syntax	Expected: identifier
+propset	Sub As Long	syntax	Expected: identifier
+propset	Error As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+propset	a, a	syntax	Duplicate declaration in current scope
+propset	a As Long, a As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
+declare	a	accepted	
+declare	a As Long	accepted	
+declare	a()	accepted	
+declare	a() As Long	accepted	
+declare	a As Long()	syntax	Expected: list separator or )
+declare	a As Variant	accepted	
+declare	a As Object	accepted	
+declare	a As String	accepted	
+declare	a As String * 3	syntax	Expected array
+declare	a As Class1	semantic	User-defined type not defined
+declare	a As New Class1	syntax	Expected: type name
+declare	a$	accepted	
+declare	a%	accepted	
+declare	a$ As String	syntax	Expected: list separator or )
+declare	a = 1	syntax	Expected: list separator or )
+declare	a As Long = 1	syntax	Expected: list separator or )
+declare	a As Variant = 1	syntax	Expected: list separator or )
+declare	a As Object = Nothing	syntax	Expected: list separator or )
+declare	a As String = "x"	syntax	Expected: list separator or )
+declare	a As Long = 1 + 1	syntax	Expected: list separator or )
+declare	a As Long = x	syntax	Expected: list separator or )
+declare	a As Long =	syntax	Expected: list separator or )
+declare	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+declare	a As Byte = 300	syntax	Expected: list separator or )
+declare	a() = 1	syntax	Expected: list separator or )
+declare	ByVal a	accepted	
+declare	ByVal a As Long	accepted	
+declare	ByVal a()	syntax	Array argument must be ByRef
+declare	ByVal a() As Long	syntax	Array argument must be ByRef
+declare	ByVal a As Long()	syntax	Expected: list separator or )
+declare	ByVal a As Variant	accepted	
+declare	ByVal a As Object	accepted	
+declare	ByVal a As String	accepted	
+declare	ByVal a As String * 3	syntax	Expected array
+declare	ByVal a As Class1	semantic	User-defined type not defined
+declare	ByVal a As New Class1	syntax	Expected: type name
+declare	ByVal a$	accepted	
+declare	ByVal a%	accepted	
+declare	ByVal a$ As String	syntax	Expected: list separator or )
+declare	ByVal a = 1	syntax	Expected: list separator or )
+declare	ByVal a As Long = 1	syntax	Expected: list separator or )
+declare	ByVal a As Variant = 1	syntax	Expected: list separator or )
+declare	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+declare	ByVal a As String = "x"	syntax	Expected: list separator or )
+declare	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+declare	ByVal a As Long = x	syntax	Expected: list separator or )
+declare	ByVal a As Long =	syntax	Expected: list separator or )
+declare	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+declare	ByVal a As Byte = 300	syntax	Expected: list separator or )
+declare	ByVal a() = 1	syntax	Array argument must be ByRef
+declare	ByRef a	accepted	
+declare	ByRef a As Long	accepted	
+declare	ByRef a()	accepted	
+declare	ByRef a() As Long	accepted	
+declare	ByRef a As Long()	syntax	Expected: list separator or )
+declare	ByRef a As Variant	accepted	
+declare	ByRef a As Object	accepted	
+declare	ByRef a As String	accepted	
+declare	ByRef a As String * 3	syntax	Expected array
+declare	ByRef a As Class1	semantic	User-defined type not defined
+declare	ByRef a As New Class1	syntax	Expected: type name
+declare	ByRef a$	accepted	
+declare	ByRef a%	accepted	
+declare	ByRef a$ As String	syntax	Expected: list separator or )
+declare	ByRef a = 1	syntax	Expected: list separator or )
+declare	ByRef a As Long = 1	syntax	Expected: list separator or )
+declare	ByRef a As Variant = 1	syntax	Expected: list separator or )
+declare	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+declare	ByRef a As String = "x"	syntax	Expected: list separator or )
+declare	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+declare	ByRef a As Long = x	syntax	Expected: list separator or )
+declare	ByRef a As Long =	syntax	Expected: list separator or )
+declare	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+declare	ByRef a As Byte = 300	syntax	Expected: list separator or )
+declare	ByRef a() = 1	syntax	Expected: list separator or )
+declare	Optional a	accepted	
+declare	Optional a As Long	accepted	
+declare	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+declare	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+declare	Optional a As Long()	syntax	Expected: list separator or )
+declare	Optional a As Variant	accepted	
+declare	Optional a As Object	accepted	
+declare	Optional a As String	accepted	
+declare	Optional a As String * 3	syntax	Expected array
+declare	Optional a As Class1	semantic	User-defined type not defined
+declare	Optional a As New Class1	syntax	Expected: type name
+declare	Optional a$	accepted	
+declare	Optional a%	accepted	
+declare	Optional a$ As String	syntax	Expected: list separator or )
+declare	Optional a = 1	accepted	
+declare	Optional a As Long = 1	accepted	
+declare	Optional a As Variant = 1	accepted	
+declare	Optional a As Object = Nothing	accepted	
+declare	Optional a As String = "x"	accepted	
+declare	Optional a As Long = 1 + 1	accepted	
+declare	Optional a As Long = x	semantic	Constant expression required
+declare	Optional a As Long =	syntax	Expected: expression
+declare	Optional a As Date = #1/1/2000#	accepted	
+declare	Optional a As Byte = 300	syntax	Overflow
+declare	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+declare	Optional ByVal a	accepted	
+declare	Optional ByVal a As Long	accepted	
+declare	Optional ByVal a()	syntax	Array argument must be ByRef
+declare	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+declare	Optional ByVal a As Long()	syntax	Expected: list separator or )
+declare	Optional ByVal a As Variant	accepted	
+declare	Optional ByVal a As Object	accepted	
+declare	Optional ByVal a As String	accepted	
+declare	Optional ByVal a As String * 3	syntax	Expected array
+declare	Optional ByVal a As Class1	semantic	User-defined type not defined
+declare	Optional ByVal a As New Class1	syntax	Expected: type name
+declare	Optional ByVal a$	accepted	
+declare	Optional ByVal a%	accepted	
+declare	Optional ByVal a$ As String	syntax	Expected: list separator or )
+declare	Optional ByVal a = 1	accepted	
+declare	Optional ByVal a As Long = 1	accepted	
+declare	Optional ByVal a As Variant = 1	accepted	
+declare	Optional ByVal a As Object = Nothing	accepted	
+declare	Optional ByVal a As String = "x"	accepted	
+declare	Optional ByVal a As Long = 1 + 1	accepted	
+declare	Optional ByVal a As Long = x	semantic	Constant expression required
+declare	Optional ByVal a As Long =	syntax	Expected: expression
+declare	Optional ByVal a As Date = #1/1/2000#	accepted	
+declare	Optional ByVal a As Byte = 300	syntax	Overflow
+declare	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+declare	Optional ByRef a	accepted	
+declare	Optional ByRef a As Long	accepted	
+declare	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+declare	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+declare	Optional ByRef a As Long()	syntax	Expected: list separator or )
+declare	Optional ByRef a As Variant	accepted	
+declare	Optional ByRef a As Object	accepted	
+declare	Optional ByRef a As String	accepted	
+declare	Optional ByRef a As String * 3	syntax	Expected array
+declare	Optional ByRef a As Class1	semantic	User-defined type not defined
+declare	Optional ByRef a As New Class1	syntax	Expected: type name
+declare	Optional ByRef a$	accepted	
+declare	Optional ByRef a%	accepted	
+declare	Optional ByRef a$ As String	syntax	Expected: list separator or )
+declare	Optional ByRef a = 1	accepted	
+declare	Optional ByRef a As Long = 1	accepted	
+declare	Optional ByRef a As Variant = 1	accepted	
+declare	Optional ByRef a As Object = Nothing	accepted	
+declare	Optional ByRef a As String = "x"	accepted	
+declare	Optional ByRef a As Long = 1 + 1	accepted	
+declare	Optional ByRef a As Long = x	semantic	Constant expression required
+declare	Optional ByRef a As Long =	syntax	Expected: expression
+declare	Optional ByRef a As Date = #1/1/2000#	accepted	
+declare	Optional ByRef a As Byte = 300	syntax	Overflow
+declare	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+declare	ByVal Optional a	accepted	
+declare	ByVal Optional a As Long	accepted	
+declare	ByVal Optional a()	syntax	Array argument must be ByRef
+declare	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+declare	ByVal Optional a As Long()	syntax	Expected: list separator or )
+declare	ByVal Optional a As Variant	accepted	
+declare	ByVal Optional a As Object	accepted	
+declare	ByVal Optional a As String	accepted	
+declare	ByVal Optional a As String * 3	syntax	Expected array
+declare	ByVal Optional a As Class1	semantic	User-defined type not defined
+declare	ByVal Optional a As New Class1	syntax	Expected: type name
+declare	ByVal Optional a$	accepted	
+declare	ByVal Optional a%	accepted	
+declare	ByVal Optional a$ As String	syntax	Expected: list separator or )
+declare	ByVal Optional a = 1	accepted	
+declare	ByVal Optional a As Long = 1	accepted	
+declare	ByVal Optional a As Variant = 1	accepted	
+declare	ByVal Optional a As Object = Nothing	accepted	
+declare	ByVal Optional a As String = "x"	accepted	
+declare	ByVal Optional a As Long = 1 + 1	accepted	
+declare	ByVal Optional a As Long = x	semantic	Constant expression required
+declare	ByVal Optional a As Long =	syntax	Expected: expression
+declare	ByVal Optional a As Date = #1/1/2000#	accepted	
+declare	ByVal Optional a As Byte = 300	syntax	Overflow
+declare	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+declare	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a()	accepted	
+declare	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As String * 3	syntax	Expected array
+declare	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As New Class1	syntax	Expected: type name
+declare	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a$ As String	syntax	Expected: list separator or )
+declare	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a() = 1	syntax	Expected: list separator or )
+declare	ByVal ParamArray a	syntax	Expected: identifier
+declare	ByVal ParamArray a As Long	syntax	Expected: identifier
+declare	ByVal ParamArray a()	syntax	Expected: identifier
+declare	ByVal ParamArray a() As Long	syntax	Expected: identifier
+declare	ByVal ParamArray a As Long()	syntax	Expected: identifier
+declare	ByVal ParamArray a As Variant	syntax	Expected: identifier
+declare	ByVal ParamArray a As Object	syntax	Expected: identifier
+declare	ByVal ParamArray a As String	syntax	Expected: identifier
+declare	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+declare	ByVal ParamArray a As Class1	syntax	Expected: identifier
+declare	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+declare	ByVal ParamArray a$	syntax	Expected: identifier
+declare	ByVal ParamArray a%	syntax	Expected: identifier
+declare	ByVal ParamArray a$ As String	syntax	Expected: identifier
+declare	ByVal ParamArray a = 1	syntax	Expected: identifier
+declare	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+declare	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+declare	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+declare	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+declare	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+declare	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+declare	ByVal ParamArray a As Long =	syntax	Expected: identifier
+declare	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+declare	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+declare	ByVal ParamArray a() = 1	syntax	Expected: identifier
+declare	ParamArray ByVal a	syntax	Expected: identifier
+declare	ParamArray ByVal a As Long	syntax	Expected: identifier
+declare	ParamArray ByVal a()	syntax	Expected: identifier
+declare	ParamArray ByVal a() As Long	syntax	Expected: identifier
+declare	ParamArray ByVal a As Long()	syntax	Expected: identifier
+declare	ParamArray ByVal a As Variant	syntax	Expected: identifier
+declare	ParamArray ByVal a As Object	syntax	Expected: identifier
+declare	ParamArray ByVal a As String	syntax	Expected: identifier
+declare	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+declare	ParamArray ByVal a As Class1	syntax	Expected: identifier
+declare	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+declare	ParamArray ByVal a$	syntax	Expected: identifier
+declare	ParamArray ByVal a%	syntax	Expected: identifier
+declare	ParamArray ByVal a$ As String	syntax	Expected: identifier
+declare	ParamArray ByVal a = 1	syntax	Expected: identifier
+declare	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+declare	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+declare	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+declare	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+declare	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+declare	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+declare	ParamArray ByVal a As Long =	syntax	Expected: identifier
+declare	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+declare	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+declare	ParamArray ByVal a() = 1	syntax	Expected: identifier
+declare	Optional ParamArray a	syntax	Expected: identifier
+declare	Optional ParamArray a As Long	syntax	Expected: identifier
+declare	Optional ParamArray a()	syntax	Expected: identifier
+declare	Optional ParamArray a() As Long	syntax	Expected: identifier
+declare	Optional ParamArray a As Long()	syntax	Expected: identifier
+declare	Optional ParamArray a As Variant	syntax	Expected: identifier
+declare	Optional ParamArray a As Object	syntax	Expected: identifier
+declare	Optional ParamArray a As String	syntax	Expected: identifier
+declare	Optional ParamArray a As String * 3	syntax	Expected: identifier
+declare	Optional ParamArray a As Class1	syntax	Expected: identifier
+declare	Optional ParamArray a As New Class1	syntax	Expected: identifier
+declare	Optional ParamArray a$	syntax	Expected: identifier
+declare	Optional ParamArray a%	syntax	Expected: identifier
+declare	Optional ParamArray a$ As String	syntax	Expected: identifier
+declare	Optional ParamArray a = 1	syntax	Expected: identifier
+declare	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+declare	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+declare	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+declare	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+declare	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+declare	Optional ParamArray a As Long = x	syntax	Expected: identifier
+declare	Optional ParamArray a As Long =	syntax	Expected: identifier
+declare	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+declare	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+declare	Optional ParamArray a() = 1	syntax	Expected: identifier
+declare	a, b	accepted	
+declare	a As Long, b As Long	accepted	
+declare	Optional a, b	syntax	Expected: Optional
+declare	Optional a, ByVal b	syntax	Expected: Optional
+declare	a, Optional b	accepted	
+declare	Optional a As Long, b As Long	syntax	Expected: Optional
+declare	ParamArray a(), b	syntax	Expected: )
+declare	ParamArray a(), ParamArray b()	syntax	Expected: )
+declare	ParamArray a() As Variant	accepted	
+declare	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+declare	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+declare	a, , b	syntax	Expected: identifier
+declare	a,	syntax	Expected: identifier
+declare	()	syntax	Expected: identifier
+declare	ByVal	syntax	Expected: identifier
+declare	Optional	syntax	Expected: identifier
+declare	a As	syntax	Expected: type name
+declare	a As As	syntax	Expected: type name
+declare	Me	syntax	Expected: identifier
+declare	Sub As Long	syntax	Expected: identifier
+declare	Error As Long	accepted	
+declare	a, a	accepted	
+declare	a As Long, a As Long	accepted	
+declsub	a	accepted	
+declsub	a As Long	accepted	
+declsub	a()	accepted	
+declsub	a() As Long	accepted	
+declsub	a As Long()	syntax	Expected: list separator or )
+declsub	a As Variant	accepted	
+declsub	a As Object	accepted	
+declsub	a As String	accepted	
+declsub	a As String * 3	syntax	Expected array
+declsub	a As Class1	semantic	User-defined type not defined
+declsub	a As New Class1	syntax	Expected: type name
+declsub	a$	accepted	
+declsub	a%	accepted	
+declsub	a$ As String	syntax	Expected: list separator or )
+declsub	a = 1	syntax	Expected: list separator or )
+declsub	a As Long = 1	syntax	Expected: list separator or )
+declsub	a As Variant = 1	syntax	Expected: list separator or )
+declsub	a As Object = Nothing	syntax	Expected: list separator or )
+declsub	a As String = "x"	syntax	Expected: list separator or )
+declsub	a As Long = 1 + 1	syntax	Expected: list separator or )
+declsub	a As Long = x	syntax	Expected: list separator or )
+declsub	a As Long =	syntax	Expected: list separator or )
+declsub	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+declsub	a As Byte = 300	syntax	Expected: list separator or )
+declsub	a() = 1	syntax	Expected: list separator or )
+declsub	ByVal a	accepted	
+declsub	ByVal a As Long	accepted	
+declsub	ByVal a()	syntax	Array argument must be ByRef
+declsub	ByVal a() As Long	syntax	Array argument must be ByRef
+declsub	ByVal a As Long()	syntax	Expected: list separator or )
+declsub	ByVal a As Variant	accepted	
+declsub	ByVal a As Object	accepted	
+declsub	ByVal a As String	accepted	
+declsub	ByVal a As String * 3	syntax	Expected array
+declsub	ByVal a As Class1	semantic	User-defined type not defined
+declsub	ByVal a As New Class1	syntax	Expected: type name
+declsub	ByVal a$	accepted	
+declsub	ByVal a%	accepted	
+declsub	ByVal a$ As String	syntax	Expected: list separator or )
+declsub	ByVal a = 1	syntax	Expected: list separator or )
+declsub	ByVal a As Long = 1	syntax	Expected: list separator or )
+declsub	ByVal a As Variant = 1	syntax	Expected: list separator or )
+declsub	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+declsub	ByVal a As String = "x"	syntax	Expected: list separator or )
+declsub	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+declsub	ByVal a As Long = x	syntax	Expected: list separator or )
+declsub	ByVal a As Long =	syntax	Expected: list separator or )
+declsub	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+declsub	ByVal a As Byte = 300	syntax	Expected: list separator or )
+declsub	ByVal a() = 1	syntax	Array argument must be ByRef
+declsub	ByRef a	accepted	
+declsub	ByRef a As Long	accepted	
+declsub	ByRef a()	accepted	
+declsub	ByRef a() As Long	accepted	
+declsub	ByRef a As Long()	syntax	Expected: list separator or )
+declsub	ByRef a As Variant	accepted	
+declsub	ByRef a As Object	accepted	
+declsub	ByRef a As String	accepted	
+declsub	ByRef a As String * 3	syntax	Expected array
+declsub	ByRef a As Class1	semantic	User-defined type not defined
+declsub	ByRef a As New Class1	syntax	Expected: type name
+declsub	ByRef a$	accepted	
+declsub	ByRef a%	accepted	
+declsub	ByRef a$ As String	syntax	Expected: list separator or )
+declsub	ByRef a = 1	syntax	Expected: list separator or )
+declsub	ByRef a As Long = 1	syntax	Expected: list separator or )
+declsub	ByRef a As Variant = 1	syntax	Expected: list separator or )
+declsub	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+declsub	ByRef a As String = "x"	syntax	Expected: list separator or )
+declsub	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+declsub	ByRef a As Long = x	syntax	Expected: list separator or )
+declsub	ByRef a As Long =	syntax	Expected: list separator or )
+declsub	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+declsub	ByRef a As Byte = 300	syntax	Expected: list separator or )
+declsub	ByRef a() = 1	syntax	Expected: list separator or )
+declsub	Optional a	accepted	
+declsub	Optional a As Long	accepted	
+declsub	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+declsub	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+declsub	Optional a As Long()	syntax	Expected: list separator or )
+declsub	Optional a As Variant	accepted	
+declsub	Optional a As Object	accepted	
+declsub	Optional a As String	accepted	
+declsub	Optional a As String * 3	syntax	Expected array
+declsub	Optional a As Class1	semantic	User-defined type not defined
+declsub	Optional a As New Class1	syntax	Expected: type name
+declsub	Optional a$	accepted	
+declsub	Optional a%	accepted	
+declsub	Optional a$ As String	syntax	Expected: list separator or )
+declsub	Optional a = 1	accepted	
+declsub	Optional a As Long = 1	accepted	
+declsub	Optional a As Variant = 1	accepted	
+declsub	Optional a As Object = Nothing	accepted	
+declsub	Optional a As String = "x"	accepted	
+declsub	Optional a As Long = 1 + 1	accepted	
+declsub	Optional a As Long = x	semantic	Constant expression required
+declsub	Optional a As Long =	syntax	Expected: expression
+declsub	Optional a As Date = #1/1/2000#	accepted	
+declsub	Optional a As Byte = 300	syntax	Overflow
+declsub	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+declsub	Optional ByVal a	accepted	
+declsub	Optional ByVal a As Long	accepted	
+declsub	Optional ByVal a()	syntax	Array argument must be ByRef
+declsub	Optional ByVal a() As Long	syntax	Array argument must be ByRef
+declsub	Optional ByVal a As Long()	syntax	Expected: list separator or )
+declsub	Optional ByVal a As Variant	accepted	
+declsub	Optional ByVal a As Object	accepted	
+declsub	Optional ByVal a As String	accepted	
+declsub	Optional ByVal a As String * 3	syntax	Expected array
+declsub	Optional ByVal a As Class1	semantic	User-defined type not defined
+declsub	Optional ByVal a As New Class1	syntax	Expected: type name
+declsub	Optional ByVal a$	accepted	
+declsub	Optional ByVal a%	accepted	
+declsub	Optional ByVal a$ As String	syntax	Expected: list separator or )
+declsub	Optional ByVal a = 1	accepted	
+declsub	Optional ByVal a As Long = 1	accepted	
+declsub	Optional ByVal a As Variant = 1	accepted	
+declsub	Optional ByVal a As Object = Nothing	accepted	
+declsub	Optional ByVal a As String = "x"	accepted	
+declsub	Optional ByVal a As Long = 1 + 1	accepted	
+declsub	Optional ByVal a As Long = x	semantic	Constant expression required
+declsub	Optional ByVal a As Long =	syntax	Expected: expression
+declsub	Optional ByVal a As Date = #1/1/2000#	accepted	
+declsub	Optional ByVal a As Byte = 300	syntax	Overflow
+declsub	Optional ByVal a() = 1	syntax	Array argument must be ByRef
+declsub	Optional ByRef a	accepted	
+declsub	Optional ByRef a As Long	accepted	
+declsub	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
+declsub	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
+declsub	Optional ByRef a As Long()	syntax	Expected: list separator or )
+declsub	Optional ByRef a As Variant	accepted	
+declsub	Optional ByRef a As Object	accepted	
+declsub	Optional ByRef a As String	accepted	
+declsub	Optional ByRef a As String * 3	syntax	Expected array
+declsub	Optional ByRef a As Class1	semantic	User-defined type not defined
+declsub	Optional ByRef a As New Class1	syntax	Expected: type name
+declsub	Optional ByRef a$	accepted	
+declsub	Optional ByRef a%	accepted	
+declsub	Optional ByRef a$ As String	syntax	Expected: list separator or )
+declsub	Optional ByRef a = 1	accepted	
+declsub	Optional ByRef a As Long = 1	accepted	
+declsub	Optional ByRef a As Variant = 1	accepted	
+declsub	Optional ByRef a As Object = Nothing	accepted	
+declsub	Optional ByRef a As String = "x"	accepted	
+declsub	Optional ByRef a As Long = 1 + 1	accepted	
+declsub	Optional ByRef a As Long = x	semantic	Constant expression required
+declsub	Optional ByRef a As Long =	syntax	Expected: expression
+declsub	Optional ByRef a As Date = #1/1/2000#	accepted	
+declsub	Optional ByRef a As Byte = 300	syntax	Overflow
+declsub	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
+declsub	ByVal Optional a	accepted	
+declsub	ByVal Optional a As Long	accepted	
+declsub	ByVal Optional a()	syntax	Array argument must be ByRef
+declsub	ByVal Optional a() As Long	syntax	Array argument must be ByRef
+declsub	ByVal Optional a As Long()	syntax	Expected: list separator or )
+declsub	ByVal Optional a As Variant	accepted	
+declsub	ByVal Optional a As Object	accepted	
+declsub	ByVal Optional a As String	accepted	
+declsub	ByVal Optional a As String * 3	syntax	Expected array
+declsub	ByVal Optional a As Class1	semantic	User-defined type not defined
+declsub	ByVal Optional a As New Class1	syntax	Expected: type name
+declsub	ByVal Optional a$	accepted	
+declsub	ByVal Optional a%	accepted	
+declsub	ByVal Optional a$ As String	syntax	Expected: list separator or )
+declsub	ByVal Optional a = 1	accepted	
+declsub	ByVal Optional a As Long = 1	accepted	
+declsub	ByVal Optional a As Variant = 1	accepted	
+declsub	ByVal Optional a As Object = Nothing	accepted	
+declsub	ByVal Optional a As String = "x"	accepted	
+declsub	ByVal Optional a As Long = 1 + 1	accepted	
+declsub	ByVal Optional a As Long = x	semantic	Constant expression required
+declsub	ByVal Optional a As Long =	syntax	Expected: expression
+declsub	ByVal Optional a As Date = #1/1/2000#	accepted	
+declsub	ByVal Optional a As Byte = 300	syntax	Overflow
+declsub	ByVal Optional a() = 1	syntax	Array argument must be ByRef
+declsub	ParamArray a	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a()	accepted	
+declsub	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As String	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As String * 3	syntax	Expected array
+declsub	ParamArray a As Class1	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As New Class1	syntax	Expected: type name
+declsub	ParamArray a$	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a%	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a$ As String	syntax	Expected: list separator or )
+declsub	ParamArray a = 1	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Long = 1	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Variant = 1	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Object = Nothing	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As String = "x"	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Long = 1 + 1	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Long = x	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Long =	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Date = #1/1/2000#	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Byte = 300	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a() = 1	syntax	Expected: list separator or )
+declsub	ByVal ParamArray a	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Long	syntax	Expected: identifier
+declsub	ByVal ParamArray a()	syntax	Expected: identifier
+declsub	ByVal ParamArray a() As Long	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Long()	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Variant	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Object	syntax	Expected: identifier
+declsub	ByVal ParamArray a As String	syntax	Expected: identifier
+declsub	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Class1	syntax	Expected: identifier
+declsub	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+declsub	ByVal ParamArray a$	syntax	Expected: identifier
+declsub	ByVal ParamArray a%	syntax	Expected: identifier
+declsub	ByVal ParamArray a$ As String	syntax	Expected: identifier
+declsub	ByVal ParamArray a = 1	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+declsub	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Long =	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+declsub	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+declsub	ByVal ParamArray a() = 1	syntax	Expected: identifier
+declsub	ParamArray ByVal a	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Long	syntax	Expected: identifier
+declsub	ParamArray ByVal a()	syntax	Expected: identifier
+declsub	ParamArray ByVal a() As Long	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Long()	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Variant	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Object	syntax	Expected: identifier
+declsub	ParamArray ByVal a As String	syntax	Expected: identifier
+declsub	ParamArray ByVal a As String * 3	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Class1	syntax	Expected: identifier
+declsub	ParamArray ByVal a As New Class1	syntax	Expected: identifier
+declsub	ParamArray ByVal a$	syntax	Expected: identifier
+declsub	ParamArray ByVal a%	syntax	Expected: identifier
+declsub	ParamArray ByVal a$ As String	syntax	Expected: identifier
+declsub	ParamArray ByVal a = 1	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Long = 1	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Variant = 1	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Object = Nothing	syntax	Expected: identifier
+declsub	ParamArray ByVal a As String = "x"	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Long = 1 + 1	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Long = x	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Long =	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Date = #1/1/2000#	syntax	Expected: identifier
+declsub	ParamArray ByVal a As Byte = 300	syntax	Expected: identifier
+declsub	ParamArray ByVal a() = 1	syntax	Expected: identifier
+declsub	Optional ParamArray a	syntax	Expected: identifier
+declsub	Optional ParamArray a As Long	syntax	Expected: identifier
+declsub	Optional ParamArray a()	syntax	Expected: identifier
+declsub	Optional ParamArray a() As Long	syntax	Expected: identifier
+declsub	Optional ParamArray a As Long()	syntax	Expected: identifier
+declsub	Optional ParamArray a As Variant	syntax	Expected: identifier
+declsub	Optional ParamArray a As Object	syntax	Expected: identifier
+declsub	Optional ParamArray a As String	syntax	Expected: identifier
+declsub	Optional ParamArray a As String * 3	syntax	Expected: identifier
+declsub	Optional ParamArray a As Class1	syntax	Expected: identifier
+declsub	Optional ParamArray a As New Class1	syntax	Expected: identifier
+declsub	Optional ParamArray a$	syntax	Expected: identifier
+declsub	Optional ParamArray a%	syntax	Expected: identifier
+declsub	Optional ParamArray a$ As String	syntax	Expected: identifier
+declsub	Optional ParamArray a = 1	syntax	Expected: identifier
+declsub	Optional ParamArray a As Long = 1	syntax	Expected: identifier
+declsub	Optional ParamArray a As Variant = 1	syntax	Expected: identifier
+declsub	Optional ParamArray a As Object = Nothing	syntax	Expected: identifier
+declsub	Optional ParamArray a As String = "x"	syntax	Expected: identifier
+declsub	Optional ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+declsub	Optional ParamArray a As Long = x	syntax	Expected: identifier
+declsub	Optional ParamArray a As Long =	syntax	Expected: identifier
+declsub	Optional ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+declsub	Optional ParamArray a As Byte = 300	syntax	Expected: identifier
+declsub	Optional ParamArray a() = 1	syntax	Expected: identifier
+declsub	a, b	accepted	
+declsub	a As Long, b As Long	accepted	
+declsub	Optional a, b	syntax	Expected: Optional
+declsub	Optional a, ByVal b	syntax	Expected: Optional
+declsub	a, Optional b	accepted	
+declsub	Optional a As Long, b As Long	syntax	Expected: Optional
+declsub	ParamArray a(), b	syntax	Expected: )
+declsub	ParamArray a(), ParamArray b()	syntax	Expected: )
+declsub	ParamArray a() As Variant	accepted	
+declsub	ParamArray a() As Long	syntax	ParamArray must be declared as an array of Variant
+declsub	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
+declsub	a, , b	syntax	Expected: identifier
+declsub	a,	syntax	Expected: identifier
+declsub	()	syntax	Expected: identifier
+declsub	ByVal	syntax	Expected: identifier
+declsub	Optional	syntax	Expected: identifier
+declsub	a As	syntax	Expected: type name
+declsub	a As As	syntax	Expected: type name
+declsub	Me	syntax	Expected: identifier
+declsub	Sub As Long	syntax	Expected: identifier
+declsub	Error As Long	accepted	
+declsub	a, a	accepted	
+declsub	a As Long, a As Long	accepted	
+event	a	accepted	
+event	a As Long	accepted	
+event	a()	accepted	
+event	a() As Long	accepted	
+event	a As Long()	syntax	Expected: list separator or )
+event	a As Variant	accepted	
+event	a As Object	accepted	
+event	a As String	accepted	
+event	a As String * 3	syntax	Expected array
+event	a As Class1	accepted	
+event	a As New Class1	syntax	Expected: type name
+event	a$	accepted	
+event	a%	accepted	
+event	a$ As String	syntax	Expected: list separator or )
+event	a = 1	syntax	Expected: list separator or )
+event	a As Long = 1	syntax	Expected: list separator or )
+event	a As Variant = 1	syntax	Expected: list separator or )
+event	a As Object = Nothing	syntax	Expected: list separator or )
+event	a As String = "x"	syntax	Expected: list separator or )
+event	a As Long = 1 + 1	syntax	Expected: list separator or )
+event	a As Long = x	syntax	Expected: list separator or )
+event	a As Long =	syntax	Expected: list separator or )
+event	a As Date = #1/1/2000#	syntax	Expected: list separator or )
+event	a As Byte = 300	syntax	Expected: list separator or )
+event	a() = 1	syntax	Expected: list separator or )
+event	ByVal a	accepted	
+event	ByVal a As Long	accepted	
+event	ByVal a()	syntax	Array argument must be ByRef
+event	ByVal a() As Long	syntax	Array argument must be ByRef
+event	ByVal a As Long()	syntax	Expected: list separator or )
+event	ByVal a As Variant	accepted	
+event	ByVal a As Object	accepted	
+event	ByVal a As String	accepted	
+event	ByVal a As String * 3	syntax	Expected array
+event	ByVal a As Class1	accepted	
+event	ByVal a As New Class1	syntax	Expected: type name
+event	ByVal a$	accepted	
+event	ByVal a%	accepted	
+event	ByVal a$ As String	syntax	Expected: list separator or )
+event	ByVal a = 1	syntax	Expected: list separator or )
+event	ByVal a As Long = 1	syntax	Expected: list separator or )
+event	ByVal a As Variant = 1	syntax	Expected: list separator or )
+event	ByVal a As Object = Nothing	syntax	Expected: list separator or )
+event	ByVal a As String = "x"	syntax	Expected: list separator or )
+event	ByVal a As Long = 1 + 1	syntax	Expected: list separator or )
+event	ByVal a As Long = x	syntax	Expected: list separator or )
+event	ByVal a As Long =	syntax	Expected: list separator or )
+event	ByVal a As Date = #1/1/2000#	syntax	Expected: list separator or )
+event	ByVal a As Byte = 300	syntax	Expected: list separator or )
+event	ByVal a() = 1	syntax	Array argument must be ByRef
+event	ByRef a	accepted	
+event	ByRef a As Long	accepted	
+event	ByRef a()	accepted	
+event	ByRef a() As Long	accepted	
+event	ByRef a As Long()	syntax	Expected: list separator or )
+event	ByRef a As Variant	accepted	
+event	ByRef a As Object	accepted	
+event	ByRef a As String	accepted	
+event	ByRef a As String * 3	syntax	Expected array
+event	ByRef a As Class1	accepted	
+event	ByRef a As New Class1	syntax	Expected: type name
+event	ByRef a$	accepted	
+event	ByRef a%	accepted	
+event	ByRef a$ As String	syntax	Expected: list separator or )
+event	ByRef a = 1	syntax	Expected: list separator or )
+event	ByRef a As Long = 1	syntax	Expected: list separator or )
+event	ByRef a As Variant = 1	syntax	Expected: list separator or )
+event	ByRef a As Object = Nothing	syntax	Expected: list separator or )
+event	ByRef a As String = "x"	syntax	Expected: list separator or )
+event	ByRef a As Long = 1 + 1	syntax	Expected: list separator or )
+event	ByRef a As Long = x	syntax	Expected: list separator or )
+event	ByRef a As Long =	syntax	Expected: list separator or )
+event	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
+event	ByRef a As Byte = 300	syntax	Expected: list separator or )
+event	ByRef a() = 1	syntax	Expected: list separator or )
+event	Optional a	syntax	Syntax error
+event	Optional a As Long	syntax	Syntax error
+event	Optional a()	syntax	Syntax error
+event	Optional a() As Long	syntax	Syntax error
+event	Optional a As Long()	syntax	Syntax error
+event	Optional a As Variant	syntax	Syntax error
+event	Optional a As Object	syntax	Syntax error
+event	Optional a As String	syntax	Syntax error
+event	Optional a As String * 3	syntax	Syntax error
+event	Optional a As Class1	syntax	Syntax error
+event	Optional a As New Class1	syntax	Syntax error
+event	Optional a$	syntax	Syntax error
+event	Optional a%	syntax	Syntax error
+event	Optional a$ As String	syntax	Syntax error
+event	Optional a = 1	syntax	Syntax error
+event	Optional a As Long = 1	syntax	Syntax error
+event	Optional a As Variant = 1	syntax	Syntax error
+event	Optional a As Object = Nothing	syntax	Syntax error
+event	Optional a As String = "x"	syntax	Syntax error
+event	Optional a As Long = 1 + 1	syntax	Syntax error
+event	Optional a As Long = x	syntax	Syntax error
+event	Optional a As Long =	syntax	Syntax error
+event	Optional a As Date = #1/1/2000#	syntax	Syntax error
+event	Optional a As Byte = 300	syntax	Syntax error
+event	Optional a() = 1	syntax	Syntax error
+event	Optional ByVal a	syntax	Syntax error
+event	Optional ByVal a As Long	syntax	Syntax error
+event	Optional ByVal a()	syntax	Syntax error
+event	Optional ByVal a() As Long	syntax	Syntax error
+event	Optional ByVal a As Long()	syntax	Syntax error
+event	Optional ByVal a As Variant	syntax	Syntax error
+event	Optional ByVal a As Object	syntax	Syntax error
+event	Optional ByVal a As String	syntax	Syntax error
+event	Optional ByVal a As String * 3	syntax	Syntax error
+event	Optional ByVal a As Class1	syntax	Syntax error
+event	Optional ByVal a As New Class1	syntax	Syntax error
+event	Optional ByVal a$	syntax	Syntax error
+event	Optional ByVal a%	syntax	Syntax error
+event	Optional ByVal a$ As String	syntax	Syntax error
+event	Optional ByVal a = 1	syntax	Syntax error
+event	Optional ByVal a As Long = 1	syntax	Syntax error
+event	Optional ByVal a As Variant = 1	syntax	Syntax error
+event	Optional ByVal a As Object = Nothing	syntax	Syntax error
+event	Optional ByVal a As String = "x"	syntax	Syntax error
+event	Optional ByVal a As Long = 1 + 1	syntax	Syntax error
+event	Optional ByVal a As Long = x	syntax	Syntax error
+event	Optional ByVal a As Long =	syntax	Syntax error
+event	Optional ByVal a As Date = #1/1/2000#	syntax	Syntax error
+event	Optional ByVal a As Byte = 300	syntax	Syntax error
+event	Optional ByVal a() = 1	syntax	Syntax error
+event	Optional ByRef a	syntax	Syntax error
+event	Optional ByRef a As Long	syntax	Syntax error
+event	Optional ByRef a()	syntax	Syntax error
+event	Optional ByRef a() As Long	syntax	Syntax error
+event	Optional ByRef a As Long()	syntax	Syntax error
+event	Optional ByRef a As Variant	syntax	Syntax error
+event	Optional ByRef a As Object	syntax	Syntax error
+event	Optional ByRef a As String	syntax	Syntax error
+event	Optional ByRef a As String * 3	syntax	Syntax error
+event	Optional ByRef a As Class1	syntax	Syntax error
+event	Optional ByRef a As New Class1	syntax	Syntax error
+event	Optional ByRef a$	syntax	Syntax error
+event	Optional ByRef a%	syntax	Syntax error
+event	Optional ByRef a$ As String	syntax	Syntax error
+event	Optional ByRef a = 1	syntax	Syntax error
+event	Optional ByRef a As Long = 1	syntax	Syntax error
+event	Optional ByRef a As Variant = 1	syntax	Syntax error
+event	Optional ByRef a As Object = Nothing	syntax	Syntax error
+event	Optional ByRef a As String = "x"	syntax	Syntax error
+event	Optional ByRef a As Long = 1 + 1	syntax	Syntax error
+event	Optional ByRef a As Long = x	syntax	Syntax error
+event	Optional ByRef a As Long =	syntax	Syntax error
+event	Optional ByRef a As Date = #1/1/2000#	syntax	Syntax error
+event	Optional ByRef a As Byte = 300	syntax	Syntax error
+event	Optional ByRef a() = 1	syntax	Syntax error
+event	ByVal Optional a	syntax	Syntax error
+event	ByVal Optional a As Long	syntax	Syntax error
+event	ByVal Optional a()	syntax	Syntax error
+event	ByVal Optional a() As Long	syntax	Syntax error
+event	ByVal Optional a As Long()	syntax	Syntax error
+event	ByVal Optional a As Variant	syntax	Syntax error
+event	ByVal Optional a As Object	syntax	Syntax error
+event	ByVal Optional a As String	syntax	Syntax error
+event	ByVal Optional a As String * 3	syntax	Syntax error
+event	ByVal Optional a As Class1	syntax	Syntax error
+event	ByVal Optional a As New Class1	syntax	Syntax error
+event	ByVal Optional a$	syntax	Syntax error
+event	ByVal Optional a%	syntax	Syntax error
+event	ByVal Optional a$ As String	syntax	Syntax error
+event	ByVal Optional a = 1	syntax	Syntax error
+event	ByVal Optional a As Long = 1	syntax	Syntax error
+event	ByVal Optional a As Variant = 1	syntax	Syntax error
+event	ByVal Optional a As Object = Nothing	syntax	Syntax error
+event	ByVal Optional a As String = "x"	syntax	Syntax error
+event	ByVal Optional a As Long = 1 + 1	syntax	Syntax error
+event	ByVal Optional a As Long = x	syntax	Syntax error
+event	ByVal Optional a As Long =	syntax	Syntax error
+event	ByVal Optional a As Date = #1/1/2000#	syntax	Syntax error
+event	ByVal Optional a As Byte = 300	syntax	Syntax error
+event	ByVal Optional a() = 1	syntax	Syntax error
+event	ParamArray a	syntax	Syntax error
+event	ParamArray a As Long	syntax	Syntax error
+event	ParamArray a()	syntax	Syntax error
+event	ParamArray a() As Long	syntax	Syntax error
+event	ParamArray a As Long()	syntax	Syntax error
+event	ParamArray a As Variant	syntax	Syntax error
+event	ParamArray a As Object	syntax	Syntax error
+event	ParamArray a As String	syntax	Syntax error
+event	ParamArray a As String * 3	syntax	Syntax error
+event	ParamArray a As Class1	syntax	Syntax error
+event	ParamArray a As New Class1	syntax	Syntax error
+event	ParamArray a$	syntax	Syntax error
+event	ParamArray a%	syntax	Syntax error
+event	ParamArray a$ As String	syntax	Syntax error
+event	ParamArray a = 1	syntax	Syntax error
+event	ParamArray a As Long = 1	syntax	Syntax error
+event	ParamArray a As Variant = 1	syntax	Syntax error
+event	ParamArray a As Object = Nothing	syntax	Syntax error
+event	ParamArray a As String = "x"	syntax	Syntax error
+event	ParamArray a As Long = 1 + 1	syntax	Syntax error
+event	ParamArray a As Long = x	syntax	Syntax error
+event	ParamArray a As Long =	syntax	Syntax error
+event	ParamArray a As Date = #1/1/2000#	syntax	Syntax error
+event	ParamArray a As Byte = 300	syntax	Syntax error
+event	ParamArray a() = 1	syntax	Syntax error
+event	ByVal ParamArray a	syntax	Expected: identifier
+event	ByVal ParamArray a As Long	syntax	Expected: identifier
+event	ByVal ParamArray a()	syntax	Expected: identifier
+event	ByVal ParamArray a() As Long	syntax	Expected: identifier
+event	ByVal ParamArray a As Long()	syntax	Expected: identifier
+event	ByVal ParamArray a As Variant	syntax	Expected: identifier
+event	ByVal ParamArray a As Object	syntax	Expected: identifier
+event	ByVal ParamArray a As String	syntax	Expected: identifier
+event	ByVal ParamArray a As String * 3	syntax	Expected: identifier
+event	ByVal ParamArray a As Class1	syntax	Expected: identifier
+event	ByVal ParamArray a As New Class1	syntax	Expected: identifier
+event	ByVal ParamArray a$	syntax	Expected: identifier
+event	ByVal ParamArray a%	syntax	Expected: identifier
+event	ByVal ParamArray a$ As String	syntax	Expected: identifier
+event	ByVal ParamArray a = 1	syntax	Expected: identifier
+event	ByVal ParamArray a As Long = 1	syntax	Expected: identifier
+event	ByVal ParamArray a As Variant = 1	syntax	Expected: identifier
+event	ByVal ParamArray a As Object = Nothing	syntax	Expected: identifier
+event	ByVal ParamArray a As String = "x"	syntax	Expected: identifier
+event	ByVal ParamArray a As Long = 1 + 1	syntax	Expected: identifier
+event	ByVal ParamArray a As Long = x	syntax	Expected: identifier
+event	ByVal ParamArray a As Long =	syntax	Expected: identifier
+event	ByVal ParamArray a As Date = #1/1/2000#	syntax	Expected: identifier
+event	ByVal ParamArray a As Byte = 300	syntax	Expected: identifier
+event	ByVal ParamArray a() = 1	syntax	Expected: identifier
+event	ParamArray ByVal a	syntax	Syntax error
+event	ParamArray ByVal a As Long	syntax	Syntax error
+event	ParamArray ByVal a()	syntax	Syntax error
+event	ParamArray ByVal a() As Long	syntax	Syntax error
+event	ParamArray ByVal a As Long()	syntax	Syntax error
+event	ParamArray ByVal a As Variant	syntax	Syntax error
+event	ParamArray ByVal a As Object	syntax	Syntax error
+event	ParamArray ByVal a As String	syntax	Syntax error
+event	ParamArray ByVal a As String * 3	syntax	Syntax error
+event	ParamArray ByVal a As Class1	syntax	Syntax error
+event	ParamArray ByVal a As New Class1	syntax	Syntax error
+event	ParamArray ByVal a$	syntax	Syntax error
+event	ParamArray ByVal a%	syntax	Syntax error
+event	ParamArray ByVal a$ As String	syntax	Syntax error
+event	ParamArray ByVal a = 1	syntax	Syntax error
+event	ParamArray ByVal a As Long = 1	syntax	Syntax error
+event	ParamArray ByVal a As Variant = 1	syntax	Syntax error
+event	ParamArray ByVal a As Object = Nothing	syntax	Syntax error
+event	ParamArray ByVal a As String = "x"	syntax	Syntax error
+event	ParamArray ByVal a As Long = 1 + 1	syntax	Syntax error
+event	ParamArray ByVal a As Long = x	syntax	Syntax error
+event	ParamArray ByVal a As Long =	syntax	Syntax error
+event	ParamArray ByVal a As Date = #1/1/2000#	syntax	Syntax error
+event	ParamArray ByVal a As Byte = 300	syntax	Syntax error
+event	ParamArray ByVal a() = 1	syntax	Syntax error
+event	Optional ParamArray a	syntax	Syntax error
+event	Optional ParamArray a As Long	syntax	Syntax error
+event	Optional ParamArray a()	syntax	Syntax error
+event	Optional ParamArray a() As Long	syntax	Syntax error
+event	Optional ParamArray a As Long()	syntax	Syntax error
+event	Optional ParamArray a As Variant	syntax	Syntax error
+event	Optional ParamArray a As Object	syntax	Syntax error
+event	Optional ParamArray a As String	syntax	Syntax error
+event	Optional ParamArray a As String * 3	syntax	Syntax error
+event	Optional ParamArray a As Class1	syntax	Syntax error
+event	Optional ParamArray a As New Class1	syntax	Syntax error
+event	Optional ParamArray a$	syntax	Syntax error
+event	Optional ParamArray a%	syntax	Syntax error
+event	Optional ParamArray a$ As String	syntax	Syntax error
+event	Optional ParamArray a = 1	syntax	Syntax error
+event	Optional ParamArray a As Long = 1	syntax	Syntax error
+event	Optional ParamArray a As Variant = 1	syntax	Syntax error
+event	Optional ParamArray a As Object = Nothing	syntax	Syntax error
+event	Optional ParamArray a As String = "x"	syntax	Syntax error
+event	Optional ParamArray a As Long = 1 + 1	syntax	Syntax error
+event	Optional ParamArray a As Long = x	syntax	Syntax error
+event	Optional ParamArray a As Long =	syntax	Syntax error
+event	Optional ParamArray a As Date = #1/1/2000#	syntax	Syntax error
+event	Optional ParamArray a As Byte = 300	syntax	Syntax error
+event	Optional ParamArray a() = 1	syntax	Syntax error
+event	a, b	accepted	
+event	a As Long, b As Long	accepted	
+event	Optional a, b	syntax	Syntax error
+event	Optional a, ByVal b	syntax	Syntax error
+event	a, Optional b	syntax	Syntax error
+event	Optional a As Long, b As Long	syntax	Syntax error
+event	ParamArray a(), b	syntax	Syntax error
+event	ParamArray a(), ParamArray b()	syntax	Syntax error
+event	ParamArray a() As Variant	syntax	Syntax error
+event	ParamArray a() As Long	syntax	Syntax error
+event	ParamArray a As Variant	syntax	Syntax error
+event	a, , b	syntax	Expected: identifier
+event	a,	syntax	Expected: identifier
+event	()	syntax	Expected: identifier
+event	ByVal	syntax	Expected: identifier
+event	Optional	syntax	Syntax error
+event	a As	syntax	Expected: type name
+event	a As As	syntax	Expected: type name
+event	Me	syntax	Expected: identifier
+event	Sub As Long	syntax	Expected: identifier
+event	Error As Long	accepted	
+event	a, a	accepted	
+event	a As Long, a As Long	accepted	

@@ -1,0 +1,300 @@
+a
+a As Long
+a()
+a() As Long
+a As Long()
+a As Variant
+a As Object
+a As String
+a As String * 3
+a As Class1
+a As New Class1
+a$
+a%
+a$ As String
+a = 1
+a As Long = 1
+a As Variant = 1
+a As Object = Nothing
+a As String = "x"
+a As Long = 1 + 1
+a As Long = x
+a As Long = 
+a As Date = #1/1/2000#
+a As Byte = 300
+a() = 1
+ByVal a
+ByVal a As Long
+ByVal a()
+ByVal a() As Long
+ByVal a As Long()
+ByVal a As Variant
+ByVal a As Object
+ByVal a As String
+ByVal a As String * 3
+ByVal a As Class1
+ByVal a As New Class1
+ByVal a$
+ByVal a%
+ByVal a$ As String
+ByVal a = 1
+ByVal a As Long = 1
+ByVal a As Variant = 1
+ByVal a As Object = Nothing
+ByVal a As String = "x"
+ByVal a As Long = 1 + 1
+ByVal a As Long = x
+ByVal a As Long = 
+ByVal a As Date = #1/1/2000#
+ByVal a As Byte = 300
+ByVal a() = 1
+ByRef a
+ByRef a As Long
+ByRef a()
+ByRef a() As Long
+ByRef a As Long()
+ByRef a As Variant
+ByRef a As Object
+ByRef a As String
+ByRef a As String * 3
+ByRef a As Class1
+ByRef a As New Class1
+ByRef a$
+ByRef a%
+ByRef a$ As String
+ByRef a = 1
+ByRef a As Long = 1
+ByRef a As Variant = 1
+ByRef a As Object = Nothing
+ByRef a As String = "x"
+ByRef a As Long = 1 + 1
+ByRef a As Long = x
+ByRef a As Long = 
+ByRef a As Date = #1/1/2000#
+ByRef a As Byte = 300
+ByRef a() = 1
+Optional a
+Optional a As Long
+Optional a()
+Optional a() As Long
+Optional a As Long()
+Optional a As Variant
+Optional a As Object
+Optional a As String
+Optional a As String * 3
+Optional a As Class1
+Optional a As New Class1
+Optional a$
+Optional a%
+Optional a$ As String
+Optional a = 1
+Optional a As Long = 1
+Optional a As Variant = 1
+Optional a As Object = Nothing
+Optional a As String = "x"
+Optional a As Long = 1 + 1
+Optional a As Long = x
+Optional a As Long = 
+Optional a As Date = #1/1/2000#
+Optional a As Byte = 300
+Optional a() = 1
+Optional ByVal a
+Optional ByVal a As Long
+Optional ByVal a()
+Optional ByVal a() As Long
+Optional ByVal a As Long()
+Optional ByVal a As Variant
+Optional ByVal a As Object
+Optional ByVal a As String
+Optional ByVal a As String * 3
+Optional ByVal a As Class1
+Optional ByVal a As New Class1
+Optional ByVal a$
+Optional ByVal a%
+Optional ByVal a$ As String
+Optional ByVal a = 1
+Optional ByVal a As Long = 1
+Optional ByVal a As Variant = 1
+Optional ByVal a As Object = Nothing
+Optional ByVal a As String = "x"
+Optional ByVal a As Long = 1 + 1
+Optional ByVal a As Long = x
+Optional ByVal a As Long = 
+Optional ByVal a As Date = #1/1/2000#
+Optional ByVal a As Byte = 300
+Optional ByVal a() = 1
+Optional ByRef a
+Optional ByRef a As Long
+Optional ByRef a()
+Optional ByRef a() As Long
+Optional ByRef a As Long()
+Optional ByRef a As Variant
+Optional ByRef a As Object
+Optional ByRef a As String
+Optional ByRef a As String * 3
+Optional ByRef a As Class1
+Optional ByRef a As New Class1
+Optional ByRef a$
+Optional ByRef a%
+Optional ByRef a$ As String
+Optional ByRef a = 1
+Optional ByRef a As Long = 1
+Optional ByRef a As Variant = 1
+Optional ByRef a As Object = Nothing
+Optional ByRef a As String = "x"
+Optional ByRef a As Long = 1 + 1
+Optional ByRef a As Long = x
+Optional ByRef a As Long = 
+Optional ByRef a As Date = #1/1/2000#
+Optional ByRef a As Byte = 300
+Optional ByRef a() = 1
+ByVal Optional a
+ByVal Optional a As Long
+ByVal Optional a()
+ByVal Optional a() As Long
+ByVal Optional a As Long()
+ByVal Optional a As Variant
+ByVal Optional a As Object
+ByVal Optional a As String
+ByVal Optional a As String * 3
+ByVal Optional a As Class1
+ByVal Optional a As New Class1
+ByVal Optional a$
+ByVal Optional a%
+ByVal Optional a$ As String
+ByVal Optional a = 1
+ByVal Optional a As Long = 1
+ByVal Optional a As Variant = 1
+ByVal Optional a As Object = Nothing
+ByVal Optional a As String = "x"
+ByVal Optional a As Long = 1 + 1
+ByVal Optional a As Long = x
+ByVal Optional a As Long = 
+ByVal Optional a As Date = #1/1/2000#
+ByVal Optional a As Byte = 300
+ByVal Optional a() = 1
+ParamArray a
+ParamArray a As Long
+ParamArray a()
+ParamArray a() As Long
+ParamArray a As Long()
+ParamArray a As Variant
+ParamArray a As Object
+ParamArray a As String
+ParamArray a As String * 3
+ParamArray a As Class1
+ParamArray a As New Class1
+ParamArray a$
+ParamArray a%
+ParamArray a$ As String
+ParamArray a = 1
+ParamArray a As Long = 1
+ParamArray a As Variant = 1
+ParamArray a As Object = Nothing
+ParamArray a As String = "x"
+ParamArray a As Long = 1 + 1
+ParamArray a As Long = x
+ParamArray a As Long = 
+ParamArray a As Date = #1/1/2000#
+ParamArray a As Byte = 300
+ParamArray a() = 1
+ByVal ParamArray a
+ByVal ParamArray a As Long
+ByVal ParamArray a()
+ByVal ParamArray a() As Long
+ByVal ParamArray a As Long()
+ByVal ParamArray a As Variant
+ByVal ParamArray a As Object
+ByVal ParamArray a As String
+ByVal ParamArray a As String * 3
+ByVal ParamArray a As Class1
+ByVal ParamArray a As New Class1
+ByVal ParamArray a$
+ByVal ParamArray a%
+ByVal ParamArray a$ As String
+ByVal ParamArray a = 1
+ByVal ParamArray a As Long = 1
+ByVal ParamArray a As Variant = 1
+ByVal ParamArray a As Object = Nothing
+ByVal ParamArray a As String = "x"
+ByVal ParamArray a As Long = 1 + 1
+ByVal ParamArray a As Long = x
+ByVal ParamArray a As Long = 
+ByVal ParamArray a As Date = #1/1/2000#
+ByVal ParamArray a As Byte = 300
+ByVal ParamArray a() = 1
+ParamArray ByVal a
+ParamArray ByVal a As Long
+ParamArray ByVal a()
+ParamArray ByVal a() As Long
+ParamArray ByVal a As Long()
+ParamArray ByVal a As Variant
+ParamArray ByVal a As Object
+ParamArray ByVal a As String
+ParamArray ByVal a As String * 3
+ParamArray ByVal a As Class1
+ParamArray ByVal a As New Class1
+ParamArray ByVal a$
+ParamArray ByVal a%
+ParamArray ByVal a$ As String
+ParamArray ByVal a = 1
+ParamArray ByVal a As Long = 1
+ParamArray ByVal a As Variant = 1
+ParamArray ByVal a As Object = Nothing
+ParamArray ByVal a As String = "x"
+ParamArray ByVal a As Long = 1 + 1
+ParamArray ByVal a As Long = x
+ParamArray ByVal a As Long = 
+ParamArray ByVal a As Date = #1/1/2000#
+ParamArray ByVal a As Byte = 300
+ParamArray ByVal a() = 1
+Optional ParamArray a
+Optional ParamArray a As Long
+Optional ParamArray a()
+Optional ParamArray a() As Long
+Optional ParamArray a As Long()
+Optional ParamArray a As Variant
+Optional ParamArray a As Object
+Optional ParamArray a As String
+Optional ParamArray a As String * 3
+Optional ParamArray a As Class1
+Optional ParamArray a As New Class1
+Optional ParamArray a$
+Optional ParamArray a%
+Optional ParamArray a$ As String
+Optional ParamArray a = 1
+Optional ParamArray a As Long = 1
+Optional ParamArray a As Variant = 1
+Optional ParamArray a As Object = Nothing
+Optional ParamArray a As String = "x"
+Optional ParamArray a As Long = 1 + 1
+Optional ParamArray a As Long = x
+Optional ParamArray a As Long = 
+Optional ParamArray a As Date = #1/1/2000#
+Optional ParamArray a As Byte = 300
+Optional ParamArray a() = 1
+a, b
+a As Long, b As Long
+Optional a, b
+Optional a, ByVal b
+a, Optional b
+Optional a As Long, b As Long
+ParamArray a(), b
+ParamArray a(), ParamArray b()
+ParamArray a() As Variant
+ParamArray a() As Long
+ParamArray a As Variant
+a, , b
+a,
+
+()
+ 
+ByVal
+Optional
+a As
+a As As
+Me
+Sub As Long
+Error As Long
+a, a
+a As Long, a As Long

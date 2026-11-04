@@ -44,9 +44,29 @@ fn new_before_a_built_in_type_is_expected_type_name() {
 }
 
 #[test]
-fn new_before_a_class_name_is_clean() {
-    let p = parse("Sub S(a As New Foo)\nEnd Sub\nFunction F() As New Foo\nEnd Function\n");
+fn new_before_a_class_name_is_clean_in_a_return_type() {
+    let p = parse("Function F() As New Foo
+End Function
+");
     assert_eq!(p.found, vec![]);
+}
+
+#[test]
+fn new_in_a_parameter_is_expected_type_name_at_new() {
+    for text in [
+        "Sub S(a As New Foo)
+End Sub
+",
+        "Function F(ByVal a As New Foo) As Long
+End Function
+",
+        "Declare Sub f Lib \"k\" (a As New Foo)
+",
+    ] {
+        let p = parse(text);
+        let at = offset_of(text, "New", 0);
+        assert_eq!(p.found[0], (ERR_EXPECTED, at, 3), "{text}");
+    }
 }
 
 #[test]
