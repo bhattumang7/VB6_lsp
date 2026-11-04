@@ -20,6 +20,8 @@ use std::collections::HashMap;
 /// Emitted when the RequireDeclaration flag (`Option Explicit`) is set and a
 /// name is used without a declaration.
 pub const ERR_VARIABLE_NOT_DEFINED: u16 = 0x9caf;
+/// "Assignment to constant not permitted" (57082).
+pub const ERR_ASSIGNMENT_TO_CONSTANT: u16 = 0xdefa;
 
 /// `0x9c9f` = 40095 = "Duplicate declaration in current scope"
 ///
@@ -1416,6 +1418,15 @@ impl<'a> Binder<'a> {
                         }
                     }
                 }
+                // A constant, or an enum member, is not assignable.
+                let assigned = !matches!(
+                    self.access_ctx.get(&id.0).copied().unwrap_or(Access::Get),
+                    Access::Get
+                );
+                if assigned && self.names_a_constant(&res) {
+                    let span = self.spans.get(id);
+                    self.diagnostics.push(ERR_ASSIGNMENT_TO_CONSTANT as u32, span);
+                }
                 self.resolutions.insert(id.0, res);
                 self.types.insert(id.0, ty);
                 if let Some(sem) = sem {
@@ -2076,6 +2087,22 @@ impl<'a> Binder<'a> {
                 SemType::Array(elem) => *elem,
                 other => default_member(&other),
             },
+        }
+    }
+
+    /// Whether `res` names a declared constant or an enum member.
+    fn names_a_constant(&self, res: &NameResolution) -> bool {
+        match res {
+            NameResolution::Local { proc_idx, local_idx } => self
+                .procs
+                .get(*proc_idx)
+                .and_then(|p| p.locals.get(*local_idx))
+                .is_some_and(|v| v.is_const),
+            NameResolution::ModuleVar(vi) => {
+                self.module_vars.get(*vi).is_some_and(|v| v.is_const)
+            }
+            NameResolution::EnumMember { .. } => true,
+            _ => false,
         }
     }
 
