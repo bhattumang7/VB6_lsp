@@ -43,11 +43,12 @@ pub fn parse_templates(text: &str) -> Result<Vec<Template>, String> {
     Ok(out)
 }
 
-/// Parses a words file: one word per line, blank lines and `#` lines ignored.
+/// Parses a words file: one word per line. Blank lines and comments (a `#`
+/// alone or followed by a blank) are ignored, so `#If` is still a word.
 pub fn parse_words(text: &str) -> Vec<String> {
     text.lines()
         .map(|l| l.trim_end_matches('\r').trim())
-        .filter(|l| !l.is_empty() && !l.starts_with('#'))
+        .filter(|l| !l.is_empty() && *l != "#" && !l.starts_with("# "))
         .map(str::to_string)
         .collect()
 }

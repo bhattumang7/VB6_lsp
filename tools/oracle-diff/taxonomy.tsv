@@ -46,3 +46,10 @@ Invalid outside procedure	syntax
 Expected End Sub	syntax
 Invalid inside procedure	syntax
 Invalid length for fixed-length string	syntax
+An # ElseIf, # Else, or # EndIf must be preceded by an # If clause	syntax
+You must terminate the # If block with an # EndIf	syntax
+Invalid character	syntax
+Statement invalid inside Type block	syntax
+Only comments may appear after End Sub, End Function, or End Property	syntax
+Can't change data types of array elements	semantic
+Invalid use of object	semantic

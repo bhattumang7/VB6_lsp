@@ -1,0 +1,117 @@
+# template	word	class	message
+module	Attribute VB_Name = "x"	accepted	
+module	Attribute VB_Description = "x"	accepted	
+module	Attribute Foo.VB_Description = "x"	accepted	
+module	Attribute .VB_Description = "x"	accepted	
+module	Attribute Foo. = "x"	accepted	
+module	Attribute Foo.VB_Description =	accepted	
+module	Attribute Foo.VB_Description = .	accepted	
+module	Attribute Foo.VB_Description = "x" "y"	accepted	
+module	Attribute Foo.VB_Description = "x"Next	accepted	
+module	Attribute Foo.VB_Description = "x" Next	accepted	
+module	Attribute Foo.& VB_Description = "x"	accepted	
+module	Attribute FooCall .VB_Description = "x"	syntax	Syntax error
+module	Attribute Foo .VB_Description = "x"	syntax	Syntax error
+module	Attribute Foo. VB_Description = "x"	accepted	
+module	Attribute Foo.VB_Description "x"	syntax	Syntax error
+module	Attribute Foo.VB_Description = x	accepted	
+module	Attribute Foo.VB_Description = 1	accepted	
+module	Attribute Foo.VB_Description = True	accepted	
+module	Attribute Foo.Bar = "x"	accepted	
+module	Attribute Foo.Bar.Baz = "x"	accepted	
+module	Attribute 1 = 2	accepted	
+module	Attribute = 1	accepted	
+module	Attribute foo	syntax	Syntax error
+module	Attribute foo bar baz	syntax	Syntax error
+module	Attribute VB_Name = "x" y	accepted	
+module	Attribute VB_Name	syntax	Syntax error
+module	Attribute Call	accepted	
+module	Attribute Foo.VB_Description = "x" ' comment	accepted	
+module	Attribute Foo.VB_Description = "x": Dim y	accepted	
+module	Attribute Foo.VB_UserMemId = 0	accepted	
+module	Attribute Foo.VB_UserMemId = -4	accepted	
+module	Attribute Foo.VB_UserMemId = "x"	accepted	
+module	Attribute Foo.VB_MemberFlags = "40"	accepted	
+module	Attribute VB_Creatable = True	accepted	
+module	Attribute VB_Creatable = Foo	accepted	
+module	Attribute VB_Exposed	syntax	Syntax error
+module	Attribute Foo.VB_Description = "x" +	accepted	
+module	Attribute Foo.VB_Description = ("x")	accepted	
+module	Attribute Foo.VB_Description = "x" & "y"	accepted	
+module	Attribute Foo.VB_Description = Foo	accepted	
+module	Attribute Foo.Call = "x"	accepted	
+module	Attribute Foo.Dim = "x"	accepted	
+module	Attribute Call.VB_Description = "x"	accepted	
+module	Attribute Dim.VB_Description = "x"	accepted	
+module	Attribute Foo.VB_Description = = "x"	accepted	
+module	Attribute Foo.VB_Description = "x	accepted	
+module	Attribute Foo(1).VB_Description = "x"	syntax	Syntax error
+module	Attribute Foo!VB_Description = "x"	syntax	Syntax error
+module	Attribute Foo.VB_Description := "x"	syntax	Syntax error
+module	Sub F()\nAttribute VB_Description = "x"\nEnd Sub	accepted	
+module	Sub F()\nAttribute Foo.VB_Description = "x"\nEnd Sub	accepted	
+module	Sub F()\nEnd Sub\nAttribute F.VB_Description = "x"	accepted	
+module	Sub F()\nEnd Sub\nAttribute F.VB_Description =	accepted	
+module	Sub F()\nEnd Sub\nAttribute F.VB_Description = "x" y	accepted	
+module	Sub F()\nEnd Sub\nAttribute Nope.VB_Description = "x"	accepted	
+module	Sub F()\nEnd Sub\nAttribute F.Nope = "x"	accepted	
+module	Sub F()\nEnd Sub\nAttribute F.VB_UserMemId = 0	accepted	
+module	Sub F()\nEnd Sub\nAttribute F.VB_UserMemId = 99999999999	accepted	
+class	Attribute VB_Name = "x"	accepted	
+class	Attribute VB_Description = "x"	accepted	
+class	Attribute Foo.VB_Description = "x"	accepted	
+class	Attribute .VB_Description = "x"	accepted	
+class	Attribute Foo. = "x"	accepted	
+class	Attribute Foo.VB_Description =	accepted	
+class	Attribute Foo.VB_Description = .	accepted	
+class	Attribute Foo.VB_Description = "x" "y"	accepted	
+class	Attribute Foo.VB_Description = "x"Next	accepted	
+class	Attribute Foo.VB_Description = "x" Next	accepted	
+class	Attribute Foo.& VB_Description = "x"	accepted	
+class	Attribute FooCall .VB_Description = "x"	syntax	Syntax error
+class	Attribute Foo .VB_Description = "x"	syntax	Syntax error
+class	Attribute Foo. VB_Description = "x"	accepted	
+class	Attribute Foo.VB_Description "x"	syntax	Syntax error
+class	Attribute Foo.VB_Description = x	accepted	
+class	Attribute Foo.VB_Description = 1	accepted	
+class	Attribute Foo.VB_Description = True	accepted	
+class	Attribute Foo.Bar = "x"	accepted	
+class	Attribute Foo.Bar.Baz = "x"	accepted	
+class	Attribute 1 = 2	accepted	
+class	Attribute = 1	accepted	
+class	Attribute foo	syntax	Syntax error
+class	Attribute foo bar baz	syntax	Syntax error
+class	Attribute VB_Name = "x" y	accepted	
+class	Attribute VB_Name	syntax	Syntax error
+class	Attribute Call	accepted	
+class	Attribute Foo.VB_Description = "x" ' comment	accepted	
+class	Attribute Foo.VB_Description = "x": Dim y	accepted	
+class	Attribute Foo.VB_UserMemId = 0	accepted	
+class	Attribute Foo.VB_UserMemId = -4	accepted	
+class	Attribute Foo.VB_UserMemId = "x"	accepted	
+class	Attribute Foo.VB_MemberFlags = "40"	accepted	
+class	Attribute VB_Creatable = True	accepted	
+class	Attribute VB_Creatable = Foo	accepted	
+class	Attribute VB_Exposed	syntax	Syntax error
+class	Attribute Foo.VB_Description = "x" +	accepted	
+class	Attribute Foo.VB_Description = ("x")	accepted	
+class	Attribute Foo.VB_Description = "x" & "y"	accepted	
+class	Attribute Foo.VB_Description = Foo	accepted	
+class	Attribute Foo.Call = "x"	accepted	
+class	Attribute Foo.Dim = "x"	accepted	
+class	Attribute Call.VB_Description = "x"	accepted	
+class	Attribute Dim.VB_Description = "x"	accepted	
+class	Attribute Foo.VB_Description = = "x"	accepted	
+class	Attribute Foo.VB_Description = "x	accepted	
+class	Attribute Foo(1).VB_Description = "x"	syntax	Syntax error
+class	Attribute Foo!VB_Description = "x"	syntax	Syntax error
+class	Attribute Foo.VB_Description := "x"	syntax	Syntax error
+class	Sub F()\nAttribute VB_Description = "x"\nEnd Sub	accepted	
+class	Sub F()\nAttribute Foo.VB_Description = "x"\nEnd Sub	accepted	
+class	Sub F()\nEnd Sub\nAttribute F.VB_Description = "x"	accepted	
+class	Sub F()\nEnd Sub\nAttribute F.VB_Description =	accepted	
+class	Sub F()\nEnd Sub\nAttribute F.VB_Description = "x" y	accepted	
+class	Sub F()\nEnd Sub\nAttribute Nope.VB_Description = "x"	accepted	
+class	Sub F()\nEnd Sub\nAttribute F.Nope = "x"	accepted	
+class	Sub F()\nEnd Sub\nAttribute F.VB_UserMemId = 0	accepted	
+class	Sub F()\nEnd Sub\nAttribute F.VB_UserMemId = 99999999999	accepted	

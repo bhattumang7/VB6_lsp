@@ -36,7 +36,7 @@ fn enum_without_members_is_reported_at_end_enum() {
 
 #[test]
 fn type_and_enum_with_members_are_clean() {
-    let p = parse("Type T\nx As Long\ny\nEnd Type\nEnum E\nA\nB = 2\nEnd Enum\n");
+    let p = parse("Type T\nx As Long\ny As String\nEnd Type\nEnum E\nA\nB = 2\nEnd Enum\n");
     assert_eq!(p.found, vec![]);
     let ExprNode::TypeDecl { members, .. } = p.node(p.top[0]) else { panic!("expected Type") };
     assert_eq!(members.len(), 2);
@@ -50,6 +50,13 @@ fn a_member_may_be_named_like_a_keyword() {
     assert_eq!(p.found, vec![]);
     let ExprNode::TypeDecl { members, .. } = p.node(p.top[0]) else { panic!("expected Type") };
     assert_eq!(members.len(), 3);
+}
+
+#[test]
+fn a_member_without_a_type_is_a_statement_in_the_type() {
+    let src = "Type T\nx As Long\ny\nEnd Type\n";
+    let p = parse(src);
+    assert_eq!(p.found, vec![(0x9c76, src.find("y\nEnd").unwrap() as u32, 1)]);
 }
 
 #[test]

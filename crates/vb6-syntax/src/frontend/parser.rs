@@ -96,7 +96,7 @@ fn starts_executable_statement(k: Kw) -> bool {
     use Kw::*;
     matches!(
         k,
-        If | For | Do | While | Select | With | Let | Set | Call | GoTo | GoSub | Go | Exit
+        If | For | Do | While | Select | With | Let | Set | Call | GoTo | GoSub | Go | Exit | ReDim
             | Return | Resume | On | Error | Stop | Erase | RaiseEvent | Debug | Open | Close
             | Print | Write | Input | Line | Get | Put | Seek | Lock | Unlock | Width | Name
             | Mid | MidS | MidB | MidBS | LSet | RSet | Question | InputS | InputB | InputBS
@@ -207,6 +207,8 @@ pub struct Parser<'src> {
     /// True while the member of a `Type` block is being parsed: a member may
     /// be named with a reserved word.
     reserved_names_allowed: bool,
+    /// The declaration item parsed last was given a type with `As`.
+    last_item_had_as: bool,
     /// Open block statements of the procedure being parsed, innermost last.
     blocks: Vec<Block>,
     /// The last token consumed was the end of a line.
@@ -327,6 +329,7 @@ impl<'src> Parser<'src> {
             decl_static: std::collections::HashSet::new(),
             in_procedure: false,
             reserved_names_allowed: false,
+            last_item_had_as: false,
             blocks: Vec::new(),
             last_was_eol: false,
             after_colon: false,
@@ -553,6 +556,14 @@ impl<'src> Parser<'src> {
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         } else {
             self.diagnostics.push_labeled(0x9c6f, span, what);
+        }
+    }
+
+    /// A name that carries a type-declaration character cannot also be given a type with `As`.
+    fn reject_suffix_with_as(&mut self, name: &Token, what: &'static str) {
+        if name.type_suffix != TypeSuffix::None && self.peek().kind == TokenKind::Kw(Kw::As) {
+            let span = self.current_span();
+            self.report_expected(span, what);
         }
     }
 
@@ -943,10 +954,9 @@ impl<'src> Parser<'src> {
                     let n = self.parse_option_stmt(arena);
                     nodes.push(n);
                 }
-                // Module-level Dim / Const / ReDim
+                // Module-level Dim / Const
                 TokenKind::Kw(Kw::Dim)
-                | TokenKind::Kw(Kw::Const)
-                | TokenKind::Kw(Kw::ReDim) => {
+                | TokenKind::Kw(Kw::Const) => {
                     if let Some(n) = self.parse_stmt(arena) {
                         nodes.push(n);
                     }
@@ -1898,12 +1908,7 @@ impl<'src> Parser<'src> {
     /// Parse a `Print`/`?` output list.
     fn parse_print_list(&mut self, arena: &mut ExprArena, channel: Option<NodeId>) -> NodeId {
         let mut args = Vec::new();
-        while !self.peek().is_stmt_end() {
-            if let Some(n) = self.try_parse_print_item(arena) { args.push(n); }
-            if !self.eat(TokenKind::Kw(Kw::Comma)) && !self.eat(TokenKind::Kw(Kw::Semi)) {
-                break;
-            }
-        }
+        self.parse_print_method_items(arena, &mut args);
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Print, channel, args, open_mode: 0, open_flags: 0 })
     }
@@ -1998,6 +2003,8 @@ impl<'src> Parser<'src> {
             self.module_decl_seen = true;
             self.module_array_seen |= bounds.is_some();
         }
+        self.reject_suffix_with_as(&name, "end of statement");
+        self.last_item_had_as = self.peek().kind == TokenKind::Kw(Kw::As);
         let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
             let is_new = self.eat(TokenKind::Kw(Kw::New));
             // `Object` is not a creatable class.
@@ -2107,6 +2114,7 @@ impl<'src> Parser<'src> {
                 }
             }
             let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
+            self.reject_suffix_with_as(&name, "end of statement");
             let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
                 Some(self.parse_type_spec(arena, false))
             } else { None };
@@ -2738,14 +2746,7 @@ impl<'src> Parser<'src> {
         }
         self.advance(); // consume Print / Assert
         let mut args = Vec::new();
-        while !self.peek().is_stmt_end() {
-            if let Some(n) = self.try_parse_print_item(arena) {
-                args.push(n);
-            }
-            if !self.eat(TokenKind::Kw(Kw::Semi)) && !self.eat(TokenKind::Kw(Kw::Comma)) {
-                break;
-            }
-        }
+        self.parse_print_method_items(arena, &mut args);
         self.end_stmt();
         arena.alloc(ExprNode::DebugPrint { args })
     }
@@ -3279,28 +3280,73 @@ impl<'src> Parser<'src> {
         self.advance(); // consume Attribute
         // `Attribute VB_Name = …` or `Attribute Member.VB_UserMemId = …`: the
         // attribute is the last name; a preceding name is the member it applies to.
-        let mut key = self.expect_ident();
+        // A line that does not begin with a name is not read at all.
+        if !self.at_attribute_word() {
+            return self.ignore_attribute_line(arena);
+        }
+        let mut key = self.advance();
         let mut target: Option<u32> = None;
-        while self.eat(TokenKind::Kw(Kw::Dot)) {
+        // The dot joins names only when it follows the name directly.
+        while self.peek().kind == TokenKind::Kw(Kw::Dot) && !self.blank_before_next() {
+            self.advance();
+            if !self.at_attribute_word() {
+                return self.ignore_attribute_line(arena);
+            }
             target = Some(key.sym.map(|s| s as u32).unwrap_or(0));
-            key = self.expect_ident();
+            key = self.advance();
         }
         let name = key.sym.map(|s| s as u32).unwrap_or(0);
-        self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
+        if !self.eat(TokenKind::Kw(Kw::Eq)) {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         // The node spans its first value: for `VB_Name` that is where the
-        // module name is written.
+        // module name is written. Whatever follows the `=` is only read for
+        // its values: a value that does not parse is not an error.
         let value_span = self.current_span();
+        let mark = self.diagnostics.items().len();
         let mut values = Vec::new();
-        loop {
-            values.push(self.parse_expr(arena, 0));
-            if !self.eat(TokenKind::Kw(Kw::Comma)) {
-                break;
+        if !self.peek().is_stmt_end() && self.peek().kind != TokenKind::Kw(Kw::Colon) {
+            loop {
+                values.push(self.parse_expr(arena, 0));
+                if !self.eat(TokenKind::Kw(Kw::Comma)) {
+                    break;
+                }
             }
+        }
+        self.diagnostics.truncate(mark);
+        while !self.peek().is_stmt_end() && self.peek().kind != TokenKind::Kw(Kw::Colon) {
+            self.advance();
         }
         self.end_stmt();
         let id = arena.alloc(ExprNode::Attribute { target, name, values });
         self.set_span(id, value_span);
         id
+    }
+
+    /// True when the next token can be a name in an `Attribute` line: a plain
+    /// name, a keyword that is not reserved, or one of the header words.
+    fn at_attribute_word(&mut self) -> bool {
+        let t = self.peek();
+        match (&t.kind, t.sym) {
+            (TokenKind::Ident, _) => true,
+            (TokenKind::Kw(_), Some(sym)) => {
+                let sym = sym as u32;
+                !self.scanner.is_reserved(sym) || is_header_word(self.scanner.sym_name(sym))
+            }
+            _ => false,
+        }
+    }
+
+    /// The rest of an `Attribute` line that the compiler does not read.
+    fn ignore_attribute_line(&mut self, arena: &mut ExprArena) -> NodeId {
+        while !self.peek().is_stmt_end() && self.peek().kind != TokenKind::Kw(Kw::Colon) {
+            self.advance();
+        }
+        self.end_stmt();
+        arena.alloc(ExprNode::Block { stmts: Vec::new() })
     }
 
     // ── File I/O statement parsers ──────────────────────────────────────────
@@ -3407,10 +3453,7 @@ impl<'src> Parser<'src> {
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
         if self.expect_comma() {
-            while !self.peek().is_stmt_end() {
-                if let Some(n) = self.try_parse_print_item(arena) { args.push(n); }
-                if !self.eat(TokenKind::Kw(Kw::Comma)) && !self.eat(TokenKind::Kw(Kw::Semi)) { break; }
-            }
+            self.parse_print_method_items(arena, &mut args);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
@@ -3512,6 +3555,17 @@ impl<'src> Parser<'src> {
             }
         } else if self.eat(TokenKind::Kw(Kw::Static)) {
             static_proc = true;
+        }
+        // `Static` outside a procedure only qualifies a procedure.
+        if access_tok == TokenKind::Kw(Kw::Static)
+            && !matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
+            )
+        {
+            self.diagnostics.push(ERR_INVALID_OUTSIDE_PROCEDURE, first.span);
+            self.skip_to_stmt_end();
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
         }
         let vis = match access_tok {
             TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Friend) => {
@@ -3719,11 +3773,7 @@ impl<'src> Parser<'src> {
             }
         }
         let ret_type = if kind == ProcKind::PropGet && self.eat(TokenKind::Kw(Kw::As)) {
-            let t = self.parse_type_spec(arena, true);
-            if name.type_suffix != TypeSuffix::None {
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, name.span);
-            }
-            Some(t)
+            Some(self.parse_type_spec(arena, true))
         } else if name.type_suffix != TypeSuffix::None {
             if kind == ProcKind::PropGet {
                 self.type_node_from_suffix(arena, name.type_suffix)
@@ -3797,6 +3847,10 @@ impl<'src> Parser<'src> {
         };
         let name_tok = self.expect_decl_name();
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
+        // A `Sub` returns nothing, so its name takes no type character.
+        if kind == ProcKind::Sub && name_tok.type_suffix != TypeSuffix::None {
+            self.report_expected(name_tok.span, "Identifier without type suffix");
+        }
         // The calling-convention word may precede `Lib`.
         self.eat(TokenKind::Kw(Kw::CDecl));
         // Lib "libname": the library is a string literal.
@@ -3834,6 +3888,9 @@ impl<'src> Parser<'src> {
             None
         };
         // Optional return type.
+        if kind == ProcKind::Function {
+            self.reject_suffix_with_as(&name_tok, "end of statement");
+        }
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
             Some(self.parse_type_spec(arena, false))
         } else {
@@ -3979,6 +4036,7 @@ impl<'src> Parser<'src> {
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
             flags |= 0x08; // array parameter
         }
+        self.reject_suffix_with_as(&name, "list separator or )");
         let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
             if self.eat(TokenKind::Kw(Kw::New)) { flags |= 0x10; }
             if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
@@ -4072,7 +4130,7 @@ impl<'src> Parser<'src> {
                 self.advance();
                 arena.alloc(ExprNode::BuiltinType { kind: 0 })
             }
-            TokenKind::Kw(Kw::String) | TokenKind::Kw(Kw::StringS) => {
+            TokenKind::Kw(Kw::String) => {
                 self.advance();
                 let fixed_len = if self.eat(TokenKind::Kw(Kw::Star)) {
                     Some(self.parse_fixed_string_length(arena))
@@ -4154,8 +4212,14 @@ impl<'src> Parser<'src> {
                         continue;
                     }
                     self.reserved_names_allowed = true;
+                    self.last_item_had_as = false;
                     let m = self.parse_dim_item(arena, false, false, false);
                     self.reserved_names_allowed = false;
+                    if !self.last_item_had_as && self.peek().kind != TokenKind::Kw(Kw::Eq) {
+                        self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+                        self.skip_line();
+                        continue;
+                    }
                     // `name = value` is a statement, not a member.
                     if self.peek().kind == TokenKind::Kw(Kw::Eq) {
                         self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);

@@ -195,3 +195,122 @@ Dim s As String * 2 ^ 2
 Dim s As String * 7 Mod 3
 Dim s As String * 3 And 3
 Dim s As String * (2 + 1)
+Debug.Print "a" "b"
+Debug.Print a b
+Debug.Print a"b"
+Debug.Print 1 2
+Debug.Print a ,
+Debug.Print a ;
+Debug.Print ,
+Debug.Print ; a
+Print "a" "b"
+Print a"b"
+Print #1, a b
+Print #1, "a" "b"
+On Error Error GoTo X
+On Error GoTo X
+On Error Resume Next
+On Error GoTo 0
+On Error GoTo -1
+On Error Resume
+On Error
+Static Explicit
+Static x As Long
+Static Sub S()\nEnd Sub
+#If True Then\n#Else@\n#End If
+#If True Then\n#Else junk\n#End If
+#If True Then\n#End If junk
+#If True Then junk\n#End If
+#If True Then\n#Else\n#End If@
+#If True Then\n#Else%\n#End If
+#If True Then\n#Else$\n#End If
+#If True Then\n#Else!\n#End If
+#If True Then\n#Else&\n#End If
+#If True Then\n#Else#\n#End If
+#If True Then\n#Else@@\n#End If
+#If True Then\n#End If@
+#If True Then\n#End If%
+#If True Then\n#EndIf@
+#If True@ Then\n#End If
+#If True Then@\n#End If
+#Const X@ = 1
+#Const X = 1@
+#If True Then\n#ElseIf True Then@\n#End If
+#If True Then\n#ElseIf True@ Then\n#End If
+#If True Then\n#Elseif@ True Then\n#End If
+#If@ True Then\n#End If
+x = True@
+x = True%
+x = 1 + 2@
+x = Nothing@
+If x Then@ y = 1
+If x@ Then y = 1
+If x Then y = 1@
+If x Then\n    y = 1\nEnd If@
+If x Then\n    y = 1\nEnd@ If
+If x Then\n    y = 1\nElse@\n    y = 2\nEnd If
+For i = 1 To 2\n    y = 1\nNext@
+For@ i = 1 To 2\n    y = 1\nNext
+Dim a As Long@
+Dim a@ As Long
+Dim a As@ Long
+Dim@ a As Long
+Do\n    y = 1\nLoop@
+Do While@ x\n    y = 1\nLoop
+Select Case x\n    Case 1@\n        y = 1\nEnd Select
+Select Case x\n    Case@ 1\n        y = 1\nEnd Select
+With o\n    .x = 1\nEnd With@
+Call@ Probe
+Probe@
+Probe@ 1
+x = Len@("a")
+x = Len("a")@
+Exit@ Sub
+GoTo@ L
+End@
+x = 1 +@ 2
+x = (1@)
+x = 1@@
+Dim a% As Integer
+Dim a% As Long
+Dim a$ As String
+Dim a$, b%
+Dim a%
+Dim a%(1)
+Dim a%(1) As Integer
+Static a% As Integer
+Const c@ = 1
+Const c@ As Currency = 1
+Const c% As Integer = 1
+ReDim a%(1) As Integer
+ReDim a%(1)
+Sub S(a% As Integer)\nEnd Sub
+Sub S(a% As Long)\nEnd Sub
+Sub S(a%)\nEnd Sub
+Function F%() As Integer\nEnd Function
+Function F%()\nEnd Function
+Function F@() As Currency\nEnd Function
+Function F%() As Long\nEnd Function
+Sub S%()\nEnd Sub
+Type T\n    a% As Integer\nEnd Type
+Type T\n    a% As Long\nEnd Type
+Type T\n    a%\nEnd Type
+Declare Function F Lib "k" (a% As Integer) As Long
+Declare Function F% Lib "k" () As Integer
+Declare Function F% Lib "k" () As Long
+Property Get P%() As Integer\nEnd Property
+For i% = 1 To 2\nNext
+Dim a As Integer%
+Dim a As Integer@
+Dim a As Integer$
+Dim a As Foo%
+Dim a As String$
+Type T\n    y\nEnd Type
+Type T\n    y%\nEnd Type
+Type T\n    y(3)\nEnd Type
+Type T\n    y$\nEnd Type
+Type T\n    x As Long\n    y\nEnd Type
+Type T\n    y As\nEnd Type
+Declare Sub F% Lib "k" ()
+Declare Sub F Lib "k" (a, b%)
+Enum E\n    A\n    B = 2\nEnd Enum

@@ -1,0 +1,59 @@
+# One case per line; `\n` stands for a line break. Attribute lines in a module and in a procedure.
+Attribute VB_Name = "x"
+Attribute VB_Description = "x"
+Attribute Foo.VB_Description = "x"
+Attribute .VB_Description = "x"
+Attribute Foo. = "x"
+Attribute Foo.VB_Description =
+Attribute Foo.VB_Description = .
+Attribute Foo.VB_Description = "x" "y"
+Attribute Foo.VB_Description = "x"Next
+Attribute Foo.VB_Description = "x" Next
+Attribute Foo.& VB_Description = "x"
+Attribute FooCall .VB_Description = "x"
+Attribute Foo .VB_Description = "x"
+Attribute Foo. VB_Description = "x"
+Attribute Foo.VB_Description "x"
+Attribute Foo.VB_Description = x
+Attribute Foo.VB_Description = 1
+Attribute Foo.VB_Description = True
+Attribute Foo.Bar = "x"
+Attribute Foo.Bar.Baz = "x"
+Attribute 1 = 2
+Attribute = 1
+Attribute foo
+Attribute foo bar baz
+Attribute VB_Name = "x" y
+Attribute VB_Name
+Attribute Call
+Attribute Foo.VB_Description = "x" ' comment
+Attribute Foo.VB_Description = "x": Dim y
+Attribute Foo.VB_UserMemId = 0
+Attribute Foo.VB_UserMemId = -4
+Attribute Foo.VB_UserMemId = "x"
+Attribute Foo.VB_MemberFlags = "40"
+Attribute VB_Creatable = True
+Attribute VB_Creatable = Foo
+Attribute VB_Exposed
+Attribute Foo.VB_Description = "x" +
+Attribute Foo.VB_Description = ("x")
+Attribute Foo.VB_Description = "x" & "y"
+Attribute Foo.VB_Description = Foo
+Attribute Foo.Call = "x"
+Attribute Foo.Dim = "x"
+Attribute Call.VB_Description = "x"
+Attribute Dim.VB_Description = "x"
+Attribute Foo.VB_Description = = "x"
+Attribute Foo.VB_Description = "x
+Attribute Foo(1).VB_Description = "x"
+Attribute Foo!VB_Description = "x"
+Attribute Foo.VB_Description := "x"
+Sub F()\nAttribute VB_Description = "x"\nEnd Sub
+Sub F()\nAttribute Foo.VB_Description = "x"\nEnd Sub
+Sub F()\nEnd Sub\nAttribute F.VB_Description = "x"
+Sub F()\nEnd Sub\nAttribute F.VB_Description =
+Sub F()\nEnd Sub\nAttribute F.VB_Description = "x" y
+Sub F()\nEnd Sub\nAttribute Nope.VB_Description = "x"
+Sub F()\nEnd Sub\nAttribute F.Nope = "x"
+Sub F()\nEnd Sub\nAttribute F.VB_UserMemId = 0
+Sub F()\nEnd Sub\nAttribute F.VB_UserMemId = 99999999999

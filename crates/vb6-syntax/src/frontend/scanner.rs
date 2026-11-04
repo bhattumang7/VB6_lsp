@@ -1006,6 +1006,10 @@ impl<'a> Scanner<'a> {
             return None;
         }
         let kw = Kw::from_token_id(token as u16)?;
+        // Like any word, a directive word may carry one type-declaration character.
+        if matches!(self.src.get(self.pos), Some(b'%' | b'&' | b'!' | b'#' | b'@' | b'$')) {
+            self.pos += 1;
+        }
         let mut tok = Token::kw(kw, sym_id, self.span(start));
         if one_word {
             tok.lit = Some(Lit::Int(1));

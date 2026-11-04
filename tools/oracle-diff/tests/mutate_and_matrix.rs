@@ -99,7 +99,7 @@ fn bad_template_files_are_rejected() {
 
 #[test]
 fn words_skip_blank_and_comment_lines() {
-    assert_eq!(parse_words("# keywords\r\nAbs\r\n\r\n  Len  \r\n"), ["Abs", "Len"]);
+    assert_eq!(parse_words("# keywords\r\nAbs\r\n\r\n  Len  \r\n#\r\n#If\r\n"), ["Abs", "Len", "#If"]);
 }
 
 #[test]

@@ -194,6 +194,125 @@ body	Dim s As String * 2 ^ 2	syntax	Syntax error
 body	Dim s As String * 7 Mod 3	syntax	Syntax error
 body	Dim s As String * 3 And 3	syntax	Syntax error
 body	Dim s As String * (2 + 1)	syntax	Syntax error
+body	Debug.Print "a" "b"	accepted	
+body	Debug.Print a b	accepted	
+body	Debug.Print a"b"	accepted	
+body	Debug.Print 1 2	accepted	
+body	Debug.Print a ,	accepted	
+body	Debug.Print a ;	accepted	
+body	Debug.Print ,	accepted	
+body	Debug.Print ; a	accepted	
+body	Print "a" "b"	semantic	Method not valid without suitable object
+body	Print a"b"	semantic	Method not valid without suitable object
+body	Print #1, a b	accepted	
+body	Print #1, "a" "b"	accepted	
+body	On Error Error GoTo X	syntax	Syntax error
+body	On Error GoTo X	syntax	Label not defined
+body	On Error Resume Next	accepted	
+body	On Error GoTo 0	accepted	
+body	On Error GoTo -1	accepted	
+body	On Error Resume	syntax	Syntax error
+body	On Error	syntax	Syntax error
+body	Static Explicit	accepted	
+body	Static x As Long	accepted	
+body	Static Sub S()\nEnd Sub	syntax	Expected End Sub
+body	#If True Then\n#Else@\n#End If	accepted	
+body	#If True Then\n#Else junk\n#End If	syntax	Syntax error
+body	#If True Then\n#End If junk	syntax	You must terminate the # If block with an # EndIf
+body	#If True Then junk\n#End If	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+body	#If True Then\n#Else\n#End If@	accepted	
+body	#If True Then\n#Else%\n#End If	accepted	
+body	#If True Then\n#Else$\n#End If	accepted	
+body	#If True Then\n#Else!\n#End If	accepted	
+body	#If True Then\n#Else&\n#End If	accepted	
+body	#If True Then\n#Else#\n#End If	accepted	
+body	#If True Then\n#Else@@\n#End If	syntax	Syntax error
+body	#If True Then\n#End If@	accepted	
+body	#If True Then\n#End If%	accepted	
+body	#If True Then\n#EndIf@	accepted	
+body	#If True@ Then\n#End If	accepted	
+body	#If True Then@\n#End If	accepted	
+body	#Const X@ = 1	accepted	
+body	#Const X = 1@	accepted	
+body	#If True Then\n#ElseIf True Then@\n#End If	accepted	
+body	#If True Then\n#ElseIf True@ Then\n#End If	accepted	
+body	#If True Then\n#Elseif@ True Then\n#End If	accepted	
+body	#If@ True Then\n#End If	accepted	
+body	x = True@	accepted	
+body	x = True%	accepted	
+body	x = 1 + 2@	accepted	
+body	x = Nothing@	accepted	
+body	If x Then@ y = 1	accepted	
+body	If x@ Then y = 1	accepted	
+body	If x Then y = 1@	accepted	
+body	If x Then\n    y = 1\nEnd If@	accepted	
+body	If x Then\n    y = 1\nEnd@ If	accepted	
+body	If x Then\n    y = 1\nElse@\n    y = 2\nEnd If	accepted	
+body	For i = 1 To 2\n    y = 1\nNext@	accepted	
+body	For@ i = 1 To 2\n    y = 1\nNext	accepted	
+body	Dim a As Long@	accepted	
+body	Dim a@ As Long	syntax	Syntax error
+body	Dim a As@ Long	accepted	
+body	Dim@ a As Long	accepted	
+body	Do\n    y = 1\nLoop@	accepted	
+body	Do While@ x\n    y = 1\nLoop	accepted	
+body	Select Case x\n    Case 1@\n        y = 1\nEnd Select	accepted	
+body	Select Case x\n    Case@ 1\n        y = 1\nEnd Select	accepted	
+body	With o\n    .x = 1\nEnd With@	accepted	
+body	Call@ Probe	accepted	
+body	Probe@	accepted	
+body	Probe@ 1	semantic	Wrong number of arguments or invalid property assignment
+body	x = Len@("a")	accepted	
+body	x = Len("a")@	syntax	Syntax error
+body	Exit@ Sub	accepted	
+body	GoTo@ L	syntax	Label not defined
+body	End@	accepted	
+body	x = 1 +@ 2	syntax	Syntax error
+body	x = (1@)	accepted	
+body	x = 1@@	syntax	Syntax error
+body	Dim a% As Integer	syntax	Syntax error
+body	Dim a% As Long	syntax	Syntax error
+body	Dim a$ As String	syntax	Syntax error
+body	Dim a$, b%	accepted	
+body	Dim a%	accepted	
+body	Dim a%(1)	accepted	
+body	Dim a%(1) As Integer	syntax	Syntax error
+body	Static a% As Integer	syntax	Syntax error
+body	Const c@ = 1	accepted	
+body	Const c@ As Currency = 1	syntax	Syntax error
+body	Const c% As Integer = 1	syntax	Syntax error
+body	ReDim a%(1) As Integer	syntax	Syntax error
+body	ReDim a%(1)	accepted	
+body	Sub S(a% As Integer)\nEnd Sub	syntax	Syntax error
+body	Sub S(a% As Long)\nEnd Sub	syntax	Syntax error
+body	Sub S(a%)\nEnd Sub	syntax	Expected End Sub
+body	Function F%() As Integer\nEnd Function	syntax	Syntax error
+body	Function F%()\nEnd Function	syntax	Expected End Sub
+body	Function F@() As Currency\nEnd Function	syntax	Syntax error
+body	Function F%() As Long\nEnd Function	syntax	Syntax error
+body	Sub S%()\nEnd Sub	syntax	Syntax error
+body	Type T\n    a% As Integer\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    a% As Long\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    a%\nEnd Type	syntax	Invalid inside procedure
+body	Declare Function F Lib "k" (a% As Integer) As Long	syntax	Syntax error
+body	Declare Function F% Lib "k" () As Integer	syntax	Syntax error
+body	Declare Function F% Lib "k" () As Long	syntax	Syntax error
+body	Property Get P%() As Integer\nEnd Property	syntax	Expected End Sub
+body	For i% = 1 To 2\nNext	accepted	
+body	Dim a As Integer%	accepted	
+body	Dim a As Integer@	accepted	
+body	Dim a As Integer$	accepted	
+body	Dim a As Foo%	semantic	User-defined type not defined
+body	Dim a As String$	syntax	Syntax error
+body	Type T\n    y\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    y%\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    y(3)\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    y$\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    x As Long\n    y\nEnd Type	syntax	Invalid inside procedure
+body	Type T\n    y As\nEnd Type	syntax	Invalid inside procedure
+body	Declare Sub F% Lib "k" ()	syntax	Syntax error
+body	Declare Sub F Lib "k" (a, b%)	syntax	Only comments may appear after End Sub, End Function, or End Property
+body	Enum E\n    A\n    B = 2\nEnd Enum	syntax	Invalid inside procedure
 module	x = 1 +* 2	syntax	Expected: expression
 module	x = (1	syntax	Expected: )
 module	x = 2 ^ 3 ^ 2	syntax	Invalid outside procedure
@@ -389,3 +508,122 @@ module	Dim s As String * 2 ^ 2	syntax	Expected: end of statement
 module	Dim s As String * 7 Mod 3	syntax	Expected: end of statement
 module	Dim s As String * 3 And 3	syntax	Expected: end of statement
 module	Dim s As String * (2 + 1)	syntax	Expected: identifier
+module	Debug.Print "a" "b"	syntax	Invalid outside procedure
+module	Debug.Print a b	syntax	Invalid outside procedure
+module	Debug.Print a"b"	syntax	Invalid outside procedure
+module	Debug.Print 1 2	syntax	Invalid outside procedure
+module	Debug.Print a ,	syntax	Invalid outside procedure
+module	Debug.Print a ;	syntax	Invalid outside procedure
+module	Debug.Print ,	syntax	Invalid outside procedure
+module	Debug.Print ; a	syntax	Invalid outside procedure
+module	Print "a" "b"	syntax	Invalid outside procedure
+module	Print a"b"	syntax	Invalid outside procedure
+module	Print #1, a b	syntax	Invalid outside procedure
+module	Print #1, "a" "b"	syntax	Invalid outside procedure
+module	On Error Error GoTo X	syntax	Expected: GoTo or Resume
+module	On Error GoTo X	syntax	Invalid outside procedure
+module	On Error Resume Next	syntax	Invalid outside procedure
+module	On Error GoTo 0	syntax	Invalid outside procedure
+module	On Error GoTo -1	syntax	Invalid outside procedure
+module	On Error Resume	syntax	Expected: Next
+module	On Error	syntax	Expected: GoTo or Resume
+module	Static Explicit	syntax	Invalid outside procedure
+module	Static x As Long	syntax	Invalid outside procedure
+module	Static Sub S()\nEnd Sub	accepted	
+module	#If True Then\n#Else@\n#End If	accepted	
+module	#If True Then\n#Else junk\n#End If	syntax	Expected: end of statement
+module	#If True Then\n#End If junk	syntax	You must terminate the # If block with an # EndIf
+module	#If True Then junk\n#End If	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+module	#If True Then\n#Else\n#End If@	accepted	
+module	#If True Then\n#Else%\n#End If	accepted	
+module	#If True Then\n#Else$\n#End If	accepted	
+module	#If True Then\n#Else!\n#End If	accepted	
+module	#If True Then\n#Else&\n#End If	accepted	
+module	#If True Then\n#Else#\n#End If	accepted	
+module	#If True Then\n#Else@@\n#End If	syntax	Invalid character
+module	#If True Then\n#End If@	accepted	
+module	#If True Then\n#End If%	accepted	
+module	#If True Then\n#EndIf@	accepted	
+module	#If True@ Then\n#End If	accepted	
+module	#If True Then@\n#End If	accepted	
+module	#Const X@ = 1	accepted	
+module	#Const X = 1@	accepted	
+module	#If True Then\n#ElseIf True Then@\n#End If	accepted	
+module	#If True Then\n#ElseIf True@ Then\n#End If	accepted	
+module	#If True Then\n#Elseif@ True Then\n#End If	accepted	
+module	#If@ True Then\n#End If	accepted	
+module	x = True@	syntax	Invalid outside procedure
+module	x = True%	syntax	Invalid outside procedure
+module	x = 1 + 2@	syntax	Invalid outside procedure
+module	x = Nothing@	syntax	Invalid outside procedure
+module	If x Then@ y = 1	syntax	Invalid outside procedure
+module	If x@ Then y = 1	syntax	Invalid outside procedure
+module	If x Then y = 1@	syntax	Invalid outside procedure
+module	If x Then\n    y = 1\nEnd If@	syntax	Invalid outside procedure
+module	If x Then\n    y = 1\nEnd@ If	syntax	Invalid outside procedure
+module	If x Then\n    y = 1\nElse@\n    y = 2\nEnd If	syntax	Invalid outside procedure
+module	For i = 1 To 2\n    y = 1\nNext@	syntax	Invalid outside procedure
+module	For@ i = 1 To 2\n    y = 1\nNext	syntax	Invalid outside procedure
+module	Dim a As Long@	accepted	
+module	Dim a@ As Long	syntax	Expected: end of statement
+module	Dim a As@ Long	accepted	
+module	Dim@ a As Long	accepted	
+module	Do\n    y = 1\nLoop@	syntax	Invalid outside procedure
+module	Do While@ x\n    y = 1\nLoop	syntax	Invalid outside procedure
+module	Select Case x\n    Case 1@\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	Select Case x\n    Case@ 1\n        y = 1\nEnd Select	syntax	Invalid outside procedure
+module	With o\n    .x = 1\nEnd With@	syntax	Invalid outside procedure
+module	Call@ Probe	syntax	Invalid outside procedure
+module	Probe@	syntax	Invalid outside procedure
+module	Probe@ 1	syntax	Invalid outside procedure
+module	x = Len@("a")	syntax	Invalid outside procedure
+module	x = Len("a")@	syntax	Invalid character
+module	Exit@ Sub	syntax	Invalid outside procedure
+module	GoTo@ L	syntax	Invalid outside procedure
+module	End@	syntax	Invalid outside procedure
+module	x = 1 +@ 2	syntax	Invalid character
+module	x = (1@)	syntax	Invalid outside procedure
+module	x = 1@@	syntax	Invalid character
+module	Dim a% As Integer	syntax	Expected: end of statement
+module	Dim a% As Long	syntax	Expected: end of statement
+module	Dim a$ As String	syntax	Expected: end of statement
+module	Dim a$, b%	accepted	
+module	Dim a%	accepted	
+module	Dim a%(1)	accepted	
+module	Dim a%(1) As Integer	syntax	Expected: end of statement
+module	Static a% As Integer	syntax	Expected: end of statement
+module	Const c@ = 1	accepted	
+module	Const c@ As Currency = 1	syntax	Expected: =
+module	Const c% As Integer = 1	syntax	Expected: =
+module	ReDim a%(1) As Integer	syntax	Syntax error
+module	ReDim a%(1)	syntax	Invalid outside procedure
+module	Sub S(a% As Integer)\nEnd Sub	syntax	Expected: list separator or )
+module	Sub S(a% As Long)\nEnd Sub	syntax	Expected: list separator or )
+module	Sub S(a%)\nEnd Sub	accepted	
+module	Function F%() As Integer\nEnd Function	syntax	Expected: end of statement
+module	Function F%()\nEnd Function	accepted	
+module	Function F@() As Currency\nEnd Function	syntax	Expected: end of statement
+module	Function F%() As Long\nEnd Function	syntax	Expected: end of statement
+module	Sub S%()\nEnd Sub	syntax	Expected: Identifier without type suffix
+module	Type T\n    a% As Integer\nEnd Type	syntax	Expected: end of statement
+module	Type T\n    a% As Long\nEnd Type	syntax	Expected: end of statement
+module	Type T\n    a%\nEnd Type	syntax	Statement invalid inside Type block
+module	Declare Function F Lib "k" (a% As Integer) As Long	syntax	Expected: list separator or )
+module	Declare Function F% Lib "k" () As Integer	syntax	Expected: end of statement
+module	Declare Function F% Lib "k" () As Long	syntax	Expected: end of statement
+module	Property Get P%() As Integer\nEnd Property	accepted	
+module	For i% = 1 To 2\nNext	syntax	Invalid outside procedure
+module	Dim a As Integer%	accepted	
+module	Dim a As Integer@	accepted	
+module	Dim a As Integer$	accepted	
+module	Dim a As Foo%	semantic	User-defined type not defined
+module	Dim a As String$	syntax	Expected: New or type name
+module	Type T\n    y\nEnd Type	syntax	Statement invalid inside Type block
+module	Type T\n    y%\nEnd Type	syntax	Statement invalid inside Type block
+module	Type T\n    y(3)\nEnd Type	syntax	Statement invalid inside Type block
+module	Type T\n    y$\nEnd Type	syntax	Statement invalid inside Type block
+module	Type T\n    x As Long\n    y\nEnd Type	syntax	Statement invalid inside Type block
+module	Type T\n    y As\nEnd Type	syntax	Expected: New or type name
+module	Declare Sub F% Lib "k" ()	syntax	Expected: Identifier without type suffix
+module	Declare Sub F Lib "k" (a, b%)	accepted	
+module	Enum E\n    A\n    B = 2\nEnd Enum	accepted	
