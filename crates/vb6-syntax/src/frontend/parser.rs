@@ -2535,6 +2535,16 @@ impl<'src> Parser<'src> {
             true
         };
 
+        // In the legacy form `Go` is followed by `To`.
+        if legacy_goto && self.peek().kind == TokenKind::Kw(Kw::Go) && self.peek2().kind != TokenKind::Kw(Kw::To) {
+            let span = self.peek2().span;
+            self.report_expected(span, "To");
+        }
+        // A `Dim` cannot be the statement after `Then`.
+        if has_then && self.peek().kind == TokenKind::Kw(Kw::Dim) {
+            let span = self.current_span();
+            self.report_expected(span, "statement");
+        }
         // Single-line If: a `Then` followed immediately by a statement (not Eol),
         // or the legacy `GoTo` form.
         if has_then && self.peek().kind == TokenKind::Kw(Kw::Rem) {

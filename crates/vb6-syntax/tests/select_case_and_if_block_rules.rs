@@ -77,3 +77,19 @@ fn else_followed_by_a_statement_or_a_colon_is_fine() {
         assert_eq!(p.found, vec![], "{body:?}");
     }
 }
+
+#[test]
+fn dim_cannot_be_the_statement_after_then() {
+    let src = "Sub S()\nIf x Then Dim a As Long\nEnd Sub\n";
+    let p = parse(src);
+    assert!(p.found.iter().any(|d| d.1 == offset_of(src, "Dim", 0)), "{:?}", p.found);
+}
+
+#[test]
+fn legacy_if_go_needs_to() {
+    let src = "Sub S()\nIf x Go Sub L\nL:\nEnd Sub\n";
+    let p = parse(src);
+    assert!(p.found.iter().any(|d| d.1 == offset_of(src, "Sub L", 0)), "{:?}", p.found);
+    let ok = parse("Sub S()\nIf x Go To L\nL:\nEnd Sub\n");
+    assert_eq!(ok.found, vec![]);
+}
