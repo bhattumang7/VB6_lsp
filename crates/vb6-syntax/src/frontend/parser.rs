@@ -221,6 +221,8 @@ pub struct Parser<'src> {
     in_inline_if: bool,
     /// A statement's target is being parsed, where built-in functions are plain names.
     in_target: bool,
+    /// The name being read is the target of a jump, which may be written in brackets.
+    label_target: bool,
     /// The target about to be parsed is at the start of a statement, where a few reserved
     /// words (`Date`, `DoEvents`, `CDec`) may name what is assigned or called.
     target_at_statement_start: bool,
@@ -348,6 +350,7 @@ impl<'src> Parser<'src> {
             address_of_ok: false,
             in_inline_if: false,
             in_target: false,
+            label_target: false,
             target_at_statement_start: false,
             blocks: Vec::new(),
             last_was_eol: false,
@@ -548,6 +551,15 @@ impl<'src> Parser<'src> {
     /// the words that only mean something in a module header (`Attribute`,
     /// `VB_Name`, ...), which stay free as names.
     fn expect_decl_name(&mut self) -> Token {
+        // A bracketed name is an external name, never a declared one.
+        if !self.label_target
+            && self.peek().kind == TokenKind::Ident
+            && self.src.get(self.peek().span.start as usize) == Some(&b'[')
+        {
+            let span = self.current_span();
+            self.report_expected(span, "identifier");
+            return self.advance();
+        }
         // A `Type` member may take any reserved word but `Me`.
         let me = self.peek().kind == TokenKind::Kw(Kw::Me) && self.peek2().kind != TokenKind::Kw(Kw::LParen);
         if (!self.reserved_names_allowed || me) && self.at_reserved_word() {
@@ -2020,6 +2032,17 @@ impl<'src> Parser<'src> {
                 self.skip_line();
                 return lhs;
             }
+            // Bang access takes no arguments as a statement, and a bracketed reserved word is no
+            // callable name.
+            if !self.peek().is_stmt_end()
+                && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
+                && (self.is_bang_member(arena, lhs) || self.is_bracketed_reserved_word(arena, lhs))
+            {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                return lhs;
+            }
             let args = self.parse_stmt_arg_list(arena);
             self.end_stmt();
             if args.is_empty() {
@@ -2054,6 +2077,18 @@ impl<'src> Parser<'src> {
         let ExprNode::Call { args, .. } = arena.get(lhs) else { return false };
         matches!(arena.get(*args), ExprNode::ArgList { args }
             if args.iter().any(|a| matches!(arena.get(*a), ExprNode::AddressOf { .. })))
+    }
+
+    /// True when `target` ends in a `!` member access.
+    fn is_bang_member(&self, arena: &ExprArena, target: NodeId) -> bool {
+        matches!(arena.get(target), ExprNode::MemberAccess { bang: true, .. })
+    }
+
+    /// True when `target` is a name written in brackets whose text is a reserved word.
+    fn is_bracketed_reserved_word(&self, arena: &ExprArena, target: NodeId) -> bool {
+        let ExprNode::NameRef { sym, .. } = arena.get(target) else { return false };
+        let span = self.node_spans.get(target);
+        self.src.get(span.start as usize) == Some(&b'[') && self.scanner.is_reserved(*sym)
     }
 
     /// True when `target` is a member access (not a plain name) whose member is `wanted`.
@@ -2898,7 +2933,10 @@ impl<'src> Parser<'src> {
             let tok = self.advance();
             LabelRef::Line(line_label_value(&tok.lit))
         } else {
-            LabelRef::Name(self.expect_decl_name().sym.map(|s| s as u32).unwrap_or(0))
+            self.label_target = true;
+            let name = self.expect_decl_name();
+            self.label_target = false;
+            LabelRef::Name(name.sym.map(|s| s as u32).unwrap_or(0))
         };
         self.label_refs.push((target, target_span));
         self.end_stmt();
@@ -2927,7 +2965,9 @@ impl<'src> Parser<'src> {
         } else if !self.peek().is_stmt_end()
             && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
         {
+            self.label_target = true;
             let lbl = self.expect_decl_name();
+            self.label_target = false;
             let sym = lbl.sym.map(|s| s as u32).unwrap_or(0);
             self.label_refs.push((LabelRef::Name(sym), lbl.span));
             ResumeTarget::At(LabelRef::Name(sym))

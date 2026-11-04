@@ -1,0 +1,38 @@
+# One template per block; {k} is replaced by each word of words.txt.
+=== dim bas
+Sub Probe()
+    Dim {k} As Long
+End Sub
+=== assign bas
+Sub Probe()
+    {k} = 1
+End Sub
+=== use bas
+Sub Probe()
+    x = {k} + 1
+End Sub
+=== call bas
+Sub Probe()
+    {k} 1
+End Sub
+=== sub bas
+Sub {k}()
+End Sub
+=== param bas
+Sub Probe({k} As Long)
+End Sub
+=== label bas
+Sub Probe()
+    GoTo {k}
+{k}:
+End Sub
+=== member bas
+Sub Probe(o As Object)
+    x = o.{k}
+End Sub
+=== moddim bas
+Dim {k} As Long
+=== typemember bas
+Type T
+    {k} As Long
+End Type

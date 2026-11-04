@@ -744,6 +744,9 @@ impl<'a> Scanner<'a> {
 
                 0x41 => return self.scan_underscore(b, start),
 
+                _ if matches!(b, b'~' | b'`' | b'|' | b'{' | b'}') => {
+                    return Token::error(self.span(start));
+                }
                 _ => {
                     let tok = self.scan_ident(b, start);
                     // After `.` or `!` the word names a member, even `Rem`.
@@ -1186,7 +1189,9 @@ impl<'a> Scanner<'a> {
         if self.peek().map_or(true, |b| !is_ident_continue(b)) {
             Token::op(Kw::LineCont, self.span(start))
         } else {
-            self.scan_ident(first, start)
+            // A name cannot begin with an underscore.
+            self.scan_ident(first, start);
+            Token::error(self.span(start))
         }
     }
 
@@ -1261,6 +1266,8 @@ impl<'a> Scanner<'a> {
             match self.advance() {
                 None | Some(0x00) => return Token::error(self.span(start)),
                 Some(b']') => break,
+                // A bracket cannot hold another opening bracket.
+                Some(b'[') => return Token::error(self.span(start)),
                 Some(b) => self.tok_buf.push(b as char),
             }
         }

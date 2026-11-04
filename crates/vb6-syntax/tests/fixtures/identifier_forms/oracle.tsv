@@ -1,0 +1,721 @@
+# template	word	class	message
+dim	a	accepted	
+dim	A1	accepted	
+dim	a_b	accepted	
+dim	_a	syntax	Syntax error
+dim	__a	syntax	Syntax error
+dim	a_	accepted	
+dim	a__	accepted	
+dim	1a	syntax	Syntax error
+dim	a1b	accepted	
+dim	a$	syntax	Syntax error
+dim	a%	syntax	Syntax error
+dim	a&	syntax	Syntax error
+dim	a!	syntax	Syntax error
+dim	a#	syntax	Syntax error
+dim	a@	syntax	Syntax error
+dim	a$$	syntax	Syntax error
+dim	a%%	syntax	Syntax error
+dim	a$%	syntax	Syntax error
+dim	[a]	syntax	Syntax error
+dim	[a b]	syntax	Syntax error
+dim	[a-b]	syntax	Syntax error
+dim	[1a]	syntax	Syntax error
+dim	[if]	syntax	Syntax error
+dim	[Dim]	syntax	Syntax error
+dim	[]	syntax	Syntax error
+dim	[a	syntax	Syntax error
+dim	a]	syntax	Syntax error
+dim	[a]]	syntax	Syntax error
+dim	[[a]	syntax	Syntax error
+dim	[a.b]	syntax	Syntax error
+dim	[a!b]	syntax	Syntax error
+dim	[a$]	syntax	Syntax error
+dim	[a]$	syntax	Syntax error
+dim	a.b	syntax	Syntax error
+dim	a!b	syntax	Syntax error
+dim	a b	syntax	Syntax error
+dim	a,b	accepted	
+dim	a:b	syntax	Statement invalid outside Type block
+dim	a;b	syntax	Syntax error
+dim	a(	syntax	Syntax error
+dim	a)	syntax	Syntax error
+dim	a=b	syntax	Syntax error
+dim	a+b	syntax	Syntax error
+dim	a'b	accepted	
+dim	a"b	syntax	Syntax error
+dim	a?b	syntax	Syntax error
+dim	a~b	syntax	Syntax error
+dim	a`b	syntax	Syntax error
+dim	a\b	syntax	Syntax error
+dim	a/b	syntax	Syntax error
+dim	a^b	syntax	Syntax error
+dim	a|b	syntax	Syntax error
+dim	a{b	syntax	Syntax error
+dim	a}b	syntax	Syntax error
+dim	a<b	syntax	Syntax error
+dim	a>b	syntax	Syntax error
+dim	a#b	syntax	Syntax error
+dim	a@b	syntax	Syntax error
+dim	a€	accepted	
+dim	é	accepted	
+dim	éa	accepted	
+dim	aé	accepted	
+dim	日本	accepted	
+dim	a日	accepted	
+dim	Straße	accepted	
+dim	a.	syntax	Syntax error
+dim	.a	syntax	Syntax error
+dim	a..b	syntax	Syntax error
+dim	nbsp	accepted	
+dim	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+dim	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+dim	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+assign	a	accepted	
+assign	A1	accepted	
+assign	a_b	accepted	
+assign	_a	syntax	Syntax error
+assign	__a	syntax	Syntax error
+assign	a_	accepted	
+assign	a__	accepted	
+assign	1a	accepted	
+assign	a1b	accepted	
+assign	a$	accepted	
+assign	a%	accepted	
+assign	a&	accepted	
+assign	a!	accepted	
+assign	a#	accepted	
+assign	a@	accepted	
+assign	a$$	syntax	Syntax error
+assign	a%%	syntax	Syntax error
+assign	a$%	syntax	Syntax error
+assign	[a]	semantic	External name not defined
+assign	[a b]	semantic	External name not defined
+assign	[a-b]	semantic	External name not defined
+assign	[1a]	semantic	External name not defined
+assign	[if]	semantic	External name not defined
+assign	[Dim]	semantic	External name not defined
+assign	[]	semantic	External name not defined
+assign	[a	syntax	Syntax error
+assign	a]	syntax	Syntax error
+assign	[a]]	syntax	Syntax error
+assign	[[a]	syntax	Syntax error
+assign	[a.b]	semantic	External name not defined
+assign	[a!b]	semantic	External name not defined
+assign	[a$]	semantic	External name not defined
+assign	[a]$	syntax	Syntax error
+assign	a.b	accepted	
+assign	a!b	accepted	
+assign	a b	semantic	Sub or Function not defined
+assign	a,b	semantic	Sub or Function not defined
+assign	a:b	accepted	
+assign	a;b	syntax	Syntax error
+assign	a(	syntax	Syntax error
+assign	a)	syntax	Syntax error
+assign	a=b	accepted	
+assign	a+b	semantic	Sub or Function not defined
+assign	a'b	semantic	Sub or Function not defined
+assign	a"b	semantic	Sub or Function not defined
+assign	a?b	syntax	Syntax error
+assign	a~b	syntax	Syntax error
+assign	a`b	syntax	Syntax error
+assign	a\b	syntax	Syntax error
+assign	a/b	syntax	Syntax error
+assign	a^b	syntax	Syntax error
+assign	a|b	syntax	Syntax error
+assign	a{b	syntax	Syntax error
+assign	a}b	syntax	Syntax error
+assign	a<b	syntax	Syntax error
+assign	a>b	syntax	Syntax error
+assign	a#b	semantic	Sub or Function not defined
+assign	a@b	semantic	Sub or Function not defined
+assign	a€	accepted	
+assign	é	accepted	
+assign	éa	accepted	
+assign	aé	accepted	
+assign	日本	accepted	
+assign	a日	accepted	
+assign	Straße	accepted	
+assign	a.	syntax	Syntax error
+assign	.a	semantic	Invalid or unqualified reference
+assign	a..b	syntax	Syntax error
+assign	nbsp	accepted	
+assign	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+assign	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+assign	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+use	a	accepted	
+use	A1	accepted	
+use	a_b	accepted	
+use	_a	syntax	Syntax error
+use	__a	syntax	Syntax error
+use	a_	accepted	
+use	a__	accepted	
+use	1a	syntax	Syntax error
+use	a1b	accepted	
+use	a$	accepted	
+use	a%	accepted	
+use	a&	accepted	
+use	a!	accepted	
+use	a#	accepted	
+use	a@	accepted	
+use	a$$	syntax	Syntax error
+use	a%%	syntax	Syntax error
+use	a$%	syntax	Syntax error
+use	[a]	semantic	External name not defined
+use	[a b]	semantic	External name not defined
+use	[a-b]	semantic	External name not defined
+use	[1a]	semantic	External name not defined
+use	[if]	semantic	External name not defined
+use	[Dim]	semantic	External name not defined
+use	[]	semantic	External name not defined
+use	[a	syntax	Syntax error
+use	a]	syntax	Syntax error
+use	[a]]	syntax	Syntax error
+use	[[a]	syntax	Syntax error
+use	[a.b]	semantic	External name not defined
+use	[a!b]	semantic	External name not defined
+use	[a$]	semantic	External name not defined
+use	[a]$	syntax	Syntax error
+use	a.b	accepted	
+use	a!b	accepted	
+use	a b	syntax	Syntax error
+use	a,b	syntax	Syntax error
+use	a:b	semantic	Sub or Function not defined
+use	a;b	syntax	Syntax error
+use	a(	syntax	Syntax error
+use	a)	syntax	Syntax error
+use	a=b	accepted	
+use	a+b	accepted	
+use	a'b	accepted	
+use	a"b	syntax	Syntax error
+use	a?b	syntax	Syntax error
+use	a~b	syntax	Syntax error
+use	a`b	syntax	Syntax error
+use	a\b	accepted	
+use	a/b	accepted	
+use	a^b	accepted	
+use	a|b	syntax	Syntax error
+use	a{b	syntax	Syntax error
+use	a}b	syntax	Syntax error
+use	a<b	accepted	
+use	a>b	accepted	
+use	a#b	syntax	Syntax error
+use	a@b	syntax	Syntax error
+use	a€	accepted	
+use	é	accepted	
+use	éa	accepted	
+use	aé	accepted	
+use	日本	accepted	
+use	a日	accepted	
+use	Straße	accepted	
+use	a.	syntax	Syntax error
+use	.a	semantic	Invalid or unqualified reference
+use	a..b	syntax	Syntax error
+use	nbsp	accepted	
+use	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+use	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+use	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+call	a	semantic	Sub or Function not defined
+call	A1	semantic	Sub or Function not defined
+call	a_b	semantic	Sub or Function not defined
+call	_a	syntax	Syntax error
+call	__a	syntax	Syntax error
+call	a_	semantic	Sub or Function not defined
+call	a__	semantic	Sub or Function not defined
+call	1a	semantic	Sub or Function not defined
+call	a1b	semantic	Sub or Function not defined
+call	a$	semantic	Sub or Function not defined
+call	a%	semantic	Sub or Function not defined
+call	a&	semantic	Sub or Function not defined
+call	a!	semantic	Sub or Function not defined
+call	a#	semantic	Sub or Function not defined
+call	a@	semantic	Sub or Function not defined
+call	a$$	syntax	Syntax error
+call	a%%	syntax	Syntax error
+call	a$%	syntax	Syntax error
+call	[a]	semantic	External name not defined
+call	[a b]	semantic	External name not defined
+call	[a-b]	semantic	External name not defined
+call	[1a]	semantic	External name not defined
+call	[if]	syntax	Syntax error
+call	[Dim]	syntax	Syntax error
+call	[]	semantic	External name not defined
+call	[a	syntax	Syntax error
+call	a]	syntax	Syntax error
+call	[a]]	syntax	Syntax error
+call	[[a]	syntax	Syntax error
+call	[a.b]	semantic	External name not defined
+call	[a!b]	semantic	External name not defined
+call	[a$]	semantic	External name not defined
+call	[a]$	syntax	Syntax error
+call	a.b	accepted	
+call	a!b	syntax	Syntax error
+call	a b	syntax	Syntax error
+call	a,b	syntax	Syntax error
+call	a:b	semantic	Sub or Function not defined
+call	a;b	syntax	Syntax error
+call	a(	syntax	Syntax error
+call	a)	syntax	Syntax error
+call	a=b	syntax	Syntax error
+call	a+b	syntax	Syntax error
+call	a'b	semantic	Sub or Function not defined
+call	a"b	semantic	Sub or Function not defined
+call	a?b	syntax	Syntax error
+call	a~b	syntax	Syntax error
+call	a`b	syntax	Syntax error
+call	a\b	syntax	Syntax error
+call	a/b	syntax	Syntax error
+call	a^b	syntax	Syntax error
+call	a|b	syntax	Syntax error
+call	a{b	syntax	Syntax error
+call	a}b	syntax	Syntax error
+call	a<b	syntax	Syntax error
+call	a>b	syntax	Syntax error
+call	a#b	syntax	Syntax error
+call	a@b	syntax	Syntax error
+call	a€	semantic	Sub or Function not defined
+call	é	semantic	Sub or Function not defined
+call	éa	semantic	Sub or Function not defined
+call	aé	semantic	Sub or Function not defined
+call	日本	semantic	Sub or Function not defined
+call	a日	semantic	Sub or Function not defined
+call	Straße	semantic	Sub or Function not defined
+call	a.	syntax	Syntax error
+call	.a	semantic	Invalid or unqualified reference
+call	a..b	syntax	Syntax error
+call	nbsp	semantic	Sub or Function not defined
+call	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	semantic	Sub or Function not defined
+call	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	semantic	Sub or Function not defined
+call	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	semantic	Sub or Function not defined
+sub	a	accepted	
+sub	A1	accepted	
+sub	a_b	accepted	
+sub	_a	syntax	Invalid character
+sub	__a	syntax	Invalid character
+sub	a_	accepted	
+sub	a__	accepted	
+sub	1a	syntax	Expected: identifier
+sub	a1b	accepted	
+sub	a$	syntax	Expected: Identifier without type suffix
+sub	a%	syntax	Expected: Identifier without type suffix
+sub	a&	syntax	Expected: Identifier without type suffix
+sub	a!	syntax	Expected: Identifier without type suffix
+sub	a#	syntax	Expected: Identifier without type suffix
+sub	a@	syntax	Expected: Identifier without type suffix
+sub	a$$	syntax	Expected: Identifier without type suffix
+sub	a%%	syntax	Expected: Identifier without type suffix
+sub	a$%	syntax	Expected: Identifier without type suffix
+sub	[a]	syntax	Expected: identifier
+sub	[a b]	syntax	Expected: identifier
+sub	[a-b]	syntax	Expected: identifier
+sub	[1a]	syntax	Expected: identifier
+sub	[if]	syntax	Expected: identifier
+sub	[Dim]	syntax	Expected: identifier
+sub	[]	syntax	Expected: identifier
+sub	[a	syntax	Missing end bracket
+sub	a]	syntax	Invalid character
+sub	[a]]	syntax	Expected: identifier
+sub	[[a]	syntax	Missing end bracket
+sub	[a.b]	syntax	Expected: identifier
+sub	[a!b]	syntax	Expected: identifier
+sub	[a$]	syntax	Expected: identifier
+sub	[a]$	syntax	Expected: identifier
+sub	a.b	syntax	Expected: end of statement
+sub	a!b	syntax	Expected: end of statement
+sub	a b	syntax	Expected: end of statement
+sub	a,b	syntax	Expected: end of statement
+sub	a:b	syntax	Expected: =
+sub	a;b	syntax	Expected: end of statement
+sub	a(	syntax	Expected: identifier
+sub	a)	syntax	Expected: end of statement
+sub	a=b	syntax	Expected: end of statement
+sub	a+b	syntax	Expected: end of statement
+sub	a'b	accepted	
+sub	a"b	syntax	Expected: end of statement
+sub	a?b	syntax	Expected: end of statement
+sub	a~b	syntax	Invalid character
+sub	a`b	syntax	Invalid character
+sub	a\b	syntax	Expected: end of statement
+sub	a/b	syntax	Expected: end of statement
+sub	a^b	syntax	Expected: end of statement
+sub	a|b	syntax	Invalid character
+sub	a{b	syntax	Invalid character
+sub	a}b	syntax	Invalid character
+sub	a<b	syntax	Expected: end of statement
+sub	a>b	syntax	Expected: end of statement
+sub	a#b	syntax	Expected: Identifier without type suffix
+sub	a@b	syntax	Expected: Identifier without type suffix
+sub	a€	accepted	
+sub	é	accepted	
+sub	éa	accepted	
+sub	aé	accepted	
+sub	日本	accepted	
+sub	a日	accepted	
+sub	Straße	accepted	
+sub	a.	syntax	Expected: end of statement
+sub	.a	syntax	Expected: identifier
+sub	a..b	syntax	Expected: end of statement
+sub	nbsp	accepted	
+sub	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+sub	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+sub	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+param	a	accepted	
+param	A1	accepted	
+param	a_b	accepted	
+param	_a	syntax	Invalid character
+param	__a	syntax	Invalid character
+param	a_	accepted	
+param	a__	accepted	
+param	1a	syntax	Expected: identifier
+param	a1b	accepted	
+param	a$	syntax	Expected: list separator or )
+param	a%	syntax	Expected: list separator or )
+param	a&	syntax	Expected: list separator or )
+param	a!	syntax	Expected: list separator or )
+param	a#	syntax	Expected: list separator or )
+param	a@	syntax	Expected: list separator or )
+param	a$$	syntax	Invalid character
+param	a%%	syntax	Invalid character
+param	a$%	syntax	Invalid character
+param	[a]	syntax	Expected: identifier
+param	[a b]	syntax	Expected: identifier
+param	[a-b]	syntax	Expected: identifier
+param	[1a]	syntax	Expected: identifier
+param	[if]	syntax	Expected: identifier
+param	[Dim]	syntax	Expected: identifier
+param	[]	syntax	Expected: identifier
+param	[a	syntax	Missing end bracket
+param	a]	syntax	Invalid character
+param	[a]]	syntax	Expected: identifier
+param	[[a]	syntax	Missing end bracket
+param	[a.b]	syntax	Expected: identifier
+param	[a!b]	syntax	Expected: identifier
+param	[a$]	syntax	Expected: identifier
+param	[a]$	syntax	Expected: identifier
+param	a.b	syntax	Expected: list separator or )
+param	a!b	syntax	Expected: list separator or )
+param	a b	syntax	Expected: list separator or )
+param	a,b	accepted	
+param	a:b	syntax	Expected: list separator or )
+param	a;b	syntax	Expected: list separator or )
+param	a(	syntax	Expected: )
+param	a)	syntax	Expected: end of statement
+param	a=b	syntax	Expected: list separator or )
+param	a+b	syntax	Expected: list separator or )
+param	a'b	syntax	Expected: list separator or )
+param	a"b	syntax	Expected: list separator or )
+param	a?b	syntax	Expected: list separator or )
+param	a~b	syntax	Invalid character
+param	a`b	syntax	Invalid character
+param	a\b	syntax	Expected: list separator or )
+param	a/b	syntax	Expected: list separator or )
+param	a^b	syntax	Expected: list separator or )
+param	a|b	syntax	Invalid character
+param	a{b	syntax	Invalid character
+param	a}b	syntax	Invalid character
+param	a<b	syntax	Expected: list separator or )
+param	a>b	syntax	Expected: list separator or )
+param	a#b	syntax	Expected: list separator or )
+param	a@b	syntax	Expected: list separator or )
+param	a€	accepted	
+param	é	accepted	
+param	éa	accepted	
+param	aé	accepted	
+param	日本	accepted	
+param	a日	accepted	
+param	Straße	accepted	
+param	a.	syntax	Expected: list separator or )
+param	.a	syntax	Expected: identifier
+param	a..b	syntax	Expected: list separator or )
+param	nbsp	accepted	
+param	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+param	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+param	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+label	a	accepted	
+label	A1	accepted	
+label	a_b	accepted	
+label	_a	syntax	Syntax error
+label	__a	syntax	Syntax error
+label	a_	accepted	
+label	a__	accepted	
+label	1a	syntax	Syntax error
+label	a1b	accepted	
+label	a$	accepted	
+label	a%	accepted	
+label	a&	accepted	
+label	a!	accepted	
+label	a#	accepted	
+label	a@	accepted	
+label	a$$	syntax	Syntax error
+label	a%%	syntax	Syntax error
+label	a$%	syntax	Syntax error
+label	[a]	accepted	
+label	[a b]	accepted	
+label	[a-b]	accepted	
+label	[1a]	accepted	
+label	[if]	accepted	
+label	[Dim]	accepted	
+label	[]	accepted	
+label	[a	syntax	Syntax error
+label	a]	syntax	Syntax error
+label	[a]]	syntax	Syntax error
+label	[[a]	syntax	Syntax error
+label	[a.b]	accepted	
+label	[a!b]	accepted	
+label	[a$]	accepted	
+label	[a]$	syntax	Syntax error
+label	a.b	syntax	Syntax error
+label	a!b	syntax	Syntax error
+label	a b	syntax	Syntax error
+label	a,b	syntax	Syntax error
+label	a:b	semantic	Sub or Function not defined
+label	a;b	syntax	Syntax error
+label	a(	syntax	Syntax error
+label	a)	syntax	Syntax error
+label	a=b	syntax	Syntax error
+label	a+b	syntax	Syntax error
+label	a'b	semantic	Sub or Function not defined
+label	a"b	syntax	Syntax error
+label	a?b	syntax	Syntax error
+label	a~b	syntax	Syntax error
+label	a`b	syntax	Syntax error
+label	a\b	syntax	Syntax error
+label	a/b	syntax	Syntax error
+label	a^b	syntax	Syntax error
+label	a|b	syntax	Syntax error
+label	a{b	syntax	Syntax error
+label	a}b	syntax	Syntax error
+label	a<b	syntax	Syntax error
+label	a>b	syntax	Syntax error
+label	a#b	syntax	Syntax error
+label	a@b	syntax	Syntax error
+label	a€	accepted	
+label	é	accepted	
+label	éa	accepted	
+label	aé	accepted	
+label	日本	accepted	
+label	a日	accepted	
+label	Straße	accepted	
+label	a.	syntax	Syntax error
+label	.a	syntax	Syntax error
+label	a..b	syntax	Syntax error
+label	nbsp	accepted	
+label	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+label	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+label	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+member	a	accepted	
+member	A1	accepted	
+member	a_b	accepted	
+member	_a	syntax	Syntax error
+member	__a	syntax	Syntax error
+member	a_	accepted	
+member	a__	accepted	
+member	1a	syntax	Syntax error
+member	a1b	accepted	
+member	a$	accepted	
+member	a%	accepted	
+member	a&	accepted	
+member	a!	accepted	
+member	a#	accepted	
+member	a@	accepted	
+member	a$$	syntax	Syntax error
+member	a%%	syntax	Syntax error
+member	a$%	syntax	Syntax error
+member	[a]	accepted	
+member	[a b]	accepted	
+member	[a-b]	accepted	
+member	[1a]	accepted	
+member	[if]	accepted	
+member	[Dim]	accepted	
+member	[]	accepted	
+member	[a	syntax	Syntax error
+member	a]	syntax	Syntax error
+member	[a]]	syntax	Syntax error
+member	[[a]	syntax	Syntax error
+member	[a.b]	accepted	
+member	[a!b]	accepted	
+member	[a$]	accepted	
+member	[a]$	syntax	Syntax error
+member	a.b	accepted	
+member	a!b	accepted	
+member	a b	syntax	Syntax error
+member	a,b	syntax	Syntax error
+member	a:b	semantic	Sub or Function not defined
+member	a;b	syntax	Syntax error
+member	a(	syntax	Syntax error
+member	a)	syntax	Syntax error
+member	a=b	accepted	
+member	a+b	accepted	
+member	a'b	accepted	
+member	a"b	syntax	Syntax error
+member	a?b	syntax	Syntax error
+member	a~b	syntax	Syntax error
+member	a`b	syntax	Syntax error
+member	a\b	accepted	
+member	a/b	accepted	
+member	a^b	accepted	
+member	a|b	syntax	Syntax error
+member	a{b	syntax	Syntax error
+member	a}b	syntax	Syntax error
+member	a<b	accepted	
+member	a>b	accepted	
+member	a#b	syntax	Syntax error
+member	a@b	syntax	Syntax error
+member	a€	accepted	
+member	é	accepted	
+member	éa	accepted	
+member	aé	accepted	
+member	日本	accepted	
+member	a日	accepted	
+member	Straße	accepted	
+member	a.	syntax	Syntax error
+member	.a	syntax	Syntax error
+member	a..b	syntax	Syntax error
+member	nbsp	accepted	
+member	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+member	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+member	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+moddim	a	accepted	
+moddim	A1	accepted	
+moddim	a_b	accepted	
+moddim	_a	syntax	Invalid character
+moddim	__a	syntax	Invalid character
+moddim	a_	accepted	
+moddim	a__	accepted	
+moddim	1a	syntax	Expected: identifier
+moddim	a1b	accepted	
+moddim	a$	syntax	Expected: end of statement
+moddim	a%	syntax	Expected: end of statement
+moddim	a&	syntax	Expected: end of statement
+moddim	a!	syntax	Expected: end of statement
+moddim	a#	syntax	Expected: end of statement
+moddim	a@	syntax	Expected: end of statement
+moddim	a$$	syntax	Invalid character
+moddim	a%%	syntax	Invalid character
+moddim	a$%	syntax	Invalid character
+moddim	[a]	syntax	Expected: identifier
+moddim	[a b]	syntax	Expected: identifier
+moddim	[a-b]	syntax	Expected: identifier
+moddim	[1a]	syntax	Expected: identifier
+moddim	[if]	syntax	Expected: identifier
+moddim	[Dim]	syntax	Expected: identifier
+moddim	[]	syntax	Expected: identifier
+moddim	[a	syntax	Missing end bracket
+moddim	a]	syntax	Invalid character
+moddim	[a]]	syntax	Expected: identifier
+moddim	[[a]	syntax	Missing end bracket
+moddim	[a.b]	syntax	Expected: identifier
+moddim	[a!b]	syntax	Expected: identifier
+moddim	[a$]	syntax	Expected: identifier
+moddim	[a]$	syntax	Expected: identifier
+moddim	a.b	syntax	Expected: end of statement
+moddim	a!b	syntax	Expected: end of statement
+moddim	a b	syntax	Expected: end of statement
+moddim	a,b	accepted	
+moddim	a:b	syntax	Statement invalid outside Type block
+moddim	a;b	syntax	Expected: end of statement
+moddim	a(	syntax	Expected: expression
+moddim	a)	syntax	Expected: end of statement
+moddim	a=b	syntax	Expected: end of statement
+moddim	a+b	syntax	Expected: end of statement
+moddim	a'b	accepted	
+moddim	a"b	syntax	Expected: end of statement
+moddim	a?b	syntax	Expected: end of statement
+moddim	a~b	syntax	Invalid character
+moddim	a`b	syntax	Invalid character
+moddim	a\b	syntax	Expected: end of statement
+moddim	a/b	syntax	Expected: end of statement
+moddim	a^b	syntax	Expected: end of statement
+moddim	a|b	syntax	Invalid character
+moddim	a{b	syntax	Invalid character
+moddim	a}b	syntax	Invalid character
+moddim	a<b	syntax	Expected: end of statement
+moddim	a>b	syntax	Expected: end of statement
+moddim	a#b	syntax	Expected: end of statement
+moddim	a@b	syntax	Expected: end of statement
+moddim	a€	accepted	
+moddim	é	accepted	
+moddim	éa	accepted	
+moddim	aé	accepted	
+moddim	日本	accepted	
+moddim	a日	accepted	
+moddim	Straße	accepted	
+moddim	a.	syntax	Expected: end of statement
+moddim	.a	syntax	Expected: identifier
+moddim	a..b	syntax	Expected: end of statement
+moddim	nbsp	accepted	
+moddim	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+moddim	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+moddim	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+typemember	a	accepted	
+typemember	A1	accepted	
+typemember	a_b	accepted	
+typemember	_a	syntax	Invalid character
+typemember	__a	syntax	Invalid character
+typemember	a_	accepted	
+typemember	a__	accepted	
+typemember	1a	syntax	Statement invalid inside Type block
+typemember	a1b	accepted	
+typemember	a$	syntax	Expected: end of statement
+typemember	a%	syntax	Expected: end of statement
+typemember	a&	syntax	Expected: end of statement
+typemember	a!	syntax	Expected: end of statement
+typemember	a#	syntax	Expected: end of statement
+typemember	a@	syntax	Expected: end of statement
+typemember	a$$	syntax	Invalid character
+typemember	a%%	syntax	Invalid character
+typemember	a$%	syntax	Invalid character
+typemember	[a]	syntax	Expected: expression or end of statement
+typemember	[a b]	syntax	Expected: expression or end of statement
+typemember	[a-b]	syntax	Expected: expression or end of statement
+typemember	[1a]	syntax	Expected: expression or end of statement
+typemember	[if]	syntax	Expected: expression or end of statement
+typemember	[Dim]	syntax	Expected: expression or end of statement
+typemember	[]	syntax	Expected: expression or end of statement
+typemember	[a	syntax	Missing end bracket
+typemember	a]	syntax	Invalid character
+typemember	[a]]	syntax	Invalid character
+typemember	[[a]	syntax	Missing end bracket
+typemember	[a.b]	syntax	Expected: expression or end of statement
+typemember	[a!b]	syntax	Expected: expression or end of statement
+typemember	[a$]	syntax	Expected: expression or end of statement
+typemember	[a]$	syntax	Invalid character
+typemember	a.b	syntax	Expected: expression
+typemember	a!b	syntax	Expected: =
+typemember	a b	syntax	Expected: end of statement
+typemember	a,b	syntax	Expected: end of statement
+typemember	a:b	syntax	Statement invalid inside Type block
+typemember	a;b	syntax	Expected: expression
+typemember	a(	syntax	Expected: expression
+typemember	a)	syntax	Expected: expression
+typemember	a=b	syntax	Expected: end of statement
+typemember	a+b	syntax	Expected: end of statement
+typemember	a'b	syntax	Statement invalid inside Type block
+typemember	a"b	syntax	Statement invalid inside Type block
+typemember	a?b	syntax	Expected: expression
+typemember	a~b	syntax	Invalid character
+typemember	a`b	syntax	Invalid character
+typemember	a\b	syntax	Expected: expression
+typemember	a/b	syntax	Expected: expression
+typemember	a^b	syntax	Expected: expression
+typemember	a|b	syntax	Invalid character
+typemember	a{b	syntax	Invalid character
+typemember	a}b	syntax	Invalid character
+typemember	a<b	syntax	Expected: expression
+typemember	a>b	syntax	Expected: expression
+typemember	a#b	syntax	Expected: end of statement
+typemember	a@b	syntax	Expected: end of statement
+typemember	a€	accepted	
+typemember	é	accepted	
+typemember	éa	accepted	
+typemember	aé	accepted	
+typemember	日本	accepted	
+typemember	a日	accepted	
+typemember	Straße	accepted	
+typemember	a.	syntax	Expected: expression
+typemember	.a	syntax	Expected: expression
+typemember	a..b	syntax	Expected: identifier or bracketed expression
+typemember	nbsp	accepted	
+typemember	verylongidentifiernamethatgoesonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandonandon	accepted	
+typemember	a123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	
+typemember	a12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890	accepted	

@@ -75,3 +75,5 @@ Exit Function not allowed in Sub or Property	syntax
 Exit Property not allowed in Function or Sub	syntax
 Invalid data type for constant	semantic
 Overflow	syntax
+External name not defined	semantic
+Missing end bracket	syntax
