@@ -1,0 +1,10 @@
+[package]
+name = "oracle-diff"
+version = "0.1.0"
+edition = "2021"
+description = "Differential harness: compares the VB6 compiler's verdicts with the vb6-syntax parser's"
+publish = false
+
+[dependencies]
+vb6-syntax = { path = "../../crates/vb6-syntax" }
+serde_json = "1"

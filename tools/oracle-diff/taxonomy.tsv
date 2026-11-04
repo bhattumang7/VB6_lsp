@@ -1,0 +1,7 @@
+# message	class
+Sub or Function not defined	semantic
+User-defined type not defined	semantic
+Variable not defined	semantic
+Method or data member not found	semantic
+Constant expression required	semantic
+Syntax error	syntax
