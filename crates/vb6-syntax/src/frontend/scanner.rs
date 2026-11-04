@@ -427,130 +427,202 @@ fn expand_two_digit_year(yy: i32) -> i32 {
     if yy < 30 { 2000 + yy } else { 1900 + yy }
 }
 
-/// Parse a time string `H:MM[:SS][ AM|PM]` as a day fraction (0.0–1.0).
-///
-/// Returns `None` if the string is not a well-formed time — used so the
-/// `#…#` scanner can tell a real time literal from a `#`-operator run that
-/// merely happens to contain a colon (e.g. a `:` statement separator).
-fn parse_time_fraction_opt(s: &str) -> Option<f64> {
-    let s = s.trim();
-    let (time_str, ampm) = {
-        let upper = s.to_ascii_uppercase();
-        if upper.ends_with(" AM") {
-            (&s[..s.len() - 3], 0i32)
-        } else if upper.ends_with(" PM") {
-            (&s[..s.len() - 3], 1i32)
-        } else if upper.ends_with("AM") {
-            (&s[..s.len() - 2], 0i32)
-        } else if upper.ends_with("PM") {
-            (&s[..s.len() - 2], 1i32)
-        } else {
-            (s, -1i32)
-        }
-    };
-    let parts: Vec<&str> = time_str.trim().split(':').collect();
-    if parts.len() < 2 || parts.len() > 3 {
-        return None;
-    }
-    let h = parts[0].trim().parse::<f64>().ok()?;
-    let m = parts[1].trim().parse::<f64>().ok()?;
-    let sec = match parts.get(2) {
-        Some(p) => p.trim().parse::<f64>().ok()?,
-        None => 0.0,
-    };
-    let mut hours = h;
-    if ampm == 1 && h < 12.0 { hours += 12.0; }
-    if ampm == 0 && h == 12.0 { hours = 0.0; }
-    Some((hours * 3600.0 + m * 60.0 + sec) / 86400.0)
+const MONTH_NAMES: [&str; 12] = [
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
+];
+const WEEKDAY_NAMES: [&str; 7] = [
+    "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
+];
+
+/// One lexical piece of the text between the `#` marks of a date literal.
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum DateTok<'a> {
+    Num { value: i32, digits: usize },
+    Word(&'a str),
+    Colon,
+    Slash,
+    Dash,
 }
 
-/// True if `s` contains an English month name or its 3-letter abbreviation —
-/// recognises name-form date literals such as `#December, 24, 2000#` (whose
-/// serial this scanner does not yet compute, but which must still tokenize as a
-/// date literal rather than a `#` operator).
-fn contains_month_name(s: &str) -> bool {
-    const MONTHS: [&str; 12] = [
-        "january", "february", "march", "april", "may", "june",
-        "july", "august", "september", "october", "november", "december",
-    ];
-    s.split(|c: char| !c.is_ascii_alphabetic())
-        .filter(|w| w.len() >= 3)
-        .any(|w| {
-            let wl = w.to_ascii_lowercase();
-            MONTHS.iter().any(|&m| m == wl.as_str() || m[..3] == wl.as_str()[..3.min(wl.len())])
-        })
+/// Split the body of a date literal; `None` when it holds any other character.
+fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
+    let bytes = s.as_bytes();
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < bytes.len() {
+        let b = bytes[i];
+        match b {
+            b' ' | b'\t' | b',' => i += 1,
+            b':' => { out.push(DateTok::Colon); i += 1; }
+            b'/' => { out.push(DateTok::Slash); i += 1; }
+            b'-' => { out.push(DateTok::Dash); i += 1; }
+            b'0'..=b'9' => {
+                let start = i;
+                while i < bytes.len() && bytes[i].is_ascii_digit() { i += 1; }
+                let value = s[start..i].parse::<i32>().ok()?;
+                out.push(DateTok::Num { value, digits: i - start });
+            }
+            b'A'..=b'Z' | b'a'..=b'z' => {
+                let start = i;
+                while i < bytes.len() && bytes[i].is_ascii_alphabetic() { i += 1; }
+                out.push(DateTok::Word(&s[start..i]));
+            }
+            _ => return None,
+        }
+    }
+    Some(out)
+}
+
+fn month_from_word(w: &str) -> Option<i32> {
+    let w = w.to_ascii_lowercase();
+    if w.len() < 3 {
+        return None;
+    }
+    MONTH_NAMES
+        .iter()
+        .position(|m| *m == w || (w.len() == 3 && m[..3] == w))
+        .map(|i| i as i32 + 1)
+}
+
+fn is_weekday_word(w: &str) -> bool {
+    let w = w.to_ascii_lowercase();
+    w.len() >= 3
+        && WEEKDAY_NAMES.iter().any(|d| *d == w || (w.len() == 3 && d[..3] == w))
+}
+
+fn days_in_month(y: i32, m: i32) -> i32 {
+    match m {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        _ => if (y % 4 == 0 && y % 100 != 0) || y % 400 == 0 { 29 } else { 28 },
+    }
+}
+
+/// A year as written: two digits expand, the result must lie in 100..=9999.
+fn full_year(value: i32, digits: usize) -> Option<i32> {
+    let y = if digits <= 2 { expand_two_digit_year(value) } else { value };
+    (100..=9999).contains(&y).then_some(y)
+}
+
+fn valid_serial(y: i32, m: i32, d: i32) -> Option<f64> {
+    ((1..=12).contains(&m) && d >= 1 && d <= days_in_month(y, m))
+        .then(|| vba_date_serial(y, m, d))
+}
+
+/// Date part made of numbers only: `m/d/y`, or `y/m/d` for a leading year.
+fn numeric_date(nums: &[(i32, usize)]) -> Option<f64> {
+    let [(a, ad), (b, _), (c, cd)] = *nums else { return None };
+    if ad >= 3 || a > 31 {
+        valid_serial(full_year(a, ad)?, b, c)
+    } else {
+        valid_serial(full_year(c, cd)?, a, b)
+    }
+}
+
+/// Date part with a month name and one or two numbers. A date needs a year,
+/// so a lone day is not a literal; a lone year means the first of the month.
+fn named_date(month: i32, nums: &[(i32, usize)]) -> Option<f64> {
+    let year_like = |v: i32, d: usize| d >= 3 || v > 31;
+    match *nums {
+        [(v, d)] if year_like(v, d) => valid_serial(full_year(v, d)?, month, 1),
+        [(a, ad), (b, bd)] => {
+            if year_like(a, ad) {
+                valid_serial(full_year(a, ad)?, month, b)
+            } else {
+                valid_serial(full_year(b, bd)?, month, a)
+            }
+        }
+        _ => None,
+    }
+}
+
+/// The time of day as a fraction of a day: `H:M[:S]` with optional AM/PM, or
+/// an hour followed by AM/PM.
+fn time_fraction(hour: i32, minute: i32, second: i32, meridiem: Option<bool>) -> Option<f64> {
+    let hour = match meridiem {
+        Some(pm) => {
+            if !(1..=12).contains(&hour) { return None; }
+            (hour % 12) + if pm { 12 } else { 0 }
+        }
+        None => {
+            if !(0..=23).contains(&hour) { return None; }
+            hour
+        }
+    };
+    if !(0..=59).contains(&minute) || !(0..=59).contains(&second) {
+        return None;
+    }
+    Some((hour * 3600 + minute * 60 + second) as f64 / 86400.0)
 }
 
 /// Parse a VBA date/time literal's inner text into a serial, or `None` if the
-/// text is not a date/time literal at all.
+/// text is not a valid date/time literal.
 ///
 /// The `None` case is essential: a `#…#` run is only a literal when its body is
 /// a real date or time. `Close #1, #2` puts two `#` on one line, and without
 /// this check the scanner would greedily fuse `#1, #` into a bogus date literal.
 fn parse_vba_date_literal(s: &str) -> Option<f64> {
-    let s = s.trim();
-    if s.is_empty() {
+    let toks = lex_date_text(s)?;
+    if toks.is_empty() {
         return None;
     }
-
-    let first_part = s.split_whitespace().next().unwrap_or(s);
-    let has_date_sep = first_part.contains('/') || first_part.contains('-');
-
-    // Time-only literal: no date separator but a `H:MM[:SS]` body.
-    if !has_date_sep && s.contains(':') {
-        return parse_time_fraction_opt(s);
-    }
-
-    if has_date_sep {
-        let (date_part, time_part) = match s.find(' ') {
-            Some(idx) => (&s[..idx], &s[idx + 1..]),
-            None => (s, ""),
-        };
-        let time_frac = if time_part.trim().is_empty() {
-            0.0
-        } else {
-            parse_time_fraction_opt(time_part)?
-        };
-        for sep in [b'/', b'-'] {
-            if let Some(serial) = parse_date_with_sep(date_part, sep) {
-                return Some(serial + time_frac);
-            }
+    let mut meridiem = None;
+    let mut rest: Vec<DateTok> = Vec::new();
+    for t in toks {
+        match t {
+            DateTok::Word(w) if w.eq_ignore_ascii_case("am") => meridiem = Some(false),
+            DateTok::Word(w) if w.eq_ignore_ascii_case("pm") => meridiem = Some(true),
+            DateTok::Word(w) if is_weekday_word(w) => {}
+            other => rest.push(other),
         }
-        return None;
     }
-
-    // No numeric separator and no time colon: only a month-name date qualifies
-    // (e.g. `#December, 24, 2000#`). Recognise it as a literal; serial valuation
-    // of name-form dates is a separate, pre-existing gap (valued 0.0).
-    if contains_month_name(s) { Some(0.0) } else { None }
-}
-
-/// Parse `date_part` split on `sep` into a date serial, or `None` if it does
-/// not form a valid 3-component date.
-fn parse_date_with_sep(date_part: &str, sep: u8) -> Option<f64> {
-    let parts: Vec<&str> = date_part.split(|c: char| c as u8 == sep).collect();
-    if parts.len() != 3 {
-        return None;
+    // The time is `Num (: Num)+`, or the last number before AM/PM.
+    let mut time: Option<f64> = None;
+    if let Some(c) = rest.iter().position(|t| *t == DateTok::Colon) {
+        let num_at = |i: usize| match rest.get(i) {
+            Some(DateTok::Num { value, .. }) => Some(*value),
+            _ => None,
+        };
+        let start = c.checked_sub(1)?;
+        let hour = num_at(start)?;
+        let minute = num_at(c + 1)?;
+        let (second, end) = if rest.get(c + 2) == Some(&DateTok::Colon) {
+            (num_at(c + 3)?, c + 3)
+        } else {
+            (0, c + 1)
+        };
+        time = Some(time_fraction(hour, minute, second, meridiem)?);
+        rest.drain(start..=end);
+    } else if let Some(pm) = meridiem {
+        let last = rest.iter().rposition(|t| matches!(t, DateTok::Num { .. }))?;
+        let DateTok::Num { value, .. } = rest[last] else { return None };
+        time = Some(time_fraction(value, 0, 0, Some(pm))?);
+        rest.remove(last);
     }
-    let (Ok(a), Ok(b), Ok(c)) = (
-        parts[0].trim().parse::<i32>(),
-        parts[1].trim().parse::<i32>(),
-        parts[2].trim().parse::<i32>(),
-    ) else {
-        return None;
+    let mut nums: Vec<(i32, usize)> = Vec::new();
+    let mut month: Option<i32> = None;
+    let mut has_sep = false;
+    for t in &rest {
+        match *t {
+            DateTok::Num { value, digits } => nums.push((value, digits)),
+            DateTok::Word(w) => {
+                if month.is_some() { return None; }
+                month = Some(month_from_word(w)?);
+            }
+            DateTok::Slash | DateTok::Dash => has_sep = true,
+            DateTok::Colon => return None,
+        }
+    }
+    let date = match (month, nums.is_empty()) {
+        (None, true) => {
+            if has_sep { return None; }
+            return time;
+        }
+        (None, false) => numeric_date(&nums)?,
+        (Some(m), _) => named_date(m, &nums)?,
     };
-    let (y, m, d) = if a >= 100 {
-        (a, b, c)
-    } else if c >= 100 {
-        (c, a, b)
-    } else {
-        (expand_two_digit_year(c), a, b)
-    };
-    if m >= 1 && m <= 12 && d >= 1 && d <= 31 {
-        Some(vba_date_serial(y, m, d))
-    } else {
-        None
-    }
+    Some(date + time.unwrap_or(0.0))
 }
 
 // ── Scanner ───────────────────────────────────────────────────────────────────
