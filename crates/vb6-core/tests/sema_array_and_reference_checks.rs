@@ -126,3 +126,14 @@ fn a_property_with_a_set_accessor_can_be_assigned() {
     let src = "Property Get Item()\nEnd Property\nProperty Set Item(o As Object)\nEnd Property\nSub Run(o As Object)\n    Item = o\nEnd Sub\n";
     assert_eq!(class_codes(src), vec![]);
 }
+
+#[test]
+fn for_each_control_variable_and_source_types() {
+    let src = "Sub Run(c As Collection)\n    Dim n As Long\n    Dim s As String\n    Dim v As Variant\n    Dim o As Object\n    Dim a(2) As Long\n    Dim x As Long\n    For Each n In c\n    Next\n    For Each s In a\n    Next\n    For Each v In a\n    Next\n    For Each o In c\n    Next\n    For Each v In x\n    Next\n    For Each v In \"abc\"\n    Next\nEnd Sub\n";
+    let found = codes(src);
+    let kinds: Vec<u32> = found.iter().map(|d| d.0).collect();
+    assert_eq!(kinds, vec![40119, 40137, 40139, 40139]);
+    assert_eq!(found[0].1, at(src, "For Each n In c", "n"));
+    assert_eq!(found[1].1, at(src, "For Each s In a", "s"));
+    assert_eq!(found[2].1, at(src, "In x", "x"));
+}

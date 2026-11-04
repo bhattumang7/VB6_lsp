@@ -45,6 +45,12 @@ pub const ERR_WRONG_NUMBER_OF_ARGUMENTS: u16 = 450;
 pub const ERR_ARGUMENT_NOT_OPTIONAL: u16 = 449;
 /// "Named argument not found" (448).
 pub const ERR_NAMED_ARGUMENT_NOT_FOUND: u16 = 448;
+/// "For Each control variable must be Variant or Object" (40119).
+pub const ERR_FOR_EACH_VARIABLE_TYPE: u16 = 40119;
+/// "For Each control variable on arrays must be Variant" (40137).
+pub const ERR_FOR_EACH_ARRAY_VARIABLE: u16 = 40137;
+/// "For Each may only iterate over a collection object or an array" (40139).
+pub const ERR_FOR_EACH_SOURCE: u16 = 40139;
 /// "Invalid ReDim" (40149): `ReDim` of a constant.
 pub const ERR_INVALID_REDIM: u16 = 40149;
 
@@ -1714,6 +1720,33 @@ impl<'a> Binder<'a> {
                 self.record_attribute(target, name, first);
             }
 
+            ExprNode::ForEach { var, collection, .. } => {
+                let (var, collection) = (*var, *collection);
+                let var_ty = self.types.get(&var.0).cloned().unwrap_or_default();
+                let src_ty = self.types.get(&collection.0).cloned().unwrap_or_default();
+                let var_is_scalar_variable = matches!(self.arena.get(var), ExprNode::NameRef { .. })
+                    && is_scalar_type(&var_ty)
+                    && self.resolutions.get(&var.0).is_some_and(|r| {
+                        matches!(
+                            r,
+                            NameResolution::Local { .. }
+                                | NameResolution::Param { .. }
+                                | NameResolution::ModuleVar(_)
+                        )
+                    });
+                if var_is_scalar_variable {
+                    let code = if matches!(src_ty, VbaType::Array(_)) {
+                        ERR_FOR_EACH_ARRAY_VARIABLE
+                    } else {
+                        ERR_FOR_EACH_VARIABLE_TYPE
+                    };
+                    let span = self.spans.get(var);
+                    self.diagnostics.push(code as u32, span);
+                } else if is_scalar_type(&src_ty) {
+                    let span = self.spans.get(collection);
+                    self.diagnostics.push(ERR_FOR_EACH_SOURCE as u32, span);
+                }
+            }
             ExprNode::CaseBlock { test, .. } => {
                 let items = match self.arena.get(*test) {
                     ExprNode::ArgList { args } => args.clone(),
@@ -2569,6 +2602,23 @@ fn resolve_class_member_slots(
 
 /// `t` as the type of a declaration with array bounds: an array of `t`, unless
 /// the declared type is already an array (`Dim a(3) As Long()` is one array).
+/// True for the intrinsic value types that can never be an object or array.
+fn is_scalar_type(t: &VbaType) -> bool {
+    matches!(
+        t,
+        VbaType::Integer
+            | VbaType::Long
+            | VbaType::Single
+            | VbaType::Double
+            | VbaType::Currency
+            | VbaType::Date
+            | VbaType::String
+            | VbaType::Boolean
+            | VbaType::Decimal
+            | VbaType::Byte
+    )
+}
+
 fn as_array(t: VbaType) -> VbaType {
     match t {
         VbaType::Array(_) => t,
