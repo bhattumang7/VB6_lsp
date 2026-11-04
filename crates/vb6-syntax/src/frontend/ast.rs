@@ -45,10 +45,6 @@ pub enum BinOpKind {
     Add, Sub, Mul, Div, IDiv, Mod, Pow, Cat,
     Eq, Ne, Lt, Gt, Le, Ge, Like, Is,
     And, Or, Xor, Eqv, Imp,
-    /// `.member` access (infix form, used when base is a non-Ident primary like `Me`).
-    Dot,
-    /// `!member` access (infix form).
-    Bang,
 }
 
 /// Unary operator kinds for [`ExprNode::UnOp`].

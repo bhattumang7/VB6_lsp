@@ -2794,8 +2794,6 @@ fn binop_type(
                 other => other,
             }
         }
-        // Member access: Variant (resolved at runtime)
-        B::Dot | B::Bang => VbaType::Variant,
     }
 }
 

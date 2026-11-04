@@ -25,7 +25,8 @@ use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 ///
 /// Precedence levels are: `Imp`=1, `Eqv`=2, `Xor`=3, `Or`=4, `And`=5,
 /// comparison/`Like`/`Is`=6, `&`=7, `+`/`-`=8, `Mod`=9, `\`=10, `*`/`/`=11,
-/// `^`=12.  Member access (`.`/`!`) is tighter than any of these.
+/// `^`=12.  Member access (`.`/`!`) is not an operator: it is postfix, and
+/// only when no blank precedes it (see `parse_postfix`).
 ///
 /// Each `(left_bp, right_bp)` pair below encodes level `N` as
 /// `(2N, 2N+1)` (left-associative) so the relative ordering matches VB6
@@ -33,9 +34,6 @@ use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 fn infix_bp(kind: &TokenKind) -> Option<(u8, u8, BinOpKind)> {
     use BinOpKind as B;
     let (l, r, o) = match kind {
-        // Member access (highest infix) — also handled by parse_postfix for Ident bases
-        TokenKind::Kw(Kw::Dot)       => (26, 27, B::Dot),
-        TokenKind::Kw(Kw::Bang)      => (26, 27, B::Bang),
         // ^ exponentiation, level 12, left-associative
         TokenKind::Kw(Kw::Caret)     => (25, 26, B::Pow),
         // * / multiplicative, level 11
@@ -179,6 +177,8 @@ pub enum ModuleKind {
 /// [`Diagnostics`] collector; parsing continues after each error.
 pub struct Parser<'src> {
     scanner:     Scanner<'src>,
+    /// The source text being parsed.
+    src:         &'src [u8],
     peeked:      Option<Token>,
     /// Second lookahead slot (for `peek2`), filled lazily after `peeked`.
     peeked2:     Option<Token>,
@@ -313,6 +313,7 @@ impl<'src> Parser<'src> {
     pub fn new(ctx: &'src mut ScannerContext, src: &'src [u8]) -> Self {
         Self {
             scanner:     Scanner::new(ctx, src),
+            src,
             peeked:      None,
             peeked2:     None,
             after_line_cont: None,
@@ -398,6 +399,17 @@ impl<'src> Parser<'src> {
 
     fn current_span(&mut self) -> Span {
         self.peek().span
+    }
+
+    /// True when the next token follows the previous one after blanks on the
+    /// same line. A line continuation between them does not count: the
+    /// continued line joins the statement as if no blanks were there.
+    fn blank_before_next(&mut self) -> bool {
+        let start = self.peek().span.start as usize;
+        let end = self.last_token_end as usize;
+        start > end
+            && start <= self.src.len()
+            && !self.src[end..start].iter().any(|b| *b == b'\n' || *b == b'\r')
     }
 
     /// Record the source span of a symbol-naming node — the identifier span of
@@ -3708,6 +3720,37 @@ impl<'src> Parser<'src> {
 
     /// Parse a type specifier.  `allow_array_suffix` controls whether a trailing
     /// `()` array marker is consumed.
+    /// The length after `String *`: one whole-number literal or one constant
+    /// name. Nothing larger is an expression here, so `String * 3 = "x"` in a
+    /// `Const` leaves the `=` to the constant's value.
+    fn parse_fixed_string_length(&mut self, arena: &mut ExprArena) -> NodeId {
+        let len_span = self.current_span();
+        match self.peek().kind {
+            TokenKind::IntLit | TokenKind::LongLit => {
+                let tok = self.advance();
+                let lit = ast_lit_from_token(&tok);
+                // A literal length must be 1 up to (not including) 65527.
+                if let AstLit::Int(n) | AstLit::Long(n) = &lit {
+                    if *n <= 0 || *n >= FIXED_STRING_LIMIT {
+                        self.diagnostics.push(ERR_INVALID_FIXED_STRING_LENGTH, len_span);
+                    }
+                }
+                arena.alloc(ExprNode::Literal { lit })
+            }
+            TokenKind::Ident => {
+                let tok = self.advance();
+                let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
+                let name = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
+                self.set_span(name, tok.span);
+                name
+            }
+            _ => {
+                self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, len_span, "Identifier");
+                arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
+            }
+        }
+    }
+
     fn parse_type_spec(&mut self, arena: &mut ExprArena, allow_array_suffix: bool) -> NodeId {
         let node = match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Integer)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 2  }) }
@@ -3724,15 +3767,7 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::String) | TokenKind::Kw(Kw::StringS) => {
                 self.advance();
                 let fixed_len = if self.eat(TokenKind::Kw(Kw::Star)) {
-                    let len_span = self.current_span();
-                    let len = self.parse_expr(arena, 0);
-                    // A literal length must be 1 up to (not including) 65527.
-                    if let ExprNode::Literal { lit: AstLit::Int(n) | AstLit::Long(n) } = arena.get(len) {
-                        if *n <= 0 || *n >= FIXED_STRING_LIMIT {
-                            self.diagnostics.push(ERR_INVALID_FIXED_STRING_LENGTH, len_span);
-                        }
-                    }
-                    Some(len)
+                    Some(self.parse_fixed_string_length(arena))
                 } else { None };
                 arena.alloc(ExprNode::StringType { fixed_len })
             }
@@ -3919,7 +3954,9 @@ impl<'src> Parser<'src> {
         match self.peek().kind {
             TokenKind::Kw(Kw::RParen)
             | TokenKind::Kw(Kw::Comma)
-            | TokenKind::Kw(Kw::Colon) => None,
+            | TokenKind::Kw(Kw::Colon)
+            // The `Else` of a single-line `If` ends a call without arguments.
+            | TokenKind::Kw(Kw::Else) => None,
             _ => Some(self.parse_expr(arena, 0)),
         }
     }
@@ -4067,6 +4104,13 @@ impl<'src> Parser<'src> {
     /// Postfix: member access and call/index.
     fn parse_postfix(&mut self, arena: &mut ExprArena, mut base: NodeId) -> NodeId {
         loop {
+            // A `.` or `!` after blanks on the same line starts a With-member
+            // argument of the statement, not a member of what precedes it.
+            if matches!(self.peek().kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang))
+                && self.blank_before_next()
+            {
+                break;
+            }
             match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::Dot) => {
                     self.advance();
@@ -4077,6 +4121,11 @@ impl<'src> Parser<'src> {
                 }
                 TokenKind::Kw(Kw::Bang) => {
                     self.advance();
+                    // Unlike the dot, the bang takes its key with no blanks between.
+                    if self.blank_before_next() {
+                        let span = self.current_span();
+                        self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                    }
                     let member = self.expect_ident();
                     let mid = member.sym.map(|s| s as u32).unwrap_or(0);
                     base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: true });

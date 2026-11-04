@@ -448,8 +448,6 @@ fn binop_text(op: BinOpKind) -> &'static str {
         BinOpKind::Xor => "Xor",
         BinOpKind::Eqv => "Eqv",
         BinOpKind::Imp => "Imp",
-        BinOpKind::Dot => ".",
-        BinOpKind::Bang => "!",
     }
 }
 
