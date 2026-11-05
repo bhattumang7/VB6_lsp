@@ -4895,8 +4895,21 @@ impl<'src> Parser<'src> {
             return arena.alloc(ExprNode::ArgList { args: vec![] });
         }
         let mut args = Vec::new();
+        // In a property assignment the value is the parameter that follows every Optional or
+        // ParamArray one: `section` is set once such a parameter is read, `required_after`
+        // once a required one follows it.
+        let mut section = false;
+        let mut required_after = false;
         loop {
-            args.push(self.parse_param(arena, in_declare));
+            let param = self.parse_param(arena, in_declare);
+            if let ExprNode::ParamDef { flags, .. } = arena.get(param) {
+                if flags & 0x21 != 0 {
+                    section = true;
+                } else if section {
+                    required_after = true;
+                }
+            }
+            args.push(param);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             if self.peek().kind == TokenKind::Kw(Kw::RParen) {
                 // A comma needs a parameter after it.
@@ -4904,6 +4917,11 @@ impl<'src> Parser<'src> {
                 self.report_expected(span, "identifier");
                 break;
             }
+        }
+        if self.value_owner_params && section && !required_after {
+            // The list ends without a required value parameter.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_ARGUMENT_NOT_OPTIONAL, span);
         }
         arena.alloc(ExprNode::ArgList { args })
     }

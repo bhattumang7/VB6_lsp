@@ -968,110 +968,110 @@ proplet	ByRef a As Long =	syntax	Expected: list separator or )
 proplet	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
 proplet	ByRef a As Byte = 300	syntax	Expected: list separator or )
 proplet	ByRef a() = 1	syntax	Expected: list separator or )
-proplet	Optional a	semantic	Argument not optional
-proplet	Optional a As Long	semantic	Argument not optional
+proplet	Optional a	syntax	Argument not optional
+proplet	Optional a As Long	syntax	Argument not optional
 proplet	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
 proplet	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
-proplet	Optional a As Long()	semantic	Argument not optional
-proplet	Optional a As Variant	semantic	Argument not optional
-proplet	Optional a As Object	semantic	Argument not optional
-proplet	Optional a As String	semantic	Argument not optional
+proplet	Optional a As Long()	syntax	Argument not optional
+proplet	Optional a As Variant	syntax	Argument not optional
+proplet	Optional a As Object	syntax	Argument not optional
+proplet	Optional a As String	syntax	Argument not optional
 proplet	Optional a As String * 3	syntax	Expected array
-proplet	Optional a As Class1	semantic	Argument not optional
+proplet	Optional a As Class1	syntax	Argument not optional
 proplet	Optional a As New Class1	syntax	Expected: type name
-proplet	Optional a$	semantic	Argument not optional
-proplet	Optional a%	semantic	Argument not optional
+proplet	Optional a$	syntax	Argument not optional
+proplet	Optional a%	syntax	Argument not optional
 proplet	Optional a$ As String	syntax	Expected: list separator or )
-proplet	Optional a = 1	semantic	Argument not optional
-proplet	Optional a As Long = 1	semantic	Argument not optional
-proplet	Optional a As Variant = 1	semantic	Argument not optional
-proplet	Optional a As Object = Nothing	semantic	Argument not optional
-proplet	Optional a As String = "x"	semantic	Argument not optional
-proplet	Optional a As Long = 1 + 1	semantic	Argument not optional
-proplet	Optional a As Long = x	semantic	Argument not optional
+proplet	Optional a = 1	syntax	Argument not optional
+proplet	Optional a As Long = 1	syntax	Argument not optional
+proplet	Optional a As Variant = 1	syntax	Argument not optional
+proplet	Optional a As Object = Nothing	syntax	Argument not optional
+proplet	Optional a As String = "x"	syntax	Argument not optional
+proplet	Optional a As Long = 1 + 1	syntax	Argument not optional
+proplet	Optional a As Long = x	syntax	Argument not optional
 proplet	Optional a As Long =	syntax	Expected: expression
-proplet	Optional a As Date = #1/1/2000#	semantic	Argument not optional
-proplet	Optional a As Byte = 300	semantic	Argument not optional
+proplet	Optional a As Date = #1/1/2000#	syntax	Argument not optional
+proplet	Optional a As Byte = 300	syntax	Argument not optional
 proplet	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
-proplet	Optional ByVal a	semantic	Argument not optional
-proplet	Optional ByVal a As Long	semantic	Argument not optional
+proplet	Optional ByVal a	syntax	Argument not optional
+proplet	Optional ByVal a As Long	syntax	Argument not optional
 proplet	Optional ByVal a()	syntax	Array argument must be ByRef
 proplet	Optional ByVal a() As Long	syntax	Array argument must be ByRef
-proplet	Optional ByVal a As Long()	semantic	Argument not optional
-proplet	Optional ByVal a As Variant	semantic	Argument not optional
-proplet	Optional ByVal a As Object	semantic	Argument not optional
-proplet	Optional ByVal a As String	semantic	Argument not optional
+proplet	Optional ByVal a As Long()	syntax	Argument not optional
+proplet	Optional ByVal a As Variant	syntax	Argument not optional
+proplet	Optional ByVal a As Object	syntax	Argument not optional
+proplet	Optional ByVal a As String	syntax	Argument not optional
 proplet	Optional ByVal a As String * 3	syntax	Expected array
-proplet	Optional ByVal a As Class1	semantic	Argument not optional
+proplet	Optional ByVal a As Class1	syntax	Argument not optional
 proplet	Optional ByVal a As New Class1	syntax	Expected: type name
-proplet	Optional ByVal a$	semantic	Argument not optional
-proplet	Optional ByVal a%	semantic	Argument not optional
+proplet	Optional ByVal a$	syntax	Argument not optional
+proplet	Optional ByVal a%	syntax	Argument not optional
 proplet	Optional ByVal a$ As String	syntax	Expected: list separator or )
-proplet	Optional ByVal a = 1	semantic	Argument not optional
-proplet	Optional ByVal a As Long = 1	semantic	Argument not optional
-proplet	Optional ByVal a As Variant = 1	semantic	Argument not optional
-proplet	Optional ByVal a As Object = Nothing	semantic	Argument not optional
-proplet	Optional ByVal a As String = "x"	semantic	Argument not optional
-proplet	Optional ByVal a As Long = 1 + 1	semantic	Argument not optional
-proplet	Optional ByVal a As Long = x	semantic	Argument not optional
+proplet	Optional ByVal a = 1	syntax	Argument not optional
+proplet	Optional ByVal a As Long = 1	syntax	Argument not optional
+proplet	Optional ByVal a As Variant = 1	syntax	Argument not optional
+proplet	Optional ByVal a As Object = Nothing	syntax	Argument not optional
+proplet	Optional ByVal a As String = "x"	syntax	Argument not optional
+proplet	Optional ByVal a As Long = 1 + 1	syntax	Argument not optional
+proplet	Optional ByVal a As Long = x	syntax	Argument not optional
 proplet	Optional ByVal a As Long =	syntax	Expected: expression
-proplet	Optional ByVal a As Date = #1/1/2000#	semantic	Argument not optional
-proplet	Optional ByVal a As Byte = 300	semantic	Argument not optional
+proplet	Optional ByVal a As Date = #1/1/2000#	syntax	Argument not optional
+proplet	Optional ByVal a As Byte = 300	syntax	Argument not optional
 proplet	Optional ByVal a() = 1	syntax	Array argument must be ByRef
-proplet	Optional ByRef a	semantic	Argument not optional
-proplet	Optional ByRef a As Long	semantic	Argument not optional
+proplet	Optional ByRef a	syntax	Argument not optional
+proplet	Optional ByRef a As Long	syntax	Argument not optional
 proplet	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
 proplet	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
-proplet	Optional ByRef a As Long()	semantic	Argument not optional
-proplet	Optional ByRef a As Variant	semantic	Argument not optional
-proplet	Optional ByRef a As Object	semantic	Argument not optional
-proplet	Optional ByRef a As String	semantic	Argument not optional
+proplet	Optional ByRef a As Long()	syntax	Argument not optional
+proplet	Optional ByRef a As Variant	syntax	Argument not optional
+proplet	Optional ByRef a As Object	syntax	Argument not optional
+proplet	Optional ByRef a As String	syntax	Argument not optional
 proplet	Optional ByRef a As String * 3	syntax	Expected array
-proplet	Optional ByRef a As Class1	semantic	Argument not optional
+proplet	Optional ByRef a As Class1	syntax	Argument not optional
 proplet	Optional ByRef a As New Class1	syntax	Expected: type name
-proplet	Optional ByRef a$	semantic	Argument not optional
-proplet	Optional ByRef a%	semantic	Argument not optional
+proplet	Optional ByRef a$	syntax	Argument not optional
+proplet	Optional ByRef a%	syntax	Argument not optional
 proplet	Optional ByRef a$ As String	syntax	Expected: list separator or )
-proplet	Optional ByRef a = 1	semantic	Argument not optional
-proplet	Optional ByRef a As Long = 1	semantic	Argument not optional
-proplet	Optional ByRef a As Variant = 1	semantic	Argument not optional
-proplet	Optional ByRef a As Object = Nothing	semantic	Argument not optional
-proplet	Optional ByRef a As String = "x"	semantic	Argument not optional
-proplet	Optional ByRef a As Long = 1 + 1	semantic	Argument not optional
-proplet	Optional ByRef a As Long = x	semantic	Argument not optional
+proplet	Optional ByRef a = 1	syntax	Argument not optional
+proplet	Optional ByRef a As Long = 1	syntax	Argument not optional
+proplet	Optional ByRef a As Variant = 1	syntax	Argument not optional
+proplet	Optional ByRef a As Object = Nothing	syntax	Argument not optional
+proplet	Optional ByRef a As String = "x"	syntax	Argument not optional
+proplet	Optional ByRef a As Long = 1 + 1	syntax	Argument not optional
+proplet	Optional ByRef a As Long = x	syntax	Argument not optional
 proplet	Optional ByRef a As Long =	syntax	Expected: expression
-proplet	Optional ByRef a As Date = #1/1/2000#	semantic	Argument not optional
-proplet	Optional ByRef a As Byte = 300	semantic	Argument not optional
+proplet	Optional ByRef a As Date = #1/1/2000#	syntax	Argument not optional
+proplet	Optional ByRef a As Byte = 300	syntax	Argument not optional
 proplet	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
-proplet	ByVal Optional a	semantic	Argument not optional
-proplet	ByVal Optional a As Long	semantic	Argument not optional
+proplet	ByVal Optional a	syntax	Argument not optional
+proplet	ByVal Optional a As Long	syntax	Argument not optional
 proplet	ByVal Optional a()	syntax	Array argument must be ByRef
 proplet	ByVal Optional a() As Long	syntax	Array argument must be ByRef
-proplet	ByVal Optional a As Long()	semantic	Argument not optional
-proplet	ByVal Optional a As Variant	semantic	Argument not optional
-proplet	ByVal Optional a As Object	semantic	Argument not optional
-proplet	ByVal Optional a As String	semantic	Argument not optional
+proplet	ByVal Optional a As Long()	syntax	Argument not optional
+proplet	ByVal Optional a As Variant	syntax	Argument not optional
+proplet	ByVal Optional a As Object	syntax	Argument not optional
+proplet	ByVal Optional a As String	syntax	Argument not optional
 proplet	ByVal Optional a As String * 3	syntax	Expected array
-proplet	ByVal Optional a As Class1	semantic	Argument not optional
+proplet	ByVal Optional a As Class1	syntax	Argument not optional
 proplet	ByVal Optional a As New Class1	syntax	Expected: type name
-proplet	ByVal Optional a$	semantic	Argument not optional
-proplet	ByVal Optional a%	semantic	Argument not optional
+proplet	ByVal Optional a$	syntax	Argument not optional
+proplet	ByVal Optional a%	syntax	Argument not optional
 proplet	ByVal Optional a$ As String	syntax	Expected: list separator or )
-proplet	ByVal Optional a = 1	semantic	Argument not optional
-proplet	ByVal Optional a As Long = 1	semantic	Argument not optional
-proplet	ByVal Optional a As Variant = 1	semantic	Argument not optional
-proplet	ByVal Optional a As Object = Nothing	semantic	Argument not optional
-proplet	ByVal Optional a As String = "x"	semantic	Argument not optional
-proplet	ByVal Optional a As Long = 1 + 1	semantic	Argument not optional
-proplet	ByVal Optional a As Long = x	semantic	Argument not optional
+proplet	ByVal Optional a = 1	syntax	Argument not optional
+proplet	ByVal Optional a As Long = 1	syntax	Argument not optional
+proplet	ByVal Optional a As Variant = 1	syntax	Argument not optional
+proplet	ByVal Optional a As Object = Nothing	syntax	Argument not optional
+proplet	ByVal Optional a As String = "x"	syntax	Argument not optional
+proplet	ByVal Optional a As Long = 1 + 1	syntax	Argument not optional
+proplet	ByVal Optional a As Long = x	syntax	Argument not optional
 proplet	ByVal Optional a As Long =	syntax	Expected: expression
-proplet	ByVal Optional a As Date = #1/1/2000#	semantic	Argument not optional
-proplet	ByVal Optional a As Byte = 300	semantic	Argument not optional
+proplet	ByVal Optional a As Date = #1/1/2000#	syntax	Argument not optional
+proplet	ByVal Optional a As Byte = 300	syntax	Argument not optional
 proplet	ByVal Optional a() = 1	syntax	Array argument must be ByRef
 proplet	ParamArray a	syntax	ParamArray must be declared as an array of Variant
 proplet	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
-proplet	ParamArray a()	semantic	Argument not optional
-proplet	ParamArray a() As Long	semantic	Argument not optional
+proplet	ParamArray a()	syntax	Argument not optional
+proplet	ParamArray a() As Long	syntax	Argument not optional
 proplet	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
 proplet	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
 proplet	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
@@ -1172,12 +1172,12 @@ proplet	a, b	accepted
 proplet	a As Long, b As Long	accepted	
 proplet	Optional a, b	accepted	
 proplet	Optional a, ByVal b	accepted	
-proplet	a, Optional b	semantic	Argument not optional
+proplet	a, Optional b	syntax	Argument not optional
 proplet	Optional a As Long, b As Long	accepted	
 proplet	ParamArray a(), b	accepted	
 proplet	ParamArray a(), ParamArray b()	syntax	Expected: identifier
-proplet	ParamArray a() As Variant	semantic	Argument not optional
-proplet	ParamArray a() As Long	semantic	Argument not optional
+proplet	ParamArray a() As Variant	syntax	Argument not optional
+proplet	ParamArray a() As Long	syntax	Argument not optional
 proplet	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
 proplet	a, , b	syntax	Expected: identifier
 proplet	a,	syntax	Expected: identifier
@@ -1266,110 +1266,110 @@ propset	ByRef a As Long =	syntax	Expected: list separator or )
 propset	ByRef a As Date = #1/1/2000#	syntax	Expected: list separator or )
 propset	ByRef a As Byte = 300	syntax	Expected: list separator or )
 propset	ByRef a() = 1	syntax	Expected: list separator or )
-propset	Optional a	semantic	Argument not optional
-propset	Optional a As Long	semantic	Argument not optional
+propset	Optional a	syntax	Argument not optional
+propset	Optional a As Long	syntax	Argument not optional
 propset	Optional a()	syntax	Optional argument must be Variant or intrinsic type with a default value
 propset	Optional a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
-propset	Optional a As Long()	semantic	Argument not optional
-propset	Optional a As Variant	semantic	Argument not optional
-propset	Optional a As Object	semantic	Argument not optional
-propset	Optional a As String	semantic	Argument not optional
+propset	Optional a As Long()	syntax	Argument not optional
+propset	Optional a As Variant	syntax	Argument not optional
+propset	Optional a As Object	syntax	Argument not optional
+propset	Optional a As String	syntax	Argument not optional
 propset	Optional a As String * 3	syntax	Expected array
-propset	Optional a As Class1	semantic	Argument not optional
+propset	Optional a As Class1	syntax	Argument not optional
 propset	Optional a As New Class1	syntax	Expected: type name
-propset	Optional a$	semantic	Argument not optional
-propset	Optional a%	semantic	Argument not optional
+propset	Optional a$	syntax	Argument not optional
+propset	Optional a%	syntax	Argument not optional
 propset	Optional a$ As String	syntax	Expected: list separator or )
-propset	Optional a = 1	semantic	Argument not optional
-propset	Optional a As Long = 1	semantic	Argument not optional
-propset	Optional a As Variant = 1	semantic	Argument not optional
-propset	Optional a As Object = Nothing	semantic	Argument not optional
-propset	Optional a As String = "x"	semantic	Argument not optional
-propset	Optional a As Long = 1 + 1	semantic	Argument not optional
-propset	Optional a As Long = x	semantic	Argument not optional
+propset	Optional a = 1	syntax	Argument not optional
+propset	Optional a As Long = 1	syntax	Argument not optional
+propset	Optional a As Variant = 1	syntax	Argument not optional
+propset	Optional a As Object = Nothing	syntax	Argument not optional
+propset	Optional a As String = "x"	syntax	Argument not optional
+propset	Optional a As Long = 1 + 1	syntax	Argument not optional
+propset	Optional a As Long = x	syntax	Argument not optional
 propset	Optional a As Long =	syntax	Expected: expression
-propset	Optional a As Date = #1/1/2000#	semantic	Argument not optional
-propset	Optional a As Byte = 300	semantic	Argument not optional
+propset	Optional a As Date = #1/1/2000#	syntax	Argument not optional
+propset	Optional a As Byte = 300	syntax	Argument not optional
 propset	Optional a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
-propset	Optional ByVal a	semantic	Argument not optional
-propset	Optional ByVal a As Long	semantic	Argument not optional
+propset	Optional ByVal a	syntax	Argument not optional
+propset	Optional ByVal a As Long	syntax	Argument not optional
 propset	Optional ByVal a()	syntax	Array argument must be ByRef
 propset	Optional ByVal a() As Long	syntax	Array argument must be ByRef
-propset	Optional ByVal a As Long()	semantic	Argument not optional
-propset	Optional ByVal a As Variant	semantic	Argument not optional
-propset	Optional ByVal a As Object	semantic	Argument not optional
-propset	Optional ByVal a As String	semantic	Argument not optional
+propset	Optional ByVal a As Long()	syntax	Argument not optional
+propset	Optional ByVal a As Variant	syntax	Argument not optional
+propset	Optional ByVal a As Object	syntax	Argument not optional
+propset	Optional ByVal a As String	syntax	Argument not optional
 propset	Optional ByVal a As String * 3	syntax	Expected array
-propset	Optional ByVal a As Class1	semantic	Argument not optional
+propset	Optional ByVal a As Class1	syntax	Argument not optional
 propset	Optional ByVal a As New Class1	syntax	Expected: type name
-propset	Optional ByVal a$	semantic	Argument not optional
-propset	Optional ByVal a%	semantic	Argument not optional
+propset	Optional ByVal a$	syntax	Argument not optional
+propset	Optional ByVal a%	syntax	Argument not optional
 propset	Optional ByVal a$ As String	syntax	Expected: list separator or )
-propset	Optional ByVal a = 1	semantic	Argument not optional
-propset	Optional ByVal a As Long = 1	semantic	Argument not optional
-propset	Optional ByVal a As Variant = 1	semantic	Argument not optional
-propset	Optional ByVal a As Object = Nothing	semantic	Argument not optional
-propset	Optional ByVal a As String = "x"	semantic	Argument not optional
-propset	Optional ByVal a As Long = 1 + 1	semantic	Argument not optional
-propset	Optional ByVal a As Long = x	semantic	Argument not optional
+propset	Optional ByVal a = 1	syntax	Argument not optional
+propset	Optional ByVal a As Long = 1	syntax	Argument not optional
+propset	Optional ByVal a As Variant = 1	syntax	Argument not optional
+propset	Optional ByVal a As Object = Nothing	syntax	Argument not optional
+propset	Optional ByVal a As String = "x"	syntax	Argument not optional
+propset	Optional ByVal a As Long = 1 + 1	syntax	Argument not optional
+propset	Optional ByVal a As Long = x	syntax	Argument not optional
 propset	Optional ByVal a As Long =	syntax	Expected: expression
-propset	Optional ByVal a As Date = #1/1/2000#	semantic	Argument not optional
-propset	Optional ByVal a As Byte = 300	semantic	Argument not optional
+propset	Optional ByVal a As Date = #1/1/2000#	syntax	Argument not optional
+propset	Optional ByVal a As Byte = 300	syntax	Argument not optional
 propset	Optional ByVal a() = 1	syntax	Array argument must be ByRef
-propset	Optional ByRef a	semantic	Argument not optional
-propset	Optional ByRef a As Long	semantic	Argument not optional
+propset	Optional ByRef a	syntax	Argument not optional
+propset	Optional ByRef a As Long	syntax	Argument not optional
 propset	Optional ByRef a()	syntax	Optional argument must be Variant or intrinsic type with a default value
 propset	Optional ByRef a() As Long	syntax	Optional argument must be Variant or intrinsic type with a default value
-propset	Optional ByRef a As Long()	semantic	Argument not optional
-propset	Optional ByRef a As Variant	semantic	Argument not optional
-propset	Optional ByRef a As Object	semantic	Argument not optional
-propset	Optional ByRef a As String	semantic	Argument not optional
+propset	Optional ByRef a As Long()	syntax	Argument not optional
+propset	Optional ByRef a As Variant	syntax	Argument not optional
+propset	Optional ByRef a As Object	syntax	Argument not optional
+propset	Optional ByRef a As String	syntax	Argument not optional
 propset	Optional ByRef a As String * 3	syntax	Expected array
-propset	Optional ByRef a As Class1	semantic	Argument not optional
+propset	Optional ByRef a As Class1	syntax	Argument not optional
 propset	Optional ByRef a As New Class1	syntax	Expected: type name
-propset	Optional ByRef a$	semantic	Argument not optional
-propset	Optional ByRef a%	semantic	Argument not optional
+propset	Optional ByRef a$	syntax	Argument not optional
+propset	Optional ByRef a%	syntax	Argument not optional
 propset	Optional ByRef a$ As String	syntax	Expected: list separator or )
-propset	Optional ByRef a = 1	semantic	Argument not optional
-propset	Optional ByRef a As Long = 1	semantic	Argument not optional
-propset	Optional ByRef a As Variant = 1	semantic	Argument not optional
-propset	Optional ByRef a As Object = Nothing	semantic	Argument not optional
-propset	Optional ByRef a As String = "x"	semantic	Argument not optional
-propset	Optional ByRef a As Long = 1 + 1	semantic	Argument not optional
-propset	Optional ByRef a As Long = x	semantic	Argument not optional
+propset	Optional ByRef a = 1	syntax	Argument not optional
+propset	Optional ByRef a As Long = 1	syntax	Argument not optional
+propset	Optional ByRef a As Variant = 1	syntax	Argument not optional
+propset	Optional ByRef a As Object = Nothing	syntax	Argument not optional
+propset	Optional ByRef a As String = "x"	syntax	Argument not optional
+propset	Optional ByRef a As Long = 1 + 1	syntax	Argument not optional
+propset	Optional ByRef a As Long = x	syntax	Argument not optional
 propset	Optional ByRef a As Long =	syntax	Expected: expression
-propset	Optional ByRef a As Date = #1/1/2000#	semantic	Argument not optional
-propset	Optional ByRef a As Byte = 300	semantic	Argument not optional
+propset	Optional ByRef a As Date = #1/1/2000#	syntax	Argument not optional
+propset	Optional ByRef a As Byte = 300	syntax	Argument not optional
 propset	Optional ByRef a() = 1	syntax	Optional argument must be Variant or intrinsic type with a default value
-propset	ByVal Optional a	semantic	Argument not optional
-propset	ByVal Optional a As Long	semantic	Argument not optional
+propset	ByVal Optional a	syntax	Argument not optional
+propset	ByVal Optional a As Long	syntax	Argument not optional
 propset	ByVal Optional a()	syntax	Array argument must be ByRef
 propset	ByVal Optional a() As Long	syntax	Array argument must be ByRef
-propset	ByVal Optional a As Long()	semantic	Argument not optional
-propset	ByVal Optional a As Variant	semantic	Argument not optional
-propset	ByVal Optional a As Object	semantic	Argument not optional
-propset	ByVal Optional a As String	semantic	Argument not optional
+propset	ByVal Optional a As Long()	syntax	Argument not optional
+propset	ByVal Optional a As Variant	syntax	Argument not optional
+propset	ByVal Optional a As Object	syntax	Argument not optional
+propset	ByVal Optional a As String	syntax	Argument not optional
 propset	ByVal Optional a As String * 3	syntax	Expected array
-propset	ByVal Optional a As Class1	semantic	Argument not optional
+propset	ByVal Optional a As Class1	syntax	Argument not optional
 propset	ByVal Optional a As New Class1	syntax	Expected: type name
-propset	ByVal Optional a$	semantic	Argument not optional
-propset	ByVal Optional a%	semantic	Argument not optional
+propset	ByVal Optional a$	syntax	Argument not optional
+propset	ByVal Optional a%	syntax	Argument not optional
 propset	ByVal Optional a$ As String	syntax	Expected: list separator or )
-propset	ByVal Optional a = 1	semantic	Argument not optional
-propset	ByVal Optional a As Long = 1	semantic	Argument not optional
-propset	ByVal Optional a As Variant = 1	semantic	Argument not optional
-propset	ByVal Optional a As Object = Nothing	semantic	Argument not optional
-propset	ByVal Optional a As String = "x"	semantic	Argument not optional
-propset	ByVal Optional a As Long = 1 + 1	semantic	Argument not optional
-propset	ByVal Optional a As Long = x	semantic	Argument not optional
+propset	ByVal Optional a = 1	syntax	Argument not optional
+propset	ByVal Optional a As Long = 1	syntax	Argument not optional
+propset	ByVal Optional a As Variant = 1	syntax	Argument not optional
+propset	ByVal Optional a As Object = Nothing	syntax	Argument not optional
+propset	ByVal Optional a As String = "x"	syntax	Argument not optional
+propset	ByVal Optional a As Long = 1 + 1	syntax	Argument not optional
+propset	ByVal Optional a As Long = x	syntax	Argument not optional
 propset	ByVal Optional a As Long =	syntax	Expected: expression
-propset	ByVal Optional a As Date = #1/1/2000#	semantic	Argument not optional
-propset	ByVal Optional a As Byte = 300	semantic	Argument not optional
+propset	ByVal Optional a As Date = #1/1/2000#	syntax	Argument not optional
+propset	ByVal Optional a As Byte = 300	syntax	Argument not optional
 propset	ByVal Optional a() = 1	syntax	Array argument must be ByRef
 propset	ParamArray a	syntax	ParamArray must be declared as an array of Variant
 propset	ParamArray a As Long	syntax	ParamArray must be declared as an array of Variant
-propset	ParamArray a()	semantic	Argument not optional
-propset	ParamArray a() As Long	semantic	Argument not optional
+propset	ParamArray a()	syntax	Argument not optional
+propset	ParamArray a() As Long	syntax	Argument not optional
 propset	ParamArray a As Long()	syntax	ParamArray must be declared as an array of Variant
 propset	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
 propset	ParamArray a As Object	syntax	ParamArray must be declared as an array of Variant
@@ -1470,12 +1470,12 @@ propset	a, b	accepted
 propset	a As Long, b As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
 propset	Optional a, b	accepted	
 propset	Optional a, ByVal b	accepted	
-propset	a, Optional b	semantic	Argument not optional
+propset	a, Optional b	syntax	Argument not optional
 propset	Optional a As Long, b As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
 propset	ParamArray a(), b	accepted	
 propset	ParamArray a(), ParamArray b()	syntax	Expected: identifier
-propset	ParamArray a() As Variant	semantic	Argument not optional
-propset	ParamArray a() As Long	semantic	Argument not optional
+propset	ParamArray a() As Variant	syntax	Argument not optional
+propset	ParamArray a() As Long	syntax	Argument not optional
 propset	ParamArray a As Variant	syntax	ParamArray must be declared as an array of Variant
 propset	a, , b	syntax	Expected: identifier
 propset	a,	syntax	Expected: identifier

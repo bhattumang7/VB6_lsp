@@ -5,7 +5,7 @@
 mod common;
 use common::{offset_of, parse};
 
-const INCONSISTENT: u32 = 0x9c43;
+const INCONSISTENT: u32 = 0x9c83;
 
 fn pair(first: &str, second: &str) -> (String, Vec<(u32, u32, u32)>) {
     let src = format!("{first}\nEnd Property\n{second}\nEnd Property\n");

@@ -5,7 +5,7 @@
 mod common;
 use common::{offset_of, parse};
 
-const PROPERTY_PROCEDURES_INCONSISTENT: u32 = 0x9c43;
+const PROPERTY_PROCEDURES_INCONSISTENT: u32 = 0x9c83;
 const DUPLICATE_DECLARATION: u32 = 0x9c9f;
 const EXPECTED_ARRAY: u32 = 0x9c8a;
 
@@ -85,14 +85,14 @@ fn declare_follows_the_procedure_parameter_rules() {
 }
 
 #[test]
-fn optional_in_a_property_assignment_ends_the_parameter_clause() {
-    // The Optional word is itself the first error here; the array marker after the type
-    // is not read.
+fn optional_value_of_a_property_assignment_ends_the_parameter_clause() {
+    // The array marker after the type is not read.
     for text in [
         "Property Let Prp(Optional a As Long())\nEnd Property\n",
         "Property Set Prp(Optional a As Long())\nEnd Property\n",
     ] {
-        assert_eq!(parse(text).found, vec![], "{text}");
+        // The value parameter is missing: reported where the list ends.
+        assert_eq!(parse(text).found, vec![(0x1c1, offset_of(text, "())", 0) + 2, 1)], "{text}");
     }
     // The same text in a procedure is a plain syntax error at the bracket.
     let src = "Sub S(Optional a As Long())\nEnd Sub\n";
