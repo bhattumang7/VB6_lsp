@@ -314,6 +314,10 @@ pub struct Parser<'src> {
     cc_module_consts: Vec<String>,
     /// The last directive token read ended the line.
     cc_line_done: bool,
+    /// A token has been read on the current physical line.
+    phys_line_has_token: bool,
+    /// The token read last was the first on its physical line.
+    tok_first_on_line: bool,
     /// Open `#If` blocks, innermost last.
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
@@ -489,6 +493,8 @@ impl<'src> Parser<'src> {
             cc_pending: None,
             cc_module_consts: Vec::new(),
             cc_line_done: false,
+            phys_line_has_token: false,
+            tok_first_on_line: true,
             cc_defs: vec![
                 ("win32".into(), CcValue::Integer(-1)),
             ],
@@ -616,10 +622,22 @@ impl<'src> Parser<'src> {
     fn fetch_logical(&mut self) -> Token {
         loop {
             let tok = self.next_physical();
+            let first_on_line = self.tok_first_on_line;
             if let TokenKind::Kw(kw @ (Kw::CcIf | Kw::CcElseIf | Kw::CcElse | Kw::CcEnd | Kw::CcConst)) =
                 tok.kind
             {
-                self.cc_directive(kw, tok.span, tok.lit.is_some());
+                if first_on_line {
+                    self.cc_directive(kw, tok.span, tok.lit.is_some());
+                } else {
+                    // A directive is only read at the start of a line; elsewhere it is an
+                    // ordinary word, and no word of that kind begins a statement.
+                    if self.cc_active() {
+                        self.diagnostics.push(ERR_SYNTAX_ERROR, tok.span);
+                        while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
+                            self.cc_advance();
+                        }
+                    }
+                }
                 continue;
             }
             if tok.kind == TokenKind::Eof {
@@ -657,6 +675,8 @@ impl<'src> Parser<'src> {
                 }
                 self.after_line_cont = Some(next);
             }
+            self.tok_first_on_line = !self.phys_line_has_token;
+            self.phys_line_has_token = !matches!(tok.kind, TokenKind::Eol);
             return tok;
         }
     }

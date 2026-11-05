@@ -144,3 +144,17 @@ fn directives_in_unused_branches_are_still_evaluated() {
     let src = "#If True Then\n#Else\n#ElseIf 1 / 0 Then\n#End If\n";
     assert_eq!(parse(src).found.iter().map(|f| f.0).collect::<Vec<_>>(), vec![0xdebf]);
 }
+
+#[test]
+fn a_directive_is_only_read_at_the_start_of_a_line() {
+    for (src, word) in [
+        ("Sub S()\nDim a : #If True Then\nEnd Sub\n", "#If"),
+        ("Sub S()\nIf True Then #Const A = 1\nEnd Sub\n", "#Const"),
+        ("Sub S()\n x = 1 : #End If\nEnd Sub\n", "#End"),
+    ] {
+        let p = parse(src);
+        assert_eq!(p.found.first().map(|f| (f.0, f.1)), Some((0x9c70, offset_of(src, word, 0))), "{src:?}");
+    }
+    // Blanks before the directive do not matter.
+    assert_eq!(parse("Sub S()\n   #If True Then\n x = 1\n   #End If\nEnd Sub\n").found, vec![]);
+}

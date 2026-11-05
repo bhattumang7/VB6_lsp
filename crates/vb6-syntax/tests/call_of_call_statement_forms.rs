@@ -38,3 +38,8 @@ fn a_single_call_with_a_continued_argument_is_still_a_call_statement() {
     let ExprNode::ArgList { args } = p.node(*args) else { panic!("no argument list") };
     assert_eq!(args.len(), 2);
 }
+
+#[test]
+fn a_plain_call_statement_with_one_group_is_accepted() {
+    assert_eq!(parse("Sub S()\n Foo (1)\nEnd Sub\n").found, vec![]);
+}
