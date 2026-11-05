@@ -53,6 +53,7 @@ pub const ERR_CC_WITHOUT_IF: u32 = 0xdebd; // 57021
 pub const ERR_CC_DUPLICATE_ELSE: u32 = 0xdebe; // 57022
 pub const ERR_CC_ELSEIF_AFTER_ELSE: u32 = 0xdebf; // 57023
 pub const ERR_CC_IF_NOT_TERMINATED: u32 = 0xdec0; // 57024
+pub const ERR_CC_DUPLICATE_DEFINITION: u32 = 0xdec7; // 57031
 pub const ERR_END_TYPE_OUTSIDE_TYPE: u32 = 0x9c75; // 40053
 pub const ERR_STATEMENT_IN_TYPE: u32 = 0x9c76; // 40054
 pub const ERR_TYPE_WITHOUT_MEMBERS: u32 = 0x9cfc; // 40188
@@ -170,6 +171,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         ERR_CC_WITHOUT_IF => "An # ElseIf, # Else, or # EndIf must be preceded by an # If clause",
         ERR_CC_DUPLICATE_ELSE => "An # Else clause must be preceded by an # If",
         ERR_CC_ELSEIF_AFTER_ELSE => "An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf",
+        ERR_CC_DUPLICATE_DEFINITION => "Duplicate definition",
         ERR_CC_IF_NOT_TERMINATED => "You must terminate the # If block with an # EndIf",
         ERR_EXPECTED_END_SUB => "Expected End Sub",
         ERR_EXPECTED_END_FUNCTION => "Expected End Function",

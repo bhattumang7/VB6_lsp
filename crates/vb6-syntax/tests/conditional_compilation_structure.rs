@@ -87,9 +87,9 @@ fn module_level_directive_selects_procedures() {
 }
 
 #[test]
-fn const_inside_inactive_branch_is_not_applied() {
+fn const_inside_inactive_branch_is_still_defined() {
     let p = parse(
-        "#Const V = 1\n#If 0 Then\n#Const V = 2\n#End If\n#If V = 1 Then\nSub One()\nEnd Sub\n#Else\nSub Two()\nEnd Sub\n#End If\n",
+        "#If 0 Then\n#Const V = 2\n#End If\n#If V = 2 Then\nSub One()\nEnd Sub\n#Else\nSub Two()\nEnd Sub\n#End If\n",
     );
     assert_eq!(p.diags, 0);
     assert_eq!(p.top.len(), 1);
@@ -101,7 +101,22 @@ fn const_inside_inactive_branch_is_not_applied() {
 fn directive_with_trailing_comment_and_unterminated_block() {
     let src = "Sub A()\n #If 1 Then ' comment\n x = 1\n #End If ' done\n y = 2\nEnd Sub\n #If 0 Then\nSub Z()\n";
     let p = parse(src);
-    // The unterminated `#If` is reported once, at its directive.
-    assert_eq!(p.found, vec![(0xdec0, offset_of(src, "#If 0", 0), 3)]);
+    // The unterminated `#If` is reported once, on the last line of the module.
+    assert_eq!(p.found, vec![(0xdec0, offset_of(src, "Sub Z()", 0), 7)]);
     assert_eq!(p.proc_body(0).len(), 2);
+}
+
+#[test]
+fn a_const_given_twice_is_a_duplicate_definition_at_the_second_directive() {
+    for (src, second) in [
+        ("#Const A = 1\n#Const a = 2\n", "#Const a"),
+        ("#Const Win32 = 1\n#Const Win32 = 2\n", "#Const Win32 = 2"),
+        ("#Const A = 1\n#If 0 Then\n#Const A = 2\n#End If\n", "#Const A = 2"),
+    ] {
+        let p = parse(src);
+        assert_eq!(p.found, vec![(0xdec7, offset_of(src, second, 0), 6)], "{src:?}");
+    }
+    // A name given once, even one a project argument or predefined name already carries, is fine.
+    assert_eq!(parse("#Const Win32 = 0\n").found, vec![]);
+    assert_eq!(parse("#Const A = 1\n#Const B = 1\n").found, vec![]);
 }

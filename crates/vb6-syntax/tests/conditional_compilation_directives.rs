@@ -11,10 +11,11 @@ const NOT_TERMINATED: u32 = 0xdec0;
 
 #[test]
 fn directives_with_no_open_if_are_reported() {
-    for (line, len) in [("#End If", 4), ("#Else", 5), ("#ElseIf 1 Then", 7)] {
+    // A lone `#Else` is reported as a repeated one and a lone `#ElseIf` as one after an `#Else`.
+    for (line, id, len) in [("#End If", WITHOUT_IF, 4), ("#Else", DUPLICATE_ELSE, 5), ("#ElseIf 1 Then", ELSEIF_AFTER_ELSE, 7)] {
         let src = format!("{line}\nSub S()\nEnd Sub\n");
         let p = parse(&src);
-        assert_eq!(p.found, vec![(WITHOUT_IF, 0, len)], "for {line}");
+        assert_eq!(p.found, vec![(id, 0, len)], "for {line}");
         assert_eq!(p.top.len(), 1, "the procedure after `{line}` is still parsed");
     }
 }
@@ -29,15 +30,15 @@ fn second_else_and_elseif_after_else_are_reported() {
 }
 
 #[test]
-fn an_if_left_open_at_the_end_is_reported_once_at_the_innermost() {
+fn an_if_left_open_at_the_end_is_reported_once_on_the_last_line() {
     let src = "#If 1 Then\n#If 0 Then\nSub S()\nEnd Sub\n";
     let p = parse(src);
-    assert_eq!(p.found, vec![(NOT_TERMINATED, offset_of(src, "#If", 1), 3)]);
+    assert_eq!(p.found, vec![(NOT_TERMINATED, offset_of(src, "End Sub", 0), 7)]);
     assert_eq!(p.top.len(), 0, "the procedure is inside the inactive inner branch");
 
     let src = "#If 1 Then\nSub S()\nEnd Sub\n";
     let p = parse(src);
-    assert_eq!(p.found, vec![(NOT_TERMINATED, 0, 3)]);
+    assert_eq!(p.found, vec![(NOT_TERMINATED, offset_of(src, "End Sub", 0), 7)]);
     assert_eq!(p.top.len(), 1);
 }
 

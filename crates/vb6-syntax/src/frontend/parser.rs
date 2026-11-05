@@ -306,6 +306,8 @@ pub struct Parser<'src> {
     /// Conditional-compilation constant table: `(lowercase_name, value)`.
     /// Pre-seeded with VB6 predefined constants.
     cc_defs: Vec<(String, CcValue)>,
+    /// Names given by a `#Const` of this module: giving one again is an error.
+    cc_module_consts: Vec<String>,
     /// Open `#If` blocks, innermost last.
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
@@ -479,6 +481,7 @@ impl<'src> Parser<'src> {
             module_kind: ModuleKind::Standard,
             cc_stack: Vec::new(),
             cc_pending: None,
+            cc_module_consts: Vec::new(),
             cc_defs: vec![
                 ("win32".into(), CcValue::TRUE),
                 ("win64".into(), CcValue::FALSE),
@@ -3593,7 +3596,7 @@ impl<'src> Parser<'src> {
     fn cc_directive(&mut self, kind: Kw, span: Span, one_word: bool) {
         match kind {
             Kw::CcConst => {
-                if self.cc_active() {
+                {
                     let name_tok = self.cc_peek().clone();
                     let name_ok = name_tok.kind == TokenKind::Ident
                         || (matches!(name_tok.kind, TokenKind::Kw(_))
@@ -3618,10 +3621,14 @@ impl<'src> Parser<'src> {
                         self.diagnostics.push(ERR_EXPECTED_EQ, span);
                     }
                     let value = self.eval_cc_expr(0);
+                    // A `#Const` is defined whether or not its block is active.
+                    if self.cc_module_consts.contains(&name) {
+                        self.diagnostics.push(ERR_CC_DUPLICATE_DEFINITION, span);
+                    } else {
+                        self.cc_module_consts.push(name.clone());
+                    }
                     self.cc_set(&name, value);
                     self.cc_end_of_directive();
-                } else {
-                    self.cc_skip_line();
                 }
             }
             Kw::CcIf => {
@@ -3631,7 +3638,8 @@ impl<'src> Parser<'src> {
             }
             Kw::CcElseIf => {
                 let Some(frame) = self.cc_stack.last().copied() else {
-                    self.diagnostics.push(ERR_CC_WITHOUT_IF, span);
+                    // No `#If` is open: the lone `#ElseIf` is reported as one that follows an `#Else`.
+                    self.diagnostics.push(ERR_CC_ELSEIF_AFTER_ELSE, span);
                     self.cc_skip_line();
                     return;
                 };
@@ -3654,7 +3662,8 @@ impl<'src> Parser<'src> {
                     self.cc_skip_line();
                 }
                 match self.cc_stack.last_mut() {
-                    None => self.diagnostics.push(ERR_CC_WITHOUT_IF, span),
+                    // No `#If` is open: the lone `#Else` is reported as a repeated one.
+                    None => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
                     Some(top) if top.else_seen => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
                     Some(top) => {
                         top.else_seen = true;
@@ -3688,8 +3697,13 @@ impl<'src> Parser<'src> {
     /// At the end of the module, report the innermost `#If` that was never
     /// closed (once).
     fn report_open_cc_blocks(&mut self) {
-        if let Some(frame) = self.cc_stack.last().copied() {
-            self.diagnostics.push(ERR_CC_IF_NOT_TERMINATED, frame.open);
+        if self.cc_stack.last().is_some() {
+            // Reported once, on the last line of the module.
+            let text = &self.src[..];
+            let end = text.iter().rposition(|b| !matches!(b, b'\r' | b'\n')).map_or(0, |i| i + 1);
+            let start = text[..end].iter().rposition(|b| *b == b'\n').map_or(0, |i| i + 1);
+            let span = Span { start: start as u32, len: (end - start) as u32 };
+            self.diagnostics.push(ERR_CC_IF_NOT_TERMINATED, span);
             self.cc_stack.clear();
         }
     }
