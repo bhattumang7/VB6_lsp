@@ -2199,8 +2199,9 @@ impl<'src> Parser<'src> {
         } else if self.has_empty_call(arena, lhs)
             || self.call_with_address_of_argument(arena, lhs)
             || self.call_with_several_arguments(arena, lhs)
+            || matches!(arena.get(lhs), ExprNode::Call { func, .. } if matches!(arena.get(*func), ExprNode::Call { .. }))
         {
-            // `Foo()`, `Foo(AddressOf Bar)` and `Foo(a, b)` are not statements: `Call` is needed for them.
+            // `Foo()`, `Foo(AddressOf Bar)`, `Foo(a, b)` and `Foo(a)(b)` are not statements: `Call` is needed for them.
             let span = self.current_span();
             self.report_expected(span, "end of statement");
             self.skip_line();
@@ -2355,8 +2356,12 @@ impl<'src> Parser<'src> {
         if matches!(arena.get(*arg), ExprNode::NamedArg { .. } | ExprNode::MissingArg) {
             return None;
         }
-        let kind = self.peek().kind.clone();
         let (func, arg) = (*func, *arg);
+        // A call, or a `!` member, in the callee's place is never the callee of a call statement.
+        if matches!(arena.get(func), ExprNode::Call { .. } | ExprNode::MemberAccess { bang: true, .. }) {
+            return None;
+        }
+        let kind = self.peek().kind.clone();
         // `Obj.Print (a); b`: `;` separates the items of a `Print` method.
         let semi = kind == TokenKind::Kw(Kw::Semi) && self.graphics_target_is(arena, func, "print");
         let continues = kind == TokenKind::Kw(Kw::Comma) || infix_bp(&kind).is_some() || semi;
