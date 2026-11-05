@@ -122,6 +122,26 @@ fn def_type_kw(k: Kw) -> Option<u16> {
 /// Build the [`AstLit`] carried by a literal token. The token's `kind` selects
 /// the variant; a missing/mismatched `lit` payload falls back to a zero value
 /// (preserving the parser's lenient literal handling).
+/// Whether the text after the `#` of a `Declare` alias is an ordinal: a decimal number up
+/// to 32767, or a hexadecimal (`&H`) or octal (`&O`) one that fits sixteen bits, with
+/// nothing but blanks after it.
+fn is_valid_ordinal(text: &str) -> bool {
+    let text = text.trim_end_matches([' ', '\t']);
+    let (digits, radix) = match text.get(..2) {
+        Some(p) if p.eq_ignore_ascii_case("&h") => (&text[2..], 16),
+        Some(p) if p.eq_ignore_ascii_case("&o") => (&text[2..], 8),
+        _ => (text, 10),
+    };
+    if digits.is_empty() || !digits.chars().all(|c| c.is_digit(radix)) {
+        return false;
+    }
+    let limit = if radix == 10 { 32767 } else { 0xFFFF };
+    digits.chars().try_fold(0u64, |acc, c| {
+        let v = acc * radix as u64 + c.to_digit(radix).unwrap() as u64;
+        (v <= limit).then_some(v)
+    }).is_some()
+}
+
 fn ast_lit_from_token(tok: &Token) -> AstLit {
     // Each arm reads the matching payload (defaulting a missing/mismatched one to
     // zero) via a tiny extractor, so the dispatch itself stays a flat table.
@@ -349,7 +369,8 @@ enum PropType {
     String,
     Object,
     User(u32),
-    Array,
+    /// An array of the element type.
+    Array(Box<PropType>),
 }
 
 /// What the procedures of one property have to agree on.
@@ -386,7 +407,7 @@ fn prop_type(arena: &ExprArena, node: Option<NodeId>) -> PropType {
         ExprNode::BuiltinType { kind } => PropType::Builtin(*kind as u8),
         ExprNode::StringType { .. } => PropType::String,
         ExprNode::UserType { name, .. } => PropType::User(*name),
-        ExprNode::ArrayType { .. } => PropType::Array,
+        ExprNode::ArrayType { elem } => PropType::Array(Box::new(prop_type(arena, Some(*elem)))),
         _ => PropType::Variant,
     }
 }
@@ -4681,6 +4702,10 @@ impl<'src> Parser<'src> {
         } else {
             let Some((last, rest)) = list.split_last() else { return };
             let value = match arena.get(*last) {
+                // A value parameter written `v() As T` is an array of `T`.
+                ExprNode::ParamDef { flags, type_node, .. } if flags & 0x08 != 0 => {
+                    PropType::Array(Box::new(prop_type(arena, *type_node)))
+                }
                 ExprNode::ParamDef { type_node, .. } => prop_type(arena, *type_node),
                 _ => return,
             };
@@ -4774,8 +4799,16 @@ impl<'src> Parser<'src> {
         };
         // Optional Alias "aliasname"
         let alias = if self.eat(TokenKind::Kw(Kw::Alias)) {
+            let alias_span = self.current_span();
             match self.declare_string_operand(arena) {
-                Some(s) => Some(s),
+                Some(s) => {
+                    if let ExprNode::Literal { lit: AstLit::Str(text) } = arena.get(s) {
+                        if text.starts_with('#') && !is_valid_ordinal(&text[1..]) {
+                            self.diagnostics.push(ERR_INVALID_ORDINAL, alias_span);
+                        }
+                    }
+                    Some(s)
+                }
                 None => {
                     self.skip_line();
                     return arena.alloc(ExprNode::Block { stmts: vec![] });
@@ -4931,7 +4964,13 @@ impl<'src> Parser<'src> {
         // once a required one follows it.
         let mut section = false;
         let mut required_after = false;
+        // A standard module takes at most 60 parameters, an object module 59.
+        let limit = if self.module_kind == ModuleKind::Standard { 60 } else { 59 };
+        let mut too_many = None;
         loop {
+            if args.len() == limit {
+                too_many = Some(self.current_span());
+            }
             let param = self.parse_param(arena, in_declare);
             if let ExprNode::ParamDef { flags, .. } = arena.get(param) {
                 if flags & 0x21 != 0 {
@@ -4948,6 +4987,9 @@ impl<'src> Parser<'src> {
                 self.report_expected(span, "identifier");
                 break;
             }
+        }
+        if let Some(span) = too_many {
+            self.diagnostics.push(ERR_TOO_MANY_ARGUMENTS, span);
         }
         if self.value_owner_params && section && !required_after {
             // The list ends without a required value parameter.

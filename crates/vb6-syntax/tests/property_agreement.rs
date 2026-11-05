@@ -31,6 +31,7 @@ fn a_getter_and_a_let_agree_on_the_value_type() {
         ("Property Get P() As Foo", "Property Let P(v As Variant)"),
         ("Property Get P() As Foo", "Property Let P(v As Foo)"),
         ("Property Get P() As Object", "Property Let P(v As Object)"),
+        ("Property Get P() As Long()", "Property Let P(v() As Long)"),
     ] {
         assert_eq!(pair(get, let_).1, vec![], "{get} / {let_}");
         assert_eq!(pair(let_, get).1, vec![], "{let_} / {get}");
@@ -48,6 +49,10 @@ fn a_getter_and_a_let_with_different_value_types_disagree_at_the_later_one() {
         ("Property Get P() As Object", "Property Let P(v As Foo)"),
         ("Property Get P() As Foo", "Property Let P(v As Object)"),
         ("Property Get P() As Long()", "Property Let P(v As Long)"),
+        ("Property Get P() As Long()", "Property Let P(v() As Variant)"),
+        ("Property Get P() As Long()", "Property Let P(v() As Single)"),
+        ("Property Get P() As Variant", "Property Let P(v() As Long)"),
+        ("Property Get P() As Long", "Property Let P(v() As Long)"),
     ] {
         let (src, found) = pair(get, let_);
         assert_eq!(found, vec![(INCONSISTENT, second_name(&src), 1)], "{get} / {let_}");
