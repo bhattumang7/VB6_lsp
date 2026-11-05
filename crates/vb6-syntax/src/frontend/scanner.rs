@@ -867,7 +867,11 @@ impl<'a> Scanner<'a> {
                     if self.try_consume_exponent() {
                         has_exp = true;
                     } else {
-                        break;
+                        // An exponent mark must be followed by digits (after an optional sign).
+                        while matches!(self.src.get(self.pos), Some(b) if is_ident_continue(*b)) {
+                            self.pos += 1;
+                        }
+                        return self.number_error(self.span(start));
                     }
                 }
                 _ => break,
@@ -915,13 +919,15 @@ impl<'a> Scanner<'a> {
                 }
             }
             Some(b'&') if !is_float => {
-                self.pos += 1;
-                let span = Span { len: span.len + 1, ..span };
                 match self.tok_buf.parse::<i64>() {
                     Ok(v) if v >= i32::MIN as i64 && v <= i32::MAX as i64 => {
+                        self.pos += 1;
+                        let span = Span { len: span.len + 1, ..span };
                         Token::lit(TokenKind::LongLit, Lit::Long(v as i32), span)
                     }
-                    _ => self.number_error(span),
+                    // A whole number too large for a Long is a Double, and the `&` after it
+                    // is the operator.
+                    _ => self.finish_double(span),
                 }
             }
             Some(b'!') => {
@@ -1082,20 +1088,32 @@ impl<'a> Scanner<'a> {
             Some(b'H') | Some(b'h') => {
                 self.pos += 1;
                 let val = self.scan_radix_digits(16);
-                self.finish_radix_literal(val, start)
+                self.radix_literal_or_amp(val, start)
             }
             Some(b'O') | Some(b'o') => {
                 self.pos += 1;
                 let val = self.scan_radix_digits(8);
-                self.finish_radix_literal(val, start)
+                self.radix_literal_or_amp(val, start)
             }
             // `&` and an octal digit start an octal literal without the `O`, wherever they stand.
             Some(b'0'..=b'7') => {
                 let val = self.scan_radix_digits(8);
-                self.finish_radix_literal(val, start)
+                self.radix_literal_or_amp(val, start)
             }
             _ => Token::op(Kw::Amp, self.span(start)),
         }
+    }
+
+    /// The literal read after `&`, or, when the text after the `&` is not a whole literal
+    /// (no digits, too many digits, a stray `H` or `O` among hexadecimal digits, an 8 or 9
+    /// in an octal one), the `&` operator alone, with the text after it left to be read
+    /// as the next token.
+    fn radix_literal_or_amp(&mut self, val: Option<u32>, start: usize) -> Token {
+        if val.is_none() {
+            self.pos = start + 1;
+            return Token::op(Kw::Amp, self.span(start));
+        }
+        self.finish_radix_literal(val, start)
     }
 
     /// Accumulate digits of the given radix from the current position.
@@ -1105,7 +1123,16 @@ impl<'a> Scanner<'a> {
         let mut count = 0usize;
         let mut overflow = false;
         while let Some(&b) = self.src.get(self.pos) {
-            let Some(d) = (b as char).to_digit(radix) else { break };
+            let Some(d) = (b as char).to_digit(radix) else {
+                // Hexadecimal digits swallow an `H` or `O`, which spoils the literal; an 8 or
+                // a 9 spoils an octal one.
+                if (radix == 16 && matches!(b, b'h' | b'H' | b'o' | b'O')) || (radix == 8 && matches!(b, b'8' | b'9')) {
+                    overflow = true;
+                    self.pos += 1;
+                    continue;
+                }
+                break;
+            };
             val = val * radix as u64 + d as u64;
             if val > u32::MAX as u64 {
                 overflow = true;

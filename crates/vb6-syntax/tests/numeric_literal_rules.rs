@@ -64,17 +64,47 @@ fn octal_literals_follow_the_same_sizing() {
     assert_eq!(literal("&O7&"), AstLit::Long(7));
 }
 
-#[test]
-fn radix_literal_out_of_range_is_a_syntax_error() {
-    assert_eq!(rejected("&H100000000"), vec![(ERR_SYNTAX_ERROR, 0, 11)]);
-    assert_eq!(rejected("&O40000000000"), vec![(ERR_SYNTAX_ERROR, 0, 13)]);
-    assert_eq!(rejected("&H10000%"), vec![(ERR_SYNTAX_ERROR, 0, 8)]);
+/// Parse `x = a <text>` and return the name read after the `&` operator.
+fn name_after_concatenation(text: &str) -> String {
+    let p = parse(&format!("Sub S()\n x = a {text}\nEnd Sub\n"));
+    assert_eq!(p.found, vec![], "diagnostics for {text}");
+    let body = p.proc_body(0);
+    let ExprNode::Assign { value, .. } = p.node(body[0]) else { panic!("not an assignment") };
+    let ExprNode::BinOp { op: vb6_syntax::frontend::ast::BinOpKind::Cat, rhs, .. } = p.node(*value) else { panic!("not a concatenation: {text}") };
+    let ExprNode::NameRef { sym, .. } = p.node(*rhs) else { panic!("not a name: {text}") };
+    p.name(*sym).to_string()
 }
 
 #[test]
-fn radix_prefix_without_digits_is_a_syntax_error() {
-    assert_eq!(rejected("&H"), vec![(ERR_SYNTAX_ERROR, 0, 2)]);
-    assert_eq!(rejected("&O"), vec![(ERR_SYNTAX_ERROR, 0, 2)]);
+fn radix_text_that_is_not_a_whole_literal_is_the_concatenation_operator_and_a_name() {
+    for (text, name) in [
+        ("&H", "H"),
+        ("&O", "O"),
+        ("&Hz", "Hz"),
+        ("&Oz", "Oz"),
+        ("&H1o", "H1o"),
+        ("&H100000000", "H100000000"),
+        ("&O40000000000", "O40000000000"),
+        ("&O18", "O18"),
+        ("&H1O", "H1O"),
+    ] {
+        assert_eq!(name_after_concatenation(text), name, "{text}");
+    }
+}
+
+#[test]
+fn an_eight_or_nine_after_octal_digits_makes_the_ampersand_an_operator() {
+    let p = parse("Sub S()\n n = 5 &18\nEnd Sub\n");
+    assert_eq!(p.found, vec![]);
+    let body = p.proc_body(0);
+    let ExprNode::Assign { value, .. } = p.node(body[0]) else { panic!("not an assignment") };
+    let ExprNode::BinOp { op: vb6_syntax::frontend::ast::BinOpKind::Cat, rhs, .. } = p.node(*value) else { panic!("not a concatenation") };
+    assert!(matches!(p.node(*rhs), ExprNode::Literal { lit: AstLit::Int(18) }));
+}
+
+#[test]
+fn a_hex_literal_with_the_integer_suffix_must_fit_sixteen_bits() {
+    assert_eq!(rejected("&H10000%"), vec![(ERR_SYNTAX_ERROR, 0, 8)]);
 }
 
 #[test]
@@ -95,7 +125,9 @@ fn suffixed_whole_number_must_fit_its_type() {
     assert_eq!(literal("32767%"), AstLit::Int(32767));
     assert_eq!(literal("2147483647&"), AstLit::Long(i32::MAX));
     assert_eq!(rejected("32768%"), vec![(ERR_SYNTAX_ERROR, 0, 6)]);
-    assert_eq!(rejected("2147483648&"), vec![(ERR_SYNTAX_ERROR, 0, 11)]);
+    // A whole number too large for a Long is a Double, and a `&` after it is the operator.
+    let p = parse("Sub S()\n x = 3000000000& \"a\"\nEnd Sub\n");
+    assert_eq!(p.found, vec![]);
 }
 
 #[test]
@@ -165,4 +197,15 @@ fn punctuation_cannot_start_an_expression() {
         let found = parse(&src).found;
         assert_eq!(found[0], (ERR_UNEXPECTED_TOKEN, base + at, 1), "{text}");
     }
+}
+
+#[test]
+fn an_exponent_mark_needs_digits() {
+    for text in ["1E", "2D", "1Else", "1e x", "1e+x"] {
+        let found = rejected(text);
+        assert_eq!(found.first().map(|f| (f.0, f.1)), Some((ERR_SYNTAX_ERROR, 0)), "{text}");
+    }
+    assert_eq!(literal("1E5"), AstLit::Double(100000.0));
+    assert_eq!(literal("1d2"), AstLit::Double(100.0));
+    assert_eq!(literal("1E+2"), AstLit::Double(100.0));
 }
