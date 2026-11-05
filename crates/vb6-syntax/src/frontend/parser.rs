@@ -237,6 +237,9 @@ pub struct Parser<'src> {
     /// A token other than a line end has been read on the current logical line: a
     /// `Name:` is a line label only as the first thing on its line.
     line_has_content: bool,
+    /// A statement-separating colon has been read on the current logical line (the colon
+    /// of a line label or of a line number does not count): a `Rem` then ends a statement.
+    colon_on_line: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
     /// True while the header of a procedure written with a leading `Static` is read.
@@ -427,6 +430,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             line_has_content: false,
+            colon_on_line: false,
             module_decl_seen: false,
             static_prefix: false,
             property_sigs: Vec::new(),
@@ -497,8 +501,14 @@ impl<'src> Parser<'src> {
         self.line_has_content = tok.kind != TokenKind::Eol;
         self.last_token_end = tok.span.start + tok.span.len;
         match tok.kind {
-            TokenKind::Kw(Kw::Colon) => self.after_colon = true,
-            TokenKind::Eol => self.after_colon = false,
+            TokenKind::Kw(Kw::Colon) => {
+                self.after_colon = true;
+                self.colon_on_line = true;
+            }
+            TokenKind::Eol => {
+                self.after_colon = false;
+                self.colon_on_line = false;
+            }
             _ => {}
         }
         tok
@@ -968,13 +978,19 @@ impl<'src> Parser<'src> {
     /// True at the end of a statement: the end of the line, a comment, or, inside a
     /// single-line `If`, a `Rem` comment.
     fn at_statement_end(&mut self) -> bool {
-        self.peek().is_stmt_end() || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem))
+        self.peek().is_stmt_end() || (self.rem_ends_statement() && self.peek().kind == TokenKind::Kw(Kw::Rem))
+    }
+
+    /// Whether a `Rem` comment may follow a statement here: inside a single-line `If` or
+    /// after a statement-separating colon.
+    fn rem_ends_statement(&self) -> bool {
+        self.in_inline_if || self.colon_on_line
     }
 
     /// As [`Self::end_stmt`] for a statement whose operand list does not stop at `Rem`: the
     /// word is a syntax error even inside a single-line `If`.
     fn end_stmt_before_rem_is_error(&mut self) {
-        if self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem) {
+        if self.rem_ends_statement() && self.peek().kind == TokenKind::Kw(Kw::Rem) {
             let span = self.current_span();
             self.diagnostics.push_labeled(0x9c6f, span, "end of statement");
             self.skip_line();
@@ -984,7 +1000,7 @@ impl<'src> Parser<'src> {
     }
 
     fn end_stmt(&mut self) {
-        if self.peek().is_stmt_end() || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
+        if self.peek().is_stmt_end() || (self.rem_ends_statement() && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
             self.advance();
         } else if !matches!(
             self.peek().kind,
@@ -1797,6 +1813,7 @@ impl<'src> Parser<'src> {
                 let name = self.advance();
                 self.advance(); // colon
                 self.after_colon = false; // the colon belongs to the label
+                self.colon_on_line = false;
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
                 self.define_label(LabelRef::Name(sym), name.span);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
@@ -1998,6 +2015,7 @@ impl<'src> Parser<'src> {
                 let name = self.advance(); // identifier
                 self.advance();            // colon
                 self.after_colon = false;  // the colon belongs to the label
+                self.colon_on_line = false;
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
                 self.define_label(LabelRef::Name(sym), name.span);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
@@ -2034,6 +2052,7 @@ impl<'src> Parser<'src> {
                 let line = line_label_value(&tok.lit);
                 if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
                     self.after_colon = false;
+                    self.colon_on_line = false;
                 } else {
                     // A line number alone does not make a later `Name:` a mid-line label.
                     self.line_has_content = false;
@@ -2423,6 +2442,11 @@ impl<'src> Parser<'src> {
     /// Parse a Dim/Static/Public/Private variable list, marking each item static
     /// when declared with the `Static` keyword.
     fn parse_dim_list_static(&mut self, arena: &mut ExprArena, is_const: bool, is_static: bool) -> NodeId {
+        // `Shared` directly after `Dim`, `Public`, `Private` or `Global` is skipped; after
+        // `Static` or `Const` (and in `ReDim`) it is an error like any reserved word.
+        if !is_static && !is_const {
+            self.eat(TokenKind::Kw(Kw::Shared));
+        }
         if is_static && self.in_procedure && self.peek().kind == TokenKind::Kw(Kw::Property) {
             // After `Static` a `Property` starts a property procedure, which a procedure body cannot hold.
             let span = self.current_span();
@@ -2588,7 +2612,6 @@ impl<'src> Parser<'src> {
     /// Parses a ReDim statement.
     fn parse_redim_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume ReDim
-        let _shared = self.eat(TokenKind::Kw(Kw::Shared));
         let preserve = self.eat(TokenKind::Kw(Kw::Preserve));
         let mut stmts = Vec::new();
         loop {
@@ -4327,6 +4350,8 @@ impl<'src> Parser<'src> {
             TokenKind::Ident | TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::WithEvents) => {
                 self.parse_dim_list_static(arena, false, static_proc)
             }
+            // `Shared` directly after the access word is skipped by the variable list.
+            TokenKind::Kw(Kw::Shared) if !static_proc => self.parse_dim_list_static(arena, false, false),
             // A contextual keyword names the variable (`Public Name As String`).
             TokenKind::Kw(_) if self.at_contextual_keyword() => {
                 self.parse_dim_list_static(arena, false, static_proc)
