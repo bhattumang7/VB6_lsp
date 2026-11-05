@@ -816,8 +816,16 @@ impl<'a> Scanner<'a> {
                 }
                 _ => {}
             }
-            // A double-byte character starts a name.
-            if self.double_byte_at(start) {
+            // A full-width form of an ASCII character is read as that character.
+            let b = match self.full_width_at(start) {
+                Some((ascii, _)) => {
+                    self.pos += 1;
+                    ascii
+                }
+                None => b,
+            };
+            // Another double-byte character starts a name.
+            if b == self.src[start] && self.double_byte_at(start) {
                 return self.scan_ident(b, start);
             }
             let cls = CHAR_CLASSES[b as usize];
@@ -959,7 +967,25 @@ impl<'a> Scanner<'a> {
     fn scan_string(&mut self, start: usize) -> Token {
         self.tok_buf.clear();
         loop {
-            match self.advance() {
+            // A full-width double quote closes (or doubles) a string like a plain one.
+            let step = match self.full_width_at(self.pos) {
+                Some((b'"', width)) => {
+                    self.pos += width;
+                    Some(b'"')
+                }
+                _ => self.advance(),
+            };
+            if step == Some(b'"') {
+                let wide_next = matches!(self.full_width_at(self.pos), Some((b'"', _)));
+                if self.peek() == Some(b'"') || wide_next {
+                    self.pos += if wide_next { 2 } else { 1 };
+                    self.tok_buf.push('"');
+                } else {
+                    break;
+                }
+                continue;
+            }
+            match step {
                 None => break,
                 // A string cut off by a NUL (the end of what is read of a long line) is not
                 // closed in time.
@@ -1020,11 +1046,13 @@ impl<'a> Scanner<'a> {
         let mut has_exp = false;
 
         loop {
-            let Some(&b) = self.src.get(self.pos) else { break };
+            let Some(&raw) = self.src.get(self.pos) else { break };
+            // A full-width digit or point is the ASCII one.
+            let (b, width) = self.full_width_at(self.pos).unwrap_or((raw, 1));
             match b {
                 b'0'..=b'9' => {
                     self.tok_buf.push(b as char);
-                    self.pos += 1;
+                    self.pos += width;
                 }
                 b'.' if !has_decimal && !has_exp => {
                     has_decimal = true;
@@ -1338,10 +1366,14 @@ impl<'a> Scanner<'a> {
     /// blanks between their characters.
     fn peek_past_blanks(&self) -> Option<(u8, usize)> {
         let mut i = self.pos;
-        while matches!(self.src.get(i), Some(b' ') | Some(b'\t') | Some(0x19)) {
-            i += 1;
+        loop {
+            match self.full_width_at(i) {
+                Some((b' ', width)) => i += width,
+                Some((b, width)) => return Some((b, i + width)),
+                None if matches!(self.src.get(i), Some(b' ') | Some(b'\t') | Some(0x19)) => i += 1,
+                None => return self.src.get(i).map(|&b| (b, i + 1)),
+            }
         }
-        self.src.get(i).map(|&b| (b, i + 1))
     }
 
     /// Consume the operator's second character when it is one of `wanted`
@@ -1424,12 +1456,21 @@ impl<'a> Scanner<'a> {
     fn scan_ident(&mut self, first: u8, start: usize) -> Token {
         self.tok_buf.clear();
         self.tok_buf.push(ansi_char(first));
-        if self.double_byte_at(start) {
+        if self.src[start] == first && self.double_byte_at(start) {
             // A lead byte and the trail byte after it are one character of the name.
             self.tok_buf.push(ansi_char(self.src[self.pos]));
             self.pos += 1;
         }
         while let Some(&b) = self.src.get(self.pos) {
+            if let Some((ascii, width)) = self.full_width_at(self.pos) {
+                // Full-width letters, digits and the underscore continue the name as themselves.
+                if is_ident_continue(ascii) {
+                    self.tok_buf.push(ascii as char);
+                    self.pos += width;
+                    continue;
+                }
+                break;
+            }
             if self.double_byte_at(self.pos) {
                 self.tok_buf.push(ansi_char(b));
                 self.tok_buf.push(ansi_char(self.src[self.pos + 1]));
@@ -1541,6 +1582,25 @@ impl<'a> Scanner<'a> {
 
     // ── low-level helpers ────────────────────────────────────────────────────
 
+    /// The ASCII character the full-width pair of bytes at `at` stands for, and how many
+    /// bytes it takes (always 2).
+    fn full_width_at(&self, at: usize) -> Option<(u8, usize)> {
+        if !self.double_byte_at(at) {
+            return None;
+        }
+        let column = match self.ctx.dbcs_code_page()? {
+            932 => 0,
+            936 => 1,
+            950 => 2,
+            _ => 3,
+        };
+        let pair = (u16::from(self.src[at]) << 8) | u16::from(self.src[at + 1]);
+        FULL_WIDTH.iter().find_map(|&(ascii, count, codes)| {
+            let first = codes[column];
+            (first != 0 && pair >= first && pair < first + u16::from(count)).then(|| (ascii + (pair - first) as u8, 2))
+        })
+    }
+
     /// Whether the byte at `at` leads a double-byte character of the module's code page and a
     /// trail byte follows it on the same line.
     fn double_byte_at(&self, at: usize) -> bool {
@@ -1598,6 +1658,45 @@ fn currency_units(text: &str) -> Option<i64> {
 /// measured as the number of names a module can add before the table is full (32436 members of
 /// user types beside 65 type names and one procedure name).
 const HOST_SYMBOLS: u32 = 10;
+
+/// The full-width spelling of ASCII characters in each double-byte code page, as
+/// (ASCII character, how many consecutive characters follow it, the code of its full-width
+/// form in code pages 932, 936, 950 and 949). A pair of source bytes with one of these codes
+/// stands for the ASCII character.
+const FULL_WIDTH: [(u8, u8, [u16; 4]); 32] = [
+    (b'>', 1, [0x8184, 0xa3be, 0xa1d6, 0xa3be]),
+    (b'<', 1, [0x8183, 0xa3bc, 0xa1d5, 0xa3bc]),
+    (b'=', 1, [0x8181, 0xa3bd, 0xa1d7, 0xa3bd]),
+    (b':', 1, [0x8146, 0xa3ba, 0xa147, 0xa3ba]),
+    (b' ', 1, [0x8140, 0xa1a1, 0xa140, 0xa1a1]),
+    (b'%', 1, [0x8193, 0xa3a5, 0xa248, 0xa3a5]),
+    (b'&', 1, [0x8195, 0xa3a6, 0xa1ae, 0xa3a6]),
+    (b'!', 1, [0x8149, 0xa3a1, 0xa149, 0xa3a1]),
+    (b'#', 1, [0x8194, 0xa3a3, 0xa1ad, 0xa3a3]),
+    (b'$', 1, [0x8190, 0xa3a4, 0xa243, 0xa3a4]),
+    (b'@', 1, [0x8197, 0xa3c0, 0xa249, 0xa3c0]),
+    (b'[', 1, [0x816d, 0xa3db, 0xa165, 0xa3db]),
+    (b']', 1, [0x816e, 0xa3dd, 0xa166, 0xa3dd]),
+    (b',', 1, [0x8143, 0xa3ac, 0xa141, 0xa3a7]),
+    (b'.', 1, [0x8144, 0xa3ae, 0xa144, 0xa3ae]),
+    (b'+', 1, [0x817b, 0xa3ab, 0xa1cf, 0xa3ab]),
+    (b'-', 1, [0x817c, 0xa3ad, 0xa1d0, 0xa3ad]),
+    (b'"', 1, [0x8167, 0xa3a2, 0xa1a7, 0xa3a2]),
+    (b'"', 1, [0x8168, 0xa3a2, 0xa1a8, 0xa3a2]),
+    (b'\'', 1, [0x8166, 0xa3a7, 0xa141, 0xa1af]),
+    (b'(', 1, [0x8169, 0xa3a8, 0xa15d, 0xa3a8]),
+    (b')', 1, [0x816a, 0xa3a9, 0xa15e, 0xa3a9]),
+    (b'/', 1, [0x815e, 0xa3af, 0xa1fe, 0xa3af]),
+    (b'?', 1, [0x8148, 0xa3bf, 0xa1ec, 0xa3bf]),
+    (b'?', 1, [0x8148, 0xa3bf, 0xa148, 0xa3bf]),
+    (b'^', 1, [0x814f, 0xa3de, 0x0000, 0xa3de]),
+    (b'*', 1, [0x8196, 0xa3aa, 0xa1af, 0xa3aa]),
+    (b'A', 26, [0x8260, 0xa3c1, 0xa2cf, 0xa3c1]),
+    (b'a', 26, [0x8281, 0xa3e1, 0xa2e9, 0xa3e1]),
+    (b'e', 1, [0x8285, 0xa3e5, 0xa2ed, 0xa3e5]),
+    (b'E', 1, [0x8264, 0xa3c5, 0xa2d3, 0xa3c5]),
+    (b'0', 10, [0x824f, 0xa3b0, 0xa2af, 0xa3b0]),
+];
 
 /// Longest physical line the scanner reads, in bytes; the rest of a longer line is not seen.
 const MAX_LINE_LEN: usize = 1023;

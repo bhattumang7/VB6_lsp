@@ -149,3 +149,66 @@ fn a_double_byte_character_is_one_unit_of_a_name_in_a_double_byte_code_page() {
         assert_eq!(!parser.diagnostics.items().is_empty(), expect_errors, "{lcid:#x}");
     }
 }
+
+fn parse_bytes_in(lcid: u32, src: &[u8]) -> (Vec<(u32, u32, u32)>, String) {
+    use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprArena, ExprNode};
+    use vb6_syntax::frontend::parser::Parser;
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    let mut ctx = ScannerContext::new(1, 1, lcid);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, src);
+    let top = parser.parse_module(&mut arena);
+    let found = parser.diagnostics.items().iter().map(|d| (d.code, d.span.start, d.span.len)).collect();
+    drop(parser);
+    let mut shape = String::new();
+    if let Some(ExprNode::ProcDecl { body, .. }) = top.first().map(|n| arena.get(*n)) {
+        if let ExprNode::Block { stmts } = arena.get(*body) {
+            if let Some(ExprNode::Assign { target, value }) = stmts.first().map(|s| arena.get(*s)) {
+                let name = |id| match arena.get(id) {
+                    ExprNode::NameRef { sym, .. } => ctx.sym_name(*sym as usize).to_string(),
+                    ExprNode::Literal { lit: AstLit::Int(n) } => n.to_string(),
+                    ExprNode::Literal { lit: AstLit::Str(s) } => format!("{s:?}"),
+                    _ => "?".to_string(),
+                };
+                shape = match arena.get(*value) {
+                    ExprNode::BinOp { op: BinOpKind::Add, lhs, rhs } => format!("{} = {} + {}", name(*target), name(*lhs), name(*rhs)),
+                    _ => format!("{} = {}", name(*target), name(*value)),
+                };
+            }
+        }
+    }
+    (found, shape)
+}
+
+#[test]
+fn full_width_forms_are_read_as_the_ascii_characters_in_a_double_byte_code_page() {
+    // Shift-JIS: x, full-width = 1 + 2 (digits 0x8250.., plus 0x817B, equals 0x8181).
+    let mut src = b"Sub S()\nx".to_vec();
+    src.extend_from_slice(&[0x81, 0x81, 0x82, 0x50, 0x81, 0x7B, 0x82, 0x51]);
+    src.extend_from_slice(b"\nEnd Sub\n");
+    assert_eq!(parse_bytes_in(0x0411, &src), (vec![], "x = 1 + 2".to_string()));
+    assert!(!parse_bytes_in(0x0409, &src).0.is_empty());
+}
+
+#[test]
+fn full_width_letters_and_quotes_in_a_double_byte_code_page() {
+    // Full-width A (0x8260) and a (0x8281) in a name are the ASCII letters; 0x8167 ... 0x8168
+    // are the quotes of a string.
+    let mut src = b"Sub S()\n".to_vec();
+    src.extend_from_slice(&[0x82, 0x60, 0x82, 0x81]);
+    src.extend_from_slice(b" = ");
+    src.extend_from_slice(&[0x81, 0x67]);
+    src.extend_from_slice(b"abc");
+    src.extend_from_slice(&[0x81, 0x68]);
+    src.extend_from_slice(b"\nEnd Sub\n");
+    assert_eq!(parse_bytes_in(0x0411, &src), (vec![], "Aa = \"abc\"".to_string()));
+    // Korean (949) and Chinese (936, 950) spell the digits too.
+    let digit_one: [(u32, [u8; 2]); 3] = [(0x0412, [0xa3, 0xb1]), (0x0804, [0xa3, 0xb1]), (0x0404, [0xa2, 0xb0])];
+    for (lcid, pair) in digit_one {
+        let mut src = b"Sub S()\nx = ".to_vec();
+        src.extend_from_slice(&pair);
+        src.extend_from_slice(b"\nEnd Sub\n");
+        assert_eq!(parse_bytes_in(lcid, &src), (vec![], "x = 1".to_string()), "{lcid:#x}");
+    }
+}
