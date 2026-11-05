@@ -840,10 +840,10 @@ impl<'src> Parser<'src> {
     }
 
     /// After `New`: a class name. A built-in type word is reported as a missing type name.
-    fn require_class_name_after_new(&mut self) {
+    fn require_class_name_after_new(&mut self, what: &'static str) {
         if self.at_reserved_word() || self.peek().kind == TokenKind::Kw(Kw::Object) {
             let span = self.current_span();
-            self.report_expected(span, "type name");
+            self.report_expected(span, what);
         }
     }
 
@@ -1473,10 +1473,15 @@ impl<'src> Parser<'src> {
     fn parse_line_keyword_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let t = self.advance();
         if self.eat(TokenKind::Kw(Kw::Input)) {
-            self.eat(TokenKind::Kw(Kw::Hash));
+            // The `#` before the channel is required here (unlike `Input`, where it
+            // is what tells the statement from a call).
+            if !self.eat(TokenKind::Kw(Kw::Hash)) {
+                let span = self.current_span();
+                self.report_expected(span, "#");
+            }
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
-            let var = self.parse_expr(arena, 0);
+            let var = self.parse_target_expr(arena);
             self.end_stmt();
             arena.alloc(ExprNode::FileIoStmt {
                 kind: FileIoKind::LineInput,
@@ -4154,7 +4159,7 @@ impl<'src> Parser<'src> {
         let mut vars = Vec::new();
         if self.expect_comma() {
             loop {
-                vars.push(self.parse_expr(arena, 0));
+                vars.push(self.parse_target_expr(arena));
                 if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             }
         }
@@ -4867,7 +4872,7 @@ impl<'src> Parser<'src> {
                 self.report_expected(span, "type name");
                 self.advance();
                 flags |= 0x10;
-                self.require_class_name_after_new();
+                self.require_class_name_after_new("type name");
             }
             if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
                 Some(arena.alloc(ExprNode::AnyType))
@@ -5021,7 +5026,7 @@ impl<'src> Parser<'src> {
             }
             TokenKind::Kw(Kw::New) => {
                 self.advance();
-                self.require_class_name_after_new();
+                self.require_class_name_after_new("type name");
                 let name = self.expect_ident();
                 self.finish_user_type(arena, name)
             }
@@ -5327,7 +5332,10 @@ impl<'src> Parser<'src> {
     /// `New <TypeName>`
     fn parse_new_expr(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume New
-        let type_spec = self.parse_type_spec(arena, false);
+        // Only a class name follows: a built-in type, `Object` or a second `New` is an error.
+        self.require_class_name_after_new("identifier");
+        let name = self.expect_ident();
+        let type_spec = self.finish_user_type(arena, name);
         arena.alloc(ExprNode::New { type_spec })
     }
 
