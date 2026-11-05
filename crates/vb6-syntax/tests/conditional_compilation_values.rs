@@ -183,11 +183,19 @@ fn if_needs_then_and_nothing_follows_a_directive() {
     assert_eq!(found[0].0, EXPECTED);
     assert_eq!(found[0].1, offset_of(src, "\nSub", 0));
 
+    // The malformed `#If` opens nothing, so the `#End If` has nothing to close.
     let src = "#If 1 Then foo\nSub A()\nEnd Sub\n#End If\n";
-    assert_eq!(parse(src).found, vec![(EXPECTED, offset_of(src, "foo", 0), 3)]);
+    assert_eq!(
+        parse(src).found,
+        vec![(EXPECTED, offset_of(src, "foo", 0), 3), (0xdebd, offset_of(src, "#End If", 0), 4)]
+    );
 
     let src = "#If 1 Then\nSub A()\nEnd Sub\n#End If foo\n";
-    assert_eq!(parse(src).found, vec![(EXPECTED, offset_of(src, "foo", 0), 3)]);
+    // The malformed `#End If` closes nothing: the `#If` is still open at the end.
+    assert_eq!(
+        parse(src).found,
+        vec![(EXPECTED, offset_of(src, "foo", 0), 3), (0xdec0, offset_of(src, "#End If foo", 0), 11)]
+    );
 
     let src = "#If 1 Then\nSub A()\nEnd Sub\n#Else foo\n#End If\n";
     assert_eq!(parse(src).found, vec![(EXPECTED, offset_of(src, "foo", 0), 3)]);

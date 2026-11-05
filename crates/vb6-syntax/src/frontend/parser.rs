@@ -312,6 +312,8 @@ pub struct Parser<'src> {
     cc_defs: Vec<(String, CcValue)>,
     /// Names given by a `#Const` of this module: giving one again is an error.
     cc_module_consts: Vec<String>,
+    /// The last directive token read ended the line.
+    cc_line_done: bool,
     /// Open `#If` blocks, innermost last.
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
@@ -486,6 +488,7 @@ impl<'src> Parser<'src> {
             cc_stack: Vec::new(),
             cc_pending: None,
             cc_module_consts: Vec::new(),
+            cc_line_done: false,
             cc_defs: vec![
                 ("win32".into(), CcValue::Integer(-1)),
             ],
@@ -3513,10 +3516,12 @@ impl<'src> Parser<'src> {
     }
 
     fn cc_advance(&mut self) -> Token {
-        match self.cc_pending.take() {
+        let t = match self.cc_pending.take() {
             Some(t) => t,
             None => self.next_physical(),
-        }
+        };
+        self.cc_line_done = matches!(t.kind, TokenKind::Eol | TokenKind::Eof);
+        t
     }
 
     /// Consume the rest of a directive line, including its end of line.
@@ -3574,11 +3579,7 @@ impl<'src> Parser<'src> {
 
     /// `#If` / `#ElseIf` condition: evaluated only when the branch can still
     /// be taken; the expression is followed by `Then`.
-    fn cc_condition(&mut self, evaluate: bool, read_anyway: bool, span: Span) -> bool {
-        if !evaluate && !read_anyway {
-            self.cc_skip_line();
-            return false;
-        }
+    fn cc_condition(&mut self, evaluate: bool, span: Span) -> bool {
         let truth = self.eval_cc_expr(0).and_then(|v| v.is_true());
         let value = match truth {
             Ok(b) => b && evaluate,
@@ -3603,6 +3604,25 @@ impl<'src> Parser<'src> {
     /// Handle the directive token `kind` (already consumed). Returns after the
     /// directive's whole line has been consumed.
     fn cc_directive(&mut self, kind: Kw, span: Span, one_word: bool) {
+        let was_active = self.cc_active();
+        let diag_len = self.diagnostics.len();
+        let saved = (self.cc_stack.clone(), self.cc_defs.clone(), self.cc_module_consts.clone());
+        self.cc_directive_line(kind, span, one_word);
+        // A directive that does not read completely is not a directive: nothing it did
+        // counts, and it is an ordinary line, whose errors count where code is compiled
+        // and which is ignored where it is not.
+        let malformed = self.diagnostics.items()[diag_len..].iter().any(|d| matches!(d.code, 0x9c6f | 0x9c70));
+        if malformed {
+            (self.cc_stack, self.cc_defs, self.cc_module_consts) = saved;
+            if !self.cc_line_done {
+                self.cc_skip_line();
+            }
+            // The line stops at its first error, and is not read at all where code is not compiled.
+            self.diagnostics.truncate(if was_active { diag_len + 1 } else { diag_len });
+        }
+    }
+
+    fn cc_directive_line(&mut self, kind: Kw, span: Span, one_word: bool) {
         match kind {
             Kw::CcConst => {
                 {
@@ -3649,7 +3669,7 @@ impl<'src> Parser<'src> {
             }
             Kw::CcIf => {
                 let parent_active = self.cc_active();
-                let taken = self.cc_condition(parent_active, false, span);
+                let taken = self.cc_condition(parent_active, span);
                 self.cc_stack.push(CcFrame { open: span, else_seen: false, parent_active, active: taken, taken });
             }
             Kw::CcElseIf => {
@@ -3666,7 +3686,7 @@ impl<'src> Parser<'src> {
                 }
                 let evaluate = frame.parent_active && !frame.taken;
                 // A branch that cannot be taken is still read as a directive.
-                let cond = self.cc_condition(evaluate, frame.parent_active, span);
+                let cond = self.cc_condition(evaluate, span);
                 let top = self.cc_stack.last_mut().unwrap();
                 top.active = cond;
                 top.taken |= cond;

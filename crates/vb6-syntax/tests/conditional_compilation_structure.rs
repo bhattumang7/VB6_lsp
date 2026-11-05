@@ -120,3 +120,27 @@ fn a_const_given_twice_is_a_duplicate_definition_at_the_second_directive() {
     assert_eq!(parse("#Const Win32 = 0\n").found, vec![]);
     assert_eq!(parse("#Const A = 1\n#Const B = 1\n").found, vec![]);
 }
+
+#[test]
+fn a_malformed_directive_in_an_unused_branch_is_not_a_directive() {
+    // The malformed inner `#If` opens nothing, so the second `#End If` is the orphan.
+    let src = "#If False Then\n#If (1 Then\n#End If\n#End If\n";
+    assert_eq!(parse(src).found, vec![(0xdebd, offset_of(src, "#End If", 1), 4)]);
+    // An `#ElseIf` after a branch that was not taken is not read.
+    assert_eq!(parse("#If False Then\n#ElseIf (( Then\n#End If\n").found, vec![]);
+    // After a taken branch it is read, and its error counts.
+    let src = "#If True Then\n#ElseIf (( Then\n#End If\n";
+    let found = parse(src).found;
+    assert_eq!(found.len(), 1);
+    assert_eq!(found[0].0, 0x9c6f);
+}
+
+#[test]
+fn directives_in_unused_branches_are_still_evaluated() {
+    let src = "#If False Then\n#If 1 / 0 Then\n#End If\n#End If\n";
+    assert_eq!(parse(src).found, vec![(11, offset_of(src, "#If 1", 0), 3)]);
+    let src = "#If False Then\n#Const A = 1 / 0\n#End If\n";
+    assert_eq!(parse(src).found, vec![(11, offset_of(src, "#Const", 0), 6)]);
+    let src = "#If True Then\n#Else\n#ElseIf 1 / 0 Then\n#End If\n";
+    assert_eq!(parse(src).found.iter().map(|f| f.0).collect::<Vec<_>>(), vec![0xdebf]);
+}
