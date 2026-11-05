@@ -3426,14 +3426,12 @@ impl<'src> Parser<'src> {
             TokenKind::Eol => {
                 self.cc_advance();
             }
-            TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) => {
+            // Only a comment mark may follow a directive: neither `Rem` nor a colon does.
+            TokenKind::Kw(Kw::Apos) => {
                 self.cc_advance();
                 if self.cc_peek().kind == TokenKind::Eol {
                     self.cc_advance();
                 }
-            }
-            TokenKind::Kw(Kw::Colon) => {
-                self.cc_advance();
             }
             _ => {
                 let span = self.cc_peek().span;
@@ -3445,12 +3443,12 @@ impl<'src> Parser<'src> {
 
     /// `#If` / `#ElseIf` condition: evaluated only when the branch can still
     /// be taken; the expression is followed by `Then`.
-    fn cc_condition(&mut self, evaluate: bool) -> bool {
-        if !evaluate {
+    fn cc_condition(&mut self, evaluate: bool, read_anyway: bool) -> bool {
+        if !evaluate && !read_anyway {
             self.cc_skip_line();
             return false;
         }
-        let value = self.eval_cc_expr(0).is_true();
+        let value = self.eval_cc_expr(0).is_true() && evaluate;
         if self.cc_peek().kind == TokenKind::Kw(Kw::Then) {
             self.cc_advance();
             self.cc_end_of_directive();
@@ -3470,7 +3468,11 @@ impl<'src> Parser<'src> {
                 if self.cc_active() {
                     let name_tok = self.cc_peek().clone();
                     let name_ok = name_tok.kind == TokenKind::Ident
-                        || (matches!(name_tok.kind, TokenKind::Kw(_)) && name_tok.sym.is_some());
+                        || (matches!(name_tok.kind, TokenKind::Kw(_))
+                            && name_tok.sym.is_some_and(|sym| {
+                                let sym = sym as u32;
+                                !self.scanner.is_reserved(sym) && !is_header_word(self.scanner.sym_name(sym))
+                            }));
                     if !name_ok {
                         self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, name_tok.span, "Identifier");
                         self.cc_skip_line();
@@ -3496,7 +3498,7 @@ impl<'src> Parser<'src> {
             }
             Kw::CcIf => {
                 let parent_active = self.cc_active();
-                let taken = self.cc_condition(parent_active);
+                let taken = self.cc_condition(parent_active, false);
                 self.cc_stack.push(CcFrame { open: span, else_seen: false, parent_active, active: taken, taken });
             }
             Kw::CcElseIf => {
@@ -3511,7 +3513,8 @@ impl<'src> Parser<'src> {
                     return;
                 }
                 let evaluate = frame.parent_active && !frame.taken;
-                let cond = self.cc_condition(evaluate);
+                // A branch that cannot be taken is still read as a directive.
+                let cond = self.cc_condition(evaluate, frame.parent_active);
                 let top = self.cc_stack.last_mut().unwrap();
                 top.active = cond;
                 top.taken |= cond;

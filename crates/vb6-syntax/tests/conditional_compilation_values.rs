@@ -90,7 +90,7 @@ fn constants_keep_their_types() {
     assert_eq!(taken("#Const A = 3 / 2\n", "A = 1.5"), "Yes");
     assert_eq!(taken("#Const A = 1\n#Const B = A + 1\n", "B = 2"), "Yes");
     assert_eq!(taken("", "Undefined = 0"), "Yes");
-    assert_eq!(taken("#Const debug = 1\n", "DEBUG"), "Yes");
+    assert_eq!(taken("#Const verbose = 1\n", "VERBOSE"), "Yes");
 }
 
 #[test]
@@ -108,11 +108,71 @@ fn one_word_end_if_and_blank_after_the_hash() {
 }
 
 #[test]
-fn a_colon_continues_the_line_after_a_directive() {
-    let src = "#Const A = 1 : #If A Then\nSub Yes()\nEnd Sub\n#End If\n";
-    let p = parse(src);
-    assert_eq!(p.found, vec![]);
-    assert_eq!(p.top.len(), 1);
+fn a_colon_after_a_directive_is_a_syntax_error() {
+    for src in [
+        "#Const A = 1 : #If A Then
+Sub Yes()
+End Sub
+#End If
+",
+        "#Const A = 1:
+",
+        "#If 1 Then:
+Sub A()
+End Sub
+#End If
+",
+        "#If 1 Then
+Sub A()
+End Sub
+#Else:
+#End If
+",
+    ] {
+        let found = parse(src).found;
+        assert_eq!(found[0].0, EXPECTED, "{src:?}");
+        assert_eq!(found[0].1, offset_of(src, ":", 0), "{src:?}");
+    }
+}
+
+#[test]
+fn rem_after_a_directive_is_a_syntax_error_but_an_apostrophe_is_not() {
+    let src = "#Const A = 1 Rem c
+";
+    // The comment word takes the rest of the line with it.
+    assert_eq!(parse(src).found[0], (EXPECTED, offset_of(src, "Rem", 0), 5));
+    assert_eq!(parse("#Const A = 1 'c
+").found, vec![]);
+}
+
+#[test]
+fn a_constant_name_is_not_a_reserved_word() {
+    for word in ["Debug", "Date", "Me", "String", "Long", "If", "Rem", "Attribute", "VB_Name"] {
+        let src = format!("#Const {word} = 1
+");
+        let found = parse(&src).found;
+        let len = if word == "Rem" { "Rem = 1".len() } else { word.len() };
+        assert_eq!(found[0], (EXPECTED, offset_of(&src, word, 0), len as u32), "{word}");
+    }
+    for word in ["Text", "Name", "Error", "Line", "Mid"] {
+        assert_eq!(parse(&format!("#Const {word} = 1
+")).found, vec![], "{word}");
+    }
+}
+
+#[test]
+fn an_elseif_after_a_taken_branch_is_still_read() {
+    let src = "#If 1 Then
+#ElseIf
+#End If
+";
+    assert_eq!(parse(src).found[0].1, offset_of(src, "
+#End", 0));
+    let src = "#If 1 Then
+#ElseIf 1
+#End If
+";
+    assert_eq!(parse(src).found[0].0, 0x9c70_u32.min(parse(src).found[0].0));
 }
 
 #[test]

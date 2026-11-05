@@ -1,0 +1,56 @@
+#Const k = 1
+#Const k
+#Const k =
+#Const = 1
+#Const k = 1: x = 1
+#Const k = 1 'c
+#Const k = 1 Rem c
+#Const k = x
+#Const k = "s"
+#Const k As Long = 1
+#Const k% = 1
+#Const k = 1, j = 2
+#Const Me = 1
+#Const Date = 1
+#Const k = True
+#Const k = Nothing
+#Const k = Null
+#Const k = 1 + 1
+#Const k = 1 : #Const j = 2
+#If 1 Then
+#If 1
+#If Then
+#If 1 Then: x = 1
+#If 1 Then 'c
+#If 1 Then Rem c
+#If 1 Then x = 1
+#ElseIf 1 Then
+#ElseIf
+#ElseIf 1
+#Else
+#Else x
+#Else: 
+#Else If 1 Then
+#EndIf
+#End If
+#End
+#End If x
+#End Sub
+# If 1 Then
+#if 1 then
+#IF 1 THEN
+#Elseif 1 Then
+#If k Then
+#If Not k Then
+#If k = 1 And j Then
+#If True Then
+#If "a" Then
+#If Nothing Then
+#If k Then Else
+#Foo
+#
+#1
+#"a"
+#Const
+#If
+#Const k = 1 _

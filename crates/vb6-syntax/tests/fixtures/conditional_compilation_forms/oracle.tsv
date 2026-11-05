@@ -1,0 +1,217 @@
+# template	word	class	message
+mod	#Const k = 1	accepted	
+mod	#Const k	syntax	Expected: =
+mod	#Const k =	syntax	Expected: expression
+mod	#Const = 1	syntax	Expected: identifier
+mod	#Const k = 1: x = 1	syntax	Expected: end of statement
+mod	#Const k = 1 'c	accepted	
+mod	#Const k = 1 Rem c	syntax	Expected: end of statement
+mod	#Const k = x	accepted	
+mod	#Const k = "s"	accepted	
+mod	#Const k As Long = 1	syntax	Expected: =
+mod	#Const k% = 1	accepted	
+mod	#Const k = 1, j = 2	syntax	Expected: end of statement
+mod	#Const Me = 1	syntax	Expected: identifier
+mod	#Const Date = 1	syntax	Expected: identifier
+mod	#Const k = True	accepted	
+mod	#Const k = Nothing	accepted	
+mod	#Const k = Null	accepted	
+mod	#Const k = 1 + 1	accepted	
+mod	#Const k = 1 : #Const j = 2	syntax	Expected: end of statement
+mod	#If 1 Then	syntax	You must terminate the # If block with an # EndIf
+mod	#If 1	syntax	Expected: Then
+mod	#If Then	syntax	Expected: expression
+mod	#If 1 Then: x = 1	syntax	Expected: end of statement
+mod	#If 1 Then 'c	syntax	You must terminate the # If block with an # EndIf
+mod	#If 1 Then Rem c	syntax	Expected: end of statement
+mod	#If 1 Then x = 1	syntax	Expected: end of statement
+mod	#ElseIf 1 Then	syntax	An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf
+mod	#ElseIf	syntax	Expected: expression
+mod	#ElseIf 1	syntax	Expected: Then
+mod	#Else	syntax	An # Else clause must be preceded by an # If
+mod	#Else x	syntax	Expected: end of statement
+mod	#Else:	syntax	Expected: end of statement
+mod	#Else If 1 Then	syntax	Expected: end of statement
+mod	#EndIf	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+mod	#End If	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+mod	#End	syntax	Expected: If
+mod	#End If x	syntax	Expected: end of statement
+mod	#End Sub	syntax	Expected: If
+mod	#if 1 then	syntax	You must terminate the # If block with an # EndIf
+mod	#IF 1 THEN	syntax	You must terminate the # If block with an # EndIf
+mod	#Elseif 1 Then	syntax	An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf
+mod	#If k Then	syntax	You must terminate the # If block with an # EndIf
+mod	#If Not k Then	syntax	You must terminate the # If block with an # EndIf
+mod	#If k = 1 And j Then	syntax	You must terminate the # If block with an # EndIf
+mod	#If True Then	syntax	You must terminate the # If block with an # EndIf
+mod	#If "a" Then	semantic	Type mismatch
+mod	#If Nothing Then	semantic	Invalid use of object
+mod	#If k Then Else	syntax	Expected: end of statement
+mod	#Foo	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+mod	#1	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+mod	#"a"	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+mod	#Const	syntax	Expected: identifier
+mod	#If	syntax	Expected: expression
+mod	#Const k = 1 _	accepted	
+open	#Const k = 1	accepted	
+open	#Const k	syntax	Expected: =
+open	#Const k =	syntax	Expected: expression
+open	#Const = 1	syntax	Expected: identifier
+open	#Const k = 1: x = 1	syntax	Expected: end of statement
+open	#Const k = 1 'c	accepted	
+open	#Const k = 1 Rem c	syntax	Expected: end of statement
+open	#Const k = x	accepted	
+open	#Const k = "s"	accepted	
+open	#Const k As Long = 1	syntax	Expected: =
+open	#Const k% = 1	accepted	
+open	#Const k = 1, j = 2	syntax	Expected: end of statement
+open	#Const Me = 1	syntax	Expected: identifier
+open	#Const Date = 1	syntax	Expected: identifier
+open	#Const k = True	accepted	
+open	#Const k = Nothing	accepted	
+open	#Const k = Null	accepted	
+open	#Const k = 1 + 1	accepted	
+open	#Const k = 1 : #Const j = 2	syntax	Expected: end of statement
+open	#If 1 Then	syntax	You must terminate the # If block with an # EndIf
+open	#If 1	syntax	Expected: Then
+open	#If Then	syntax	Expected: expression
+open	#If 1 Then: x = 1	syntax	Expected: end of statement
+open	#If 1 Then 'c	syntax	You must terminate the # If block with an # EndIf
+open	#If 1 Then Rem c	syntax	Expected: end of statement
+open	#If 1 Then x = 1	syntax	Expected: end of statement
+open	#ElseIf 1 Then	accepted	
+open	#ElseIf	syntax	Expected: expression
+open	#ElseIf 1	syntax	Expected: Then
+open	#Else	accepted	
+open	#Else x	syntax	Expected: end of statement
+open	#Else:	syntax	Expected: end of statement
+open	#Else If 1 Then	syntax	Expected: end of statement
+open	#EndIf	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+open	#End If	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+open	#End	syntax	Expected: If
+open	#End If x	syntax	Expected: end of statement
+open	#End Sub	syntax	Expected: If
+open	#if 1 then	syntax	You must terminate the # If block with an # EndIf
+open	#IF 1 THEN	syntax	You must terminate the # If block with an # EndIf
+open	#Elseif 1 Then	accepted	
+open	#If k Then	syntax	You must terminate the # If block with an # EndIf
+open	#If Not k Then	syntax	You must terminate the # If block with an # EndIf
+open	#If k = 1 And j Then	syntax	You must terminate the # If block with an # EndIf
+open	#If True Then	syntax	You must terminate the # If block with an # EndIf
+open	#If "a" Then	semantic	Type mismatch
+open	#If Nothing Then	semantic	Invalid use of object
+open	#If k Then Else	syntax	Expected: end of statement
+open	#Foo	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+open	#1	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+open	#"a"	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+open	#Const	syntax	Expected: identifier
+open	#If	syntax	Expected: expression
+open	#Const k = 1 _	syntax	You must terminate the # If block with an # EndIf
+proc	#Const k = 1	accepted	
+proc	#Const k	syntax	Syntax error
+proc	#Const k =	syntax	Syntax error
+proc	#Const = 1	syntax	Syntax error
+proc	#Const k = 1: x = 1	syntax	Syntax error
+proc	#Const k = 1 'c	accepted	
+proc	#Const k = 1 Rem c	syntax	Syntax error
+proc	#Const k = x	accepted	
+proc	#Const k = "s"	accepted	
+proc	#Const k As Long = 1	syntax	Syntax error
+proc	#Const k% = 1	accepted	
+proc	#Const k = 1, j = 2	syntax	Syntax error
+proc	#Const Me = 1	syntax	Syntax error
+proc	#Const Date = 1	syntax	Syntax error
+proc	#Const k = True	accepted	
+proc	#Const k = Nothing	accepted	
+proc	#Const k = Null	accepted	
+proc	#Const k = 1 + 1	accepted	
+proc	#Const k = 1 : #Const j = 2	syntax	Syntax error
+proc	#If 1 Then	syntax	You must terminate the # If block with an # EndIf
+proc	#If 1	syntax	Syntax error
+proc	#If Then	syntax	Syntax error
+proc	#If 1 Then: x = 1	syntax	Syntax error
+proc	#If 1 Then 'c	syntax	You must terminate the # If block with an # EndIf
+proc	#If 1 Then Rem c	syntax	Syntax error
+proc	#If 1 Then x = 1	syntax	Syntax error
+proc	#ElseIf 1 Then	accepted	
+proc	#ElseIf	syntax	Syntax error
+proc	#ElseIf 1	syntax	Syntax error
+proc	#Else	accepted	
+proc	#Else x	syntax	Syntax error
+proc	#Else:	syntax	Syntax error
+proc	#Else If 1 Then	syntax	Syntax error
+proc	#EndIf	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+proc	#End If	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+proc	#End	syntax	Syntax error
+proc	#End If x	syntax	Syntax error
+proc	#End Sub	syntax	Syntax error
+proc	#if 1 then	syntax	You must terminate the # If block with an # EndIf
+proc	#IF 1 THEN	syntax	You must terminate the # If block with an # EndIf
+proc	#Elseif 1 Then	accepted	
+proc	#If k Then	syntax	You must terminate the # If block with an # EndIf
+proc	#If Not k Then	syntax	You must terminate the # If block with an # EndIf
+proc	#If k = 1 And j Then	syntax	You must terminate the # If block with an # EndIf
+proc	#If True Then	syntax	You must terminate the # If block with an # EndIf
+proc	#If "a" Then	semantic	Type mismatch
+proc	#If Nothing Then	semantic	Invalid use of object
+proc	#If k Then Else	syntax	Syntax error
+proc	#Foo	syntax	Syntax error
+proc	#1	syntax	Syntax error
+proc	#"a"	syntax	Syntax error
+proc	#Const	syntax	Syntax error
+proc	#If	syntax	Syntax error
+proc	#Const k = 1 _	syntax	You must terminate the # If block with an # EndIf
+els	#Const k = 1	accepted	
+els	#Const k	syntax	Expected: =
+els	#Const k =	syntax	Expected: expression
+els	#Const = 1	syntax	Expected: identifier
+els	#Const k = 1: x = 1	syntax	Expected: end of statement
+els	#Const k = 1 'c	accepted	
+els	#Const k = 1 Rem c	syntax	Expected: end of statement
+els	#Const k = x	accepted	
+els	#Const k = "s"	accepted	
+els	#Const k As Long = 1	syntax	Expected: =
+els	#Const k% = 1	accepted	
+els	#Const k = 1, j = 2	syntax	Expected: end of statement
+els	#Const Me = 1	syntax	Expected: identifier
+els	#Const Date = 1	syntax	Expected: identifier
+els	#Const k = True	accepted	
+els	#Const k = Nothing	accepted	
+els	#Const k = Null	accepted	
+els	#Const k = 1 + 1	accepted	
+els	#Const k = 1 : #Const j = 2	syntax	Expected: end of statement
+els	#If 1 Then	syntax	You must terminate the # If block with an # EndIf
+els	#If 1	syntax	Expected: Then
+els	#If Then	syntax	Expected: expression
+els	#If 1 Then: x = 1	syntax	Expected: end of statement
+els	#If 1 Then 'c	syntax	You must terminate the # If block with an # EndIf
+els	#If 1 Then Rem c	syntax	Expected: end of statement
+els	#If 1 Then x = 1	syntax	Expected: end of statement
+els	#ElseIf 1 Then	syntax	An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf
+els	#ElseIf	syntax	Expected: expression
+els	#ElseIf 1	syntax	Expected: Then
+els	#Else	syntax	An # Else clause must be preceded by an # If
+els	#Else x	syntax	Expected: end of statement
+els	#Else:	syntax	Expected: end of statement
+els	#Else If 1 Then	syntax	Expected: end of statement
+els	#EndIf	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+els	#End If	syntax	An # ElseIf, # Else, or # EndIf must be preceded by an # If clause
+els	#End	syntax	Expected: If
+els	#End If x	syntax	Expected: end of statement
+els	#End Sub	syntax	Expected: If
+els	#if 1 then	syntax	You must terminate the # If block with an # EndIf
+els	#IF 1 THEN	syntax	You must terminate the # If block with an # EndIf
+els	#Elseif 1 Then	syntax	An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf
+els	#If k Then	syntax	You must terminate the # If block with an # EndIf
+els	#If Not k Then	syntax	You must terminate the # If block with an # EndIf
+els	#If k = 1 And j Then	syntax	You must terminate the # If block with an # EndIf
+els	#If True Then	syntax	You must terminate the # If block with an # EndIf
+els	#If "a" Then	semantic	Type mismatch
+els	#If Nothing Then	semantic	Invalid use of object
+els	#If k Then Else	syntax	Expected: end of statement
+els	#Foo	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+els	#1	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+els	#"a"	syntax	Expected: If or Else or ElseIf or End or EndIf or Const
+els	#Const	syntax	Expected: identifier
+els	#If	syntax	Expected: expression
+els	#Const k = 1 _	syntax	You must terminate the # If block with an # EndIf

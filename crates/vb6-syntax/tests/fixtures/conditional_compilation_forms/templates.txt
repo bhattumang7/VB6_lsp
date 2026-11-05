@@ -1,0 +1,18 @@
+# x
+=== mod bas
+{k}
+=== open bas
+#If 1 Then
+{k}
+#End If
+=== proc bas
+Sub P()
+#If 1 Then
+{k}
+#End If
+End Sub
+=== els bas
+#If 0 Then
+#Else
+{k}
+#End If
