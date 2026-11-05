@@ -321,6 +321,8 @@ pub struct Parser<'src> {
     /// Depth of the argument lists being read, and the first `ByVal` and first named
     /// argument met at depth one since the statement began.
     group_depth: u32,
+    /// The argument values written with a call-site `ByVal`.
+    pub by_val_args: Vec<NodeId>,
     /// The argument list about to be read follows another one directly (`f(1)(2)`).
     later_group: bool,
     stmt_byval: Option<Span>,
@@ -503,6 +505,7 @@ impl<'src> Parser<'src> {
             phys_line_has_token: false,
             tok_first_on_line: true,
             group_depth: 0,
+            by_val_args: Vec::new(),
             later_group: false,
             stmt_byval: None,
             stmt_named: None,
@@ -5861,7 +5864,7 @@ impl<'src> Parser<'src> {
 
     /// Reads the call-site `ByVal` that may come before an argument's value; an `AddressOf`
     /// may start the value only when no `ByVal` came before it.
-    fn argument_operand_prefix(&mut self) {
+    fn argument_operand_prefix(&mut self) -> bool {
         if self.peek().kind == TokenKind::Kw(Kw::ByVal) && self.group_depth == 1 && self.stmt_byval.is_none() {
             self.stmt_byval = Some(self.current_span());
         }
@@ -5871,8 +5874,10 @@ impl<'src> Parser<'src> {
                 let span = self.current_span();
                 self.report_expected(span, "expression");
             }
+            true
         } else {
             self.allow_address_of_here();
+            false
         }
     }
 
@@ -6027,8 +6032,12 @@ impl<'src> Parser<'src> {
                     let span = self.current_span();
                     self.report_expected(span, "expression");
                 }
-                self.argument_operand_prefix();
-                args.push(self.parse_expr(arena, 0));
+                let by_val = self.argument_operand_prefix();
+                let value = self.parse_expr(arena, 0);
+                if by_val {
+                    self.by_val_args.push(value);
+                }
+                args.push(value);
             }
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
@@ -6055,8 +6064,11 @@ impl<'src> Parser<'src> {
                     let span = self.current_span();
                     self.report_expected(span, "named argument");
                 }
-                self.argument_operand_prefix();
+                let by_val = self.argument_operand_prefix();
                 if let Some(expr) = self.try_parse_expr(arena) {
+                    if by_val {
+                        self.by_val_args.push(expr);
+                    }
                     expr
                 } else {
                     break;
@@ -6106,8 +6118,11 @@ impl<'src> Parser<'src> {
         }
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
         self.advance(); // `:=`
-        self.argument_operand_prefix();
+        let by_val = self.argument_operand_prefix();
         let value = self.parse_expr(arena, 0);
+        if by_val {
+            self.by_val_args.push(value);
+        }
         let id = arena.alloc(ExprNode::NamedArg { name, value });
         self.set_span(id, name_tok.span);
         Some(id)

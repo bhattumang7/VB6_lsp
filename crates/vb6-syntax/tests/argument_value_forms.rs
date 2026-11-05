@@ -75,3 +75,27 @@ fn typeof_does_not_take_array() {
     let (_, p) = in_sub("If TypeOf o Is Object Then x = 1");
     assert_eq!(p.found, vec![]);
 }
+
+#[test]
+fn call_site_byval_is_recorded_for_the_argument() {
+    use vb6_syntax::frontend::ast::ExprArena;
+    use vb6_syntax::frontend::parser::Parser;
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    let src = "Sub S()\n T ByVal x, y\n z = F(ByVal p, q, a:=ByVal r)\nEnd Sub\n";
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    parser.parse_module(&mut arena);
+    let names: Vec<u32> = parser
+        .by_val_args
+        .iter()
+        .map(|n| match arena.get(*n) {
+            ExprNode::NameRef { sym, .. } => *sym,
+            _ => panic!("not a name"),
+        })
+        .collect();
+    drop(parser);
+    let spelled: Vec<String> = names.iter().map(|s| ctx.sym_name(*s as usize).to_string()).collect();
+    assert_eq!(spelled, vec!["x", "p", "r"]);
+}
