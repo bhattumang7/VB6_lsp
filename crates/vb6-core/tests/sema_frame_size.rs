@@ -83,3 +83,69 @@ fn the_local_that_passes_the_limit_is_the_one_reported() {
     let at = src.find("v8159 ").unwrap() as u32;
     assert_eq!(hit[0].1, at);
 }
+
+#[test]
+fn loops_with_and_select_case_take_hidden_frame_space() {
+    let long = sub(" As Long");
+    // (the lines before the locals, what closes them, most Long locals that fit)
+    let cases: [(&str, &str, usize); 16] = [
+        ("Sub Foo()\nDim i As Long\nFor i = 1 To 2\nNext i", "End Sub", 8156),
+        ("Sub Foo()\nDim i As Integer\nFor i = 1 To 2\nNext i", "End Sub", 8157),
+        ("Sub Foo()\nDim i As Double\nFor i = 1 To 2\nNext i", "End Sub", 8153),
+        ("Sub Foo()\nDim i As Single\nFor i = 1 To 2\nNext i", "End Sub", 8156),
+        ("Sub Foo()\nDim i As Currency\nFor i = 1 To 2\nNext i", "End Sub", 8153),
+        ("Sub Foo()\nDim v As Variant, c As Object\nFor Each v In c\nNext v", "End Sub", 8153),
+        ("Sub Foo()\nDim v As Object, c As Object\nFor Each v In c\nNext v", "End Sub", 8156),
+        ("Sub Foo()\nDim o As Object\nWith o\nEnd With", "End Sub", 8157),
+        ("Sub Foo()\nDim i As Long\nSelect Case i\nCase 1\nEnd Select", "End Sub", 8157),
+        ("Sub Foo()\nDim i As String\nSelect Case i\nCase \"a\"\nEnd Select", "End Sub", 8157),
+        ("Sub Foo()\nDim i As Integer\nSelect Case i\nCase 1\nEnd Select", "End Sub", 8158),
+        ("Sub Foo()\nDim i As Double\nSelect Case i\nCase 1\nEnd Select", "End Sub", 8155),
+        ("Sub Foo()\nDim i As Currency\nSelect Case i\nCase 1\nEnd Select", "End Sub", 8155),
+        ("Sub Foo()\nDim i As Long\nFor i = 1 To 2\nNext i\nFor i = 1 To 2\nNext i", "End Sub", 8154),
+        ("Sub Foo()\nDim i As Long, j As Long\nFor i = 1 To 2\nFor j = 1 To 2\nNext j\nNext i", "End Sub", 8153),
+        ("Sub Foo()\nDim o As Object\nWith o\nEnd With\nWith o\nEnd With", "End Sub", 8156),
+    ];
+    for (header, footer, fits) in cases {
+        // The locals come first, then the statements, as the measurement placed them.
+        let (decls, stmts) = match header.find("\nFor ").or_else(|| header.find("\nWith ")).or_else(|| header.find("\nSelect ")) {
+            Some(_) => {
+                let lines: Vec<&str> = header.split('\n').collect();
+                let first_stmt = lines.iter().position(|l| l.starts_with("For ") || l.starts_with("With ") || l.starts_with("Select ")).unwrap();
+                (lines[..first_stmt].join("\n"), lines[first_stmt..].join("\n"))
+            }
+            None => (header.to_string(), String::new()),
+        };
+        let run = |n: usize| {
+            let mut body = String::new();
+            for i in 0..n {
+                body.push_str(&format!("{}\n", long(i)));
+            }
+            let src = format!("{decls}\n{body}{stmts}\n{footer}\nSub Main()\nEnd Sub\n");
+            let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+            s.diagnostics(0).iter().any(|d| d.code == TOO_MANY_LOCALS)
+        };
+        assert!(!run(fits), "{header:?} x {fits}");
+        assert!(run(fits + 1), "{header:?} x {}", fits + 1);
+    }
+}
+
+fn param_array_calls(statements: usize, args: usize) -> bool {
+    // Lines of at most 100 arguments: a longer physical line is cut.
+    let lines: Vec<String> = vec!["1"; args].chunks(100).map(|c| c.join(", ")).collect();
+    let call = format!("Foo {}", lines.join(", _\n"));
+    let body = vec![call; statements].join("\n");
+    let src = format!("Sub Foo(ParamArray a())\nEnd Sub\nSub Main()\n{body}\nEnd Sub\n");
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    s.diagnostics(0).iter().any(|d| d.code == TOO_MANY_LOCALS)
+}
+
+#[test]
+fn param_array_arguments_take_sixteen_bytes_each_and_later_calls_reuse_them() {
+    assert!(!param_array_calls(1, 2039));
+    assert!(param_array_calls(1, 2040));
+    // Two calls share the same temporaries.
+    assert!(!param_array_calls(2, 1500));
+    assert!(!param_array_calls(2, 2039));
+    assert!(param_array_calls(2, 2040));
+}

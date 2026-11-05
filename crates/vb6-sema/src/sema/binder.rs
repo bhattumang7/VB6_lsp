@@ -283,6 +283,9 @@ struct Binder<'a> {
     /// The project and this module's index in it; `None` for a plain [`bind`].
     project: Option<(&'a dyn ProjectScope, usize)>,
     sem_types: HashMap<u32, SemType>,
+    /// Frame bytes the declared locals of the procedure being bound take, when all are known and
+    /// fit.
+    frame_bytes_used: Option<usize>,
     member_status: HashMap<u32, MemberStatus>,
     /// Accessor a member use needs, keyed by the `MemberAccess` / `NameRef`
     /// node: set from the enclosing statement before the node is bound.
@@ -349,6 +352,7 @@ impl<'a> Binder<'a> {
             proc_diag_mark: 0,
             project,
             sem_types: HashMap::new(),
+            frame_bytes_used: None,
             member_status: HashMap::new(),
             access_ctx: HashMap::new(),
             callable: HashMap::new(),
@@ -1035,6 +1039,7 @@ impl<'a> Binder<'a> {
         if self.project.is_some() {
             self.infer_and_rebind(proc_idx, body_id);
         }
+        self.check_hidden_slots(body_id);
     }
 
     /// Procedure-local object-type inference. For each local of type `Variant`
@@ -1300,6 +1305,7 @@ impl<'a> Binder<'a> {
     /// Reports the local whose frame bytes take the procedure's frame past its limit. A
     /// procedure with a local of unknown size is not checked.
     fn check_frame_size(&mut self, locals: &[BoundVar]) {
+        self.frame_bytes_used = None;
         let mut total = 0usize;
         for local in locals {
             let Some(bytes) = Self::frame_bytes(local) else { return };
@@ -1307,6 +1313,80 @@ impl<'a> Binder<'a> {
             if total > MAX_FRAME_BYTES {
                 self.diagnostics.push(ERR_TOO_MANY_LOCALS as u32, local.name_span);
                 return;
+            }
+        }
+        self.frame_bytes_used = Some(total);
+    }
+
+    /// The frame bytes of a loop variable or `Select Case` subject of this type, for the types
+    /// whose size is known.
+    fn scalar_frame_bytes(ty: &VbaType, loop_variable: bool) -> Option<usize> {
+        match ty {
+            VbaType::Integer => Some(2),
+            VbaType::Long | VbaType::String => Some(4),
+            VbaType::Single if loop_variable => Some(4),
+            VbaType::Double | VbaType::Currency => Some(8),
+            _ => None,
+        }
+    }
+
+    /// The hidden slots of the statements of a procedure take frame space too: a `For` two
+    /// copies of its variable's type (limit and step), a `For Each` and a `With` 4 bytes, a
+    /// `Select Case` one copy of its subject's type. The statement that passes the limit is
+    /// reported. A procedure with a statement of unknown size is not checked further.
+    fn check_hidden_slots(&mut self, body_id: NodeId) {
+        let Some(mut total) = self.frame_bytes_used else { return };
+        let mut stack = vec![body_id];
+        // Source order: a node's children are visited before its later siblings.
+        let mut order: Vec<NodeId> = Vec::new();
+        while let Some(id) = stack.pop() {
+            order.push(id);
+            let mut kids: Vec<NodeId> = Vec::new();
+            self.arena.get(id).for_each_child(&mut |c| kids.push(c));
+            stack.extend(kids.into_iter().rev());
+        }
+        // A call's `ParamArray` arguments are boxed in 16-byte temporaries, which later
+        // statements reuse: only the largest call counts.
+        let mut call_temps: (usize, Option<NodeId>) = (0, None);
+        for id in order {
+            if let ExprNode::CallStmt { callee: func, args } | ExprNode::Call { func, args } = self.arena.get(id) {
+                if let (Some(NameResolution::Proc(callee)), ExprNode::ArgList { args }) =
+                    (self.resolutions.get(&func.0), self.arena.get(*args))
+                {
+                    let params = &self.procs[*callee].params;
+                    if params.last().is_some_and(|p| p.flags.param_array) {
+                        let temps = 16 * args.len().saturating_sub(params.len() - 1);
+                        if temps > call_temps.0 {
+                            call_temps = (temps, Some(id));
+                        }
+                    }
+                }
+            }
+            let hidden = match self.arena.get(id) {
+                ExprNode::For { var, .. } => {
+                    let Some(ty) = self.types.get(&var.0) else { return };
+                    let Some(bytes) = Self::scalar_frame_bytes(ty, true) else { return };
+                    2 * bytes
+                }
+                ExprNode::ForEach { .. } | ExprNode::With { .. } => 4,
+                ExprNode::SelectCase { subject, .. } => {
+                    let Some(ty) = self.types.get(&subject.0) else { return };
+                    let Some(bytes) = Self::scalar_frame_bytes(ty, false) else { return };
+                    bytes
+                }
+                _ => continue,
+            };
+            total += hidden;
+            if total > MAX_FRAME_BYTES {
+                let span = self.spans.get(id);
+                self.diagnostics.push(ERR_TOO_MANY_LOCALS as u32, span);
+                return;
+            }
+        }
+        if let (temps, Some(call)) = call_temps {
+            if total + temps > MAX_FRAME_BYTES {
+                let span = self.spans.get(call);
+                self.diagnostics.push(ERR_TOO_MANY_LOCALS as u32, span);
             }
         }
     }
