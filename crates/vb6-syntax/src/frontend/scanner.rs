@@ -407,6 +407,20 @@ fn is_ident_continue(b: u8) -> bool {
 
 /// True if `b` can begin an identifier (or a bracketed/member name).
 #[inline]
+/// The character a source byte stands for in the Windows ANSI code page (1252): the bytes
+/// 0x80-0x9F that name no character stand for themselves.
+fn ansi_char(b: u8) -> char {
+    const HIGH: [u32; 32] = [
+        0x20AC, 0x81, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x8D, 0x017D,
+        0x8F, 0x90, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A, 0x0153, 0x9D,
+        0x017E, 0x0178,
+    ];
+    match b {
+        0x80..=0x9F => char::from_u32(HIGH[(b - 0x80) as usize]).unwrap_or(b as char),
+        _ => b as char,
+    }
+}
+
 fn is_ident_start(b: u8) -> bool {
     matches!(b, b'A'..=b'Z' | b'a'..=b'z' | b'_' | b'[' | 0x80..=0xFF)
 }
@@ -896,6 +910,17 @@ impl<'a> Scanner<'a> {
         }
     }
 
+    /// The column (from 0) the byte at `at` takes on its physical line once tabs are
+    /// expanded to stops every 8 columns.
+    fn expanded_column(&self, at: usize) -> usize {
+        let line_start = self.src[..at].iter().rposition(|b| matches!(b, b'\r' | b'\n')).map_or(0, |i| i + 1);
+        let mut column = 0;
+        for &b in &self.src[line_start..at] {
+            column += if b == b'\t' { 8 - column % 8 } else { 1 };
+        }
+        column
+    }
+
     /// Scan a string literal.
     fn scan_string(&mut self, start: usize) -> Token {
         self.tok_buf.clear();
@@ -905,6 +930,14 @@ impl<'a> Scanner<'a> {
                 // A string cut off by a NUL (the end of what is read of a long line) is not
                 // closed in time.
                 Some(0x00) => return Token::error(self.span(start)),
+                // A tab inside a string is expanded to the next tab stop (every 8 columns,
+                // counted on the expanded line).
+                Some(b'\t') => {
+                    let column = self.expanded_column(self.pos - 1);
+                    for _ in 0..(8 - column % 8) {
+                        self.tok_buf.push(' ');
+                    }
+                }
                 Some(b'\r') | Some(b'\n') => {
                     // A string stops at the end of its line. When the line ends in a
                     // continuation mark, the string stops before the blanks that lead to
@@ -929,7 +962,7 @@ impl<'a> Scanner<'a> {
                         break;
                     }
                 }
-                Some(b) => self.tok_buf.push(b as char),
+                Some(b) => self.tok_buf.push(ansi_char(b)),
             }
         }
         let s = std::mem::take(&mut self.tok_buf).into_boxed_str();
@@ -1034,7 +1067,8 @@ impl<'a> Scanner<'a> {
             Some(b'!') => {
                 self.pos += 1;
                 let span = Span { len: span.len + 1, ..span };
-                match self.tok_buf.parse::<f32>() {
+                // The text becomes a Double first, and the Double a Single.
+                match self.tok_buf.parse::<f64>().map(|d| d as f32) {
                     Ok(v) if v.is_finite() => Token::lit(TokenKind::SngLit, Lit::Single(v), span),
                     _ => self.number_error(span),
                 }
@@ -1355,10 +1389,10 @@ impl<'a> Scanner<'a> {
     /// Collect an identifier and resolve it to a keyword or user symbol.
     fn scan_ident(&mut self, first: u8, start: usize) -> Token {
         self.tok_buf.clear();
-        self.tok_buf.push(first as char);
+        self.tok_buf.push(ansi_char(first));
         while let Some(&b) = self.src.get(self.pos) {
             if !is_ident_continue(b) { break; }
-            self.tok_buf.push(b as char);
+            self.tok_buf.push(ansi_char(b));
             self.pos += 1;
         }
 
@@ -1446,7 +1480,7 @@ impl<'a> Scanner<'a> {
                     depth += 1;
                     self.tok_buf.push('[');
                 }
-                Some(b) => self.tok_buf.push(b as char),
+                Some(b) => self.tok_buf.push(ansi_char(b)),
             }
         }
         let span = self.span(start);

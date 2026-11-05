@@ -63,7 +63,7 @@ fn tab_inside_a_comment_is_comment_text() {
 }
 
 #[test]
-fn tab_inside_a_string_literal_is_kept() {
+fn tab_inside_a_string_literal_is_expanded_to_the_next_tab_stop() {
     let mut c = ctx();
     let mut arena = ExprArena::new();
     let src = "Sub T()\nsText = \"a\tb\"\nEnd Sub\n";
@@ -73,7 +73,7 @@ fn tab_inside_a_string_literal_is_kept() {
     let ExprNode::ProcDecl { body, .. } = arena.get(nodes[0]) else { panic!("expected ProcDecl") };
     let ExprNode::Block { stmts } = arena.get(*body) else { panic!("expected Block") };
     let ExprNode::Assign { value, .. } = arena.get(stmts[0]) else { panic!("expected Assign") };
-    assert!(matches!(arena.get(*value), ExprNode::Literal { lit: AstLit::Str(s) } if &**s == "a\tb"));
+    assert!(matches!(arena.get(*value), ExprNode::Literal { lit: AstLit::Str(s) } if &**s == "a      b"));
 }
 
 #[test]

@@ -214,3 +214,11 @@ fn an_exponent_mark_needs_digits() {
     assert_eq!(literal("1d2"), AstLit::Double(100.0));
     assert_eq!(literal("1E+2"), AstLit::Double(100.0));
 }
+
+#[test]
+fn a_single_literal_is_rounded_through_a_double() {
+    // Two roundings (text to Double, Double to Single) give one Single for both spellings.
+    let a = literal("0.0008833812607917935!");
+    let b = literal("0.000883381231687963!");
+    assert_eq!(a, b);
+}

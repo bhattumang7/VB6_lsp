@@ -102,3 +102,24 @@ fn names_differing_in_the_case_of_an_accented_letter_are_one_symbol() {
     assert_eq!(a, b);
     assert!(a.is_some());
 }
+
+#[test]
+fn string_bytes_are_read_in_the_ansi_code_page() {
+    use vb6_syntax::frontend::ast::{AstLit, ExprArena, ExprNode};
+    use vb6_syntax::frontend::parser::Parser;
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    let mut src = b"Sub S()\n x = \"".to_vec();
+    src.extend_from_slice(&[0x80, 0x81, 0x8E, 0x9F, 0xE9]);
+    src.extend_from_slice(b"\"\nEnd Sub\n");
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, &src);
+    let top = parser.parse_module(&mut arena);
+    assert_eq!(parser.diagnostics.items().len(), 0);
+    let ExprNode::ProcDecl { body, .. } = arena.get(top[0]) else { panic!("no procedure") };
+    let ExprNode::Block { stmts } = arena.get(*body) else { panic!("no body") };
+    let ExprNode::Assign { value, .. } = arena.get(stmts[0]) else { panic!("no assignment") };
+    let ExprNode::Literal { lit: AstLit::Str(s) } = arena.get(*value) else { panic!("no string") };
+    assert_eq!(s.chars().map(|c| c as u32).collect::<Vec<_>>(), vec![8364, 129, 381, 376, 233]);
+}
