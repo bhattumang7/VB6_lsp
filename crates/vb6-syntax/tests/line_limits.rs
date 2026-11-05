@@ -323,3 +323,27 @@ fn spc_tab_and_the_length_clause_of_open_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "Len per {per}");
     }
 }
+
+#[test]
+fn the_channel_of_print_is_an_expression_that_adds_its_own_bytes() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (channel, terms per line, most terms that fit)
+    for (channel, per, fits) in [
+        ("y", 150, 2547),
+        ("y", 170, 2548),
+        ("1 + 1", 150, 2546),
+        ("1 + 1", 170, 2547),
+        ("40000", 150, 2546),
+        ("40000", 170, 2548),
+        ("(1)", 150, 2546),
+        ("(1)", 170, 2548),
+    ] {
+        let src = |n| format!("Sub S()\nPrint #{channel}, {}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "#{channel} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "#{channel} per {per}");
+    }
+}

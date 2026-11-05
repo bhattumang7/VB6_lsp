@@ -4594,12 +4594,12 @@ impl<'src> Parser<'src> {
         if self.expect_comma() {
             self.parse_print_method_items(arena, &mut args);
         }
-        // `Print #n, expr` and `Write #n, expr` cost 6 more than an assignment of the first
-        // expression: the channel and the statement's own code.
-        let channel_is_simple =
-            matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
-        if channel_is_simple && self.output_list_too_complex(arena, &args, 6) {
-            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, first_span);
+        // `Print #n, expr` and `Write #n, expr` cost 2 more than an assignment of the first
+        // expression, and the channel's own expression.
+        if let Some(channel_size) = expression_chain_size(arena, ch, 0) {
+            if self.output_list_too_complex(arena, &args, 2 + channel_size - 6) {
+                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, first_span);
+            }
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
