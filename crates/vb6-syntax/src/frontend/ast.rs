@@ -336,8 +336,9 @@ pub enum ExprNode {
     CallStmt { callee: NodeId, args: NodeId },
     /// `Erase var1[, var2...]`
     Erase { vars: Vec<NodeId> },
-    /// `RaiseEvent name[(args)]`
-    RaiseEvent { name: u32, args: NodeId },
+    /// `RaiseEvent [qualifier.]name[(args)]`; `qualifier` is the expression before the last
+    /// member when the event is written qualified.
+    RaiseEvent { name: u32, qualifier: Option<NodeId>, args: NodeId },
     /// `Debug.Print [#channel,] [args...]`
     DebugPrint { channel: Option<NodeId>, args: Vec<NodeId> },
     /// `Debug.Assert condition`

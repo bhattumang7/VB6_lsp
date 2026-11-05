@@ -3515,18 +3515,27 @@ impl<'src> Parser<'src> {
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
         self.advance(); // consume RaiseEvent
-        let name = self.expect_decl_name();
-        let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-        let args = if self.eat(TokenKind::Kw(Kw::LParen)) {
-            let a = self.parse_arg_list(arena);
-            self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
-            a
-        } else {
-            arena.alloc(ExprNode::ArgList { args: vec![] })
+        let name_span = self.current_span();
+        // The event is a (possibly qualified) name with an optional bracketed argument list.
+        let target = self.parse_target_expr(arena);
+        let (callee, args) = match arena.get(target) {
+            ExprNode::Call { func, args } => (*func, Some(*args)),
+            _ => (target, None),
         };
+        let (nid, qualifier) = match arena.get(callee) {
+            ExprNode::NameRef { sym, .. } => (*sym, None),
+            ExprNode::MemberAccess { base, member, bang: false } => (*member, Some(*base)),
+            _ => {
+                let span = self.current_span();
+                self.report_expected(span, "end of statement");
+                self.skip_line();
+                return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+            }
+        };
+        let args = args.unwrap_or_else(|| arena.alloc(ExprNode::ArgList { args: vec![] }));
         self.end_stmt();
-        let id = arena.alloc(ExprNode::RaiseEvent { name: nid, args });
-        self.set_span(id, name.span);
+        let id = arena.alloc(ExprNode::RaiseEvent { name: nid, qualifier, args });
+        self.set_span(id, name_span);
         id
     }
 

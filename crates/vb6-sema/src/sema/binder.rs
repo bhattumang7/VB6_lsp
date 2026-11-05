@@ -1798,9 +1798,10 @@ impl<'a> Binder<'a> {
                     }
                 }
             }
-            ExprNode::RaiseEvent { name, .. } => {
+            ExprNode::RaiseEvent { name, qualifier, .. } => {
                 let lower = self.name_of(*name).to_ascii_lowercase();
-                if !self.event_names.contains(&lower) {
+                // A qualified event belongs to the qualifier, not to this module.
+                if qualifier.is_none() && !self.event_names.contains(&lower) {
                     let span = self.spans.get(id);
                     self.diagnostics.push(ERR_EVENT_NOT_FOUND as u32, span);
                 }
