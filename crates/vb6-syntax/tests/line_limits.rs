@@ -210,3 +210,31 @@ fn assignments_before_one_on_the_same_line_add_to_its_compiled_size() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before} per {per}");
     }
 }
+
+#[test]
+fn signs_not_and_brackets_cost_two_on_literals_and_like_costs_what_an_operator_does() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    // (term, operator, terms per physical line, most terms that fit)
+    for (term, op, per, fits) in [
+        ("(1)", "+", 150, 1913),
+        ("Not 1", "+", 100, 1909),
+        ("(1.5)", "+", 100, 1093),
+        ("-40000", "+", 100, 1529),
+        ("(\"a\" Like \"b\")", "&", 60, 849),
+    ] {
+        assert_eq!(parse(&chain(term, op, fits, per)).found, vec![], "{term} x {fits}");
+        let found = parse(&chain(term, op, fits + 1, per)).found;
+        assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term} x {}", fits + 1);
+    }
+}
+
+#[test]
+fn a_continuation_mark_past_the_cut_is_not_part_of_the_text() {
+    // 1023 bytes of text and then ` _`: the line is not cut and the mark joins the next line.
+    let head = "    x = 1";
+    let filler = " + 1".repeat((1023 - head.len()) / 4);
+    let line = format!("{head}{filler}");
+    let pad = " ".repeat(1023 - line.len());
+    let ok = format!("Sub S()\n{line}{pad} _\n + 1\nEnd Sub\n");
+    assert_eq!(parse(&ok).found, vec![]);
+}

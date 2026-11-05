@@ -6277,81 +6277,53 @@ fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physi
 /// `Select Case` lines, whose own code costs what an assignment's store does.
 fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize) -> Option<usize> {
     let mut total = 6 + 4 * physical_lines;
-    // Signs, `Not` and brackets are measured with names (and, for signs, Integer and Double
-    // literals) as their operands only.
-    let (mut signs, mut nots_or_brackets, mut other_literals) = (false, false, false);
+    // A sign, `Not` or bracket pair costs 2 more than what it holds, measured on names and on
+    // Integer, Long and Double literals.
+    let (mut wrapped, mut unmeasured_literal) = (false, false);
     let mut stack = vec![value];
     while let Some(id) = stack.pop() {
         match arena.get(id) {
             ExprNode::BinOp { op, lhs, rhs } => {
-                if matches!(op, BinOpKind::Like | BinOpKind::Is | BinOpKind::Not) {
+                if matches!(op, BinOpKind::Is | BinOpKind::Not) {
                     return None;
                 }
                 total += 2;
                 stack.push(*lhs);
                 stack.push(*rhs);
             }
-            ExprNode::UnOp { op: UnOpKind::Neg, operand } => {
-                signs = true;
-                total += 2;
-                stack.push(*operand);
-            }
-            ExprNode::UnOp { op: UnOpKind::Not, operand } => {
-                nots_or_brackets = true;
+            ExprNode::UnOp { op: UnOpKind::Neg | UnOpKind::Not, operand } => {
+                wrapped = true;
                 total += 2;
                 stack.push(*operand);
             }
             ExprNode::Paren { inner } => {
-                nots_or_brackets = true;
+                wrapped = true;
                 total += 2;
                 stack.push(*inner);
             }
             ExprNode::NameRef { .. } => total += 4,
             ExprNode::Literal { lit } => match lit {
                 AstLit::Int(_) => total += 4,
+                AstLit::Long(_) => total += 6,
                 AstLit::Double(_) => total += 10,
-                AstLit::Long(_) | AstLit::Single(_) => {
-                    other_literals = true;
+                AstLit::Single(_) => {
+                    unmeasured_literal = true;
                     total += 6;
                 }
                 AstLit::Currency(_) | AstLit::Date(_) => {
-                    other_literals = true;
+                    unmeasured_literal = true;
                     total += 10;
                 }
-                AstLit::Str(s) => {
-                    other_literals = true;
-                    total += 4 + s.chars().count().next_multiple_of(2);
-                }
+                AstLit::Str(s) => total += 4 + s.chars().count().next_multiple_of(2),
                 _ => return None,
             },
             _ => return None,
         }
     }
-    // `Not` and brackets were measured on names only, signs on names and Integer and Double
-    // literals only.
-    let literal_operands = other_literals || total_has_literals(arena, value);
-    if (nots_or_brackets && literal_operands) || (signs && other_literals) {
+    if wrapped && unmeasured_literal {
         return None;
     }
     Some(total)
-}
-
-/// Whether the expression has a literal operand.
-fn total_has_literals(arena: &ExprArena, value: NodeId) -> bool {
-    let mut stack = vec![value];
-    while let Some(id) = stack.pop() {
-        match arena.get(id) {
-            ExprNode::Literal { .. } => return true,
-            ExprNode::BinOp { lhs, rhs, .. } => {
-                stack.push(*lhs);
-                stack.push(*rhs);
-            }
-            ExprNode::UnOp { operand, .. } => stack.push(*operand),
-            ExprNode::Paren { inner } => stack.push(*inner),
-            _ => {}
-        }
-    }
-    false
 }
 /// Most `#If` blocks that may be open at once.
 const MAX_CC_NESTING: usize = 4079;

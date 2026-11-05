@@ -1705,12 +1705,31 @@ const MAX_LINE_LEN: usize = 1023;
 /// the line there. Offsets are unchanged.
 fn cut_long_lines(src: &[u8]) -> std::borrow::Cow<'_, [u8]> {
     let mut out: Option<Vec<u8>> = None;
+    let blank = |b: u8| matches!(b, b' ' | b'\t');
     let mut line_start = 0;
-    for (i, b) in src.iter().enumerate() {
-        if matches!(b, b'\r' | b'\n') {
-            line_start = i + 1;
-        } else if i - line_start == MAX_LINE_LEN {
-            out.get_or_insert_with(|| src.to_vec())[i] = 0;
+    while line_start < src.len() {
+        let mut line_end = line_start;
+        while line_end < src.len() && !matches!(src[line_end], b'\r' | b'\n') {
+            line_end += 1;
+        }
+        // The text of the line is what comes before a continuation mark and the blanks around it.
+        let mut text_end = line_end;
+        while text_end > line_start && blank(src[text_end - 1]) {
+            text_end -= 1;
+        }
+        if text_end >= line_start + 2 && src[text_end - 1] == b'_' && blank(src[text_end - 2]) {
+            text_end -= 1;
+            while text_end > line_start && blank(src[text_end - 1]) {
+                text_end -= 1;
+            }
+        }
+        if text_end - line_start > MAX_LINE_LEN {
+            out.get_or_insert_with(|| src.to_vec())[line_start + MAX_LINE_LEN] = 0;
+        }
+        // Past the line end: a CR LF pair is one break.
+        line_start = line_end + 1;
+        if line_end + 1 < src.len() && src[line_end] == b'\r' && src[line_end + 1] == b'\n' {
+            line_start += 1;
         }
     }
     match out {
