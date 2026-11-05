@@ -6198,56 +6198,78 @@ const MAX_IDENTIFIER_LEN: usize = 255;
 /// Most bytes of compiled code one logical line may hold.
 const MAX_LINE_CODE_SIZE: usize = 0x3c00;
 
-/// The compiled size of `target = a + b + ...` (or `&`) when every operand is a literal of
-/// one kind or every operand is a plain name, as the line's compiled code counts it: the
-/// store 6, each operand its load (a name or Integer literal 4, a Long or Single literal 6,
-/// a Double, Currency or Date literal 10, a string 4 plus its length rounded up to even),
-/// each operator 2, and 4 for each physical line. `None` for any other shape: only the
-/// shapes whose size is known exactly are measured, so a size is never overstated.
+/// The compiled size of `target = <expression>` when the expression is built from operands
+/// of one kind and one binary operator, as the line's compiled code counts it: the store 6,
+/// each operand its load (a name or Integer literal 4, a Long or Single literal 6, a Double,
+/// Currency or Date literal 10, a string 4 plus its length rounded up to even), each binary
+/// operator, sign change, `Not` and bracket pair 2, and 4 for each physical line. The operands
+/// are all literals of one kind or all plain names; a sign change is measured on Integer and
+/// Double literals and on names, `Not` and brackets on names. `None` for any other shape: only
+/// the shapes whose size is known exactly are measured, so a size is never overstated.
 fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physical_lines: usize) -> Option<usize> {
     if !matches!(arena.get(target), ExprNode::NameRef { .. }) {
         return None;
     }
     let mut total = 6 + 4 * physical_lines;
-    let mut kind: Option<std::mem::Discriminant<AstLit>> = None;
+    let mut lit_kind: Option<std::mem::Discriminant<AstLit>> = None;
+    let mut lit_is_int_or_double = true;
     let mut names = false;
-    let mut node = value;
-    let mut leaf = |arena: &ExprArena, id: NodeId, total: &mut usize| -> Option<()> {
-        let size = match arena.get(id) {
+    let mut op: Option<BinOpKind> = None;
+    let (mut signs, mut nots, mut parens) = (0usize, 0usize, 0usize);
+    let mut stack = vec![value];
+    while let Some(id) = stack.pop() {
+        match arena.get(id) {
+            ExprNode::BinOp { op: this, lhs, rhs } => {
+                if matches!(this, BinOpKind::Like | BinOpKind::Is | BinOpKind::Not) || op.is_some_and(|k| k != *this) {
+                    return None;
+                }
+                op = Some(*this);
+                total += 2;
+                stack.push(*lhs);
+                stack.push(*rhs);
+            }
+            ExprNode::UnOp { op: UnOpKind::Neg, operand } => {
+                signs += 1;
+                total += 2;
+                stack.push(*operand);
+            }
+            ExprNode::UnOp { op: UnOpKind::Not, operand } => {
+                nots += 1;
+                total += 2;
+                stack.push(*operand);
+            }
+            ExprNode::Paren { inner } => {
+                parens += 1;
+                total += 2;
+                stack.push(*inner);
+            }
             ExprNode::NameRef { .. } => {
-                if kind.is_some() { return None; }
+                if lit_kind.is_some() { return None; }
                 names = true;
-                4
+                total += 4;
             }
             ExprNode::Literal { lit } => {
                 let d = std::mem::discriminant(lit);
-                if names || kind.is_some_and(|k| k != d) { return None; }
-                kind = Some(d);
-                match lit {
+                if names || lit_kind.is_some_and(|k| k != d) { return None; }
+                lit_kind = Some(d);
+                lit_is_int_or_double = matches!(lit, AstLit::Int(_) | AstLit::Double(_));
+                total += match lit {
                     AstLit::Int(_) => 4,
                     AstLit::Long(_) | AstLit::Single(_) => 6,
                     AstLit::Double(_) | AstLit::Currency(_) | AstLit::Date(_) => 10,
                     AstLit::Str(s) => 4 + s.chars().count().next_multiple_of(2),
                     _ => return None,
-                }
+                };
             }
             _ => return None,
-        };
-        *total += size;
-        Some(())
-    };
-    let mut op_kind: Option<BinOpKind> = None;
-    while let ExprNode::BinOp { op, lhs, rhs } = arena.get(node) {
-        if !matches!(op, BinOpKind::Add | BinOpKind::Cat) || op_kind.is_some_and(|k| k != *op) {
-            return None;
         }
-        op_kind = Some(*op);
-        leaf(arena, *rhs, &mut total)?;
-        total += 2;
-        node = *lhs;
     }
-    op_kind?;
-    leaf(arena, node, &mut total)?;
+    if (nots > 0 || parens > 0) && !names {
+        return None;
+    }
+    if signs > 0 && !names && !lit_is_int_or_double {
+        return None;
+    }
     Some(total)
 }
 /// Most `#If` blocks that may be open at once.

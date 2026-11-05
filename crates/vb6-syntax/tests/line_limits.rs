@@ -90,3 +90,28 @@ fn a_statement_whose_compiled_line_passes_15360_bytes_is_too_complex() {
         assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term} x {}", fits + 1);
     }
 }
+
+#[test]
+fn the_size_rule_holds_for_every_binary_operator_sign_not_and_brackets() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    // (term, operator, terms per physical line, most terms that fit)
+    let mut cases: Vec<(&str, &str, usize, usize)> = Vec::new();
+    for op in ["-", "*", "/", "\\", "Or", "^", "=", "<"] {
+        cases.push(("1", op, 200, 2550));
+    }
+    for op in ["Mod", "And", "Xor", "Eqv", "Imp", ">=", "<>", ">", "<="] {
+        cases.push(("1", op, 150, 2548));
+    }
+    cases.extend([
+        ("-1", "+", 150, 1913),
+        ("-1.5", "+", 120, 1094),
+        ("-y", "+", 100, 1909),
+        ("Not y", "+", 80, 1907),
+        ("(y)", "+", 150, 1913),
+    ]);
+    for (term, op, per, fits) in cases {
+        assert_eq!(parse(&chain(term, op, fits, per)).found, vec![], "{term} {op} x {fits}");
+        let found = parse(&chain(term, op, fits + 1, per)).found;
+        assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term} {op} x {}", fits + 1);
+    }
+}
