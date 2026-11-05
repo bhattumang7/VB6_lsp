@@ -292,9 +292,11 @@ pub enum ExprNode {
     /// `Do [While/Until cond] ... Loop [While/Until cond]`
     Do { kind: DoKind, cond: Option<NodeId>, body: NodeId },
     /// `For var = start To end [Step step] ... Next`
-    For { var: NodeId, start: NodeId, end: NodeId, step: Option<NodeId>, body: NodeId },
+    /// `next_var` is the variable written after the `Next` that closes this loop.
+    For { var: NodeId, start: NodeId, end: NodeId, step: Option<NodeId>, body: NodeId, next_var: Option<NodeId> },
     /// `For Each var In collection ... Next`
-    ForEach { var: NodeId, collection: NodeId, body: NodeId },
+    /// `next_var` is the variable written after the `Next` that closes this loop.
+    ForEach { var: NodeId, collection: NodeId, body: NodeId, next_var: Option<NodeId> },
     /// `With obj ... End With`
     With { obj: NodeId, body: NodeId },
     /// `Select Case subject ... End Select`; `cases` = Vec of CaseBlock/CaseElse nodes.

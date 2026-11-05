@@ -237,6 +237,9 @@ pub struct Parser<'src> {
     /// A token other than a line end has been read on the current logical line: a
     /// `Name:` is a line label only as the first thing on its line.
     line_has_content: bool,
+    /// Line ends read so far: a block opener inside a single-line `If` must be closed
+    /// before the line ends.
+    eols_read: u32,
     /// A statement-separating colon has been read on the current logical line (the colon
     /// of a line label or of a line number does not count): a `Rem` then ends a statement.
     colon_on_line: bool,
@@ -274,7 +277,7 @@ pub struct Parser<'src> {
     block_error_reported: bool,
     /// Control-variable names of a `Next a, b, …` still to be matched by the
     /// enclosing `For` blocks, with the span of each name.
-    next_carry: Vec<(Option<u32>, Span)>,
+    next_carry: Vec<(Option<u32>, Span, NodeId)>,
     /// A variable named `Error` is declared at module level / in the current
     /// procedure (parameters included). It shadows the `Error` statement, so a
     /// line that starts with `Error` is then an ordinary target expression.
@@ -430,6 +433,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             line_has_content: false,
+            eols_read: 0,
             colon_on_line: false,
             module_decl_seen: false,
             static_prefix: false,
@@ -508,6 +512,7 @@ impl<'src> Parser<'src> {
             TokenKind::Eol => {
                 self.after_colon = false;
                 self.colon_on_line = false;
+                self.eols_read += 1;
             }
             _ => {}
         }
@@ -1002,10 +1007,9 @@ impl<'src> Parser<'src> {
     fn end_stmt(&mut self) {
         if self.peek().is_stmt_end() || (self.rem_ends_statement() && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
             self.advance();
-        } else if !matches!(
-            self.peek().kind,
-            TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)
-        ) {
+        } else if !(self.peek().kind == TokenKind::Kw(Kw::Colon)
+            || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Else)))
+        {
             let span = self.current_span();
             self.diagnostics.push_labeled(0x9c6f, span, "end of statement");
             self.skip_line();
@@ -2726,9 +2730,9 @@ impl<'src> Parser<'src> {
         self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
-        self.finish_next(arena);
+        let next_var = self.finish_next(arena);
         self.blocks.pop();
-        arena.alloc(ExprNode::For { var, start, end, step, body })
+        arena.alloc(ExprNode::For { var, start, end, step, body, next_var })
     }
 
     fn parse_for_each_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
@@ -2744,9 +2748,9 @@ impl<'src> Parser<'src> {
         self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
-        self.finish_next(arena);
+        let next_var = self.finish_next(arena);
         self.blocks.pop();
-        arena.alloc(ExprNode::ForEach { var, collection, body })
+        arena.alloc(ExprNode::ForEach { var, collection, body, next_var })
     }
 
     /// The symbol of a `For` control variable written as a plain name; reports
@@ -2762,18 +2766,18 @@ impl<'src> Parser<'src> {
 
     /// End of a `For` body: `Next [var [, var]…]`, or a variable carried over
     /// from an inner `Next a, b`. Names are matched innermost loop first.
-    fn finish_next(&mut self, arena: &mut ExprArena) {
+    fn finish_next(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
         if !self.next_carry.is_empty() {
-            let (name, span) = self.next_carry.remove(0);
+            let (name, span, node) = self.next_carry.remove(0);
             self.check_next_variable(name, span);
-            return;
+            return Some(node);
         }
         if self.peek().kind != TokenKind::Kw(Kw::Next) {
             self.report_unclosed(ERR_FOR_WITHOUT_NEXT);
-            return;
+            return None;
         }
         self.advance(); // Next
-        let mut names: Vec<(Option<u32>, Span)> = Vec::new();
+        let mut names: Vec<(Option<u32>, Span, NodeId)> = Vec::new();
         while !self.peek().is_stmt_end() {
             if matches!(self.peek().kind, TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)) {
                 break;
@@ -2785,7 +2789,7 @@ impl<'src> Parser<'src> {
                 ExprNode::NameRef { sym, .. } => Some(*sym),
                 _ => None,
             };
-            names.push((name, span));
+            names.push((name, span, var));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             if self.peek().is_stmt_end() {
                 // A comma needs another variable after it.
@@ -2803,16 +2807,19 @@ impl<'src> Parser<'src> {
         // `For` blocks are directly nested.
         let directly_nested = self.blocks.iter().rev().take_while(|b| matches!(b, Block::For(_))).count();
         let mut names = names.into_iter();
-        if let Some((name, span)) = names.next() {
+        let mut mine = None;
+        if let Some((name, span, node)) = names.next() {
             self.check_next_variable(name, span);
+            mine = Some(node);
         }
-        for (i, (name, span)) in names.enumerate() {
+        for (i, (name, span, node)) in names.enumerate() {
             if i + 1 < directly_nested {
-                self.next_carry.push((name, span));
+                self.next_carry.push((name, span, node));
             } else {
                 self.diagnostics.push(ERR_NEXT_WITHOUT_FOR, span);
             }
         }
+        mine
     }
 
     /// A name after `Next` must be the control variable of the loop it closes.
@@ -2939,6 +2946,11 @@ impl<'src> Parser<'src> {
         if not_first_on_line {
             self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
         }
+        if self.in_inline_if {
+            // A block `If` cannot be opened from inside a single-line `If`.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        }
         self.end_stmt();
         self.blocks.push(Block::If);
         let then_body = self.parse_block(arena);
@@ -2979,8 +2991,22 @@ impl<'src> Parser<'src> {
             {
                 break;
             }
+            let opener = self.peek().kind.clone();
+            let opener_span = self.current_span();
+            let eols_before = self.eols_read;
             if let Some(n) = self.parse_stmt(arena) {
                 stmts.push(n);
+            }
+            // A loop, `With` or `Select Case` opened here is closed when the line ends, so
+            // its terminator on a later line has nothing to close.
+            if self.eols_read > eols_before + 1
+                && matches!(
+                    opener,
+                    TokenKind::Kw(Kw::For) | TokenKind::Kw(Kw::Do) | TokenKind::Kw(Kw::While)
+                        | TokenKind::Kw(Kw::With) | TokenKind::Kw(Kw::Select)
+                )
+            {
+                self.diagnostics.push(ERR_END_IF_WITHOUT_BLOCK_IF, opener_span);
             }
             if self.last_was_eol {
                 break;

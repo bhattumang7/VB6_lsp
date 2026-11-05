@@ -108,7 +108,7 @@ pub(super) fn lower_stmt(
             let (kind, cond_id, body_id) = (*kind, *cond, *body);
             lower_do(ctx, kind, cond_id, body_id, expr_arena, out)
         }
-        ExprNode::For { var, start, end, step, body } => {
+        ExprNode::For { var, start, end, step, body, .. } => {
             let (var_id, start_id, end_id, step_id, body_id) =
                 (*var, *start, *end, *step, *body);
             lower_for(ctx, var_id, start_id, end_id, step_id, body_id, expr_arena, out)
