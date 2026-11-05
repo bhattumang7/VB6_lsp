@@ -45,6 +45,10 @@ pub mod cost {
     pub const MISSING_RECORD: usize = 2;
     /// `ReDim a(n)` over an assignment of the bound: the array name and the statement's code.
     pub const REDIM: usize = 8;
+    /// `Lock #n, from` and `Unlock #n, from` over an assignment of `from`, besides the channel.
+    pub const LOCK: usize = 2;
+    /// `Width #n, w` over an assignment of `w`, besides the channel.
+    pub const WIDTH: usize = 4;
     /// A name or Integer literal operand.
     pub const NAME_OR_INTEGER: usize = 4;
 }

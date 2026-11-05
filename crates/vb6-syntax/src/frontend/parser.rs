@@ -1880,9 +1880,11 @@ impl<'src> Parser<'src> {
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
             let val = self.parse_expr(arena, 0);
-            // `Seek #n, expr` costs the channel's expression over an assignment of `expr`.
-            if kind == FileIoKind::Seek {
-                let parts = line_size::expression_part(arena, ch).zip(line_size::expression_part(arena, val)).map(|(a, b)| a + b);
+            // `Seek #n, expr` costs the channel's expression over an assignment of `expr`; `Width`
+            // costs 4 more.
+            if matches!(kind, FileIoKind::Seek | FileIoKind::Width) {
+                let extra = if kind == FileIoKind::Width { cost::WIDTH } else { 0 };
+                let parts = line_size::expression_part(arena, ch).zip(line_size::expression_part(arena, val)).map(|(a, b)| a + b + extra);
                 self.check_parts_size(parts, t.span);
             }
             self.end_stmt();
@@ -1962,10 +1964,14 @@ impl<'src> Parser<'src> {
     /// `LSet`/`RSet target = expr` — range-copy assignment preserving justification.
     fn parse_range_assign_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let right_justify = matches!(self.peek().kind, TokenKind::Kw(Kw::RSet));
+        let set_span = self.current_span();
         self.advance();
         let target = self.parse_target_expr(arena);
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
+        // `LSet`/`RSet target = v` costs its target and value, and nothing more than a store.
+        let parts = line_size::expression_part(arena, target).zip(line_size::expression_part(arena, value)).map(|(a, b)| a + b);
+        self.check_parts_size(parts, set_span);
         self.end_stmt();
         arena.alloc(ExprNode::RangeAssign { right_justify, target, value })
     }
@@ -4755,6 +4761,7 @@ impl<'src> Parser<'src> {
 
     /// `Lock #filenum [, from [To to]]` or `Unlock ...`.
     fn parse_file_lock_after_keyword(&mut self, arena: &mut ExprArena, kind: FileIoKind) -> NodeId {
+        let lock_span = self.current_span();
         self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
@@ -4770,6 +4777,14 @@ impl<'src> Parser<'src> {
                     args.push(self.parse_expr(arena, 0));
                 }
             }
+        }
+        // `Lock #n, from` and `Unlock #n, from` cost the channel's expression and 2 over an
+        // assignment of `from`.
+        if let [from] = args.as_slice() {
+            let parts = line_size::expression_part(arena, ch)
+                .zip(line_size::expression_part(arena, *from))
+                .map(|(channel, from)| cost::LOCK + channel + from);
+            self.check_parts_size(parts, lock_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })

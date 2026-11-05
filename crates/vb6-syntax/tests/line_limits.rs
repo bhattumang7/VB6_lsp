@@ -467,3 +467,28 @@ fn every_mid_spelling_and_put_or_get_with_a_record_follow_the_size_rule() {
         }
     }
 }
+
+#[test]
+fn lset_rset_width_lock_and_unlock_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (statement before the expression, terms per line, most terms that fit)
+    for (before, per, fits) in [
+        ("LSet s = ", 120, 2544),
+        ("LSet s = ", 165, 2548),
+        ("RSet s = ", 120, 2544),
+        ("Width #1, ", 120, 2543),
+        ("Width #1, ", 150, 2546),
+        ("Width #1, ", 165, 2547),
+        ("Lock #1, ", 120, 2543),
+        ("Lock #1, ", 150, 2547),
+        ("Unlock #1, ", 150, 2547),
+    ] {
+        let src = |n| format!("Sub S()\n{before}{}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{before:?} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
+    }
+}
