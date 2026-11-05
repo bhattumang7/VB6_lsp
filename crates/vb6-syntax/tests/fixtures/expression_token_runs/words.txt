@@ -1,0 +1,5450 @@
+1
+a
+"s"
+(
+)
+,
++
+-
+*
+/
+\
+^
+&
+=
+<>
+<
+>
+<=
+>=
+And
+Or
+Not
+Xor
+Mod
+Like
+Is
+TypeOf
+.
+!
+New
+AddressOf
+ByVal
+Nothing
+x(1)
+Chr(1)
+#1/1/2000#
+&H1
+1.5
+[a b]
+Me
+True
+Empty
+Null
+:=
+To
+As
+Step
+Eqv
+Imp
+1 1
+1 a
+1 "s"
+1 (
+1 )
+1 ,
+1 +
+1 -
+1 *
+1 /
+1 \
+1 ^
+1 &
+1 =
+1 <>
+1 <
+1 >
+1 <=
+1 >=
+1 And
+1 Or
+1 Not
+1 Xor
+1 Mod
+1 Like
+1 Is
+1 TypeOf
+1 .
+1 !
+1 New
+1 AddressOf
+1 ByVal
+1 Nothing
+1 x(1)
+1 Chr(1)
+1 #1/1/2000#
+1 &H1
+1 1.5
+1 [a b]
+1 Me
+1 True
+1 Empty
+1 Null
+1 :=
+1 To
+1 As
+1 Step
+1 Eqv
+1 Imp
+a 1
+a a
+a "s"
+a (
+a )
+a ,
+a +
+a -
+a *
+a /
+a \
+a ^
+a &
+a =
+a <>
+a <
+a >
+a <=
+a >=
+a And
+a Or
+a Not
+a Xor
+a Mod
+a Like
+a Is
+a TypeOf
+a .
+a !
+a New
+a AddressOf
+a ByVal
+a Nothing
+a x(1)
+a Chr(1)
+a #1/1/2000#
+a &H1
+a 1.5
+a [a b]
+a Me
+a True
+a Empty
+a Null
+a :=
+a To
+a As
+a Step
+a Eqv
+a Imp
+"s" 1
+"s" a
+"s" "s"
+"s" (
+"s" )
+"s" ,
+"s" +
+"s" -
+"s" *
+"s" /
+"s" \
+"s" ^
+"s" &
+"s" =
+"s" <>
+"s" <
+"s" >
+"s" <=
+"s" >=
+"s" And
+"s" Or
+"s" Not
+"s" Xor
+"s" Mod
+"s" Like
+"s" Is
+"s" TypeOf
+"s" .
+"s" !
+"s" New
+"s" AddressOf
+"s" ByVal
+"s" Nothing
+"s" x(1)
+"s" Chr(1)
+"s" #1/1/2000#
+"s" &H1
+"s" 1.5
+"s" [a b]
+"s" Me
+"s" True
+"s" Empty
+"s" Null
+"s" :=
+"s" To
+"s" As
+"s" Step
+"s" Eqv
+"s" Imp
+( 1
+( a
+( "s"
+( (
+( )
+( ,
+( +
+( -
+( *
+( /
+( \
+( ^
+( &
+( =
+( <>
+( <
+( >
+( <=
+( >=
+( And
+( Or
+( Not
+( Xor
+( Mod
+( Like
+( Is
+( TypeOf
+( .
+( !
+( New
+( AddressOf
+( ByVal
+( Nothing
+( x(1)
+( Chr(1)
+( #1/1/2000#
+( &H1
+( 1.5
+( [a b]
+( Me
+( True
+( Empty
+( Null
+( :=
+( To
+( As
+( Step
+( Eqv
+( Imp
+) 1
+) a
+) "s"
+) (
+) )
+) ,
+) +
+) -
+) *
+) /
+) \
+) ^
+) &
+) =
+) <>
+) <
+) >
+) <=
+) >=
+) And
+) Or
+) Not
+) Xor
+) Mod
+) Like
+) Is
+) TypeOf
+) .
+) !
+) New
+) AddressOf
+) ByVal
+) Nothing
+) x(1)
+) Chr(1)
+) #1/1/2000#
+) &H1
+) 1.5
+) [a b]
+) Me
+) True
+) Empty
+) Null
+) :=
+) To
+) As
+) Step
+) Eqv
+) Imp
+, 1
+, a
+, "s"
+, (
+, )
+, ,
+, +
+, -
+, *
+, /
+, \
+, ^
+, &
+, =
+, <>
+, <
+, >
+, <=
+, >=
+, And
+, Or
+, Not
+, Xor
+, Mod
+, Like
+, Is
+, TypeOf
+, .
+, !
+, New
+, AddressOf
+, ByVal
+, Nothing
+, x(1)
+, Chr(1)
+, #1/1/2000#
+, &H1
+, 1.5
+, [a b]
+, Me
+, True
+, Empty
+, Null
+, :=
+, To
+, As
+, Step
+, Eqv
+, Imp
++ 1
++ a
++ "s"
++ (
++ )
++ ,
++ +
++ -
++ *
++ /
++ \
++ ^
++ &
++ =
++ <>
++ <
++ >
++ <=
++ >=
++ And
++ Or
++ Not
++ Xor
++ Mod
++ Like
++ Is
++ TypeOf
++ .
++ !
++ New
++ AddressOf
++ ByVal
++ Nothing
++ x(1)
++ Chr(1)
++ #1/1/2000#
++ &H1
++ 1.5
++ [a b]
++ Me
++ True
++ Empty
++ Null
++ :=
++ To
++ As
++ Step
++ Eqv
++ Imp
+- 1
+- a
+- "s"
+- (
+- )
+- ,
+- +
+- -
+- *
+- /
+- \
+- ^
+- &
+- =
+- <>
+- <
+- >
+- <=
+- >=
+- And
+- Or
+- Not
+- Xor
+- Mod
+- Like
+- Is
+- TypeOf
+- .
+- !
+- New
+- AddressOf
+- ByVal
+- Nothing
+- x(1)
+- Chr(1)
+- #1/1/2000#
+- &H1
+- 1.5
+- [a b]
+- Me
+- True
+- Empty
+- Null
+- :=
+- To
+- As
+- Step
+- Eqv
+- Imp
+* 1
+* a
+* "s"
+* (
+* )
+* ,
+* +
+* -
+* *
+* /
+* \
+* ^
+* &
+* =
+* <>
+* <
+* >
+* <=
+* >=
+* And
+* Or
+* Not
+* Xor
+* Mod
+* Like
+* Is
+* TypeOf
+* .
+* !
+* New
+* AddressOf
+* ByVal
+* Nothing
+* x(1)
+* Chr(1)
+* #1/1/2000#
+* &H1
+* 1.5
+* [a b]
+* Me
+* True
+* Empty
+* Null
+* :=
+* To
+* As
+* Step
+* Eqv
+* Imp
+/ 1
+/ a
+/ "s"
+/ (
+/ )
+/ ,
+/ +
+/ -
+/ *
+/ /
+/ \
+/ ^
+/ &
+/ =
+/ <>
+/ <
+/ >
+/ <=
+/ >=
+/ And
+/ Or
+/ Not
+/ Xor
+/ Mod
+/ Like
+/ Is
+/ TypeOf
+/ .
+/ !
+/ New
+/ AddressOf
+/ ByVal
+/ Nothing
+/ x(1)
+/ Chr(1)
+/ #1/1/2000#
+/ &H1
+/ 1.5
+/ [a b]
+/ Me
+/ True
+/ Empty
+/ Null
+/ :=
+/ To
+/ As
+/ Step
+/ Eqv
+/ Imp
+\ 1
+\ a
+\ "s"
+\ (
+\ )
+\ ,
+\ +
+\ -
+\ *
+\ /
+\ \
+\ ^
+\ &
+\ =
+\ <>
+\ <
+\ >
+\ <=
+\ >=
+\ And
+\ Or
+\ Not
+\ Xor
+\ Mod
+\ Like
+\ Is
+\ TypeOf
+\ .
+\ !
+\ New
+\ AddressOf
+\ ByVal
+\ Nothing
+\ x(1)
+\ Chr(1)
+\ #1/1/2000#
+\ &H1
+\ 1.5
+\ [a b]
+\ Me
+\ True
+\ Empty
+\ Null
+\ :=
+\ To
+\ As
+\ Step
+\ Eqv
+\ Imp
+^ 1
+^ a
+^ "s"
+^ (
+^ )
+^ ,
+^ +
+^ -
+^ *
+^ /
+^ \
+^ ^
+^ &
+^ =
+^ <>
+^ <
+^ >
+^ <=
+^ >=
+^ And
+^ Or
+^ Not
+^ Xor
+^ Mod
+^ Like
+^ Is
+^ TypeOf
+^ .
+^ !
+^ New
+^ AddressOf
+^ ByVal
+^ Nothing
+^ x(1)
+^ Chr(1)
+^ #1/1/2000#
+^ &H1
+^ 1.5
+^ [a b]
+^ Me
+^ True
+^ Empty
+^ Null
+^ :=
+^ To
+^ As
+^ Step
+^ Eqv
+^ Imp
+& 1
+& a
+& "s"
+& (
+& )
+& ,
+& +
+& -
+& *
+& /
+& \
+& ^
+& &
+& =
+& <>
+& <
+& >
+& <=
+& >=
+& And
+& Or
+& Not
+& Xor
+& Mod
+& Like
+& Is
+& TypeOf
+& .
+& !
+& New
+& AddressOf
+& ByVal
+& Nothing
+& x(1)
+& Chr(1)
+& #1/1/2000#
+& &H1
+& 1.5
+& [a b]
+& Me
+& True
+& Empty
+& Null
+& :=
+& To
+& As
+& Step
+& Eqv
+& Imp
+= 1
+= a
+= "s"
+= (
+= )
+= ,
+= +
+= -
+= *
+= /
+= \
+= ^
+= &
+= =
+= <>
+= <
+= >
+= <=
+= >=
+= And
+= Or
+= Not
+= Xor
+= Mod
+= Like
+= Is
+= TypeOf
+= .
+= !
+= New
+= AddressOf
+= ByVal
+= Nothing
+= x(1)
+= Chr(1)
+= #1/1/2000#
+= &H1
+= 1.5
+= [a b]
+= Me
+= True
+= Empty
+= Null
+= :=
+= To
+= As
+= Step
+= Eqv
+= Imp
+<> 1
+<> a
+<> "s"
+<> (
+<> )
+<> ,
+<> +
+<> -
+<> *
+<> /
+<> \
+<> ^
+<> &
+<> =
+<> <>
+<> <
+<> >
+<> <=
+<> >=
+<> And
+<> Or
+<> Not
+<> Xor
+<> Mod
+<> Like
+<> Is
+<> TypeOf
+<> .
+<> !
+<> New
+<> AddressOf
+<> ByVal
+<> Nothing
+<> x(1)
+<> Chr(1)
+<> #1/1/2000#
+<> &H1
+<> 1.5
+<> [a b]
+<> Me
+<> True
+<> Empty
+<> Null
+<> :=
+<> To
+<> As
+<> Step
+<> Eqv
+<> Imp
+< 1
+< a
+< "s"
+< (
+< )
+< ,
+< +
+< -
+< *
+< /
+< \
+< ^
+< &
+< =
+< <>
+< <
+< >
+< <=
+< >=
+< And
+< Or
+< Not
+< Xor
+< Mod
+< Like
+< Is
+< TypeOf
+< .
+< !
+< New
+< AddressOf
+< ByVal
+< Nothing
+< x(1)
+< Chr(1)
+< #1/1/2000#
+< &H1
+< 1.5
+< [a b]
+< Me
+< True
+< Empty
+< Null
+< :=
+< To
+< As
+< Step
+< Eqv
+< Imp
+> 1
+> a
+> "s"
+> (
+> )
+> ,
+> +
+> -
+> *
+> /
+> \
+> ^
+> &
+> =
+> <>
+> <
+> >
+> <=
+> >=
+> And
+> Or
+> Not
+> Xor
+> Mod
+> Like
+> Is
+> TypeOf
+> .
+> !
+> New
+> AddressOf
+> ByVal
+> Nothing
+> x(1)
+> Chr(1)
+> #1/1/2000#
+> &H1
+> 1.5
+> [a b]
+> Me
+> True
+> Empty
+> Null
+> :=
+> To
+> As
+> Step
+> Eqv
+> Imp
+<= 1
+<= a
+<= "s"
+<= (
+<= )
+<= ,
+<= +
+<= -
+<= *
+<= /
+<= \
+<= ^
+<= &
+<= =
+<= <>
+<= <
+<= >
+<= <=
+<= >=
+<= And
+<= Or
+<= Not
+<= Xor
+<= Mod
+<= Like
+<= Is
+<= TypeOf
+<= .
+<= !
+<= New
+<= AddressOf
+<= ByVal
+<= Nothing
+<= x(1)
+<= Chr(1)
+<= #1/1/2000#
+<= &H1
+<= 1.5
+<= [a b]
+<= Me
+<= True
+<= Empty
+<= Null
+<= :=
+<= To
+<= As
+<= Step
+<= Eqv
+<= Imp
+>= 1
+>= a
+>= "s"
+>= (
+>= )
+>= ,
+>= +
+>= -
+>= *
+>= /
+>= \
+>= ^
+>= &
+>= =
+>= <>
+>= <
+>= >
+>= <=
+>= >=
+>= And
+>= Or
+>= Not
+>= Xor
+>= Mod
+>= Like
+>= Is
+>= TypeOf
+>= .
+>= !
+>= New
+>= AddressOf
+>= ByVal
+>= Nothing
+>= x(1)
+>= Chr(1)
+>= #1/1/2000#
+>= &H1
+>= 1.5
+>= [a b]
+>= Me
+>= True
+>= Empty
+>= Null
+>= :=
+>= To
+>= As
+>= Step
+>= Eqv
+>= Imp
+And 1
+And a
+And "s"
+And (
+And )
+And ,
+And +
+And -
+And *
+And /
+And \
+And ^
+And &
+And =
+And <>
+And <
+And >
+And <=
+And >=
+And And
+And Or
+And Not
+And Xor
+And Mod
+And Like
+And Is
+And TypeOf
+And .
+And !
+And New
+And AddressOf
+And ByVal
+And Nothing
+And x(1)
+And Chr(1)
+And #1/1/2000#
+And &H1
+And 1.5
+And [a b]
+And Me
+And True
+And Empty
+And Null
+And :=
+And To
+And As
+And Step
+And Eqv
+And Imp
+Or 1
+Or a
+Or "s"
+Or (
+Or )
+Or ,
+Or +
+Or -
+Or *
+Or /
+Or \
+Or ^
+Or &
+Or =
+Or <>
+Or <
+Or >
+Or <=
+Or >=
+Or And
+Or Or
+Or Not
+Or Xor
+Or Mod
+Or Like
+Or Is
+Or TypeOf
+Or .
+Or !
+Or New
+Or AddressOf
+Or ByVal
+Or Nothing
+Or x(1)
+Or Chr(1)
+Or #1/1/2000#
+Or &H1
+Or 1.5
+Or [a b]
+Or Me
+Or True
+Or Empty
+Or Null
+Or :=
+Or To
+Or As
+Or Step
+Or Eqv
+Or Imp
+Not 1
+Not a
+Not "s"
+Not (
+Not )
+Not ,
+Not +
+Not -
+Not *
+Not /
+Not \
+Not ^
+Not &
+Not =
+Not <>
+Not <
+Not >
+Not <=
+Not >=
+Not And
+Not Or
+Not Not
+Not Xor
+Not Mod
+Not Like
+Not Is
+Not TypeOf
+Not .
+Not !
+Not New
+Not AddressOf
+Not ByVal
+Not Nothing
+Not x(1)
+Not Chr(1)
+Not #1/1/2000#
+Not &H1
+Not 1.5
+Not [a b]
+Not Me
+Not True
+Not Empty
+Not Null
+Not :=
+Not To
+Not As
+Not Step
+Not Eqv
+Not Imp
+Xor 1
+Xor a
+Xor "s"
+Xor (
+Xor )
+Xor ,
+Xor +
+Xor -
+Xor *
+Xor /
+Xor \
+Xor ^
+Xor &
+Xor =
+Xor <>
+Xor <
+Xor >
+Xor <=
+Xor >=
+Xor And
+Xor Or
+Xor Not
+Xor Xor
+Xor Mod
+Xor Like
+Xor Is
+Xor TypeOf
+Xor .
+Xor !
+Xor New
+Xor AddressOf
+Xor ByVal
+Xor Nothing
+Xor x(1)
+Xor Chr(1)
+Xor #1/1/2000#
+Xor &H1
+Xor 1.5
+Xor [a b]
+Xor Me
+Xor True
+Xor Empty
+Xor Null
+Xor :=
+Xor To
+Xor As
+Xor Step
+Xor Eqv
+Xor Imp
+Mod 1
+Mod a
+Mod "s"
+Mod (
+Mod )
+Mod ,
+Mod +
+Mod -
+Mod *
+Mod /
+Mod \
+Mod ^
+Mod &
+Mod =
+Mod <>
+Mod <
+Mod >
+Mod <=
+Mod >=
+Mod And
+Mod Or
+Mod Not
+Mod Xor
+Mod Mod
+Mod Like
+Mod Is
+Mod TypeOf
+Mod .
+Mod !
+Mod New
+Mod AddressOf
+Mod ByVal
+Mod Nothing
+Mod x(1)
+Mod Chr(1)
+Mod #1/1/2000#
+Mod &H1
+Mod 1.5
+Mod [a b]
+Mod Me
+Mod True
+Mod Empty
+Mod Null
+Mod :=
+Mod To
+Mod As
+Mod Step
+Mod Eqv
+Mod Imp
+Like 1
+Like a
+Like "s"
+Like (
+Like )
+Like ,
+Like +
+Like -
+Like *
+Like /
+Like \
+Like ^
+Like &
+Like =
+Like <>
+Like <
+Like >
+Like <=
+Like >=
+Like And
+Like Or
+Like Not
+Like Xor
+Like Mod
+Like Like
+Like Is
+Like TypeOf
+Like .
+Like !
+Like New
+Like AddressOf
+Like ByVal
+Like Nothing
+Like x(1)
+Like Chr(1)
+Like #1/1/2000#
+Like &H1
+Like 1.5
+Like [a b]
+Like Me
+Like True
+Like Empty
+Like Null
+Like :=
+Like To
+Like As
+Like Step
+Like Eqv
+Like Imp
+Is 1
+Is a
+Is "s"
+Is (
+Is )
+Is ,
+Is +
+Is -
+Is *
+Is /
+Is \
+Is ^
+Is &
+Is =
+Is <>
+Is <
+Is >
+Is <=
+Is >=
+Is And
+Is Or
+Is Not
+Is Xor
+Is Mod
+Is Like
+Is Is
+Is TypeOf
+Is .
+Is !
+Is New
+Is AddressOf
+Is ByVal
+Is Nothing
+Is x(1)
+Is Chr(1)
+Is #1/1/2000#
+Is &H1
+Is 1.5
+Is [a b]
+Is Me
+Is True
+Is Empty
+Is Null
+Is :=
+Is To
+Is As
+Is Step
+Is Eqv
+Is Imp
+TypeOf 1
+TypeOf a
+TypeOf "s"
+TypeOf (
+TypeOf )
+TypeOf ,
+TypeOf +
+TypeOf -
+TypeOf *
+TypeOf /
+TypeOf \
+TypeOf ^
+TypeOf &
+TypeOf =
+TypeOf <>
+TypeOf <
+TypeOf >
+TypeOf <=
+TypeOf >=
+TypeOf And
+TypeOf Or
+TypeOf Not
+TypeOf Xor
+TypeOf Mod
+TypeOf Like
+TypeOf Is
+TypeOf TypeOf
+TypeOf .
+TypeOf !
+TypeOf New
+TypeOf AddressOf
+TypeOf ByVal
+TypeOf Nothing
+TypeOf x(1)
+TypeOf Chr(1)
+TypeOf #1/1/2000#
+TypeOf &H1
+TypeOf 1.5
+TypeOf [a b]
+TypeOf Me
+TypeOf True
+TypeOf Empty
+TypeOf Null
+TypeOf :=
+TypeOf To
+TypeOf As
+TypeOf Step
+TypeOf Eqv
+TypeOf Imp
+. 1
+. a
+. "s"
+. (
+. )
+. ,
+. +
+. -
+. *
+. /
+. \
+. ^
+. &
+. =
+. <>
+. <
+. >
+. <=
+. >=
+. And
+. Or
+. Not
+. Xor
+. Mod
+. Like
+. Is
+. TypeOf
+. .
+. !
+. New
+. AddressOf
+. ByVal
+. Nothing
+. x(1)
+. Chr(1)
+. #1/1/2000#
+. &H1
+. 1.5
+. [a b]
+. Me
+. True
+. Empty
+. Null
+. :=
+. To
+. As
+. Step
+. Eqv
+. Imp
+! 1
+! a
+! "s"
+! (
+! )
+! ,
+! +
+! -
+! *
+! /
+! \
+! ^
+! &
+! =
+! <>
+! <
+! >
+! <=
+! >=
+! And
+! Or
+! Not
+! Xor
+! Mod
+! Like
+! Is
+! TypeOf
+! .
+! !
+! New
+! AddressOf
+! ByVal
+! Nothing
+! x(1)
+! Chr(1)
+! #1/1/2000#
+! &H1
+! 1.5
+! [a b]
+! Me
+! True
+! Empty
+! Null
+! :=
+! To
+! As
+! Step
+! Eqv
+! Imp
+New 1
+New a
+New "s"
+New (
+New )
+New ,
+New +
+New -
+New *
+New /
+New \
+New ^
+New &
+New =
+New <>
+New <
+New >
+New <=
+New >=
+New And
+New Or
+New Not
+New Xor
+New Mod
+New Like
+New Is
+New TypeOf
+New .
+New !
+New New
+New AddressOf
+New ByVal
+New Nothing
+New x(1)
+New Chr(1)
+New #1/1/2000#
+New &H1
+New 1.5
+New [a b]
+New Me
+New True
+New Empty
+New Null
+New :=
+New To
+New As
+New Step
+New Eqv
+New Imp
+AddressOf 1
+AddressOf a
+AddressOf "s"
+AddressOf (
+AddressOf )
+AddressOf ,
+AddressOf +
+AddressOf -
+AddressOf *
+AddressOf /
+AddressOf \
+AddressOf ^
+AddressOf &
+AddressOf =
+AddressOf <>
+AddressOf <
+AddressOf >
+AddressOf <=
+AddressOf >=
+AddressOf And
+AddressOf Or
+AddressOf Not
+AddressOf Xor
+AddressOf Mod
+AddressOf Like
+AddressOf Is
+AddressOf TypeOf
+AddressOf .
+AddressOf !
+AddressOf New
+AddressOf AddressOf
+AddressOf ByVal
+AddressOf Nothing
+AddressOf x(1)
+AddressOf Chr(1)
+AddressOf #1/1/2000#
+AddressOf &H1
+AddressOf 1.5
+AddressOf [a b]
+AddressOf Me
+AddressOf True
+AddressOf Empty
+AddressOf Null
+AddressOf :=
+AddressOf To
+AddressOf As
+AddressOf Step
+AddressOf Eqv
+AddressOf Imp
+ByVal 1
+ByVal a
+ByVal "s"
+ByVal (
+ByVal )
+ByVal ,
+ByVal +
+ByVal -
+ByVal *
+ByVal /
+ByVal \
+ByVal ^
+ByVal &
+ByVal =
+ByVal <>
+ByVal <
+ByVal >
+ByVal <=
+ByVal >=
+ByVal And
+ByVal Or
+ByVal Not
+ByVal Xor
+ByVal Mod
+ByVal Like
+ByVal Is
+ByVal TypeOf
+ByVal .
+ByVal !
+ByVal New
+ByVal AddressOf
+ByVal ByVal
+ByVal Nothing
+ByVal x(1)
+ByVal Chr(1)
+ByVal #1/1/2000#
+ByVal &H1
+ByVal 1.5
+ByVal [a b]
+ByVal Me
+ByVal True
+ByVal Empty
+ByVal Null
+ByVal :=
+ByVal To
+ByVal As
+ByVal Step
+ByVal Eqv
+ByVal Imp
+Nothing 1
+Nothing a
+Nothing "s"
+Nothing (
+Nothing )
+Nothing ,
+Nothing +
+Nothing -
+Nothing *
+Nothing /
+Nothing \
+Nothing ^
+Nothing &
+Nothing =
+Nothing <>
+Nothing <
+Nothing >
+Nothing <=
+Nothing >=
+Nothing And
+Nothing Or
+Nothing Not
+Nothing Xor
+Nothing Mod
+Nothing Like
+Nothing Is
+Nothing TypeOf
+Nothing .
+Nothing !
+Nothing New
+Nothing AddressOf
+Nothing ByVal
+Nothing Nothing
+Nothing x(1)
+Nothing Chr(1)
+Nothing #1/1/2000#
+Nothing &H1
+Nothing 1.5
+Nothing [a b]
+Nothing Me
+Nothing True
+Nothing Empty
+Nothing Null
+Nothing :=
+Nothing To
+Nothing As
+Nothing Step
+Nothing Eqv
+Nothing Imp
+x(1) 1
+x(1) a
+x(1) "s"
+x(1) (
+x(1) )
+x(1) ,
+x(1) +
+x(1) -
+x(1) *
+x(1) /
+x(1) \
+x(1) ^
+x(1) &
+x(1) =
+x(1) <>
+x(1) <
+x(1) >
+x(1) <=
+x(1) >=
+x(1) And
+x(1) Or
+x(1) Not
+x(1) Xor
+x(1) Mod
+x(1) Like
+x(1) Is
+x(1) TypeOf
+x(1) .
+x(1) !
+x(1) New
+x(1) AddressOf
+x(1) ByVal
+x(1) Nothing
+x(1) x(1)
+x(1) Chr(1)
+x(1) #1/1/2000#
+x(1) &H1
+x(1) 1.5
+x(1) [a b]
+x(1) Me
+x(1) True
+x(1) Empty
+x(1) Null
+x(1) :=
+x(1) To
+x(1) As
+x(1) Step
+x(1) Eqv
+x(1) Imp
+Chr(1) 1
+Chr(1) a
+Chr(1) "s"
+Chr(1) (
+Chr(1) )
+Chr(1) ,
+Chr(1) +
+Chr(1) -
+Chr(1) *
+Chr(1) /
+Chr(1) \
+Chr(1) ^
+Chr(1) &
+Chr(1) =
+Chr(1) <>
+Chr(1) <
+Chr(1) >
+Chr(1) <=
+Chr(1) >=
+Chr(1) And
+Chr(1) Or
+Chr(1) Not
+Chr(1) Xor
+Chr(1) Mod
+Chr(1) Like
+Chr(1) Is
+Chr(1) TypeOf
+Chr(1) .
+Chr(1) !
+Chr(1) New
+Chr(1) AddressOf
+Chr(1) ByVal
+Chr(1) Nothing
+Chr(1) x(1)
+Chr(1) Chr(1)
+Chr(1) #1/1/2000#
+Chr(1) &H1
+Chr(1) 1.5
+Chr(1) [a b]
+Chr(1) Me
+Chr(1) True
+Chr(1) Empty
+Chr(1) Null
+Chr(1) :=
+Chr(1) To
+Chr(1) As
+Chr(1) Step
+Chr(1) Eqv
+Chr(1) Imp
+#1/1/2000# 1
+#1/1/2000# a
+#1/1/2000# "s"
+#1/1/2000# (
+#1/1/2000# )
+#1/1/2000# ,
+#1/1/2000# +
+#1/1/2000# -
+#1/1/2000# *
+#1/1/2000# /
+#1/1/2000# \
+#1/1/2000# ^
+#1/1/2000# &
+#1/1/2000# =
+#1/1/2000# <>
+#1/1/2000# <
+#1/1/2000# >
+#1/1/2000# <=
+#1/1/2000# >=
+#1/1/2000# And
+#1/1/2000# Or
+#1/1/2000# Not
+#1/1/2000# Xor
+#1/1/2000# Mod
+#1/1/2000# Like
+#1/1/2000# Is
+#1/1/2000# TypeOf
+#1/1/2000# .
+#1/1/2000# !
+#1/1/2000# New
+#1/1/2000# AddressOf
+#1/1/2000# ByVal
+#1/1/2000# Nothing
+#1/1/2000# x(1)
+#1/1/2000# Chr(1)
+#1/1/2000# #1/1/2000#
+#1/1/2000# &H1
+#1/1/2000# 1.5
+#1/1/2000# [a b]
+#1/1/2000# Me
+#1/1/2000# True
+#1/1/2000# Empty
+#1/1/2000# Null
+#1/1/2000# :=
+#1/1/2000# To
+#1/1/2000# As
+#1/1/2000# Step
+#1/1/2000# Eqv
+#1/1/2000# Imp
+&H1 1
+&H1 a
+&H1 "s"
+&H1 (
+&H1 )
+&H1 ,
+&H1 +
+&H1 -
+&H1 *
+&H1 /
+&H1 \
+&H1 ^
+&H1 &
+&H1 =
+&H1 <>
+&H1 <
+&H1 >
+&H1 <=
+&H1 >=
+&H1 And
+&H1 Or
+&H1 Not
+&H1 Xor
+&H1 Mod
+&H1 Like
+&H1 Is
+&H1 TypeOf
+&H1 .
+&H1 !
+&H1 New
+&H1 AddressOf
+&H1 ByVal
+&H1 Nothing
+&H1 x(1)
+&H1 Chr(1)
+&H1 #1/1/2000#
+&H1 &H1
+&H1 1.5
+&H1 [a b]
+&H1 Me
+&H1 True
+&H1 Empty
+&H1 Null
+&H1 :=
+&H1 To
+&H1 As
+&H1 Step
+&H1 Eqv
+&H1 Imp
+1.5 1
+1.5 a
+1.5 "s"
+1.5 (
+1.5 )
+1.5 ,
+1.5 +
+1.5 -
+1.5 *
+1.5 /
+1.5 \
+1.5 ^
+1.5 &
+1.5 =
+1.5 <>
+1.5 <
+1.5 >
+1.5 <=
+1.5 >=
+1.5 And
+1.5 Or
+1.5 Not
+1.5 Xor
+1.5 Mod
+1.5 Like
+1.5 Is
+1.5 TypeOf
+1.5 .
+1.5 !
+1.5 New
+1.5 AddressOf
+1.5 ByVal
+1.5 Nothing
+1.5 x(1)
+1.5 Chr(1)
+1.5 #1/1/2000#
+1.5 &H1
+1.5 1.5
+1.5 [a b]
+1.5 Me
+1.5 True
+1.5 Empty
+1.5 Null
+1.5 :=
+1.5 To
+1.5 As
+1.5 Step
+1.5 Eqv
+1.5 Imp
+[a b] 1
+[a b] a
+[a b] "s"
+[a b] (
+[a b] )
+[a b] ,
+[a b] +
+[a b] -
+[a b] *
+[a b] /
+[a b] \
+[a b] ^
+[a b] &
+[a b] =
+[a b] <>
+[a b] <
+[a b] >
+[a b] <=
+[a b] >=
+[a b] And
+[a b] Or
+[a b] Not
+[a b] Xor
+[a b] Mod
+[a b] Like
+[a b] Is
+[a b] TypeOf
+[a b] .
+[a b] !
+[a b] New
+[a b] AddressOf
+[a b] ByVal
+[a b] Nothing
+[a b] x(1)
+[a b] Chr(1)
+[a b] #1/1/2000#
+[a b] &H1
+[a b] 1.5
+[a b] [a b]
+[a b] Me
+[a b] True
+[a b] Empty
+[a b] Null
+[a b] :=
+[a b] To
+[a b] As
+[a b] Step
+[a b] Eqv
+[a b] Imp
+Me 1
+Me a
+Me "s"
+Me (
+Me )
+Me ,
+Me +
+Me -
+Me *
+Me /
+Me \
+Me ^
+Me &
+Me =
+Me <>
+Me <
+Me >
+Me <=
+Me >=
+Me And
+Me Or
+Me Not
+Me Xor
+Me Mod
+Me Like
+Me Is
+Me TypeOf
+Me .
+Me !
+Me New
+Me AddressOf
+Me ByVal
+Me Nothing
+Me x(1)
+Me Chr(1)
+Me #1/1/2000#
+Me &H1
+Me 1.5
+Me [a b]
+Me Me
+Me True
+Me Empty
+Me Null
+Me :=
+Me To
+Me As
+Me Step
+Me Eqv
+Me Imp
+True 1
+True a
+True "s"
+True (
+True )
+True ,
+True +
+True -
+True *
+True /
+True \
+True ^
+True &
+True =
+True <>
+True <
+True >
+True <=
+True >=
+True And
+True Or
+True Not
+True Xor
+True Mod
+True Like
+True Is
+True TypeOf
+True .
+True !
+True New
+True AddressOf
+True ByVal
+True Nothing
+True x(1)
+True Chr(1)
+True #1/1/2000#
+True &H1
+True 1.5
+True [a b]
+True Me
+True True
+True Empty
+True Null
+True :=
+True To
+True As
+True Step
+True Eqv
+True Imp
+Empty 1
+Empty a
+Empty "s"
+Empty (
+Empty )
+Empty ,
+Empty +
+Empty -
+Empty *
+Empty /
+Empty \
+Empty ^
+Empty &
+Empty =
+Empty <>
+Empty <
+Empty >
+Empty <=
+Empty >=
+Empty And
+Empty Or
+Empty Not
+Empty Xor
+Empty Mod
+Empty Like
+Empty Is
+Empty TypeOf
+Empty .
+Empty !
+Empty New
+Empty AddressOf
+Empty ByVal
+Empty Nothing
+Empty x(1)
+Empty Chr(1)
+Empty #1/1/2000#
+Empty &H1
+Empty 1.5
+Empty [a b]
+Empty Me
+Empty True
+Empty Empty
+Empty Null
+Empty :=
+Empty To
+Empty As
+Empty Step
+Empty Eqv
+Empty Imp
+Null 1
+Null a
+Null "s"
+Null (
+Null )
+Null ,
+Null +
+Null -
+Null *
+Null /
+Null \
+Null ^
+Null &
+Null =
+Null <>
+Null <
+Null >
+Null <=
+Null >=
+Null And
+Null Or
+Null Not
+Null Xor
+Null Mod
+Null Like
+Null Is
+Null TypeOf
+Null .
+Null !
+Null New
+Null AddressOf
+Null ByVal
+Null Nothing
+Null x(1)
+Null Chr(1)
+Null #1/1/2000#
+Null &H1
+Null 1.5
+Null [a b]
+Null Me
+Null True
+Null Empty
+Null Null
+Null :=
+Null To
+Null As
+Null Step
+Null Eqv
+Null Imp
+:= 1
+:= a
+:= "s"
+:= (
+:= )
+:= ,
+:= +
+:= -
+:= *
+:= /
+:= \
+:= ^
+:= &
+:= =
+:= <>
+:= <
+:= >
+:= <=
+:= >=
+:= And
+:= Or
+:= Not
+:= Xor
+:= Mod
+:= Like
+:= Is
+:= TypeOf
+:= .
+:= !
+:= New
+:= AddressOf
+:= ByVal
+:= Nothing
+:= x(1)
+:= Chr(1)
+:= #1/1/2000#
+:= &H1
+:= 1.5
+:= [a b]
+:= Me
+:= True
+:= Empty
+:= Null
+:= :=
+:= To
+:= As
+:= Step
+:= Eqv
+:= Imp
+To 1
+To a
+To "s"
+To (
+To )
+To ,
+To +
+To -
+To *
+To /
+To \
+To ^
+To &
+To =
+To <>
+To <
+To >
+To <=
+To >=
+To And
+To Or
+To Not
+To Xor
+To Mod
+To Like
+To Is
+To TypeOf
+To .
+To !
+To New
+To AddressOf
+To ByVal
+To Nothing
+To x(1)
+To Chr(1)
+To #1/1/2000#
+To &H1
+To 1.5
+To [a b]
+To Me
+To True
+To Empty
+To Null
+To :=
+To To
+To As
+To Step
+To Eqv
+To Imp
+As 1
+As a
+As "s"
+As (
+As )
+As ,
+As +
+As -
+As *
+As /
+As \
+As ^
+As &
+As =
+As <>
+As <
+As >
+As <=
+As >=
+As And
+As Or
+As Not
+As Xor
+As Mod
+As Like
+As Is
+As TypeOf
+As .
+As !
+As New
+As AddressOf
+As ByVal
+As Nothing
+As x(1)
+As Chr(1)
+As #1/1/2000#
+As &H1
+As 1.5
+As [a b]
+As Me
+As True
+As Empty
+As Null
+As :=
+As To
+As As
+As Step
+As Eqv
+As Imp
+Step 1
+Step a
+Step "s"
+Step (
+Step )
+Step ,
+Step +
+Step -
+Step *
+Step /
+Step \
+Step ^
+Step &
+Step =
+Step <>
+Step <
+Step >
+Step <=
+Step >=
+Step And
+Step Or
+Step Not
+Step Xor
+Step Mod
+Step Like
+Step Is
+Step TypeOf
+Step .
+Step !
+Step New
+Step AddressOf
+Step ByVal
+Step Nothing
+Step x(1)
+Step Chr(1)
+Step #1/1/2000#
+Step &H1
+Step 1.5
+Step [a b]
+Step Me
+Step True
+Step Empty
+Step Null
+Step :=
+Step To
+Step As
+Step Step
+Step Eqv
+Step Imp
+Eqv 1
+Eqv a
+Eqv "s"
+Eqv (
+Eqv )
+Eqv ,
+Eqv +
+Eqv -
+Eqv *
+Eqv /
+Eqv \
+Eqv ^
+Eqv &
+Eqv =
+Eqv <>
+Eqv <
+Eqv >
+Eqv <=
+Eqv >=
+Eqv And
+Eqv Or
+Eqv Not
+Eqv Xor
+Eqv Mod
+Eqv Like
+Eqv Is
+Eqv TypeOf
+Eqv .
+Eqv !
+Eqv New
+Eqv AddressOf
+Eqv ByVal
+Eqv Nothing
+Eqv x(1)
+Eqv Chr(1)
+Eqv #1/1/2000#
+Eqv &H1
+Eqv 1.5
+Eqv [a b]
+Eqv Me
+Eqv True
+Eqv Empty
+Eqv Null
+Eqv :=
+Eqv To
+Eqv As
+Eqv Step
+Eqv Eqv
+Eqv Imp
+Imp 1
+Imp a
+Imp "s"
+Imp (
+Imp )
+Imp ,
+Imp +
+Imp -
+Imp *
+Imp /
+Imp \
+Imp ^
+Imp &
+Imp =
+Imp <>
+Imp <
+Imp >
+Imp <=
+Imp >=
+Imp And
+Imp Or
+Imp Not
+Imp Xor
+Imp Mod
+Imp Like
+Imp Is
+Imp TypeOf
+Imp .
+Imp !
+Imp New
+Imp AddressOf
+Imp ByVal
+Imp Nothing
+Imp x(1)
+Imp Chr(1)
+Imp #1/1/2000#
+Imp &H1
+Imp 1.5
+Imp [a b]
+Imp Me
+Imp True
+Imp Empty
+Imp Null
+Imp :=
+Imp To
+Imp As
+Imp Step
+Imp Eqv
+Imp Imp
+! "s" (
+! "s" Me
+! #1/1/2000# &H1
+! #1/1/2000# Me
+! & Null
+! + Is
+! . \
+! / "s"
+! / Is
+! 1 "s"
+! 1 &H1
+! 1 <
+! := 1.5
+! < >
+! < ByVal
+! <= Eqv
+! <> -
+! > +
+! > ^
+! AddressOf Like
+! As ,
+! As Nothing
+! Chr(1) Xor
+! Eqv ,
+! Imp Not
+! Like New
+! Mod [a b]
+! Mod x(1)
+! New >
+! New Empty
+! Step 1
+! To )
+! [a b] <
+! \ As
+! ^ To
+! a 1.5
+! x(1) <=
+! x(1) Me
+! x(1) Mod
+"s" ! ByVal
+"s" "s" +
+"s" "s" .
+"s" "s" =
+"s" &H1 1.5
+"s" ( )
+"s" ( <>
+"s" * :=
+"s" * AddressOf
+"s" + Imp
+"s" / \
+"s" := &
+"s" := =
+"s" < &
+"s" <= !
+"s" <= &H1
+"s" > x(1)
+"s" AddressOf a
+"s" As ,
+"s" ByVal Is
+"s" Imp As
+"s" Imp Mod
+"s" Is As
+"s" Like [a b]
+"s" Me <=
+"s" Mod \
+"s" New "s"
+"s" New Chr(1)
+"s" Not Or
+"s" Not ^
+"s" Nothing >
+"s" Nothing Chr(1)
+"s" Null /
+"s" Or Eqv
+"s" Step AddressOf
+"s" True !
+"s" True a
+"s" \ =
+"s" a :=
+#1/1/2000# & Imp
+#1/1/2000# &H1 "s"
+#1/1/2000# ( >=
+#1/1/2000# ) Xor
+#1/1/2000# + &H1
+#1/1/2000# + Is
+#1/1/2000# , &H1
+#1/1/2000# . Empty
+#1/1/2000# / x(1)
+#1/1/2000# 1 Chr(1)
+#1/1/2000# < Not
+#1/1/2000# < Null
+#1/1/2000# <= Eqv
+#1/1/2000# = >
+#1/1/2000# > Chr(1)
+#1/1/2000# >= >
+#1/1/2000# >= As
+#1/1/2000# AddressOf !
+#1/1/2000# As !
+#1/1/2000# ByVal >
+#1/1/2000# Is )
+#1/1/2000# Me 1
+#1/1/2000# Me :=
+#1/1/2000# Null \
+#1/1/2000# Step To
+#1/1/2000# Xor Not
+#1/1/2000# \ To
+& "s" Chr(1)
+& #1/1/2000# Step
+& & Eqv
+& ) :=
+& ) Like
+& + Is
+& , =
+& , >=
+& , Step
+& , To
+& , \
+& - And
+& . Eqv
+& / Nothing
+& / \
+& := &H1
+& := ,
+& <= /
+& <> Imp
+& >= .
+& >= To
+& Chr(1) .
+& Mod 1.5
+& Mod Like
+& Not 1.5
+& Null New
+& Or <>
+& Step (
+& Step <
+& Step =
+& TypeOf ,
+& [a b] Or
+& \ x(1)
+& ^ Not
+& ^ TypeOf
+& a /
+& a Xor
+& x(1) &H1
+&H1 ! AddressOf
+&H1 #1/1/2000# /
+&H1 #1/1/2000# Me
+&H1 & [a b]
+&H1 ( "s"
+&H1 ) Not
+&H1 , AddressOf
+&H1 . :=
+&H1 < New
+&H1 <= &H1
+&H1 <= Or
+&H1 <> AddressOf
+&H1 = AddressOf
+&H1 > TypeOf
+&H1 AddressOf True
+&H1 AddressOf a
+&H1 And <>
+&H1 And Chr(1)
+&H1 ByVal a
+&H1 Empty )
+&H1 Imp Mod
+&H1 Is <
+&H1 Like To
+&H1 Me <>
+&H1 New x(1)
+&H1 Nothing And
+&H1 Null New
+&H1 Null a
+&H1 To 1
+&H1 TypeOf True
+&H1 [a b] a
+&H1 a Nothing
+( ! Step
+( "s" ^
+( & >=
+( & Eqv
+( &H1 TypeOf
+( ( Not
+( * 1
+( - "s"
+( . And
+( < Imp
+( <= .
+( <= x(1)
+( = "s"
+( > *
+( > -
+( >= ByVal
+( AddressOf *
+( AddressOf To
+( As Eqv
+( As True
+( ByVal Chr(1)
+( Empty (
+( Empty Null
+( Eqv )
+( Eqv Like
+( Imp >
+( Imp [a b]
+( Me TypeOf
+( Mod ,
+( Mod Imp
+( To =
+( To a
+( \ <
+( \ >
+( \ AddressOf
+( a Or
+( x(1) <=
+) ! )
+) "s" :=
+) #1/1/2000# )
+) #1/1/2000# .
+) &H1 As
+) ( #1/1/2000#
+) ( Not
+) ( Step
+) ) 1.5
+) ) Mod
+) * -
+) * TypeOf
+) . Is
+) 1 (
+) 1 +
+) := Imp
+) < +
+) <= Null
+) <> <
+) = Empty
+) > New
+) AddressOf Nothing
+) And <
+) As New
+) Chr(1) New
+) Empty !
+) Empty .
+) Empty Empty
+) Imp #1/1/2000#
+) New AddressOf
+) Nothing "s"
+) To *
+) To True
+) Xor "s"
+) Xor #1/1/2000#
+) \ Nothing
+) \ True
+) ^ True
+) x(1) a
+* &H1 !
+* ( <
+* ) And
+* * x(1)
+* + !
+* + >=
+* , #1/1/2000#
+* , +
+* , To
+* - ^
+* . Nothing
+* / 1
+* 1.5 +
+* 1.5 >=
+* <= #1/1/2000#
+* As Xor
+* Chr(1) \
+* Empty &H1
+* Eqv +
+* Eqv .
+* Eqv >
+* Is [a b]
+* Me :=
+* Not #1/1/2000#
+* Not Not
+* Nothing =
+* Nothing Is
+* Step &
+* Step >=
+* True =
+* Xor ,
+* Xor \
+* [a b] "s"
+* \ Is
+* ^ =
+* a Not
+* x(1) And
+* x(1) Me
++ & Imp
++ &H1 Eqv
++ ( &
++ * And
++ * Eqv
++ , <
++ - &H1
++ - Like
++ . "s"
++ / !
++ / Not
++ 1 As
++ < !
++ < &H1
++ < Nothing
++ > "s"
++ >= Nothing
++ ByVal Like
++ Empty TypeOf
++ Eqv #1/1/2000#
++ Eqv TypeOf
++ Imp ,
++ Is )
++ Is >=
++ Like \
++ Me 1.5
++ Mod >=
++ New <=
++ New Xor
++ Not Step
++ Nothing AddressOf
++ Nothing New
++ Null Mod
++ Or a
++ To >
++ To AddressOf
++ To Nothing
++ True x(1)
++ TypeOf Eqv
++ \ /
++ a Is
++ a True
++ x(1) <>
++ x(1) New
+, ! &H1
+, "s" Xor
+, & Like
+, &H1 =
+, * 1
+, + #1/1/2000#
+, + Empty
+, + Is
+, . Mod
+, . a
+, 1 <>
+, 1 And
+, < &H1
+, <= &
+, <> <=
+, <> TypeOf
+, >= TypeOf
+, AddressOf 1.5
+, ByVal &H1
+, Empty -
+, Eqv 1.5
+, Imp .
+, Like [a b]
+, Me ^
+, Mod /
+, Mod 1
+, Not Nothing
+, Nothing As
+, Nothing \
+, Or Eqv
+, Step &H1
+, Step )
+, True a
+, Xor *
+, [a b] Eqv
+, ^ To
+, x(1) 1
+, x(1) [a b]
+- & AddressOf
+- & ByVal
+- &H1 To
+- ) (
+- ) .
+- ) >
+- . >=
+- / )
+- / ^
+- 1 ,
+- 1.5 To
+- := &
+- := a
+- <= &H1
+- <= New
+- <= Step
+- = Empty
+- > :=
+- As ByVal
+- As Eqv
+- ByVal Or
+- Chr(1) Null
+- Is To
+- Like >
+- Like Is
+- Me New
+- Not +
+- Nothing .
+- Null Not
+- Null True
+- Null x(1)
+- True :=
+- TypeOf 1
+- [a b] #1/1/2000#
+- [a b] x(1)
+- a \
+- x(1) -
+. & Nothing
+. & Step
+. ( Me
+. ( Nothing
+. ) )
+. ) New
+. * AddressOf
+. * As
+. + &
+. + 1
+. , Or
+. . New
+. 1.5 Me
+. := "s"
+. := <>
+. := Me
+. := New
+. < -
+. >= :=
+. AddressOf +
+. AddressOf True
+. AddressOf \
+. And #1/1/2000#
+. Empty To
+. Imp Me
+. Imp Nothing
+. Me Step
+. Nothing )
+. Nothing <=
+. Nothing AddressOf
+. Null Xor
+. Or Imp
+. True :=
+. TypeOf <
+. Xor (
+. [a b] Not
+. [a b] ^
+. ^ \
+. a =
+. x(1) :=
+/ ! Me
+/ & Mod
+/ &H1 +
+/ &H1 [a b]
+/ ( Me
+/ ) #1/1/2000#
+/ + Me
+/ . As
+/ . Empty
+/ 1 Not
+/ 1.5 Like
+/ := Null
+/ >= >
+/ And Is
+/ As Chr(1)
+/ Empty ^
+/ Eqv 1.5
+/ Eqv :=
+/ Eqv Is
+/ Imp Nothing
+/ Is "s"
+/ Is )
+/ Is +
+/ Me Or
+/ Mod As
+/ New \
+/ Not Chr(1)
+/ Nothing Imp
+/ Nothing Mod
+/ Nothing ^
+/ Null Or
+/ Or And
+/ Or Nothing
+/ To And
+/ True ,
+/ [a b] )
+/ [a b] Eqv
+/ ^ !
+/ a Null
+/ x(1) Me
+1 ! >
+1 ! Mod
+1 "s" &
+1 #1/1/2000# !
+1 + AddressOf
+1 + And
+1 , +
+1 , <
+1 / <>
+1 1.5 1
+1 1.5 ByVal
+1 1.5 Nothing
+1 := +
+1 <= >
+1 >= 1.5
+1 AddressOf Not
+1 ByVal )
+1 ByVal ,
+1 Chr(1) Empty
+1 Empty 1
+1 Eqv -
+1 Is True
+1 Is x(1)
+1 Like Null
+1 Me .
+1 Or Nothing
+1 Step Mod
+1 To Eqv
+1 True True
+1 TypeOf -
+1 TypeOf And
+1 [a b] Eqv
+1 [a b] Like
+1 a Or
+1.5 ! :=
+1.5 ! Or
+1.5 , ,
+1.5 , AddressOf
+1.5 - ,
+1.5 . Eqv
+1.5 . Null
+1.5 / [a b]
+1.5 1 <>
+1.5 1 Empty
+1.5 1.5 And
+1.5 := >=
+1.5 <> Chr(1)
+1.5 > ,
+1.5 >= 1
+1.5 >= Imp
+1.5 >= Nothing
+1.5 And .
+1.5 As ByVal
+1.5 ByVal \
+1.5 Eqv #1/1/2000#
+1.5 Eqv >
+1.5 Imp To
+1.5 Like &
+1.5 Like .
+1.5 Mod 1
+1.5 Mod AddressOf
+1.5 Mod Me
+1.5 Mod Null
+1.5 Mod Xor
+1.5 New Or
+1.5 Not )
+1.5 Nothing Nothing
+1.5 Null ^
+1.5 Or )
+1.5 Step ByVal
+1.5 True As
+1.5 TypeOf >=
+1.5 TypeOf Mod
+1.5 Xor &
+1.5 [a b] =
+1.5 \ Nothing
+1.5 ^ /
+:= ! )
+:= & Null
+:= ) Null
+:= * Is
+:= * TypeOf
+:= + New
+:= , #1/1/2000#
+:= , As
+:= , ByVal
+:= - TypeOf
+:= 1 <>
+:= 1 Step
+:= 1.5 )
+:= <> Chr(1)
+:= <> To
+:= <> Xor
+:= >= Nothing
+:= And Not
+:= And Or
+:= As Empty
+:= Chr(1) Empty
+:= Chr(1) [a b]
+:= Eqv ^
+:= Like *
+:= Like -
+:= Nothing Like
+:= Null 1.5
+:= Or >
+:= Step &H1
+:= To +
+:= ^ ,
+:= ^ Xor
+:= x(1) &
+:= x(1) AddressOf
+< ) Or
+< * Imp
+< , New
+< / Mod
+< 1 True
+< 1.5 <=
+< < *
+< < /
+< = =
+< > +
+< And \
+< As As
+< As New
+< Chr(1) "s"
+< Eqv ByVal
+< Is Xor
+< Me Xor
+< Mod >
+< New Null
+< Not Chr(1)
+< Nothing To
+< Null Chr(1)
+< Or "s"
+< To Step
+< TypeOf ByVal
+< [a b] ,
+< \ 1.5
+< ^ 1.5
+< ^ =
+< ^ Imp
+< a >=
+< x(1) (
+<= ! 1
+<= & Eqv
+<= &H1 "s"
+<= &H1 <=
+<= &H1 Imp
+<= ( Not
+<= ) Like
+<= * <>
+<= + x(1)
+<= - ByVal
+<= 1.5 Mod
+<= 1.5 Not
+<= < [a b]
+<= <= 1.5
+<= <> =
+<= And >
+<= As x(1)
+<= ByVal #1/1/2000#
+<= ByVal Chr(1)
+<= Eqv Imp
+<= Mod .
+<= New ,
+<= New Null
+<= Not \
+<= Null Is
+<= Or <>
+<= Or Eqv
+<= Step As
+<= Step \
+<= To ,
+<= Xor +
+<= Xor :=
+<= Xor \
+<= \ True
+<= ^ -
+<= x(1) Me
+<= x(1) Xor
+<> #1/1/2000# As
+<> & .
+<> &H1 =
+<> ( 1
+<> ( <>
+<> ( ByVal
+<> ) #1/1/2000#
+<> + )
+<> - .
+<> - New
+<> . Imp
+<> . Or
+<> 1.5 And
+<> > >
+<> >= a
+<> And Empty
+<> As &H1
+<> ByVal <=
+<> Chr(1) Not
+<> Empty Empty
+<> Eqv #1/1/2000#
+<> Like Nothing
+<> Me &
+<> Me New
+<> Mod .
+<> Mod \
+<> Not #1/1/2000#
+<> Not To
+<> Nothing Chr(1)
+<> Or [a b]
+<> Or \
+<> Step True
+<> To ByVal
+<> To Mod
+<> TypeOf And
+<> \ #1/1/2000#
+<> \ a
+<> ^ !
+= "s" *
+= #1/1/2000# #1/1/2000#
+= & /
+= &H1 =
+= ( 1.5
+= ) Is
+= ) Step
+= - And
+= / >
+= / Step
+= := ^
+= := a
+= < Eqv
+= <= (
+= <> .
+= = +
+= > [a b]
+= >= -
+= >= To
+= AddressOf Eqv
+= And =
+= Empty TypeOf
+= Eqv x(1)
+= Me <=
+= Not /
+= Nothing Is
+= Nothing Not
+= Step #1/1/2000#
+= True Imp
+= True Not
+= Xor >
+= \ !
+= \ #1/1/2000#
+= \ .
+= \ 1.5
+= ^ .
+= a =
+> ! x(1)
+> #1/1/2000# Like
+> & Null
+> ( 1.5
+> ) #1/1/2000#
+> - <
+> 1.5 Or
+> <= Chr(1)
+> > &
+> > ,
+> > ByVal
+> >= Empty
+> >= Xor
+> As <>
+> ByVal New
+> Imp Me
+> Imp Or
+> Imp Step
+> Is <=
+> Is New
+> Mod <>
+> Mod Or
+> Not #1/1/2000#
+> Not x(1)
+> Nothing Like
+> Null TypeOf
+> \ !
+> a New
+> x(1) Is
+>= "s" 1.5
+>= #1/1/2000# -
+>= #1/1/2000# AddressOf
+>= ( +
+>= ( Nothing
+>= , Me
+>= , a
+>= - Null
+>= . <=
+>= . TypeOf
+>= 1.5 *
+>= 1.5 TypeOf
+>= := Or
+>= := [a b]
+>= <= &H1
+>= = Null
+>= >= Nothing
+>= And 1
+>= Imp <>
+>= Imp Is
+>= Imp TypeOf
+>= Me <
+>= New Xor
+>= Not Eqv
+>= Null Null
+>= Null Or
+>= Step \
+>= \ ,
+>= \ -
+>= x(1) &
+AddressOf "s" AddressOf
+AddressOf "s" TypeOf
+AddressOf #1/1/2000# /
+AddressOf #1/1/2000# \
+AddressOf #1/1/2000# a
+AddressOf & Step
+AddressOf ) !
+AddressOf ) +
+AddressOf + !
+AddressOf + +
+AddressOf + To
+AddressOf + \
+AddressOf - a
+AddressOf . ,
+AddressOf . a
+AddressOf / \
+AddressOf 1 Chr(1)
+AddressOf := *
+AddressOf := /
+AddressOf < -
+AddressOf < 1
+AddressOf < And
+AddressOf As :=
+AddressOf As >=
+AddressOf Chr(1) &H1
+AddressOf Eqv Like
+AddressOf Imp ByVal
+AddressOf Is ^
+AddressOf Like Me
+AddressOf Me /
+AddressOf Me :=
+AddressOf Me Chr(1)
+AddressOf Me ^
+AddressOf Not AddressOf
+AddressOf Nothing Chr(1)
+AddressOf True ,
+AddressOf True And
+AddressOf TypeOf 1.5
+AddressOf TypeOf Like
+AddressOf Xor Xor
+AddressOf [a b] To
+AddressOf \ Step
+AddressOf ^ \
+And "s" ByVal
+And #1/1/2000# ,
+And #1/1/2000# Me
+And #1/1/2000# True
+And ) As
+And * Empty
+And , <>
+And - /
+And - =
+And / ByVal
+And 1 1
+And 1.5 #1/1/2000#
+And < Or
+And > ,
+And > -
+And > =
+And > Not
+And >= ,
+And AddressOf ,
+And As Chr(1)
+And Chr(1) .
+And Chr(1) To
+And Like 1
+And Like \
+And New <>
+And New Not
+And Null &H1
+And Null )
+And Step >=
+And TypeOf !
+And [a b] :=
+And [a b] Empty
+And \ :=
+And ^ +
+As "s" "s"
+As & As
+As &H1 <>
+As ( TypeOf
+As * <>
+As + /
+As - .
+As . ^
+As / <
+As / Not
+As := Null
+As <= 1
+As <> "s"
+As = Like
+As >= .
+As And Step
+As And \
+As ByVal Nothing
+As ByVal TypeOf
+As Eqv Is
+As Imp *
+As Imp New
+As Is Me
+As Is a
+As Like As
+As Like Null
+As Me ^
+As Mod Is
+As New x(1)
+As Not <=
+As Null <
+As Null Empty
+As Or :=
+As True [a b]
+As True \
+As TypeOf 1.5
+As TypeOf True
+As Xor TypeOf
+As [a b] =
+As [a b] Empty
+As ^ &H1
+As ^ Me
+As x(1) Chr(1)
+ByVal ! Me
+ByVal "s" >=
+ByVal & "s"
+ByVal ( Eqv
+ByVal ( TypeOf
+ByVal / .
+ByVal 1.5 Imp
+ByVal <> "s"
+ByVal <> To
+ByVal > a
+ByVal >= /
+ByVal AddressOf Me
+ByVal AddressOf Xor
+ByVal And -
+ByVal ByVal Nothing
+ByVal Chr(1) Chr(1)
+ByVal Empty \
+ByVal Mod ,
+ByVal Mod To
+ByVal New Nothing
+ByVal Not .
+ByVal Nothing Like
+ByVal Step ByVal
+ByVal To (
+ByVal To And
+ByVal To Is
+ByVal True 1.5
+ByVal True Like
+ByVal Xor (
+ByVal Xor :=
+ByVal x(1) AddressOf
+ByVal x(1) True
+Chr(1) ! )
+Chr(1) ! Imp
+Chr(1) "s" Imp
+Chr(1) & >=
+Chr(1) & And
+Chr(1) & Xor
+Chr(1) &H1 <=
+Chr(1) ( Chr(1)
+Chr(1) ) &H1
+Chr(1) ) =
+Chr(1) - <
+Chr(1) . -
+Chr(1) / ByVal
+Chr(1) / Null
+Chr(1) 1 Chr(1)
+Chr(1) < Mod
+Chr(1) >= To
+Chr(1) AddressOf Nothing
+Chr(1) And +
+Chr(1) And =
+Chr(1) And New
+Chr(1) And a
+Chr(1) ByVal Eqv
+Chr(1) ByVal New
+Chr(1) Chr(1) &
+Chr(1) Empty &
+Chr(1) Empty Null
+Chr(1) Is ,
+Chr(1) Is >=
+Chr(1) Me True
+Chr(1) Nothing New
+Chr(1) Null )
+Chr(1) Step #1/1/2000#
+Chr(1) Step Like
+Chr(1) True 1
+Chr(1) True AddressOf
+Chr(1) Xor #1/1/2000#
+Chr(1) Xor -
+Chr(1) [a b] Me
+Chr(1) [a b] True
+Empty #1/1/2000# TypeOf
+Empty ( !
+Empty ( &H1
+Empty ( And
+Empty - x(1)
+Empty . <>
+Empty / \
+Empty 1 &
+Empty 1.5 TypeOf
+Empty <= =
+Empty = !
+Empty And -
+Empty ByVal "s"
+Empty ByVal \
+Empty Chr(1) 1
+Empty Chr(1) Null
+Empty Chr(1) TypeOf
+Empty Empty As
+Empty Empty Step
+Empty Imp Chr(1)
+Empty Me Imp
+Empty Mod Me
+Empty New (
+Empty Not Chr(1)
+Empty Or -
+Empty True 1.5
+Empty TypeOf Like
+Empty TypeOf Or
+Empty [a b] Me
+Empty \ >
+Empty \ ^
+Empty x(1) *
+Eqv ! !
+Eqv ! As
+Eqv "s" TypeOf
+Eqv ( Chr(1)
+Eqv ) Xor
+Eqv - /
+Eqv . ,
+Eqv / As
+Eqv 1 True
+Eqv := 1.5
+Eqv := =
+Eqv < Chr(1)
+Eqv <= ^
+Eqv >= 1
+Eqv And Is
+Eqv And New
+Eqv As a
+Eqv Chr(1) Or
+Eqv Empty New
+Eqv Eqv As
+Eqv Imp .
+Eqv Is Mod
+Eqv Mod &H1
+Eqv Mod -
+Eqv New Step
+Eqv Not ByVal
+Eqv Not Empty
+Eqv Not x(1)
+Eqv Nothing Is
+Eqv Null Step
+Eqv Or <
+Eqv Step To
+Eqv Step a
+Eqv To Like
+Eqv True Step
+Eqv TypeOf Nothing
+Eqv Xor Empty
+Eqv Xor Me
+Eqv [a b] >=
+Eqv \ *
+Eqv ^ a
+Imp "s" !
+Imp "s" &H1
+Imp #1/1/2000# Is
+Imp &H1 True
+Imp &H1 TypeOf
+Imp ( *
+Imp ( +
+Imp ) "s"
+Imp ) TypeOf
+Imp ) Xor
+Imp * (
+Imp + Chr(1)
+Imp - AddressOf
+Imp - [a b]
+Imp - a
+Imp / ByVal
+Imp 1.5 Like
+Imp 1.5 Nothing
+Imp := Eqv
+Imp <= (
+Imp <= +
+Imp <= Step
+Imp <> -
+Imp >= >=
+Imp >= [a b]
+Imp AddressOf !
+Imp AddressOf &H1
+Imp AddressOf Like
+Imp And )
+Imp As "s"
+Imp Chr(1) ,
+Imp Chr(1) Or
+Imp Empty Chr(1)
+Imp Is [a b]
+Imp Like ByVal
+Imp Like Chr(1)
+Imp Mod &H1
+Imp New #1/1/2000#
+Imp New Step
+Imp Null <
+Imp True Xor
+Imp TypeOf &H1
+Imp TypeOf TypeOf
+Imp \ !
+Imp \ "s"
+Imp \ As
+Imp a .
+Imp x(1) #1/1/2000#
+Is #1/1/2000# /
+Is & <
+Is ( Empty
+Is * ,
+Is , [a b]
+Is 1 AddressOf
+Is > True
+Is AddressOf #1/1/2000#
+Is Chr(1) Nothing
+Is Chr(1) Null
+Is Is ByVal
+Is Me \
+Is New >
+Is Not Or
+Is Or ByVal
+Is True Empty
+Is TypeOf "s"
+Is TypeOf <
+Is [a b] Imp
+Is \ 1.5
+Is ^ Chr(1)
+Is a !
+Is a "s"
+Is a AddressOf
+Like "s" TypeOf
+Like #1/1/2000# ByVal
+Like * 1.5
+Like / Empty
+Like 1 Chr(1)
+Like < <
+Like <> *
+Like = >
+Like > (
+Like > To
+Like AddressOf =
+Like AddressOf True
+Like AddressOf Xor
+Like And !
+Like As <>
+Like Imp 1.5
+Like Imp Or
+Like Like Empty
+Like Me ^
+Like Mod Like
+Like Mod a
+Like Nothing 1
+Like Nothing New
+Like Null New
+Like To Or
+Like TypeOf -
+Like Xor Eqv
+Like [a b] Mod
+Like ^ &H1
+Like a :=
+Like a Eqv
+Like x(1) Xor
+Me ! Not
+Me "s" Empty
+Me & 1
+Me &H1 1
+Me &H1 Like
+Me &H1 Me
+Me ( And
+Me ( Empty
+Me ) (
+Me ) /
+Me * >
+Me * Xor
+Me + ,
+Me , ^
+Me . Me
+Me . \
+Me 1.5 Chr(1)
+Me := Mod
+Me <= !
+Me <> Chr(1)
+Me <> \
+Me = &H1
+Me = +
+Me = :=
+Me > =
+Me >= Null
+Me AddressOf 1
+Me As -
+Me ByVal (
+Me Empty ,
+Me Eqv And
+Me Is 1.5
+Me Me =
+Me Not 1.5
+Me Not a
+Me Nothing Empty
+Me Null -
+Me Or AddressOf
+Me Step =
+Me To TypeOf
+Me True *
+Me Xor "s"
+Me ^ *
+Me ^ a
+Me a Imp
+Me a Or
+Mod "s" Eqv
+Mod & Not
+Mod &H1 /
+Mod ( [a b]
+Mod * *
+Mod - Chr(1)
+Mod - Eqv
+Mod - True
+Mod . +
+Mod / Imp
+Mod := As
+Mod <= AddressOf
+Mod = +
+Mod = Or
+Mod >= &H1
+Mod ByVal )
+Mod Chr(1) &H1
+Mod Chr(1) <>
+Mod Chr(1) Empty
+Mod Eqv As
+Mod Like (
+Mod Mod [a b]
+Mod New Not
+Mod Not *
+Mod Not Mod
+Mod Or ,
+Mod Or AddressOf
+Mod Or Xor
+Mod To >=
+Mod True "s"
+Mod Xor .
+Mod \ 1.5
+Mod \ New
+New ! *
+New ! 1
+New ! Not
+New ! ^
+New & :=
+New ( /
+New ) New
+New * <
+New , &
+New - /
+New . "s"
+New 1 a
+New <> Null
+New >= =
+New As :=
+New Chr(1) Imp
+New Eqv 1
+New Eqv Chr(1)
+New Imp (
+New Imp =
+New Is Eqv
+New Me /
+New Mod TypeOf
+New New ^
+New Null *
+New Or >=
+New Step &H1
+New [a b] TypeOf
+New ^ *
+New a Eqv
+New a ^
+New x(1) Imp
+Not "s" Null
+Not #1/1/2000# To
+Not & ByVal
+Not ( +
+Not ) +
+Not ) Me
+Not * x(1)
+Not + As
+Not , And
+Not , Imp
+Not , New
+Not - #1/1/2000#
+Not - Not
+Not / !
+Not / ^
+Not 1 AddressOf
+Not := To
+Not <> 1.5
+Not = &H1
+Not > Chr(1)
+Not >= &H1
+Not And ,
+Not As <>
+Not ByVal 1.5
+Not ByVal x(1)
+Not Chr(1) a
+Not Is &H1
+Not Is =
+Not Is Chr(1)
+Not Like a
+Not Me Null
+Not New New
+Not True -
+Not TypeOf .
+Not TypeOf Or
+Not [a b] ,
+Not \ ^
+Not ^ Imp
+Not ^ Null
+Not ^ x(1)
+Not a Xor
+Nothing ! And
+Nothing ! TypeOf
+Nothing "s" "s"
+Nothing "s" Empty
+Nothing #1/1/2000# &H1
+Nothing #1/1/2000# TypeOf
+Nothing & [a b]
+Nothing ) x(1)
+Nothing , &H1
+Nothing . &
+Nothing := Me
+Nothing <> ByVal
+Nothing AddressOf Or
+Nothing AddressOf Xor
+Nothing ByVal And
+Nothing ByVal a
+Nothing Empty Nothing
+Nothing Eqv :=
+Nothing Imp x(1)
+Nothing Me ^
+Nothing Nothing >=
+Nothing Nothing And
+Nothing Null 1
+Nothing True &H1
+Nothing True >
+Nothing True New
+Nothing [a b] AddressOf
+Nothing [a b] Imp
+Nothing [a b] Step
+Nothing ^ "s"
+Nothing a <>
+Nothing x(1) /
+Nothing x(1) Xor
+Null "s" Not
+Null & <>
+Null & ByVal
+Null ( AddressOf
+Null * "s"
+Null * And
+Null + *
+Null + +
+Null - Me
+Null - To
+Null / >
+Null 1 #1/1/2000#
+Null 1 1
+Null 1.5 Me
+Null := Like
+Null = As
+Null = Xor
+Null > >=
+Null >= !
+Null >= Mod
+Null AddressOf Imp
+Null And ,
+Null As Me
+Null As Null
+Null ByVal )
+Null Chr(1) Not
+Null Empty !
+Null Eqv \
+Null Imp ,
+Null Imp >=
+Null Me .
+Null Me Nothing
+Null Not Empty
+Null Nothing ^
+Null Or .
+Null True *
+Null TypeOf !
+Null TypeOf <=
+Null TypeOf \
+Null ^ Empty
+Null a +
+Null x(1) Not
+Or ! a
+Or ( ByVal
+Or ( Me
+Or - And
+Or / Chr(1)
+Or 1.5 Eqv
+Or := Me
+Or < "s"
+Or <= Empty
+Or <= TypeOf
+Or <= x(1)
+Or <> True
+Or >= )
+Or And Xor
+Or As ByVal
+Or Chr(1) -
+Or Chr(1) Xor
+Or Chr(1) \
+Or Empty -
+Or Eqv Empty
+Or Eqv True
+Or Imp Or
+Or Is True
+Or Like -
+Or Mod True
+Or Not *
+Or Not <=
+Or Not Mod
+Or Null /
+Or True Null
+Or [a b] 1.5
+Or [a b] Xor
+Or \ 1
+Or ^ &H1
+Step #1/1/2000# =
+Step #1/1/2000# Or
+Step ) ByVal
+Step , (
+Step , 1.5
+Step - <=
+Step - Step
+Step . <
+Step . ByVal
+Step . Xor
+Step 1.5 Or
+Step := Null
+Step <> *
+Step = +
+Step = ByVal
+Step As ByVal
+Step ByVal "s"
+Step ByVal =
+Step Eqv "s"
+Step Eqv =
+Step Eqv x(1)
+Step Imp #1/1/2000#
+Step Is Is
+Step New As
+Step Not Like
+Step Not Step
+Step Null Empty
+Step Or AddressOf
+Step Or Eqv
+Step Step .
+Step Step a
+Step TypeOf Not
+Step Xor <
+Step Xor Imp
+Step [a b] :=
+Step a ^
+Step x(1) ,
+To ! >
+To #1/1/2000# <>
+To #1/1/2000# Imp
+To ( Imp
+To ( Or
+To ) +
+To ) a
+To * <
+To - <
+To - Chr(1)
+To / +
+To / :=
+To / True
+To > (
+To > ByVal
+To AddressOf Empty
+To AddressOf Step
+To As ByVal
+To Chr(1) #1/1/2000#
+To Empty [a b]
+To Is /
+To New New
+To Nothing #1/1/2000#
+To Step Imp
+To Step To
+To \ <=
+To \ a
+To ^ Mod
+True ! <>
+True "s" Nothing
+True "s" Or
+True #1/1/2000# 1.5
+True & 1.5
+True &H1 New
+True ) +
+True ) :=
+True + Xor
+True . /
+True . Is
+True . New
+True / As
+True / Null
+True 1 Step
+True <> AddressOf
+True = *
+True = As
+True AddressOf a
+True ByVal Xor
+True Chr(1) Eqv
+True Eqv Chr(1)
+True Mod ^
+True Not &
+True Not >
+True Not Is
+True Nothing Is
+True Nothing Xor
+True Step )
+True To (
+True To /
+True TypeOf Is
+True TypeOf x(1)
+True a Null
+True x(1) To
+True x(1) TypeOf
+TypeOf ! Mod
+TypeOf "s" ,
+TypeOf #1/1/2000# New
+TypeOf #1/1/2000# Null
+TypeOf & -
+TypeOf & /
+TypeOf & Null
+TypeOf &H1 1.5
+TypeOf ( Eqv
+TypeOf ) -
+TypeOf ) To
+TypeOf ) a
+TypeOf * "s"
+TypeOf , /
+TypeOf , 1
+TypeOf - >=
+TypeOf - New
+TypeOf . (
+TypeOf / Null
+TypeOf / To
+TypeOf 1 New
+TypeOf 1 To
+TypeOf < Empty
+TypeOf < New
+TypeOf <= Me
+TypeOf <> 1.5
+TypeOf > >=
+TypeOf > ^
+TypeOf >= 1.5
+TypeOf And &H1
+TypeOf And *
+TypeOf And ^
+TypeOf Chr(1) ,
+TypeOf Empty Eqv
+TypeOf Empty Like
+TypeOf Is Not
+TypeOf Like Empty
+TypeOf Mod Is
+TypeOf New Imp
+TypeOf Nothing Nothing
+TypeOf Null "s"
+TypeOf To <=
+TypeOf To Me
+TypeOf To Or
+TypeOf To True
+TypeOf TypeOf ,
+TypeOf Xor And
+TypeOf Xor TypeOf
+TypeOf \ 1
+TypeOf ^ )
+TypeOf ^ Mod
+TypeOf a Null
+TypeOf a True
+Xor ( )
+Xor ( ,
+Xor ) -
+Xor ) =
+Xor + <=
+Xor , <=
+Xor , a
+Xor . -
+Xor / New
+Xor / Not
+Xor 1 Mod
+Xor 1 Not
+Xor := >
+Xor < <>
+Xor <= )
+Xor <= Mod
+Xor <> 1.5
+Xor = Me
+Xor > ^
+Xor >= Like
+Xor And <=
+Xor Chr(1) )
+Xor Chr(1) -
+Xor Empty 1.5
+Xor Eqv =
+Xor Imp ,
+Xor Imp =
+Xor Is 1
+Xor Like And
+Xor Like True
+Xor Nothing *
+Xor Step &H1
+Xor Step =
+Xor To And
+Xor True >
+Xor [a b] AddressOf
+Xor a Like
+Xor x(1) .
+Xor x(1) Chr(1)
+[a b] ! Nothing
+[a b] "s" Imp
+[a b] "s" \
+[a b] &H1 True
+[a b] * ,
+[a b] * -
+[a b] + 1.5
+[a b] + To
+[a b] , *
+[a b] 1.5 Mod
+[a b] := >=
+[a b] <= Is
+[a b] = &H1
+[a b] = .
+[a b] = ^
+[a b] >= And
+[a b] AddressOf As
+[a b] And <
+[a b] And Not
+[a b] As *
+[a b] ByVal +
+[a b] Empty 1
+[a b] Imp 1.5
+[a b] Mod <
+[a b] Mod >
+[a b] Nothing Nothing
+[a b] Step <=
+[a b] Step AddressOf
+[a b] True ByVal
+[a b] TypeOf [a b]
+[a b] \ As
+[a b] ^ #1/1/2000#
+\ ! <>
+\ ! Me
+\ "s" -
+\ & And
+\ ) >=
+\ * 1.5
+\ - <>
+\ / To
+\ 1 Not
+\ 1.5 Eqv
+\ 1.5 Mod
+\ 1.5 Or
+\ := 1
+\ < Step
+\ = -
+\ = 1.5
+\ = =
+\ = Or
+\ AddressOf <
+\ And [a b]
+\ As As
+\ As Nothing
+\ Empty !
+\ Empty Not
+\ Eqv >=
+\ Is &H1
+\ Is 1
+\ Is [a b]
+\ Like Or
+\ Mod ,
+\ Mod <
+\ Mod x(1)
+\ Null ,
+\ Null As
+\ Null Like
+\ Or Empty
+\ Step Like
+\ Step True
+\ True .
+\ [a b] /
+^ ! Imp
+^ ! ^
+^ #1/1/2000# "s"
+^ * Step
+^ / 1.5
+^ 1.5 Null
+^ := Chr(1)
+^ := Me
+^ := Step
+^ <= Xor
+^ > >
+^ > New
+^ As AddressOf
+^ As Xor
+^ Chr(1) Or
+^ Empty !
+^ Empty Mod
+^ Eqv As
+^ Is >=
+^ Is Mod
+^ Me .
+^ Me =
+^ Not To
+^ Null ^
+^ Or !
+^ True )
+^ TypeOf &
+^ TypeOf New
+^ TypeOf a
+^ Xor 1.5
+^ Xor \
+^ \ >=
+^ a 1.5
+^ x(1) (
+^ x(1) Chr(1)
+a "s" AddressOf
+a "s" Not
+a & :=
+a & TypeOf
+a ) [a b]
+a + ,
+a . ByVal
+a / True
+a 1 ^
+a 1 x(1)
+a 1.5 #1/1/2000#
+a 1.5 Me
+a 1.5 True
+a := >=
+a := Chr(1)
+a := True
+a < )
+a < Nothing
+a <> Null
+a >= ^
+a And 1.5
+a ByVal /
+a Empty Mod
+a Eqv New
+a Eqv To
+a Is ByVal
+a Like <>
+a Me Me
+a New *
+a New <=
+a Nothing -
+a Nothing <
+a Nothing True
+a Or And
+a Step Nothing
+a To ,
+a TypeOf *
+a Xor \
+a \ <>
+x(1) ! :=
+x(1) #1/1/2000# <>
+x(1) & =
+x(1) ( *
+x(1) ) -
+x(1) ) As
+x(1) * #1/1/2000#
+x(1) + 1
+x(1) + Me
+x(1) , ,
+x(1) - Not
+x(1) 1 (
+x(1) := /
+x(1) < 1
+x(1) <= x(1)
+x(1) = Like
+x(1) > \
+x(1) Chr(1) Is
+x(1) Empty \
+x(1) Is ,
+x(1) Is Empty
+x(1) New "s"
+x(1) Nothing :=
+x(1) TypeOf -
+x(1) TypeOf Not
+x(1) Xor Xor
+x(1) [a b] =
+x(1) \ As
+x(1) a ByVal
+! ) Is ,
+! ) Null 1
+! + &H1 Imp
+! / ( Empty
+! < ! Imp
+! < Null \
+! <> Empty >
+! = * <>
+! >= Mod &
+! Imp & Xor
+! Is > (
+! Like Empty >=
+! Mod Like Or
+! New > 1.5
+! Not + (
+! Step = Me
+! a Chr(1) "s"
+"s" "s" & :=
+"s" "s" ) &
+"s" & ! ^
+"s" & x(1) Step
+"s" * > ByVal
+"s" - TypeOf <
+"s" 1 <> AddressOf
+"s" 1 Is =
+"s" 1.5 Is New
+"s" 1.5 [a b] Xor
+"s" < TypeOf 1.5
+"s" <= Like >
+"s" <> 1.5 Xor
+"s" = - And
+"s" AddressOf - (
+"s" As Me :=
+"s" ByVal . Step
+"s" Like "s" Eqv
+"s" Me [a b] ^
+"s" Not & 1.5
+"s" Not ) &H1
+"s" Not x(1) Chr(1)
+"s" Null Xor ByVal
+"s" To > To
+#1/1/2000# #1/1/2000# & [a b]
+#1/1/2000# + / :=
+#1/1/2000# + To Eqv
+#1/1/2000# , "s" ,
+#1/1/2000# / Or Xor
+#1/1/2000# < , =
+#1/1/2000# < Eqv ,
+#1/1/2000# > Or <
+#1/1/2000# AddressOf Xor 1
+#1/1/2000# And < Mod
+#1/1/2000# ByVal [a b] (
+#1/1/2000# Empty ) Is
+#1/1/2000# Eqv Not 1.5
+#1/1/2000# Eqv \ &
+#1/1/2000# Is Xor [a b]
+#1/1/2000# Like * \
+#1/1/2000# Me #1/1/2000# New
+#1/1/2000# Mod Step ^
+#1/1/2000# New ! Imp
+#1/1/2000# New ^ )
+#1/1/2000# Nothing Chr(1) >
+#1/1/2000# Xor Not #1/1/2000#
+#1/1/2000# [a b] ( Step
+#1/1/2000# [a b] . Xor
+#1/1/2000# \ \ Empty
+& &H1 ) Xor
+& + <= (
+& + True ,
+& - < !
+& - Or <>
+& 1 ByVal "s"
+& := >= \
+& := Nothing Eqv
+& < Xor >
+& >= True &H1
+& AddressOf ( 1
+& AddressOf ( To
+& As Like To
+& As [a b] Mod
+& Imp - Step
+& Is ( <>
+& Is := (
+& Like Eqv Imp
+& Me As =
+& Me ^ >
+& Mod < <
+& Not 1 AddressOf
+& Null Imp :=
+& TypeOf & 1.5
+& TypeOf Or ^
+& Xor Empty Like
+& [a b] x(1) Step
+& x(1) As TypeOf
+&H1 & \ <=
+&H1 &H1 - ^
+&H1 + &H1 "s"
+&H1 - \ )
+&H1 . \ &
+&H1 / := 1.5
+&H1 / <= Step
+&H1 1 Chr(1) \
+&H1 <= As +
+&H1 > . New
+&H1 And [a b] Chr(1)
+&H1 Chr(1) Eqv >
+&H1 Imp Not *
+&H1 Null ( Me
+&H1 Or And 1.5
+&H1 Xor AddressOf Empty
+&H1 \ := /
+( ! <= Null
+( ! Me Null
+( + Not <
+( <= "s" ,
+( <= Chr(1) Me
+( <> + =
+( >= x(1) Or
+( And Like ByVal
+( As &H1 [a b]
+( ByVal True >
+( ByVal TypeOf New
+( Eqv Me 1
+( Imp ( <
+( Nothing TypeOf ^
+( Or Not #1/1/2000#
+( True ( <>
+( ^ To Step
+( x(1) <= (
+( x(1) ^ +
+) #1/1/2000# True =
+) ( 1.5 Is
+) ) Null <
+) * / [a b]
+) * Nothing [a b]
+) , ^ \
+) <= Me Not
+) <> AddressOf >
+) = New Mod
+) > True Mod
+) >= <> =
+) >= True Step
+) Chr(1) Me ,
+) Is Xor Xor
+) Mod & Step
+) New - True
+) Or As a
+) Step ( Nothing
+) To * <
+) To . Like
+) Xor ByVal Chr(1)
+) \ Is AddressOf
+* ( >= AddressOf
+* + := Like
+* + New Nothing
+* + Or ,
+* , Null "s"
+* := > a
+* := Null Is
+* <> Chr(1) Nothing
+* >= , ,
+* >= True &
+* And > <
+* And >= And
+* Empty "s" ByVal
+* Empty 1 x(1)
+* Empty 1.5 Me
+* Imp 1.5 .
+* Me ! :=
+* Null TypeOf Nothing
+* True Nothing Mod
+* True \ >=
+* TypeOf New (
+* Xor < =
+* ^ Mod Chr(1)
++ "s" = /
++ "s" AddressOf 1.5
++ #1/1/2000# Step 1
++ &H1 , #1/1/2000#
++ ( Xor ByVal
++ * Mod Empty
++ + Not (
++ . 1.5 Chr(1)
++ / Null Or
++ >= ! >
++ Empty >= Or
++ Imp Empty "s"
++ Mod . ByVal
++ Mod / Xor
++ Nothing > /
++ Xor Null 1
++ [a b] > =
++ \ >= ByVal
++ ^ And Step
++ x(1) Is [a b]
+, ! >= ,
+, #1/1/2000# [a b] Is
+, &H1 Mod Empty
+, ( Is <=
+, . x(1) /
+, 1 \ &H1
+, <> * Null
+, = * New
+, = \ .
+, AddressOf TypeOf x(1)
+, And ) Eqv
+, Eqv Is Nothing
+, Is And #1/1/2000#
+, New #1/1/2000# [a b]
+, Nothing &H1 And
+, Nothing ) "s"
+, Null ^ &
+, Or - To
+, Or 1 a
+, Xor Is Empty
+, Xor TypeOf As
+, Xor a <>
+, ^ And /
+, a = Nothing
+, x(1) Me .
+, x(1) True :=
+- ! > <>
+- ! Xor <>
+- "s" \ ByVal
+- & True To
+- ( "s" x(1)
+- / Like TypeOf
+- 1.5 Eqv \
+- = >= <
+- = Eqv New
+- ByVal Or Xor
+- Mod Is x(1)
+- New As *
+- Not New -
+- Nothing * And
+- Step \ #1/1/2000#
+- Xor < Step
+- Xor And #1/1/2000#
+- \ [a b] ByVal
+- a #1/1/2000# /
+. ! &H1 !
+. "s" Chr(1) ,
+. "s" Null ByVal
+. #1/1/2000# Eqv >=
+. #1/1/2000# Null &
+. &H1 Not Eqv
+. &H1 ^ Imp
+. ) New To
+. < Step >=
+. <= . #1/1/2000#
+. <> Like !
+. >= "s" >
+. >= >= .
+. And 1.5 <
+. As 1.5 x(1)
+. Empty 1 Empty
+. Empty AddressOf )
+. Empty Eqv "s"
+. Empty Null Xor
+. Eqv = +
+. Like < !
+. Null #1/1/2000# Empty
+. Null And Eqv
+. Step Eqv AddressOf
+. To AddressOf (
+. To ^ Imp
+. Xor And *
+. ^ ( -
+. ^ , ^
+. a <> -
+. x(1) Step And
+. x(1) Step As
+/ "s" - #1/1/2000#
+/ & - -
+/ & > /
+/ &H1 Me Empty
+/ ( >= ,
+/ ( Is Nothing
+/ * And -
+/ - And Xor
+/ - New .
+/ / TypeOf <>
+/ 1.5 ByVal And
+/ 1.5 Like (
+/ <= #1/1/2000# And
+/ <= := "s"
+/ <> ! &
+/ >= + TypeOf
+/ >= > 1.5
+/ AddressOf And Empty
+/ And - True
+/ Chr(1) ! 1
+/ Chr(1) - ^
+/ Chr(1) 1 :=
+/ Imp . Eqv
+/ Is 1 "s"
+/ Is Imp /
+/ Me ! Not
+/ True ByVal =
+/ TypeOf True .
+/ Xor <> Step
+/ [a b] ^ ^
+/ \ / Null
+/ ^ , Step
+/ x(1) AddressOf AddressOf
+1 & #1/1/2000# Null
+1 & > 1.5
+1 &H1 x(1) AddressOf
+1 ( := Nothing
+1 ) & Empty
+1 ) , True
+1 + >= -
+1 . 1.5 As
+1 / - <=
+1 1 ^ Xor
+1 < - AddressOf
+1 < Chr(1) AddressOf
+1 <= Me &
+1 <= x(1) "s"
+1 >= ( /
+1 >= Null -
+1 As x(1) Xor
+1 ByVal ) Is
+1 Empty > (
+1 Me > TypeOf
+1 Me [a b] New
+1 Mod &H1 1
+1 Mod <> +
+1 Mod AddressOf Is
+1 New Nothing <
+1 Not & New
+1 Not To Step
+1 Or > +
+1 To ! >
+1 To Eqv 1
+1 Xor Step Chr(1)
+1 \ ByVal New
+1 \ Imp ByVal
+1.5 "s" [a b] *
+1.5 #1/1/2000# a Like
+1.5 ( * (
+1.5 ( Not &H1
+1.5 ( Not /
+1.5 ) Or &
+1.5 * Chr(1) Chr(1)
+1.5 + TypeOf /
+1.5 / \ .
+1.5 1 "s" <>
+1.5 1 TypeOf \
+1.5 <> ( Like
+1.5 = TypeOf >
+1.5 > < <
+1.5 Chr(1) True <=
+1.5 Eqv ! 1
+1.5 Imp Chr(1) x(1)
+1.5 Imp [a b] And
+1.5 Like ^ <=
+1.5 Me Step Chr(1)
+1.5 Mod &H1 !
+1.5 Mod Nothing \
+1.5 New ( x(1)
+1.5 Not #1/1/2000# Not
+1.5 Not [a b] Chr(1)
+1.5 Step >= (
+1.5 Step Xor Empty
+1.5 True Xor Chr(1)
+1.5 [a b] Me <>
+1.5 \ + "s"
+1.5 x(1) "s" And
+:= "s" As Is
+:= "s" Xor True
+:= "s" a "s"
+:= #1/1/2000# Chr(1) <
+:= &H1 &H1 *
+:= &H1 ) <>
+:= ( "s" 1.5
+:= - Imp &
+:= / #1/1/2000# Eqv
+:= / [a b] .
+:= < & <=
+:= >= ) -
+:= >= Empty True
+:= >= Like /
+:= AddressOf ^ Is
+:= And Step TypeOf
+:= Empty := *
+:= Imp + !
+:= Like To TypeOf
+:= Me <= Empty
+:= Me Null Eqv
+:= Mod <> \
+:= Or * 1
+:= Or True Null
+:= Xor TypeOf 1
+:= x(1) ( <>
+:= x(1) >= (
+< ! + Chr(1)
+< #1/1/2000# "s" Mod
+< #1/1/2000# Me &H1
+< #1/1/2000# Not Me
+< + x(1) -
+< , Empty )
+< 1.5 Me [a b]
+< := = TypeOf
+< := As x(1)
+< := True To
+< <= "s" Is
+< AddressOf Imp New
+< AddressOf Me 1.5
+< AddressOf Null New
+< Chr(1) &H1 Imp
+< Empty AddressOf ,
+< Empty Not Chr(1)
+< Mod ) *
+< Mod > True
+< Not 1.5 To
+< True New Empty
+< TypeOf New 1
+< [a b] AddressOf =
+< \ ByVal As
+< \ a ^
+< a * [a b]
+< x(1) Mod x(1)
+<= #1/1/2000# Xor !
+<= & AddressOf Nothing
+<= & Like To
+<= ( , <>
+<= ( Null Not
+<= + > Me
+<= . & >
+<= . [a b] (
+<= / * Imp
+<= / Nothing <=
+<= 1 ( Empty
+<= <= Me 1.5
+<= <= True ,
+<= <> ByVal Eqv
+<= = / Chr(1)
+<= > , :=
+<= Eqv <= <
+<= Eqv Xor (
+<= Imp <> Like
+<= Me ! (
+<= Mod #1/1/2000# Me
+<= New ( =
+<= Not 1 Null
+<= Nothing True &H1
+<= Or & 1.5
+<= ^ And >=
+<> & Xor To
+<> ( - >=
+<> ) \ ^
+<> * ^ Like
+<> + Imp &
+<> - , Not
+<> 1.5 &H1 Xor
+<> := And :=
+<> <> ) Or
+<> <> Not Step
+<> > := AddressOf
+<> ByVal Not Me
+<> Empty ( Chr(1)
+<> New To Imp
+<> Not < Imp
+<> Step , Is
+<> True ) x(1)
+<> TypeOf > >
+<> Xor . =
+<> Xor True &H1
+<> [a b] ) #1/1/2000#
+<> a & Like
+<> a Empty Like
+= ! ! AddressOf
+= "s" . ^
+= * a Nothing
+= + New <
+= . Me Step
+= / \ 1.5
+= := Xor 1.5
+= = ! ,
+= As Me >
+= ByVal = Like
+= Eqv < ^
+= Eqv Mod <
+= Me ! As
+= Not Eqv <=
+= Not Eqv True
+= Xor Or -
+= Xor [a b] Nothing
+= \ &H1 As
+= \ &H1 Eqv
+= a > x(1)
+> / True AddressOf
+> 1.5 / (
+> := + And
+> <> - x(1)
+> <> x(1) Step
+> And . )
+> ByVal #1/1/2000# Nothing
+> Chr(1) := Eqv
+> Eqv + &H1
+> Eqv >= =
+> Mod = ,
+> Mod \ Step
+> New <> *
+> Not ByVal TypeOf
+> Xor ByVal As
+> \ <> Empty
+>= ) 1.5 Like
+>= * , :=
+>= - Nothing >
+>= <= <> Mod
+>= <= \ <=
+>= > As Null
+>= >= Me x(1)
+>= And - (
+>= As Step (
+>= ByVal "s" "s"
+>= Chr(1) . (
+>= Like Chr(1) To
+>= Mod Mod -
+>= New And Like
+>= Nothing Is Or
+>= [a b] <= x(1)
+AddressOf #1/1/2000# 1 And
+AddressOf #1/1/2000# 1 Xor
+AddressOf ( := *
+AddressOf ) To New
+AddressOf > 1 Is
+AddressOf >= Mod Xor
+AddressOf As Like Chr(1)
+AddressOf Chr(1) Eqv (
+AddressOf Empty AddressOf ,
+AddressOf Imp &H1 Eqv
+AddressOf Mod <> Null
+AddressOf Mod As Not
+AddressOf New [a b] =
+AddressOf To Nothing TypeOf
+AddressOf True >= <=
+AddressOf True Not >=
+AddressOf Xor Or /
+AddressOf [a b] Mod 1
+AddressOf [a b] x(1) -
+AddressOf a * x(1)
+AddressOf x(1) 1.5 &
+And #1/1/2000# And Eqv
+And ( To \
+And ( [a b] &
+And ) < /
+And - Not TypeOf
+And . 1.5 Nothing
+And . Eqv Nothing
+And / = Like
+And := Null /
+And = & a
+And = a 1.5
+And > &H1 )
+And >= . [a b]
+And AddressOf a Is
+And Empty #1/1/2000# To
+And Empty . Nothing
+And Is #1/1/2000# Me
+And Is TypeOf TypeOf
+And Like ByVal Empty
+And Mod Step ^
+And New ! AddressOf
+And Not = Null
+And Nothing 1.5 &H1
+And Null New Eqv
+And Null ^ >=
+And Or 1.5 !
+And To Null ^
+And True a ^
+And TypeOf * True
+And TypeOf AddressOf ^
+And a = ByVal
+And a [a b] >
+As "s" + :=
+As ( [a b] <
+As ) Imp Step
+As ) New Me
+As * ( True
+As * Mod 1
+As + - Not
+As + To 1.5
+As , &H1 New
+As - Me &H1
+As < And =
+As < [a b] )
+As > And Empty
+As AddressOf <= <=
+As And , Null
+As And Step >
+As Chr(1) &H1 ^
+As Empty , 1
+As Empty Empty "s"
+As Mod & Null
+As New Nothing Me
+As True , ^
+As True As Empty
+As True Not AddressOf
+As TypeOf ByVal &H1
+As Xor > Chr(1)
+As [a b] 1.5 Step
+As ^ + ByVal
+As x(1) & <=
+ByVal ! Empty x(1)
+ByVal "s" Nothing Me
+ByVal #1/1/2000# Nothing ^
+ByVal #1/1/2000# Or Nothing
+ByVal &H1 ! !
+ByVal + Is &H1
+ByVal + a Eqv
+ByVal - [a b] .
+ByVal 1 / As
+ByVal 1 < :=
+ByVal := Xor .
+ByVal < := Chr(1)
+ByVal > ! ByVal
+ByVal AddressOf Empty #1/1/2000#
+ByVal AddressOf Xor Is
+ByVal And Is !
+ByVal Eqv <> Nothing
+ByVal Mod Chr(1) And
+ByVal New ) ,
+ByVal Null / ^
+ByVal Or &H1 Step
+ByVal To ) [a b]
+ByVal To < Eqv
+ByVal True >= =
+ByVal TypeOf ( ^
+ByVal ^ 1.5 &
+ByVal ^ Empty +
+Chr(1) ! ByVal &
+Chr(1) ! Xor ByVal
+Chr(1) "s" x(1) And
+Chr(1) + "s" Chr(1)
+Chr(1) 1.5 ^ \
+Chr(1) := * Chr(1)
+Chr(1) < Or <
+Chr(1) <= ( <>
+Chr(1) <> Is -
+Chr(1) = >= Mod
+Chr(1) >= 1 ByVal
+Chr(1) And #1/1/2000# True
+Chr(1) As TypeOf Or
+Chr(1) Me 1.5 +
+Chr(1) Not &H1 Null
+Chr(1) Not ( Null
+Chr(1) Not Like <=
+Chr(1) Not [a b] &
+Chr(1) Or Xor :=
+Chr(1) True True 1
+Chr(1) TypeOf < ByVal
+Chr(1) Xor Nothing :=
+Chr(1) [a b] Empty Is
+Chr(1) a "s" ^
+Chr(1) x(1) & Eqv
+Chr(1) x(1) = <
+Empty "s" Like Me
+Empty #1/1/2000# 1 Or
+Empty & >= Chr(1)
+Empty & Step And
+Empty ( &H1 AddressOf
+Empty ) Step Me
+Empty + & True
+Empty . Like 1
+Empty / New a
+Empty AddressOf Is 1
+Empty And Eqv Imp
+Empty As > Nothing
+Empty Chr(1) > 1.5
+Empty Empty Step Me
+Empty Eqv & Not
+Empty Null > New
+Empty Null x(1) And
+Empty Or <> And
+Empty To Xor a
+Empty Xor AddressOf "s"
+Empty \ 1 >=
+Empty \ >= /
+Empty ^ Nothing And
+Eqv #1/1/2000# ! New
+Eqv & a !
+Eqv / &H1 And
+Eqv 1.5 ( [a b]
+Eqv 1.5 x(1) ByVal
+Eqv AddressOf & New
+Eqv As ! TypeOf
+Eqv As Or Empty
+Eqv As Xor >=
+Eqv Eqv <> Imp
+Eqv Is Mod Not
+Eqv Like := <
+Eqv Not Nothing 1
+Eqv Not x(1) Empty
+Eqv Or - +
+Eqv Step ) As
+Eqv To := ByVal
+Eqv To Empty Like
+Eqv True Chr(1) TypeOf
+Eqv TypeOf ) True
+Eqv Xor And &
+Eqv \ * 1
+Imp #1/1/2000# / Null
+Imp #1/1/2000# := >=
+Imp & New Empty
+Imp & To And
+Imp &H1 , /
+Imp &H1 Or Xor
+Imp ) - Nothing
+Imp ) <= +
+Imp - ByVal #1/1/2000#
+Imp - Step ByVal
+Imp <= To Like
+Imp > "s" Mod
+Imp AddressOf - Is
+Imp AddressOf ByVal <=
+Imp ByVal a =
+Imp Eqv Me &
+Imp Imp > >=
+Imp Imp Nothing "s"
+Imp Is Imp Nothing
+Imp Is x(1) As
+Imp Like ByVal And
+Imp Nothing ( >=
+Imp [a b] Step Like
+Imp ^ > Imp
+Is ! & .
+Is "s" Step !
+Is & ! "s"
+Is ( Null Null
+Is ) To True
+Is + 1 Not
+Is , ( Eqv
+Is , New Imp
+Is 1 \ [a b]
+Is 1.5 Me New
+Is 1.5 True As
+Is <> Eqv #1/1/2000#
+Is > \ !
+Is AddressOf 1.5 Mod
+Is As 1 AddressOf
+Is Is & Me
+Is Like & Step
+Is Like And Null
+Is New \ ,
+Is New ^ ByVal
+Is Not #1/1/2000# Imp
+Is Not , <>
+Is Null And !
+Is Step Mod Or
+Is Step x(1) -
+Is To "s" <
+Is \ And Imp
+Is \ Eqv True
+Is ^ / .
+Is a TypeOf AddressOf
+Is x(1) Or Xor
+Like & 1 Imp
+Like & Like #1/1/2000#
+Like & a True
+Like &H1 = <=
+Like , ByVal Xor
+Like . < Is
+Like . [a b] >=
+Like / Empty TypeOf
+Like < , Me
+Like <> TypeOf Chr(1)
+Like >= - Imp
+Like ByVal ( True
+Like ByVal * \
+Like Chr(1) ) <=
+Like Chr(1) * Null
+Like Chr(1) TypeOf New
+Like Empty Eqv "s"
+Like Empty Not 1
+Like Imp Mod #1/1/2000#
+Like Like . 1
+Like Like Like Or
+Like Step Imp &
+Like TypeOf Null To
+Me ! <> a
+Me ! Empty >=
+Me ! \ AddressOf
+Me ! ^ "s"
+Me "s" Step New
+Me #1/1/2000# := x(1)
+Me &H1 Chr(1) >
+Me ( &H1 And
+Me ) * TypeOf
+Me + Is -
+Me . 1 =
+Me / * x(1)
+Me / Like True
+Me 1 Null Nothing
+Me >= 1 Empty
+Me AddressOf Empty 1.5
+Me ByVal Eqv ByVal
+Me Chr(1) * !
+Me Eqv #1/1/2000# True
+Me Like Null Eqv
+Me Mod New >
+Me Null , )
+Me Or ! <>
+Me Or 1 !
+Me TypeOf Step Imp
+Me Xor ) :=
+Me [a b] 1 *
+Me ^ Or <
+Me a Chr(1) 1.5
+Me x(1) - TypeOf
+Mod ! Empty New
+Mod & * "s"
+Mod & Null Xor
+Mod + "s" (
+Mod + And New
+Mod - True Not
+Mod 1 1.5 \
+Mod 1.5 , And
+Mod 1.5 To Is
+Mod > Imp Mod
+Mod > Like -
+Mod >= Nothing Xor
+Mod And >= Imp
+Mod As & Or
+Mod Eqv \ New
+Mod Not Is Imp
+Mod Nothing To x(1)
+Mod To <> (
+Mod True a Not
+Mod \ Xor As
+Mod ^ Mod 1
+Mod ^ ^ True
+New #1/1/2000# "s" True
+New #1/1/2000# <> Xor
+New #1/1/2000# Is ^
+New & := <>
+New := 1.5 As
+New := Mod ,
+New < <= "s"
+New <= Chr(1) .
+New <> \ #1/1/2000#
+New >= a *
+New And < Is
+New ByVal AddressOf 1
+New Empty To As
+New Empty Xor True
+New Mod >= Me
+New Mod Imp 1.5
+New New <> \
+New TypeOf - /
+New TypeOf Step !
+New Xor * a
+New ^ To &
+New x(1) Is Nothing
+Not #1/1/2000# Nothing [a b]
+Not + Imp <
+Not + To >=
+Not + \ .
+Not - "s" As
+Not / <> Like
+Not / >= True
+Not 1.5 New +
+Not := \ Nothing
+Not < ( And
+Not Chr(1) < ,
+Not Empty To ^
+Not Imp AddressOf =
+Not Is And <=
+Not Like 1.5 <
+Not Nothing > True
+Not Null Null Step
+Not Null ^ TypeOf
+Not True Is As
+Not ^ Empty Step
+Nothing "s" - =
+Nothing ( Null &H1
+Nothing ( True (
+Nothing ) Nothing #1/1/2000#
+Nothing * = <>
+Nothing + Chr(1) Mod
+Nothing , #1/1/2000# Xor
+Nothing - ! #1/1/2000#
+Nothing - TypeOf Chr(1)
+Nothing 1 #1/1/2000# >
+Nothing 1.5 >= x(1)
+Nothing := Xor Nothing
+Nothing = Me Chr(1)
+Nothing >= &H1 =
+Nothing As = True
+Nothing ByVal <= Mod
+Nothing ByVal True <=
+Nothing Eqv & Chr(1)
+Nothing Eqv := /
+Nothing Like , Is
+Nothing Me a *
+Nothing Or Like As
+Nothing To Mod (
+Nothing To a <=
+Nothing TypeOf Or [a b]
+Nothing Xor 1.5 TypeOf
+Nothing x(1) TypeOf Is
+Null & Empty Eqv
+Null &H1 , Eqv
+Null ( Like Mod
+Null ) - >=
+Null * #1/1/2000# Is
+Null * <> /
+Null , Eqv /
+Null / ) :=
+Null := TypeOf [a b]
+Null <> Null >
+Null <> \ Me
+Null >= 1.5 True
+Null >= Null 1
+Null And & As
+Null Chr(1) And \
+Null Empty & And
+Null Is <= 1.5
+Null Is To &H1
+Null Like / x(1)
+Null Me TypeOf Chr(1)
+Null Not & Mod
+Null Null Me AddressOf
+Null To #1/1/2000# >=
+Null TypeOf New Not
+Null [a b] And x(1)
+Null ^ #1/1/2000# ByVal
+Null a , x(1)
+Null a = /
+Or &H1 To <>
+Or ( 1 x(1)
+Or ) Imp Like
+Or * Imp Empty
+Or + 1.5 <=
+Or / Nothing Imp
+Or := <> Imp
+Or := Imp Empty
+Or <> = )
+Or > Step Chr(1)
+Or And / a
+Or And Step Is
+Or As ! :=
+Or Chr(1) And 1.5
+Or Chr(1) Empty x(1)
+Or Imp &H1 Nothing
+Or Is := Is
+Or Me ^ :=
+Or Me a Me
+Or Not Chr(1) !
+Or Nothing < )
+Or Null >= *
+Or Or Imp As
+Or Or Or ^
+Or Step Not +
+Or Xor AddressOf x(1)
+Or \ "s" #1/1/2000#
+Or \ Or AddressOf
+Or x(1) <> Chr(1)
+Step ! / <=
+Step "s" &H1 Nothing
+Step "s" ^ <
+Step &H1 New Chr(1)
+Step * Not <
+Step . "s" Mod
+Step . \ +
+Step = ^ Empty
+Step As Null *
+Step ByVal - *
+Step Eqv #1/1/2000# New
+Step Me ByVal =
+Step Null New #1/1/2000#
+Step Null TypeOf Chr(1)
+Step Step Or /
+Step Xor True New
+Step [a b] Is True
+Step ^ ! "s"
+To &H1 >= AddressOf
+To &H1 [a b] >=
+To , ( -
+To , - Null
+To , Chr(1) &H1
+To - "s" True
+To < Me :=
+To <> 1.5 <
+To = >= [a b]
+To > >= \
+To >= < Nothing
+To AddressOf AddressOf :=
+To ByVal ) To
+To Imp &H1 And
+To Imp / >
+To Imp [a b] \
+To Is Like Mod
+To Like Not &
+To Me , 1
+To New Eqv ByVal
+To To Me AddressOf
+To [a b] / Step
+To [a b] ByVal :=
+To ^ = =
+True & 1.5 #1/1/2000#
+True + a Imp
+True , [a b] .
+True - True Is
+True . AddressOf <>
+True := Empty Eqv
+True := To #1/1/2000#
+True <= Eqv )
+True > AddressOf .
+True Empty \ x(1)
+True Imp <= =
+True Like = Not
+True Me := Not
+True Mod x(1) <>
+True New = (
+True Nothing "s" 1.5
+True Null &H1 Empty
+True Step AddressOf Or
+True Step To >=
+True True := ByVal
+True True := Empty
+True TypeOf ) ,
+True TypeOf := <=
+True [a b] #1/1/2000# Null
+True [a b] True =
+True \ + Xor
+True \ / Empty
+True \ Xor Mod
+TypeOf #1/1/2000# ^ And
+TypeOf & > Empty
+TypeOf / ByVal >
+TypeOf 1 . To
+TypeOf := + Eqv
+TypeOf := ^ True
+TypeOf < As Chr(1)
+TypeOf < Like Mod
+TypeOf = To Me
+TypeOf As . a
+TypeOf Is 1 !
+TypeOf Me ! Me
+TypeOf Mod Null Empty
+TypeOf New To <>
+TypeOf Not ! Is
+TypeOf Nothing ^ Not
+TypeOf True - Not
+TypeOf Xor New &H1
+TypeOf Xor Null -
+TypeOf ^ Nothing Or
+TypeOf x(1) 1 Null
+Xor ! ) Null
+Xor "s" . <
+Xor "s" a +
+Xor &H1 ByVal :=
+Xor ) #1/1/2000# "s"
+Xor * a +
+Xor . , Like
+Xor / + <=
+Xor := &H1 Nothing
+Xor := Is <
+Xor <> As True
+Xor <> Mod &
+Xor = * .
+Xor > ( Me
+Xor AddressOf Mod Null
+Xor Empty 1.5 \
+Xor Eqv ByVal &
+Xor Eqv Not AddressOf
+Xor Eqv Null Xor
+Xor Is , >
+Xor Like Mod ,
+Xor Not Not ,
+Xor Nothing a Xor
+Xor To <= a
+[a b] ! Like Me
+[a b] #1/1/2000# ( )
+[a b] &H1 >= Empty
+[a b] &H1 ^ -
+[a b] ( * "s"
+[a b] := ( TypeOf
+[a b] := , Like
+[a b] < , New
+[a b] < Like As
+[a b] > > Like
+[a b] >= >= And
+[a b] >= Nothing \
+[a b] And x(1) >=
+[a b] Empty True Me
+[a b] New + (
+[a b] New \ <
+[a b] Null Xor New
+[a b] Or Not True
+[a b] \ ByVal +
+[a b] ^ <> <
+\ "s" / <>
+\ #1/1/2000# Is (
+\ & > Step
+\ & Step Eqv
+\ * #1/1/2000# Or
+\ + And Not
+\ + Chr(1) Like
+\ + [a b] /
+\ - , 1
+\ . Imp As
+\ . a Is
+\ 1.5 * Or
+\ 1.5 Nothing +
+\ := ) [a b]
+\ := a a
+\ < 1.5 Imp
+\ <> & Eqv
+\ <> Mod True
+\ <> Or True
+\ AddressOf Null .
+\ As Nothing Eqv
+\ As Step Mod
+\ ByVal To Step
+\ Chr(1) <> Like
+\ Empty >= ^
+\ Imp \ =
+\ Like TypeOf (
+\ Not Like )
+\ Or #1/1/2000# <
+\ Step Mod +
+\ True And 1.5
+\ TypeOf Not =
+\ Xor Xor \
+\ [a b] Eqv AddressOf
+\ \ * Xor
+\ ^ Nothing Imp
+\ a 1.5 =
+\ x(1) Like Imp
+^ "s" + Empty
+^ &H1 Or Xor
+^ ) ( Mod
+^ * < *
+^ * = x(1)
+^ * > =
+^ * a AddressOf
+^ - &H1 Me
+^ - <= ,
+^ - AddressOf :=
+^ > Me Mod
+^ > a &
+^ Empty - !
+^ Empty . <
+^ Imp Empty 1
+^ Imp Is New
+^ Like . 1.5
+^ Me As x(1)
+^ Not Not Or
+^ Nothing Chr(1) (
+^ Or 1.5 ,
+^ TypeOf a :=
+^ Xor Eqv ^
+a "s" / )
+a & ^ x(1)
+a ) . Or
+a . To .
+a 1.5 Imp <>
+a AddressOf Nothing !
+a As ( ^
+a As To Eqv
+a As Xor Eqv
+a Chr(1) - (
+a Empty ^ Eqv
+a Imp Step \
+a Imp To Null
+a Is ! Nothing
+a Like > ^
+a Nothing / -
+a Nothing >= Like
+a Or To *
+x(1) & AddressOf <>
+x(1) &H1 AddressOf *
+x(1) ( #1/1/2000# <
+x(1) * And \
+x(1) + <> And
+x(1) + <> \
+x(1) + True As
+x(1) , >= -
+x(1) <= / /
+x(1) <= Or [a b]
+x(1) <= x(1) Is
+x(1) <> [a b] AddressOf
+x(1) > ByVal Chr(1)
+x(1) And ByVal AddressOf
+x(1) Is Xor TypeOf
+x(1) Me , )
+x(1) Or "s" <
+x(1) Or + As
+x(1) Step 1.5 And
+x(1) To - Me
+x(1) To True ^
+x(1) True := !
+x(1) True a True
+x(1) TypeOf Xor True
+x(1) Xor New *
+x(1) \ To ,

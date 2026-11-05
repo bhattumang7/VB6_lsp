@@ -1,0 +1,5 @@
+# {k} is replaced by each run of tokens.
+=== assign bas
+Sub P(a, x)
+x = {k}
+End Sub
