@@ -541,8 +541,31 @@ fn valid_serial(y: i32, m: i32, d: i32) -> Option<f64> {
         .then(|| vba_date_serial(y, m, d))
 }
 
-/// Date part made of numbers only: `m/d/y`, or `y/m/d` for a leading year.
+/// The year of the system clock, which a date written without a year takes.
+pub fn current_year() -> i32 {
+    let secs = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs() as i64);
+    let days = (secs / 86400) as i32 + 719468; // days since 0000-03-01
+    let era = days / 146097;
+    let doe = days - era * 146097;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let m = (5 * doy + 2) / 153;
+    let year = yoe + era * 400;
+    if m >= 10 { year + 1 } else { year }
+}
+
+/// Date part made of numbers only: `m/d/y`, or `y/m/d` for a leading year; with two numbers,
+/// `m/d` of the current year or `y/m` for a leading year.
 fn numeric_date(nums: &[(i32, usize)]) -> Option<f64> {
+    if let [(a, ad), (b, _)] = *nums {
+        return if ad >= 3 || a > 31 {
+            valid_serial(full_year(a, ad)?, b, 1)
+        } else {
+            valid_serial(current_year(), a, b)
+        };
+    }
     let [(a, ad), (b, _), (c, cd)] = *nums else { return None };
     if ad >= 3 || a > 31 {
         valid_serial(full_year(a, ad)?, b, c)
@@ -560,6 +583,8 @@ fn named_date(month: i32, nums: &[(i32, usize)]) -> Option<f64> {
     let year_like = |v: i32, d: usize| d >= 3 || v > 31;
     match *nums {
         [(v, d)] if year_like(v, d) => valid_serial(full_year(v, d)?, month, 1),
+        // A day alone is a day of the current year.
+        [(v, _)] => valid_serial(current_year(), month, v),
         [(a, ad), (b, bd)] => {
             if year_like(a, ad) {
                 valid_serial(full_year(a, ad)?, month, b)

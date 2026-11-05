@@ -131,3 +131,15 @@ fn a_period_between_numbers_separates_time_parts() {
     close(date("12:30.5"), 12.5 / 24.0 + 5.0 / 86400.0);
     assert_eq!(date("Jan. 1, 2000"), Some(36526.0));
 }
+
+#[test]
+fn a_date_without_a_year_takes_the_current_year() {
+    let year = vb6_syntax::frontend::scanner::current_year();
+    assert!((2024..=2200).contains(&year));
+    let jan_2 = date(&format!("1/2/{year}"));
+    assert!(jan_2.is_some());
+    assert_eq!(date("1/2"), jan_2);
+    assert_eq!(date("Jan 2"), jan_2);
+    assert_eq!(date("2 Jan"), jan_2);
+    assert_eq!(date("2000-2"), Some(36557.0));
+}
