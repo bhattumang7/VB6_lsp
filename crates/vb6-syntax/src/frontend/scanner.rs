@@ -1435,7 +1435,7 @@ impl<'a> Scanner<'a> {
             return TypeSuffix::None;
         }
         let is_bang_member = suffix == b'!'
-            && self.src.get(self.pos + 1).map_or(false, |&n| is_ident_start(n));
+            && self.src.get(self.pos + 1).map_or(false, |&n| is_ident_start(n) && n != b'_');
         let ts = TypeSuffix::from_byte(suffix);
         if ts != TypeSuffix::None && !is_bang_member {
             self.pos += 1;

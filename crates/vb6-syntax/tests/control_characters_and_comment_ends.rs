@@ -123,3 +123,12 @@ fn string_bytes_are_read_in_the_ansi_code_page() {
     let ExprNode::Literal { lit: AstLit::Str(s) } = arena.get(*value) else { panic!("no string") };
     assert_eq!(s.chars().map(|c| c as u32).collect::<Vec<_>>(), vec![8364, 129, 381, 376, 233]);
 }
+
+#[test]
+fn an_underscore_after_a_bang_does_not_start_a_member() {
+    // `r!_x`: the `!` is the Single suffix of `r` and `_x` is not a name.
+    let (_, found) = in_sub("n = r!_x");
+    assert!(!found.is_empty());
+    let (_, found) = in_sub("n = r!x");
+    assert_eq!(found, vec![]);
+}
