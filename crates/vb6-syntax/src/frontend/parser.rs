@@ -2993,11 +2993,11 @@ impl<'src> Parser<'src> {
                 ERR_EXIT_DO_OUTSIDE_DO,
             ),
             ExitKind::Sub => (
-                self.proc_kind.is_none_or(|k| k == ProcKind::Sub),
+                self.proc_kind.is_none_or(|k| matches!(k, ProcKind::Sub | ProcKind::PropGet)),
                 ERR_EXIT_SUB_NOT_ALLOWED,
             ),
             ExitKind::Function => (
-                self.proc_kind.is_none_or(|k| k == ProcKind::Function),
+                self.proc_kind.is_none_or(|k| matches!(k, ProcKind::Function | ProcKind::PropGet)),
                 ERR_EXIT_FUNCTION_NOT_ALLOWED,
             ),
             ExitKind::Property => (
@@ -4273,7 +4273,11 @@ impl<'src> Parser<'src> {
             return body;
         }
         self.advance(); // End
-        if self.peek().kind != TokenKind::Kw(closer) {
+        // A property getter is closed by any of the three procedure closers.
+        let closes = self.peek().kind == TokenKind::Kw(closer)
+            || (kind == ProcKind::PropGet
+                && matches!(self.peek().kind, TokenKind::Kw(Kw::Sub | Kw::Function | Kw::Property)));
+        if !closes {
             self.diagnostics.push(expected_code, end_span);
         }
         self.advance(); // Sub / Function / Property

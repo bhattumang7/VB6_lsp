@@ -1,0 +1,1867 @@
+# template	word	class	message
+sub	End Sub	accepted	
+sub	End Function	syntax	Expected End Sub
+sub	End Property	syntax	Expected End Sub
+sub	End	syntax	Expected End Sub
+sub	End If	syntax	End If without block If
+sub	End Sub Rem x	syntax	Syntax error
+sub	End Sub x	syntax	Syntax error
+sub	End  Sub	accepted	
+sub	EndSub	semantic	Sub or Function not defined
+sub	End Sub:	syntax	Syntax error
+sub	End Sub: End Sub	syntax	Syntax error
+sub	Exit Sub\nEnd Sub	accepted	
+sub	Exit Sub\nEnd Function	syntax	Expected End Sub
+sub	Exit Sub\nEnd Property	syntax	Expected End Sub
+sub	Exit Sub\nEnd	syntax	Expected End Sub
+sub	Exit Sub\nEnd If	syntax	End If without block If
+sub	Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+sub	Exit Sub\nEnd Sub x	syntax	Syntax error
+sub	Exit Sub\nEnd  Sub	accepted	
+sub	Exit Sub\nEndSub	semantic	Sub or Function not defined
+sub	Exit Sub\nEnd Sub:	syntax	Syntax error
+sub	Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+sub	Exit Sub\n	syntax	Expected End Sub
+sub	Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Property\nEnd Sub	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd Function	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd Property	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd If	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd Sub Rem x	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd Sub x	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd  Sub	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEndSub	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd Sub:	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\nEnd Sub: End Sub	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Property\n	syntax	Exit Property not allowed in Function or Sub
+sub	Exit Do\nEnd Sub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd Function	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd Property	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd Sub x	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd  Sub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEndSub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd Sub:	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\n	syntax	Exit Do not within Do...Loop
+sub	Exit For\nEnd Sub	syntax	Exit For not within For...Next
+sub	Exit For\nEnd Function	syntax	Exit For not within For...Next
+sub	Exit For\nEnd Property	syntax	Exit For not within For...Next
+sub	Exit For\nEnd	syntax	Exit For not within For...Next
+sub	Exit For\nEnd If	syntax	Exit For not within For...Next
+sub	Exit For\nEnd Sub Rem x	syntax	Exit For not within For...Next
+sub	Exit For\nEnd Sub x	syntax	Exit For not within For...Next
+sub	Exit For\nEnd  Sub	syntax	Exit For not within For...Next
+sub	Exit For\nEndSub	syntax	Exit For not within For...Next
+sub	Exit For\nEnd Sub:	syntax	Exit For not within For...Next
+sub	Exit For\nEnd Sub: End Sub	syntax	Exit For not within For...Next
+sub	Exit For\n	syntax	Exit For not within For...Next
+sub	Exit Select\nEnd Sub	syntax	Syntax error
+sub	Exit Select\nEnd Function	syntax	Syntax error
+sub	Exit Select\nEnd Property	syntax	Syntax error
+sub	Exit Select\nEnd	syntax	Syntax error
+sub	Exit Select\nEnd If	syntax	Syntax error
+sub	Exit Select\nEnd Sub Rem x	syntax	Syntax error
+sub	Exit Select\nEnd Sub x	syntax	Syntax error
+sub	Exit Select\nEnd  Sub	syntax	Syntax error
+sub	Exit Select\nEndSub	syntax	Syntax error
+sub	Exit Select\nEnd Sub:	syntax	Syntax error
+sub	Exit Select\nEnd Sub: End Sub	syntax	Syntax error
+sub	Exit Select\n	syntax	Syntax error
+sub	Exit With\nEnd Sub	syntax	Syntax error
+sub	Exit With\nEnd Function	syntax	Syntax error
+sub	Exit With\nEnd Property	syntax	Syntax error
+sub	Exit With\nEnd	syntax	Syntax error
+sub	Exit With\nEnd If	syntax	Syntax error
+sub	Exit With\nEnd Sub Rem x	syntax	Syntax error
+sub	Exit With\nEnd Sub x	syntax	Syntax error
+sub	Exit With\nEnd  Sub	syntax	Syntax error
+sub	Exit With\nEndSub	syntax	Syntax error
+sub	Exit With\nEnd Sub:	syntax	Syntax error
+sub	Exit With\nEnd Sub: End Sub	syntax	Syntax error
+sub	Exit With\n	syntax	Syntax error
+sub	Return\nEnd Sub	accepted	
+sub	Return\nEnd Function	syntax	Expected End Sub
+sub	Return\nEnd Property	syntax	Expected End Sub
+sub	Return\nEnd	syntax	Expected End Sub
+sub	Return\nEnd If	syntax	End If without block If
+sub	Return\nEnd Sub Rem x	syntax	Syntax error
+sub	Return\nEnd Sub x	syntax	Syntax error
+sub	Return\nEnd  Sub	accepted	
+sub	Return\nEndSub	semantic	Sub or Function not defined
+sub	Return\nEnd Sub:	syntax	Syntax error
+sub	Return\nEnd Sub: End Sub	syntax	Syntax error
+sub	Return\n	syntax	Expected End Sub
+sub	GoSub L\nEnd Sub	syntax	Label not defined
+sub	GoSub L\nEnd Function	syntax	Expected End Sub
+sub	GoSub L\nEnd Property	syntax	Expected End Sub
+sub	GoSub L\nEnd	syntax	Expected End Sub
+sub	GoSub L\nEnd If	syntax	End If without block If
+sub	GoSub L\nEnd Sub Rem x	syntax	Syntax error
+sub	GoSub L\nEnd Sub x	syntax	Syntax error
+sub	GoSub L\nEnd  Sub	syntax	Label not defined
+sub	GoSub L\nEndSub	semantic	Sub or Function not defined
+sub	GoSub L\nEnd Sub:	syntax	Syntax error
+sub	GoSub L\nEnd Sub: End Sub	syntax	Syntax error
+sub	GoSub L\n	syntax	Expected End Sub
+sub	L:\nEnd Sub	accepted	
+sub	L:\nEnd Function	syntax	Expected End Sub
+sub	L:\nEnd Property	syntax	Expected End Sub
+sub	L:\nEnd	syntax	Expected End Sub
+sub	L:\nEnd If	syntax	End If without block If
+sub	L:\nEnd Sub Rem x	syntax	Syntax error
+sub	L:\nEnd Sub x	syntax	Syntax error
+sub	L:\nEnd  Sub	accepted	
+sub	L:\nEndSub	semantic	Sub or Function not defined
+sub	L:\nEnd Sub:	syntax	Syntax error
+sub	L:\nEnd Sub: End Sub	syntax	Syntax error
+sub	L:\n	syntax	Expected End Sub
+sub	Resume\nEnd Sub	accepted	
+sub	Resume\nEnd Function	syntax	Expected End Sub
+sub	Resume\nEnd Property	syntax	Expected End Sub
+sub	Resume\nEnd	syntax	Expected End Sub
+sub	Resume\nEnd If	syntax	End If without block If
+sub	Resume\nEnd Sub Rem x	syntax	Syntax error
+sub	Resume\nEnd Sub x	syntax	Syntax error
+sub	Resume\nEnd  Sub	accepted	
+sub	Resume\nEndSub	semantic	Sub or Function not defined
+sub	Resume\nEnd Sub:	syntax	Syntax error
+sub	Resume\nEnd Sub: End Sub	syntax	Syntax error
+sub	Resume\n	syntax	Expected End Sub
+sub	Resume Next\nEnd Sub	accepted	
+sub	Resume Next\nEnd Function	syntax	Expected End Sub
+sub	Resume Next\nEnd Property	syntax	Expected End Sub
+sub	Resume Next\nEnd	syntax	Expected End Sub
+sub	Resume Next\nEnd If	syntax	End If without block If
+sub	Resume Next\nEnd Sub Rem x	syntax	Syntax error
+sub	Resume Next\nEnd Sub x	syntax	Syntax error
+sub	Resume Next\nEnd  Sub	accepted	
+sub	Resume Next\nEndSub	semantic	Sub or Function not defined
+sub	Resume Next\nEnd Sub:	syntax	Syntax error
+sub	Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+sub	Resume Next\n	syntax	Expected End Sub
+sub	Resume 0\nEnd Sub	accepted	
+sub	Resume 0\nEnd Function	syntax	Expected End Sub
+sub	Resume 0\nEnd Property	syntax	Expected End Sub
+sub	Resume 0\nEnd	syntax	Expected End Sub
+sub	Resume 0\nEnd If	syntax	End If without block If
+sub	Resume 0\nEnd Sub Rem x	syntax	Syntax error
+sub	Resume 0\nEnd Sub x	syntax	Syntax error
+sub	Resume 0\nEnd  Sub	accepted	
+sub	Resume 0\nEndSub	semantic	Sub or Function not defined
+sub	Resume 0\nEnd Sub:	syntax	Syntax error
+sub	Resume 0\nEnd Sub: End Sub	syntax	Syntax error
+sub	Resume 0\n	syntax	Expected End Sub
+sub	Stop\nEnd Sub	accepted	
+sub	Stop\nEnd Function	syntax	Expected End Sub
+sub	Stop\nEnd Property	syntax	Expected End Sub
+sub	Stop\nEnd	syntax	Expected End Sub
+sub	Stop\nEnd If	syntax	End If without block If
+sub	Stop\nEnd Sub Rem x	syntax	Syntax error
+sub	Stop\nEnd Sub x	syntax	Syntax error
+sub	Stop\nEnd  Sub	accepted	
+sub	Stop\nEndSub	semantic	Sub or Function not defined
+sub	Stop\nEnd Sub:	syntax	Syntax error
+sub	Stop\nEnd Sub: End Sub	syntax	Syntax error
+sub	Stop\n	syntax	Expected End Sub
+sub	On Error GoTo 0\nEnd Sub	accepted	
+sub	On Error GoTo 0\nEnd Function	syntax	Expected End Sub
+sub	On Error GoTo 0\nEnd Property	syntax	Expected End Sub
+sub	On Error GoTo 0\nEnd	syntax	Expected End Sub
+sub	On Error GoTo 0\nEnd If	syntax	End If without block If
+sub	On Error GoTo 0\nEnd Sub Rem x	syntax	Syntax error
+sub	On Error GoTo 0\nEnd Sub x	syntax	Syntax error
+sub	On Error GoTo 0\nEnd  Sub	accepted	
+sub	On Error GoTo 0\nEndSub	semantic	Sub or Function not defined
+sub	On Error GoTo 0\nEnd Sub:	syntax	Syntax error
+sub	On Error GoTo 0\nEnd Sub: End Sub	syntax	Syntax error
+sub	On Error GoTo 0\n	syntax	Expected End Sub
+sub	On Error Resume Next\nEnd Sub	accepted	
+sub	On Error Resume Next\nEnd Function	syntax	Expected End Sub
+sub	On Error Resume Next\nEnd Property	syntax	Expected End Sub
+sub	On Error Resume Next\nEnd	syntax	Expected End Sub
+sub	On Error Resume Next\nEnd If	syntax	End If without block If
+sub	On Error Resume Next\nEnd Sub Rem x	syntax	Syntax error
+sub	On Error Resume Next\nEnd Sub x	syntax	Syntax error
+sub	On Error Resume Next\nEnd  Sub	accepted	
+sub	On Error Resume Next\nEndSub	semantic	Sub or Function not defined
+sub	On Error Resume Next\nEnd Sub:	syntax	Syntax error
+sub	On Error Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+sub	On Error Resume Next\n	syntax	Expected End Sub
+sub	Exit Sub: Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+sub	Exit Sub: Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+sub	x = 1: Exit Sub\nEnd Sub	accepted	
+sub	x = 1: Exit Sub\nEnd Function	syntax	Expected End Sub
+sub	x = 1: Exit Sub\nEnd Property	syntax	Expected End Sub
+sub	x = 1: Exit Sub\nEnd	syntax	Expected End Sub
+sub	x = 1: Exit Sub\nEnd If	syntax	End If without block If
+sub	x = 1: Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+sub	x = 1: Exit Sub\nEnd Sub x	syntax	Syntax error
+sub	x = 1: Exit Sub\nEnd  Sub	accepted	
+sub	x = 1: Exit Sub\nEndSub	semantic	Sub or Function not defined
+sub	x = 1: Exit Sub\nEnd Sub:	syntax	Syntax error
+sub	x = 1: Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+sub	x = 1: Exit Sub\n	syntax	Expected End Sub
+sub	If c Then Exit Sub\nEnd Sub	accepted	
+sub	If c Then Exit Sub\nEnd Function	syntax	Expected End Sub
+sub	If c Then Exit Sub\nEnd Property	syntax	Expected End Sub
+sub	If c Then Exit Sub\nEnd	syntax	Expected End Sub
+sub	If c Then Exit Sub\nEnd If	syntax	End If without block If
+sub	If c Then Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+sub	If c Then Exit Sub\nEnd Sub x	syntax	Syntax error
+sub	If c Then Exit Sub\nEnd  Sub	accepted	
+sub	If c Then Exit Sub\nEndSub	semantic	Sub or Function not defined
+sub	If c Then Exit Sub\nEnd Sub:	syntax	Syntax error
+sub	If c Then Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+sub	If c Then Exit Sub\n	syntax	Expected End Sub
+sub	If c Then Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+sub	If c Then Exit Property\nEnd Sub	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd Function	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd Property	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd If	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd Sub Rem x	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd Sub x	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd  Sub	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEndSub	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd Sub:	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\nEnd Sub: End Sub	syntax	Exit Property not allowed in Function or Sub
+sub	If c Then Exit Property\n	syntax	Exit Property not allowed in Function or Sub
+sub	Do\nExit Do\nLoop\nEnd Sub	accepted	
+sub	Do\nExit Do\nLoop\nEnd Function	syntax	Expected End Sub
+sub	Do\nExit Do\nLoop\nEnd Property	syntax	Expected End Sub
+sub	Do\nExit Do\nLoop\nEnd	syntax	Expected End Sub
+sub	Do\nExit Do\nLoop\nEnd If	syntax	End If without block If
+sub	Do\nExit Do\nLoop\nEnd Sub Rem x	syntax	Syntax error
+sub	Do\nExit Do\nLoop\nEnd Sub x	syntax	Syntax error
+sub	Do\nExit Do\nLoop\nEnd  Sub	accepted	
+sub	Do\nExit Do\nLoop\nEndSub	semantic	Sub or Function not defined
+sub	Do\nExit Do\nLoop\nEnd Sub:	syntax	Syntax error
+sub	Do\nExit Do\nLoop\nEnd Sub: End Sub	syntax	Syntax error
+sub	Do\nExit Do\nLoop\n	syntax	Expected End Sub
+sub	For i = 1 To 2\nExit For\nNext\nEnd Sub	accepted	
+sub	For i = 1 To 2\nExit For\nNext\nEnd Function	syntax	Expected End Sub
+sub	For i = 1 To 2\nExit For\nNext\nEnd Property	syntax	Expected End Sub
+sub	For i = 1 To 2\nExit For\nNext\nEnd	syntax	Expected End Sub
+sub	For i = 1 To 2\nExit For\nNext\nEnd If	syntax	End If without block If
+sub	For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x	syntax	Syntax error
+sub	For i = 1 To 2\nExit For\nNext\nEnd Sub x	syntax	Syntax error
+sub	For i = 1 To 2\nExit For\nNext\nEnd  Sub	accepted	
+sub	For i = 1 To 2\nExit For\nNext\nEndSub	semantic	Sub or Function not defined
+sub	For i = 1 To 2\nExit For\nNext\nEnd Sub:	syntax	Syntax error
+sub	For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub	syntax	Syntax error
+sub	For i = 1 To 2\nExit For\nNext\n	syntax	Expected End Sub
+sub	Exit Do\nDo\nLoop\nEnd Sub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd Function	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd Property	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd If	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd Sub x	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd  Sub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEndSub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd Sub:	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+sub	Exit Do\nDo\nLoop\n	syntax	Exit Do not within Do...Loop
+sub	End\nEnd Sub	accepted	
+sub	End\nEnd Function	syntax	Expected End Sub
+sub	End\nEnd Property	syntax	Expected End Sub
+sub	End\nEnd	syntax	Expected End Sub
+sub	End\nEnd If	syntax	End If without block If
+sub	End\nEnd Sub Rem x	syntax	Syntax error
+sub	End\nEnd Sub x	syntax	Syntax error
+sub	End\nEnd  Sub	accepted	
+sub	End\nEndSub	semantic	Sub or Function not defined
+sub	End\nEnd Sub:	syntax	Syntax error
+sub	End\nEnd Sub: End Sub	syntax	Syntax error
+sub	End\n	syntax	Expected End Sub
+func	End Sub	syntax	Expected End Function
+func	End Function	accepted	
+func	End Property	syntax	Expected End Function
+func	End	syntax	Expected End Function
+func	End If	syntax	End If without block If
+func	End Sub Rem x	syntax	Syntax error
+func	End Sub x	syntax	Syntax error
+func	End  Sub	syntax	Expected End Function
+func	EndSub	semantic	Sub or Function not defined
+func	End Sub:	syntax	Syntax error
+func	End Sub: End Sub	syntax	Syntax error
+func	Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+func	Exit Function\nEnd Sub	syntax	Expected End Function
+func	Exit Function\nEnd Function	accepted	
+func	Exit Function\nEnd Property	syntax	Expected End Function
+func	Exit Function\nEnd	syntax	Expected End Function
+func	Exit Function\nEnd If	syntax	End If without block If
+func	Exit Function\nEnd Sub Rem x	syntax	Syntax error
+func	Exit Function\nEnd Sub x	syntax	Syntax error
+func	Exit Function\nEnd  Sub	syntax	Expected End Function
+func	Exit Function\nEndSub	semantic	Sub or Function not defined
+func	Exit Function\nEnd Sub:	syntax	Syntax error
+func	Exit Function\nEnd Sub: End Sub	syntax	Syntax error
+func	Exit Function\n	syntax	Expected End Function
+func	Exit Property\nEnd Sub	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd Function	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd Property	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd If	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd Sub Rem x	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd Sub x	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd  Sub	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEndSub	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd Sub:	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\nEnd Sub: End Sub	syntax	Exit Property not allowed in Function or Sub
+func	Exit Property\n	syntax	Exit Property not allowed in Function or Sub
+func	Exit Do\nEnd Sub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd Function	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd Property	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd Sub x	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd  Sub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEndSub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd Sub:	syntax	Exit Do not within Do...Loop
+func	Exit Do\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+func	Exit Do\n	syntax	Exit Do not within Do...Loop
+func	Exit For\nEnd Sub	syntax	Exit For not within For...Next
+func	Exit For\nEnd Function	syntax	Exit For not within For...Next
+func	Exit For\nEnd Property	syntax	Exit For not within For...Next
+func	Exit For\nEnd	syntax	Exit For not within For...Next
+func	Exit For\nEnd If	syntax	Exit For not within For...Next
+func	Exit For\nEnd Sub Rem x	syntax	Exit For not within For...Next
+func	Exit For\nEnd Sub x	syntax	Exit For not within For...Next
+func	Exit For\nEnd  Sub	syntax	Exit For not within For...Next
+func	Exit For\nEndSub	syntax	Exit For not within For...Next
+func	Exit For\nEnd Sub:	syntax	Exit For not within For...Next
+func	Exit For\nEnd Sub: End Sub	syntax	Exit For not within For...Next
+func	Exit For\n	syntax	Exit For not within For...Next
+func	Exit Select\nEnd Sub	syntax	Syntax error
+func	Exit Select\nEnd Function	syntax	Syntax error
+func	Exit Select\nEnd Property	syntax	Syntax error
+func	Exit Select\nEnd	syntax	Syntax error
+func	Exit Select\nEnd If	syntax	Syntax error
+func	Exit Select\nEnd Sub Rem x	syntax	Syntax error
+func	Exit Select\nEnd Sub x	syntax	Syntax error
+func	Exit Select\nEnd  Sub	syntax	Syntax error
+func	Exit Select\nEndSub	syntax	Syntax error
+func	Exit Select\nEnd Sub:	syntax	Syntax error
+func	Exit Select\nEnd Sub: End Sub	syntax	Syntax error
+func	Exit Select\n	syntax	Syntax error
+func	Exit With\nEnd Sub	syntax	Syntax error
+func	Exit With\nEnd Function	syntax	Syntax error
+func	Exit With\nEnd Property	syntax	Syntax error
+func	Exit With\nEnd	syntax	Syntax error
+func	Exit With\nEnd If	syntax	Syntax error
+func	Exit With\nEnd Sub Rem x	syntax	Syntax error
+func	Exit With\nEnd Sub x	syntax	Syntax error
+func	Exit With\nEnd  Sub	syntax	Syntax error
+func	Exit With\nEndSub	syntax	Syntax error
+func	Exit With\nEnd Sub:	syntax	Syntax error
+func	Exit With\nEnd Sub: End Sub	syntax	Syntax error
+func	Exit With\n	syntax	Syntax error
+func	Return\nEnd Sub	syntax	Expected End Function
+func	Return\nEnd Function	accepted	
+func	Return\nEnd Property	syntax	Expected End Function
+func	Return\nEnd	syntax	Expected End Function
+func	Return\nEnd If	syntax	End If without block If
+func	Return\nEnd Sub Rem x	syntax	Syntax error
+func	Return\nEnd Sub x	syntax	Syntax error
+func	Return\nEnd  Sub	syntax	Expected End Function
+func	Return\nEndSub	semantic	Sub or Function not defined
+func	Return\nEnd Sub:	syntax	Syntax error
+func	Return\nEnd Sub: End Sub	syntax	Syntax error
+func	Return\n	syntax	Expected End Function
+func	GoSub L\nEnd Sub	syntax	Expected End Function
+func	GoSub L\nEnd Function	syntax	Label not defined
+func	GoSub L\nEnd Property	syntax	Expected End Function
+func	GoSub L\nEnd	syntax	Expected End Function
+func	GoSub L\nEnd If	syntax	End If without block If
+func	GoSub L\nEnd Sub Rem x	syntax	Syntax error
+func	GoSub L\nEnd Sub x	syntax	Syntax error
+func	GoSub L\nEnd  Sub	syntax	Expected End Function
+func	GoSub L\nEndSub	semantic	Sub or Function not defined
+func	GoSub L\nEnd Sub:	syntax	Syntax error
+func	GoSub L\nEnd Sub: End Sub	syntax	Syntax error
+func	GoSub L\n	syntax	Expected End Function
+func	L:\nEnd Sub	syntax	Expected End Function
+func	L:\nEnd Function	accepted	
+func	L:\nEnd Property	syntax	Expected End Function
+func	L:\nEnd	syntax	Expected End Function
+func	L:\nEnd If	syntax	End If without block If
+func	L:\nEnd Sub Rem x	syntax	Syntax error
+func	L:\nEnd Sub x	syntax	Syntax error
+func	L:\nEnd  Sub	syntax	Expected End Function
+func	L:\nEndSub	semantic	Sub or Function not defined
+func	L:\nEnd Sub:	syntax	Syntax error
+func	L:\nEnd Sub: End Sub	syntax	Syntax error
+func	L:\n	syntax	Expected End Function
+func	Resume\nEnd Sub	syntax	Expected End Function
+func	Resume\nEnd Function	accepted	
+func	Resume\nEnd Property	syntax	Expected End Function
+func	Resume\nEnd	syntax	Expected End Function
+func	Resume\nEnd If	syntax	End If without block If
+func	Resume\nEnd Sub Rem x	syntax	Syntax error
+func	Resume\nEnd Sub x	syntax	Syntax error
+func	Resume\nEnd  Sub	syntax	Expected End Function
+func	Resume\nEndSub	semantic	Sub or Function not defined
+func	Resume\nEnd Sub:	syntax	Syntax error
+func	Resume\nEnd Sub: End Sub	syntax	Syntax error
+func	Resume\n	syntax	Expected End Function
+func	Resume Next\nEnd Sub	syntax	Expected End Function
+func	Resume Next\nEnd Function	accepted	
+func	Resume Next\nEnd Property	syntax	Expected End Function
+func	Resume Next\nEnd	syntax	Expected End Function
+func	Resume Next\nEnd If	syntax	End If without block If
+func	Resume Next\nEnd Sub Rem x	syntax	Syntax error
+func	Resume Next\nEnd Sub x	syntax	Syntax error
+func	Resume Next\nEnd  Sub	syntax	Expected End Function
+func	Resume Next\nEndSub	semantic	Sub or Function not defined
+func	Resume Next\nEnd Sub:	syntax	Syntax error
+func	Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+func	Resume Next\n	syntax	Expected End Function
+func	Resume 0\nEnd Sub	syntax	Expected End Function
+func	Resume 0\nEnd Function	accepted	
+func	Resume 0\nEnd Property	syntax	Expected End Function
+func	Resume 0\nEnd	syntax	Expected End Function
+func	Resume 0\nEnd If	syntax	End If without block If
+func	Resume 0\nEnd Sub Rem x	syntax	Syntax error
+func	Resume 0\nEnd Sub x	syntax	Syntax error
+func	Resume 0\nEnd  Sub	syntax	Expected End Function
+func	Resume 0\nEndSub	semantic	Sub or Function not defined
+func	Resume 0\nEnd Sub:	syntax	Syntax error
+func	Resume 0\nEnd Sub: End Sub	syntax	Syntax error
+func	Resume 0\n	syntax	Expected End Function
+func	Stop\nEnd Sub	syntax	Expected End Function
+func	Stop\nEnd Function	accepted	
+func	Stop\nEnd Property	syntax	Expected End Function
+func	Stop\nEnd	syntax	Expected End Function
+func	Stop\nEnd If	syntax	End If without block If
+func	Stop\nEnd Sub Rem x	syntax	Syntax error
+func	Stop\nEnd Sub x	syntax	Syntax error
+func	Stop\nEnd  Sub	syntax	Expected End Function
+func	Stop\nEndSub	semantic	Sub or Function not defined
+func	Stop\nEnd Sub:	syntax	Syntax error
+func	Stop\nEnd Sub: End Sub	syntax	Syntax error
+func	Stop\n	syntax	Expected End Function
+func	On Error GoTo 0\nEnd Sub	syntax	Expected End Function
+func	On Error GoTo 0\nEnd Function	accepted	
+func	On Error GoTo 0\nEnd Property	syntax	Expected End Function
+func	On Error GoTo 0\nEnd	syntax	Expected End Function
+func	On Error GoTo 0\nEnd If	syntax	End If without block If
+func	On Error GoTo 0\nEnd Sub Rem x	syntax	Syntax error
+func	On Error GoTo 0\nEnd Sub x	syntax	Syntax error
+func	On Error GoTo 0\nEnd  Sub	syntax	Expected End Function
+func	On Error GoTo 0\nEndSub	semantic	Sub or Function not defined
+func	On Error GoTo 0\nEnd Sub:	syntax	Syntax error
+func	On Error GoTo 0\nEnd Sub: End Sub	syntax	Syntax error
+func	On Error GoTo 0\n	syntax	Expected End Function
+func	On Error Resume Next\nEnd Sub	syntax	Expected End Function
+func	On Error Resume Next\nEnd Function	accepted	
+func	On Error Resume Next\nEnd Property	syntax	Expected End Function
+func	On Error Resume Next\nEnd	syntax	Expected End Function
+func	On Error Resume Next\nEnd If	syntax	End If without block If
+func	On Error Resume Next\nEnd Sub Rem x	syntax	Syntax error
+func	On Error Resume Next\nEnd Sub x	syntax	Syntax error
+func	On Error Resume Next\nEnd  Sub	syntax	Expected End Function
+func	On Error Resume Next\nEndSub	semantic	Sub or Function not defined
+func	On Error Resume Next\nEnd Sub:	syntax	Syntax error
+func	On Error Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+func	On Error Resume Next\n	syntax	Expected End Function
+func	Exit Sub: Exit Function\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd If	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEndSub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+func	Exit Sub: Exit Function\n	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+func	x = 1: Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+func	If c Then Exit Function\nEnd Sub	syntax	Expected End Function
+func	If c Then Exit Function\nEnd Function	accepted	
+func	If c Then Exit Function\nEnd Property	syntax	Expected End Function
+func	If c Then Exit Function\nEnd	syntax	Expected End Function
+func	If c Then Exit Function\nEnd If	syntax	End If without block If
+func	If c Then Exit Function\nEnd Sub Rem x	syntax	Syntax error
+func	If c Then Exit Function\nEnd Sub x	syntax	Syntax error
+func	If c Then Exit Function\nEnd  Sub	syntax	Expected End Function
+func	If c Then Exit Function\nEndSub	semantic	Sub or Function not defined
+func	If c Then Exit Function\nEnd Sub:	syntax	Syntax error
+func	If c Then Exit Function\nEnd Sub: End Sub	syntax	Syntax error
+func	If c Then Exit Function\n	syntax	Expected End Function
+func	If c Then Exit Property\nEnd Sub	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd Function	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd Property	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd If	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd Sub Rem x	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd Sub x	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd  Sub	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEndSub	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd Sub:	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\nEnd Sub: End Sub	syntax	Exit Property not allowed in Function or Sub
+func	If c Then Exit Property\n	syntax	Exit Property not allowed in Function or Sub
+func	Do\nExit Do\nLoop\nEnd Sub	syntax	Expected End Function
+func	Do\nExit Do\nLoop\nEnd Function	accepted	
+func	Do\nExit Do\nLoop\nEnd Property	syntax	Expected End Function
+func	Do\nExit Do\nLoop\nEnd	syntax	Expected End Function
+func	Do\nExit Do\nLoop\nEnd If	syntax	End If without block If
+func	Do\nExit Do\nLoop\nEnd Sub Rem x	syntax	Syntax error
+func	Do\nExit Do\nLoop\nEnd Sub x	syntax	Syntax error
+func	Do\nExit Do\nLoop\nEnd  Sub	syntax	Expected End Function
+func	Do\nExit Do\nLoop\nEndSub	semantic	Sub or Function not defined
+func	Do\nExit Do\nLoop\nEnd Sub:	syntax	Syntax error
+func	Do\nExit Do\nLoop\nEnd Sub: End Sub	syntax	Syntax error
+func	Do\nExit Do\nLoop\n	syntax	Expected End Function
+func	For i = 1 To 2\nExit For\nNext\nEnd Sub	syntax	Expected End Function
+func	For i = 1 To 2\nExit For\nNext\nEnd Function	accepted	
+func	For i = 1 To 2\nExit For\nNext\nEnd Property	syntax	Expected End Function
+func	For i = 1 To 2\nExit For\nNext\nEnd	syntax	Expected End Function
+func	For i = 1 To 2\nExit For\nNext\nEnd If	syntax	End If without block If
+func	For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x	syntax	Syntax error
+func	For i = 1 To 2\nExit For\nNext\nEnd Sub x	syntax	Syntax error
+func	For i = 1 To 2\nExit For\nNext\nEnd  Sub	syntax	Expected End Function
+func	For i = 1 To 2\nExit For\nNext\nEndSub	semantic	Sub or Function not defined
+func	For i = 1 To 2\nExit For\nNext\nEnd Sub:	syntax	Syntax error
+func	For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub	syntax	Syntax error
+func	For i = 1 To 2\nExit For\nNext\n	syntax	Expected End Function
+func	Exit Do\nDo\nLoop\nEnd Sub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd Function	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd Property	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd If	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd Sub x	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd  Sub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEndSub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd Sub:	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+func	Exit Do\nDo\nLoop\n	syntax	Exit Do not within Do...Loop
+func	End\nEnd Sub	syntax	Expected End Function
+func	End\nEnd Function	accepted	
+func	End\nEnd Property	syntax	Expected End Function
+func	End\nEnd	syntax	Expected End Function
+func	End\nEnd If	syntax	End If without block If
+func	End\nEnd Sub Rem x	syntax	Syntax error
+func	End\nEnd Sub x	syntax	Syntax error
+func	End\nEnd  Sub	syntax	Expected End Function
+func	End\nEndSub	semantic	Sub or Function not defined
+func	End\nEnd Sub:	syntax	Syntax error
+func	End\nEnd Sub: End Sub	syntax	Syntax error
+func	End\n	syntax	Expected End Function
+propget	End Sub	accepted	
+propget	End Function	accepted	
+propget	End Property	accepted	
+propget	End	syntax	Expected End Property
+propget	End If	syntax	End If without block If
+propget	End Sub Rem x	syntax	Syntax error
+propget	End Sub x	syntax	Syntax error
+propget	End  Sub	accepted	
+propget	EndSub	semantic	Sub or Function not defined
+propget	End Sub:	syntax	Syntax error
+propget	End Sub: End Sub	syntax	Syntax error
+propget	Exit Sub\nEnd Sub	accepted	
+propget	Exit Sub\nEnd Function	accepted	
+propget	Exit Sub\nEnd Property	accepted	
+propget	Exit Sub\nEnd	syntax	Expected End Property
+propget	Exit Sub\nEnd If	syntax	End If without block If
+propget	Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+propget	Exit Sub\nEnd Sub x	syntax	Syntax error
+propget	Exit Sub\nEnd  Sub	accepted	
+propget	Exit Sub\nEndSub	semantic	Sub or Function not defined
+propget	Exit Sub\nEnd Sub:	syntax	Syntax error
+propget	Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+propget	Exit Sub\n	syntax	Expected End Property
+propget	Exit Function\nEnd Sub	accepted	
+propget	Exit Function\nEnd Function	accepted	
+propget	Exit Function\nEnd Property	accepted	
+propget	Exit Function\nEnd	syntax	Expected End Property
+propget	Exit Function\nEnd If	syntax	End If without block If
+propget	Exit Function\nEnd Sub Rem x	syntax	Syntax error
+propget	Exit Function\nEnd Sub x	syntax	Syntax error
+propget	Exit Function\nEnd  Sub	accepted	
+propget	Exit Function\nEndSub	semantic	Sub or Function not defined
+propget	Exit Function\nEnd Sub:	syntax	Syntax error
+propget	Exit Function\nEnd Sub: End Sub	syntax	Syntax error
+propget	Exit Function\n	syntax	Expected End Property
+propget	Exit Property\nEnd Sub	accepted	
+propget	Exit Property\nEnd Function	accepted	
+propget	Exit Property\nEnd Property	accepted	
+propget	Exit Property\nEnd	syntax	Expected End Property
+propget	Exit Property\nEnd If	syntax	End If without block If
+propget	Exit Property\nEnd Sub Rem x	syntax	Syntax error
+propget	Exit Property\nEnd Sub x	syntax	Syntax error
+propget	Exit Property\nEnd  Sub	accepted	
+propget	Exit Property\nEndSub	semantic	Sub or Function not defined
+propget	Exit Property\nEnd Sub:	syntax	Syntax error
+propget	Exit Property\nEnd Sub: End Sub	syntax	Syntax error
+propget	Exit Property\n	syntax	Expected End Property
+propget	Exit Do\nEnd Sub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd Function	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd Property	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd Sub x	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd  Sub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEndSub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd Sub:	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\n	syntax	Exit Do not within Do...Loop
+propget	Exit For\nEnd Sub	syntax	Exit For not within For...Next
+propget	Exit For\nEnd Function	syntax	Exit For not within For...Next
+propget	Exit For\nEnd Property	syntax	Exit For not within For...Next
+propget	Exit For\nEnd	syntax	Exit For not within For...Next
+propget	Exit For\nEnd If	syntax	Exit For not within For...Next
+propget	Exit For\nEnd Sub Rem x	syntax	Exit For not within For...Next
+propget	Exit For\nEnd Sub x	syntax	Exit For not within For...Next
+propget	Exit For\nEnd  Sub	syntax	Exit For not within For...Next
+propget	Exit For\nEndSub	syntax	Exit For not within For...Next
+propget	Exit For\nEnd Sub:	syntax	Exit For not within For...Next
+propget	Exit For\nEnd Sub: End Sub	syntax	Exit For not within For...Next
+propget	Exit For\n	syntax	Exit For not within For...Next
+propget	Exit Select\nEnd Sub	syntax	Syntax error
+propget	Exit Select\nEnd Function	syntax	Syntax error
+propget	Exit Select\nEnd Property	syntax	Syntax error
+propget	Exit Select\nEnd	syntax	Syntax error
+propget	Exit Select\nEnd If	syntax	Syntax error
+propget	Exit Select\nEnd Sub Rem x	syntax	Syntax error
+propget	Exit Select\nEnd Sub x	syntax	Syntax error
+propget	Exit Select\nEnd  Sub	syntax	Syntax error
+propget	Exit Select\nEndSub	syntax	Syntax error
+propget	Exit Select\nEnd Sub:	syntax	Syntax error
+propget	Exit Select\nEnd Sub: End Sub	syntax	Syntax error
+propget	Exit Select\n	syntax	Syntax error
+propget	Exit With\nEnd Sub	syntax	Syntax error
+propget	Exit With\nEnd Function	syntax	Syntax error
+propget	Exit With\nEnd Property	syntax	Syntax error
+propget	Exit With\nEnd	syntax	Syntax error
+propget	Exit With\nEnd If	syntax	Syntax error
+propget	Exit With\nEnd Sub Rem x	syntax	Syntax error
+propget	Exit With\nEnd Sub x	syntax	Syntax error
+propget	Exit With\nEnd  Sub	syntax	Syntax error
+propget	Exit With\nEndSub	syntax	Syntax error
+propget	Exit With\nEnd Sub:	syntax	Syntax error
+propget	Exit With\nEnd Sub: End Sub	syntax	Syntax error
+propget	Exit With\n	syntax	Syntax error
+propget	Return\nEnd Sub	accepted	
+propget	Return\nEnd Function	accepted	
+propget	Return\nEnd Property	accepted	
+propget	Return\nEnd	syntax	Expected End Property
+propget	Return\nEnd If	syntax	End If without block If
+propget	Return\nEnd Sub Rem x	syntax	Syntax error
+propget	Return\nEnd Sub x	syntax	Syntax error
+propget	Return\nEnd  Sub	accepted	
+propget	Return\nEndSub	semantic	Sub or Function not defined
+propget	Return\nEnd Sub:	syntax	Syntax error
+propget	Return\nEnd Sub: End Sub	syntax	Syntax error
+propget	Return\n	syntax	Expected End Property
+propget	GoSub L\nEnd Sub	syntax	Label not defined
+propget	GoSub L\nEnd Function	syntax	Label not defined
+propget	GoSub L\nEnd Property	syntax	Label not defined
+propget	GoSub L\nEnd	syntax	Expected End Property
+propget	GoSub L\nEnd If	syntax	End If without block If
+propget	GoSub L\nEnd Sub Rem x	syntax	Syntax error
+propget	GoSub L\nEnd Sub x	syntax	Syntax error
+propget	GoSub L\nEnd  Sub	syntax	Label not defined
+propget	GoSub L\nEndSub	semantic	Sub or Function not defined
+propget	GoSub L\nEnd Sub:	syntax	Syntax error
+propget	GoSub L\nEnd Sub: End Sub	syntax	Syntax error
+propget	GoSub L\n	syntax	Expected End Property
+propget	L:\nEnd Sub	accepted	
+propget	L:\nEnd Function	accepted	
+propget	L:\nEnd Property	accepted	
+propget	L:\nEnd	syntax	Expected End Property
+propget	L:\nEnd If	syntax	End If without block If
+propget	L:\nEnd Sub Rem x	syntax	Syntax error
+propget	L:\nEnd Sub x	syntax	Syntax error
+propget	L:\nEnd  Sub	accepted	
+propget	L:\nEndSub	semantic	Sub or Function not defined
+propget	L:\nEnd Sub:	syntax	Syntax error
+propget	L:\nEnd Sub: End Sub	syntax	Syntax error
+propget	L:\n	syntax	Expected End Property
+propget	Resume\nEnd Sub	accepted	
+propget	Resume\nEnd Function	accepted	
+propget	Resume\nEnd Property	accepted	
+propget	Resume\nEnd	syntax	Expected End Property
+propget	Resume\nEnd If	syntax	End If without block If
+propget	Resume\nEnd Sub Rem x	syntax	Syntax error
+propget	Resume\nEnd Sub x	syntax	Syntax error
+propget	Resume\nEnd  Sub	accepted	
+propget	Resume\nEndSub	semantic	Sub or Function not defined
+propget	Resume\nEnd Sub:	syntax	Syntax error
+propget	Resume\nEnd Sub: End Sub	syntax	Syntax error
+propget	Resume\n	syntax	Expected End Property
+propget	Resume Next\nEnd Sub	accepted	
+propget	Resume Next\nEnd Function	accepted	
+propget	Resume Next\nEnd Property	accepted	
+propget	Resume Next\nEnd	syntax	Expected End Property
+propget	Resume Next\nEnd If	syntax	End If without block If
+propget	Resume Next\nEnd Sub Rem x	syntax	Syntax error
+propget	Resume Next\nEnd Sub x	syntax	Syntax error
+propget	Resume Next\nEnd  Sub	accepted	
+propget	Resume Next\nEndSub	semantic	Sub or Function not defined
+propget	Resume Next\nEnd Sub:	syntax	Syntax error
+propget	Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+propget	Resume Next\n	syntax	Expected End Property
+propget	Resume 0\nEnd Sub	accepted	
+propget	Resume 0\nEnd Function	accepted	
+propget	Resume 0\nEnd Property	accepted	
+propget	Resume 0\nEnd	syntax	Expected End Property
+propget	Resume 0\nEnd If	syntax	End If without block If
+propget	Resume 0\nEnd Sub Rem x	syntax	Syntax error
+propget	Resume 0\nEnd Sub x	syntax	Syntax error
+propget	Resume 0\nEnd  Sub	accepted	
+propget	Resume 0\nEndSub	semantic	Sub or Function not defined
+propget	Resume 0\nEnd Sub:	syntax	Syntax error
+propget	Resume 0\nEnd Sub: End Sub	syntax	Syntax error
+propget	Resume 0\n	syntax	Expected End Property
+propget	Stop\nEnd Sub	accepted	
+propget	Stop\nEnd Function	accepted	
+propget	Stop\nEnd Property	accepted	
+propget	Stop\nEnd	syntax	Expected End Property
+propget	Stop\nEnd If	syntax	End If without block If
+propget	Stop\nEnd Sub Rem x	syntax	Syntax error
+propget	Stop\nEnd Sub x	syntax	Syntax error
+propget	Stop\nEnd  Sub	accepted	
+propget	Stop\nEndSub	semantic	Sub or Function not defined
+propget	Stop\nEnd Sub:	syntax	Syntax error
+propget	Stop\nEnd Sub: End Sub	syntax	Syntax error
+propget	Stop\n	syntax	Expected End Property
+propget	On Error GoTo 0\nEnd Sub	accepted	
+propget	On Error GoTo 0\nEnd Function	accepted	
+propget	On Error GoTo 0\nEnd Property	accepted	
+propget	On Error GoTo 0\nEnd	syntax	Expected End Property
+propget	On Error GoTo 0\nEnd If	syntax	End If without block If
+propget	On Error GoTo 0\nEnd Sub Rem x	syntax	Syntax error
+propget	On Error GoTo 0\nEnd Sub x	syntax	Syntax error
+propget	On Error GoTo 0\nEnd  Sub	accepted	
+propget	On Error GoTo 0\nEndSub	semantic	Sub or Function not defined
+propget	On Error GoTo 0\nEnd Sub:	syntax	Syntax error
+propget	On Error GoTo 0\nEnd Sub: End Sub	syntax	Syntax error
+propget	On Error GoTo 0\n	syntax	Expected End Property
+propget	On Error Resume Next\nEnd Sub	accepted	
+propget	On Error Resume Next\nEnd Function	accepted	
+propget	On Error Resume Next\nEnd Property	accepted	
+propget	On Error Resume Next\nEnd	syntax	Expected End Property
+propget	On Error Resume Next\nEnd If	syntax	End If without block If
+propget	On Error Resume Next\nEnd Sub Rem x	syntax	Syntax error
+propget	On Error Resume Next\nEnd Sub x	syntax	Syntax error
+propget	On Error Resume Next\nEnd  Sub	accepted	
+propget	On Error Resume Next\nEndSub	semantic	Sub or Function not defined
+propget	On Error Resume Next\nEnd Sub:	syntax	Syntax error
+propget	On Error Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+propget	On Error Resume Next\n	syntax	Expected End Property
+propget	Exit Sub: Exit Function\nEnd Sub	accepted	
+propget	Exit Sub: Exit Function\nEnd Function	accepted	
+propget	Exit Sub: Exit Function\nEnd Property	accepted	
+propget	Exit Sub: Exit Function\nEnd	syntax	Expected End Property
+propget	Exit Sub: Exit Function\nEnd If	syntax	End If without block If
+propget	Exit Sub: Exit Function\nEnd Sub Rem x	syntax	Syntax error
+propget	Exit Sub: Exit Function\nEnd Sub x	syntax	Syntax error
+propget	Exit Sub: Exit Function\nEnd  Sub	accepted	
+propget	Exit Sub: Exit Function\nEndSub	semantic	Sub or Function not defined
+propget	Exit Sub: Exit Function\nEnd Sub:	syntax	Syntax error
+propget	Exit Sub: Exit Function\nEnd Sub: End Sub	syntax	Syntax error
+propget	Exit Sub: Exit Function\n	syntax	Expected End Property
+propget	x = 1: Exit Sub\nEnd Sub	accepted	
+propget	x = 1: Exit Sub\nEnd Function	accepted	
+propget	x = 1: Exit Sub\nEnd Property	accepted	
+propget	x = 1: Exit Sub\nEnd	syntax	Expected End Property
+propget	x = 1: Exit Sub\nEnd If	syntax	End If without block If
+propget	x = 1: Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+propget	x = 1: Exit Sub\nEnd Sub x	syntax	Syntax error
+propget	x = 1: Exit Sub\nEnd  Sub	accepted	
+propget	x = 1: Exit Sub\nEndSub	semantic	Sub or Function not defined
+propget	x = 1: Exit Sub\nEnd Sub:	syntax	Syntax error
+propget	x = 1: Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+propget	x = 1: Exit Sub\n	syntax	Expected End Property
+propget	If c Then Exit Sub\nEnd Sub	accepted	
+propget	If c Then Exit Sub\nEnd Function	accepted	
+propget	If c Then Exit Sub\nEnd Property	accepted	
+propget	If c Then Exit Sub\nEnd	syntax	Expected End Property
+propget	If c Then Exit Sub\nEnd If	syntax	End If without block If
+propget	If c Then Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+propget	If c Then Exit Sub\nEnd Sub x	syntax	Syntax error
+propget	If c Then Exit Sub\nEnd  Sub	accepted	
+propget	If c Then Exit Sub\nEndSub	semantic	Sub or Function not defined
+propget	If c Then Exit Sub\nEnd Sub:	syntax	Syntax error
+propget	If c Then Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+propget	If c Then Exit Sub\n	syntax	Expected End Property
+propget	If c Then Exit Function\nEnd Sub	accepted	
+propget	If c Then Exit Function\nEnd Function	accepted	
+propget	If c Then Exit Function\nEnd Property	accepted	
+propget	If c Then Exit Function\nEnd	syntax	Expected End Property
+propget	If c Then Exit Function\nEnd If	syntax	End If without block If
+propget	If c Then Exit Function\nEnd Sub Rem x	syntax	Syntax error
+propget	If c Then Exit Function\nEnd Sub x	syntax	Syntax error
+propget	If c Then Exit Function\nEnd  Sub	accepted	
+propget	If c Then Exit Function\nEndSub	semantic	Sub or Function not defined
+propget	If c Then Exit Function\nEnd Sub:	syntax	Syntax error
+propget	If c Then Exit Function\nEnd Sub: End Sub	syntax	Syntax error
+propget	If c Then Exit Function\n	syntax	Expected End Property
+propget	If c Then Exit Property\nEnd Sub	accepted	
+propget	If c Then Exit Property\nEnd Function	accepted	
+propget	If c Then Exit Property\nEnd Property	accepted	
+propget	If c Then Exit Property\nEnd	syntax	Expected End Property
+propget	If c Then Exit Property\nEnd If	syntax	End If without block If
+propget	If c Then Exit Property\nEnd Sub Rem x	syntax	Syntax error
+propget	If c Then Exit Property\nEnd Sub x	syntax	Syntax error
+propget	If c Then Exit Property\nEnd  Sub	accepted	
+propget	If c Then Exit Property\nEndSub	semantic	Sub or Function not defined
+propget	If c Then Exit Property\nEnd Sub:	syntax	Syntax error
+propget	If c Then Exit Property\nEnd Sub: End Sub	syntax	Syntax error
+propget	If c Then Exit Property\n	syntax	Expected End Property
+propget	Do\nExit Do\nLoop\nEnd Sub	accepted	
+propget	Do\nExit Do\nLoop\nEnd Function	accepted	
+propget	Do\nExit Do\nLoop\nEnd Property	accepted	
+propget	Do\nExit Do\nLoop\nEnd	syntax	Expected End Property
+propget	Do\nExit Do\nLoop\nEnd If	syntax	End If without block If
+propget	Do\nExit Do\nLoop\nEnd Sub Rem x	syntax	Syntax error
+propget	Do\nExit Do\nLoop\nEnd Sub x	syntax	Syntax error
+propget	Do\nExit Do\nLoop\nEnd  Sub	accepted	
+propget	Do\nExit Do\nLoop\nEndSub	semantic	Sub or Function not defined
+propget	Do\nExit Do\nLoop\nEnd Sub:	syntax	Syntax error
+propget	Do\nExit Do\nLoop\nEnd Sub: End Sub	syntax	Syntax error
+propget	Do\nExit Do\nLoop\n	syntax	Expected End Property
+propget	For i = 1 To 2\nExit For\nNext\nEnd Sub	accepted	
+propget	For i = 1 To 2\nExit For\nNext\nEnd Function	accepted	
+propget	For i = 1 To 2\nExit For\nNext\nEnd Property	accepted	
+propget	For i = 1 To 2\nExit For\nNext\nEnd	syntax	Expected End Property
+propget	For i = 1 To 2\nExit For\nNext\nEnd If	syntax	End If without block If
+propget	For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x	syntax	Syntax error
+propget	For i = 1 To 2\nExit For\nNext\nEnd Sub x	syntax	Syntax error
+propget	For i = 1 To 2\nExit For\nNext\nEnd  Sub	accepted	
+propget	For i = 1 To 2\nExit For\nNext\nEndSub	semantic	Sub or Function not defined
+propget	For i = 1 To 2\nExit For\nNext\nEnd Sub:	syntax	Syntax error
+propget	For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub	syntax	Syntax error
+propget	For i = 1 To 2\nExit For\nNext\n	syntax	Expected End Property
+propget	Exit Do\nDo\nLoop\nEnd Sub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd Function	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd Property	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd If	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd Sub x	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd  Sub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEndSub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd Sub:	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+propget	Exit Do\nDo\nLoop\n	syntax	Exit Do not within Do...Loop
+propget	End\nEnd Sub	accepted	
+propget	End\nEnd Function	accepted	
+propget	End\nEnd Property	accepted	
+propget	End\nEnd	syntax	Expected End Property
+propget	End\nEnd If	syntax	End If without block If
+propget	End\nEnd Sub Rem x	syntax	Syntax error
+propget	End\nEnd Sub x	syntax	Syntax error
+propget	End\nEnd  Sub	accepted	
+propget	End\nEndSub	semantic	Sub or Function not defined
+propget	End\nEnd Sub:	syntax	Syntax error
+propget	End\nEnd Sub: End Sub	syntax	Syntax error
+propget	End\n	syntax	Expected End Property
+proplet	End Sub	syntax	Expected End Property
+proplet	End Function	syntax	Expected End Property
+proplet	End Property	accepted	
+proplet	End	syntax	Expected End Property
+proplet	End If	syntax	End If without block If
+proplet	End Sub Rem x	syntax	Syntax error
+proplet	End Sub x	syntax	Syntax error
+proplet	End  Sub	syntax	Expected End Property
+proplet	EndSub	semantic	Sub or Function not defined
+proplet	End Sub:	syntax	Syntax error
+proplet	End Sub: End Sub	syntax	Syntax error
+proplet	Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+proplet	Exit Property\nEnd Sub	syntax	Expected End Property
+proplet	Exit Property\nEnd Function	syntax	Expected End Property
+proplet	Exit Property\nEnd Property	accepted	
+proplet	Exit Property\nEnd	syntax	Expected End Property
+proplet	Exit Property\nEnd If	syntax	End If without block If
+proplet	Exit Property\nEnd Sub Rem x	syntax	Syntax error
+proplet	Exit Property\nEnd Sub x	syntax	Syntax error
+proplet	Exit Property\nEnd  Sub	syntax	Expected End Property
+proplet	Exit Property\nEndSub	semantic	Sub or Function not defined
+proplet	Exit Property\nEnd Sub:	syntax	Syntax error
+proplet	Exit Property\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Exit Property\n	syntax	Expected End Property
+proplet	Exit Do\nEnd Sub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd Function	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd Property	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd Sub x	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd  Sub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEndSub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd Sub:	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\n	syntax	Exit Do not within Do...Loop
+proplet	Exit For\nEnd Sub	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd Function	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd Property	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd If	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd Sub Rem x	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd Sub x	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd  Sub	syntax	Exit For not within For...Next
+proplet	Exit For\nEndSub	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd Sub:	syntax	Exit For not within For...Next
+proplet	Exit For\nEnd Sub: End Sub	syntax	Exit For not within For...Next
+proplet	Exit For\n	syntax	Exit For not within For...Next
+proplet	Exit Select\nEnd Sub	syntax	Syntax error
+proplet	Exit Select\nEnd Function	syntax	Syntax error
+proplet	Exit Select\nEnd Property	syntax	Syntax error
+proplet	Exit Select\nEnd	syntax	Syntax error
+proplet	Exit Select\nEnd If	syntax	Syntax error
+proplet	Exit Select\nEnd Sub Rem x	syntax	Syntax error
+proplet	Exit Select\nEnd Sub x	syntax	Syntax error
+proplet	Exit Select\nEnd  Sub	syntax	Syntax error
+proplet	Exit Select\nEndSub	syntax	Syntax error
+proplet	Exit Select\nEnd Sub:	syntax	Syntax error
+proplet	Exit Select\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Exit Select\n	syntax	Syntax error
+proplet	Exit With\nEnd Sub	syntax	Syntax error
+proplet	Exit With\nEnd Function	syntax	Syntax error
+proplet	Exit With\nEnd Property	syntax	Syntax error
+proplet	Exit With\nEnd	syntax	Syntax error
+proplet	Exit With\nEnd If	syntax	Syntax error
+proplet	Exit With\nEnd Sub Rem x	syntax	Syntax error
+proplet	Exit With\nEnd Sub x	syntax	Syntax error
+proplet	Exit With\nEnd  Sub	syntax	Syntax error
+proplet	Exit With\nEndSub	syntax	Syntax error
+proplet	Exit With\nEnd Sub:	syntax	Syntax error
+proplet	Exit With\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Exit With\n	syntax	Syntax error
+proplet	Return\nEnd Sub	syntax	Expected End Property
+proplet	Return\nEnd Function	syntax	Expected End Property
+proplet	Return\nEnd Property	accepted	
+proplet	Return\nEnd	syntax	Expected End Property
+proplet	Return\nEnd If	syntax	End If without block If
+proplet	Return\nEnd Sub Rem x	syntax	Syntax error
+proplet	Return\nEnd Sub x	syntax	Syntax error
+proplet	Return\nEnd  Sub	syntax	Expected End Property
+proplet	Return\nEndSub	semantic	Sub or Function not defined
+proplet	Return\nEnd Sub:	syntax	Syntax error
+proplet	Return\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Return\n	syntax	Expected End Property
+proplet	GoSub L\nEnd Sub	syntax	Expected End Property
+proplet	GoSub L\nEnd Function	syntax	Expected End Property
+proplet	GoSub L\nEnd Property	syntax	Label not defined
+proplet	GoSub L\nEnd	syntax	Expected End Property
+proplet	GoSub L\nEnd If	syntax	End If without block If
+proplet	GoSub L\nEnd Sub Rem x	syntax	Syntax error
+proplet	GoSub L\nEnd Sub x	syntax	Syntax error
+proplet	GoSub L\nEnd  Sub	syntax	Expected End Property
+proplet	GoSub L\nEndSub	semantic	Sub or Function not defined
+proplet	GoSub L\nEnd Sub:	syntax	Syntax error
+proplet	GoSub L\nEnd Sub: End Sub	syntax	Syntax error
+proplet	GoSub L\n	syntax	Expected End Property
+proplet	L:\nEnd Sub	syntax	Expected End Property
+proplet	L:\nEnd Function	syntax	Expected End Property
+proplet	L:\nEnd Property	accepted	
+proplet	L:\nEnd	syntax	Expected End Property
+proplet	L:\nEnd If	syntax	End If without block If
+proplet	L:\nEnd Sub Rem x	syntax	Syntax error
+proplet	L:\nEnd Sub x	syntax	Syntax error
+proplet	L:\nEnd  Sub	syntax	Expected End Property
+proplet	L:\nEndSub	semantic	Sub or Function not defined
+proplet	L:\nEnd Sub:	syntax	Syntax error
+proplet	L:\nEnd Sub: End Sub	syntax	Syntax error
+proplet	L:\n	syntax	Expected End Property
+proplet	Resume\nEnd Sub	syntax	Expected End Property
+proplet	Resume\nEnd Function	syntax	Expected End Property
+proplet	Resume\nEnd Property	accepted	
+proplet	Resume\nEnd	syntax	Expected End Property
+proplet	Resume\nEnd If	syntax	End If without block If
+proplet	Resume\nEnd Sub Rem x	syntax	Syntax error
+proplet	Resume\nEnd Sub x	syntax	Syntax error
+proplet	Resume\nEnd  Sub	syntax	Expected End Property
+proplet	Resume\nEndSub	semantic	Sub or Function not defined
+proplet	Resume\nEnd Sub:	syntax	Syntax error
+proplet	Resume\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Resume\n	syntax	Expected End Property
+proplet	Resume Next\nEnd Sub	syntax	Expected End Property
+proplet	Resume Next\nEnd Function	syntax	Expected End Property
+proplet	Resume Next\nEnd Property	accepted	
+proplet	Resume Next\nEnd	syntax	Expected End Property
+proplet	Resume Next\nEnd If	syntax	End If without block If
+proplet	Resume Next\nEnd Sub Rem x	syntax	Syntax error
+proplet	Resume Next\nEnd Sub x	syntax	Syntax error
+proplet	Resume Next\nEnd  Sub	syntax	Expected End Property
+proplet	Resume Next\nEndSub	semantic	Sub or Function not defined
+proplet	Resume Next\nEnd Sub:	syntax	Syntax error
+proplet	Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Resume Next\n	syntax	Expected End Property
+proplet	Resume 0\nEnd Sub	syntax	Expected End Property
+proplet	Resume 0\nEnd Function	syntax	Expected End Property
+proplet	Resume 0\nEnd Property	accepted	
+proplet	Resume 0\nEnd	syntax	Expected End Property
+proplet	Resume 0\nEnd If	syntax	End If without block If
+proplet	Resume 0\nEnd Sub Rem x	syntax	Syntax error
+proplet	Resume 0\nEnd Sub x	syntax	Syntax error
+proplet	Resume 0\nEnd  Sub	syntax	Expected End Property
+proplet	Resume 0\nEndSub	semantic	Sub or Function not defined
+proplet	Resume 0\nEnd Sub:	syntax	Syntax error
+proplet	Resume 0\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Resume 0\n	syntax	Expected End Property
+proplet	Stop\nEnd Sub	syntax	Expected End Property
+proplet	Stop\nEnd Function	syntax	Expected End Property
+proplet	Stop\nEnd Property	accepted	
+proplet	Stop\nEnd	syntax	Expected End Property
+proplet	Stop\nEnd If	syntax	End If without block If
+proplet	Stop\nEnd Sub Rem x	syntax	Syntax error
+proplet	Stop\nEnd Sub x	syntax	Syntax error
+proplet	Stop\nEnd  Sub	syntax	Expected End Property
+proplet	Stop\nEndSub	semantic	Sub or Function not defined
+proplet	Stop\nEnd Sub:	syntax	Syntax error
+proplet	Stop\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Stop\n	syntax	Expected End Property
+proplet	On Error GoTo 0\nEnd Sub	syntax	Expected End Property
+proplet	On Error GoTo 0\nEnd Function	syntax	Expected End Property
+proplet	On Error GoTo 0\nEnd Property	accepted	
+proplet	On Error GoTo 0\nEnd	syntax	Expected End Property
+proplet	On Error GoTo 0\nEnd If	syntax	End If without block If
+proplet	On Error GoTo 0\nEnd Sub Rem x	syntax	Syntax error
+proplet	On Error GoTo 0\nEnd Sub x	syntax	Syntax error
+proplet	On Error GoTo 0\nEnd  Sub	syntax	Expected End Property
+proplet	On Error GoTo 0\nEndSub	semantic	Sub or Function not defined
+proplet	On Error GoTo 0\nEnd Sub:	syntax	Syntax error
+proplet	On Error GoTo 0\nEnd Sub: End Sub	syntax	Syntax error
+proplet	On Error GoTo 0\n	syntax	Expected End Property
+proplet	On Error Resume Next\nEnd Sub	syntax	Expected End Property
+proplet	On Error Resume Next\nEnd Function	syntax	Expected End Property
+proplet	On Error Resume Next\nEnd Property	accepted	
+proplet	On Error Resume Next\nEnd	syntax	Expected End Property
+proplet	On Error Resume Next\nEnd If	syntax	End If without block If
+proplet	On Error Resume Next\nEnd Sub Rem x	syntax	Syntax error
+proplet	On Error Resume Next\nEnd Sub x	syntax	Syntax error
+proplet	On Error Resume Next\nEnd  Sub	syntax	Expected End Property
+proplet	On Error Resume Next\nEndSub	semantic	Sub or Function not defined
+proplet	On Error Resume Next\nEnd Sub:	syntax	Syntax error
+proplet	On Error Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+proplet	On Error Resume Next\n	syntax	Expected End Property
+proplet	Exit Sub: Exit Function\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd If	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEndSub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	Exit Sub: Exit Function\n	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	x = 1: Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+proplet	If c Then Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+proplet	If c Then Exit Property\nEnd Sub	syntax	Expected End Property
+proplet	If c Then Exit Property\nEnd Function	syntax	Expected End Property
+proplet	If c Then Exit Property\nEnd Property	accepted	
+proplet	If c Then Exit Property\nEnd	syntax	Expected End Property
+proplet	If c Then Exit Property\nEnd If	syntax	End If without block If
+proplet	If c Then Exit Property\nEnd Sub Rem x	syntax	Syntax error
+proplet	If c Then Exit Property\nEnd Sub x	syntax	Syntax error
+proplet	If c Then Exit Property\nEnd  Sub	syntax	Expected End Property
+proplet	If c Then Exit Property\nEndSub	semantic	Sub or Function not defined
+proplet	If c Then Exit Property\nEnd Sub:	syntax	Syntax error
+proplet	If c Then Exit Property\nEnd Sub: End Sub	syntax	Syntax error
+proplet	If c Then Exit Property\n	syntax	Expected End Property
+proplet	Do\nExit Do\nLoop\nEnd Sub	syntax	Expected End Property
+proplet	Do\nExit Do\nLoop\nEnd Function	syntax	Expected End Property
+proplet	Do\nExit Do\nLoop\nEnd Property	accepted	
+proplet	Do\nExit Do\nLoop\nEnd	syntax	Expected End Property
+proplet	Do\nExit Do\nLoop\nEnd If	syntax	End If without block If
+proplet	Do\nExit Do\nLoop\nEnd Sub Rem x	syntax	Syntax error
+proplet	Do\nExit Do\nLoop\nEnd Sub x	syntax	Syntax error
+proplet	Do\nExit Do\nLoop\nEnd  Sub	syntax	Expected End Property
+proplet	Do\nExit Do\nLoop\nEndSub	semantic	Sub or Function not defined
+proplet	Do\nExit Do\nLoop\nEnd Sub:	syntax	Syntax error
+proplet	Do\nExit Do\nLoop\nEnd Sub: End Sub	syntax	Syntax error
+proplet	Do\nExit Do\nLoop\n	syntax	Expected End Property
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Sub	syntax	Expected End Property
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Function	syntax	Expected End Property
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Property	accepted	
+proplet	For i = 1 To 2\nExit For\nNext\nEnd	syntax	Expected End Property
+proplet	For i = 1 To 2\nExit For\nNext\nEnd If	syntax	End If without block If
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x	syntax	Syntax error
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Sub x	syntax	Syntax error
+proplet	For i = 1 To 2\nExit For\nNext\nEnd  Sub	syntax	Expected End Property
+proplet	For i = 1 To 2\nExit For\nNext\nEndSub	semantic	Sub or Function not defined
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Sub:	syntax	Syntax error
+proplet	For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub	syntax	Syntax error
+proplet	For i = 1 To 2\nExit For\nNext\n	syntax	Expected End Property
+proplet	Exit Do\nDo\nLoop\nEnd Sub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd Function	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd Property	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd If	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd Sub x	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd  Sub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEndSub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd Sub:	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+proplet	Exit Do\nDo\nLoop\n	syntax	Exit Do not within Do...Loop
+proplet	End\nEnd Sub	syntax	Expected End Property
+proplet	End\nEnd Function	syntax	Expected End Property
+proplet	End\nEnd Property	accepted	
+proplet	End\nEnd	syntax	Expected End Property
+proplet	End\nEnd If	syntax	End If without block If
+proplet	End\nEnd Sub Rem x	syntax	Syntax error
+proplet	End\nEnd Sub x	syntax	Syntax error
+proplet	End\nEnd  Sub	syntax	Expected End Property
+proplet	End\nEndSub	semantic	Sub or Function not defined
+proplet	End\nEnd Sub:	syntax	Syntax error
+proplet	End\nEnd Sub: End Sub	syntax	Syntax error
+proplet	End\n	syntax	Expected End Property
+propset	End Sub	syntax	Expected End Property
+propset	End Function	syntax	Expected End Property
+propset	End Property	accepted	
+propset	End	syntax	Expected End Property
+propset	End If	syntax	End If without block If
+propset	End Sub Rem x	syntax	Syntax error
+propset	End Sub x	syntax	Syntax error
+propset	End  Sub	syntax	Expected End Property
+propset	EndSub	semantic	Sub or Function not defined
+propset	End Sub:	syntax	Syntax error
+propset	End Sub: End Sub	syntax	Syntax error
+propset	Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+propset	Exit Property\nEnd Sub	syntax	Expected End Property
+propset	Exit Property\nEnd Function	syntax	Expected End Property
+propset	Exit Property\nEnd Property	accepted	
+propset	Exit Property\nEnd	syntax	Expected End Property
+propset	Exit Property\nEnd If	syntax	End If without block If
+propset	Exit Property\nEnd Sub Rem x	syntax	Syntax error
+propset	Exit Property\nEnd Sub x	syntax	Syntax error
+propset	Exit Property\nEnd  Sub	syntax	Expected End Property
+propset	Exit Property\nEndSub	semantic	Sub or Function not defined
+propset	Exit Property\nEnd Sub:	syntax	Syntax error
+propset	Exit Property\nEnd Sub: End Sub	syntax	Syntax error
+propset	Exit Property\n	syntax	Expected End Property
+propset	Exit Do\nEnd Sub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd Function	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd Property	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd Sub x	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd  Sub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEndSub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd Sub:	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\n	syntax	Exit Do not within Do...Loop
+propset	Exit For\nEnd Sub	syntax	Exit For not within For...Next
+propset	Exit For\nEnd Function	syntax	Exit For not within For...Next
+propset	Exit For\nEnd Property	syntax	Exit For not within For...Next
+propset	Exit For\nEnd	syntax	Exit For not within For...Next
+propset	Exit For\nEnd If	syntax	Exit For not within For...Next
+propset	Exit For\nEnd Sub Rem x	syntax	Exit For not within For...Next
+propset	Exit For\nEnd Sub x	syntax	Exit For not within For...Next
+propset	Exit For\nEnd  Sub	syntax	Exit For not within For...Next
+propset	Exit For\nEndSub	syntax	Exit For not within For...Next
+propset	Exit For\nEnd Sub:	syntax	Exit For not within For...Next
+propset	Exit For\nEnd Sub: End Sub	syntax	Exit For not within For...Next
+propset	Exit For\n	syntax	Exit For not within For...Next
+propset	Exit Select\nEnd Sub	syntax	Syntax error
+propset	Exit Select\nEnd Function	syntax	Syntax error
+propset	Exit Select\nEnd Property	syntax	Syntax error
+propset	Exit Select\nEnd	syntax	Syntax error
+propset	Exit Select\nEnd If	syntax	Syntax error
+propset	Exit Select\nEnd Sub Rem x	syntax	Syntax error
+propset	Exit Select\nEnd Sub x	syntax	Syntax error
+propset	Exit Select\nEnd  Sub	syntax	Syntax error
+propset	Exit Select\nEndSub	syntax	Syntax error
+propset	Exit Select\nEnd Sub:	syntax	Syntax error
+propset	Exit Select\nEnd Sub: End Sub	syntax	Syntax error
+propset	Exit Select\n	syntax	Syntax error
+propset	Exit With\nEnd Sub	syntax	Syntax error
+propset	Exit With\nEnd Function	syntax	Syntax error
+propset	Exit With\nEnd Property	syntax	Syntax error
+propset	Exit With\nEnd	syntax	Syntax error
+propset	Exit With\nEnd If	syntax	Syntax error
+propset	Exit With\nEnd Sub Rem x	syntax	Syntax error
+propset	Exit With\nEnd Sub x	syntax	Syntax error
+propset	Exit With\nEnd  Sub	syntax	Syntax error
+propset	Exit With\nEndSub	syntax	Syntax error
+propset	Exit With\nEnd Sub:	syntax	Syntax error
+propset	Exit With\nEnd Sub: End Sub	syntax	Syntax error
+propset	Exit With\n	syntax	Syntax error
+propset	Return\nEnd Sub	syntax	Expected End Property
+propset	Return\nEnd Function	syntax	Expected End Property
+propset	Return\nEnd Property	accepted	
+propset	Return\nEnd	syntax	Expected End Property
+propset	Return\nEnd If	syntax	End If without block If
+propset	Return\nEnd Sub Rem x	syntax	Syntax error
+propset	Return\nEnd Sub x	syntax	Syntax error
+propset	Return\nEnd  Sub	syntax	Expected End Property
+propset	Return\nEndSub	semantic	Sub or Function not defined
+propset	Return\nEnd Sub:	syntax	Syntax error
+propset	Return\nEnd Sub: End Sub	syntax	Syntax error
+propset	Return\n	syntax	Expected End Property
+propset	GoSub L\nEnd Sub	syntax	Expected End Property
+propset	GoSub L\nEnd Function	syntax	Expected End Property
+propset	GoSub L\nEnd Property	syntax	Label not defined
+propset	GoSub L\nEnd	syntax	Expected End Property
+propset	GoSub L\nEnd If	syntax	End If without block If
+propset	GoSub L\nEnd Sub Rem x	syntax	Syntax error
+propset	GoSub L\nEnd Sub x	syntax	Syntax error
+propset	GoSub L\nEnd  Sub	syntax	Expected End Property
+propset	GoSub L\nEndSub	semantic	Sub or Function not defined
+propset	GoSub L\nEnd Sub:	syntax	Syntax error
+propset	GoSub L\nEnd Sub: End Sub	syntax	Syntax error
+propset	GoSub L\n	syntax	Expected End Property
+propset	L:\nEnd Sub	syntax	Expected End Property
+propset	L:\nEnd Function	syntax	Expected End Property
+propset	L:\nEnd Property	accepted	
+propset	L:\nEnd	syntax	Expected End Property
+propset	L:\nEnd If	syntax	End If without block If
+propset	L:\nEnd Sub Rem x	syntax	Syntax error
+propset	L:\nEnd Sub x	syntax	Syntax error
+propset	L:\nEnd  Sub	syntax	Expected End Property
+propset	L:\nEndSub	semantic	Sub or Function not defined
+propset	L:\nEnd Sub:	syntax	Syntax error
+propset	L:\nEnd Sub: End Sub	syntax	Syntax error
+propset	L:\n	syntax	Expected End Property
+propset	Resume\nEnd Sub	syntax	Expected End Property
+propset	Resume\nEnd Function	syntax	Expected End Property
+propset	Resume\nEnd Property	accepted	
+propset	Resume\nEnd	syntax	Expected End Property
+propset	Resume\nEnd If	syntax	End If without block If
+propset	Resume\nEnd Sub Rem x	syntax	Syntax error
+propset	Resume\nEnd Sub x	syntax	Syntax error
+propset	Resume\nEnd  Sub	syntax	Expected End Property
+propset	Resume\nEndSub	semantic	Sub or Function not defined
+propset	Resume\nEnd Sub:	syntax	Syntax error
+propset	Resume\nEnd Sub: End Sub	syntax	Syntax error
+propset	Resume\n	syntax	Expected End Property
+propset	Resume Next\nEnd Sub	syntax	Expected End Property
+propset	Resume Next\nEnd Function	syntax	Expected End Property
+propset	Resume Next\nEnd Property	accepted	
+propset	Resume Next\nEnd	syntax	Expected End Property
+propset	Resume Next\nEnd If	syntax	End If without block If
+propset	Resume Next\nEnd Sub Rem x	syntax	Syntax error
+propset	Resume Next\nEnd Sub x	syntax	Syntax error
+propset	Resume Next\nEnd  Sub	syntax	Expected End Property
+propset	Resume Next\nEndSub	semantic	Sub or Function not defined
+propset	Resume Next\nEnd Sub:	syntax	Syntax error
+propset	Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+propset	Resume Next\n	syntax	Expected End Property
+propset	Resume 0\nEnd Sub	syntax	Expected End Property
+propset	Resume 0\nEnd Function	syntax	Expected End Property
+propset	Resume 0\nEnd Property	accepted	
+propset	Resume 0\nEnd	syntax	Expected End Property
+propset	Resume 0\nEnd If	syntax	End If without block If
+propset	Resume 0\nEnd Sub Rem x	syntax	Syntax error
+propset	Resume 0\nEnd Sub x	syntax	Syntax error
+propset	Resume 0\nEnd  Sub	syntax	Expected End Property
+propset	Resume 0\nEndSub	semantic	Sub or Function not defined
+propset	Resume 0\nEnd Sub:	syntax	Syntax error
+propset	Resume 0\nEnd Sub: End Sub	syntax	Syntax error
+propset	Resume 0\n	syntax	Expected End Property
+propset	Stop\nEnd Sub	syntax	Expected End Property
+propset	Stop\nEnd Function	syntax	Expected End Property
+propset	Stop\nEnd Property	accepted	
+propset	Stop\nEnd	syntax	Expected End Property
+propset	Stop\nEnd If	syntax	End If without block If
+propset	Stop\nEnd Sub Rem x	syntax	Syntax error
+propset	Stop\nEnd Sub x	syntax	Syntax error
+propset	Stop\nEnd  Sub	syntax	Expected End Property
+propset	Stop\nEndSub	semantic	Sub or Function not defined
+propset	Stop\nEnd Sub:	syntax	Syntax error
+propset	Stop\nEnd Sub: End Sub	syntax	Syntax error
+propset	Stop\n	syntax	Expected End Property
+propset	On Error GoTo 0\nEnd Sub	syntax	Expected End Property
+propset	On Error GoTo 0\nEnd Function	syntax	Expected End Property
+propset	On Error GoTo 0\nEnd Property	accepted	
+propset	On Error GoTo 0\nEnd	syntax	Expected End Property
+propset	On Error GoTo 0\nEnd If	syntax	End If without block If
+propset	On Error GoTo 0\nEnd Sub Rem x	syntax	Syntax error
+propset	On Error GoTo 0\nEnd Sub x	syntax	Syntax error
+propset	On Error GoTo 0\nEnd  Sub	syntax	Expected End Property
+propset	On Error GoTo 0\nEndSub	semantic	Sub or Function not defined
+propset	On Error GoTo 0\nEnd Sub:	syntax	Syntax error
+propset	On Error GoTo 0\nEnd Sub: End Sub	syntax	Syntax error
+propset	On Error GoTo 0\n	syntax	Expected End Property
+propset	On Error Resume Next\nEnd Sub	syntax	Expected End Property
+propset	On Error Resume Next\nEnd Function	syntax	Expected End Property
+propset	On Error Resume Next\nEnd Property	accepted	
+propset	On Error Resume Next\nEnd	syntax	Expected End Property
+propset	On Error Resume Next\nEnd If	syntax	End If without block If
+propset	On Error Resume Next\nEnd Sub Rem x	syntax	Syntax error
+propset	On Error Resume Next\nEnd Sub x	syntax	Syntax error
+propset	On Error Resume Next\nEnd  Sub	syntax	Expected End Property
+propset	On Error Resume Next\nEndSub	semantic	Sub or Function not defined
+propset	On Error Resume Next\nEnd Sub:	syntax	Syntax error
+propset	On Error Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+propset	On Error Resume Next\n	syntax	Expected End Property
+propset	Exit Sub: Exit Function\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd If	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEndSub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+propset	Exit Sub: Exit Function\n	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+propset	x = 1: Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Sub	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Function	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Property	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd If	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Sub Rem x	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Sub x	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd  Sub	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEndSub	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Sub:	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\nEnd Sub: End Sub	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Sub\n	syntax	Exit Sub not allowed in Function or Property
+propset	If c Then Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+propset	If c Then Exit Property\nEnd Sub	syntax	Expected End Property
+propset	If c Then Exit Property\nEnd Function	syntax	Expected End Property
+propset	If c Then Exit Property\nEnd Property	accepted	
+propset	If c Then Exit Property\nEnd	syntax	Expected End Property
+propset	If c Then Exit Property\nEnd If	syntax	End If without block If
+propset	If c Then Exit Property\nEnd Sub Rem x	syntax	Syntax error
+propset	If c Then Exit Property\nEnd Sub x	syntax	Syntax error
+propset	If c Then Exit Property\nEnd  Sub	syntax	Expected End Property
+propset	If c Then Exit Property\nEndSub	semantic	Sub or Function not defined
+propset	If c Then Exit Property\nEnd Sub:	syntax	Syntax error
+propset	If c Then Exit Property\nEnd Sub: End Sub	syntax	Syntax error
+propset	If c Then Exit Property\n	syntax	Expected End Property
+propset	Do\nExit Do\nLoop\nEnd Sub	syntax	Expected End Property
+propset	Do\nExit Do\nLoop\nEnd Function	syntax	Expected End Property
+propset	Do\nExit Do\nLoop\nEnd Property	accepted	
+propset	Do\nExit Do\nLoop\nEnd	syntax	Expected End Property
+propset	Do\nExit Do\nLoop\nEnd If	syntax	End If without block If
+propset	Do\nExit Do\nLoop\nEnd Sub Rem x	syntax	Syntax error
+propset	Do\nExit Do\nLoop\nEnd Sub x	syntax	Syntax error
+propset	Do\nExit Do\nLoop\nEnd  Sub	syntax	Expected End Property
+propset	Do\nExit Do\nLoop\nEndSub	semantic	Sub or Function not defined
+propset	Do\nExit Do\nLoop\nEnd Sub:	syntax	Syntax error
+propset	Do\nExit Do\nLoop\nEnd Sub: End Sub	syntax	Syntax error
+propset	Do\nExit Do\nLoop\n	syntax	Expected End Property
+propset	For i = 1 To 2\nExit For\nNext\nEnd Sub	syntax	Expected End Property
+propset	For i = 1 To 2\nExit For\nNext\nEnd Function	syntax	Expected End Property
+propset	For i = 1 To 2\nExit For\nNext\nEnd Property	accepted	
+propset	For i = 1 To 2\nExit For\nNext\nEnd	syntax	Expected End Property
+propset	For i = 1 To 2\nExit For\nNext\nEnd If	syntax	End If without block If
+propset	For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x	syntax	Syntax error
+propset	For i = 1 To 2\nExit For\nNext\nEnd Sub x	syntax	Syntax error
+propset	For i = 1 To 2\nExit For\nNext\nEnd  Sub	syntax	Expected End Property
+propset	For i = 1 To 2\nExit For\nNext\nEndSub	semantic	Sub or Function not defined
+propset	For i = 1 To 2\nExit For\nNext\nEnd Sub:	syntax	Syntax error
+propset	For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub	syntax	Syntax error
+propset	For i = 1 To 2\nExit For\nNext\n	syntax	Expected End Property
+propset	Exit Do\nDo\nLoop\nEnd Sub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd Function	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd Property	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd If	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd Sub x	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd  Sub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEndSub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd Sub:	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+propset	Exit Do\nDo\nLoop\n	syntax	Exit Do not within Do...Loop
+propset	End\nEnd Sub	syntax	Expected End Property
+propset	End\nEnd Function	syntax	Expected End Property
+propset	End\nEnd Property	accepted	
+propset	End\nEnd	syntax	Expected End Property
+propset	End\nEnd If	syntax	End If without block If
+propset	End\nEnd Sub Rem x	syntax	Syntax error
+propset	End\nEnd Sub x	syntax	Syntax error
+propset	End\nEnd  Sub	syntax	Expected End Property
+propset	End\nEndSub	semantic	Sub or Function not defined
+propset	End\nEnd Sub:	syntax	Syntax error
+propset	End\nEnd Sub: End Sub	syntax	Syntax error
+propset	End\n	syntax	Expected End Property
+publicsub	End Sub	accepted	
+publicsub	End Function	syntax	Expected End Sub
+publicsub	End Property	syntax	Expected End Sub
+publicsub	End	syntax	Expected End Sub
+publicsub	End If	syntax	End If without block If
+publicsub	End Sub Rem x	syntax	Syntax error
+publicsub	End Sub x	syntax	Syntax error
+publicsub	End  Sub	accepted	
+publicsub	EndSub	semantic	Sub or Function not defined
+publicsub	End Sub:	syntax	Syntax error
+publicsub	End Sub: End Sub	syntax	Syntax error
+publicsub	Exit Sub\nEnd Sub	accepted	
+publicsub	Exit Sub\nEnd Function	syntax	Expected End Sub
+publicsub	Exit Sub\nEnd Property	syntax	Expected End Sub
+publicsub	Exit Sub\nEnd	syntax	Expected End Sub
+publicsub	Exit Sub\nEnd If	syntax	End If without block If
+publicsub	Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Exit Sub\nEnd Sub x	syntax	Syntax error
+publicsub	Exit Sub\nEnd  Sub	accepted	
+publicsub	Exit Sub\nEndSub	semantic	Sub or Function not defined
+publicsub	Exit Sub\nEnd Sub:	syntax	Syntax error
+publicsub	Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Exit Sub\n	syntax	Expected End Sub
+publicsub	Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Property\nEnd Sub	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd Function	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd Property	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd If	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd Sub Rem x	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd Sub x	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd  Sub	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEndSub	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd Sub:	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\nEnd Sub: End Sub	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Property\n	syntax	Exit Property not allowed in Function or Sub
+publicsub	Exit Do\nEnd Sub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd Function	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd Property	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd If	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd Sub x	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd  Sub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEndSub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd Sub:	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\n	syntax	Exit Do not within Do...Loop
+publicsub	Exit For\nEnd Sub	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd Function	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd Property	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd If	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd Sub Rem x	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd Sub x	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd  Sub	syntax	Exit For not within For...Next
+publicsub	Exit For\nEndSub	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd Sub:	syntax	Exit For not within For...Next
+publicsub	Exit For\nEnd Sub: End Sub	syntax	Exit For not within For...Next
+publicsub	Exit For\n	syntax	Exit For not within For...Next
+publicsub	Exit Select\nEnd Sub	syntax	Syntax error
+publicsub	Exit Select\nEnd Function	syntax	Syntax error
+publicsub	Exit Select\nEnd Property	syntax	Syntax error
+publicsub	Exit Select\nEnd	syntax	Syntax error
+publicsub	Exit Select\nEnd If	syntax	Syntax error
+publicsub	Exit Select\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Exit Select\nEnd Sub x	syntax	Syntax error
+publicsub	Exit Select\nEnd  Sub	syntax	Syntax error
+publicsub	Exit Select\nEndSub	syntax	Syntax error
+publicsub	Exit Select\nEnd Sub:	syntax	Syntax error
+publicsub	Exit Select\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Exit Select\n	syntax	Syntax error
+publicsub	Exit With\nEnd Sub	syntax	Syntax error
+publicsub	Exit With\nEnd Function	syntax	Syntax error
+publicsub	Exit With\nEnd Property	syntax	Syntax error
+publicsub	Exit With\nEnd	syntax	Syntax error
+publicsub	Exit With\nEnd If	syntax	Syntax error
+publicsub	Exit With\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Exit With\nEnd Sub x	syntax	Syntax error
+publicsub	Exit With\nEnd  Sub	syntax	Syntax error
+publicsub	Exit With\nEndSub	syntax	Syntax error
+publicsub	Exit With\nEnd Sub:	syntax	Syntax error
+publicsub	Exit With\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Exit With\n	syntax	Syntax error
+publicsub	Return\nEnd Sub	accepted	
+publicsub	Return\nEnd Function	syntax	Expected End Sub
+publicsub	Return\nEnd Property	syntax	Expected End Sub
+publicsub	Return\nEnd	syntax	Expected End Sub
+publicsub	Return\nEnd If	syntax	End If without block If
+publicsub	Return\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Return\nEnd Sub x	syntax	Syntax error
+publicsub	Return\nEnd  Sub	accepted	
+publicsub	Return\nEndSub	semantic	Sub or Function not defined
+publicsub	Return\nEnd Sub:	syntax	Syntax error
+publicsub	Return\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Return\n	syntax	Expected End Sub
+publicsub	GoSub L\nEnd Sub	syntax	Label not defined
+publicsub	GoSub L\nEnd Function	syntax	Expected End Sub
+publicsub	GoSub L\nEnd Property	syntax	Expected End Sub
+publicsub	GoSub L\nEnd	syntax	Expected End Sub
+publicsub	GoSub L\nEnd If	syntax	End If without block If
+publicsub	GoSub L\nEnd Sub Rem x	syntax	Syntax error
+publicsub	GoSub L\nEnd Sub x	syntax	Syntax error
+publicsub	GoSub L\nEnd  Sub	syntax	Label not defined
+publicsub	GoSub L\nEndSub	semantic	Sub or Function not defined
+publicsub	GoSub L\nEnd Sub:	syntax	Syntax error
+publicsub	GoSub L\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	GoSub L\n	syntax	Expected End Sub
+publicsub	L:\nEnd Sub	accepted	
+publicsub	L:\nEnd Function	syntax	Expected End Sub
+publicsub	L:\nEnd Property	syntax	Expected End Sub
+publicsub	L:\nEnd	syntax	Expected End Sub
+publicsub	L:\nEnd If	syntax	End If without block If
+publicsub	L:\nEnd Sub Rem x	syntax	Syntax error
+publicsub	L:\nEnd Sub x	syntax	Syntax error
+publicsub	L:\nEnd  Sub	accepted	
+publicsub	L:\nEndSub	semantic	Sub or Function not defined
+publicsub	L:\nEnd Sub:	syntax	Syntax error
+publicsub	L:\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	L:\n	syntax	Expected End Sub
+publicsub	Resume\nEnd Sub	accepted	
+publicsub	Resume\nEnd Function	syntax	Expected End Sub
+publicsub	Resume\nEnd Property	syntax	Expected End Sub
+publicsub	Resume\nEnd	syntax	Expected End Sub
+publicsub	Resume\nEnd If	syntax	End If without block If
+publicsub	Resume\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Resume\nEnd Sub x	syntax	Syntax error
+publicsub	Resume\nEnd  Sub	accepted	
+publicsub	Resume\nEndSub	semantic	Sub or Function not defined
+publicsub	Resume\nEnd Sub:	syntax	Syntax error
+publicsub	Resume\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Resume\n	syntax	Expected End Sub
+publicsub	Resume Next\nEnd Sub	accepted	
+publicsub	Resume Next\nEnd Function	syntax	Expected End Sub
+publicsub	Resume Next\nEnd Property	syntax	Expected End Sub
+publicsub	Resume Next\nEnd	syntax	Expected End Sub
+publicsub	Resume Next\nEnd If	syntax	End If without block If
+publicsub	Resume Next\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Resume Next\nEnd Sub x	syntax	Syntax error
+publicsub	Resume Next\nEnd  Sub	accepted	
+publicsub	Resume Next\nEndSub	semantic	Sub or Function not defined
+publicsub	Resume Next\nEnd Sub:	syntax	Syntax error
+publicsub	Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Resume Next\n	syntax	Expected End Sub
+publicsub	Resume 0\nEnd Sub	accepted	
+publicsub	Resume 0\nEnd Function	syntax	Expected End Sub
+publicsub	Resume 0\nEnd Property	syntax	Expected End Sub
+publicsub	Resume 0\nEnd	syntax	Expected End Sub
+publicsub	Resume 0\nEnd If	syntax	End If without block If
+publicsub	Resume 0\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Resume 0\nEnd Sub x	syntax	Syntax error
+publicsub	Resume 0\nEnd  Sub	accepted	
+publicsub	Resume 0\nEndSub	semantic	Sub or Function not defined
+publicsub	Resume 0\nEnd Sub:	syntax	Syntax error
+publicsub	Resume 0\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Resume 0\n	syntax	Expected End Sub
+publicsub	Stop\nEnd Sub	accepted	
+publicsub	Stop\nEnd Function	syntax	Expected End Sub
+publicsub	Stop\nEnd Property	syntax	Expected End Sub
+publicsub	Stop\nEnd	syntax	Expected End Sub
+publicsub	Stop\nEnd If	syntax	End If without block If
+publicsub	Stop\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Stop\nEnd Sub x	syntax	Syntax error
+publicsub	Stop\nEnd  Sub	accepted	
+publicsub	Stop\nEndSub	semantic	Sub or Function not defined
+publicsub	Stop\nEnd Sub:	syntax	Syntax error
+publicsub	Stop\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Stop\n	syntax	Expected End Sub
+publicsub	On Error GoTo 0\nEnd Sub	accepted	
+publicsub	On Error GoTo 0\nEnd Function	syntax	Expected End Sub
+publicsub	On Error GoTo 0\nEnd Property	syntax	Expected End Sub
+publicsub	On Error GoTo 0\nEnd	syntax	Expected End Sub
+publicsub	On Error GoTo 0\nEnd If	syntax	End If without block If
+publicsub	On Error GoTo 0\nEnd Sub Rem x	syntax	Syntax error
+publicsub	On Error GoTo 0\nEnd Sub x	syntax	Syntax error
+publicsub	On Error GoTo 0\nEnd  Sub	accepted	
+publicsub	On Error GoTo 0\nEndSub	semantic	Sub or Function not defined
+publicsub	On Error GoTo 0\nEnd Sub:	syntax	Syntax error
+publicsub	On Error GoTo 0\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	On Error GoTo 0\n	syntax	Expected End Sub
+publicsub	On Error Resume Next\nEnd Sub	accepted	
+publicsub	On Error Resume Next\nEnd Function	syntax	Expected End Sub
+publicsub	On Error Resume Next\nEnd Property	syntax	Expected End Sub
+publicsub	On Error Resume Next\nEnd	syntax	Expected End Sub
+publicsub	On Error Resume Next\nEnd If	syntax	End If without block If
+publicsub	On Error Resume Next\nEnd Sub Rem x	syntax	Syntax error
+publicsub	On Error Resume Next\nEnd Sub x	syntax	Syntax error
+publicsub	On Error Resume Next\nEnd  Sub	accepted	
+publicsub	On Error Resume Next\nEndSub	semantic	Sub or Function not defined
+publicsub	On Error Resume Next\nEnd Sub:	syntax	Syntax error
+publicsub	On Error Resume Next\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	On Error Resume Next\n	syntax	Expected End Sub
+publicsub	Exit Sub: Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	Exit Sub: Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+publicsub	x = 1: Exit Sub\nEnd Sub	accepted	
+publicsub	x = 1: Exit Sub\nEnd Function	syntax	Expected End Sub
+publicsub	x = 1: Exit Sub\nEnd Property	syntax	Expected End Sub
+publicsub	x = 1: Exit Sub\nEnd	syntax	Expected End Sub
+publicsub	x = 1: Exit Sub\nEnd If	syntax	End If without block If
+publicsub	x = 1: Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+publicsub	x = 1: Exit Sub\nEnd Sub x	syntax	Syntax error
+publicsub	x = 1: Exit Sub\nEnd  Sub	accepted	
+publicsub	x = 1: Exit Sub\nEndSub	semantic	Sub or Function not defined
+publicsub	x = 1: Exit Sub\nEnd Sub:	syntax	Syntax error
+publicsub	x = 1: Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	x = 1: Exit Sub\n	syntax	Expected End Sub
+publicsub	If c Then Exit Sub\nEnd Sub	accepted	
+publicsub	If c Then Exit Sub\nEnd Function	syntax	Expected End Sub
+publicsub	If c Then Exit Sub\nEnd Property	syntax	Expected End Sub
+publicsub	If c Then Exit Sub\nEnd	syntax	Expected End Sub
+publicsub	If c Then Exit Sub\nEnd If	syntax	End If without block If
+publicsub	If c Then Exit Sub\nEnd Sub Rem x	syntax	Syntax error
+publicsub	If c Then Exit Sub\nEnd Sub x	syntax	Syntax error
+publicsub	If c Then Exit Sub\nEnd  Sub	accepted	
+publicsub	If c Then Exit Sub\nEndSub	semantic	Sub or Function not defined
+publicsub	If c Then Exit Sub\nEnd Sub:	syntax	Syntax error
+publicsub	If c Then Exit Sub\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	If c Then Exit Sub\n	syntax	Expected End Sub
+publicsub	If c Then Exit Function\nEnd Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd Function	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd Property	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd If	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd Sub Rem x	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd Sub x	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd  Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEndSub	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd Sub:	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\nEnd Sub: End Sub	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Function\n	syntax	Exit Function not allowed in Sub or Property
+publicsub	If c Then Exit Property\nEnd Sub	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd Function	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd Property	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd If	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd Sub Rem x	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd Sub x	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd  Sub	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEndSub	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd Sub:	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\nEnd Sub: End Sub	syntax	Exit Property not allowed in Function or Sub
+publicsub	If c Then Exit Property\n	syntax	Exit Property not allowed in Function or Sub
+publicsub	Do\nExit Do\nLoop\nEnd Sub	accepted	
+publicsub	Do\nExit Do\nLoop\nEnd Function	syntax	Expected End Sub
+publicsub	Do\nExit Do\nLoop\nEnd Property	syntax	Expected End Sub
+publicsub	Do\nExit Do\nLoop\nEnd	syntax	Expected End Sub
+publicsub	Do\nExit Do\nLoop\nEnd If	syntax	End If without block If
+publicsub	Do\nExit Do\nLoop\nEnd Sub Rem x	syntax	Syntax error
+publicsub	Do\nExit Do\nLoop\nEnd Sub x	syntax	Syntax error
+publicsub	Do\nExit Do\nLoop\nEnd  Sub	accepted	
+publicsub	Do\nExit Do\nLoop\nEndSub	semantic	Sub or Function not defined
+publicsub	Do\nExit Do\nLoop\nEnd Sub:	syntax	Syntax error
+publicsub	Do\nExit Do\nLoop\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	Do\nExit Do\nLoop\n	syntax	Expected End Sub
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Sub	accepted	
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Function	syntax	Expected End Sub
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Property	syntax	Expected End Sub
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd	syntax	Expected End Sub
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd If	syntax	End If without block If
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x	syntax	Syntax error
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Sub x	syntax	Syntax error
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd  Sub	accepted	
+publicsub	For i = 1 To 2\nExit For\nNext\nEndSub	semantic	Sub or Function not defined
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Sub:	syntax	Syntax error
+publicsub	For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	For i = 1 To 2\nExit For\nNext\n	syntax	Expected End Sub
+publicsub	Exit Do\nDo\nLoop\nEnd Sub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd Function	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd Property	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd If	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd Sub Rem x	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd Sub x	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd  Sub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEndSub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd Sub:	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\nEnd Sub: End Sub	syntax	Exit Do not within Do...Loop
+publicsub	Exit Do\nDo\nLoop\n	syntax	Exit Do not within Do...Loop
+publicsub	End\nEnd Sub	accepted	
+publicsub	End\nEnd Function	syntax	Expected End Sub
+publicsub	End\nEnd Property	syntax	Expected End Sub
+publicsub	End\nEnd	syntax	Expected End Sub
+publicsub	End\nEnd If	syntax	End If without block If
+publicsub	End\nEnd Sub Rem x	syntax	Syntax error
+publicsub	End\nEnd Sub x	syntax	Syntax error
+publicsub	End\nEnd  Sub	accepted	
+publicsub	End\nEndSub	semantic	Sub or Function not defined
+publicsub	End\nEnd Sub:	syntax	Syntax error
+publicsub	End\nEnd Sub: End Sub	syntax	Syntax error
+publicsub	End\n	syntax	Expected End Sub

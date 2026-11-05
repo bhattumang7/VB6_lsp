@@ -103,3 +103,4 @@ Deftype statements must precede declarations	syntax
 Duplicate Deftype statement	syntax
 Duplicate Option statement	syntax
 Option Private Module not permitted in a object module	syntax
+Exit Sub not allowed in Function or Property	syntax

@@ -1,0 +1,312 @@
+End Sub
+End Function
+End Property
+End
+End If
+End Sub Rem x
+End Sub x
+End  Sub
+EndSub
+End Sub:
+End Sub: End Sub
+
+Exit Sub\nEnd Sub
+Exit Sub\nEnd Function
+Exit Sub\nEnd Property
+Exit Sub\nEnd
+Exit Sub\nEnd If
+Exit Sub\nEnd Sub Rem x
+Exit Sub\nEnd Sub x
+Exit Sub\nEnd  Sub
+Exit Sub\nEndSub
+Exit Sub\nEnd Sub:
+Exit Sub\nEnd Sub: End Sub
+Exit Sub\n
+Exit Function\nEnd Sub
+Exit Function\nEnd Function
+Exit Function\nEnd Property
+Exit Function\nEnd
+Exit Function\nEnd If
+Exit Function\nEnd Sub Rem x
+Exit Function\nEnd Sub x
+Exit Function\nEnd  Sub
+Exit Function\nEndSub
+Exit Function\nEnd Sub:
+Exit Function\nEnd Sub: End Sub
+Exit Function\n
+Exit Property\nEnd Sub
+Exit Property\nEnd Function
+Exit Property\nEnd Property
+Exit Property\nEnd
+Exit Property\nEnd If
+Exit Property\nEnd Sub Rem x
+Exit Property\nEnd Sub x
+Exit Property\nEnd  Sub
+Exit Property\nEndSub
+Exit Property\nEnd Sub:
+Exit Property\nEnd Sub: End Sub
+Exit Property\n
+Exit Do\nEnd Sub
+Exit Do\nEnd Function
+Exit Do\nEnd Property
+Exit Do\nEnd
+Exit Do\nEnd If
+Exit Do\nEnd Sub Rem x
+Exit Do\nEnd Sub x
+Exit Do\nEnd  Sub
+Exit Do\nEndSub
+Exit Do\nEnd Sub:
+Exit Do\nEnd Sub: End Sub
+Exit Do\n
+Exit For\nEnd Sub
+Exit For\nEnd Function
+Exit For\nEnd Property
+Exit For\nEnd
+Exit For\nEnd If
+Exit For\nEnd Sub Rem x
+Exit For\nEnd Sub x
+Exit For\nEnd  Sub
+Exit For\nEndSub
+Exit For\nEnd Sub:
+Exit For\nEnd Sub: End Sub
+Exit For\n
+Exit Select\nEnd Sub
+Exit Select\nEnd Function
+Exit Select\nEnd Property
+Exit Select\nEnd
+Exit Select\nEnd If
+Exit Select\nEnd Sub Rem x
+Exit Select\nEnd Sub x
+Exit Select\nEnd  Sub
+Exit Select\nEndSub
+Exit Select\nEnd Sub:
+Exit Select\nEnd Sub: End Sub
+Exit Select\n
+Exit With\nEnd Sub
+Exit With\nEnd Function
+Exit With\nEnd Property
+Exit With\nEnd
+Exit With\nEnd If
+Exit With\nEnd Sub Rem x
+Exit With\nEnd Sub x
+Exit With\nEnd  Sub
+Exit With\nEndSub
+Exit With\nEnd Sub:
+Exit With\nEnd Sub: End Sub
+Exit With\n
+Return\nEnd Sub
+Return\nEnd Function
+Return\nEnd Property
+Return\nEnd
+Return\nEnd If
+Return\nEnd Sub Rem x
+Return\nEnd Sub x
+Return\nEnd  Sub
+Return\nEndSub
+Return\nEnd Sub:
+Return\nEnd Sub: End Sub
+Return\n
+GoSub L\nEnd Sub
+GoSub L\nEnd Function
+GoSub L\nEnd Property
+GoSub L\nEnd
+GoSub L\nEnd If
+GoSub L\nEnd Sub Rem x
+GoSub L\nEnd Sub x
+GoSub L\nEnd  Sub
+GoSub L\nEndSub
+GoSub L\nEnd Sub:
+GoSub L\nEnd Sub: End Sub
+GoSub L\n
+L:\nEnd Sub
+L:\nEnd Function
+L:\nEnd Property
+L:\nEnd
+L:\nEnd If
+L:\nEnd Sub Rem x
+L:\nEnd Sub x
+L:\nEnd  Sub
+L:\nEndSub
+L:\nEnd Sub:
+L:\nEnd Sub: End Sub
+L:\n
+Resume\nEnd Sub
+Resume\nEnd Function
+Resume\nEnd Property
+Resume\nEnd
+Resume\nEnd If
+Resume\nEnd Sub Rem x
+Resume\nEnd Sub x
+Resume\nEnd  Sub
+Resume\nEndSub
+Resume\nEnd Sub:
+Resume\nEnd Sub: End Sub
+Resume\n
+Resume Next\nEnd Sub
+Resume Next\nEnd Function
+Resume Next\nEnd Property
+Resume Next\nEnd
+Resume Next\nEnd If
+Resume Next\nEnd Sub Rem x
+Resume Next\nEnd Sub x
+Resume Next\nEnd  Sub
+Resume Next\nEndSub
+Resume Next\nEnd Sub:
+Resume Next\nEnd Sub: End Sub
+Resume Next\n
+Resume 0\nEnd Sub
+Resume 0\nEnd Function
+Resume 0\nEnd Property
+Resume 0\nEnd
+Resume 0\nEnd If
+Resume 0\nEnd Sub Rem x
+Resume 0\nEnd Sub x
+Resume 0\nEnd  Sub
+Resume 0\nEndSub
+Resume 0\nEnd Sub:
+Resume 0\nEnd Sub: End Sub
+Resume 0\n
+Stop\nEnd Sub
+Stop\nEnd Function
+Stop\nEnd Property
+Stop\nEnd
+Stop\nEnd If
+Stop\nEnd Sub Rem x
+Stop\nEnd Sub x
+Stop\nEnd  Sub
+Stop\nEndSub
+Stop\nEnd Sub:
+Stop\nEnd Sub: End Sub
+Stop\n
+On Error GoTo 0\nEnd Sub
+On Error GoTo 0\nEnd Function
+On Error GoTo 0\nEnd Property
+On Error GoTo 0\nEnd
+On Error GoTo 0\nEnd If
+On Error GoTo 0\nEnd Sub Rem x
+On Error GoTo 0\nEnd Sub x
+On Error GoTo 0\nEnd  Sub
+On Error GoTo 0\nEndSub
+On Error GoTo 0\nEnd Sub:
+On Error GoTo 0\nEnd Sub: End Sub
+On Error GoTo 0\n
+On Error Resume Next\nEnd Sub
+On Error Resume Next\nEnd Function
+On Error Resume Next\nEnd Property
+On Error Resume Next\nEnd
+On Error Resume Next\nEnd If
+On Error Resume Next\nEnd Sub Rem x
+On Error Resume Next\nEnd Sub x
+On Error Resume Next\nEnd  Sub
+On Error Resume Next\nEndSub
+On Error Resume Next\nEnd Sub:
+On Error Resume Next\nEnd Sub: End Sub
+On Error Resume Next\n
+Exit Sub: Exit Function\nEnd Sub
+Exit Sub: Exit Function\nEnd Function
+Exit Sub: Exit Function\nEnd Property
+Exit Sub: Exit Function\nEnd
+Exit Sub: Exit Function\nEnd If
+Exit Sub: Exit Function\nEnd Sub Rem x
+Exit Sub: Exit Function\nEnd Sub x
+Exit Sub: Exit Function\nEnd  Sub
+Exit Sub: Exit Function\nEndSub
+Exit Sub: Exit Function\nEnd Sub:
+Exit Sub: Exit Function\nEnd Sub: End Sub
+Exit Sub: Exit Function\n
+x = 1: Exit Sub\nEnd Sub
+x = 1: Exit Sub\nEnd Function
+x = 1: Exit Sub\nEnd Property
+x = 1: Exit Sub\nEnd
+x = 1: Exit Sub\nEnd If
+x = 1: Exit Sub\nEnd Sub Rem x
+x = 1: Exit Sub\nEnd Sub x
+x = 1: Exit Sub\nEnd  Sub
+x = 1: Exit Sub\nEndSub
+x = 1: Exit Sub\nEnd Sub:
+x = 1: Exit Sub\nEnd Sub: End Sub
+x = 1: Exit Sub\n
+If c Then Exit Sub\nEnd Sub
+If c Then Exit Sub\nEnd Function
+If c Then Exit Sub\nEnd Property
+If c Then Exit Sub\nEnd
+If c Then Exit Sub\nEnd If
+If c Then Exit Sub\nEnd Sub Rem x
+If c Then Exit Sub\nEnd Sub x
+If c Then Exit Sub\nEnd  Sub
+If c Then Exit Sub\nEndSub
+If c Then Exit Sub\nEnd Sub:
+If c Then Exit Sub\nEnd Sub: End Sub
+If c Then Exit Sub\n
+If c Then Exit Function\nEnd Sub
+If c Then Exit Function\nEnd Function
+If c Then Exit Function\nEnd Property
+If c Then Exit Function\nEnd
+If c Then Exit Function\nEnd If
+If c Then Exit Function\nEnd Sub Rem x
+If c Then Exit Function\nEnd Sub x
+If c Then Exit Function\nEnd  Sub
+If c Then Exit Function\nEndSub
+If c Then Exit Function\nEnd Sub:
+If c Then Exit Function\nEnd Sub: End Sub
+If c Then Exit Function\n
+If c Then Exit Property\nEnd Sub
+If c Then Exit Property\nEnd Function
+If c Then Exit Property\nEnd Property
+If c Then Exit Property\nEnd
+If c Then Exit Property\nEnd If
+If c Then Exit Property\nEnd Sub Rem x
+If c Then Exit Property\nEnd Sub x
+If c Then Exit Property\nEnd  Sub
+If c Then Exit Property\nEndSub
+If c Then Exit Property\nEnd Sub:
+If c Then Exit Property\nEnd Sub: End Sub
+If c Then Exit Property\n
+Do\nExit Do\nLoop\nEnd Sub
+Do\nExit Do\nLoop\nEnd Function
+Do\nExit Do\nLoop\nEnd Property
+Do\nExit Do\nLoop\nEnd
+Do\nExit Do\nLoop\nEnd If
+Do\nExit Do\nLoop\nEnd Sub Rem x
+Do\nExit Do\nLoop\nEnd Sub x
+Do\nExit Do\nLoop\nEnd  Sub
+Do\nExit Do\nLoop\nEndSub
+Do\nExit Do\nLoop\nEnd Sub:
+Do\nExit Do\nLoop\nEnd Sub: End Sub
+Do\nExit Do\nLoop\n
+For i = 1 To 2\nExit For\nNext\nEnd Sub
+For i = 1 To 2\nExit For\nNext\nEnd Function
+For i = 1 To 2\nExit For\nNext\nEnd Property
+For i = 1 To 2\nExit For\nNext\nEnd
+For i = 1 To 2\nExit For\nNext\nEnd If
+For i = 1 To 2\nExit For\nNext\nEnd Sub Rem x
+For i = 1 To 2\nExit For\nNext\nEnd Sub x
+For i = 1 To 2\nExit For\nNext\nEnd  Sub
+For i = 1 To 2\nExit For\nNext\nEndSub
+For i = 1 To 2\nExit For\nNext\nEnd Sub:
+For i = 1 To 2\nExit For\nNext\nEnd Sub: End Sub
+For i = 1 To 2\nExit For\nNext\n
+Exit Do\nDo\nLoop\nEnd Sub
+Exit Do\nDo\nLoop\nEnd Function
+Exit Do\nDo\nLoop\nEnd Property
+Exit Do\nDo\nLoop\nEnd
+Exit Do\nDo\nLoop\nEnd If
+Exit Do\nDo\nLoop\nEnd Sub Rem x
+Exit Do\nDo\nLoop\nEnd Sub x
+Exit Do\nDo\nLoop\nEnd  Sub
+Exit Do\nDo\nLoop\nEndSub
+Exit Do\nDo\nLoop\nEnd Sub:
+Exit Do\nDo\nLoop\nEnd Sub: End Sub
+Exit Do\nDo\nLoop\n
+End\nEnd Sub
+End\nEnd Function
+End\nEnd Property
+End\nEnd
+End\nEnd If
+End\nEnd Sub Rem x
+End\nEnd Sub x
+End\nEnd  Sub
+End\nEndSub
+End\nEnd Sub:
+End\nEnd Sub: End Sub
+End\n

@@ -1,0 +1,46 @@
+# {k} is replaced by each body and closer (\n separates lines).
+=== sub bas
+Sub P(c, i)
+{k}
+=== func bas
+Function P(c, i) As Long
+{k}
+=== propget cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Property Get P(c, i) As Long
+{k}
+=== proplet cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Property Let P(c, i, v)
+{k}
+=== propset cls
+VERSION 1.0 CLASS
+BEGIN
+  MultiUse = -1  'True
+END
+Attribute VB_Name = "Class1"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = False
+Property Set P(c, i, v As Object)
+{k}
+=== publicsub bas
+Public Static Sub P(c, i)
+{k}

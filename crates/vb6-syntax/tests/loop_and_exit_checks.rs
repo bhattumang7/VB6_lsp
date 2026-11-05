@@ -55,7 +55,12 @@ fn exit_procedure_kind_must_match_the_procedure() {
     exit_in("Function F()\nEXIT\nEnd Function\n", "Exit Function", None);
     exit_in("Function F()\nEXIT\nEnd Function\n", "Exit Sub", Some(EXIT_SUB_IN_FUNCTION_OR_PROPERTY));
     exit_in("Function F()\nEXIT\nEnd Function\n", "Exit Property", Some(EXIT_PROPERTY_IN_FUNCTION_OR_SUB));
-    for head in ["Property Get P()", "Property Let P(v)", "Property Set P(v)"] {
+    // A getter may be left with any Exit.
+    let getter = "Property Get P()\nEXIT\nEnd Property\n";
+    exit_in(getter, "Exit Property", None);
+    exit_in(getter, "Exit Sub", None);
+    exit_in(getter, "Exit Function", None);
+    for head in ["Property Let P(v)", "Property Set P(v)"] {
         let src = format!("{head}\nEXIT\nEnd Property\n");
         exit_in(&src, "Exit Property", None);
         exit_in(&src, "Exit Sub", Some(EXIT_SUB_IN_FUNCTION_OR_PROPERTY));

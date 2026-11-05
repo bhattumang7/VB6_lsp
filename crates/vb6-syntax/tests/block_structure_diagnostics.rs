@@ -167,7 +167,10 @@ fn end_of_the_wrong_kind_is_reported_at_the_end_statement() {
     assert_eq!(parse(src).found, vec![(0x9c90, offset_of(src, "End Sub", 0), 3)]);
     let src = "Sub S()\nEnd Function\n";
     assert_eq!(parse(src).found, vec![(0x9c8f, offset_of(src, "End Function", 0), 3)]);
+    // A getter is closed by any of the three; the other property procedures only by their own.
     let src = "Property Get P()\nEnd Sub\n";
+    assert_eq!(parse(src).found, vec![]);
+    let src = "Property Let P(v)\nEnd Sub\n";
     assert_eq!(parse(src).found, vec![(0x9cbe, offset_of(src, "End Sub", 0), 3)]);
     let src = "Sub S()\nEnd Property\n";
     assert_eq!(parse(src).found, vec![(0x9c8f, offset_of(src, "End Property", 0), 3)]);
