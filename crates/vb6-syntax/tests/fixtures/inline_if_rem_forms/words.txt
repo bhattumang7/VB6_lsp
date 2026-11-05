@@ -1,0 +1,82 @@
+If x Then Erase a Rem z
+If x Then Close Rem z
+If x Then Close #1 Rem z
+If x Then Close #1, #2 Rem z
+If x Then Lock #1 Rem z
+If x Then Unlock #1 Rem z
+If x Then Seek #1, 5 Rem z
+If x Then Width #1, 80 Rem z
+If x Then Print 1 Rem z
+If x Then Print #1, 1 Rem z
+If x Then Input #1, y Rem z
+If x Then Line Input #1, y Rem z
+If x Then Write #1, 1 Rem z
+If x Then Get #1, , y Rem z
+If x Then Put #1, , y Rem z
+If x Then Open "f" For Input As #1 Rem z
+If x Then Name "a" As "b" Rem z
+If x Then Kill "a" Rem z
+If x Then Randomize Rem z
+If x Then Beep Rem z
+If x Then DoEvents Rem z
+If x Then Stop Rem z
+If x Then End Rem z
+If x Then Exit Sub Rem z
+If x Then GoSub L Rem z
+If x Then Return Rem z
+If x Then Resume Next Rem z
+If x Then Resume L Rem z
+If x Then On Error GoTo 0 Rem z
+If x Then On Error Resume Next Rem z
+If x Then ReDim b(3) Rem z
+If x Then Set o = Nothing Rem z
+If x Then Let y = 1 Rem z
+If x Then LSet s = "a" Rem z
+If x Then RSet s = "a" Rem z
+If x Then Mid(s, 1) = "a" Rem z
+If x Then Call f Rem z
+If x Then Call f(1) Rem z
+If x Then f 1 Rem z
+If x Then f Rem z
+If x Then o.f 1 Rem z
+If x Then o.f Rem z
+If x Then Debug.Print 1 Rem z
+If x Then Debug.Assert y Rem z
+If x Then Static z Rem z
+If x Then Dim w Rem z
+If x Then Const c = 1 Rem z
+If x Then y = 1 Rem z
+If x Then y = f(1) Rem z
+If x Then Load f Rem z
+If x Then Unload f Rem z
+If x Then Date = 1 Rem z
+If x Then Time = 1 Rem z
+If x Then Error 5 Rem z
+If x Then Rem q Rem z
+If x Then Option Explicit Rem z
+If x Then Do Rem z
+If x Then Loop Rem z
+If x Then While y Rem z
+If x Then Wend Rem z
+If x Then For y = 1 To 2 Rem z
+If x Then Next Rem z
+If x Then Next y Rem z
+If x Then With o Rem z
+If x Then End With Rem z
+If x Then Select Case y Rem z
+If x Then Case 1 Rem z
+If x Then End Select Rem z
+If x Then End If Rem z
+If x Then Else Rem z
+If x Then ElseIf y Then Rem z
+If x Then GoTo L Rem z
+If x Then Exit Do Rem z
+If x Then Exit For Rem z
+If x Then Exit Function Rem z
+If x Then Exit Property Rem z
+If x Then Enum E Rem z
+If x Then Type T Rem z
+If x Then Declare Sub d Lib "k" () Rem z
+If x Then Event e Rem z
+If x Then RaiseEvent e Rem z
+If x Then Implements c Rem z

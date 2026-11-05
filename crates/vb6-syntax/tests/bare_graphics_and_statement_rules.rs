@@ -140,3 +140,19 @@ fn a_mid_assignment_leaves_no_argument_out() {
         assert_eq!(parse(&in_sub(stmt)).found, vec![], "{stmt}");
     }
 }
+
+#[test]
+fn rem_after_a_statement_in_a_single_line_if_depends_on_the_statement() {
+    // These statements read their operand list up to the end of the line: Rem is no end.
+    for stmt in ["Erase a", "Close #1", "Close #1, #2", "Input #1, b", "Call f", "Call f(1)"] {
+        let src = in_sub(&format!("If a Then {stmt} Rem z"));
+        let found = parse(&src).found;
+        assert_eq!(found.len(), 1, "{stmt}: {found:?}");
+        assert_eq!(found[0].1, offset_of(&src, "Rem", 0), "{stmt}");
+    }
+    // These stop at Rem like at a comment mark.
+    for stmt in ["b = 1", "Exit Sub", "Stop", "End", "Print #1, 1", "Write #1, 1", "Debug.Print 1", "GoTo L"] {
+        let src = format!("Sub S(a, b)\n    If a Then {stmt} Rem z\nL:\nEnd Sub\n");
+        assert_eq!(parse(&src).found, vec![], "{stmt}");
+    }
+}

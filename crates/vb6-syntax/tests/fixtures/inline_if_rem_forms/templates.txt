@@ -1,0 +1,6 @@
+# x
+=== q bas
+Sub P(a() As Long, b() As Long, o As Object, f, x, y, s)
+{k}
+L:
+End Sub

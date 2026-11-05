@@ -960,6 +960,24 @@ impl<'src> Parser<'src> {
     /// begins the next statement, or the `Else` that continues a single-line
     /// `If`. Anything else is an error: the rest of the line is skipped so
     /// parsing resumes at the next statement.
+    /// True at the end of a statement: the end of the line, a comment, or, inside a
+    /// single-line `If`, a `Rem` comment.
+    fn at_statement_end(&mut self) -> bool {
+        self.peek().is_stmt_end() || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem))
+    }
+
+    /// As [`Self::end_stmt`] for a statement whose operand list does not stop at `Rem`: the
+    /// word is a syntax error even inside a single-line `If`.
+    fn end_stmt_before_rem_is_error(&mut self) {
+        if self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem) {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(0x9c6f, span, "end of statement");
+            self.skip_line();
+        } else {
+            self.end_stmt();
+        }
+    }
+
     fn end_stmt(&mut self) {
         if self.peek().is_stmt_end() || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
             self.advance();
@@ -1492,7 +1510,7 @@ impl<'src> Parser<'src> {
     /// The items of a `Print` method statement, separated by `;` or `,`
     /// (either may also end the statement).
     fn parse_print_method_items(&mut self, arena: &mut ExprArena, args: &mut Vec<NodeId>) {
-        while !self.peek().is_stmt_end() {
+        while !self.at_statement_end() {
             if self.eat(TokenKind::Kw(Kw::Semi)) || self.eat(TokenKind::Kw(Kw::Comma)) {
                 continue;
             }
@@ -1712,7 +1730,7 @@ impl<'src> Parser<'src> {
             return self.stray_terminator();
         }
         self.advance();
-        if self.peek().is_stmt_end()
+        if self.at_statement_end()
             || matches!(
                 self.peek().kind,
                 TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else) | TokenKind::Eof
@@ -3086,7 +3104,7 @@ impl<'src> Parser<'src> {
             // `Call Foo` takes its arguments in brackets or not at all.
             arena.alloc(ExprNode::ArgList { args: Vec::new() })
         };
-        self.end_stmt();
+        self.end_stmt_before_rem_is_error();
         arena.alloc(ExprNode::CallStmt { callee, args })
     }
 
@@ -3299,7 +3317,7 @@ impl<'src> Parser<'src> {
             vars.push(self.parse_target_expr(arena));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        self.end_stmt();
+        self.end_stmt_before_rem_is_error();
         arena.alloc(ExprNode::Erase { vars })
     }
 
@@ -4110,7 +4128,7 @@ impl<'src> Parser<'src> {
                 break;
             }
         }
-        self.end_stmt();
+        self.end_stmt_before_rem_is_error();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, open_mode: 0, open_flags: 0 })
     }
 
@@ -4137,7 +4155,7 @@ impl<'src> Parser<'src> {
                 if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             }
         }
-        self.end_stmt();
+        self.end_stmt_before_rem_is_error();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Input, channel: Some(ch), args: vars, open_mode: 0, open_flags: 0 })
     }
 
