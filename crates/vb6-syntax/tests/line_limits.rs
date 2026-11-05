@@ -280,3 +280,11 @@ fn output_lists_cost_a_two_byte_separator_between_items() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{head}{term} {sep}");
     }
 }
+
+#[test]
+fn is_costs_what_an_operator_does() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    assert_eq!(parse(&chain("(o Is o)", "+", 1092, 80)).found, vec![]);
+    let found = parse(&chain("(o Is o)", "+", 1093, 80)).found;
+    assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX));
+}

@@ -6313,7 +6313,7 @@ fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize
     while let Some(id) = stack.pop() {
         match arena.get(id) {
             ExprNode::BinOp { op, lhs, rhs } => {
-                if matches!(op, BinOpKind::Is | BinOpKind::Not) {
+                if matches!(op, BinOpKind::Not) {
                     return None;
                 }
                 total += 2;
