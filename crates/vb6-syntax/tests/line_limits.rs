@@ -397,3 +397,26 @@ fn step_and_the_other_forms_of_case_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
     }
 }
+
+#[test]
+fn loop_conditions_seek_and_local_const_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (statement before the expression, after it, terms per line, most terms that fit)
+    for (before, after, per, fits) in [
+        ("Do\nLoop While ", "", 150, 2548),
+        ("Do\nLoop While ", "", 170, 2549),
+        ("Do\nLoop Until ", "", 150, 2548),
+        ("Seek #1, ", "", 120, 2544),
+        ("Seek #1, ", "", 165, 2548),
+        ("Const c = ", "", 120, 2544),
+        ("Const c = ", "", 165, 2548),
+    ] {
+        let src = |n| format!("Sub S()\n{before}{}{after}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{before:?} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
+    }
+}

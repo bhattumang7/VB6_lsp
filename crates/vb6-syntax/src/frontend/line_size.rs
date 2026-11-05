@@ -37,6 +37,8 @@ pub mod cost {
     pub const OPEN_WITH_LENGTH: usize = 10;
     /// A `For` with no `Step`: the code of the loop itself, besides its variable and bounds.
     pub const FOR: usize = 2;
+    /// A local `Const name =` over an assignment of its value: the name.
+    pub const CONST: usize = 4;
     /// A name or Integer literal operand.
     pub const NAME_OR_INTEGER: usize = 4;
 }

@@ -1880,6 +1880,11 @@ impl<'src> Parser<'src> {
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
             let val = self.parse_expr(arena, 0);
+            // `Seek #n, expr` costs the channel's expression over an assignment of `expr`.
+            if kind == FileIoKind::Seek {
+                let parts = line_size::expression_part(arena, ch).zip(line_size::expression_part(arena, val)).map(|(a, b)| a + b);
+                self.check_parts_size(parts, t.span);
+            }
             self.end_stmt();
             arena.alloc(ExprNode::FileIoStmt {
                 kind,
@@ -2730,6 +2735,9 @@ impl<'src> Parser<'src> {
         value_required: bool,
     ) -> NodeId {
         // A member named `WithEvents` is followed by its type, not by a name.
+        // The first item of a `Const` statement in a procedure: its line is measured.
+        let first_const_item = is_const && self.in_procedure && matches!(self.last_consumed, TokenKind::Kw(Kw::Const));
+        let item_span = self.current_span();
         let with_events = !is_const
             && self.peek().kind == TokenKind::Kw(Kw::WithEvents)
             && !matches!(self.peek2().kind, TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen));
@@ -2812,12 +2820,17 @@ impl<'src> Parser<'src> {
         };
         // Only a constant has an initial value.
         let init = if is_const {
-            if value_required {
+            let value = if value_required {
                 self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
                 Some(self.parse_expr(arena, 0))
             } else if self.eat(TokenKind::Kw(Kw::Eq)) {
                 Some(self.parse_expr(arena, 0))
-            } else { None }
+            } else { None };
+            if let (true, Some(value)) = (first_const_item, value) {
+                let parts = line_size::expression_part(arena, value).map(|part| cost::CONST + part);
+                self.check_parts_size(parts, item_span);
+            }
+            value
         } else { None };
         let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, with_events, bounds, type_node, init });
         self.set_span(id, name.span);
@@ -3089,6 +3102,9 @@ impl<'src> Parser<'src> {
             // A loop tests its condition at the top or at the bottom, not both.
             if p.is_some() && pre.is_some() {
                 self.diagnostics.push(ERR_LOOP_WITHOUT_DO, loop_span);
+            }
+            if let Some((_, cond)) = p {
+                self.check_condition_size(arena, cond, loop_span);
             }
             self.end_stmt();
             p
