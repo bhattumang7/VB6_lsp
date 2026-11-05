@@ -679,6 +679,22 @@ impl<'a> Scanner<'a> {
             if b == b'\t' {
                 continue;
             }
+            match b {
+                // A NUL ends the line's text: what follows it on the line belongs to no token.
+                0x00 => {
+                    while !matches!(self.peek(), None | Some(b'\r') | Some(b'\n')) {
+                        self.pos += 1;
+                    }
+                    continue;
+                }
+                // 0x19 is a blank.
+                0x19 => continue,
+                // Every other control character is invalid.
+                0x01..=0x08 | 0x0b | 0x0c | 0x0e..=0x18 | 0x1a..=0x1f | 0x7f => {
+                    return Token::error(self.span(start));
+                }
+                _ => {}
+            }
             let cls = CHAR_CLASSES[b as usize];
             match cls {
                 0x00 => {
@@ -767,13 +783,14 @@ impl<'a> Scanner<'a> {
         loop {
             let line_start = self.pos;
             while let Some(b) = self.peek() {
-                let cls = CHAR_CLASSES[b as usize];
-                if b != b'\t' && (cls == 0x00 || cls == 0x01) {
+                // A comment runs to the end of its line whatever it holds.
+                if b == b'\r' || b == b'\n' {
                     break;
                 }
                 self.pos += 1;
             }
-            if !Self::ends_with_line_cont(&self.src[line_start..self.pos]) {
+            let prev = line_start.checked_sub(1).map(|i| self.src[i]);
+            if !Self::ends_with_line_cont(&self.src[line_start..self.pos], prev) {
                 break;
             }
             match (self.peek(), self.src.get(self.pos + 1).copied()) {
@@ -787,13 +804,17 @@ impl<'a> Scanner<'a> {
 
     /// True if `text` ends (ignoring trailing spaces and tabs) with a `_` that
     /// is not the last character of a word.
-    fn ends_with_line_cont(text: &[u8]) -> bool {
+    fn ends_with_line_cont(text: &[u8], prev: Option<u8>) -> bool {
         let trimmed = match text.iter().rposition(|&b| b != b' ' && b != b'\t') {
             Some(i) => &text[..=i],
             None => return false,
         };
         match trimmed.split_last() {
-            Some((b'_', before)) => before.last().map_or(true, |&b| !is_ident_continue(b)),
+            // The mark must follow a blank.
+            Some((b'_', before)) => match before.last().copied().or(prev) {
+                Some(b) => matches!(b, b' ' | b'\t' | b'\r' | b'\n'),
+                None => true,
+            },
             _ => false,
         }
     }
@@ -1169,7 +1190,7 @@ impl<'a> Scanner<'a> {
     /// blanks between their characters.
     fn peek_past_blanks(&self) -> Option<(u8, usize)> {
         let mut i = self.pos;
-        while matches!(self.src.get(i), Some(b' ') | Some(b'\t')) {
+        while matches!(self.src.get(i), Some(b' ') | Some(b'\t') | Some(0x19)) {
             i += 1;
         }
         self.src.get(i).map(|&b| (b, i + 1))

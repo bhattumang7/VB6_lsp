@@ -137,9 +137,10 @@ fn underscore_ending_a_word_is_not_a_continuation() {
 }
 
 #[test]
-fn bare_underscore_comment_continues() {
+fn bare_underscore_comment_does_not_continue() {
+    // The continuation mark must follow a blank.
     let src = "'_\n b\n";
-    assert_eq!(tokens(src), vec![tok("Apos", "'_\n b"), tok("Eol", "")]);
+    assert_eq!(tokens(src), vec![tok("Apos", "'_"), tok("Eol", ""), tok("B", "b"), tok("Eol", "")]);
 }
 
 #[test]
