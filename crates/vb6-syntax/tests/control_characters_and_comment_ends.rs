@@ -49,3 +49,16 @@ fn a_comment_continues_only_after_a_blank_and_an_underscore() {
         assert_eq!(found, vec![], "{body:?}");
     }
 }
+
+#[test]
+fn brackets_inside_a_bracketed_name_nest() {
+    use vb6_syntax::frontend::ast::ExprNode;
+    let p = parse("Sub S()\n o.[a[b]c] = 1\nEnd Sub\n");
+    assert_eq!(p.found, vec![]);
+    let body = p.proc_body(0);
+    let ExprNode::Assign { target, .. } = p.node(body[0]) else { panic!("not an assignment") };
+    let ExprNode::MemberAccess { member, .. } = p.node(*target) else { panic!("not a member") };
+    assert_eq!(p.name(*member), "a[b]c");
+    let (_, found) = in_sub("o.[a[b] = 1");
+    assert!(!found.is_empty());
+}

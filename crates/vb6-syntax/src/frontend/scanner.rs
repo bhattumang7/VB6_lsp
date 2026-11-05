@@ -1347,6 +1347,8 @@ impl<'a> Scanner<'a> {
     /// Scan a bracketed (verbatim) identifier `[name]`.
     fn scan_bracketed_ident(&mut self, start: usize) -> Token {
         self.tok_buf.clear();
+        // Brackets inside the name nest: the name ends at the `]` that closes the first.
+        let mut depth = 0u32;
         loop {
             match self.advance() {
                 None | Some(0x00) => return Token::error(self.span(start)),
@@ -1355,9 +1357,15 @@ impl<'a> Scanner<'a> {
                     self.pos -= 1;
                     return Token::error(self.span(start));
                 }
-                Some(b']') => break,
-                // A bracket cannot hold another opening bracket.
-                Some(b'[') => return Token::error(self.span(start)),
+                Some(b']') if depth == 0 => break,
+                Some(b']') => {
+                    depth -= 1;
+                    self.tok_buf.push(']');
+                }
+                Some(b'[') => {
+                    depth += 1;
+                    self.tok_buf.push('[');
+                }
                 Some(b) => self.tok_buf.push(b as char),
             }
         }
