@@ -1,0 +1,50 @@
+Const a = 1
+Const a As Long = 1
+Const a$ = "x"
+Const a$ As String = "x"
+Const a
+Const a =
+Const a As = 1
+Const a As Long
+Const a() = 1
+Const a = 1, b = 2
+Const a = 1, b
+Const a = 1,
+Const [a] = 1
+Const a As Long, b = 1
+Const a As String * 3 = "x"
+Const a As New Foo = 1
+Const a, b = 1
+Const a = 1 b = 2
+Const a.b = 1
+Const Me = 1
+Const Date = 1
+Const Error = 1
+Const a As Variant = 1
+Const a As Object = Nothing
+Const a As Foo = 1
+Const Public = 1
+Const Const = 1
+Const a = Const
+Const 1 = 1
+Const "a" = 1
+Const a As Long = 1, b As Long = 2
+Const a As Long() = 1
+Const a = (1
+Const a % = 1
+Const a% As Long = 1
+Const a = 1 : Const b = 2
+Const a = 1 Rem x
+Const a = New Foo
+Const a = b
+Const a = Nothing
+Const a = Null
+Const a = #1/1/2000#
+Const a = &H1
+Const a = -1
+Const a = Not 1
+Const a = 1 + 1
+Const a = "x" & "y"
+Const a = Chr(1)
+Const a = f(1)
+Const a = AddressOf f

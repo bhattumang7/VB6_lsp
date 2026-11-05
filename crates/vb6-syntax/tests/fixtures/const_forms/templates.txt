@@ -1,0 +1,7 @@
+# x
+=== mod bas
+{k}
+=== proc bas
+Sub P(s, x, y)
+{k}
+End Sub

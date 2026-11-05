@@ -73,3 +73,19 @@ fn a_bracketed_type_member_needs_bounds() {
     assert_eq!(parse(src).found[0].0, EXPECTED);
     assert_eq!(parse(src).found[0].1, offset_of(src, "[a b]", 0));
 }
+
+#[test]
+fn a_constant_takes_a_built_in_type_only() {
+    for (text, name) in [("Const a As Foo = 1
+", "Foo"), ("Const a As New Foo = 1
+", "Foo"), ("Const a As Class1 = 1
+", "Class1")] {
+        let found = parse(text).found;
+        assert_eq!(found[0], (EXPECTED, offset_of(text, name, 0), name.len() as u32), "{text}");
+    }
+    let src = in_sub("Const a As Foo = 1");
+    assert_eq!(parse(&src).found[0].0, 0x9c70);
+    for text in ["Const a As Long = 1\n", "Const a As String = \"x\"\n", "Const a As Variant = 1\n", "Const a = 1\n"] {
+        assert_eq!(parse(text).found, vec![], "{text}");
+    }
+}

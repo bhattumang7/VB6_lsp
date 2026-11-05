@@ -2490,7 +2490,13 @@ impl<'src> Parser<'src> {
                 let span = self.current_span();
                 self.report_expected(span, "identifier");
             }
-            (is_new, Some(self.parse_type_spec(arena, array_suffix_ok)))
+            let type_span = self.current_span();
+            let ty = self.parse_type_spec(arena, array_suffix_ok);
+            // A constant has a built-in type: a class or user type name does not fit.
+            if is_const && (is_new || matches!(arena.get(ty), ExprNode::UserType { .. })) {
+                self.report_expected(type_span, "type name");
+            }
+            (is_new, Some(ty))
         } else {
             // `Dim x%` ≡ `Dim x As Integer`
             (false, self.type_node_from_suffix(arena, name.type_suffix))

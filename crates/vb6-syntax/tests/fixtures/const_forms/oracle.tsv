@@ -1,0 +1,101 @@
+# template	word	class	message
+mod	Const a = 1	accepted	
+mod	Const a As Long = 1	accepted	
+mod	Const a$ = "x"	accepted	
+mod	Const a$ As String = "x"	syntax	Expected: =
+mod	Const a	syntax	Expected: As or =
+mod	Const a =	syntax	Expected: expression
+mod	Const a As = 1	syntax	Expected: type name
+mod	Const a As Long	syntax	Expected: =
+mod	Const a() = 1	syntax	Expected: As or =
+mod	Const a = 1, b = 2	accepted	
+mod	Const a = 1, b	syntax	Expected: As or =
+mod	Const a = 1,	syntax	Expected: identifier
+mod	Const [a] = 1	syntax	Expected: identifier
+mod	Const a As Long, b = 1	syntax	Expected: =
+mod	Const a As String * 3 = "x"	accepted	
+mod	Const a As New Foo = 1	syntax	Expected: type name
+mod	Const a, b = 1	syntax	Expected: As or =
+mod	Const a = 1 b = 2	syntax	Expected: end of statement
+mod	Const a.b = 1	syntax	Expected: As or =
+mod	Const Me = 1	syntax	Expected: identifier
+mod	Const Date = 1	syntax	Expected: identifier
+mod	Const Error = 1	accepted	
+mod	Const a As Variant = 1	accepted	
+mod	Const a As Object = Nothing	semantic	Invalid data type for constant
+mod	Const a As Foo = 1	syntax	Expected: type name
+mod	Const Public = 1	syntax	Expected: identifier
+mod	Const Const = 1	syntax	Expected: identifier
+mod	Const a = Const	syntax	Expected: expression
+mod	Const 1 = 1	syntax	Expected: identifier
+mod	Const "a" = 1	syntax	Expected: identifier
+mod	Const a As Long = 1, b As Long = 2	accepted	
+mod	Const a As Long() = 1	syntax	Expected: =
+mod	Const a = (1	syntax	Expected: )
+mod	Const a % = 1	syntax	Invalid character
+mod	Const a% As Long = 1	syntax	Expected: =
+mod	Const a = 1 : Const b = 2	accepted	
+mod	Const a = 1 Rem x	syntax	Expected: end of statement
+mod	Const a = New Foo	semantic	User-defined type not defined
+mod	Const a = b	semantic	Constant expression required
+mod	Const a = Nothing	semantic	Invalid data type for constant
+mod	Const a = Null	accepted	
+mod	Const a = #1/1/2000#	accepted	
+mod	Const a = &H1	accepted	
+mod	Const a = -1	accepted	
+mod	Const a = Not 1	accepted	
+mod	Const a = 1 + 1	accepted	
+mod	Const a = "x" & "y"	accepted	
+mod	Const a = Chr(1)	semantic	Constant expression required
+mod	Const a = f(1)	semantic	Sub or Function not defined
+mod	Const a = AddressOf f	syntax	Expected: expression
+proc	Const a = 1	accepted	
+proc	Const a As Long = 1	accepted	
+proc	Const a$ = "x"	accepted	
+proc	Const a$ As String = "x"	syntax	Syntax error
+proc	Const a	syntax	Syntax error
+proc	Const a =	syntax	Syntax error
+proc	Const a As = 1	syntax	Syntax error
+proc	Const a As Long	syntax	Syntax error
+proc	Const a() = 1	syntax	Syntax error
+proc	Const a = 1, b = 2	accepted	
+proc	Const a = 1, b	syntax	Syntax error
+proc	Const a = 1,	syntax	Syntax error
+proc	Const [a] = 1	syntax	Syntax error
+proc	Const a As Long, b = 1	syntax	Syntax error
+proc	Const a As String * 3 = "x"	accepted	
+proc	Const a As New Foo = 1	syntax	Syntax error
+proc	Const a, b = 1	syntax	Syntax error
+proc	Const a = 1 b = 2	syntax	Syntax error
+proc	Const a.b = 1	syntax	Syntax error
+proc	Const Me = 1	syntax	Syntax error
+proc	Const Date = 1	syntax	Syntax error
+proc	Const Error = 1	accepted	
+proc	Const a As Variant = 1	accepted	
+proc	Const a As Object = Nothing	semantic	Invalid data type for constant
+proc	Const a As Foo = 1	syntax	Syntax error
+proc	Const Public = 1	syntax	Syntax error
+proc	Const Const = 1	syntax	Syntax error
+proc	Const a = Const	syntax	Syntax error
+proc	Const 1 = 1	syntax	Syntax error
+proc	Const "a" = 1	syntax	Syntax error
+proc	Const a As Long = 1, b As Long = 2	accepted	
+proc	Const a As Long() = 1	syntax	Syntax error
+proc	Const a = (1	syntax	Syntax error
+proc	Const a % = 1	syntax	Syntax error
+proc	Const a% As Long = 1	syntax	Syntax error
+proc	Const a = 1 : Const b = 2	accepted	
+proc	Const a = 1 Rem x	syntax	Syntax error
+proc	Const a = New Foo	semantic	User-defined type not defined
+proc	Const a = b	semantic	Constant expression required
+proc	Const a = Nothing	semantic	Invalid data type for constant
+proc	Const a = Null	accepted	
+proc	Const a = #1/1/2000#	accepted	
+proc	Const a = &H1	accepted	
+proc	Const a = -1	accepted	
+proc	Const a = Not 1	accepted	
+proc	Const a = 1 + 1	accepted	
+proc	Const a = "x" & "y"	accepted	
+proc	Const a = Chr(1)	semantic	Constant expression required
+proc	Const a = f(1)	semantic	Sub or Function not defined
+proc	Const a = AddressOf f	syntax	Syntax error
