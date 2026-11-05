@@ -203,7 +203,7 @@ impl ScannerContext {
         }
 
         // --- not found: allocate ---
-        if self.mode_flags != 0 && self.counter > 0x7ffe {
+        if self.mode_flags != 0 && self.counter + HOST_SYMBOLS > 0x7ffe {
             self.symbol_table_full = true;
             return None;
         }
@@ -315,7 +315,7 @@ impl ScannerContext {
         if let Some(&existing) = self.by_key.get(&key) {
             return Some(existing);
         }
-        if self.mode_flags != 0 && self.counter > 0x7ffe {
+        if self.mode_flags != 0 && self.counter + HOST_SYMBOLS > 0x7ffe {
             self.symbol_table_full = true;
             return None;
         }
@@ -1593,6 +1593,11 @@ fn currency_units(text: &str) -> Option<i64> {
     i64::try_from(units).ok()
 }
 
+
+/// Names the compiler's table holds that are not keywords or names of the module being read,
+/// measured as the number of names a module can add before the table is full (32436 members of
+/// user types beside 65 type names and one procedure name).
+const HOST_SYMBOLS: u32 = 10;
 
 /// Longest physical line the scanner reads, in bytes; the rest of a longer line is not seen.
 const MAX_LINE_LEN: usize = 1023;

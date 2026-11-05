@@ -38,3 +38,27 @@ fn a_full_symbol_table_is_out_of_memory() {
     let p = parse(&src);
     assert!(p.found.iter().any(|f| f.0 == 7), "{:?}", p.found.first());
 }
+
+fn types_with_members(members: usize) -> String {
+    let mut src = String::new();
+    let (mut i, mut t) = (0, 0);
+    while i < members {
+        src.push_str(&format!("Type T{t}\n"));
+        for k in i..members.min(i + 500) {
+            src.push_str(&format!(" m{k} As Long\n"));
+        }
+        src.push_str("End Type\n");
+        i += 500;
+        t += 1;
+    }
+    src.push_str("Sub Main()\nEnd Sub\n");
+    src
+}
+
+#[test]
+fn the_symbol_table_holds_as_many_names_as_the_compiler_does() {
+    // 32436 members fit next to the keyword symbols; one more does not.
+    assert_eq!(parse(&types_with_members(32436)).found, vec![]);
+    let p = parse(&types_with_members(32437));
+    assert!(p.found.iter().any(|f| f.0 == 7), "{:?}", p.found.first());
+}
