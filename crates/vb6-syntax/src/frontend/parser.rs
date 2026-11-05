@@ -4058,7 +4058,11 @@ impl<'src> Parser<'src> {
         }
         let open_flags = (lock_code << 4) | access_code;
 
-        self.eat(TokenKind::Kw(Kw::As));
+        if !self.eat(TokenKind::Kw(Kw::As)) {
+            // The channel follows `As`.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        }
         self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = vec![path];

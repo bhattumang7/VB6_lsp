@@ -1,0 +1,5606 @@
+Dim
+a
+1
+"s"
+(
+)
+,
+.
+=
+Set
+Let
+Call
+If
+Then
+Else
+ElseIf
+For
+To
+Next
+Do
+Loop
+While
+Wend
+Select
+Case
+End
+Exit
+GoTo
+GoSub
+On
+Error
+Resume
+Print
+#
+Open
+As
+ReDim
+Erase
+With
+New
+Static
+Const
+Private
+Rem
+:
+Is
+Step
+Not
+Until
+Sub
+Function
+Preserve
+Input
+Line
+Get
+Put
+Close
+Dim Dim
+Dim a
+Dim 1
+Dim "s"
+Dim (
+Dim )
+Dim ,
+Dim .
+Dim =
+Dim Set
+Dim Let
+Dim Call
+Dim If
+Dim Then
+Dim Else
+Dim ElseIf
+Dim For
+Dim To
+Dim Next
+Dim Do
+Dim Loop
+Dim While
+Dim Wend
+Dim Select
+Dim Case
+Dim End
+Dim Exit
+Dim GoTo
+Dim GoSub
+Dim On
+Dim Error
+Dim Resume
+Dim Print
+Dim #
+Dim Open
+Dim As
+Dim ReDim
+Dim Erase
+Dim With
+Dim New
+Dim Static
+Dim Const
+Dim Private
+Dim Rem
+Dim :
+Dim Is
+Dim Step
+Dim Not
+Dim Until
+Dim Sub
+Dim Function
+Dim Preserve
+Dim Input
+Dim Line
+Dim Get
+Dim Put
+Dim Close
+a Dim
+a a
+a 1
+a "s"
+a (
+a )
+a ,
+a .
+a =
+a Set
+a Let
+a Call
+a If
+a Then
+a Else
+a ElseIf
+a For
+a To
+a Next
+a Do
+a Loop
+a While
+a Wend
+a Select
+a Case
+a End
+a Exit
+a GoTo
+a GoSub
+a On
+a Error
+a Resume
+a Print
+a #
+a Open
+a As
+a ReDim
+a Erase
+a With
+a New
+a Static
+a Const
+a Private
+a Rem
+a :
+a Is
+a Step
+a Not
+a Until
+a Sub
+a Function
+a Preserve
+a Input
+a Line
+a Get
+a Put
+a Close
+1 Dim
+1 a
+1 1
+1 "s"
+1 (
+1 )
+1 ,
+1 .
+1 =
+1 Set
+1 Let
+1 Call
+1 If
+1 Then
+1 Else
+1 ElseIf
+1 For
+1 To
+1 Next
+1 Do
+1 Loop
+1 While
+1 Wend
+1 Select
+1 Case
+1 End
+1 Exit
+1 GoTo
+1 GoSub
+1 On
+1 Error
+1 Resume
+1 Print
+1 #
+1 Open
+1 As
+1 ReDim
+1 Erase
+1 With
+1 New
+1 Static
+1 Const
+1 Private
+1 Rem
+1 :
+1 Is
+1 Step
+1 Not
+1 Until
+1 Sub
+1 Function
+1 Preserve
+1 Input
+1 Line
+1 Get
+1 Put
+1 Close
+"s" Dim
+"s" a
+"s" 1
+"s" "s"
+"s" (
+"s" )
+"s" ,
+"s" .
+"s" =
+"s" Set
+"s" Let
+"s" Call
+"s" If
+"s" Then
+"s" Else
+"s" ElseIf
+"s" For
+"s" To
+"s" Next
+"s" Do
+"s" Loop
+"s" While
+"s" Wend
+"s" Select
+"s" Case
+"s" End
+"s" Exit
+"s" GoTo
+"s" GoSub
+"s" On
+"s" Error
+"s" Resume
+"s" Print
+"s" #
+"s" Open
+"s" As
+"s" ReDim
+"s" Erase
+"s" With
+"s" New
+"s" Static
+"s" Const
+"s" Private
+"s" Rem
+"s" :
+"s" Is
+"s" Step
+"s" Not
+"s" Until
+"s" Sub
+"s" Function
+"s" Preserve
+"s" Input
+"s" Line
+"s" Get
+"s" Put
+"s" Close
+( Dim
+( a
+( 1
+( "s"
+( (
+( )
+( ,
+( .
+( =
+( Set
+( Let
+( Call
+( If
+( Then
+( Else
+( ElseIf
+( For
+( To
+( Next
+( Do
+( Loop
+( While
+( Wend
+( Select
+( Case
+( End
+( Exit
+( GoTo
+( GoSub
+( On
+( Error
+( Resume
+( Print
+( #
+( Open
+( As
+( ReDim
+( Erase
+( With
+( New
+( Static
+( Const
+( Private
+( Rem
+( :
+( Is
+( Step
+( Not
+( Until
+( Sub
+( Function
+( Preserve
+( Input
+( Line
+( Get
+( Put
+( Close
+) Dim
+) a
+) 1
+) "s"
+) (
+) )
+) ,
+) .
+) =
+) Set
+) Let
+) Call
+) If
+) Then
+) Else
+) ElseIf
+) For
+) To
+) Next
+) Do
+) Loop
+) While
+) Wend
+) Select
+) Case
+) End
+) Exit
+) GoTo
+) GoSub
+) On
+) Error
+) Resume
+) Print
+) #
+) Open
+) As
+) ReDim
+) Erase
+) With
+) New
+) Static
+) Const
+) Private
+) Rem
+) :
+) Is
+) Step
+) Not
+) Until
+) Sub
+) Function
+) Preserve
+) Input
+) Line
+) Get
+) Put
+) Close
+, Dim
+, a
+, 1
+, "s"
+, (
+, )
+, ,
+, .
+, =
+, Set
+, Let
+, Call
+, If
+, Then
+, Else
+, ElseIf
+, For
+, To
+, Next
+, Do
+, Loop
+, While
+, Wend
+, Select
+, Case
+, End
+, Exit
+, GoTo
+, GoSub
+, On
+, Error
+, Resume
+, Print
+, #
+, Open
+, As
+, ReDim
+, Erase
+, With
+, New
+, Static
+, Const
+, Private
+, Rem
+, :
+, Is
+, Step
+, Not
+, Until
+, Sub
+, Function
+, Preserve
+, Input
+, Line
+, Get
+, Put
+, Close
+. Dim
+. a
+. 1
+. "s"
+. (
+. )
+. ,
+. .
+. =
+. Set
+. Let
+. Call
+. If
+. Then
+. Else
+. ElseIf
+. For
+. To
+. Next
+. Do
+. Loop
+. While
+. Wend
+. Select
+. Case
+. End
+. Exit
+. GoTo
+. GoSub
+. On
+. Error
+. Resume
+. Print
+. #
+. Open
+. As
+. ReDim
+. Erase
+. With
+. New
+. Static
+. Const
+. Private
+. Rem
+. :
+. Is
+. Step
+. Not
+. Until
+. Sub
+. Function
+. Preserve
+. Input
+. Line
+. Get
+. Put
+. Close
+= Dim
+= a
+= 1
+= "s"
+= (
+= )
+= ,
+= .
+= =
+= Set
+= Let
+= Call
+= If
+= Then
+= Else
+= ElseIf
+= For
+= To
+= Next
+= Do
+= Loop
+= While
+= Wend
+= Select
+= Case
+= End
+= Exit
+= GoTo
+= GoSub
+= On
+= Error
+= Resume
+= Print
+= #
+= Open
+= As
+= ReDim
+= Erase
+= With
+= New
+= Static
+= Const
+= Private
+= Rem
+= :
+= Is
+= Step
+= Not
+= Until
+= Sub
+= Function
+= Preserve
+= Input
+= Line
+= Get
+= Put
+= Close
+Set Dim
+Set a
+Set 1
+Set "s"
+Set (
+Set )
+Set ,
+Set .
+Set =
+Set Set
+Set Let
+Set Call
+Set If
+Set Then
+Set Else
+Set ElseIf
+Set For
+Set To
+Set Next
+Set Do
+Set Loop
+Set While
+Set Wend
+Set Select
+Set Case
+Set End
+Set Exit
+Set GoTo
+Set GoSub
+Set On
+Set Error
+Set Resume
+Set Print
+Set #
+Set Open
+Set As
+Set ReDim
+Set Erase
+Set With
+Set New
+Set Static
+Set Const
+Set Private
+Set Rem
+Set :
+Set Is
+Set Step
+Set Not
+Set Until
+Set Sub
+Set Function
+Set Preserve
+Set Input
+Set Line
+Set Get
+Set Put
+Set Close
+Let Dim
+Let a
+Let 1
+Let "s"
+Let (
+Let )
+Let ,
+Let .
+Let =
+Let Set
+Let Let
+Let Call
+Let If
+Let Then
+Let Else
+Let ElseIf
+Let For
+Let To
+Let Next
+Let Do
+Let Loop
+Let While
+Let Wend
+Let Select
+Let Case
+Let End
+Let Exit
+Let GoTo
+Let GoSub
+Let On
+Let Error
+Let Resume
+Let Print
+Let #
+Let Open
+Let As
+Let ReDim
+Let Erase
+Let With
+Let New
+Let Static
+Let Const
+Let Private
+Let Rem
+Let :
+Let Is
+Let Step
+Let Not
+Let Until
+Let Sub
+Let Function
+Let Preserve
+Let Input
+Let Line
+Let Get
+Let Put
+Let Close
+Call Dim
+Call a
+Call 1
+Call "s"
+Call (
+Call )
+Call ,
+Call .
+Call =
+Call Set
+Call Let
+Call Call
+Call If
+Call Then
+Call Else
+Call ElseIf
+Call For
+Call To
+Call Next
+Call Do
+Call Loop
+Call While
+Call Wend
+Call Select
+Call Case
+Call End
+Call Exit
+Call GoTo
+Call GoSub
+Call On
+Call Error
+Call Resume
+Call Print
+Call #
+Call Open
+Call As
+Call ReDim
+Call Erase
+Call With
+Call New
+Call Static
+Call Const
+Call Private
+Call Rem
+Call :
+Call Is
+Call Step
+Call Not
+Call Until
+Call Sub
+Call Function
+Call Preserve
+Call Input
+Call Line
+Call Get
+Call Put
+Call Close
+If Dim
+If a
+If 1
+If "s"
+If (
+If )
+If ,
+If .
+If =
+If Set
+If Let
+If Call
+If If
+If Then
+If Else
+If ElseIf
+If For
+If To
+If Next
+If Do
+If Loop
+If While
+If Wend
+If Select
+If Case
+If End
+If Exit
+If GoTo
+If GoSub
+If On
+If Error
+If Resume
+If Print
+If #
+If Open
+If As
+If ReDim
+If Erase
+If With
+If New
+If Static
+If Const
+If Private
+If Rem
+If :
+If Is
+If Step
+If Not
+If Until
+If Sub
+If Function
+If Preserve
+If Input
+If Line
+If Get
+If Put
+If Close
+Then Dim
+Then a
+Then 1
+Then "s"
+Then (
+Then )
+Then ,
+Then .
+Then =
+Then Set
+Then Let
+Then Call
+Then If
+Then Then
+Then Else
+Then ElseIf
+Then For
+Then To
+Then Next
+Then Do
+Then Loop
+Then While
+Then Wend
+Then Select
+Then Case
+Then End
+Then Exit
+Then GoTo
+Then GoSub
+Then On
+Then Error
+Then Resume
+Then Print
+Then #
+Then Open
+Then As
+Then ReDim
+Then Erase
+Then With
+Then New
+Then Static
+Then Const
+Then Private
+Then Rem
+Then :
+Then Is
+Then Step
+Then Not
+Then Until
+Then Sub
+Then Function
+Then Preserve
+Then Input
+Then Line
+Then Get
+Then Put
+Then Close
+Else Dim
+Else a
+Else 1
+Else "s"
+Else (
+Else )
+Else ,
+Else .
+Else =
+Else Set
+Else Let
+Else Call
+Else If
+Else Then
+Else Else
+Else ElseIf
+Else For
+Else To
+Else Next
+Else Do
+Else Loop
+Else While
+Else Wend
+Else Select
+Else Case
+Else End
+Else Exit
+Else GoTo
+Else GoSub
+Else On
+Else Error
+Else Resume
+Else Print
+Else #
+Else Open
+Else As
+Else ReDim
+Else Erase
+Else With
+Else New
+Else Static
+Else Const
+Else Private
+Else Rem
+Else :
+Else Is
+Else Step
+Else Not
+Else Until
+Else Sub
+Else Function
+Else Preserve
+Else Input
+Else Line
+Else Get
+Else Put
+Else Close
+ElseIf Dim
+ElseIf a
+ElseIf 1
+ElseIf "s"
+ElseIf (
+ElseIf )
+ElseIf ,
+ElseIf .
+ElseIf =
+ElseIf Set
+ElseIf Let
+ElseIf Call
+ElseIf If
+ElseIf Then
+ElseIf Else
+ElseIf ElseIf
+ElseIf For
+ElseIf To
+ElseIf Next
+ElseIf Do
+ElseIf Loop
+ElseIf While
+ElseIf Wend
+ElseIf Select
+ElseIf Case
+ElseIf End
+ElseIf Exit
+ElseIf GoTo
+ElseIf GoSub
+ElseIf On
+ElseIf Error
+ElseIf Resume
+ElseIf Print
+ElseIf #
+ElseIf Open
+ElseIf As
+ElseIf ReDim
+ElseIf Erase
+ElseIf With
+ElseIf New
+ElseIf Static
+ElseIf Const
+ElseIf Private
+ElseIf Rem
+ElseIf :
+ElseIf Is
+ElseIf Step
+ElseIf Not
+ElseIf Until
+ElseIf Sub
+ElseIf Function
+ElseIf Preserve
+ElseIf Input
+ElseIf Line
+ElseIf Get
+ElseIf Put
+ElseIf Close
+For Dim
+For a
+For 1
+For "s"
+For (
+For )
+For ,
+For .
+For =
+For Set
+For Let
+For Call
+For If
+For Then
+For Else
+For ElseIf
+For For
+For To
+For Next
+For Do
+For Loop
+For While
+For Wend
+For Select
+For Case
+For End
+For Exit
+For GoTo
+For GoSub
+For On
+For Error
+For Resume
+For Print
+For #
+For Open
+For As
+For ReDim
+For Erase
+For With
+For New
+For Static
+For Const
+For Private
+For Rem
+For :
+For Is
+For Step
+For Not
+For Until
+For Sub
+For Function
+For Preserve
+For Input
+For Line
+For Get
+For Put
+For Close
+To Dim
+To a
+To 1
+To "s"
+To (
+To )
+To ,
+To .
+To =
+To Set
+To Let
+To Call
+To If
+To Then
+To Else
+To ElseIf
+To For
+To To
+To Next
+To Do
+To Loop
+To While
+To Wend
+To Select
+To Case
+To End
+To Exit
+To GoTo
+To GoSub
+To On
+To Error
+To Resume
+To Print
+To #
+To Open
+To As
+To ReDim
+To Erase
+To With
+To New
+To Static
+To Const
+To Private
+To Rem
+To :
+To Is
+To Step
+To Not
+To Until
+To Sub
+To Function
+To Preserve
+To Input
+To Line
+To Get
+To Put
+To Close
+Next Dim
+Next a
+Next 1
+Next "s"
+Next (
+Next )
+Next ,
+Next .
+Next =
+Next Set
+Next Let
+Next Call
+Next If
+Next Then
+Next Else
+Next ElseIf
+Next For
+Next To
+Next Next
+Next Do
+Next Loop
+Next While
+Next Wend
+Next Select
+Next Case
+Next End
+Next Exit
+Next GoTo
+Next GoSub
+Next On
+Next Error
+Next Resume
+Next Print
+Next #
+Next Open
+Next As
+Next ReDim
+Next Erase
+Next With
+Next New
+Next Static
+Next Const
+Next Private
+Next Rem
+Next :
+Next Is
+Next Step
+Next Not
+Next Until
+Next Sub
+Next Function
+Next Preserve
+Next Input
+Next Line
+Next Get
+Next Put
+Next Close
+Do Dim
+Do a
+Do 1
+Do "s"
+Do (
+Do )
+Do ,
+Do .
+Do =
+Do Set
+Do Let
+Do Call
+Do If
+Do Then
+Do Else
+Do ElseIf
+Do For
+Do To
+Do Next
+Do Do
+Do Loop
+Do While
+Do Wend
+Do Select
+Do Case
+Do End
+Do Exit
+Do GoTo
+Do GoSub
+Do On
+Do Error
+Do Resume
+Do Print
+Do #
+Do Open
+Do As
+Do ReDim
+Do Erase
+Do With
+Do New
+Do Static
+Do Const
+Do Private
+Do Rem
+Do :
+Do Is
+Do Step
+Do Not
+Do Until
+Do Sub
+Do Function
+Do Preserve
+Do Input
+Do Line
+Do Get
+Do Put
+Do Close
+Loop Dim
+Loop a
+Loop 1
+Loop "s"
+Loop (
+Loop )
+Loop ,
+Loop .
+Loop =
+Loop Set
+Loop Let
+Loop Call
+Loop If
+Loop Then
+Loop Else
+Loop ElseIf
+Loop For
+Loop To
+Loop Next
+Loop Do
+Loop Loop
+Loop While
+Loop Wend
+Loop Select
+Loop Case
+Loop End
+Loop Exit
+Loop GoTo
+Loop GoSub
+Loop On
+Loop Error
+Loop Resume
+Loop Print
+Loop #
+Loop Open
+Loop As
+Loop ReDim
+Loop Erase
+Loop With
+Loop New
+Loop Static
+Loop Const
+Loop Private
+Loop Rem
+Loop :
+Loop Is
+Loop Step
+Loop Not
+Loop Until
+Loop Sub
+Loop Function
+Loop Preserve
+Loop Input
+Loop Line
+Loop Get
+Loop Put
+Loop Close
+While Dim
+While a
+While 1
+While "s"
+While (
+While )
+While ,
+While .
+While =
+While Set
+While Let
+While Call
+While If
+While Then
+While Else
+While ElseIf
+While For
+While To
+While Next
+While Do
+While Loop
+While While
+While Wend
+While Select
+While Case
+While End
+While Exit
+While GoTo
+While GoSub
+While On
+While Error
+While Resume
+While Print
+While #
+While Open
+While As
+While ReDim
+While Erase
+While With
+While New
+While Static
+While Const
+While Private
+While Rem
+While :
+While Is
+While Step
+While Not
+While Until
+While Sub
+While Function
+While Preserve
+While Input
+While Line
+While Get
+While Put
+While Close
+Wend Dim
+Wend a
+Wend 1
+Wend "s"
+Wend (
+Wend )
+Wend ,
+Wend .
+Wend =
+Wend Set
+Wend Let
+Wend Call
+Wend If
+Wend Then
+Wend Else
+Wend ElseIf
+Wend For
+Wend To
+Wend Next
+Wend Do
+Wend Loop
+Wend While
+Wend Wend
+Wend Select
+Wend Case
+Wend End
+Wend Exit
+Wend GoTo
+Wend GoSub
+Wend On
+Wend Error
+Wend Resume
+Wend Print
+Wend #
+Wend Open
+Wend As
+Wend ReDim
+Wend Erase
+Wend With
+Wend New
+Wend Static
+Wend Const
+Wend Private
+Wend Rem
+Wend :
+Wend Is
+Wend Step
+Wend Not
+Wend Until
+Wend Sub
+Wend Function
+Wend Preserve
+Wend Input
+Wend Line
+Wend Get
+Wend Put
+Wend Close
+Select Dim
+Select a
+Select 1
+Select "s"
+Select (
+Select )
+Select ,
+Select .
+Select =
+Select Set
+Select Let
+Select Call
+Select If
+Select Then
+Select Else
+Select ElseIf
+Select For
+Select To
+Select Next
+Select Do
+Select Loop
+Select While
+Select Wend
+Select Select
+Select Case
+Select End
+Select Exit
+Select GoTo
+Select GoSub
+Select On
+Select Error
+Select Resume
+Select Print
+Select #
+Select Open
+Select As
+Select ReDim
+Select Erase
+Select With
+Select New
+Select Static
+Select Const
+Select Private
+Select Rem
+Select :
+Select Is
+Select Step
+Select Not
+Select Until
+Select Sub
+Select Function
+Select Preserve
+Select Input
+Select Line
+Select Get
+Select Put
+Select Close
+Case Dim
+Case a
+Case 1
+Case "s"
+Case (
+Case )
+Case ,
+Case .
+Case =
+Case Set
+Case Let
+Case Call
+Case If
+Case Then
+Case Else
+Case ElseIf
+Case For
+Case To
+Case Next
+Case Do
+Case Loop
+Case While
+Case Wend
+Case Select
+Case Case
+Case End
+Case Exit
+Case GoTo
+Case GoSub
+Case On
+Case Error
+Case Resume
+Case Print
+Case #
+Case Open
+Case As
+Case ReDim
+Case Erase
+Case With
+Case New
+Case Static
+Case Const
+Case Private
+Case Rem
+Case :
+Case Is
+Case Step
+Case Not
+Case Until
+Case Sub
+Case Function
+Case Preserve
+Case Input
+Case Line
+Case Get
+Case Put
+Case Close
+End Dim
+End a
+End 1
+End "s"
+End (
+End )
+End ,
+End .
+End =
+End Set
+End Let
+End Call
+End If
+End Then
+End Else
+End ElseIf
+End For
+End To
+End Next
+End Do
+End Loop
+End While
+End Wend
+End Select
+End Case
+End End
+End Exit
+End GoTo
+End GoSub
+End On
+End Error
+End Resume
+End Print
+End #
+End Open
+End As
+End ReDim
+End Erase
+End With
+End New
+End Static
+End Const
+End Private
+End Rem
+End :
+End Is
+End Step
+End Not
+End Until
+End Sub
+End Function
+End Preserve
+End Input
+End Line
+End Get
+End Put
+End Close
+Exit Dim
+Exit a
+Exit 1
+Exit "s"
+Exit (
+Exit )
+Exit ,
+Exit .
+Exit =
+Exit Set
+Exit Let
+Exit Call
+Exit If
+Exit Then
+Exit Else
+Exit ElseIf
+Exit For
+Exit To
+Exit Next
+Exit Do
+Exit Loop
+Exit While
+Exit Wend
+Exit Select
+Exit Case
+Exit End
+Exit Exit
+Exit GoTo
+Exit GoSub
+Exit On
+Exit Error
+Exit Resume
+Exit Print
+Exit #
+Exit Open
+Exit As
+Exit ReDim
+Exit Erase
+Exit With
+Exit New
+Exit Static
+Exit Const
+Exit Private
+Exit Rem
+Exit :
+Exit Is
+Exit Step
+Exit Not
+Exit Until
+Exit Sub
+Exit Function
+Exit Preserve
+Exit Input
+Exit Line
+Exit Get
+Exit Put
+Exit Close
+GoTo Dim
+GoTo a
+GoTo 1
+GoTo "s"
+GoTo (
+GoTo )
+GoTo ,
+GoTo .
+GoTo =
+GoTo Set
+GoTo Let
+GoTo Call
+GoTo If
+GoTo Then
+GoTo Else
+GoTo ElseIf
+GoTo For
+GoTo To
+GoTo Next
+GoTo Do
+GoTo Loop
+GoTo While
+GoTo Wend
+GoTo Select
+GoTo Case
+GoTo End
+GoTo Exit
+GoTo GoTo
+GoTo GoSub
+GoTo On
+GoTo Error
+GoTo Resume
+GoTo Print
+GoTo #
+GoTo Open
+GoTo As
+GoTo ReDim
+GoTo Erase
+GoTo With
+GoTo New
+GoTo Static
+GoTo Const
+GoTo Private
+GoTo Rem
+GoTo :
+GoTo Is
+GoTo Step
+GoTo Not
+GoTo Until
+GoTo Sub
+GoTo Function
+GoTo Preserve
+GoTo Input
+GoTo Line
+GoTo Get
+GoTo Put
+GoTo Close
+GoSub Dim
+GoSub a
+GoSub 1
+GoSub "s"
+GoSub (
+GoSub )
+GoSub ,
+GoSub .
+GoSub =
+GoSub Set
+GoSub Let
+GoSub Call
+GoSub If
+GoSub Then
+GoSub Else
+GoSub ElseIf
+GoSub For
+GoSub To
+GoSub Next
+GoSub Do
+GoSub Loop
+GoSub While
+GoSub Wend
+GoSub Select
+GoSub Case
+GoSub End
+GoSub Exit
+GoSub GoTo
+GoSub GoSub
+GoSub On
+GoSub Error
+GoSub Resume
+GoSub Print
+GoSub #
+GoSub Open
+GoSub As
+GoSub ReDim
+GoSub Erase
+GoSub With
+GoSub New
+GoSub Static
+GoSub Const
+GoSub Private
+GoSub Rem
+GoSub :
+GoSub Is
+GoSub Step
+GoSub Not
+GoSub Until
+GoSub Sub
+GoSub Function
+GoSub Preserve
+GoSub Input
+GoSub Line
+GoSub Get
+GoSub Put
+GoSub Close
+On Dim
+On a
+On 1
+On "s"
+On (
+On )
+On ,
+On .
+On =
+On Set
+On Let
+On Call
+On If
+On Then
+On Else
+On ElseIf
+On For
+On To
+On Next
+On Do
+On Loop
+On While
+On Wend
+On Select
+On Case
+On End
+On Exit
+On GoTo
+On GoSub
+On On
+On Error
+On Resume
+On Print
+On #
+On Open
+On As
+On ReDim
+On Erase
+On With
+On New
+On Static
+On Const
+On Private
+On Rem
+On :
+On Is
+On Step
+On Not
+On Until
+On Sub
+On Function
+On Preserve
+On Input
+On Line
+On Get
+On Put
+On Close
+Error Dim
+Error a
+Error 1
+Error "s"
+Error (
+Error )
+Error ,
+Error .
+Error =
+Error Set
+Error Let
+Error Call
+Error If
+Error Then
+Error Else
+Error ElseIf
+Error For
+Error To
+Error Next
+Error Do
+Error Loop
+Error While
+Error Wend
+Error Select
+Error Case
+Error End
+Error Exit
+Error GoTo
+Error GoSub
+Error On
+Error Error
+Error Resume
+Error Print
+Error #
+Error Open
+Error As
+Error ReDim
+Error Erase
+Error With
+Error New
+Error Static
+Error Const
+Error Private
+Error Rem
+Error :
+Error Is
+Error Step
+Error Not
+Error Until
+Error Sub
+Error Function
+Error Preserve
+Error Input
+Error Line
+Error Get
+Error Put
+Error Close
+Resume Dim
+Resume a
+Resume 1
+Resume "s"
+Resume (
+Resume )
+Resume ,
+Resume .
+Resume =
+Resume Set
+Resume Let
+Resume Call
+Resume If
+Resume Then
+Resume Else
+Resume ElseIf
+Resume For
+Resume To
+Resume Next
+Resume Do
+Resume Loop
+Resume While
+Resume Wend
+Resume Select
+Resume Case
+Resume End
+Resume Exit
+Resume GoTo
+Resume GoSub
+Resume On
+Resume Error
+Resume Resume
+Resume Print
+Resume #
+Resume Open
+Resume As
+Resume ReDim
+Resume Erase
+Resume With
+Resume New
+Resume Static
+Resume Const
+Resume Private
+Resume Rem
+Resume :
+Resume Is
+Resume Step
+Resume Not
+Resume Until
+Resume Sub
+Resume Function
+Resume Preserve
+Resume Input
+Resume Line
+Resume Get
+Resume Put
+Resume Close
+Print Dim
+Print a
+Print 1
+Print "s"
+Print (
+Print )
+Print ,
+Print .
+Print =
+Print Set
+Print Let
+Print Call
+Print If
+Print Then
+Print Else
+Print ElseIf
+Print For
+Print To
+Print Next
+Print Do
+Print Loop
+Print While
+Print Wend
+Print Select
+Print Case
+Print End
+Print Exit
+Print GoTo
+Print GoSub
+Print On
+Print Error
+Print Resume
+Print Print
+Print #
+Print Open
+Print As
+Print ReDim
+Print Erase
+Print With
+Print New
+Print Static
+Print Const
+Print Private
+Print Rem
+Print :
+Print Is
+Print Step
+Print Not
+Print Until
+Print Sub
+Print Function
+Print Preserve
+Print Input
+Print Line
+Print Get
+Print Put
+Print Close
+# Dim
+# a
+# 1
+# "s"
+# (
+# )
+# ,
+# .
+# =
+# Set
+# Let
+# Call
+# If
+# Then
+# Else
+# ElseIf
+# For
+# To
+# Next
+# Do
+# Loop
+# While
+# Wend
+# Select
+# Case
+# End
+# Exit
+# GoTo
+# GoSub
+# On
+# Error
+# Resume
+# Print
+# #
+# Open
+# As
+# ReDim
+# Erase
+# With
+# New
+# Static
+# Const
+# Private
+# Rem
+# :
+# Is
+# Step
+# Not
+# Until
+# Sub
+# Function
+# Preserve
+# Input
+# Line
+# Get
+# Put
+# Close
+Open Dim
+Open a
+Open 1
+Open "s"
+Open (
+Open )
+Open ,
+Open .
+Open =
+Open Set
+Open Let
+Open Call
+Open If
+Open Then
+Open Else
+Open ElseIf
+Open For
+Open To
+Open Next
+Open Do
+Open Loop
+Open While
+Open Wend
+Open Select
+Open Case
+Open End
+Open Exit
+Open GoTo
+Open GoSub
+Open On
+Open Error
+Open Resume
+Open Print
+Open #
+Open Open
+Open As
+Open ReDim
+Open Erase
+Open With
+Open New
+Open Static
+Open Const
+Open Private
+Open Rem
+Open :
+Open Is
+Open Step
+Open Not
+Open Until
+Open Sub
+Open Function
+Open Preserve
+Open Input
+Open Line
+Open Get
+Open Put
+Open Close
+As Dim
+As a
+As 1
+As "s"
+As (
+As )
+As ,
+As .
+As =
+As Set
+As Let
+As Call
+As If
+As Then
+As Else
+As ElseIf
+As For
+As To
+As Next
+As Do
+As Loop
+As While
+As Wend
+As Select
+As Case
+As End
+As Exit
+As GoTo
+As GoSub
+As On
+As Error
+As Resume
+As Print
+As #
+As Open
+As As
+As ReDim
+As Erase
+As With
+As New
+As Static
+As Const
+As Private
+As Rem
+As :
+As Is
+As Step
+As Not
+As Until
+As Sub
+As Function
+As Preserve
+As Input
+As Line
+As Get
+As Put
+As Close
+ReDim Dim
+ReDim a
+ReDim 1
+ReDim "s"
+ReDim (
+ReDim )
+ReDim ,
+ReDim .
+ReDim =
+ReDim Set
+ReDim Let
+ReDim Call
+ReDim If
+ReDim Then
+ReDim Else
+ReDim ElseIf
+ReDim For
+ReDim To
+ReDim Next
+ReDim Do
+ReDim Loop
+ReDim While
+ReDim Wend
+ReDim Select
+ReDim Case
+ReDim End
+ReDim Exit
+ReDim GoTo
+ReDim GoSub
+ReDim On
+ReDim Error
+ReDim Resume
+ReDim Print
+ReDim #
+ReDim Open
+ReDim As
+ReDim ReDim
+ReDim Erase
+ReDim With
+ReDim New
+ReDim Static
+ReDim Const
+ReDim Private
+ReDim Rem
+ReDim :
+ReDim Is
+ReDim Step
+ReDim Not
+ReDim Until
+ReDim Sub
+ReDim Function
+ReDim Preserve
+ReDim Input
+ReDim Line
+ReDim Get
+ReDim Put
+ReDim Close
+Erase Dim
+Erase a
+Erase 1
+Erase "s"
+Erase (
+Erase )
+Erase ,
+Erase .
+Erase =
+Erase Set
+Erase Let
+Erase Call
+Erase If
+Erase Then
+Erase Else
+Erase ElseIf
+Erase For
+Erase To
+Erase Next
+Erase Do
+Erase Loop
+Erase While
+Erase Wend
+Erase Select
+Erase Case
+Erase End
+Erase Exit
+Erase GoTo
+Erase GoSub
+Erase On
+Erase Error
+Erase Resume
+Erase Print
+Erase #
+Erase Open
+Erase As
+Erase ReDim
+Erase Erase
+Erase With
+Erase New
+Erase Static
+Erase Const
+Erase Private
+Erase Rem
+Erase :
+Erase Is
+Erase Step
+Erase Not
+Erase Until
+Erase Sub
+Erase Function
+Erase Preserve
+Erase Input
+Erase Line
+Erase Get
+Erase Put
+Erase Close
+With Dim
+With a
+With 1
+With "s"
+With (
+With )
+With ,
+With .
+With =
+With Set
+With Let
+With Call
+With If
+With Then
+With Else
+With ElseIf
+With For
+With To
+With Next
+With Do
+With Loop
+With While
+With Wend
+With Select
+With Case
+With End
+With Exit
+With GoTo
+With GoSub
+With On
+With Error
+With Resume
+With Print
+With #
+With Open
+With As
+With ReDim
+With Erase
+With With
+With New
+With Static
+With Const
+With Private
+With Rem
+With :
+With Is
+With Step
+With Not
+With Until
+With Sub
+With Function
+With Preserve
+With Input
+With Line
+With Get
+With Put
+With Close
+New Dim
+New a
+New 1
+New "s"
+New (
+New )
+New ,
+New .
+New =
+New Set
+New Let
+New Call
+New If
+New Then
+New Else
+New ElseIf
+New For
+New To
+New Next
+New Do
+New Loop
+New While
+New Wend
+New Select
+New Case
+New End
+New Exit
+New GoTo
+New GoSub
+New On
+New Error
+New Resume
+New Print
+New #
+New Open
+New As
+New ReDim
+New Erase
+New With
+New New
+New Static
+New Const
+New Private
+New Rem
+New :
+New Is
+New Step
+New Not
+New Until
+New Sub
+New Function
+New Preserve
+New Input
+New Line
+New Get
+New Put
+New Close
+Static Dim
+Static a
+Static 1
+Static "s"
+Static (
+Static )
+Static ,
+Static .
+Static =
+Static Set
+Static Let
+Static Call
+Static If
+Static Then
+Static Else
+Static ElseIf
+Static For
+Static To
+Static Next
+Static Do
+Static Loop
+Static While
+Static Wend
+Static Select
+Static Case
+Static End
+Static Exit
+Static GoTo
+Static GoSub
+Static On
+Static Error
+Static Resume
+Static Print
+Static #
+Static Open
+Static As
+Static ReDim
+Static Erase
+Static With
+Static New
+Static Static
+Static Const
+Static Private
+Static Rem
+Static :
+Static Is
+Static Step
+Static Not
+Static Until
+Static Sub
+Static Function
+Static Preserve
+Static Input
+Static Line
+Static Get
+Static Put
+Static Close
+Const Dim
+Const a
+Const 1
+Const "s"
+Const (
+Const )
+Const ,
+Const .
+Const =
+Const Set
+Const Let
+Const Call
+Const If
+Const Then
+Const Else
+Const ElseIf
+Const For
+Const To
+Const Next
+Const Do
+Const Loop
+Const While
+Const Wend
+Const Select
+Const Case
+Const End
+Const Exit
+Const GoTo
+Const GoSub
+Const On
+Const Error
+Const Resume
+Const Print
+Const #
+Const Open
+Const As
+Const ReDim
+Const Erase
+Const With
+Const New
+Const Static
+Const Const
+Const Private
+Const Rem
+Const :
+Const Is
+Const Step
+Const Not
+Const Until
+Const Sub
+Const Function
+Const Preserve
+Const Input
+Const Line
+Const Get
+Const Put
+Const Close
+Private Dim
+Private a
+Private 1
+Private "s"
+Private (
+Private )
+Private ,
+Private .
+Private =
+Private Set
+Private Let
+Private Call
+Private If
+Private Then
+Private Else
+Private ElseIf
+Private For
+Private To
+Private Next
+Private Do
+Private Loop
+Private While
+Private Wend
+Private Select
+Private Case
+Private End
+Private Exit
+Private GoTo
+Private GoSub
+Private On
+Private Error
+Private Resume
+Private Print
+Private #
+Private Open
+Private As
+Private ReDim
+Private Erase
+Private With
+Private New
+Private Static
+Private Const
+Private Private
+Private Rem
+Private :
+Private Is
+Private Step
+Private Not
+Private Until
+Private Sub
+Private Function
+Private Preserve
+Private Input
+Private Line
+Private Get
+Private Put
+Private Close
+Rem Dim
+Rem a
+Rem 1
+Rem "s"
+Rem (
+Rem )
+Rem ,
+Rem .
+Rem =
+Rem Set
+Rem Let
+Rem Call
+Rem If
+Rem Then
+Rem Else
+Rem ElseIf
+Rem For
+Rem To
+Rem Next
+Rem Do
+Rem Loop
+Rem While
+Rem Wend
+Rem Select
+Rem Case
+Rem End
+Rem Exit
+Rem GoTo
+Rem GoSub
+Rem On
+Rem Error
+Rem Resume
+Rem Print
+Rem #
+Rem Open
+Rem As
+Rem ReDim
+Rem Erase
+Rem With
+Rem New
+Rem Static
+Rem Const
+Rem Private
+Rem Rem
+Rem :
+Rem Is
+Rem Step
+Rem Not
+Rem Until
+Rem Sub
+Rem Function
+Rem Preserve
+Rem Input
+Rem Line
+Rem Get
+Rem Put
+Rem Close
+: Dim
+: a
+: 1
+: "s"
+: (
+: )
+: ,
+: .
+: =
+: Set
+: Let
+: Call
+: If
+: Then
+: Else
+: ElseIf
+: For
+: To
+: Next
+: Do
+: Loop
+: While
+: Wend
+: Select
+: Case
+: End
+: Exit
+: GoTo
+: GoSub
+: On
+: Error
+: Resume
+: Print
+: #
+: Open
+: As
+: ReDim
+: Erase
+: With
+: New
+: Static
+: Const
+: Private
+: Rem
+: :
+: Is
+: Step
+: Not
+: Until
+: Sub
+: Function
+: Preserve
+: Input
+: Line
+: Get
+: Put
+: Close
+Is Dim
+Is a
+Is 1
+Is "s"
+Is (
+Is )
+Is ,
+Is .
+Is =
+Is Set
+Is Let
+Is Call
+Is If
+Is Then
+Is Else
+Is ElseIf
+Is For
+Is To
+Is Next
+Is Do
+Is Loop
+Is While
+Is Wend
+Is Select
+Is Case
+Is End
+Is Exit
+Is GoTo
+Is GoSub
+Is On
+Is Error
+Is Resume
+Is Print
+Is #
+Is Open
+Is As
+Is ReDim
+Is Erase
+Is With
+Is New
+Is Static
+Is Const
+Is Private
+Is Rem
+Is :
+Is Is
+Is Step
+Is Not
+Is Until
+Is Sub
+Is Function
+Is Preserve
+Is Input
+Is Line
+Is Get
+Is Put
+Is Close
+Step Dim
+Step a
+Step 1
+Step "s"
+Step (
+Step )
+Step ,
+Step .
+Step =
+Step Set
+Step Let
+Step Call
+Step If
+Step Then
+Step Else
+Step ElseIf
+Step For
+Step To
+Step Next
+Step Do
+Step Loop
+Step While
+Step Wend
+Step Select
+Step Case
+Step End
+Step Exit
+Step GoTo
+Step GoSub
+Step On
+Step Error
+Step Resume
+Step Print
+Step #
+Step Open
+Step As
+Step ReDim
+Step Erase
+Step With
+Step New
+Step Static
+Step Const
+Step Private
+Step Rem
+Step :
+Step Is
+Step Step
+Step Not
+Step Until
+Step Sub
+Step Function
+Step Preserve
+Step Input
+Step Line
+Step Get
+Step Put
+Step Close
+Not Dim
+Not a
+Not 1
+Not "s"
+Not (
+Not )
+Not ,
+Not .
+Not =
+Not Set
+Not Let
+Not Call
+Not If
+Not Then
+Not Else
+Not ElseIf
+Not For
+Not To
+Not Next
+Not Do
+Not Loop
+Not While
+Not Wend
+Not Select
+Not Case
+Not End
+Not Exit
+Not GoTo
+Not GoSub
+Not On
+Not Error
+Not Resume
+Not Print
+Not #
+Not Open
+Not As
+Not ReDim
+Not Erase
+Not With
+Not New
+Not Static
+Not Const
+Not Private
+Not Rem
+Not :
+Not Is
+Not Step
+Not Not
+Not Until
+Not Sub
+Not Function
+Not Preserve
+Not Input
+Not Line
+Not Get
+Not Put
+Not Close
+Until Dim
+Until a
+Until 1
+Until "s"
+Until (
+Until )
+Until ,
+Until .
+Until =
+Until Set
+Until Let
+Until Call
+Until If
+Until Then
+Until Else
+Until ElseIf
+Until For
+Until To
+Until Next
+Until Do
+Until Loop
+Until While
+Until Wend
+Until Select
+Until Case
+Until End
+Until Exit
+Until GoTo
+Until GoSub
+Until On
+Until Error
+Until Resume
+Until Print
+Until #
+Until Open
+Until As
+Until ReDim
+Until Erase
+Until With
+Until New
+Until Static
+Until Const
+Until Private
+Until Rem
+Until :
+Until Is
+Until Step
+Until Not
+Until Until
+Until Sub
+Until Function
+Until Preserve
+Until Input
+Until Line
+Until Get
+Until Put
+Until Close
+Sub Dim
+Sub a
+Sub 1
+Sub "s"
+Sub (
+Sub )
+Sub ,
+Sub .
+Sub =
+Sub Set
+Sub Let
+Sub Call
+Sub If
+Sub Then
+Sub Else
+Sub ElseIf
+Sub For
+Sub To
+Sub Next
+Sub Do
+Sub Loop
+Sub While
+Sub Wend
+Sub Select
+Sub Case
+Sub End
+Sub Exit
+Sub GoTo
+Sub GoSub
+Sub On
+Sub Error
+Sub Resume
+Sub Print
+Sub #
+Sub Open
+Sub As
+Sub ReDim
+Sub Erase
+Sub With
+Sub New
+Sub Static
+Sub Const
+Sub Private
+Sub Rem
+Sub :
+Sub Is
+Sub Step
+Sub Not
+Sub Until
+Sub Sub
+Sub Function
+Sub Preserve
+Sub Input
+Sub Line
+Sub Get
+Sub Put
+Sub Close
+Function Dim
+Function a
+Function 1
+Function "s"
+Function (
+Function )
+Function ,
+Function .
+Function =
+Function Set
+Function Let
+Function Call
+Function If
+Function Then
+Function Else
+Function ElseIf
+Function For
+Function To
+Function Next
+Function Do
+Function Loop
+Function While
+Function Wend
+Function Select
+Function Case
+Function End
+Function Exit
+Function GoTo
+Function GoSub
+Function On
+Function Error
+Function Resume
+Function Print
+Function #
+Function Open
+Function As
+Function ReDim
+Function Erase
+Function With
+Function New
+Function Static
+Function Const
+Function Private
+Function Rem
+Function :
+Function Is
+Function Step
+Function Not
+Function Until
+Function Sub
+Function Function
+Function Preserve
+Function Input
+Function Line
+Function Get
+Function Put
+Function Close
+Preserve Dim
+Preserve a
+Preserve 1
+Preserve "s"
+Preserve (
+Preserve )
+Preserve ,
+Preserve .
+Preserve =
+Preserve Set
+Preserve Let
+Preserve Call
+Preserve If
+Preserve Then
+Preserve Else
+Preserve ElseIf
+Preserve For
+Preserve To
+Preserve Next
+Preserve Do
+Preserve Loop
+Preserve While
+Preserve Wend
+Preserve Select
+Preserve Case
+Preserve End
+Preserve Exit
+Preserve GoTo
+Preserve GoSub
+Preserve On
+Preserve Error
+Preserve Resume
+Preserve Print
+Preserve #
+Preserve Open
+Preserve As
+Preserve ReDim
+Preserve Erase
+Preserve With
+Preserve New
+Preserve Static
+Preserve Const
+Preserve Private
+Preserve Rem
+Preserve :
+Preserve Is
+Preserve Step
+Preserve Not
+Preserve Until
+Preserve Sub
+Preserve Function
+Preserve Preserve
+Preserve Input
+Preserve Line
+Preserve Get
+Preserve Put
+Preserve Close
+Input Dim
+Input a
+Input 1
+Input "s"
+Input (
+Input )
+Input ,
+Input .
+Input =
+Input Set
+Input Let
+Input Call
+Input If
+Input Then
+Input Else
+Input ElseIf
+Input For
+Input To
+Input Next
+Input Do
+Input Loop
+Input While
+Input Wend
+Input Select
+Input Case
+Input End
+Input Exit
+Input GoTo
+Input GoSub
+Input On
+Input Error
+Input Resume
+Input Print
+Input #
+Input Open
+Input As
+Input ReDim
+Input Erase
+Input With
+Input New
+Input Static
+Input Const
+Input Private
+Input Rem
+Input :
+Input Is
+Input Step
+Input Not
+Input Until
+Input Sub
+Input Function
+Input Preserve
+Input Input
+Input Line
+Input Get
+Input Put
+Input Close
+Line Dim
+Line a
+Line 1
+Line "s"
+Line (
+Line )
+Line ,
+Line .
+Line =
+Line Set
+Line Let
+Line Call
+Line If
+Line Then
+Line Else
+Line ElseIf
+Line For
+Line To
+Line Next
+Line Do
+Line Loop
+Line While
+Line Wend
+Line Select
+Line Case
+Line End
+Line Exit
+Line GoTo
+Line GoSub
+Line On
+Line Error
+Line Resume
+Line Print
+Line #
+Line Open
+Line As
+Line ReDim
+Line Erase
+Line With
+Line New
+Line Static
+Line Const
+Line Private
+Line Rem
+Line :
+Line Is
+Line Step
+Line Not
+Line Until
+Line Sub
+Line Function
+Line Preserve
+Line Input
+Line Line
+Line Get
+Line Put
+Line Close
+Get Dim
+Get a
+Get 1
+Get "s"
+Get (
+Get )
+Get ,
+Get .
+Get =
+Get Set
+Get Let
+Get Call
+Get If
+Get Then
+Get Else
+Get ElseIf
+Get For
+Get To
+Get Next
+Get Do
+Get Loop
+Get While
+Get Wend
+Get Select
+Get Case
+Get End
+Get Exit
+Get GoTo
+Get GoSub
+Get On
+Get Error
+Get Resume
+Get Print
+Get #
+Get Open
+Get As
+Get ReDim
+Get Erase
+Get With
+Get New
+Get Static
+Get Const
+Get Private
+Get Rem
+Get :
+Get Is
+Get Step
+Get Not
+Get Until
+Get Sub
+Get Function
+Get Preserve
+Get Input
+Get Line
+Get Get
+Get Put
+Get Close
+Put Dim
+Put a
+Put 1
+Put "s"
+Put (
+Put )
+Put ,
+Put .
+Put =
+Put Set
+Put Let
+Put Call
+Put If
+Put Then
+Put Else
+Put ElseIf
+Put For
+Put To
+Put Next
+Put Do
+Put Loop
+Put While
+Put Wend
+Put Select
+Put Case
+Put End
+Put Exit
+Put GoTo
+Put GoSub
+Put On
+Put Error
+Put Resume
+Put Print
+Put #
+Put Open
+Put As
+Put ReDim
+Put Erase
+Put With
+Put New
+Put Static
+Put Const
+Put Private
+Put Rem
+Put :
+Put Is
+Put Step
+Put Not
+Put Until
+Put Sub
+Put Function
+Put Preserve
+Put Input
+Put Line
+Put Get
+Put Put
+Put Close
+Close Dim
+Close a
+Close 1
+Close "s"
+Close (
+Close )
+Close ,
+Close .
+Close =
+Close Set
+Close Let
+Close Call
+Close If
+Close Then
+Close Else
+Close ElseIf
+Close For
+Close To
+Close Next
+Close Do
+Close Loop
+Close While
+Close Wend
+Close Select
+Close Case
+Close End
+Close Exit
+Close GoTo
+Close GoSub
+Close On
+Close Error
+Close Resume
+Close Print
+Close #
+Close Open
+Close As
+Close ReDim
+Close Erase
+Close With
+Close New
+Close Static
+Close Const
+Close Private
+Close Rem
+Close :
+Close Is
+Close Step
+Close Not
+Close Until
+Close Sub
+Close Function
+Close Preserve
+Close Input
+Close Line
+Close Get
+Close Put
+Close Close
+"s" . Put
+"s" = Put
+"s" Close Open
+"s" Const Input
+"s" Const Loop
+"s" Dim Loop
+"s" Do Loop
+"s" Do Until
+"s" Else New
+"s" ElseIf Until
+"s" End Put
+"s" Exit Private
+"s" For With
+"s" Function To
+"s" Get .
+"s" Get Exit
+"s" GoSub Not
+"s" GoTo ElseIf
+"s" Input ReDim
+"s" Let :
+"s" Line Call
+"s" Loop ElseIf
+"s" Private Case
+"s" Private Dim
+"s" Put Let
+"s" ReDim End
+"s" Set Next
+"s" Set Select
+"s" Sub Loop
+# "s" Set
+# . End
+# = GoTo
+# As Print
+# Const Const
+# Const Input
+# Const Resume
+# Do Get
+# Do Line
+# Else Line
+# Else Not
+# ElseIf Call
+# ElseIf Close
+# Error Function
+# Exit End
+# Exit GoTo
+# Function Next
+# Function Rem
+# Function Sub
+# Function Wend
+# Is Resume
+# Is Select
+# Line .
+# Loop GoTo
+# Loop If
+# Private Error
+# Put "s"
+# ReDim Close
+# Select With
+# Static Is
+# Until GoTo
+( # End
+( # Line
+( , With
+( . :
+( . ReDim
+( = :
+( = Step
+( Call Line
+( Close a
+( Do .
+( Do While
+( ElseIf Close
+( Erase a
+( Error Set
+( For Until
+( Function Step
+( If .
+( Line =
+( Loop On
+( On Input
+( Preserve To
+( Preserve With
+( Select Close
+( Select With
+( Sub If
+( Sub Open
+( Until Static
+( Until Until
+( Wend Case
+( Wend ElseIf
+( While Do
+( With As
+( With Call
+( a Resume
+) "s" Static
+) "s" a
+) ) (
+) : GoTo
+) = "s"
+) Const Static
+) ElseIf Static
+) Error Exit
+) Function For
+) GoTo ReDim
+) If Case
+) Input .
+) Loop End
+) Next (
+) Print ,
+) Private Sub
+) Step New
+) Sub Dim
+) Until As
+) Wend #
+) Wend Is
+, ( ,
+, , Put
+, 1 Case
+, = Loop
+, Call Resume
+, Case As
+, Case Dim
+, Else Private
+, End Else
+, Function As
+, Is "s"
+, Line Set
+, Line While
+, New Case
+, Not On
+, Private End
+, Rem Error
+, Resume =
+, Then Loop
+, To a
+, Until Let
+, Until ReDim
+, With Resume
+, a End
+. . Wend
+. : Close
+. : Is
+. : Open
+. : ReDim
+. GoSub As
+. GoSub Let
+. GoSub Static
+. Input For
+. Input Sub
+. Is GoSub
+. Is Input
+. Line GoSub
+. Line Loop
+. Loop Private
+. On If
+. Open Else
+. ReDim Put
+. Resume =
+. Resume Let
+. Set For
+. Static (
+. Sub Then
+. Wend Let
+. While On
+. With Select
+. a Sub
+1 , Close
+1 , Exit
+1 1 ReDim
+1 1 a
+1 : On
+1 = Not
+1 Call As
+1 Call For
+1 Call Select
+1 Close Open
+1 Close Step
+1 Do As
+1 Else (
+1 Error New
+1 Exit Step
+1 For To
+1 For While
+1 If GoSub
+1 If Line
+1 Not Loop
+1 Put (
+1 Step Erase
+1 To Static
+1 Wend (
+1 Wend .
+1 With Call
+1 With Is
+: # Open
+: = :
+: Case Erase
+: Do Next
+: ElseIf ElseIf
+: End Input
+: Erase Get
+: Function Loop
+: Get Get
+: If While
+: Loop Let
+: New As
+: On Error
+: Open GoTo
+: Preserve Dim
+: Print #
+: ReDim Line
+: Rem Loop
+: Resume Line
+: Select Else
+: Set Error
+: Static Put
+: Then Private
+: With Const
+: a ElseIf
+= ( Static
+= ( To
+= ) =
+= . =
+= 1 Call
+= 1 Wend
+= = Put
+= Call Error
+= Const Case
+= Dim On
+= Do Const
+= Else ,
+= ElseIf Wend
+= Exit GoSub
+= Get Resume
+= Input Private
+= New Static
+= Not Error
+= Not GoTo
+= Put Close
+= Rem New
+= Select .
+= Step Print
+= Sub ElseIf
+= Sub Set
+= Then 1
+As # =
+As # Sub
+As ) Resume
+As . Step
+As : ElseIf
+As = If
+As Case If
+As Else With
+As ElseIf Static
+As End New
+As End Next
+As Error Do
+As GoTo End
+As GoTo Wend
+As Input Next
+As Is .
+As On As
+As Preserve ElseIf
+As Rem With
+As Set If
+As Static Input
+As Static Loop
+As Then Const
+As a Dim
+Call , With
+Call 1 =
+Call As "s"
+Call As GoSub
+Call As Let
+Call As New
+Call Call On
+Call Close Dim
+Call Close a
+Call Else )
+Call Else Exit
+Call ElseIf (
+Call Exit 1
+Call For =
+Call GoSub ElseIf
+Call If End
+Call Line Else
+Call Line Step
+Call Not As
+Call Preserve "s"
+Call Preserve On
+Call Private Put
+Call Put "s"
+Call Rem Resume
+Call To Not
+Call While :
+Call While Wend
+Case ( Step
+Case . Input
+Case 1 Input
+Case Do Select
+Case Else Until
+Case End Rem
+Case For ReDim
+Case GoSub (
+Case If Exit
+Case Input ElseIf
+Case Input With
+Case Is Static
+Case Not If
+Case Put To
+Case Rem GoTo
+Case Resume ElseIf
+Case Set While
+Case Sub Do
+Case Wend )
+Case With GoSub
+Case With Not
+Case a )
+Close "s" ElseIf
+Close ) With
+Close , Resume
+Close 1 GoSub
+Close Call a
+Close Case Call
+Close Const End
+Close Do Then
+Close Else ElseIf
+Close Else Erase
+Close Else ReDim
+Close ElseIf Erase
+Close ElseIf Preserve
+Close End While
+Close Erase Wend
+Close For Private
+Close GoTo If
+Close GoTo Line
+Close Is Static
+Close Open Close
+Close Preserve Put
+Close Print On
+Close Rem Not
+Close Resume GoSub
+Close Set Do
+Close Then Function
+Close Wend Loop
+Const Case .
+Const Case If
+Const Do Close
+Const Else For
+Const Get Sub
+Const GoSub Open
+Const GoTo Error
+Const Input On
+Const Line As
+Const Line Loop
+Const Loop For
+Const New Select
+Const Not Error
+Const Private Case
+Const Rem Call
+Const Select GoSub
+Const Static GoTo
+Const Step If
+Const Sub Input
+Const To GoSub
+Const To Private
+Const Wend a
+Const With If
+Dim "s" Select
+Dim , Case
+Dim 1 Erase
+Dim = Loop
+Dim Call Sub
+Dim Case As
+Dim Error .
+Dim Function ReDim
+Dim GoTo Is
+Dim Input 1
+Dim Next New
+Dim On Error
+Dim Open )
+Dim Preserve )
+Dim Print Case
+Dim Put "s"
+Dim ReDim 1
+Dim Rem Else
+Dim Rem Input
+Dim Resume .
+Dim Resume =
+Dim Resume Private
+Dim Set Input
+Dim Static As
+Dim Step Get
+Do # "s"
+Do ) #
+Do : Call
+Do : Select
+Do = GoSub
+Do Call For
+Do Close Rem
+Do End Input
+Do End Sub
+Do Erase #
+Do Error Dim
+Do Error Wend
+Do For Rem
+Do Function Is
+Do GoSub "s"
+Do GoSub Call
+Do Line Rem
+Do Not (
+Do Open "s"
+Do Open Erase
+Do Preserve Close
+Do Preserve Error
+Do Step .
+Do Then Exit
+Do Wend Private
+Do With Const
+Do a Step
+Else "s" Rem
+Else ( Do
+Else = .
+Else = Resume
+Else = With
+Else As Print
+Else Close ReDim
+Else Const =
+Else Dim Case
+Else Dim Error
+Else Else With
+Else ElseIf With
+Else End Open
+Else Error Preserve
+Else GoTo Loop
+Else GoTo Rem
+Else Input Loop
+Else Let On
+Else Open Put
+Else Open Step
+Else Open Sub
+Else Put "s"
+Else ReDim (
+Else ReDim On
+Else Static Erase
+Else Sub Exit
+Else Sub While
+Else Wend On
+Else With Do
+Else With Until
+ElseIf , As
+ElseIf , Call
+ElseIf As For
+ElseIf As Wend
+ElseIf Call Case
+ElseIf Call Until
+ElseIf Close Do
+ElseIf End GoTo
+ElseIf Erase Sub
+ElseIf Is Do
+ElseIf Is ElseIf
+ElseIf Is Private
+ElseIf Let )
+ElseIf Let GoSub
+ElseIf New Else
+ElseIf New On
+ElseIf Next (
+ElseIf On ,
+ElseIf Open Dim
+ElseIf Print :
+ElseIf Put Next
+ElseIf ReDim Until
+ElseIf Resume As
+ElseIf Sub To
+ElseIf Then ReDim
+ElseIf Then Step
+ElseIf Until Erase
+ElseIf While Line
+ElseIf While Not
+ElseIf a Case
+ElseIf a Dim
+End "s" .
+End "s" Else
+End "s" Preserve
+End 1 :
+End 1 On
+End = Input
+End As Print
+End Const "s"
+End Const With
+End Do End
+End Else #
+End End Erase
+End Erase Resume
+End Error Const
+End Function "s"
+End Get Do
+End Let Print
+End Line With
+End Print Wend
+End Put Then
+End ReDim Wend
+End Select With
+End Static End
+End Static Erase
+End Sub )
+End Until ElseIf
+End Wend As
+End Wend GoSub
+End a Private
+Erase ) Is
+Erase ) Step
+Erase 1 Get
+Erase Dim As
+Erase Dim Print
+Erase Do Put
+Erase ElseIf While
+Erase Erase Dim
+Erase Erase Sub
+Erase Function Let
+Erase Get Call
+Erase If ,
+Erase Line Error
+Erase Next "s"
+Erase Next GoSub
+Erase Private (
+Erase Rem Print
+Erase Resume Wend
+Erase Step Print
+Erase To New
+Erase To With
+Erase While GoSub
+Error "s" Resume
+Error # Get
+Error . "s"
+Error = (
+Error = Select
+Error As Print
+Error Call :
+Error Const Close
+Error Const Rem
+Error Dim :
+Error Dim Close
+Error ElseIf Print
+Error Function Rem
+Error Get ,
+Error Get Do
+Error Is If
+Error Is Step
+Error Line ReDim
+Error Line Until
+Error Loop Else
+Error New Preserve
+Error Not For
+Error On New
+Error Private Rem
+Error Put Next
+Error ReDim Put
+Error Rem .
+Error Select Static
+Error Set ReDim
+Error Set Static
+Error Sub Wend
+Error Wend ElseIf
+Error While Next
+Error While Not
+Error a Input
+Error a Not
+Exit ) Print
+Exit : Exit
+Exit : Input
+Exit Case Select
+Exit Dim Rem
+Exit Do Do
+Exit For Line
+Exit Function With
+Exit Get Select
+Exit GoSub .
+Exit GoSub Until
+Exit Is With
+Exit Let Loop
+Exit Private To
+Exit Select a
+Exit Set Put
+Exit Static )
+Exit Then New
+Exit To Loop
+Exit With #
+For "s" Error
+For . :
+For 1 )
+For As =
+For Case Function
+For Const Input
+For Do Function
+For End "s"
+For Erase Open
+For Error While
+For Exit Call
+For For Wend
+For GoTo Const
+For If "s"
+For New Resume
+For Next Set
+For Open "s"
+For Preserve Static
+For Print Exit
+For ReDim Then
+For ReDim To
+For Rem As
+For Static Error
+For Sub Next
+For To Set
+For Until Private
+For While Dim
+Function ) On
+Function Case Select
+Function Close End
+Function Erase Rem
+Function Error Let
+Function Exit Do
+Function GoTo Preserve
+Function Line Preserve
+Function On Wend
+Function Preserve Else
+Function Put Rem
+Function Rem For
+Function Static Open
+Function Sub "s"
+Function Sub Do
+Get "s" For
+Get , Private
+Get : Close
+Get = Function
+Get As To
+Get Case Until
+Get Close Function
+Get Const Close
+Get Dim Const
+Get Do As
+Get Error =
+Get Function "s"
+Get If Close
+Get If ElseIf
+Get Is .
+Get Line Private
+Get New Input
+Get On To
+Get On Until
+Get Private .
+Get Put With
+Get Rem For
+Get Resume Until
+Get Step Set
+Get Step Then
+Get Sub Get
+Get Wend ReDim
+Get While Do
+Get While Exit
+Get While Wend
+Get a :
+GoSub # Exit
+GoSub , If
+GoSub . Print
+GoSub 1 Erase
+GoSub As Then
+GoSub Call New
+GoSub Case Dim
+GoSub Const Preserve
+GoSub ElseIf Resume
+GoSub GoTo If
+GoSub Is Error
+GoSub Open Do
+GoSub Open Set
+GoSub Preserve :
+GoSub Put Is
+GoSub ReDim Loop
+GoSub Rem New
+GoSub Resume ElseIf
+GoSub Select Not
+GoSub Step Error
+GoSub Step Select
+GoSub Then For
+GoSub To If
+GoSub Until Erase
+GoSub While Let
+GoTo Call Not
+GoTo Case If
+GoTo Close Is
+GoTo Const Set
+GoTo ElseIf "s"
+GoTo Error Function
+GoTo Error Set
+GoTo Exit ReDim
+GoTo If )
+GoTo Input GoSub
+GoTo Input With
+GoTo Is Error
+GoTo Let :
+GoTo Loop For
+GoTo Loop If
+GoTo New Loop
+GoTo New Sub
+GoTo Print ElseIf
+GoTo Put (
+GoTo Set Sub
+GoTo Step (
+GoTo Step Select
+GoTo Then Input
+GoTo Wend Exit
+GoTo Wend Resume
+GoTo While Loop
+GoTo a "s"
+If ) :
+If = Case
+If As Case
+If Close End
+If Function :
+If Function Private
+If Input Error
+If Input Put
+If Is New
+If Next Const
+If Not Wend
+If Print Input
+If Print Set
+If Private Open
+If Rem Rem
+If Set For
+If Step =
+If Step ElseIf
+If Then While
+If Wend 1
+If Wend Resume
+If While Const
+If While Let
+If a Function
+Input # New
+Input , Function
+Input : Select
+Input = Function
+Input Case ReDim
+Input Const Call
+Input Else Error
+Input Exit )
+Input Exit Case
+Input Get Error
+Input GoSub Case
+Input Let .
+Input On Loop
+Input Print Is
+Input Private Exit
+Input ReDim Print
+Input Rem :
+Input Rem As
+Input Static ElseIf
+Input Static Get
+Input Step Close
+Input Step Open
+Input Sub Case
+Input To For
+Input With Do
+Is ) Then
+Is . GoSub
+Is As Not
+Is Close Const
+Is Const For
+Is ElseIf Private
+Is For Print
+Is Function Do
+Is Get Set
+Is GoTo Call
+Is If ElseIf
+Is Next On
+Is Next Step
+Is Print Step
+Is Put Dim
+Is Put If
+Is Put Not
+Is Put Print
+Is Select Line
+Is Step ,
+Is Then Dim
+Is Until =
+Is Wend Rem
+Is a On
+Let ( ,
+Let . With
+Let ElseIf Dim
+Let ElseIf Is
+Let Error To
+Let Exit Const
+Let Exit Get
+Let For Is
+Let Function Let
+Let GoSub Erase
+Let GoSub Error
+Let Input Line
+Let Input Private
+Let Next Exit
+Let Next On
+Let Preserve Resume
+Let Put Get
+Let Rem ,
+Let Then Is
+Let To Resume
+Let Until ReDim
+Let a Line
+Line ) GoTo
+Line : Until
+Line As New
+Line As Then
+Line Close If
+Line Const GoTo
+Line Dim Dim
+Line Dim a
+Line Function Next
+Line If 1
+Line Input Not
+Line Is =
+Line Is Erase
+Line Let Error
+Line New Get
+Line Next Loop
+Line Not #
+Line Not Select
+Line Open Not
+Line Preserve Resume
+Line Static Else
+Loop , Error
+Loop , Exit
+Loop : )
+Loop : Until
+Loop = Wend
+Loop As Print
+Loop Call While
+Loop Case Sub
+Loop Close Print
+Loop Const Select
+Loop Do Then
+Loop ElseIf ElseIf
+Loop ElseIf End
+Loop ElseIf Print
+Loop Erase Rem
+Loop Exit Static
+Loop Function Case
+Loop If "s"
+Loop Let Error
+Loop Let Print
+Loop Loop Get
+Loop Open Dim
+Loop Preserve On
+Loop ReDim Step
+Loop Resume Case
+Loop Resume Erase
+Loop Select End
+Loop Select Static
+Loop Sub Preserve
+Loop Sub Select
+Loop To Let
+Loop Until ReDim
+Loop While (
+Loop a With
+New "s" New
+New # With
+New ( Open
+New ( While
+New ) Open
+New : Error
+New Close Call
+New Do )
+New Do Not
+New Do Set
+New ElseIf Open
+New For Case
+New Function Print
+New GoSub Print
+New GoTo Do
+New GoTo a
+New If Not
+New Is Erase
+New Is Print
+New Let Set
+New Not Resume
+New Put #
+New Rem :
+New Resume Static
+New Set Rem
+New Set Sub
+New Then On
+New Until .
+New With Else
+Next ( Not
+Next ) Call
+Next , 1
+Next 1 a
+Next : Input
+Next Case ReDim
+Next Const a
+Next Dim Call
+Next Dim Rem
+Next Do Const
+Next ElseIf a
+Next Error Select
+Next For Erase
+Next Get Function
+Next GoTo As
+Next If On
+Next Is "s"
+Next Let Const
+Next Preserve Put
+Next Print Sub
+Next Private )
+Next Put "s"
+Next Put End
+Next Put Sub
+Next Select =
+Next Select On
+Next Step =
+Next Until End
+Next While ReDim
+Next With 1
+Next With =
+Not "s" ReDim
+Not "s" Resume
+Not # Put
+Not ( Const
+Not ) Call
+Not ) Rem
+Not : GoTo
+Not Case Case
+Not Error Set
+Not For Step
+Not Function Loop
+Not Function Not
+Not If Next
+Not Input 1
+Not Input Is
+Not New 1
+Not Not Line
+Not Print Call
+Not Select Get
+Not Until Exit
+Not While To
+On "s" =
+On # Exit
+On , Wend
+On 1 Set
+On As Wend
+On Case "s"
+On Case On
+On Const (
+On Do Is
+On Else Close
+On Else To
+On ElseIf On
+On End a
+On Erase Rem
+On Erase Set
+On Get Wend
+On GoSub )
+On Input New
+On Is (
+On Next Exit
+On Next To
+On On (
+On On Put
+On Preserve :
+On Preserve Resume
+On Private Call
+On Private Close
+On Private To
+On Put :
+On Put For
+On Static Rem
+On Sub "s"
+On To Next
+On While Is
+Open # Static
+Open ( Wend
+Open = Dim
+Open = Loop
+Open Const ElseIf
+Open Dim )
+Open Do Function
+Open End If
+Open For GoTo
+Open Function Resume
+Open If GoTo
+Open Input Open
+Open Is Case
+Open Line Put
+Open Line Rem
+Open Loop Get
+Open Put 1
+Open ReDim .
+Open Set End
+Open Set Function
+Open Static ReDim
+Open Step 1
+Open Step Input
+Open Sub Loop
+Open To While
+Open Wend .
+Open a Close
+Preserve ( Close
+Preserve 1 Exit
+Preserve As Function
+Preserve Call Sub
+Preserve Case Resume
+Preserve Const Next
+Preserve Const Not
+Preserve Dim End
+Preserve ElseIf As
+Preserve ElseIf GoSub
+Preserve Error GoSub
+Preserve Exit ReDim
+Preserve GoSub Function
+Preserve If GoSub
+Preserve If Is
+Preserve Input Case
+Preserve Is Exit
+Preserve Is Not
+Preserve Let (
+Preserve Loop Rem
+Preserve Next For
+Preserve Print With
+Preserve Private Preserve
+Preserve Put GoTo
+Preserve ReDim Then
+Preserve Resume Call
+Preserve Static Rem
+Preserve Step With
+Preserve Then Do
+Preserve While GoSub
+Print "s" Resume
+Print : While
+Print = "s"
+Print = Rem
+Print Case To
+Print Close Do
+Print Dim If
+Print Erase Get
+Print For Input
+Print GoTo Line
+Print If As
+Print Is ElseIf
+Print Open Case
+Print Open While
+Print Print With
+Print Rem "s"
+Print Rem =
+Print Resume To
+Print Select For
+Print Set If
+Print Static End
+Print Step Loop
+Print Step Next
+Print Then End
+Print To Wend
+Print Wend On
+Print While 1
+Print While Do
+Print While Sub
+Print While With
+Private "s" =
+Private ) Else
+Private ) If
+Private , To
+Private = Select
+Private As "s"
+Private As ,
+Private As With
+Private Close Sub
+Private Const Rem
+Private Do ReDim
+Private Else If
+Private ElseIf As
+Private Erase Erase
+Private For Const
+Private If Resume
+Private Loop Case
+Private Not GoTo
+Private Not Set
+Private Not With
+Private Put On
+Private ReDim Close
+Private Resume Exit
+Private Select Rem
+Private Then Resume
+Private To Close
+Private While Sub
+Put = Let
+Put Dim Private
+Put Do Get
+Put Exit Sub
+Put Get Print
+Put Input Private
+Put Is 1
+Put Is Call
+Put Let For
+Put Let a
+Put Line GoSub
+Put Loop GoSub
+Put Loop New
+Put On End
+Put Open Loop
+Put Private Else
+Put Private Open
+Put Resume Error
+Put Until a
+Put Wend Select
+Put While Wend
+ReDim "s" To
+ReDim ( (
+ReDim . Else
+ReDim . Set
+ReDim As End
+ReDim As Select
+ReDim Dim Exit
+ReDim Dim Until
+ReDim GoTo Static
+ReDim If Put
+ReDim Input Let
+ReDim Is If
+ReDim Loop (
+ReDim Loop Put
+ReDim Next Function
+ReDim Not Function
+ReDim On Exit
+ReDim Open .
+ReDim Preserve GoSub
+ReDim Private Set
+ReDim Resume Preserve
+ReDim Select Error
+ReDim Static Error
+ReDim Wend Exit
+Rem "s" Print
+Rem ) Next
+Rem ) Static
+Rem 1 =
+Rem 1 Do
+Rem As Is
+Rem Case New
+Rem Close Case
+Rem Close Close
+Rem Erase :
+Rem Error Error
+Rem Exit Then
+Rem Get Sub
+Rem GoSub Const
+Rem If Print
+Rem Is End
+Rem Line )
+Rem Loop To
+Rem Private End
+Rem Set Let
+Rem Static Print
+Rem Step Rem
+Rem Sub Else
+Rem Sub Error
+Rem To Open
+Rem To Then
+Rem Wend Put
+Rem With Private
+Resume 1 Error
+Resume = GoTo
+Resume = Not
+Resume Dim New
+Resume Do Rem
+Resume Else Const
+Resume End ElseIf
+Resume Function Resume
+Resume GoTo Case
+Resume If Not
+Resume Input GoTo
+Resume Line GoTo
+Resume Open While
+Resume Preserve Get
+Resume Static Erase
+Resume Then Do
+Resume Until Function
+Resume Wend Const
+Resume With ReDim
+Resume a Function
+Select ( While
+Select ) Until
+Select , Erase
+Select Call Then
+Select Do Rem
+Select Erase Preserve
+Select Erase a
+Select Error Sub
+Select Exit Exit
+Select For On
+Select Get Input
+Select GoTo Next
+Select Input New
+Select Private Until
+Select Select Sub
+Select Static Then
+Select Sub Get
+Select While Input
+Select While With
+Set "s" On
+Set ) Close
+Set , Dim
+Set , Let
+Set = #
+Set Call "s"
+Set Case Preserve
+Set Close Call
+Set Dim With
+Set Do Resume
+Set Else As
+Set ElseIf Case
+Set Function For
+Set Get Static
+Set GoTo On
+Set If Line
+Set Line Do
+Set Line Function
+Set Not 1
+Set Private Set
+Set ReDim ReDim
+Set Select Open
+Set To Let
+Set Until Not
+Set a For
+Static , Put
+Static . If
+Static 1 Function
+Static : Resume
+Static Close Input
+Static Dim )
+Static Get 1
+Static GoSub To
+Static If Function
+Static Input Erase
+Static Is ReDim
+Static New Static
+Static Next Until
+Static On Until
+Static Print Error
+Static Private Dim
+Static Private ElseIf
+Static ReDim As
+Static ReDim Exit
+Static ReDim Resume
+Static Rem GoTo
+Static Sub Until
+Static With Input
+Static With Put
+Static a #
+Static a Call
+Step "s" Sub
+Step ( Case
+Step ( Dim
+Step ( To
+Step 1 If
+Step : Let
+Step Case Exit
+Step Case Next
+Step Close =
+Step Close Line
+Step Const While
+Step End Call
+Step For a
+Step GoTo Then
+Step If New
+Step If Preserve
+Step If Step
+Step Input New
+Step Input Put
+Step Let )
+Step Let As
+Step Print Function
+Step ReDim On
+Step Resume Until
+Step Select Close
+Step Set Then
+Step Static Is
+Step Then Is
+Step Until Wend
+Step While Wend
+Step a Call
+Sub ( On
+Sub , If
+Sub = Sub
+Sub Case Static
+Sub Const Error
+Sub Dim If
+Sub Do Resume
+Sub End Print
+Sub Erase (
+Sub For Static
+Sub Get Case
+Sub GoSub With
+Sub If Rem
+Sub Let 1
+Sub Let Print
+Sub Line Not
+Sub Loop Line
+Sub Loop Not
+Sub New Open
+Sub New Step
+Sub Next ElseIf
+Sub On New
+Sub On Resume
+Sub Open .
+Sub Open Else
+Sub Set =
+Sub Static Then
+Sub Wend Then
+Sub With End
+Sub With Error
+Sub With Preserve
+Sub a For
+Then "s" Case
+Then # ,
+Then As As
+Then As Close
+Then Case ,
+Then Close Loop
+Then Const Get
+Then Dim Private
+Then End 1
+Then Erase )
+Then Erase On
+Then Exit Erase
+Then Function a
+Then Is While
+Then Loop Wend
+Then Not ,
+Then On ,
+Then Open ,
+Then Preserve Error
+Then Preserve While
+Then Print Not
+Then Private GoTo
+Then Rem If
+Then Then Function
+Then Wend Function
+To # Loop
+To ) GoSub
+To , Put
+To Case To
+To Close =
+To Const Wend
+To End Case
+To Error Until
+To For Line
+To Get As
+To GoSub Input
+To GoTo Next
+To Line Is
+To Next Step
+To Print Exit
+To Print Line
+To Private Sub
+To Put For
+To Put Select
+To Rem Print
+To Resume Set
+To Select (
+To Select Set
+To Sub a
+To To (
+To To Else
+To While 1
+To With GoSub
+Until # As
+Until # Put
+Until ( Close
+Until ) As
+Until ) Close
+Until , Resume
+Until 1 Is
+Until 1 Print
+Until : )
+Until Dim .
+Until Do Print
+Until Else Case
+Until ElseIf .
+Until ElseIf Const
+Until ElseIf Until
+Until End Set
+Until Erase Next
+Until Error Dim
+Until Exit .
+Until For For
+Until For Set
+Until Get ,
+Until Get While
+Until Line With
+Until Next Do
+Until Print Dim
+Until ReDim Case
+Until Static Case
+Until Step ,
+Until Until Select
+Until Wend Select
+Until With Do
+Wend ) Erase
+Wend : Step
+Wend = Put
+Wend = Then
+Wend Call Select
+Wend Close For
+Wend Exit GoTo
+Wend Function )
+Wend GoTo Let
+Wend GoTo Put
+Wend Is Next
+Wend Line Erase
+Wend Not Put
+Wend Open Const
+Wend Preserve Private
+Wend Preserve Sub
+Wend Preserve With
+Wend Print Dim
+Wend Print GoTo
+Wend Print If
+Wend Print Private
+Wend Private While
+Wend ReDim Do
+Wend Rem Dim
+Wend Set :
+Wend Static Is
+Wend Static a
+Wend With #
+While # Preserve
+While ( Call
+While ( Dim
+While ) Private
+While Call Put
+While Dim Resume
+While Dim With
+While ElseIf GoSub
+While Function Wend
+While Input Static
+While Loop To
+While Next Until
+While On While
+While Preserve Open
+While ReDim Line
+While Select Let
+While Static If
+While Sub Dim
+While To Case
+While To To
+While To a
+While While Exit
+While With On
+While a Input
+With ) If
+With , Line
+With , Loop
+With : Erase
+With : Resume
+With As Loop
+With Do Step
+With Else To
+With ElseIf End
+With End Line
+With Erase Not
+With GoSub Open
+With Input Is
+With Next Input
+With Next Select
+With Preserve Get
+With Put Put
+With Rem For
+With Resume :
+With Select :
+With Set While
+With Static Not
+With While Step
+a . (
+a . a
+a As 1
+a Call "s"
+a Const =
+a Do Loop
+a Erase ReDim
+a Get Not
+a Get Step
+a GoTo Print
+a Input "s"
+a Input If
+a Not Private
+a On Open
+a Preserve "s"
+a Print If
+a Select Open
+a Set Step
+a Sub Wend
+a Then Select
+a To Until
+a With Private
+a a Error
+"s" , = Open
+"s" As : ,
+"s" Close Is "s"
+"s" Do Get Put
+"s" Do Select Let
+"s" End Erase ,
+"s" Erase Dim As
+"s" For ) :
+"s" Function Resume Function
+"s" Get # Put
+"s" Preserve Let Line
+"s" Select ReDim With
+"s" Static , Resume
+"s" Step Is Step
+"s" Wend Input While
+"s" While Line Else
+# , Erase End
+# As . Case
+# Do Error Set
+# Else GoTo Then
+# Else Open 1
+# For With Function
+# Function GoTo Call
+# Get Select Open
+# Loop # ,
+# Next Open Close
+# On Wend Then
+# Open Get Close
+# Print 1 GoTo
+# Private If On
+# Sub Error Is
+# Sub Next New
+# To Rem Function
+( # Wend Then
+( ( GoTo Get
+( ) Call #
+( = GoTo #
+( = Resume If
+( Dim 1 GoSub
+( ElseIf While Loop
+( Function Const Sub
+( GoTo # "s"
+( Line Private =
+( Loop On Close
+( Open : Not
+( Private Line =
+( Put Call Function
+( Resume Else Line
+( Set Loop Then
+( With For New
+) Case Function As
+) Erase ElseIf Print
+) Error GoTo Private
+) If = Get
+) Is Set For
+) On Loop Wend
+) On Until Select
+) ReDim Exit For
+) Resume With Input
+) While Let :
+) While While Sub
+, , Erase Get
+, = , Call
+, Dim ( Wend
+, End Let New
+, Exit GoTo Not
+, For Erase #
+, Function Const )
+, Line Then Get
+, Private Step Is
+, ReDim : Close
+, Rem Until If
+, Set ElseIf (
+. # Do Input
+. ( Until Else
+. , If Until
+. : Else Step
+. End Do :
+. For 1 Const
+. For Let While
+. Input Line Dim
+. Input To Sub
+. Loop Next Step
+. ReDim Print Resume
+. Resume Wend )
+. Step Erase On
+. Then ( "s"
+. To For Get
+. While As Next
+. With a Sub
+1 . As To
+1 1 ElseIf Else
+1 As 1 Rem
+1 Close Open :
+1 Function Sub On
+1 Get Exit )
+1 Get To Sub
+1 GoSub Dim Resume
+1 GoTo "s" Set
+1 If Error As
+1 Resume Resume Get
+1 Step Case #
+1 With . Step
+: ( Resume Sub
+: = Static Not
+: Call Wend As
+: Else 1 :
+: Else Loop Exit
+: Line ReDim Put
+: On Resume Set
+: Select ( Open
+: Step Then Line
+: Wend Not Resume
+= ( Exit Put
+= ) = Call
+= Else Do Not
+= Erase Dim #
+= GoSub Do Get
+= GoSub Rem =
+= Rem Error Let
+= Rem ReDim Loop
+= Select ReDim Then
+= Sub With =
+= Until Error GoSub
+As , Print a
+As . Open Set
+As Function GoSub Preserve
+As Get Dim Call
+As If Else )
+As Input Resume With
+As Not Case Select
+As Not Private Select
+As On "s" End
+As Print As Put
+As Static On 1
+As Then ElseIf Let
+As Then Next Preserve
+As To New =
+As With ( On
+Call "s" Open On
+Call = Close Private
+Call Function Preserve Wend
+Call Input Not Let
+Call Open Line Line
+Call Private , Line
+Call Step Else As
+Case Call "s" ReDim
+Case Function Resume GoSub
+Case If "s" Call
+Case If Open ReDim
+Case Let Set Resume
+Case Line "s" (
+Case Loop : (
+Case Next Private Close
+Case Rem If ReDim
+Case Resume Error Select
+Case Static Preserve Next
+Case Step End Error
+Case While Dim Close
+Close ) Line 1
+Close 1 On Static
+Close As ElseIf As
+Close Close Next New
+Close Else Input "s"
+Close Error 1 Get
+Close Get Exit As
+Close Input Next Static
+Close Line Error Exit
+Close Not To Put
+Close Not a Rem
+Close Rem Print GoSub
+Close Then 1 End
+Close To For Close
+Close While Then Wend
+Close a ( a
+Const . Error Wend
+Const . Step New
+Const Error For Exit
+Const Is Dim Close
+Const Is With Then
+Const New , While
+Const Next Is Loop
+Const Put Close With
+Const Static Open =
+Const Step If New
+Const Step To "s"
+Const Then Do ElseIf
+Const To Print Function
+Const Wend With Case
+Dim 1 GoSub Select
+Dim : Next Preserve
+Dim = Print a
+Dim ElseIf Not Static
+Dim Get ) :
+Dim GoTo Close (
+Dim Next Set Error
+Dim Not Let Until
+Dim Wend Else To
+Dim Wend Exit End
+Dim a Loop Put
+Dim a With Step
+Do . ) Sub
+Do Call GoSub Input
+Do Case Get GoTo
+Do Const Select (
+Do Dim # Open
+Do ElseIf Not )
+Do Input End Preserve
+Do Is New Static
+Do Next While Resume
+Do Not ) Call
+Do Not Exit With
+Do Not On ReDim
+Do Print End GoSub
+Do Resume If =
+Do Set Call Else
+Do Step ) Input
+Else : "s" If
+Else Dim Set Open
+Else End Case #
+Else Error ( Do
+Else Function "s" Print
+Else Get Dim Resume
+Else Line Error Const
+Else Not "s" With
+Else Select Const Loop
+Else Sub Input GoSub
+Else Then Preserve Print
+Else a While 1
+ElseIf Do Step Sub
+ElseIf ElseIf Input Error
+ElseIf Exit Print Get
+ElseIf GoSub : Sub
+ElseIf Input ) Line
+ElseIf Input Next Preserve
+ElseIf Line Dim For
+ElseIf New If Put
+ElseIf Next 1 Static
+ElseIf Open Is Dim
+ElseIf Rem Else End
+ElseIf To ( GoSub
+ElseIf While . Then
+End ) Set :
+End . Not Then
+End Else Get Dim
+End For Wend Loop
+End GoSub Function Do
+End If End As
+End Is Then Error
+End Not Error Error
+End On 1 Error
+End Preserve Do Until
+End Rem Step On
+End To Function Close
+End While Private GoSub
+Erase ) Erase Put
+Erase 1 ElseIf .
+Erase 1 ElseIf Resume
+Erase = Static On
+Erase Call Exit End
+Erase Case a 1
+Erase Do Next ,
+Erase Do To Static
+Erase Else Not Error
+Erase Erase Function )
+Erase Function GoTo As
+Erase GoSub Not Dim
+Erase Input 1 Let
+Erase Is Loop Error
+Erase Static Not Then
+Erase Wend = While
+Erase a Dim Preserve
+Error "s" Input .
+Error # Input To
+Error ( For Dim
+Error ( For Sub
+Error ( On 1
+Error = Preserve #
+Error Else Until Function
+Error If Rem On
+Error Input Const Case
+Error Input Set #
+Error Line Put Function
+Error Loop : ,
+Error Not To Function
+Error Print Erase Erase
+Error Resume Const Wend
+Error Set GoTo Next
+Error Static Next ,
+Error With Loop While
+Error a ElseIf Case
+Error a Private As
+Exit # Line Not
+Exit End GoTo ElseIf
+Exit End a ReDim
+Exit Exit Open Get
+Exit Function "s" As
+Exit GoSub a Input
+Exit Next Dim Static
+Exit Not Wend As
+Exit Private ElseIf Case
+Exit Static Put Wend
+Exit Sub Input Private
+Exit To Call Else
+Exit While Loop Then
+For ElseIf Input ReDim
+For Line Input Sub
+For Loop Do If
+For New Close Preserve
+For Resume GoSub Not
+For Select Const Exit
+For Step Dim Line
+For Sub Until Const
+For While # GoTo
+For While Input On
+For a Else Close
+Function ) Error Get
+Function Case GoSub Function
+Function Case Not "s"
+Function Close Preserve =
+Function Const Const For
+Function End Call (
+Function Let Do Wend
+Function Select Error Const
+Function Select Error Error
+Function Set If GoTo
+Function Static Call If
+Function Static End Error
+Function Sub With GoTo
+Function Sub a Error
+Function Until # #
+Function Until = "s"
+Function Wend Loop Erase
+Function With Select With
+Get ) Loop Close
+Get 1 1 :
+Get Close Input Function
+Get Erase Dim As
+Get Error ( Erase
+Get For Resume Line
+Get Get a Private
+Get If Do Let
+Get Input ElseIf Private
+Get Input ReDim Else
+Get Next Case Close
+Get Not Function Erase
+Get Private ElseIf Sub
+Get Private Error Exit
+Get Rem 1 Let
+Get Static # =
+Get Static ElseIf 1
+Get Then For Resume
+Get To Select End
+Get While ReDim As
+GoSub , Line Case
+GoSub As Select )
+GoSub Do GoSub Private
+GoSub Exit . 1
+GoSub Exit Set Rem
+GoSub GoTo Until Not
+GoSub Input "s" Next
+GoSub Input Next Is
+GoSub Let Print Do
+GoSub Loop Sub Erase
+GoSub Next Error Error
+GoSub Put "s" End
+GoSub Select As Then
+GoSub Set ) Let
+GoSub Set Let =
+GoSub While As Loop
+GoSub While a Do
+GoTo "s" On Erase
+GoTo "s" Resume Function
+GoTo # Line Erase
+GoTo , If (
+GoTo . Rem On
+GoTo = Next .
+GoTo ElseIf While "s"
+GoTo Exit Close :
+GoTo Exit Erase :
+GoTo Get Close 1
+GoTo GoTo ) a
+GoTo GoTo Then )
+GoTo Sub Line Case
+GoTo With GoSub To
+If "s" Get Then
+If # Sub Until
+If Do Select GoTo
+If Exit Private Dim
+If Line Private Select
+If Open . ,
+If Until Const Do
+Input "s" "s" (
+Input # Set Preserve
+Input . Is End
+Input Call Set ReDim
+Input Dim Select Open
+Input ElseIf Close Not
+Input ElseIf Select Select
+Input Exit Do While
+Input Get New Get
+Input Let Rem ,
+Input New Get Print
+Input Next Sub Call
+Input Open Error Resume
+Input Open Print Put
+Input Select Resume Open
+Input To "s" Call
+Input To Input Open
+Input Wend Do Else
+Is , New Dim
+Is : Line ,
+Is = : .
+Is As As Else
+Is Case Next Exit
+Is Error # a
+Is Exit As GoTo
+Is Function Do (
+Is Get ElseIf )
+Is If ElseIf Do
+Is Let Not #
+Is Loop Dim Input
+Is New Private Until
+Is Private Sub On
+Is Rem ReDim Const
+Let : For Rem
+Let As Get Exit
+Let Dim On Until
+Let Dim With New
+Let Else Select Wend
+Let GoSub GoTo Close
+Let Input Not Wend
+Let Line Function Set
+Let Loop Print Preserve
+Let Print If Call
+Let Private Open (
+Let Static As Input
+Let Static Static Const
+Let Then = Is
+Let Then New Const
+Let Until Wend Wend
+Line As ElseIf Else
+Line Case : Rem
+Line Close ) Call
+Line Close While Close
+Line Const ReDim =
+Line Exit ElseIf GoSub
+Line If GoTo As
+Line Input Error Function
+Line Not Function Close
+Line Rem Next As
+Line Static Const Set
+Line Static Exit Is
+Loop "s" Input ElseIf
+Loop # Do Select
+Loop . Input Erase
+Loop . Preserve GoTo
+Loop Const Call a
+Loop Do Put Resume
+Loop Erase Close Close
+Loop Get Close GoSub
+Loop GoSub Sub Do
+Loop Line Wend Call
+Loop Step Dim Not
+Loop Sub Input Rem
+Loop Then As Input
+Loop Until . Set
+Loop Wend Error Sub
+Loop While End Else
+New Dim Do Step
+New Dim For Function
+New Else Step )
+New End . While
+New End Case New
+New For Erase If
+New For Not Step
+New Line Dim Loop
+New New Open As
+New ReDim Next End
+New ReDim Preserve Rem
+New Select 1 Else
+New Set Line Preserve
+New Step , Input
+New Sub = Loop
+New Sub Rem Const
+New Then ( Else
+New Wend Preserve )
+New With Do Input
+New With Then 1
+Next . Input Select
+Next 1 Next Call
+Next Close With ElseIf
+Next Const Wend Dim
+Next Exit Static End
+Next Function While GoTo
+Next New Error Not
+Next Print Loop a
+Next Put If Error
+Next Sub Until ElseIf
+Next Until Dim While
+Next Wend Error .
+Not "s" Is Next
+Not # Print Const
+Not ) , As
+Not = Step For
+Not ElseIf Call ,
+Not Erase Rem "s"
+Not Function To Else
+Not GoSub GoSub Put
+Not New . =
+Not New Rem Set
+Not On With GoSub
+Not Open Get Let
+Not Rem Set For
+Not Resume Do Open
+Not Set Error Do
+Not Then With :
+Not With Preserve Let
+On ( New =
+On , Resume As
+On , Until Print
+On 1 ElseIf For
+On 1 While ,
+On Close Error New
+On End Input Resume
+On Function 1 Print
+On GoTo Sub Next
+On If With For
+On Loop Loop Const
+On New Exit "s"
+On New On Input
+On Not Exit Is
+On Open Until "s"
+On Private Rem With
+On Private Then Do
+On Sub Resume 1
+Open # To Static
+Open ) Close Loop
+Open Close Dim Else
+Open Const Select Const
+Open Error Const a
+Open Exit Open Then
+Open Let Until Line
+Open Let Wend Then
+Open Loop On To
+Open On Line Set
+Open Print Do (
+Open Print Line For
+Open ReDim New )
+Open Rem = Dim
+Open Rem ElseIf ElseIf
+Open Set Exit Static
+Open Step As Print
+Open Until Not Until
+Open While If Function
+Open a On Step
+Preserve "s" Do Next
+Preserve # Rem "s"
+Preserve . End Dim
+Preserve . Until While
+Preserve Const Exit GoSub
+Preserve Function ( ReDim
+Preserve If As Call
+Preserve Is Put Input
+Preserve Next Until Else
+Preserve Not Then GoSub
+Preserve Print Function :
+Preserve While To Let
+Print ) Then :
+Print , Until Set
+Print 1 Erase With
+Print For GoSub Next
+Print Let On Is
+Print Loop If Get
+Print On As Step
+Print Preserve Put Private
+Print Rem Call On
+Print Select Print (
+Print Set Select Set
+Print With Let Call
+Private ( Open GoSub
+Private ) Wend #
+Private , a Erase
+Private As As Is
+Private Case Call Erase
+Private Close Private With
+Private Dim Open Do
+Private Dim Preserve New
+Private Let Not As
+Private Line Error Is
+Private New Line Private
+Private Preserve GoTo New
+Private Put Is ,
+Private Rem = =
+Private Set : Sub
+Private Static Then Const
+Private Step Set Until
+Private Until Get If
+Private Wend # Select
+Put "s" Not Rem
+Put As Put Private
+Put Case # Input
+Put Case Loop GoTo
+Put Close Until If
+Put Do Const To
+Put Error ElseIf Loop
+Put New Const While
+Put Step Input Else
+Put Step Step Else
+ReDim # ElseIf "s"
+ReDim # Until Set
+ReDim ( ( :
+ReDim ( ( Error
+ReDim = Input To
+ReDim Case To Is
+ReDim Erase Next Case
+ReDim Input Let While
+ReDim New Exit Do
+ReDim Open Select Dim
+ReDim Print Set "s"
+ReDim Set Error Preserve
+ReDim Set Select Not
+Rem . Call Close
+Rem Function # New
+Rem Next # Loop
+Rem Open Resume Close
+Rem Select , New
+Rem Set Dim GoTo
+Rem Sub = Erase
+Rem Sub To a
+Rem Until Else Case
+Resume # End Step
+Resume Call Dim Wend
+Resume Do Open Step
+Resume Else Select Set
+Resume ElseIf On Not
+Resume Erase New Case
+Resume Exit = Until
+Resume Function For Static
+Resume Function On Do
+Resume Put 1 Call
+Resume Rem GoSub Sub
+Resume Step While If
+Resume Sub ( (
+Resume Sub Resume Else
+Resume Until ) Put
+Select Const Dim Function
+Select Dim ReDim If
+Select Do Set GoSub
+Select Error ElseIf Close
+Select Exit Exit Case
+Select If , Loop
+Select Loop Not If
+Select Next Is On
+Select Not GoSub Not
+Select Private Until )
+Select Set Until Dim
+Select Step Step Line
+Select To Static 1
+Select Until Set ,
+Select a As Static
+Set "s" While New
+Set # Rem Step
+Set = Error To
+Set Call Resume 1
+Set Case Static Static
+Set Close ElseIf Exit
+Set ElseIf If Close
+Set Loop 1 Const
+Set On With Close
+Set Print GoSub Else
+Set Static For Let
+Set Step As a
+Set With Do Error
+Set With Set Static
+Static ( Wend New
+Static Else While Exit
+Static ElseIf # To
+Static Get ( Select
+Static On Is Wend
+Static Preserve While 1
+Static Private ReDim Call
+Static Rem Until #
+Static Then 1 ReDim
+Step "s" 1 Do
+Step ( Line If
+Step , Wend Put
+Step Call : Resume
+Step Const With Case
+Step Do Private :
+Step For Preserve =
+Step Get GoSub Else
+Step Get Print GoTo
+Step Is Else Preserve
+Step Loop Function Line
+Step Open New Open
+Step Preserve Const Exit
+Step Put Dim On
+Step Put Static Else
+Step Resume To Exit
+Step To On Exit
+Step With Exit Select
+Step With Select Function
+Sub "s" To Input
+Sub Call Set Input
+Sub Close On :
+Sub Loop a Exit
+Sub New With .
+Sub Put Function ReDim
+Sub To Else As
+Then ( For Loop
+Then , As Close
+Then As ReDim While
+Then Dim Step To
+Then Exit Const Print
+Then GoSub Function Preserve
+Then Let Print Line
+Then New a a
+Then Next Rem Not
+Then Not ElseIf Next
+Then ReDim a Get
+Then Rem Call =
+Then Select Let Set
+Then Step As ,
+To ) End If
+To . Resume To
+To : Dim Erase
+To Close "s" For
+To Const Dim Select
+To Else Close Call
+To End While Rem
+To Erase 1 Select
+To For Sub ReDim
+To Function Next Do
+To Get 1 Resume
+To GoSub = GoSub
+To GoSub Erase Exit
+To GoTo ( Put
+To Input # If
+To Loop GoSub Static
+To Not Let Set
+To On For (
+To Print Const Set
+To Put Put Line
+To Resume Function Const
+To To If For
+To a ) End
+Until # While Const
+Until , While If
+Until Call With .
+Until ElseIf Call On
+Until GoSub Not Close
+Until Is Wend Input
+Until New Not Get
+Until Not , Loop
+Until Private GoSub Until
+Until Private Private Close
+Until Select Is Resume
+Until Static Let Wend
+Until Step Let Input
+Until Step Wend Until
+Until Wend Until Exit
+Wend # ( ElseIf
+Wend ( Wend Line
+Wend . Function Const
+Wend : Is If
+Wend Case Loop New
+Wend Error Call Sub
+Wend GoTo Erase )
+Wend Line Next ReDim
+Wend Loop Set Dim
+Wend Open Preserve Error
+Wend Put : )
+Wend a Rem Input
+While As Case If
+While Const Wend Let
+While Dim : Dim
+While Erase 1 Step
+While Line "s" GoTo
+While Print Then GoTo
+While ReDim Wend Private
+While Step Case Step
+While Step Dim ReDim
+While Until While #
+While While = Do
+With As Sub Close
+With Const Loop Is
+With Do Line For
+With End Error Rem
+With Erase Case Select
+With Input For Until
+With Next With With
+With Open Exit Static
+With Preserve Case With
+a ) Error "s"
+a 1 While On
+a For Step GoSub
+a New . If
+a Then Resume Case
+a With Case Error

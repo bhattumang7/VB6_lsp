@@ -97,3 +97,12 @@ fn open_for_needs_a_mode_word() {
     assert_eq!(found[0], (0x9c70, offset_of(&src, "As", 0), 2));
     assert_eq!(in_sub("Open \"a\" For Binary As #1").1, vec![]);
 }
+
+#[test]
+fn open_needs_as_before_the_channel() {
+    let (src, found) = in_sub("Open \"a\" 1");
+    assert_eq!(found[0], (0x9c70, offset_of(&src, "1", 0), 1));
+    let (src, found) = in_sub("Open \"a\" For Input #1");
+    assert_eq!(found[0], (0x9c70, offset_of(&src, "#", 0), 1));
+    assert_eq!(in_sub("Open \"a\" For Input As #1").1, vec![]);
+}

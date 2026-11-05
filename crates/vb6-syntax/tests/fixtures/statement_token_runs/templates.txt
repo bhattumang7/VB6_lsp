@@ -1,0 +1,5 @@
+# {k} is replaced by each run of tokens.
+=== proc bas
+Sub P(a, x)
+{k}
+End Sub
