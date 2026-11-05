@@ -4,7 +4,7 @@
 mod common;
 use common::{offset_of, parse};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode};
-use vb6_syntax::frontend::cond_compile::{parse_cond_comp_args, CcValue};
+use vb6_syntax::frontend::cond_compile::{parse_cond_comp_args, CcValue, InvalidConstantDeclarations};
 use vb6_syntax::frontend::parser::Parser;
 use vb6_syntax::frontend::scanner::ScannerContext;
 
@@ -214,9 +214,9 @@ fn project_arguments_are_visible_to_the_module() {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let src = b"#If MyFlag And Name = \"x\" Then\nSub Yes()\nEnd Sub\n#Else\nSub No()\nEnd Sub\n#End If\n";
+    let src = b"#If MyFlag And Level = 7 Then\nSub Yes()\nEnd Sub\n#Else\nSub No()\nEnd Sub\n#End If\n";
     let mut parser = Parser::new(&mut ctx, src);
-    parser.set_conditional_constants(parse_cond_comp_args("MyFlag = 1 : Name = \"x\""));
+    parser.set_conditional_constants(parse_cond_comp_args("MyFlag = 1 : Level = 7").unwrap());
     let top = parser.parse_module(&mut arena);
     assert!(parser.diagnostics.items().is_empty());
     drop(parser);
@@ -227,15 +227,28 @@ fn project_arguments_are_visible_to_the_module() {
 #[test]
 fn argument_text_is_split_and_typed() {
     assert_eq!(
-        parse_cond_comp_args("A = 1 : B = \"x:y\" : C=2.5:D : E = \"say \"\"hi\"\"\" : F = -3"),
-        vec![
+        parse_cond_comp_args("A = 1 : B=-32768:C = +32767 : d = 00 : E_1 = -0"),
+        Ok(vec![
             ("a".to_string(), CcValue::Integer(1)),
-            ("b".to_string(), CcValue::Str("x:y".to_string())),
-            ("c".to_string(), CcValue::Double(2.5)),
-            ("d".to_string(), CcValue::Empty),
-            ("e".to_string(), CcValue::Str("say \"hi\"".to_string())),
-            ("f".to_string(), CcValue::Integer(-3)),
-        ]
+            ("b".to_string(), CcValue::Integer(-32768)),
+            ("c".to_string(), CcValue::Integer(32767)),
+            ("d".to_string(), CcValue::Integer(0)),
+            ("e_1".to_string(), CcValue::Integer(0)),
+        ])
     );
-    assert_eq!(parse_cond_comp_args(""), vec![]);
+    // Reserved words and the predefined name are names like any other.
+    let args = parse_cond_comp_args("Dim=1:Win32=0").unwrap();
+    assert_eq!(args, vec![("dim".to_string(), CcValue::Integer(1)), ("win32".to_string(), CcValue::Integer(0))]);
+    assert_eq!(parse_cond_comp_args(""), Ok(vec![]));
+    assert_eq!(parse_cond_comp_args("  "), Ok(vec![]));
+}
+
+#[test]
+fn argument_text_that_is_not_constant_declarations_is_invalid() {
+    for bad in [
+        "A=32768", "A=-32769", "A=1.5", "A=&H10", "A=True", "A=x", "A=1+2", "A=B", "A=1:a=2", "A=1:", "A=1::B=2", "A=1;B=2", "A=--1",
+        "A=\"x\"", "A", "A=", "1A=1", "A$=1", "A=1_", ":A=1", "=1",
+    ] {
+        assert_eq!(parse_cond_comp_args(bad), Err(InvalidConstantDeclarations), "{bad}");
+    }
 }

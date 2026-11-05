@@ -698,6 +698,13 @@ impl Session {
         }
     }
 
+    /// Whether the project's conditional-compilation arguments are written as the project
+    /// format requires. When they are not, the project cannot be built and no argument
+    /// is defined.
+    pub fn conditional_compilation_is_valid(&self) -> bool {
+        self.config.conditional_compilation.as_deref().map_or(true, |text| parse_cond_comp_args(text).is_ok())
+    }
+
     /// All diagnostics for a module: parse errors plus semantic diagnostics.
     pub fn diagnostics(&self, module: usize) -> Vec<Diagnostic> {
         let Some(m) = self.modules.get(module) else {
@@ -1318,7 +1325,7 @@ fn conditional_constants(config: &SessionConfig) -> Vec<(String, CcValue)> {
     config
         .conditional_compilation
         .as_deref()
-        .map(parse_cond_comp_args)
+        .and_then(|text| parse_cond_comp_args(text).ok())
         .unwrap_or_default()
 }
 

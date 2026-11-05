@@ -27,7 +27,7 @@ fn a_project_argument_selects_the_branch() {
 fn changing_the_arguments_rereads_every_module() {
     let mut s = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(None));
     assert_eq!(codes(&s).len(), 1);
-    s.set_config(config(Some("MyFlag = -1 : Other = \"x\"")));
+    s.set_config(config(Some("MyFlag = -1 : Other = 5")));
     assert_eq!(codes(&s), vec![]);
     s.set_config(config(Some("MyFlag = 0")));
     assert_eq!(codes(&s).len(), 1);
@@ -38,4 +38,13 @@ fn an_edited_file_is_read_with_the_project_arguments() {
     let mut s = Session::with_config(vec![("m.bas".into(), b"Sub A()\nEnd Sub\n".to_vec())], config(Some("MyFlag = 1")));
     s.update_file("m.bas", SRC.to_vec());
     assert_eq!(codes(&s), vec![]);
+}
+
+#[test]
+fn arguments_that_are_not_constant_declarations_define_nothing() {
+    let s = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(Some("MyFlag = 1 : Other = \"x\"")));
+    assert!(!s.conditional_compilation_is_valid());
+    assert_eq!(codes(&s).len(), 1);
+    let s = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(Some("MyFlag = 1")));
+    assert!(s.conditional_compilation_is_valid());
 }

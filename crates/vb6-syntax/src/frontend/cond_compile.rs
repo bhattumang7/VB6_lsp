@@ -554,63 +554,38 @@ fn format_currency(c: i64) -> String {
     }
 }
 
-/// Split the project's conditional-compilation arguments
-/// (`DEBUG = 1 : Name = "text"`) into `(lower-cased name, value)` pairs. A
-/// value is an integer, a number, or a double-quoted string (`""` for a
-/// quote); a missing or unreadable value is Empty. Colons inside a quoted
-/// string do not split.
-pub fn parse_cond_comp_args(text: &str) -> Vec<(String, CcValue)> {
-    let mut out = Vec::new();
-    let mut parts: Vec<String> = Vec::new();
-    let mut cur = String::new();
-    let mut in_str = false;
-    let mut chars = text.chars().peekable();
-    while let Some(c) = chars.next() {
-        match c {
-            '"' if in_str && chars.peek() == Some(&'"') => {
-                cur.push_str("\"\"");
-                chars.next();
-            }
-            '"' => {
-                in_str = !in_str;
-                cur.push(c);
-            }
-            ':' if !in_str => parts.push(std::mem::take(&mut cur)),
-            _ => cur.push(c),
-        }
+/// The project's conditional-compilation arguments are not written as the project format
+/// requires ("Invalid syntax for constant declarations").
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct InvalidConstantDeclarations;
+
+/// Split the project's conditional-compilation arguments (`DEBUG = 1 : Level = -2`) into
+/// `(lower-cased name, value)` pairs. Each is a name (a letter or underscore, then letters,
+/// digits and underscores; a reserved word will do), an `=`, and a 16-bit signed integer
+/// with an optional sign. A name given twice (ignoring case), an empty part, or any other
+/// value makes the whole text invalid.
+pub fn parse_cond_comp_args(text: &str) -> Result<Vec<(String, CcValue)>, InvalidConstantDeclarations> {
+    let mut out: Vec<(String, CcValue)> = Vec::new();
+    if text.trim().is_empty() {
+        return Ok(out);
     }
-    parts.push(cur);
-    for part in parts {
-        let part = part.trim();
-        if part.is_empty() {
-            continue;
+    for part in text.split(':') {
+        let (name, value) = part.split_once('=').ok_or(InvalidConstantDeclarations)?;
+        let (name, value) = (name.trim(), value.trim());
+        let mut chars = name.chars();
+        let name_ok = chars.next().is_some_and(|c| c.is_alphabetic() || c == '_')
+            && chars.all(|c| c.is_alphanumeric() || c == '_');
+        let digits = value.strip_prefix(['+', '-']).unwrap_or(value);
+        if !name_ok || digits.is_empty() || !digits.chars().all(|c| c.is_ascii_digit()) {
+            return Err(InvalidConstantDeclarations);
         }
-        let (name, value) = match part.split_once('=') {
-            Some((n, v)) => (n.trim(), v.trim()),
-            None => (part, ""),
-        };
-        if name.is_empty() {
-            continue;
+        let number: i64 = value.trim_start_matches('+').parse().map_err(|_| InvalidConstantDeclarations)?;
+        let number = i16::try_from(number).map_err(|_| InvalidConstantDeclarations)?;
+        let name = name.to_ascii_lowercase();
+        if out.iter().any(|(n, _)| *n == name) {
+            return Err(InvalidConstantDeclarations);
         }
-        let value = if let Some(body) = value.strip_prefix('"').and_then(|v| v.strip_suffix('"')) {
-            CcValue::Str(body.replace("\"\"", "\""))
-        } else if value.is_empty() {
-            CcValue::Empty
-        } else if let Ok(n) = value.parse::<i32>() {
-            match i16::try_from(n) {
-                Ok(i) => CcValue::Integer(i),
-                Err(_) => CcValue::Long(n),
-            }
-        } else if let Ok(d) = value.parse::<f64>() {
-            CcValue::Double(d)
-        } else if value.eq_ignore_ascii_case("true") {
-            CcValue::TRUE
-        } else if value.eq_ignore_ascii_case("false") {
-            CcValue::FALSE
-        } else {
-            CcValue::Empty
-        };
-        out.push((name.to_ascii_lowercase(), value));
+        out.push((name, CcValue::Integer(number)));
     }
-    out
+    Ok(out)
 }
