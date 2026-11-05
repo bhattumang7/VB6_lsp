@@ -115,3 +115,40 @@ fn the_size_rule_holds_for_every_binary_operator_sign_not_and_brackets() {
         assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term} {op} x {}", fits + 1);
     }
 }
+
+#[test]
+fn deeply_nested_brackets_and_calls_the_compiler_accepts_are_parsed() {
+    let parens = format!("Sub S()\nx = {}1{}\nEnd Sub\n", "(".repeat(480), ")".repeat(480));
+    assert_eq!(parse(&parens).found, vec![]);
+    let calls = format!("Sub S()\nx = {}1{}\nEnd Sub\n", "Abs(".repeat(100), ")".repeat(100));
+    assert_eq!(parse(&calls).found, vec![]);
+}
+
+/// `x = a op a op ...` with the terms and operators taken in turn.
+fn mixed_chain(terms: &[&str], ops: &[&str], n: usize, per: usize) -> String {
+    let mut parts = Vec::new();
+    for k in 0..n {
+        parts.push(if k == 0 { terms[0].to_string() } else { format!("{} {}", ops[(k - 1) % ops.len()], terms[k % terms.len()]) });
+    }
+    let lines: Vec<String> = parts.chunks(per).map(|c| c.join(" ")).collect();
+    format!("Sub S()\nDim x As Long\nx = {}\nEnd Sub\n", lines.join(" _\n"))
+}
+
+#[test]
+fn operators_and_operand_kinds_may_be_mixed_in_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let ok = |terms: &[&str], ops: &[&str], per: usize, n: usize| parse(&mixed_chain(terms, ops, n, per)).found.is_empty();
+    // (terms, operators, terms per line, most terms that fit)
+    for (terms, ops, per, fits) in [
+        (vec!["1"], vec!["+", "-"], 150, 2548),
+        (vec!["1"], vec!["+", "*", "And"], 150, 2548),
+        (vec!["1"], vec!["+", "/", "^", "="], 150, 2548),
+        (vec!["1"], vec!["<", "Or", "Mod", "\\"], 150, 2548),
+        (vec!["1", "40000"], vec!["+"], 150, 2185),
+        (vec!["1", "1.5"], vec!["+"], 100, 1699),
+    ] {
+        assert!(ok(&terms, &ops, per, fits), "{terms:?} {ops:?} x {fits}");
+        let found = parse(&mixed_chain(&terms, &ops, fits + 1, per)).found;
+        assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{terms:?} {ops:?} x {}", fits + 1);
+    }
+}

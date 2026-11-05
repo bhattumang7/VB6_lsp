@@ -170,3 +170,24 @@ fn the_longest_statement_the_compiler_accepts_is_analyzed_without_overflowing_th
     let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
     assert_eq!(s.diagnostics(0).len(), 0);
 }
+
+#[test]
+fn deeply_nested_brackets_are_analyzed_without_overflowing_the_stack() {
+    let src = format!("Sub Main()\nDim x As Long\nx = {}1{}\nEnd Sub\n", "(".repeat(480), ")".repeat(480));
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    assert_eq!(s.diagnostics(0).len(), 0);
+}
+
+#[test]
+fn brackets_nested_four_thousand_deep_are_analyzed() {
+    // Lines of 400 brackets, joined by continuations.
+    let opens: Vec<String> = (0..10).map(|_| "(".repeat(400)).collect();
+    let closes: Vec<String> = (0..10).map(|_| ")".repeat(400)).collect();
+    let src = format!(
+        "Sub Main()\nDim x As Long\nx = {} 1 _\n{}\nEnd Sub\n",
+        opens.join(" _\n"),
+        closes.join(" _\n")
+    );
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    assert_eq!(s.diagnostics(0).len(), 0);
+}

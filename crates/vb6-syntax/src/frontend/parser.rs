@@ -6198,79 +6198,94 @@ const MAX_IDENTIFIER_LEN: usize = 255;
 /// Most bytes of compiled code one logical line may hold.
 const MAX_LINE_CODE_SIZE: usize = 0x3c00;
 
-/// The compiled size of `target = <expression>` when the expression is built from operands
-/// of one kind and one binary operator, as the line's compiled code counts it: the store 6,
-/// each operand its load (a name or Integer literal 4, a Long or Single literal 6, a Double,
-/// Currency or Date literal 10, a string 4 plus its length rounded up to even), each binary
-/// operator, sign change, `Not` and bracket pair 2, and 4 for each physical line. The operands
-/// are all literals of one kind or all plain names; a sign change is measured on Integer and
-/// Double literals and on names, `Not` and brackets on names. `None` for any other shape: only
-/// the shapes whose size is known exactly are measured, so a size is never overstated.
+/// The compiled size of `target = <expression>` as the line's compiled code counts it: the
+/// store 6, each operand its load (a name or Integer literal 4, a Long or Single literal 6, a
+/// Double, Currency or Date literal 10, a string 4 plus its length rounded up to even), each
+/// binary operator 2, and 4 for each physical line; the kinds and operators may be mixed, as
+/// they cost nothing more. A sign change or `Not` or a bracket pair costs 2 more than the
+/// operand it holds, measured for a sign change on Integer and Double literals and names, for
+/// `Not` and brackets on names. `None` for any other shape: only the shapes whose size is
+/// known exactly are measured, so a size is never overstated.
 fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physical_lines: usize) -> Option<usize> {
     if !matches!(arena.get(target), ExprNode::NameRef { .. }) {
         return None;
     }
     let mut total = 6 + 4 * physical_lines;
-    let mut lit_kind: Option<std::mem::Discriminant<AstLit>> = None;
-    let mut lit_is_int_or_double = true;
-    let mut names = false;
-    let mut op: Option<BinOpKind> = None;
-    let (mut signs, mut nots, mut parens) = (0usize, 0usize, 0usize);
+    // Signs, `Not` and brackets are measured with names (and, for signs, Integer and Double
+    // literals) as their operands only.
+    let (mut signs, mut nots_or_brackets, mut other_literals) = (false, false, false);
     let mut stack = vec![value];
     while let Some(id) = stack.pop() {
         match arena.get(id) {
-            ExprNode::BinOp { op: this, lhs, rhs } => {
-                if matches!(this, BinOpKind::Like | BinOpKind::Is | BinOpKind::Not) || op.is_some_and(|k| k != *this) {
+            ExprNode::BinOp { op, lhs, rhs } => {
+                if matches!(op, BinOpKind::Like | BinOpKind::Is | BinOpKind::Not) {
                     return None;
                 }
-                op = Some(*this);
                 total += 2;
                 stack.push(*lhs);
                 stack.push(*rhs);
             }
             ExprNode::UnOp { op: UnOpKind::Neg, operand } => {
-                signs += 1;
+                signs = true;
                 total += 2;
                 stack.push(*operand);
             }
             ExprNode::UnOp { op: UnOpKind::Not, operand } => {
-                nots += 1;
+                nots_or_brackets = true;
                 total += 2;
                 stack.push(*operand);
             }
             ExprNode::Paren { inner } => {
-                parens += 1;
+                nots_or_brackets = true;
                 total += 2;
                 stack.push(*inner);
             }
-            ExprNode::NameRef { .. } => {
-                if lit_kind.is_some() { return None; }
-                names = true;
-                total += 4;
-            }
-            ExprNode::Literal { lit } => {
-                let d = std::mem::discriminant(lit);
-                if names || lit_kind.is_some_and(|k| k != d) { return None; }
-                lit_kind = Some(d);
-                lit_is_int_or_double = matches!(lit, AstLit::Int(_) | AstLit::Double(_));
-                total += match lit {
-                    AstLit::Int(_) => 4,
-                    AstLit::Long(_) | AstLit::Single(_) => 6,
-                    AstLit::Double(_) | AstLit::Currency(_) | AstLit::Date(_) => 10,
-                    AstLit::Str(s) => 4 + s.chars().count().next_multiple_of(2),
-                    _ => return None,
-                };
-            }
+            ExprNode::NameRef { .. } => total += 4,
+            ExprNode::Literal { lit } => match lit {
+                AstLit::Int(_) => total += 4,
+                AstLit::Double(_) => total += 10,
+                AstLit::Long(_) | AstLit::Single(_) => {
+                    other_literals = true;
+                    total += 6;
+                }
+                AstLit::Currency(_) | AstLit::Date(_) => {
+                    other_literals = true;
+                    total += 10;
+                }
+                AstLit::Str(s) => {
+                    other_literals = true;
+                    total += 4 + s.chars().count().next_multiple_of(2);
+                }
+                _ => return None,
+            },
             _ => return None,
         }
     }
-    if (nots > 0 || parens > 0) && !names {
-        return None;
-    }
-    if signs > 0 && !names && !lit_is_int_or_double {
+    // `Not` and brackets were measured on names only, signs on names and Integer and Double
+    // literals only.
+    let literal_operands = other_literals || total_has_literals(arena, value);
+    if (nots_or_brackets && literal_operands) || (signs && other_literals) {
         return None;
     }
     Some(total)
+}
+
+/// Whether the expression has a literal operand.
+fn total_has_literals(arena: &ExprArena, value: NodeId) -> bool {
+    let mut stack = vec![value];
+    while let Some(id) = stack.pop() {
+        match arena.get(id) {
+            ExprNode::Literal { .. } => return true,
+            ExprNode::BinOp { lhs, rhs, .. } => {
+                stack.push(*lhs);
+                stack.push(*rhs);
+            }
+            ExprNode::UnOp { operand, .. } => stack.push(*operand),
+            ExprNode::Paren { inner } => stack.push(*inner),
+            _ => {}
+        }
+    }
+    false
 }
 /// Most `#If` blocks that may be open at once.
 const MAX_CC_NESTING: usize = 4079;
