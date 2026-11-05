@@ -4894,15 +4894,23 @@ impl<'src> Parser<'src> {
     /// spans the first name; the tail is a `NameRef` with its own span.
     fn finish_user_type(&mut self, arena: &mut ExprArena, name: Token) -> NodeId {
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-        let child = if self.eat(TokenKind::Kw(Kw::Dot)) {
-            let sub = self.expect_ident();
+        // `A.B` is a name with a child; each further `.C` nests: the child of `A.B.C` is the
+        // type name `B.C`.
+        let mut tail: Vec<Token> = Vec::new();
+        while self.eat(TokenKind::Kw(Kw::Dot)) {
+            tail.push(self.expect_ident());
+        }
+        let mut child: Option<NodeId> = None;
+        for (i, sub) in tail.iter().enumerate().rev() {
             let sid = sub.sym.map(|s| s as u32).unwrap_or(0);
-            let cref = arena.alloc(ExprNode::NameRef { sym: sid, suffix: TypeSuffix::None });
-            self.set_span(cref, sub.span);
-            Some(cref)
-        } else {
-            None
-        };
+            let node = match child {
+                None => arena.alloc(ExprNode::NameRef { sym: sid, suffix: TypeSuffix::None }),
+                Some(_) => arena.alloc(ExprNode::UserType { name: sid, child }),
+            };
+            self.set_span(node, sub.span);
+            let _ = i;
+            child = Some(node);
+        }
         let id = arena.alloc(ExprNode::UserType { name: nid, child });
         self.set_span(id, name.span);
         id

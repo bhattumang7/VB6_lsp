@@ -1,0 +1,17 @@
+# x
+=== local bas
+Sub P()
+Dim a As {k}
+End Sub
+=== mod bas
+Dim a As {k}
+=== param bas
+Sub P(a As {k})
+End Sub
+=== ret bas
+Function F() As {k}
+End Function
+=== member bas
+Type T
+a As {k}
+End Type

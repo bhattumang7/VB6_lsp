@@ -1,0 +1,40 @@
+Foo
+Foo.Bar
+Foo.Bar.Baz
+Foo.
+Foo..Bar
+Foo.1
+Foo.Long
+Foo.Bar()
+Foo. Bar
+Foo .Bar
+Object.Foo
+Long.Foo
+String.Foo
+Variant.x
+Object * 3
+Long * 3
+Foo * 3
+Foo.Bar * 3
+Foo.Date
+Foo.Error
+Foo.Me
+Foo.[a b]
+[Foo]
+[Foo].Bar
+Foo.Bar.
+Date
+Error
+Name
+Text
+Integer.Foo
+Foo.Object
+Foo(
+Foo)
+Foo,
+Foo 1
+Foo.Bar.Baz.Qux
+Foo$
+Foo%
+VB.Form
+Scripting.Dictionary

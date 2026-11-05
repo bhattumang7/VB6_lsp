@@ -1,0 +1,201 @@
+# template	word	class	message
+local	Foo	semantic	User-defined type not defined
+local	Foo.Bar	semantic	User-defined type not defined
+local	Foo.Bar.Baz	semantic	User-defined type not defined
+local	Foo.	syntax	Syntax error
+local	Foo..Bar	syntax	Syntax error
+local	Foo.1	syntax	Syntax error
+local	Foo.Long	semantic	User-defined type not defined
+local	Foo.Bar()	syntax	Syntax error
+local	Foo. Bar	semantic	User-defined type not defined
+local	Foo .Bar	semantic	User-defined type not defined
+local	Object.Foo	syntax	Syntax error
+local	Long.Foo	syntax	Syntax error
+local	String.Foo	syntax	Syntax error
+local	Variant.x	syntax	Syntax error
+local	Object * 3	syntax	Syntax error
+local	Long * 3	syntax	Syntax error
+local	Foo * 3	syntax	Syntax error
+local	Foo.Bar * 3	syntax	Syntax error
+local	Foo.Date	semantic	User-defined type not defined
+local	Foo.Error	semantic	User-defined type not defined
+local	Foo.Me	semantic	User-defined type not defined
+local	Foo.[a b]	semantic	User-defined type not defined
+local	[Foo]	semantic	User-defined type not defined
+local	[Foo].Bar	semantic	User-defined type not defined
+local	Foo.Bar.	syntax	Syntax error
+local	Date	accepted	
+local	Error	semantic	User-defined type not defined
+local	Name	semantic	User-defined type not defined
+local	Text	semantic	User-defined type not defined
+local	Integer.Foo	syntax	Syntax error
+local	Foo.Object	semantic	User-defined type not defined
+local	Foo(	syntax	Syntax error
+local	Foo)	syntax	Syntax error
+local	Foo,	syntax	Syntax error
+local	Foo 1	syntax	Syntax error
+local	Foo.Bar.Baz.Qux	semantic	User-defined type not defined
+local	Foo$	semantic	User-defined type not defined
+local	Foo%	semantic	User-defined type not defined
+local	VB.Form	accepted	
+local	Scripting.Dictionary	semantic	User-defined type not defined
+mod	Foo	semantic	User-defined type not defined
+mod	Foo.Bar	semantic	User-defined type not defined
+mod	Foo.Bar.Baz	semantic	User-defined type not defined
+mod	Foo.	syntax	Expected: identifier
+mod	Foo..Bar	syntax	Expected: identifier
+mod	Foo.1	syntax	Expected: end of statement
+mod	Foo.Long	semantic	User-defined type not defined
+mod	Foo.Bar()	syntax	Expected: end of statement
+mod	Foo. Bar	semantic	User-defined type not defined
+mod	Foo .Bar	semantic	User-defined type not defined
+mod	Object.Foo	syntax	Expected: end of statement
+mod	Long.Foo	syntax	Expected: end of statement
+mod	String.Foo	syntax	Expected: end of statement
+mod	Variant.x	syntax	Expected: end of statement
+mod	Object * 3	syntax	Expected: end of statement
+mod	Long * 3	syntax	Expected: end of statement
+mod	Foo * 3	syntax	Expected: end of statement
+mod	Foo.Bar * 3	syntax	Expected: end of statement
+mod	Foo.Date	semantic	User-defined type not defined
+mod	Foo.Error	semantic	User-defined type not defined
+mod	Foo.Me	semantic	User-defined type not defined
+mod	Foo.[a b]	semantic	User-defined type not defined
+mod	[Foo]	semantic	User-defined type not defined
+mod	[Foo].Bar	semantic	User-defined type not defined
+mod	Foo.Bar.	syntax	Expected: identifier
+mod	Date	accepted	
+mod	Error	semantic	User-defined type not defined
+mod	Name	semantic	User-defined type not defined
+mod	Text	semantic	User-defined type not defined
+mod	Integer.Foo	syntax	Expected: end of statement
+mod	Foo.Object	semantic	User-defined type not defined
+mod	Foo(	syntax	Expected: end of statement
+mod	Foo)	syntax	Expected: end of statement
+mod	Foo,	syntax	Expected: variable
+mod	Foo 1	syntax	Expected: end of statement
+mod	Foo.Bar.Baz.Qux	semantic	User-defined type not defined
+mod	Foo$	semantic	User-defined type not defined
+mod	Foo%	semantic	User-defined type not defined
+mod	VB.Form	accepted	
+mod	Scripting.Dictionary	semantic	User-defined type not defined
+param	Foo	semantic	User-defined type not defined
+param	Foo.Bar	semantic	User-defined type not defined
+param	Foo.Bar.Baz	semantic	User-defined type not defined
+param	Foo.	syntax	Expected: identifier
+param	Foo..Bar	syntax	Expected: identifier
+param	Foo.1	syntax	Expected: list separator or )
+param	Foo.Long	semantic	User-defined type not defined
+param	Foo.Bar()	syntax	Expected: list separator or )
+param	Foo. Bar	semantic	User-defined type not defined
+param	Foo .Bar	semantic	User-defined type not defined
+param	Object.Foo	syntax	Expected: list separator or )
+param	Long.Foo	syntax	Expected: list separator or )
+param	String.Foo	syntax	Expected: list separator or )
+param	Variant.x	syntax	Expected: list separator or )
+param	Object * 3	syntax	Expected: list separator or )
+param	Long * 3	syntax	Expected: list separator or )
+param	Foo * 3	syntax	Expected: list separator or )
+param	Foo.Bar * 3	syntax	Expected: list separator or )
+param	Foo.Date	semantic	User-defined type not defined
+param	Foo.Error	semantic	User-defined type not defined
+param	Foo.Me	semantic	User-defined type not defined
+param	Foo.[a b]	semantic	User-defined type not defined
+param	[Foo]	semantic	User-defined type not defined
+param	[Foo].Bar	semantic	User-defined type not defined
+param	Foo.Bar.	syntax	Expected: identifier
+param	Date	accepted	
+param	Error	semantic	User-defined type not defined
+param	Name	semantic	User-defined type not defined
+param	Text	semantic	User-defined type not defined
+param	Integer.Foo	syntax	Expected: list separator or )
+param	Foo.Object	semantic	User-defined type not defined
+param	Foo(	syntax	Expected: list separator or )
+param	Foo)	syntax	Expected: end of statement
+param	Foo,	syntax	Expected: identifier
+param	Foo 1	syntax	Expected: list separator or )
+param	Foo.Bar.Baz.Qux	semantic	User-defined type not defined
+param	Foo$	semantic	User-defined type not defined
+param	Foo%	semantic	User-defined type not defined
+param	VB.Form	accepted	
+param	Scripting.Dictionary	semantic	User-defined type not defined
+ret	Foo	semantic	User-defined type not defined
+ret	Foo.Bar	semantic	User-defined type not defined
+ret	Foo.Bar.Baz	semantic	User-defined type not defined
+ret	Foo.	syntax	Expected: identifier
+ret	Foo..Bar	syntax	Expected: identifier
+ret	Foo.1	syntax	Expected: end of statement
+ret	Foo.Long	semantic	User-defined type not defined
+ret	Foo.Bar()	semantic	User-defined type not defined
+ret	Foo. Bar	semantic	User-defined type not defined
+ret	Foo .Bar	semantic	User-defined type not defined
+ret	Object.Foo	syntax	Expected: end of statement
+ret	Long.Foo	syntax	Expected: end of statement
+ret	String.Foo	syntax	Expected: end of statement
+ret	Variant.x	syntax	Expected: end of statement
+ret	Object * 3	syntax	Expected: end of statement
+ret	Long * 3	syntax	Expected: end of statement
+ret	Foo * 3	syntax	Expected: end of statement
+ret	Foo.Bar * 3	syntax	Expected: end of statement
+ret	Foo.Date	semantic	User-defined type not defined
+ret	Foo.Error	semantic	User-defined type not defined
+ret	Foo.Me	semantic	User-defined type not defined
+ret	Foo.[a b]	semantic	User-defined type not defined
+ret	[Foo]	semantic	User-defined type not defined
+ret	[Foo].Bar	semantic	User-defined type not defined
+ret	Foo.Bar.	syntax	Expected: identifier
+ret	Date	accepted	
+ret	Error	semantic	User-defined type not defined
+ret	Name	semantic	User-defined type not defined
+ret	Text	semantic	User-defined type not defined
+ret	Integer.Foo	syntax	Expected: end of statement
+ret	Foo.Object	semantic	User-defined type not defined
+ret	Foo(	syntax	Expected: )
+ret	Foo)	syntax	Expected: end of statement
+ret	Foo,	syntax	Expected: end of statement
+ret	Foo 1	syntax	Expected: end of statement
+ret	Foo.Bar.Baz.Qux	semantic	User-defined type not defined
+ret	Foo$	semantic	User-defined type not defined
+ret	Foo%	semantic	User-defined type not defined
+ret	VB.Form	accepted	
+ret	Scripting.Dictionary	semantic	User-defined type not defined
+member	Foo	semantic	User-defined type not defined
+member	Foo.Bar	semantic	User-defined type not defined
+member	Foo.Bar.Baz	semantic	User-defined type not defined
+member	Foo.	syntax	Expected: identifier
+member	Foo..Bar	syntax	Expected: identifier
+member	Foo.1	syntax	Expected: end of statement
+member	Foo.Long	semantic	User-defined type not defined
+member	Foo.Bar()	syntax	Expected: end of statement
+member	Foo. Bar	semantic	User-defined type not defined
+member	Foo .Bar	semantic	User-defined type not defined
+member	Object.Foo	syntax	Expected: end of statement
+member	Long.Foo	syntax	Expected: end of statement
+member	String.Foo	syntax	Expected: end of statement
+member	Variant.x	syntax	Expected: end of statement
+member	Object * 3	syntax	Expected: end of statement
+member	Long * 3	syntax	Expected: end of statement
+member	Foo * 3	syntax	Expected: end of statement
+member	Foo.Bar * 3	syntax	Expected: end of statement
+member	Foo.Date	semantic	User-defined type not defined
+member	Foo.Error	semantic	User-defined type not defined
+member	Foo.Me	semantic	User-defined type not defined
+member	Foo.[a b]	semantic	User-defined type not defined
+member	[Foo]	semantic	User-defined type not defined
+member	[Foo].Bar	semantic	User-defined type not defined
+member	Foo.Bar.	syntax	Expected: identifier
+member	Date	accepted	
+member	Error	semantic	User-defined type not defined
+member	Name	semantic	User-defined type not defined
+member	Text	semantic	User-defined type not defined
+member	Integer.Foo	syntax	Expected: end of statement
+member	Foo.Object	semantic	User-defined type not defined
+member	Foo(	syntax	Expected: end of statement
+member	Foo)	syntax	Expected: end of statement
+member	Foo,	syntax	Expected: variable
+member	Foo 1	syntax	Expected: end of statement
+member	Foo.Bar.Baz.Qux	semantic	User-defined type not defined
+member	Foo$	semantic	User-defined type not defined
+member	Foo%	semantic	User-defined type not defined
+member	VB.Form	accepted	
+member	Scripting.Dictionary	semantic	User-defined type not defined
