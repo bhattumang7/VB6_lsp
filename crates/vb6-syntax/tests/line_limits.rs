@@ -152,3 +152,23 @@ fn operators_and_operand_kinds_may_be_mixed_in_the_size_rule() {
         assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{terms:?} {ops:?} x {}", fits + 1);
     }
 }
+
+#[test]
+fn a_block_statement_line_follows_the_same_size_rule_as_an_assignment() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(150).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    for (head, tail) in [
+        ("If ", " Then\nEnd If"),
+        ("While ", "\nWend"),
+        ("Do While ", "\nLoop"),
+        ("Do Until ", "\nLoop"),
+        ("Select Case ", "\nCase 1\nEnd Select"),
+    ] {
+        let src = |n| format!("Sub S()\n{head}{}{tail}\nEnd Sub\n", expr(n));
+        assert_eq!(parse(&src(2548)).found, vec![], "{head}");
+        assert_eq!(parse(&src(2549)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{head}");
+    }
+}

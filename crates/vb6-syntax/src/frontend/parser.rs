@@ -1083,6 +1083,18 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// Reports a block statement's line whose expression takes the line's compiled code past
+    /// its limit. Call with the end of the line next.
+    fn check_condition_size(&mut self, arena: &ExprArena, condition: NodeId, at: Span) {
+        if self.peek().kind != TokenKind::Eol || self.colon_on_line {
+            return;
+        }
+        let lines = self.line_continuations as usize + 1;
+        if expression_chain_size(arena, condition, lines).is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, at);
+        }
+    }
+
     fn end_stmt(&mut self) {
         if self.peek().is_stmt_end() || (self.rem_ends_statement() && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
             self.advance();
@@ -2946,12 +2958,16 @@ impl<'src> Parser<'src> {
 
     /// Parses a Do loop.
     fn parse_do_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let do_span = self.current_span();
         self.advance(); // consume Do
         let pre = match self.peek().kind.clone() {
             TokenKind::Kw(Kw::While) => { self.advance(); Some((DoKind::PreWhile, self.parse_expr(arena, 0))) }
             TokenKind::Kw(Kw::Until) => { self.advance(); Some((DoKind::PreUntil, self.parse_expr(arena, 0))) }
             _ => None,
         };
+        if let Some((_, cond)) = pre {
+            self.check_condition_size(arena, cond, do_span);
+        }
         self.end_stmt();
         self.blocks.push(Block::Do { pre_test: pre.is_some() });
         let body = self.parse_block(arena);
@@ -2984,8 +3000,10 @@ impl<'src> Parser<'src> {
 
     /// Parses a While/Wend loop.
     fn parse_while_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let while_span = self.current_span();
         self.advance(); // consume While
         let cond = self.parse_expr(arena, 0);
+        self.check_condition_size(arena, cond, while_span);
         self.end_stmt();
         self.blocks.push(Block::While);
         let body = self.parse_block(arena);
@@ -3064,6 +3082,7 @@ impl<'src> Parser<'src> {
             let span = self.current_span();
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         }
+        self.check_condition_size(arena, cond, if_span);
         self.end_stmt();
         self.blocks.push(Block::If);
         let then_body = self.parse_block(arena);
@@ -3169,9 +3188,11 @@ impl<'src> Parser<'src> {
 
     /// Parses a Select Case statement.
     fn parse_select_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let select_span = self.current_span();
         self.advance(); // consume Select
         self.expect(TokenKind::Kw(Kw::Case), ERR_EXPECTED_CASE);
         let subject = self.parse_expr(arena, 0);
+        self.check_condition_size(arena, subject, select_span);
         self.end_stmt();
         self.blocks.push(Block::Select);
         let mut pre = Vec::new();
@@ -6210,6 +6231,13 @@ fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physi
     if !matches!(arena.get(target), ExprNode::NameRef { .. }) {
         return None;
     }
+    expression_chain_size(arena, value, physical_lines)
+}
+
+/// The compiled size of a line that is a single expression with the shape
+/// [`assignment_chain_size`] measures: the same for `If`, `While`, `Do While`, `Do Until` and
+/// `Select Case` lines, whose own code costs what an assignment's store does.
+fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize) -> Option<usize> {
     let mut total = 6 + 4 * physical_lines;
     // Signs, `Not` and brackets are measured with names (and, for signs, Integer and Double
     // literals) as their operands only.
