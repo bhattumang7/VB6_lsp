@@ -541,7 +541,7 @@ pub(super) fn lower_stmt(
         // assignment's own bytes — neither Debug statement contributes
         // anything, including their own argument expressions, even ones
         // with side effects visible to the type system).
-        ExprNode::DebugPrint { .. } => Ok(()),
+        ExprNode::DebugPrint { .. } | ExprNode::DebugAssert { .. } => Ok(()),
         _ => Err(LowerError::UnsupportedNode),
     }
 }

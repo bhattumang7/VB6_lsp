@@ -336,8 +336,10 @@ pub enum ExprNode {
     Erase { vars: Vec<NodeId> },
     /// `RaiseEvent name[(args)]`
     RaiseEvent { name: u32, args: NodeId },
-    /// `Debug.Print [args...]`
-    DebugPrint { args: Vec<NodeId> },
+    /// `Debug.Print [#channel,] [args...]`
+    DebugPrint { channel: Option<NodeId>, args: Vec<NodeId> },
+    /// `Debug.Assert condition`
+    DebugAssert { cond: NodeId },
     /// `Error expr` — set current error number.
     ErrorStmt { expr: NodeId },
 

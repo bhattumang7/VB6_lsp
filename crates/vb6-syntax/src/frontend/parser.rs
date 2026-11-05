@@ -1559,7 +1559,18 @@ impl<'src> Parser<'src> {
             let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
             let base = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
             self.set_span(base, tok.span);
-            return Some(self.parse_postfix(arena, base));
+            // `Spc` takes exactly one bracketed expression, `Tab` that or nothing; the item
+            // ends at the closing bracket, so nothing is chained onto it.
+            if self.eat(TokenKind::Kw(Kw::LParen)) {
+                let width = self.parse_expr(arena, 0);
+                let args = arena.alloc(ExprNode::ArgList { args: vec![width] });
+                self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
+                return Some(arena.alloc(ExprNode::Call { func: base, args }));
+            }
+            if tok.kind == TokenKind::Kw(Kw::Spc) {
+                self.expect(TokenKind::Kw(Kw::LParen), ERR_UNEXPECTED_TOKEN);
+            }
+            return Some(base);
         }
         self.try_parse_expr(arena)
     }
@@ -3316,6 +3327,11 @@ impl<'src> Parser<'src> {
                 self.end_stmt();
                 return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Goto(LabelRef::Name(lid)) });
             }
+            // After `Error` only `Resume Next` and `GoTo` follow.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+            self.skip_line();
+            return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Disable });
         }
         // On <expr> GoTo / GoSub label-list
         let expr = self.parse_expr(arena, 0);
@@ -3399,13 +3415,29 @@ impl<'src> Parser<'src> {
             let span = self.current_span();
             self.report_expected(span, "Print or Assert");
             self.skip_line();
-            return arena.alloc(ExprNode::DebugPrint { args: Vec::new() });
+            return arena.alloc(ExprNode::DebugPrint { channel: None, args: Vec::new() });
         }
+        let is_print = self.peek().kind == TokenKind::Kw(Kw::Print);
         self.advance(); // consume Print / Assert
+        if !is_print {
+            // `Debug.Assert` takes exactly one expression.
+            let cond = self.parse_expr(arena, 0);
+            self.end_stmt();
+            return arena.alloc(ExprNode::DebugAssert { cond });
+        }
+        // `Debug.Print [#channel,] items`: a channel is followed by its comma.
+        let mut channel = None;
+        let mut list_follows = true;
+        if self.eat(TokenKind::Kw(Kw::Hash)) {
+            channel = Some(self.parse_expr(arena, 0));
+            list_follows = self.expect_comma();
+        }
         let mut args = Vec::new();
-        self.parse_print_method_items(arena, &mut args);
+        if list_follows {
+            self.parse_print_method_items(arena, &mut args);
+        }
         self.end_stmt();
-        arena.alloc(ExprNode::DebugPrint { args })
+        arena.alloc(ExprNode::DebugPrint { channel, args })
     }
 
     // ── Conditional compilation ───────────────────────────────────────────────
