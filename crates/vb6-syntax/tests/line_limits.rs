@@ -62,3 +62,31 @@ fn the_symbol_table_holds_as_many_names_as_the_compiler_does() {
     let p = parse(&types_with_members(32437));
     assert!(p.found.iter().any(|f| f.0 == 7), "{:?}", p.found.first());
 }
+
+/// `x = t + t + ...` over continued lines of `per` terms each.
+fn chain(term: &str, op: &str, n: usize, per: usize) -> String {
+    let terms = vec![term; n];
+    let lines: Vec<String> = terms.chunks(per).map(|c| c.join(&format!(" {op} "))).collect();
+    format!("Sub S()\nDim x As Long\nx = {}\nEnd Sub\n", lines.join(&format!(" {op} _\n")))
+}
+
+#[test]
+fn a_statement_whose_compiled_line_passes_15360_bytes_is_too_complex() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    // (term, operator, terms per physical line, most terms that fit)
+    for (term, op, per, fits) in [
+        ("1", "+", 250, 2552),
+        ("y", "+", 250, 2552),
+        ("40000", "+", 110, 1910),
+        ("1.5!", "+", 120, 1911),
+        ("1.5", "+", 150, 1276),
+        ("1.5@", "+", 120, 1276),
+        ("#1/1/2000#", "+", 60, 1272),
+        ("\"ab\"", "&", 120, 1911),
+        ("\"abcdefghij\"", "&", 60, 955),
+    ] {
+        assert_eq!(parse(&chain(term, op, fits, per)).found, vec![], "{term} x {fits}");
+        let found = parse(&chain(term, op, fits + 1, per)).found;
+        assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term} x {}", fits + 1);
+    }
+}

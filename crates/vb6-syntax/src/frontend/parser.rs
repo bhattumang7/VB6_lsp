@@ -323,6 +323,8 @@ pub struct Parser<'src> {
     group_depth: u32,
     /// Continuation marks joined into the current logical line.
     continuations: u32,
+    /// Continuation marks the logical line that ended last had.
+    line_continuations: u32,
     /// The argument values written with a call-site `ByVal`.
     pub by_val_args: Vec<NodeId>,
     /// The argument list about to be read follows another one directly (`f(1)(2)`).
@@ -508,6 +510,7 @@ impl<'src> Parser<'src> {
             tok_first_on_line: true,
             group_depth: 0,
             continuations: 0,
+            line_continuations: 0,
             by_val_args: Vec::new(),
             later_group: false,
             stmt_byval: None,
@@ -702,6 +705,7 @@ impl<'src> Parser<'src> {
                 self.after_line_cont = Some(next);
             }
             if tok.kind == TokenKind::Eol {
+                self.line_continuations = self.continuations;
                 self.continuations = 0;
             }
             self.tok_first_on_line = !self.phys_line_has_token;
@@ -2239,9 +2243,21 @@ impl<'src> Parser<'src> {
             self.skip_line();
             return lhs;
         }
+        let eq_span = self.current_span();
         if self.eat(TokenKind::Kw(Kw::Eq)) {
             let value = self.parse_expr(arena, 0);
+            // The statement is alone on its line when the line end follows it.
+            let alone = self.peek().kind == TokenKind::Eol && !self.colon_on_line;
+            let physical_lines = self.line_continuations as usize + 1;
             self.end_stmt();
+            // A line of compiled code holds 0x3c00 bytes.
+            if alone {
+                if let Some(size) = assignment_chain_size(arena, lhs, value, physical_lines) {
+                    if size > MAX_LINE_CODE_SIZE {
+                        self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, eq_span);
+                    }
+                }
+            }
             arena.alloc(ExprNode::Assign { target: lhs, value })
         } else if self.peek().kind == TokenKind::Kw(Kw::ColonEq) {
             // A named argument is only meaningful inside an argument list, never as a statement.
@@ -6179,6 +6195,61 @@ impl<'src> Parser<'src> {
 // 0xdee1 = 57057 "Only valid in object module"
 /// Longest identifier, in bytes.
 const MAX_IDENTIFIER_LEN: usize = 255;
+/// Most bytes of compiled code one logical line may hold.
+const MAX_LINE_CODE_SIZE: usize = 0x3c00;
+
+/// The compiled size of `target = a + b + ...` (or `&`) when every operand is a literal of
+/// one kind or every operand is a plain name, as the line's compiled code counts it: the
+/// store 6, each operand its load (a name or Integer literal 4, a Long or Single literal 6,
+/// a Double, Currency or Date literal 10, a string 4 plus its length rounded up to even),
+/// each operator 2, and 4 for each physical line. `None` for any other shape: only the
+/// shapes whose size is known exactly are measured, so a size is never overstated.
+fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physical_lines: usize) -> Option<usize> {
+    if !matches!(arena.get(target), ExprNode::NameRef { .. }) {
+        return None;
+    }
+    let mut total = 6 + 4 * physical_lines;
+    let mut kind: Option<std::mem::Discriminant<AstLit>> = None;
+    let mut names = false;
+    let mut node = value;
+    let mut leaf = |arena: &ExprArena, id: NodeId, total: &mut usize| -> Option<()> {
+        let size = match arena.get(id) {
+            ExprNode::NameRef { .. } => {
+                if kind.is_some() { return None; }
+                names = true;
+                4
+            }
+            ExprNode::Literal { lit } => {
+                let d = std::mem::discriminant(lit);
+                if names || kind.is_some_and(|k| k != d) { return None; }
+                kind = Some(d);
+                match lit {
+                    AstLit::Int(_) => 4,
+                    AstLit::Long(_) | AstLit::Single(_) => 6,
+                    AstLit::Double(_) | AstLit::Currency(_) | AstLit::Date(_) => 10,
+                    AstLit::Str(s) => 4 + s.chars().count().next_multiple_of(2),
+                    _ => return None,
+                }
+            }
+            _ => return None,
+        };
+        *total += size;
+        Some(())
+    };
+    let mut op_kind: Option<BinOpKind> = None;
+    while let ExprNode::BinOp { op, lhs, rhs } = arena.get(node) {
+        if !matches!(op, BinOpKind::Add | BinOpKind::Cat) || op_kind.is_some_and(|k| k != *op) {
+            return None;
+        }
+        op_kind = Some(*op);
+        leaf(arena, *rhs, &mut total)?;
+        total += 2;
+        node = *lhs;
+    }
+    op_kind?;
+    leaf(arena, node, &mut total)?;
+    Some(total)
+}
 /// Most `#If` blocks that may be open at once.
 const MAX_CC_NESTING: usize = 4079;
 const ERR_OUT_OF_MEMORY: u32 = 7;

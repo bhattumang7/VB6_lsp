@@ -61,6 +61,7 @@ pub const ERR_ENUM_WITHOUT_MEMBERS: u32 = 0xdf43; // 57155
 pub const ERR_IDENTIFIER_TOO_LONG: u32 = 0x9c6d; // 40045
 pub const ERR_TOO_MANY_DIMENSIONS: u32 = 0x9c80; // 40064
 pub const ERR_TOO_MANY_ARGUMENTS: u32 = 0x9c81; // 40065
+pub const ERR_STATEMENT_TOO_COMPLEX: u32 = 0x9c6e; // 40046
 pub const ERR_TOO_MANY_LINE_CONTINUATIONS: u32 = 0x9c00; // 40192
 pub const ERR_INVALID_FIXED_STRING_LENGTH: u32 = 0x9cb0; // 40112
 pub const ERR_MUST_BE_FIRST_ON_LINE: u32 = 0x9c71; // 40049
@@ -164,6 +165,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         ERR_IDENTIFIER_TOO_LONG => "Identifier too long",
         ERR_TOO_MANY_DIMENSIONS => "Too many dimensions",
         ERR_TOO_MANY_ARGUMENTS => "Too many arguments",
+        ERR_STATEMENT_TOO_COMPLEX => "Statement too complex",
         ERR_TOO_MANY_LINE_CONTINUATIONS => "Too many line continuations",
         ERR_INVALID_ORDINAL => "Invalid ordinal",
         ERR_INVALID_FIXED_STRING_LENGTH => "Invalid length for fixed-length string",
