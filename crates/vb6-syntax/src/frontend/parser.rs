@@ -321,6 +321,8 @@ pub struct Parser<'src> {
     /// Depth of the argument lists being read, and the first `ByVal` and first named
     /// argument met at depth one since the statement began.
     group_depth: u32,
+    /// Continuation marks joined into the current logical line.
+    continuations: u32,
     /// The argument values written with a call-site `ByVal`.
     pub by_val_args: Vec<NodeId>,
     /// The argument list about to be read follows another one directly (`f(1)(2)`).
@@ -505,6 +507,7 @@ impl<'src> Parser<'src> {
             phys_line_has_token: false,
             tok_first_on_line: true,
             group_depth: 0,
+            continuations: 0,
             by_val_args: Vec::new(),
             later_group: false,
             stmt_byval: None,
@@ -685,9 +688,17 @@ impl<'src> Parser<'src> {
             if tok.kind == TokenKind::Kw(Kw::LineCont) {
                 let next = self.scanner.next_token();
                 if next.kind == TokenKind::Eol {
+                    // A logical line joins at most 25 physical ones.
+                    self.continuations += 1;
+                    if self.continuations == 25 {
+                        self.diagnostics.push(ERR_TOO_MANY_LINE_CONTINUATIONS, tok.span);
+                    }
                     continue;
                 }
                 self.after_line_cont = Some(next);
+            }
+            if tok.kind == TokenKind::Eol {
+                self.continuations = 0;
             }
             self.tok_first_on_line = !self.phys_line_has_token;
             self.phys_line_has_token = !matches!(tok.kind, TokenKind::Eol);

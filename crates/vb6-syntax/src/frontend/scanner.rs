@@ -657,7 +657,7 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
 pub struct Scanner<'a> {
     ctx: &'a mut ScannerContext,
     /// Source bytes for one logical statement.
-    src: &'a [u8],
+    src: std::borrow::Cow<'a, [u8]>,
     /// Current byte offset into `src`.
     pos: usize,
     /// Scratch buffer for identifier and literal accumulation.
@@ -681,7 +681,7 @@ impl<'a> Scanner<'a> {
     /// Create a scanner for `src`, borrowing `ctx` for symbol interning.
     pub fn new(ctx: &'a mut ScannerContext, src: &'a [u8]) -> Self {
         let src = &src[..without_open_continuation(src)];
-        Self { ctx, src, pos: 0, tok_buf: String::with_capacity(64), after_member_operator: false }
+        Self { ctx, src: cut_long_lines(src), pos: 0, tok_buf: String::with_capacity(64), after_member_operator: false }
     }
 
     /// Return the next token from the source, advancing the position.
@@ -847,7 +847,10 @@ impl<'a> Scanner<'a> {
         self.tok_buf.clear();
         loop {
             match self.advance() {
-                None | Some(0x00) => break,
+                None => break,
+                // A string cut off by a NUL (the end of what is read of a long line) is not
+                // closed in time.
+                Some(0x00) => return Token::error(self.span(start)),
                 Some(b'\r') | Some(b'\n') => {
                     // A string stops at the end of its line. When the line ends in a
                     // continuation mark, the string stops before the blanks that lead to
@@ -1450,6 +1453,27 @@ fn currency_units(text: &str) -> Option<i64> {
     i64::try_from(units).ok()
 }
 
+
+/// Longest physical line the scanner reads, in bytes; the rest of a longer line is not seen.
+const MAX_LINE_LEN: usize = 1023;
+
+/// `src` with the 1024th byte of every longer line turned into a NUL, which ends the text of
+/// the line there. Offsets are unchanged.
+fn cut_long_lines(src: &[u8]) -> std::borrow::Cow<'_, [u8]> {
+    let mut out: Option<Vec<u8>> = None;
+    let mut line_start = 0;
+    for (i, b) in src.iter().enumerate() {
+        if matches!(b, b'\r' | b'\n') {
+            line_start = i + 1;
+        } else if i - line_start == MAX_LINE_LEN {
+            out.get_or_insert_with(|| src.to_vec())[i] = 0;
+        }
+    }
+    match out {
+        Some(v) => std::borrow::Cow::Owned(v),
+        None => std::borrow::Cow::Borrowed(src),
+    }
+}
 
 /// The length of `src` without its last logical line when that line ends in a continuation
 /// mark with nothing after it: a line continued into the end of the text is not read at all.
