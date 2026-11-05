@@ -8,6 +8,7 @@ pub mod ast;
 pub mod cond_compile;
 pub mod diagnostics;
 pub mod keyword_table;
+pub mod line_size;
 pub mod parser;
 pub mod scanner;
 pub mod token;

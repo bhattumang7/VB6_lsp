@@ -7,6 +7,7 @@
 //! * Process-global scanner state → owned `Scanner` threaded via `Parser`.
 //! * List chain nodes → `Vec<NodeId>` in typed `ArgList`/`Block` variants.
 
+use crate::frontend::line_size::{self, cost, MAX_LINE_CODE_SIZE};
 use crate::frontend::cond_compile::{CcOp, CcResult, CcValue, ERR_VARIABLE_NOT_DEFINED as CC_ERR_VARIABLE_NOT_DEFINED};
 
 /// Binding power of the operand of `Not` and of a sign in a directive expression.
@@ -1101,7 +1102,20 @@ impl<'src> Parser<'src> {
             return;
         }
         let lines = self.line_continuations as usize + 1;
-        if expression_chain_size(arena, condition, lines).is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
+        if line_size::expression_size(arena, condition, 0, lines).is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, at);
+        }
+    }
+
+    /// Reports a line, alone and ending next, whose statement costs as much as an assignment's
+    /// store plus `parts` and takes the line's compiled code past its limit.
+    fn check_parts_size(&mut self, parts: Option<usize>, at: Span) {
+        let Some(parts) = parts else { return };
+        if self.peek().kind != TokenKind::Eol || self.colon_on_line {
+            return;
+        }
+        let lines = self.line_continuations as usize + 1;
+        if cost::ASSIGNMENT + cost::PER_PHYSICAL_LINE * lines + parts > MAX_LINE_CODE_SIZE {
             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, at);
         }
     }
@@ -1120,20 +1134,17 @@ impl<'src> Parser<'src> {
             return false;
         }
         let lines = self.line_continuations as usize + 1;
-        // Every item's own bytes are its size as the sole item without the statement's 6 and
-        // the lines' bytes.
-        let mut total = 6 + 4 * lines + extra;
+        let mut total = cost::ASSIGNMENT + cost::PER_PHYSICAL_LINE * lines + extra;
         for (i, item) in items.iter().enumerate() {
-            // `Spc(n)` and `Tab(n)` cost 2 more than `n`.
             let (expr, wrapper) = match arena.get(*item) {
                 ExprNode::Call { func, args } if self.is_spc_or_tab(arena, *func) => match arena.get(*args) {
-                    ExprNode::ArgList { args } if args.len() == 1 => (args[0], 2),
+                    ExprNode::ArgList { args } if args.len() == 1 => (args[0], cost::SPC_OR_TAB),
                     _ => return false,
                 },
                 _ => (*item, 0),
             };
-            let Some(size) = expression_chain_size(arena, expr, 0) else { return false };
-            total += size - 6 + wrapper + if i > 0 { 2 } else { 0 };
+            let Some(size) = line_size::expression_part(arena, expr) else { return false };
+            total += size + wrapper + if i > 0 { cost::ITEM_SEPARATOR } else { 0 };
         }
         total > MAX_LINE_CODE_SIZE
     }
@@ -1155,7 +1166,7 @@ impl<'src> Parser<'src> {
             return;
         }
         let lines = self.line_continuations as usize + 1;
-        if expression_chain_size(arena, value, lines).is_some_and(|size| size + extra > MAX_LINE_CODE_SIZE) {
+        if line_size::expression_size(arena, value, extra, lines).is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, at);
         }
     }
@@ -2340,16 +2351,16 @@ impl<'src> Parser<'src> {
                 let (before, valid) = (self.line_cost, self.line_cost_valid);
                 let lines = self.line_continuations as usize + 1;
                 if valid {
-                    if let Some(size) = assignment_chain_size(arena, lhs, value, lines) {
+                    if let Some(size) = line_size::assignment_size(arena, lhs, value, lines) {
                         if before + size > MAX_LINE_CODE_SIZE {
                             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, eq_span);
                         }
                     }
                 }
             } else if self.peek().kind == TokenKind::Kw(Kw::Colon) {
-                match assignment_chain_size(arena, lhs, value, 0) {
+                match line_size::assignment_size(arena, lhs, value, 0) {
                     Some(size) => {
-                        self.line_cost += size + 2;
+                        self.line_cost += size + cost::OPERATOR;
                         self.stmt_measured = true;
                     }
                     None => self.line_cost_valid = false,
@@ -2938,20 +2949,16 @@ impl<'src> Parser<'src> {
         let step = if self.eat(TokenKind::Kw(Kw::Step)) {
             Some(self.parse_expr(arena, 0))
         } else { None };
-        // `For i = a To b` costs the variable, the two bounds and 2 for its own code, with no
-        // step given.
-        if step.is_none()
-            && matches!(arena.get(var), ExprNode::NameRef { .. })
-            && self.peek().kind == TokenKind::Eol
-            && !self.colon_on_line
-        {
-            let lines = self.line_continuations as usize + 1;
-            let size = expression_chain_size(arena, start, 0)
-                .zip(expression_chain_size(arena, end, 0))
-                .map(|(a, b)| 6 + 4 * lines + 4 + 2 + (a - 6) + (b - 6));
-            if size.is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
-                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, var_span);
-            }
+        // `For i = a To b [Step c]` costs the variable, the bounds and the step, and its own code.
+        if matches!(arena.get(var), ExprNode::NameRef { .. }) {
+            let parts = line_size::expression_part(arena, start).zip(line_size::expression_part(arena, end)).and_then(|(a, b)| {
+                let step_part = match step {
+                    Some(step) => line_size::expression_part(arena, step)?,
+                    None => 0,
+                };
+                Some(cost::NAME_OR_INTEGER + cost::FOR + a + b + step_part)
+            });
+            self.check_parts_size(parts, var_span);
         }
         self.end_stmt();
         self.blocks.push(Block::For(var_sym));
@@ -3351,14 +3358,20 @@ impl<'src> Parser<'src> {
         } else {
             let case_span = self.current_span();
             let test = self.parse_case_test_expr(arena);
-            // A `Case` of one plain expression costs what a condition does.
+            // A `Case` line costs what a condition does: each test is its expression, a range
+            // adds its operator and the tests are separated.
             if let ExprNode::ArgList { args } = arena.get(test) {
-                if let [only] = args.as_slice() {
-                    if !matches!(arena.get(*only), ExprNode::CaseIs { .. } | ExprNode::RangeTo { .. }) {
-                        let only = *only;
-                        self.check_condition_size(arena, only, case_span);
-                    }
-                }
+                let parts: Option<usize> = args.iter().enumerate().try_fold(0, |total, (i, arg)| {
+                    let part = match arena.get(*arg) {
+                        ExprNode::CaseIs { rhs, .. } => line_size::expression_part(arena, *rhs)?,
+                        ExprNode::RangeTo { lo, hi } => {
+                            line_size::expression_part(arena, *lo)? + line_size::expression_part(arena, *hi)? + cost::OPERATOR
+                        }
+                        _ => line_size::expression_part(arena, *arg)?,
+                    };
+                    Some(total + part + if i > 0 { cost::ITEM_SEPARATOR } else { 0 })
+                });
+                self.check_parts_size(parts, case_span);
             }
             self.end_stmt();
             let body = self.parse_block(arena);
@@ -3725,7 +3738,7 @@ impl<'src> Parser<'src> {
             self.parse_print_method_items(arena, &mut args);
         }
         // `Debug.Print` of expressions costs 2 more than an assignment of the first.
-        if channel.is_none() && self.output_list_too_complex(arena, &args, 2) {
+        if channel.is_none() && self.output_list_too_complex(arena, &args, cost::DEBUG_PRINT) {
             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, debug_span);
         }
         self.end_stmt();
@@ -4573,13 +4586,13 @@ impl<'src> Parser<'src> {
         // The clauses of an `Open` of a path expression cost 8 more than an assignment of it.
         let channel_is_simple =
             matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
-        if channel_is_simple && args.len() == 1 && self.output_list_too_complex(arena, &args, 8) {
+        if channel_is_simple && args.len() == 1 && self.output_list_too_complex(arena, &args, cost::OPEN) {
             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, open_span);
         }
         // With `Len = n` the clauses and the path cost 10 more than assigning `n` when the
         // path is a name, and the path's own bytes differ from a name's by as much as its size.
         if channel_is_simple && args.len() == 2 && matches!(arena.get(args[0]), ExprNode::NameRef { .. }) {
-            self.length_clause_too_complex(arena, args[1], 10, open_span);
+            self.length_clause_too_complex(arena, args[1], cost::OPEN_WITH_LENGTH, open_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt {
@@ -4623,8 +4636,8 @@ impl<'src> Parser<'src> {
         }
         // `Print #n, expr` and `Write #n, expr` cost 2 more than an assignment of the first
         // expression, and the channel's own expression.
-        if let Some(channel_size) = expression_chain_size(arena, ch, 0) {
-            if self.output_list_too_complex(arena, &args, 2 + channel_size - 6) {
+        if let Some(channel_size) = line_size::expression_part(arena, ch) {
+            if self.output_list_too_complex(arena, &args, cost::FILE_OUTPUT + channel_size) {
                 self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, first_span);
             }
         }
@@ -6354,64 +6367,6 @@ impl<'src> Parser<'src> {
 // 0xdee1 = 57057 "Only valid in object module"
 /// Longest identifier, in bytes.
 const MAX_IDENTIFIER_LEN: usize = 255;
-/// Most bytes of compiled code one logical line may hold.
-const MAX_LINE_CODE_SIZE: usize = 0x3c00;
-
-/// The compiled size of `target = <expression>` as the line's compiled code counts it: the
-/// store 6, each operand its load (a name or Integer literal 4, a Long or Single literal 6, a
-/// Double, Currency or Date literal 10, a string 4 plus its length rounded up to even), each
-/// binary operator 2, and 4 for each physical line; the kinds and operators may be mixed, as
-/// they cost nothing more. A sign change or `Not` or a bracket pair costs 2 more than the
-/// operand it holds, measured for a sign change on Integer and Double literals and names, for
-/// `Not` and brackets on names. `None` for any other shape: only the shapes whose size is
-/// known exactly are measured, so a size is never overstated.
-fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physical_lines: usize) -> Option<usize> {
-    if !matches!(arena.get(target), ExprNode::NameRef { .. }) {
-        return None;
-    }
-    expression_chain_size(arena, value, physical_lines)
-}
-
-/// The compiled size of a line that is a single expression with the shape
-/// [`assignment_chain_size`] measures: the same for `If`, `While`, `Do While`, `Do Until` and
-/// `Select Case` lines, whose own code costs what an assignment's store does.
-fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize) -> Option<usize> {
-    let mut total = 6 + 4 * physical_lines;
-    // A sign, `Not` or bracket pair costs 2 more than what it holds.
-    let mut stack = vec![value];
-    while let Some(id) = stack.pop() {
-        match arena.get(id) {
-            ExprNode::BinOp { op, lhs, rhs } => {
-                if matches!(op, BinOpKind::Not) {
-                    return None;
-                }
-                total += 2;
-                stack.push(*lhs);
-                stack.push(*rhs);
-            }
-            ExprNode::UnOp { op: UnOpKind::Neg | UnOpKind::Not, operand } => {
-                total += 2;
-                stack.push(*operand);
-            }
-            ExprNode::Paren { inner } => {
-                total += 2;
-                stack.push(*inner);
-            }
-            ExprNode::NameRef { .. } => total += 4,
-            ExprNode::Literal { lit } => match lit {
-                AstLit::Int(_) => total += 4,
-                AstLit::Long(_) => total += 6,
-                AstLit::Double(_) => total += 10,
-                AstLit::Single(_) => total += 6,
-                AstLit::Currency(_) | AstLit::Date(_) => total += 10,
-                AstLit::Str(s) => total += 4 + s.chars().count().next_multiple_of(2),
-                _ => return None,
-            },
-            _ => return None,
-        }
-    }
-    Some(total)
-}
 /// Most `#If` blocks that may be open at once.
 const MAX_CC_NESTING: usize = 4079;
 const ERR_OUT_OF_MEMORY: u32 = 7;

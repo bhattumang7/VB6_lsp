@@ -371,3 +371,29 @@ fn for_elseif_and_case_lines_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
     }
 }
+
+#[test]
+fn step_and_the_other_forms_of_case_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (statement before the expression, after it, terms per line, most terms that fit)
+    for (before, after, per, fits) in [
+        ("For i = ", " To 5 Step 1\nNext i", 150, 2545),
+        ("For i = ", " To 5 Step 1\nNext i", 170, 2547),
+        ("For i = 1 To 5 Step ", "\nNext i", 150, 2545),
+        ("For i = 1 To 5 Step ", "\nNext i", 170, 2547),
+        ("Select Case y\nCase Is > ", "\nEnd Select", 150, 2548),
+        ("Select Case y\nCase Is > ", "\nEnd Select", 170, 2549),
+        ("Select Case y\nCase 1 To ", "\nEnd Select", 150, 2547),
+        ("Select Case y\nCase 1 To ", "\nEnd Select", 170, 2548),
+        ("Select Case y\nCase 2, ", "\nEnd Select", 150, 2547),
+        ("Select Case y\nCase ", ", 2\nEnd Select", 170, 2548),
+    ] {
+        let src = |n| format!("Sub S()\n{before}{}{after}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{before:?} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
+    }
+}
