@@ -7,7 +7,11 @@
 //! * Process-global scanner state → owned `Scanner` threaded via `Parser`.
 //! * List chain nodes → `Vec<NodeId>` in typed `ArgList`/`Block` variants.
 
-use crate::frontend::cond_compile::{CcOp, CcValue};
+use crate::frontend::cond_compile::{CcOp, CcResult, CcValue, ERR_VARIABLE_NOT_DEFINED as CC_ERR_VARIABLE_NOT_DEFINED};
+
+/// Binding power of the operand of `Not` and of a sign in a directive expression.
+const CC_NOT_BP: u8 = 10;
+const CC_SIGN_BP: u8 = 26;
 use crate::frontend::ast::{
     AstLit, BinOpKind, DoKind, ExitKind, ExprArena, ExprNode, FileIoKind, LabelRef, NodeId,
     NodeSpans, OnErrorKind, ProcKind, ResumeTarget, UnOpKind,
@@ -483,11 +487,7 @@ impl<'src> Parser<'src> {
             cc_pending: None,
             cc_module_consts: Vec::new(),
             cc_defs: vec![
-                ("win32".into(), CcValue::TRUE),
-                ("win64".into(), CcValue::FALSE),
-                ("win16".into(), CcValue::FALSE),
-                ("vba6".into(), CcValue::TRUE),
-                ("vba7".into(), CcValue::FALSE),
+                ("win32".into(), CcValue::Integer(-1)),
             ],
         }
     }
@@ -3574,12 +3574,21 @@ impl<'src> Parser<'src> {
 
     /// `#If` / `#ElseIf` condition: evaluated only when the branch can still
     /// be taken; the expression is followed by `Then`.
-    fn cc_condition(&mut self, evaluate: bool, read_anyway: bool) -> bool {
+    fn cc_condition(&mut self, evaluate: bool, read_anyway: bool, span: Span) -> bool {
         if !evaluate && !read_anyway {
             self.cc_skip_line();
             return false;
         }
-        let value = self.eval_cc_expr(0).is_true() && evaluate;
+        let truth = self.eval_cc_expr(0).and_then(|v| v.is_true());
+        let value = match truth {
+            Ok(b) => b && evaluate,
+            Err(code) => {
+                // The expression raised an error: it is reported on the directive.
+                self.diagnostics.push(code, span);
+                self.cc_skip_line();
+                return false;
+            }
+        };
         if self.cc_peek().kind == TokenKind::Kw(Kw::Then) {
             self.cc_advance();
             self.cc_end_of_directive();
@@ -3620,7 +3629,14 @@ impl<'src> Parser<'src> {
                         let span = self.cc_peek().span;
                         self.diagnostics.push(ERR_EXPECTED_EQ, span);
                     }
-                    let value = self.eval_cc_expr(0);
+                    let value = match self.eval_cc_expr(0) {
+                        Ok(v) => v,
+                        Err(code) => {
+                            self.diagnostics.push(code, span);
+                            self.cc_skip_line();
+                            return;
+                        }
+                    };
                     // A `#Const` is defined whether or not its block is active.
                     if self.cc_module_consts.contains(&name) {
                         self.diagnostics.push(ERR_CC_DUPLICATE_DEFINITION, span);
@@ -3633,7 +3649,7 @@ impl<'src> Parser<'src> {
             }
             Kw::CcIf => {
                 let parent_active = self.cc_active();
-                let taken = self.cc_condition(parent_active, false);
+                let taken = self.cc_condition(parent_active, false, span);
                 self.cc_stack.push(CcFrame { open: span, else_seen: false, parent_active, active: taken, taken });
             }
             Kw::CcElseIf => {
@@ -3650,7 +3666,7 @@ impl<'src> Parser<'src> {
                 }
                 let evaluate = frame.parent_active && !frame.taken;
                 // A branch that cannot be taken is still read as a directive.
-                let cond = self.cc_condition(evaluate, frame.parent_active);
+                let cond = self.cc_condition(evaluate, frame.parent_active, span);
                 let top = self.cc_stack.last_mut().unwrap();
                 top.active = cond;
                 top.taken |= cond;
@@ -3729,113 +3745,135 @@ impl<'src> Parser<'src> {
 
     /// Evaluate a CC prefix (unary) operator, or fall through to a primary.
     /// `^` binds tighter than a sign, so `-2 ^ 2` is `-(2 ^ 2)`.
-    fn eval_cc_prefix(&mut self) -> CcValue {
+    fn eval_cc_prefix(&mut self) -> CcResult {
         match self.cc_peek().kind.clone() {
             TokenKind::Kw(Kw::Not) => {
                 self.cc_advance();
-                self.eval_cc_expr(6).not()
+                self.eval_cc_expr(CC_NOT_BP)?.not()
             }
             TokenKind::Kw(Kw::Minus) => {
                 self.cc_advance();
-                self.eval_cc_expr(20).negate()
+                self.eval_cc_expr(CC_SIGN_BP)?.negate()
             }
             TokenKind::Kw(Kw::Plus) => {
                 self.cc_advance();
-                self.eval_cc_expr(20)
+                self.eval_cc_expr(CC_SIGN_BP)?.plus()
             }
             _ => self.eval_cc_primary(),
         }
     }
 
-    /// Binding powers + operator for a CC infix operator, or `None`.
+    /// Binding powers + operator for a CC infix operator, or `None`. From the loosest:
+    /// `Imp`, `Eqv`, `Xor`, `Or`, `And`, (`Not`), comparisons, `&`, `+ -`, `Mod`, `\`,
+    /// `* /`, `^`.
     fn cc_infix_op(&mut self) -> Option<(u8, u8, CcOp)> {
         let entry = match self.cc_peek().kind {
-            TokenKind::Kw(Kw::Caret)      => (22, 23, CcOp::Pow),
-            TokenKind::Kw(Kw::Star)       => (18, 19, CcOp::Mul),
-            TokenKind::Kw(Kw::Slash)      => (18, 19, CcOp::Div),
-            TokenKind::Kw(Kw::Backslash)  => (16, 17, CcOp::IDiv),
-            TokenKind::Kw(Kw::Mod)        => (14, 15, CcOp::Mod),
-            TokenKind::Kw(Kw::Plus)       => (12, 13, CcOp::Add),
-            TokenKind::Kw(Kw::Minus)      => (12, 13, CcOp::Sub),
-            TokenKind::Kw(Kw::Amp)        => (10, 11, CcOp::Cat),
-            TokenKind::Kw(Kw::Eq)         => (8,  9,  CcOp::Eq),
-            TokenKind::Kw(Kw::Ne)         => (8,  9,  CcOp::Ne),
-            TokenKind::Kw(Kw::Lt)         => (8,  9,  CcOp::Lt),
-            TokenKind::Kw(Kw::Gt)         => (8,  9,  CcOp::Gt),
-            TokenKind::Kw(Kw::Le)         => (8,  9,  CcOp::Le),
-            TokenKind::Kw(Kw::Ge)         => (8,  9,  CcOp::Ge),
-            TokenKind::Kw(Kw::And)        => (6,  7,  CcOp::And),
-            TokenKind::Kw(Kw::Or)         => (4,  5,  CcOp::Or),
-            TokenKind::Kw(Kw::Xor)        => (4,  5,  CcOp::Xor),
-            TokenKind::Kw(Kw::Eqv)        => (2,  3,  CcOp::Eqv),
             TokenKind::Kw(Kw::Imp)        => (2,  3,  CcOp::Imp),
+            TokenKind::Kw(Kw::Eqv)        => (4,  5,  CcOp::Eqv),
+            TokenKind::Kw(Kw::Xor)        => (6,  7,  CcOp::Xor),
+            TokenKind::Kw(Kw::Or)         => (8,  9,  CcOp::Or),
+            TokenKind::Kw(Kw::And)        => (10, 11, CcOp::And),
+            TokenKind::Kw(Kw::Eq)         => (14, 15, CcOp::Eq),
+            TokenKind::Kw(Kw::Ne)         => (14, 15, CcOp::Ne),
+            TokenKind::Kw(Kw::Lt)         => (14, 15, CcOp::Lt),
+            TokenKind::Kw(Kw::Gt)         => (14, 15, CcOp::Gt),
+            TokenKind::Kw(Kw::Le)         => (14, 15, CcOp::Le),
+            TokenKind::Kw(Kw::Ge)         => (14, 15, CcOp::Ge),
+            TokenKind::Kw(Kw::Like)       => (14, 15, CcOp::Like),
+            TokenKind::Kw(Kw::Is)         => (14, 15, CcOp::Is),
+            TokenKind::Kw(Kw::Amp)        => (16, 17, CcOp::Cat),
+            TokenKind::Kw(Kw::Plus)       => (18, 19, CcOp::Add),
+            TokenKind::Kw(Kw::Minus)      => (18, 19, CcOp::Sub),
+            TokenKind::Kw(Kw::Mod)        => (20, 21, CcOp::Mod),
+            TokenKind::Kw(Kw::Backslash)  => (22, 23, CcOp::IDiv),
+            TokenKind::Kw(Kw::Star)       => (24, 25, CcOp::Mul),
+            TokenKind::Kw(Kw::Slash)      => (24, 25, CcOp::Div),
+            TokenKind::Kw(Kw::Caret)      => (28, 29, CcOp::Pow),
             _ => return None,
         };
         Some(entry)
     }
 
     /// Evaluate a CC expression.
-    fn eval_cc_expr(&mut self, min_bp: u8) -> CcValue {
-        let mut lhs = self.eval_cc_prefix();
+    fn eval_cc_expr(&mut self, min_bp: u8) -> CcResult {
+        let mut lhs = self.eval_cc_prefix()?;
         loop {
             let Some((l_bp, r_bp, op)) = self.cc_infix_op() else { break };
             if l_bp <= min_bp { break; }
             self.cc_advance();
-            let rhs = self.eval_cc_expr(r_bp);
-            lhs = CcValue::binary(op, &lhs, &rhs);
+            let rhs = self.eval_cc_expr(r_bp)?;
+            lhs = CcValue::binary(op, &lhs, &rhs)?;
         }
-        lhs
+        Ok(lhs)
     }
 
-    fn eval_cc_primary(&mut self) -> CcValue {
+    /// Whether the word can stand as a name in a directive: an identifier, or a keyword
+    /// that is not reserved (`Me`, `Date` and the like are names too).
+    fn cc_word_is_name(&mut self, tok: &Token) -> bool {
+        match tok.kind {
+            TokenKind::Ident => true,
+            TokenKind::Kw(_) => tok.sym.is_some_and(|sym| {
+                let sym = sym as u32;
+                let name = self.scanner.sym_name(sym);
+                !self.scanner.is_reserved(sym)
+                    || ["Me", "Date", "Date$", "DoEvents", "CDec"].iter().any(|n| name.eq_ignore_ascii_case(n))
+            }),
+            _ => false,
+        }
+    }
+
+    fn eval_cc_primary(&mut self) -> CcResult {
         use crate::frontend::token::Lit;
         match self.cc_peek().kind.clone() {
             TokenKind::Kw(Kw::LParen) => {
                 self.cc_advance();
-                let v = self.eval_cc_expr(0);
+                let v = self.eval_cc_expr(0)?;
                 if self.cc_peek().kind == TokenKind::Kw(Kw::RParen) {
                     self.cc_advance();
                 } else {
                     let span = self.cc_peek().span;
                     self.diagnostics.push(ERR_EXPECTED_RPAREN, span);
                 }
-                v
+                Ok(v)
             }
             TokenKind::IntLit | TokenKind::LongLit => {
                 let tok = self.cc_advance();
-                match tok.lit {
-                    Some(Lit::Int(n)) | Some(Lit::Long(n)) => CcValue::Int(n),
-                    _ => CcValue::Int(0),
-                }
+                Ok(match tok.lit {
+                    Some(Lit::Int(n)) | Some(Lit::Long(n)) => match i16::try_from(n) {
+                        Ok(i) if tok.kind == TokenKind::IntLit => CcValue::Integer(i),
+                        _ => CcValue::Long(n),
+                    },
+                    _ => CcValue::Integer(0),
+                })
             }
             TokenKind::SngLit | TokenKind::DblLit | TokenKind::DateLit => {
                 let tok = self.cc_advance();
-                match tok.lit {
-                    Some(Lit::Single(f)) => CcValue::Double(f as f64),
-                    Some(Lit::Double(d)) | Some(Lit::Date(d)) => CcValue::Double(d),
-                    _ => CcValue::Int(0),
-                }
+                Ok(match tok.lit {
+                    Some(Lit::Single(f)) => CcValue::Single(f),
+                    Some(Lit::Double(d)) => CcValue::Double(d),
+                    Some(Lit::Date(d)) => CcValue::Date(d),
+                    _ => CcValue::Integer(0),
+                })
             }
             TokenKind::CurLit => {
                 let tok = self.cc_advance();
-                match tok.lit {
-                    Some(Lit::Currency(c)) => CcValue::Double(c as f64 / 10_000.0),
-                    _ => CcValue::Int(0),
-                }
+                Ok(match tok.lit {
+                    Some(Lit::Currency(c)) => CcValue::Currency(c),
+                    _ => CcValue::Integer(0),
+                })
             }
             TokenKind::StrLit => {
                 let tok = self.cc_advance();
-                match tok.lit {
+                Ok(match tok.lit {
                     Some(Lit::Str(s)) => CcValue::Str(s.to_string()),
                     _ => CcValue::Str(String::new()),
-                }
+                })
             }
-            TokenKind::Kw(Kw::True)  => { self.cc_advance(); CcValue::TRUE }
-            TokenKind::Kw(Kw::False) => { self.cc_advance(); CcValue::FALSE }
-            TokenKind::Kw(Kw::Empty) | TokenKind::Kw(Kw::Null) => {
-                self.cc_advance();
-                CcValue::Empty
-            }
+            TokenKind::Kw(Kw::True)  => { self.cc_advance(); Ok(CcValue::TRUE) }
+            TokenKind::Kw(Kw::False) => { self.cc_advance(); Ok(CcValue::FALSE) }
+            TokenKind::Kw(Kw::Empty) => { self.cc_advance(); Ok(CcValue::Empty) }
+            TokenKind::Kw(Kw::Null) => { self.cc_advance(); Ok(CcValue::Null) }
+            TokenKind::Kw(Kw::Nothing) => { self.cc_advance(); Ok(CcValue::Nothing) }
             TokenKind::Eol
             | TokenKind::Eof
             | TokenKind::Kw(Kw::Then)
@@ -3847,18 +3885,44 @@ impl<'src> Parser<'src> {
                 // ends the directive.
                 let span = self.cc_peek().span;
                 self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                CcValue::Empty
+                Ok(CcValue::Empty)
             }
             _ => {
                 let tok = self.cc_advance();
-                if tok.kind == TokenKind::Ident || matches!(tok.kind, TokenKind::Kw(_)) {
-                    if let Some(id) = tok.sym {
-                        let name = self.scanner.sym_name(id as u32).to_ascii_lowercase();
-                        return self.cc_lookup(&name);
+                let is_word = tok.kind == TokenKind::Ident || matches!(tok.kind, TokenKind::Kw(_));
+                let Some(id) = tok.sym.filter(|_| is_word) else {
+                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
+                    return Ok(CcValue::Empty);
+                };
+                let name = self.scanner.sym_name(id as u32).to_string();
+                if self.cc_peek().kind == TokenKind::Kw(Kw::LParen) {
+                    // A call: only the built-in conversion and numeric functions exist.
+                    self.cc_advance();
+                    let mut args = Vec::new();
+                    if self.cc_peek().kind != TokenKind::Kw(Kw::RParen) {
+                        loop {
+                            args.push(self.eval_cc_expr(0)?);
+                            if self.cc_peek().kind == TokenKind::Kw(Kw::Comma) {
+                                self.cc_advance();
+                            } else {
+                                break;
+                            }
+                        }
                     }
+                    if self.cc_peek().kind == TokenKind::Kw(Kw::RParen) {
+                        self.cc_advance();
+                    } else {
+                        let span = self.cc_peek().span;
+                        self.diagnostics.push(ERR_EXPECTED_RPAREN, span);
+                    }
+                    return CcValue::call(&name, &args).unwrap_or(Err(CC_ERR_VARIABLE_NOT_DEFINED));
                 }
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
-                CcValue::Empty
+                if CcValue::is_function_name(&name) || !self.cc_word_is_name(&tok) {
+                    // A function name without its brackets, or a reserved word.
+                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
+                    return Ok(CcValue::Empty);
+                }
+                Ok(self.cc_lookup(&name.to_ascii_lowercase()))
             }
         }
     }

@@ -61,7 +61,8 @@ fn string_comparisons() {
     no("\"b\" < \"a\"");
     yes("\"b\" > \"a\"");
     yes("\"abc\" = \"abc\"");
-    no("\"A\" = \"a\"");
+    yes("\"A\" = \"a\"");
+    no("\"B\" < \"a\"");
     yes("\"1\" = 1");
 }
 
@@ -228,12 +229,12 @@ fn argument_text_is_split_and_typed() {
     assert_eq!(
         parse_cond_comp_args("A = 1 : B = \"x:y\" : C=2.5:D : E = \"say \"\"hi\"\"\" : F = -3"),
         vec![
-            ("a".to_string(), CcValue::Int(1)),
+            ("a".to_string(), CcValue::Integer(1)),
             ("b".to_string(), CcValue::Str("x:y".to_string())),
             ("c".to_string(), CcValue::Double(2.5)),
             ("d".to_string(), CcValue::Empty),
             ("e".to_string(), CcValue::Str("say \"hi\"".to_string())),
-            ("f".to_string(), CcValue::Int(-3)),
+            ("f".to_string(), CcValue::Integer(-3)),
         ]
     );
     assert_eq!(parse_cond_comp_args(""), vec![]);
