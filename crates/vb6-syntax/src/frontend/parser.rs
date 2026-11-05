@@ -2938,6 +2938,21 @@ impl<'src> Parser<'src> {
         let step = if self.eat(TokenKind::Kw(Kw::Step)) {
             Some(self.parse_expr(arena, 0))
         } else { None };
+        // `For i = a To b` costs the variable, the two bounds and 2 for its own code, with no
+        // step given.
+        if step.is_none()
+            && matches!(arena.get(var), ExprNode::NameRef { .. })
+            && self.peek().kind == TokenKind::Eol
+            && !self.colon_on_line
+        {
+            let lines = self.line_continuations as usize + 1;
+            let size = expression_chain_size(arena, start, 0)
+                .zip(expression_chain_size(arena, end, 0))
+                .map(|(a, b)| 6 + 4 * lines + 4 + 2 + (a - 6) + (b - 6));
+            if size.is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
+                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, var_span);
+            }
+        }
         self.end_stmt();
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
@@ -3256,9 +3271,11 @@ impl<'src> Parser<'src> {
                     let span = self.current_span();
                     self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
                 }
+                let elseif_span = self.current_span();
                 self.advance();
                 let cond = self.parse_expr(arena, 0);
                 self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
+                self.check_condition_size(arena, cond, elseif_span);
                 if self.peek().kind == TokenKind::Kw(Kw::Rem) {
                     let span = self.current_span();
                     self.diagnostics.push(ERR_SYNTAX_ERROR, span);
@@ -3332,7 +3349,17 @@ impl<'src> Parser<'src> {
             let body = self.parse_block(arena);
             arena.alloc(ExprNode::CaseElse { body })
         } else {
+            let case_span = self.current_span();
             let test = self.parse_case_test_expr(arena);
+            // A `Case` of one plain expression costs what a condition does.
+            if let ExprNode::ArgList { args } = arena.get(test) {
+                if let [only] = args.as_slice() {
+                    if !matches!(arena.get(*only), ExprNode::CaseIs { .. } | ExprNode::RangeTo { .. }) {
+                        let only = *only;
+                        self.check_condition_size(arena, only, case_span);
+                    }
+                }
+            }
             self.end_stmt();
             let body = self.parse_block(arena);
             arena.alloc(ExprNode::CaseBlock { test, body })
