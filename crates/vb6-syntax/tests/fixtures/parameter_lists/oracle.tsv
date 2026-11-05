@@ -295,8 +295,8 @@ sub	a As As	syntax	Expected: type name
 sub	Me	syntax	Expected: identifier
 sub	Sub As Long	syntax	Expected: identifier
 sub	Error As Long	accepted	
-sub	a, a	syntax	Duplicate declaration in current scope
-sub	a As Long, a As Long	syntax	Duplicate declaration in current scope
+sub	a, a	semantic	Duplicate declaration in current scope
+sub	a As Long, a As Long	semantic	Duplicate declaration in current scope
 func	a	accepted	
 func	a As Long	accepted	
 func	a()	accepted	
@@ -593,8 +593,8 @@ func	a As As	syntax	Expected: type name
 func	Me	syntax	Expected: identifier
 func	Sub As Long	syntax	Expected: identifier
 func	Error As Long	accepted	
-func	a, a	syntax	Duplicate declaration in current scope
-func	a As Long, a As Long	syntax	Duplicate declaration in current scope
+func	a, a	semantic	Duplicate declaration in current scope
+func	a As Long, a As Long	semantic	Duplicate declaration in current scope
 propget	a	accepted	
 propget	a As Long	accepted	
 propget	a()	accepted	
@@ -891,8 +891,8 @@ propget	a As As	syntax	Expected: type name
 propget	Me	syntax	Expected: identifier
 propget	Sub As Long	syntax	Expected: identifier
 propget	Error As Long	accepted	
-propget	a, a	syntax	Duplicate declaration in current scope
-propget	a As Long, a As Long	syntax	Duplicate declaration in current scope
+propget	a, a	semantic	Duplicate declaration in current scope
+propget	a As Long, a As Long	semantic	Duplicate declaration in current scope
 proplet	a	accepted	
 proplet	a As Long	accepted	
 proplet	a()	accepted	
@@ -1189,8 +1189,8 @@ proplet	a As As	syntax	Expected: type name
 proplet	Me	syntax	Expected: identifier
 proplet	Sub As Long	syntax	Expected: identifier
 proplet	Error As Long	accepted	
-proplet	a, a	syntax	Duplicate declaration in current scope
-proplet	a As Long, a As Long	syntax	Duplicate declaration in current scope
+proplet	a, a	semantic	Duplicate declaration in current scope
+proplet	a As Long, a As Long	semantic	Duplicate declaration in current scope
 propset	a	accepted	
 propset	a As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
 propset	a()	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
@@ -1487,7 +1487,7 @@ propset	a As As	syntax	Expected: type name
 propset	Me	syntax	Expected: identifier
 propset	Sub As Long	syntax	Expected: identifier
 propset	Error As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
-propset	a, a	syntax	Duplicate declaration in current scope
+propset	a, a	semantic	Duplicate declaration in current scope
 propset	a As Long, a As Long	syntax	Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter
 declare	a	accepted	
 declare	a As Long	accepted	

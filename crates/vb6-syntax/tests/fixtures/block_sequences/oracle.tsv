@@ -711,7 +711,7 @@ body	L:\nExit For	syntax	Exit For not within For...Next
 body	L:\nExit Do	syntax	Exit Do not within Do...Loop
 body	L:\nExit Sub	accepted	
 body	L:\nGoTo L	accepted	
-body	L:\nL:	syntax	Duplicate declaration in current scope
+body	L:\nL:	semantic	Duplicate declaration in current scope
 body	L:\nx = 1	accepted	
 body	L:\nIf c Then x = 1	accepted	
 body	L:\nIf c Then x = 1 Else x = 2	accepted	
@@ -1439,7 +1439,7 @@ body	L:\nOn Error GoTo 0\nDo While c	syntax	Do without Loop
 body	L:\nOn Error GoTo 0\nWith o	syntax	Expected End With
 body	L:\nSelect Case x\nEnd If	syntax	End If without block If
 body	L:\nWend\nLoop	syntax	Wend without While
-body	L:\nWhile c\nL:	syntax	Duplicate declaration in current scope
+body	L:\nWhile c\nL:	semantic	Duplicate declaration in current scope
 body	L:\nWhile c\nReturn	syntax	While without Wend
 body	Loop\nCase 1\nElse	syntax	Loop without Do
 body	Loop\nCase 1\nExit For	syntax	Loop without Do
@@ -1838,11 +1838,11 @@ body	For i = 1 To 2\nExit For\nNext i	accepted
 body	If c Then\nFor i = 1 To 2\nEnd If\nNext	syntax	End If without block If
 body	For i = 1 To 2\nIf c Then\nNext\nEnd If	syntax	Next without For
 body	Select Case x\nCase 1\nIf c Then\nCase Else\nEnd If\nEnd Select	syntax	Case Else outside Select Case
-body	L:\nL:	syntax	Duplicate declaration in current scope
-body	10\n10	syntax	Duplicate declaration in current scope
-body	10 x = 1\n10 x = 2	syntax	Duplicate declaration in current scope
-body	L:\nl:	syntax	Duplicate declaration in current scope
-body	L:\nGoTo L\nL:	syntax	Duplicate declaration in current scope
-body	10\n20\n10	syntax	Duplicate declaration in current scope
+body	L:\nL:	semantic	Duplicate declaration in current scope
+body	10\n10	semantic	Duplicate declaration in current scope
+body	10 x = 1\n10 x = 2	semantic	Duplicate declaration in current scope
+body	L:\nl:	semantic	Duplicate declaration in current scope
+body	L:\nGoTo L\nL:	semantic	Duplicate declaration in current scope
+body	10\n20\n10	semantic	Duplicate declaration in current scope
 body	L:\n10	accepted	
-body	L: x = 1\nL: x = 2	syntax	Duplicate declaration in current scope
+body	L: x = 1\nL: x = 2	semantic	Duplicate declaration in current scope

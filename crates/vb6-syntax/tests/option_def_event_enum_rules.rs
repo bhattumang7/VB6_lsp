@@ -29,12 +29,29 @@ fn def_dec_is_not_a_statement() {
 
 #[test]
 fn raise_event_takes_a_name_not_a_reserved_word() {
+    use vb6_syntax::frontend::ast::ExprArena;
+    use vb6_syntax::frontend::parser::{ModuleKind, Parser};
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    let class_found = |src: &str| {
+        let mut ctx = ScannerContext::new(1, 1, 0x0409);
+        ctx.intern_keywords();
+        let mut arena = ExprArena::new();
+        let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), ModuleKind::Class);
+        parser.parse_module(&mut arena);
+        parser.diagnostics.items().iter().map(|d| (d.code, d.span.start)).collect::<Vec<_>>()
+    };
     for word in ["Event", "Implements", "Dim"] {
-        let src = format!("Sub S()\n    RaiseEvent {word}\nEnd Sub\n");
+        let src = format!("Sub S()
+    RaiseEvent {word}
+End Sub
+");
         let at = offset_of(&src, &format!(" {word}"), 0) + 1;
-        assert!(parse(&src).found.iter().any(|d| d.1 == at), "{word}");
+        assert!(class_found(&src).iter().any(|d| d.1 == at), "{word}");
     }
-    assert_eq!(parse("Sub S()\n    RaiseEvent E(1)\nEnd Sub\n").found, vec![]);
+    assert_eq!(class_found("Sub S()
+    RaiseEvent E(1)
+End Sub
+"), vec![]);
 }
 
 #[test]

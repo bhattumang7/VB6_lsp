@@ -1,0 +1,4392 @@
+Xor
+Xor 1
+Xor a
+Xor a, b
+Xor (a)
+Xor a = 1
+Xor .a
+Xor #1
+Xor #1, a
+Xor a As Long
+Xor x To y
+Xor a(1)
+Xor "s"
+Xor a: b
+Xor a Then
+Xor a,
+Xor = 1
+Xor As
+Xor To 1
+Xor (1, 2)
+Xor a.b
+Xor a!b
+Xor -1
+Xor Not a
+Write
+Write 1
+Write a
+Write a, b
+Write (a)
+Write a = 1
+Write .a
+Write #1
+Write #1, a
+Write a As Long
+Write x To y
+Write a(1)
+Write "s"
+Write a: b
+Write a Then
+Write a,
+Write = 1
+Write As
+Write To 1
+Write (1, 2)
+Write a.b
+Write a!b
+Write -1
+Write Not a
+WithEvents
+WithEvents 1
+WithEvents a
+WithEvents a, b
+WithEvents (a)
+WithEvents a = 1
+WithEvents .a
+WithEvents #1
+WithEvents #1, a
+WithEvents a As Long
+WithEvents x To y
+WithEvents a(1)
+WithEvents "s"
+WithEvents a: b
+WithEvents a Then
+WithEvents a,
+WithEvents = 1
+WithEvents As
+WithEvents To 1
+WithEvents (1, 2)
+WithEvents a.b
+WithEvents a!b
+WithEvents -1
+WithEvents Not a
+With
+With 1
+With a
+With a, b
+With (a)
+With a = 1
+With .a
+With #1
+With #1, a
+With a As Long
+With x To y
+With a(1)
+With "s"
+With a: b
+With a Then
+With a,
+With = 1
+With As
+With To 1
+With (1, 2)
+With a.b
+With a!b
+With -1
+With Not a
+Width
+Width 1
+Width a
+Width a, b
+Width (a)
+Width a = 1
+Width .a
+Width #1
+Width #1, a
+Width a As Long
+Width x To y
+Width a(1)
+Width "s"
+Width a: b
+Width a Then
+Width a,
+Width = 1
+Width As
+Width To 1
+Width (1, 2)
+Width a.b
+Width a!b
+Width -1
+Width Not a
+While
+While 1
+While a
+While a, b
+While (a)
+While a = 1
+While .a
+While #1
+While #1, a
+While a As Long
+While x To y
+While a(1)
+While "s"
+While a: b
+While a Then
+While a,
+While = 1
+While As
+While To 1
+While (1, 2)
+While a.b
+While a!b
+While -1
+While Not a
+Wend
+Wend 1
+Wend a
+Wend a, b
+Wend (a)
+Wend a = 1
+Wend .a
+Wend #1
+Wend #1, a
+Wend a As Long
+Wend x To y
+Wend a(1)
+Wend "s"
+Wend a: b
+Wend a Then
+Wend a,
+Wend = 1
+Wend As
+Wend To 1
+Wend (1, 2)
+Wend a.b
+Wend a!b
+Wend -1
+Wend Not a
+Variant
+Variant 1
+Variant a
+Variant a, b
+Variant (a)
+Variant a = 1
+Variant .a
+Variant #1
+Variant #1, a
+Variant a As Long
+Variant x To y
+Variant a(1)
+Variant "s"
+Variant a: b
+Variant a Then
+Variant a,
+Variant = 1
+Variant As
+Variant To 1
+Variant (1, 2)
+Variant a.b
+Variant a!b
+Variant -1
+Variant Not a
+Until
+Until 1
+Until a
+Until a, b
+Until (a)
+Until a = 1
+Until .a
+Until #1
+Until #1, a
+Until a As Long
+Until x To y
+Until a(1)
+Until "s"
+Until a: b
+Until a Then
+Until a,
+Until = 1
+Until As
+Until To 1
+Until (1, 2)
+Until a.b
+Until a!b
+Until -1
+Until Not a
+Unknown
+Unknown 1
+Unknown a
+Unknown a, b
+Unknown (a)
+Unknown a = 1
+Unknown .a
+Unknown #1
+Unknown #1, a
+Unknown a As Long
+Unknown x To y
+Unknown a(1)
+Unknown "s"
+Unknown a: b
+Unknown a Then
+Unknown a,
+Unknown = 1
+Unknown As
+Unknown To 1
+Unknown (1, 2)
+Unknown a.b
+Unknown a!b
+Unknown -1
+Unknown Not a
+Unlock
+Unlock 1
+Unlock a
+Unlock a, b
+Unlock (a)
+Unlock a = 1
+Unlock .a
+Unlock #1
+Unlock #1, a
+Unlock a As Long
+Unlock x To y
+Unlock a(1)
+Unlock "s"
+Unlock a: b
+Unlock a Then
+Unlock a,
+Unlock = 1
+Unlock As
+Unlock To 1
+Unlock (1, 2)
+Unlock a.b
+Unlock a!b
+Unlock -1
+Unlock Not a
+Unload
+Unload 1
+Unload a
+Unload a, b
+Unload (a)
+Unload a = 1
+Unload .a
+Unload #1
+Unload #1, a
+Unload a As Long
+Unload x To y
+Unload a(1)
+Unload "s"
+Unload a: b
+Unload a Then
+Unload a,
+Unload = 1
+Unload As
+Unload To 1
+Unload (1, 2)
+Unload a.b
+Unload a!b
+Unload -1
+Unload Not a
+UBound
+UBound 1
+UBound a
+UBound a, b
+UBound (a)
+UBound a = 1
+UBound .a
+UBound #1
+UBound #1, a
+UBound a As Long
+UBound x To y
+UBound a(1)
+UBound "s"
+UBound a: b
+UBound a Then
+UBound a,
+UBound = 1
+UBound As
+UBound To 1
+UBound (1, 2)
+UBound a.b
+UBound a!b
+UBound -1
+UBound Not a
+TypeOf
+TypeOf 1
+TypeOf a
+TypeOf a, b
+TypeOf (a)
+TypeOf a = 1
+TypeOf .a
+TypeOf #1
+TypeOf #1, a
+TypeOf a As Long
+TypeOf x To y
+TypeOf a(1)
+TypeOf "s"
+TypeOf a: b
+TypeOf a Then
+TypeOf a,
+TypeOf = 1
+TypeOf As
+TypeOf To 1
+TypeOf (1, 2)
+TypeOf a.b
+TypeOf a!b
+TypeOf -1
+TypeOf Not a
+Type
+Type 1
+Type a
+Type a, b
+Type (a)
+Type a = 1
+Type .a
+Type #1
+Type #1, a
+Type a As Long
+Type x To y
+Type a(1)
+Type "s"
+Type a: b
+Type a Then
+Type a,
+Type = 1
+Type As
+Type To 1
+Type (1, 2)
+Type a.b
+Type a!b
+Type -1
+Type Not a
+True
+True 1
+True a
+True a, b
+True (a)
+True a = 1
+True .a
+True #1
+True #1, a
+True a As Long
+True x To y
+True a(1)
+True "s"
+True a: b
+True a Then
+True a,
+True = 1
+True As
+True To 1
+True (1, 2)
+True a.b
+True a!b
+True -1
+True Not a
+To
+To 1
+To a
+To a, b
+To (a)
+To a = 1
+To .a
+To #1
+To #1, a
+To a As Long
+To x To y
+To a(1)
+To "s"
+To a: b
+To a Then
+To a,
+To = 1
+To As
+To To 1
+To (1, 2)
+To a.b
+To a!b
+To -1
+To Not a
+Then
+Then 1
+Then a
+Then a, b
+Then (a)
+Then a = 1
+Then .a
+Then #1
+Then #1, a
+Then a As Long
+Then x To y
+Then a(1)
+Then "s"
+Then a: b
+Then a Then
+Then a,
+Then = 1
+Then As
+Then To 1
+Then (1, 2)
+Then a.b
+Then a!b
+Then -1
+Then Not a
+Text
+Text 1
+Text a
+Text a, b
+Text (a)
+Text a = 1
+Text .a
+Text #1
+Text #1, a
+Text a As Long
+Text x To y
+Text a(1)
+Text "s"
+Text a: b
+Text a Then
+Text a,
+Text = 1
+Text As
+Text To 1
+Text (1, 2)
+Text a.b
+Text a!b
+Text -1
+Text Not a
+Tab
+Tab 1
+Tab a
+Tab a, b
+Tab (a)
+Tab a = 1
+Tab .a
+Tab #1
+Tab #1, a
+Tab a As Long
+Tab x To y
+Tab a(1)
+Tab "s"
+Tab a: b
+Tab a Then
+Tab a,
+Tab = 1
+Tab As
+Tab To 1
+Tab (1, 2)
+Tab a.b
+Tab a!b
+Tab -1
+Tab Not a
+Sub
+Sub 1
+Sub a
+Sub a, b
+Sub (a)
+Sub a = 1
+Sub .a
+Sub #1
+Sub #1, a
+Sub a As Long
+Sub x To y
+Sub a(1)
+Sub "s"
+Sub a: b
+Sub a Then
+Sub a,
+Sub = 1
+Sub As
+Sub To 1
+Sub (1, 2)
+Sub a.b
+Sub a!b
+Sub -1
+Sub Not a
+String
+String 1
+String a
+String a, b
+String (a)
+String a = 1
+String .a
+String #1
+String #1, a
+String a As Long
+String x To y
+String a(1)
+String "s"
+String a: b
+String a Then
+String a,
+String = 1
+String As
+String To 1
+String (1, 2)
+String a.b
+String a!b
+String -1
+String Not a
+StrComp
+StrComp 1
+StrComp a
+StrComp a, b
+StrComp (a)
+StrComp a = 1
+StrComp .a
+StrComp #1
+StrComp #1, a
+StrComp a As Long
+StrComp x To y
+StrComp a(1)
+StrComp "s"
+StrComp a: b
+StrComp a Then
+StrComp a,
+StrComp = 1
+StrComp As
+StrComp To 1
+StrComp (1, 2)
+StrComp a.b
+StrComp a!b
+StrComp -1
+StrComp Not a
+Stop
+Stop 1
+Stop a
+Stop a, b
+Stop (a)
+Stop a = 1
+Stop .a
+Stop #1
+Stop #1, a
+Stop a As Long
+Stop x To y
+Stop a(1)
+Stop "s"
+Stop a: b
+Stop a Then
+Stop a,
+Stop = 1
+Stop As
+Stop To 1
+Stop (1, 2)
+Stop a.b
+Stop a!b
+Stop -1
+Stop Not a
+Step
+Step 1
+Step a
+Step a, b
+Step (a)
+Step a = 1
+Step .a
+Step #1
+Step #1, a
+Step a As Long
+Step x To y
+Step a(1)
+Step "s"
+Step a: b
+Step a Then
+Step a,
+Step = 1
+Step As
+Step To 1
+Step (1, 2)
+Step a.b
+Step a!b
+Step -1
+Step Not a
+Static
+Static 1
+Static a
+Static a, b
+Static (a)
+Static a = 1
+Static .a
+Static #1
+Static #1, a
+Static a As Long
+Static x To y
+Static a(1)
+Static "s"
+Static a: b
+Static a Then
+Static a,
+Static = 1
+Static As
+Static To 1
+Static (1, 2)
+Static a.b
+Static a!b
+Static -1
+Static Not a
+Spc
+Spc 1
+Spc a
+Spc a, b
+Spc (a)
+Spc a = 1
+Spc .a
+Spc #1
+Spc #1, a
+Spc a As Long
+Spc x To y
+Spc a(1)
+Spc "s"
+Spc a: b
+Spc a Then
+Spc a,
+Spc = 1
+Spc As
+Spc To 1
+Spc (1, 2)
+Spc a.b
+Spc a!b
+Spc -1
+Spc Not a
+Single
+Single 1
+Single a
+Single a, b
+Single (a)
+Single a = 1
+Single .a
+Single #1
+Single #1, a
+Single a As Long
+Single x To y
+Single a(1)
+Single "s"
+Single a: b
+Single a Then
+Single a,
+Single = 1
+Single As
+Single To 1
+Single (1, 2)
+Single a.b
+Single a!b
+Single -1
+Single Not a
+Shared
+Shared 1
+Shared a
+Shared a, b
+Shared (a)
+Shared a = 1
+Shared .a
+Shared #1
+Shared #1, a
+Shared a As Long
+Shared x To y
+Shared a(1)
+Shared "s"
+Shared a: b
+Shared a Then
+Shared a,
+Shared = 1
+Shared As
+Shared To 1
+Shared (1, 2)
+Shared a.b
+Shared a!b
+Shared -1
+Shared Not a
+Sgn
+Sgn 1
+Sgn a
+Sgn a, b
+Sgn (a)
+Sgn a = 1
+Sgn .a
+Sgn #1
+Sgn #1, a
+Sgn a As Long
+Sgn x To y
+Sgn a(1)
+Sgn "s"
+Sgn a: b
+Sgn a Then
+Sgn a,
+Sgn = 1
+Sgn As
+Sgn To 1
+Sgn (1, 2)
+Sgn a.b
+Sgn a!b
+Sgn -1
+Sgn Not a
+Set
+Set 1
+Set a
+Set a, b
+Set (a)
+Set a = 1
+Set .a
+Set #1
+Set #1, a
+Set a As Long
+Set x To y
+Set a(1)
+Set "s"
+Set a: b
+Set a Then
+Set a,
+Set = 1
+Set As
+Set To 1
+Set (1, 2)
+Set a.b
+Set a!b
+Set -1
+Set Not a
+Select
+Select 1
+Select a
+Select a, b
+Select (a)
+Select a = 1
+Select .a
+Select #1
+Select #1, a
+Select a As Long
+Select x To y
+Select a(1)
+Select "s"
+Select a: b
+Select a Then
+Select a,
+Select = 1
+Select As
+Select To 1
+Select (1, 2)
+Select a.b
+Select a!b
+Select -1
+Select Not a
+Seek
+Seek 1
+Seek a
+Seek a, b
+Seek (a)
+Seek a = 1
+Seek .a
+Seek #1
+Seek #1, a
+Seek a As Long
+Seek x To y
+Seek a(1)
+Seek "s"
+Seek a: b
+Seek a Then
+Seek a,
+Seek = 1
+Seek As
+Seek To 1
+Seek (1, 2)
+Seek a.b
+Seek a!b
+Seek -1
+Seek Not a
+Scale
+Scale 1
+Scale a
+Scale a, b
+Scale (a)
+Scale a = 1
+Scale .a
+Scale #1
+Scale #1, a
+Scale a As Long
+Scale x To y
+Scale a(1)
+Scale "s"
+Scale a: b
+Scale a Then
+Scale a,
+Scale = 1
+Scale As
+Scale To 1
+Scale (1, 2)
+Scale a.b
+Scale a!b
+Scale -1
+Scale Not a
+RSet
+RSet 1
+RSet a
+RSet a, b
+RSet (a)
+RSet a = 1
+RSet .a
+RSet #1
+RSet #1, a
+RSet a As Long
+RSet x To y
+RSet a(1)
+RSet "s"
+RSet a: b
+RSet a Then
+RSet a,
+RSet = 1
+RSet As
+RSet To 1
+RSet (1, 2)
+RSet a.b
+RSet a!b
+RSet -1
+RSet Not a
+RGB
+RGB 1
+RGB a
+RGB a, b
+RGB (a)
+RGB a = 1
+RGB .a
+RGB #1
+RGB #1, a
+RGB a As Long
+RGB x To y
+RGB a(1)
+RGB "s"
+RGB a: b
+RGB a Then
+RGB a,
+RGB = 1
+RGB As
+RGB To 1
+RGB (1, 2)
+RGB a.b
+RGB a!b
+RGB -1
+RGB Not a
+Return
+Return 1
+Return a
+Return a, b
+Return (a)
+Return a = 1
+Return .a
+Return #1
+Return #1, a
+Return a As Long
+Return x To y
+Return a(1)
+Return "s"
+Return a: b
+Return a Then
+Return a,
+Return = 1
+Return As
+Return To 1
+Return (1, 2)
+Return a.b
+Return a!b
+Return -1
+Return Not a
+Resume
+Resume 1
+Resume a
+Resume a, b
+Resume (a)
+Resume a = 1
+Resume .a
+Resume #1
+Resume #1, a
+Resume a As Long
+Resume x To y
+Resume a(1)
+Resume "s"
+Resume a: b
+Resume a Then
+Resume a,
+Resume = 1
+Resume As
+Resume To 1
+Resume (1, 2)
+Resume a.b
+Resume a!b
+Resume -1
+Resume Not a
+Rem
+Rem 1
+Rem a
+Rem a, b
+Rem (a)
+Rem a = 1
+Rem .a
+Rem #1
+Rem #1, a
+Rem a As Long
+Rem x To y
+Rem a(1)
+Rem "s"
+Rem a: b
+Rem a Then
+Rem a,
+Rem = 1
+Rem As
+Rem To 1
+Rem (1, 2)
+Rem a.b
+Rem a!b
+Rem -1
+Rem Not a
+ReDim
+ReDim 1
+ReDim a
+ReDim a, b
+ReDim (a)
+ReDim a = 1
+ReDim .a
+ReDim #1
+ReDim #1, a
+ReDim a As Long
+ReDim x To y
+ReDim a(1)
+ReDim "s"
+ReDim a: b
+ReDim a Then
+ReDim a,
+ReDim = 1
+ReDim As
+ReDim To 1
+ReDim (1, 2)
+ReDim a.b
+ReDim a!b
+ReDim -1
+ReDim Not a
+Read
+Read 1
+Read a
+Read a, b
+Read (a)
+Read a = 1
+Read .a
+Read #1
+Read #1, a
+Read a As Long
+Read x To y
+Read a(1)
+Read "s"
+Read a: b
+Read a Then
+Read a,
+Read = 1
+Read As
+Read To 1
+Read (1, 2)
+Read a.b
+Read a!b
+Read -1
+Read Not a
+Randomize
+Randomize 1
+Randomize a
+Randomize a, b
+Randomize (a)
+Randomize a = 1
+Randomize .a
+Randomize #1
+Randomize #1, a
+Randomize a As Long
+Randomize x To y
+Randomize a(1)
+Randomize "s"
+Randomize a: b
+Randomize a Then
+Randomize a,
+Randomize = 1
+Randomize As
+Randomize To 1
+Randomize (1, 2)
+Randomize a.b
+Randomize a!b
+Randomize -1
+Randomize Not a
+Random
+Random 1
+Random a
+Random a, b
+Random (a)
+Random a = 1
+Random .a
+Random #1
+Random #1, a
+Random a As Long
+Random x To y
+Random a(1)
+Random "s"
+Random a: b
+Random a Then
+Random a,
+Random = 1
+Random As
+Random To 1
+Random (1, 2)
+Random a.b
+Random a!b
+Random -1
+Random Not a
+RaiseEvent
+RaiseEvent 1
+RaiseEvent a
+RaiseEvent a, b
+RaiseEvent (a)
+RaiseEvent a = 1
+RaiseEvent .a
+RaiseEvent #1
+RaiseEvent #1, a
+RaiseEvent a As Long
+RaiseEvent x To y
+RaiseEvent a(1)
+RaiseEvent "s"
+RaiseEvent a: b
+RaiseEvent a Then
+RaiseEvent a,
+RaiseEvent = 1
+RaiseEvent As
+RaiseEvent To 1
+RaiseEvent (1, 2)
+RaiseEvent a.b
+RaiseEvent a!b
+RaiseEvent -1
+RaiseEvent Not a
+Put
+Put 1
+Put a
+Put a, b
+Put (a)
+Put a = 1
+Put .a
+Put #1
+Put #1, a
+Put a As Long
+Put x To y
+Put a(1)
+Put "s"
+Put a: b
+Put a Then
+Put a,
+Put = 1
+Put As
+Put To 1
+Put (1, 2)
+Put a.b
+Put a!b
+Put -1
+Put Not a
+Public
+Public 1
+Public a
+Public a, b
+Public (a)
+Public a = 1
+Public .a
+Public #1
+Public #1, a
+Public a As Long
+Public x To y
+Public a(1)
+Public "s"
+Public a: b
+Public a Then
+Public a,
+Public = 1
+Public As
+Public To 1
+Public (1, 2)
+Public a.b
+Public a!b
+Public -1
+Public Not a
+PSet
+PSet 1
+PSet a
+PSet a, b
+PSet (a)
+PSet a = 1
+PSet .a
+PSet #1
+PSet #1, a
+PSet a As Long
+PSet x To y
+PSet a(1)
+PSet "s"
+PSet a: b
+PSet a Then
+PSet a,
+PSet = 1
+PSet As
+PSet To 1
+PSet (1, 2)
+PSet a.b
+PSet a!b
+PSet -1
+PSet Not a
+Property
+Property 1
+Property a
+Property a, b
+Property (a)
+Property a = 1
+Property .a
+Property #1
+Property #1, a
+Property a As Long
+Property x To y
+Property a(1)
+Property "s"
+Property a: b
+Property a Then
+Property a,
+Property = 1
+Property As
+Property To 1
+Property (1, 2)
+Property a.b
+Property a!b
+Property -1
+Property Not a
+Private
+Private 1
+Private a
+Private a, b
+Private (a)
+Private a = 1
+Private .a
+Private #1
+Private #1, a
+Private a As Long
+Private x To y
+Private a(1)
+Private "s"
+Private a: b
+Private a Then
+Private a,
+Private = 1
+Private As
+Private To 1
+Private (1, 2)
+Private a.b
+Private a!b
+Private -1
+Private Not a
+Print
+Print 1
+Print a
+Print a, b
+Print (a)
+Print a = 1
+Print .a
+Print #1
+Print #1, a
+Print a As Long
+Print x To y
+Print a(1)
+Print "s"
+Print a: b
+Print a Then
+Print a,
+Print = 1
+Print As
+Print To 1
+Print (1, 2)
+Print a.b
+Print a!b
+Print -1
+Print Not a
+Preserve
+Preserve 1
+Preserve a
+Preserve a, b
+Preserve (a)
+Preserve a = 1
+Preserve .a
+Preserve #1
+Preserve #1, a
+Preserve a As Long
+Preserve x To y
+Preserve a(1)
+Preserve "s"
+Preserve a: b
+Preserve a Then
+Preserve a,
+Preserve = 1
+Preserve As
+Preserve To 1
+Preserve (1, 2)
+Preserve a.b
+Preserve a!b
+Preserve -1
+Preserve Not a
+ParamArray
+ParamArray 1
+ParamArray a
+ParamArray a, b
+ParamArray (a)
+ParamArray a = 1
+ParamArray .a
+ParamArray #1
+ParamArray #1, a
+ParamArray a As Long
+ParamArray x To y
+ParamArray a(1)
+ParamArray "s"
+ParamArray a: b
+ParamArray a Then
+ParamArray a,
+ParamArray = 1
+ParamArray As
+ParamArray To 1
+ParamArray (1, 2)
+ParamArray a.b
+ParamArray a!b
+ParamArray -1
+ParamArray Not a
+Output
+Output 1
+Output a
+Output a, b
+Output (a)
+Output a = 1
+Output .a
+Output #1
+Output #1, a
+Output a As Long
+Output x To y
+Output a(1)
+Output "s"
+Output a: b
+Output a Then
+Output a,
+Output = 1
+Output As
+Output To 1
+Output (1, 2)
+Output a.b
+Output a!b
+Output -1
+Output Not a
+Or
+Or 1
+Or a
+Or a, b
+Or (a)
+Or a = 1
+Or .a
+Or #1
+Or #1, a
+Or a As Long
+Or x To y
+Or a(1)
+Or "s"
+Or a: b
+Or a Then
+Or a,
+Or = 1
+Or As
+Or To 1
+Or (1, 2)
+Or a.b
+Or a!b
+Or -1
+Or Not a
+Optional
+Optional 1
+Optional a
+Optional a, b
+Optional (a)
+Optional a = 1
+Optional .a
+Optional #1
+Optional #1, a
+Optional a As Long
+Optional x To y
+Optional a(1)
+Optional "s"
+Optional a: b
+Optional a Then
+Optional a,
+Optional = 1
+Optional As
+Optional To 1
+Optional (1, 2)
+Optional a.b
+Optional a!b
+Optional -1
+Optional Not a
+Option
+Option 1
+Option a
+Option a, b
+Option (a)
+Option a = 1
+Option .a
+Option #1
+Option #1, a
+Option a As Long
+Option x To y
+Option a(1)
+Option "s"
+Option a: b
+Option a Then
+Option a,
+Option = 1
+Option As
+Option To 1
+Option (1, 2)
+Option a.b
+Option a!b
+Option -1
+Option Not a
+Open
+Open 1
+Open a
+Open a, b
+Open (a)
+Open a = 1
+Open .a
+Open #1
+Open #1, a
+Open a As Long
+Open x To y
+Open a(1)
+Open "s"
+Open a: b
+Open a Then
+Open a,
+Open = 1
+Open As
+Open To 1
+Open (1, 2)
+Open a.b
+Open a!b
+Open -1
+Open Not a
+On
+On 1
+On a
+On a, b
+On (a)
+On a = 1
+On .a
+On #1
+On #1, a
+On a As Long
+On x To y
+On a(1)
+On "s"
+On a: b
+On a Then
+On a,
+On = 1
+On As
+On To 1
+On (1, 2)
+On a.b
+On a!b
+On -1
+On Not a
+Object
+Object 1
+Object a
+Object a, b
+Object (a)
+Object a = 1
+Object .a
+Object #1
+Object #1, a
+Object a As Long
+Object x To y
+Object a(1)
+Object "s"
+Object a: b
+Object a Then
+Object a,
+Object = 1
+Object As
+Object To 1
+Object (1, 2)
+Object a.b
+Object a!b
+Object -1
+Object Not a
+Null
+Null 1
+Null a
+Null a, b
+Null (a)
+Null a = 1
+Null .a
+Null #1
+Null #1, a
+Null a As Long
+Null x To y
+Null a(1)
+Null "s"
+Null a: b
+Null a Then
+Null a,
+Null = 1
+Null As
+Null To 1
+Null (1, 2)
+Null a.b
+Null a!b
+Null -1
+Null Not a
+Nothing
+Nothing 1
+Nothing a
+Nothing a, b
+Nothing (a)
+Nothing a = 1
+Nothing .a
+Nothing #1
+Nothing #1, a
+Nothing a As Long
+Nothing x To y
+Nothing a(1)
+Nothing "s"
+Nothing a: b
+Nothing a Then
+Nothing a,
+Nothing = 1
+Nothing As
+Nothing To 1
+Nothing (1, 2)
+Nothing a.b
+Nothing a!b
+Nothing -1
+Nothing Not a
+Not
+Not 1
+Not a
+Not a, b
+Not (a)
+Not a = 1
+Not .a
+Not #1
+Not #1, a
+Not a As Long
+Not x To y
+Not a(1)
+Not "s"
+Not a: b
+Not a Then
+Not a,
+Not = 1
+Not As
+Not To 1
+Not (1, 2)
+Not a.b
+Not a!b
+Not -1
+Not Not a
+Next
+Next 1
+Next a
+Next a, b
+Next (a)
+Next a = 1
+Next .a
+Next #1
+Next #1, a
+Next a As Long
+Next x To y
+Next a(1)
+Next "s"
+Next a: b
+Next a Then
+Next a,
+Next = 1
+Next As
+Next To 1
+Next (1, 2)
+Next a.b
+Next a!b
+Next -1
+Next Not a
+New
+New 1
+New a
+New a, b
+New (a)
+New a = 1
+New .a
+New #1
+New #1, a
+New a As Long
+New x To y
+New a(1)
+New "s"
+New a: b
+New a Then
+New a,
+New = 1
+New As
+New To 1
+New (1, 2)
+New a.b
+New a!b
+New -1
+New Not a
+Name
+Name 1
+Name a
+Name a, b
+Name (a)
+Name a = 1
+Name .a
+Name #1
+Name #1, a
+Name a As Long
+Name x To y
+Name a(1)
+Name "s"
+Name a: b
+Name a Then
+Name a,
+Name = 1
+Name As
+Name To 1
+Name (1, 2)
+Name a.b
+Name a!b
+Name -1
+Name Not a
+Module
+Module 1
+Module a
+Module a, b
+Module (a)
+Module a = 1
+Module .a
+Module #1
+Module #1, a
+Module a As Long
+Module x To y
+Module a(1)
+Module "s"
+Module a: b
+Module a Then
+Module a,
+Module = 1
+Module As
+Module To 1
+Module (1, 2)
+Module a.b
+Module a!b
+Module -1
+Module Not a
+Mod
+Mod 1
+Mod a
+Mod a, b
+Mod (a)
+Mod a = 1
+Mod .a
+Mod #1
+Mod #1, a
+Mod a As Long
+Mod x To y
+Mod a(1)
+Mod "s"
+Mod a: b
+Mod a Then
+Mod a,
+Mod = 1
+Mod As
+Mod To 1
+Mod (1, 2)
+Mod a.b
+Mod a!b
+Mod -1
+Mod Not a
+MidB
+MidB 1
+MidB a
+MidB a, b
+MidB (a)
+MidB a = 1
+MidB .a
+MidB #1
+MidB #1, a
+MidB a As Long
+MidB x To y
+MidB a(1)
+MidB "s"
+MidB a: b
+MidB a Then
+MidB a,
+MidB = 1
+MidB As
+MidB To 1
+MidB (1, 2)
+MidB a.b
+MidB a!b
+MidB -1
+MidB Not a
+Mid
+Mid 1
+Mid a
+Mid a, b
+Mid (a)
+Mid a = 1
+Mid .a
+Mid #1
+Mid #1, a
+Mid a As Long
+Mid x To y
+Mid a(1)
+Mid "s"
+Mid a: b
+Mid a Then
+Mid a,
+Mid = 1
+Mid As
+Mid To 1
+Mid (1, 2)
+Mid a.b
+Mid a!b
+Mid -1
+Mid Not a
+Me
+Me 1
+Me a
+Me a, b
+Me (a)
+Me a = 1
+Me .a
+Me #1
+Me #1, a
+Me a As Long
+Me x To y
+Me a(1)
+Me "s"
+Me a: b
+Me a Then
+Me a,
+Me = 1
+Me As
+Me To 1
+Me (1, 2)
+Me a.b
+Me a!b
+Me -1
+Me Not a
+LSet
+LSet 1
+LSet a
+LSet a, b
+LSet (a)
+LSet a = 1
+LSet .a
+LSet #1
+LSet #1, a
+LSet a As Long
+LSet x To y
+LSet a(1)
+LSet "s"
+LSet a: b
+LSet a Then
+LSet a,
+LSet = 1
+LSet As
+LSet To 1
+LSet (1, 2)
+LSet a.b
+LSet a!b
+LSet -1
+LSet Not a
+Loop
+Loop 1
+Loop a
+Loop a, b
+Loop (a)
+Loop a = 1
+Loop .a
+Loop #1
+Loop #1, a
+Loop a As Long
+Loop x To y
+Loop a(1)
+Loop "s"
+Loop a: b
+Loop a Then
+Loop a,
+Loop = 1
+Loop As
+Loop To 1
+Loop (1, 2)
+Loop a.b
+Loop a!b
+Loop -1
+Loop Not a
+Long
+Long 1
+Long a
+Long a, b
+Long (a)
+Long a = 1
+Long .a
+Long #1
+Long #1, a
+Long a As Long
+Long x To y
+Long a(1)
+Long "s"
+Long a: b
+Long a Then
+Long a,
+Long = 1
+Long As
+Long To 1
+Long (1, 2)
+Long a.b
+Long a!b
+Long -1
+Long Not a
+Lock
+Lock 1
+Lock a
+Lock a, b
+Lock (a)
+Lock a = 1
+Lock .a
+Lock #1
+Lock #1, a
+Lock a As Long
+Lock x To y
+Lock a(1)
+Lock "s"
+Lock a: b
+Lock a Then
+Lock a,
+Lock = 1
+Lock As
+Lock To 1
+Lock (1, 2)
+Lock a.b
+Lock a!b
+Lock -1
+Lock Not a
+Local
+Local 1
+Local a
+Local a, b
+Local (a)
+Local a = 1
+Local .a
+Local #1
+Local #1, a
+Local a As Long
+Local x To y
+Local a(1)
+Local "s"
+Local a: b
+Local a Then
+Local a,
+Local = 1
+Local As
+Local To 1
+Local (1, 2)
+Local a.b
+Local a!b
+Local -1
+Local Not a
+Load
+Load 1
+Load a
+Load a, b
+Load (a)
+Load a = 1
+Load .a
+Load #1
+Load #1, a
+Load a As Long
+Load x To y
+Load a(1)
+Load "s"
+Load a: b
+Load a Then
+Load a,
+Load = 1
+Load As
+Load To 1
+Load (1, 2)
+Load a.b
+Load a!b
+Load -1
+Load Not a
+LINEINPUT
+LINEINPUT 1
+LINEINPUT a
+LINEINPUT a, b
+LINEINPUT (a)
+LINEINPUT a = 1
+LINEINPUT .a
+LINEINPUT #1
+LINEINPUT #1, a
+LINEINPUT a As Long
+LINEINPUT x To y
+LINEINPUT a(1)
+LINEINPUT "s"
+LINEINPUT a: b
+LINEINPUT a Then
+LINEINPUT a,
+LINEINPUT = 1
+LINEINPUT As
+LINEINPUT To 1
+LINEINPUT (1, 2)
+LINEINPUT a.b
+LINEINPUT a!b
+LINEINPUT -1
+LINEINPUT Not a
+Line
+Line 1
+Line a
+Line a, b
+Line (a)
+Line a = 1
+Line .a
+Line #1
+Line #1, a
+Line a As Long
+Line x To y
+Line a(1)
+Line "s"
+Line a: b
+Line a Then
+Line a,
+Line = 1
+Line As
+Line To 1
+Line (1, 2)
+Line a.b
+Line a!b
+Line -1
+Line Not a
+Like
+Like 1
+Like a
+Like a, b
+Like (a)
+Like a = 1
+Like .a
+Like #1
+Like #1, a
+Like a As Long
+Like x To y
+Like a(1)
+Like "s"
+Like a: b
+Like a Then
+Like a,
+Like = 1
+Like As
+Like To 1
+Like (1, 2)
+Like a.b
+Like a!b
+Like -1
+Like Not a
+Lib
+Lib 1
+Lib a
+Lib a, b
+Lib (a)
+Lib a = 1
+Lib .a
+Lib #1
+Lib #1, a
+Lib a As Long
+Lib x To y
+Lib a(1)
+Lib "s"
+Lib a: b
+Lib a Then
+Lib a,
+Lib = 1
+Lib As
+Lib To 1
+Lib (1, 2)
+Lib a.b
+Lib a!b
+Lib -1
+Lib Not a
+Let
+Let 1
+Let a
+Let a, b
+Let (a)
+Let a = 1
+Let .a
+Let #1
+Let #1, a
+Let a As Long
+Let x To y
+Let a(1)
+Let "s"
+Let a: b
+Let a Then
+Let a,
+Let = 1
+Let As
+Let To 1
+Let (1, 2)
+Let a.b
+Let a!b
+Let -1
+Let Not a
+LenB
+LenB 1
+LenB a
+LenB a, b
+LenB (a)
+LenB a = 1
+LenB .a
+LenB #1
+LenB #1, a
+LenB a As Long
+LenB x To y
+LenB a(1)
+LenB "s"
+LenB a: b
+LenB a Then
+LenB a,
+LenB = 1
+LenB As
+LenB To 1
+LenB (1, 2)
+LenB a.b
+LenB a!b
+LenB -1
+LenB Not a
+Len
+Len 1
+Len a
+Len a, b
+Len (a)
+Len a = 1
+Len .a
+Len #1
+Len #1, a
+Len a As Long
+Len x To y
+Len a(1)
+Len "s"
+Len a: b
+Len a Then
+Len a,
+Len = 1
+Len As
+Len To 1
+Len (1, 2)
+Len a.b
+Len a!b
+Len -1
+Len Not a
+Left
+Left 1
+Left a
+Left a, b
+Left (a)
+Left a = 1
+Left .a
+Left #1
+Left #1, a
+Left a As Long
+Left x To y
+Left a(1)
+Left "s"
+Left a: b
+Left a Then
+Left a,
+Left = 1
+Left As
+Left To 1
+Left (1, 2)
+Left a.b
+Left a!b
+Left -1
+Left Not a
+LBound
+LBound 1
+LBound a
+LBound a, b
+LBound (a)
+LBound a = 1
+LBound .a
+LBound #1
+LBound #1, a
+LBound a As Long
+LBound x To y
+LBound a(1)
+LBound "s"
+LBound a: b
+LBound a Then
+LBound a,
+LBound = 1
+LBound As
+LBound To 1
+LBound (1, 2)
+LBound a.b
+LBound a!b
+LBound -1
+LBound Not a
+Is
+Is 1
+Is a
+Is a, b
+Is (a)
+Is a = 1
+Is .a
+Is #1
+Is #1, a
+Is a As Long
+Is x To y
+Is a(1)
+Is "s"
+Is a: b
+Is a Then
+Is a,
+Is = 1
+Is As
+Is To 1
+Is (1, 2)
+Is a.b
+Is a!b
+Is -1
+Is Not a
+Integer
+Integer 1
+Integer a
+Integer a, b
+Integer (a)
+Integer a = 1
+Integer .a
+Integer #1
+Integer #1, a
+Integer a As Long
+Integer x To y
+Integer a(1)
+Integer "s"
+Integer a: b
+Integer a Then
+Integer a,
+Integer = 1
+Integer As
+Integer To 1
+Integer (1, 2)
+Integer a.b
+Integer a!b
+Integer -1
+Integer Not a
+Int
+Int 1
+Int a
+Int a, b
+Int (a)
+Int a = 1
+Int .a
+Int #1
+Int #1, a
+Int a As Long
+Int x To y
+Int a(1)
+Int "s"
+Int a: b
+Int a Then
+Int a,
+Int = 1
+Int As
+Int To 1
+Int (1, 2)
+Int a.b
+Int a!b
+Int -1
+Int Not a
+InStrB
+InStrB 1
+InStrB a
+InStrB a, b
+InStrB (a)
+InStrB a = 1
+InStrB .a
+InStrB #1
+InStrB #1, a
+InStrB a As Long
+InStrB x To y
+InStrB a(1)
+InStrB "s"
+InStrB a: b
+InStrB a Then
+InStrB a,
+InStrB = 1
+InStrB As
+InStrB To 1
+InStrB (1, 2)
+InStrB a.b
+InStrB a!b
+InStrB -1
+InStrB Not a
+InStr
+InStr 1
+InStr a
+InStr a, b
+InStr (a)
+InStr a = 1
+InStr .a
+InStr #1
+InStr #1, a
+InStr a As Long
+InStr x To y
+InStr a(1)
+InStr "s"
+InStr a: b
+InStr a Then
+InStr a,
+InStr = 1
+InStr As
+InStr To 1
+InStr (1, 2)
+InStr a.b
+InStr a!b
+InStr -1
+InStr Not a
+InputB
+InputB 1
+InputB a
+InputB a, b
+InputB (a)
+InputB a = 1
+InputB .a
+InputB #1
+InputB #1, a
+InputB a As Long
+InputB x To y
+InputB a(1)
+InputB "s"
+InputB a: b
+InputB a Then
+InputB a,
+InputB = 1
+InputB As
+InputB To 1
+InputB (1, 2)
+InputB a.b
+InputB a!b
+InputB -1
+InputB Not a
+Input
+Input 1
+Input a
+Input a, b
+Input (a)
+Input a = 1
+Input .a
+Input #1
+Input #1, a
+Input a As Long
+Input x To y
+Input a(1)
+Input "s"
+Input a: b
+Input a Then
+Input a,
+Input = 1
+Input As
+Input To 1
+Input (1, 2)
+Input a.b
+Input a!b
+Input -1
+Input Not a
+In
+In 1
+In a
+In a, b
+In (a)
+In a = 1
+In .a
+In #1
+In #1, a
+In a As Long
+In x To y
+In a(1)
+In "s"
+In a: b
+In a Then
+In a,
+In = 1
+In As
+In To 1
+In (1, 2)
+In a.b
+In a!b
+In -1
+In Not a
+Implements
+Implements 1
+Implements a
+Implements a, b
+Implements (a)
+Implements a = 1
+Implements .a
+Implements #1
+Implements #1, a
+Implements a As Long
+Implements x To y
+Implements a(1)
+Implements "s"
+Implements a: b
+Implements a Then
+Implements a,
+Implements = 1
+Implements As
+Implements To 1
+Implements (1, 2)
+Implements a.b
+Implements a!b
+Implements -1
+Implements Not a
+Imp
+Imp 1
+Imp a
+Imp a, b
+Imp (a)
+Imp a = 1
+Imp .a
+Imp #1
+Imp #1, a
+Imp a As Long
+Imp x To y
+Imp a(1)
+Imp "s"
+Imp a: b
+Imp a Then
+Imp a,
+Imp = 1
+Imp As
+Imp To 1
+Imp (1, 2)
+Imp a.b
+Imp a!b
+Imp -1
+Imp Not a
+If
+If 1
+If a
+If a, b
+If (a)
+If a = 1
+If .a
+If #1
+If #1, a
+If a As Long
+If x To y
+If a(1)
+If "s"
+If a: b
+If a Then
+If a,
+If = 1
+If As
+If To 1
+If (1, 2)
+If a.b
+If a!b
+If -1
+If Not a
+GoTo
+GoTo 1
+GoTo a
+GoTo a, b
+GoTo (a)
+GoTo a = 1
+GoTo .a
+GoTo #1
+GoTo #1, a
+GoTo a As Long
+GoTo x To y
+GoTo a(1)
+GoTo "s"
+GoTo a: b
+GoTo a Then
+GoTo a,
+GoTo = 1
+GoTo As
+GoTo To 1
+GoTo (1, 2)
+GoTo a.b
+GoTo a!b
+GoTo -1
+GoTo Not a
+GoSub
+GoSub 1
+GoSub a
+GoSub a, b
+GoSub (a)
+GoSub a = 1
+GoSub .a
+GoSub #1
+GoSub #1, a
+GoSub a As Long
+GoSub x To y
+GoSub a(1)
+GoSub "s"
+GoSub a: b
+GoSub a Then
+GoSub a,
+GoSub = 1
+GoSub As
+GoSub To 1
+GoSub (1, 2)
+GoSub a.b
+GoSub a!b
+GoSub -1
+GoSub Not a
+Go
+Go 1
+Go a
+Go a, b
+Go (a)
+Go a = 1
+Go .a
+Go #1
+Go #1, a
+Go a As Long
+Go x To y
+Go a(1)
+Go "s"
+Go a: b
+Go a Then
+Go a,
+Go = 1
+Go As
+Go To 1
+Go (1, 2)
+Go a.b
+Go a!b
+Go -1
+Go Not a
+Global
+Global 1
+Global a
+Global a, b
+Global (a)
+Global a = 1
+Global .a
+Global #1
+Global #1, a
+Global a As Long
+Global x To y
+Global a(1)
+Global "s"
+Global a: b
+Global a Then
+Global a,
+Global = 1
+Global As
+Global To 1
+Global (1, 2)
+Global a.b
+Global a!b
+Global -1
+Global Not a
+Get
+Get 1
+Get a
+Get a, b
+Get (a)
+Get a = 1
+Get .a
+Get #1
+Get #1, a
+Get a As Long
+Get x To y
+Get a(1)
+Get "s"
+Get a: b
+Get a Then
+Get a,
+Get = 1
+Get As
+Get To 1
+Get (1, 2)
+Get a.b
+Get a!b
+Get -1
+Get Not a
+Function
+Function 1
+Function a
+Function a, b
+Function (a)
+Function a = 1
+Function .a
+Function #1
+Function #1, a
+Function a As Long
+Function x To y
+Function a(1)
+Function "s"
+Function a: b
+Function a Then
+Function a,
+Function = 1
+Function As
+Function To 1
+Function (1, 2)
+Function a.b
+Function a!b
+Function -1
+Function Not a
+Friend
+Friend 1
+Friend a
+Friend a, b
+Friend (a)
+Friend a = 1
+Friend .a
+Friend #1
+Friend #1, a
+Friend a As Long
+Friend x To y
+Friend a(1)
+Friend "s"
+Friend a: b
+Friend a Then
+Friend a,
+Friend = 1
+Friend As
+Friend To 1
+Friend (1, 2)
+Friend a.b
+Friend a!b
+Friend -1
+Friend Not a
+FreeFile
+FreeFile 1
+FreeFile a
+FreeFile a, b
+FreeFile (a)
+FreeFile a = 1
+FreeFile .a
+FreeFile #1
+FreeFile #1, a
+FreeFile a As Long
+FreeFile x To y
+FreeFile a(1)
+FreeFile "s"
+FreeFile a: b
+FreeFile a Then
+FreeFile a,
+FreeFile = 1
+FreeFile As
+FreeFile To 1
+FreeFile (1, 2)
+FreeFile a.b
+FreeFile a!b
+FreeFile -1
+FreeFile Not a
+Format
+Format 1
+Format a
+Format a, b
+Format (a)
+Format a = 1
+Format .a
+Format #1
+Format #1, a
+Format a As Long
+Format x To y
+Format a(1)
+Format "s"
+Format a: b
+Format a Then
+Format a,
+Format = 1
+Format As
+Format To 1
+Format (1, 2)
+Format a.b
+Format a!b
+Format -1
+Format Not a
+For
+For 1
+For a
+For a, b
+For (a)
+For a = 1
+For .a
+For #1
+For #1, a
+For a As Long
+For x To y
+For a(1)
+For "s"
+For a: b
+For a Then
+For a,
+For = 1
+For As
+For To 1
+For (1, 2)
+For a.b
+For a!b
+For -1
+For Not a
+Fix
+Fix 1
+Fix a
+Fix a, b
+Fix (a)
+Fix a = 1
+Fix .a
+Fix #1
+Fix #1, a
+Fix a As Long
+Fix x To y
+Fix a(1)
+Fix "s"
+Fix a: b
+Fix a Then
+Fix a,
+Fix = 1
+Fix As
+Fix To 1
+Fix (1, 2)
+Fix a.b
+Fix a!b
+Fix -1
+Fix Not a
+False
+False 1
+False a
+False a, b
+False (a)
+False a = 1
+False .a
+False #1
+False #1, a
+False a As Long
+False x To y
+False a(1)
+False "s"
+False a: b
+False a Then
+False a,
+False = 1
+False As
+False To 1
+False (1, 2)
+False a.b
+False a!b
+False -1
+False Not a
+Explicit
+Explicit 1
+Explicit a
+Explicit a, b
+Explicit (a)
+Explicit a = 1
+Explicit .a
+Explicit #1
+Explicit #1, a
+Explicit a As Long
+Explicit x To y
+Explicit a(1)
+Explicit "s"
+Explicit a: b
+Explicit a Then
+Explicit a,
+Explicit = 1
+Explicit As
+Explicit To 1
+Explicit (1, 2)
+Explicit a.b
+Explicit a!b
+Explicit -1
+Explicit Not a
+Exit
+Exit 1
+Exit a
+Exit a, b
+Exit (a)
+Exit a = 1
+Exit .a
+Exit #1
+Exit #1, a
+Exit a As Long
+Exit x To y
+Exit a(1)
+Exit "s"
+Exit a: b
+Exit a Then
+Exit a,
+Exit = 1
+Exit As
+Exit To 1
+Exit (1, 2)
+Exit a.b
+Exit a!b
+Exit -1
+Exit Not a
+Event
+Event 1
+Event a
+Event a, b
+Event (a)
+Event a = 1
+Event .a
+Event #1
+Event #1, a
+Event a As Long
+Event x To y
+Event a(1)
+Event "s"
+Event a: b
+Event a Then
+Event a,
+Event = 1
+Event As
+Event To 1
+Event (1, 2)
+Event a.b
+Event a!b
+Event -1
+Event Not a
+Error
+Error 1
+Error a
+Error a, b
+Error (a)
+Error a = 1
+Error .a
+Error #1
+Error #1, a
+Error a As Long
+Error x To y
+Error a(1)
+Error "s"
+Error a: b
+Error a Then
+Error a,
+Error = 1
+Error As
+Error To 1
+Error (1, 2)
+Error a.b
+Error a!b
+Error -1
+Error Not a
+Erase
+Erase 1
+Erase a
+Erase a, b
+Erase (a)
+Erase a = 1
+Erase .a
+Erase #1
+Erase #1, a
+Erase a As Long
+Erase x To y
+Erase a(1)
+Erase "s"
+Erase a: b
+Erase a Then
+Erase a,
+Erase = 1
+Erase As
+Erase To 1
+Erase (1, 2)
+Erase a.b
+Erase a!b
+Erase -1
+Erase Not a
+Eqv
+Eqv 1
+Eqv a
+Eqv a, b
+Eqv (a)
+Eqv a = 1
+Eqv .a
+Eqv #1
+Eqv #1, a
+Eqv a As Long
+Eqv x To y
+Eqv a(1)
+Eqv "s"
+Eqv a: b
+Eqv a Then
+Eqv a,
+Eqv = 1
+Eqv As
+Eqv To 1
+Eqv (1, 2)
+Eqv a.b
+Eqv a!b
+Eqv -1
+Eqv Not a
+Enum
+Enum 1
+Enum a
+Enum a, b
+Enum (a)
+Enum a = 1
+Enum .a
+Enum #1
+Enum #1, a
+Enum a As Long
+Enum x To y
+Enum a(1)
+Enum "s"
+Enum a: b
+Enum a Then
+Enum a,
+Enum = 1
+Enum As
+Enum To 1
+Enum (1, 2)
+Enum a.b
+Enum a!b
+Enum -1
+Enum Not a
+EndIf
+EndIf 1
+EndIf a
+EndIf a, b
+EndIf (a)
+EndIf a = 1
+EndIf .a
+EndIf #1
+EndIf #1, a
+EndIf a As Long
+EndIf x To y
+EndIf a(1)
+EndIf "s"
+EndIf a: b
+EndIf a Then
+EndIf a,
+EndIf = 1
+EndIf As
+EndIf To 1
+EndIf (1, 2)
+EndIf a.b
+EndIf a!b
+EndIf -1
+EndIf Not a
+End
+End 1
+End a
+End a, b
+End (a)
+End a = 1
+End .a
+End #1
+End #1, a
+End a As Long
+End x To y
+End a(1)
+End "s"
+End a: b
+End a Then
+End a,
+End = 1
+End As
+End To 1
+End (1, 2)
+End a.b
+End a!b
+End -1
+End Not a
+Empty
+Empty 1
+Empty a
+Empty a, b
+Empty (a)
+Empty a = 1
+Empty .a
+Empty #1
+Empty #1, a
+Empty a As Long
+Empty x To y
+Empty a(1)
+Empty "s"
+Empty a: b
+Empty a Then
+Empty a,
+Empty = 1
+Empty As
+Empty To 1
+Empty (1, 2)
+Empty a.b
+Empty a!b
+Empty -1
+Empty Not a
+ElseIf
+ElseIf 1
+ElseIf a
+ElseIf a, b
+ElseIf (a)
+ElseIf a = 1
+ElseIf .a
+ElseIf #1
+ElseIf #1, a
+ElseIf a As Long
+ElseIf x To y
+ElseIf a(1)
+ElseIf "s"
+ElseIf a: b
+ElseIf a Then
+ElseIf a,
+ElseIf = 1
+ElseIf As
+ElseIf To 1
+ElseIf (1, 2)
+ElseIf a.b
+ElseIf a!b
+ElseIf -1
+ElseIf Not a
+Else
+Else 1
+Else a
+Else a, b
+Else (a)
+Else a = 1
+Else .a
+Else #1
+Else #1, a
+Else a As Long
+Else x To y
+Else a(1)
+Else "s"
+Else a: b
+Else a Then
+Else a,
+Else = 1
+Else As
+Else To 1
+Else (1, 2)
+Else a.b
+Else a!b
+Else -1
+Else Not a
+Each
+Each 1
+Each a
+Each a, b
+Each (a)
+Each a = 1
+Each .a
+Each #1
+Each #1, a
+Each a As Long
+Each x To y
+Each a(1)
+Each "s"
+Each a: b
+Each a Then
+Each a,
+Each = 1
+Each As
+Each To 1
+Each (1, 2)
+Each a.b
+Each a!b
+Each -1
+Each Not a
+Double
+Double 1
+Double a
+Double a, b
+Double (a)
+Double a = 1
+Double .a
+Double #1
+Double #1, a
+Double a As Long
+Double x To y
+Double a(1)
+Double "s"
+Double a: b
+Double a Then
+Double a,
+Double = 1
+Double As
+Double To 1
+Double (1, 2)
+Double a.b
+Double a!b
+Double -1
+Double Not a
+DoEvents
+DoEvents 1
+DoEvents a
+DoEvents a, b
+DoEvents (a)
+DoEvents a = 1
+DoEvents .a
+DoEvents #1
+DoEvents #1, a
+DoEvents a As Long
+DoEvents x To y
+DoEvents a(1)
+DoEvents "s"
+DoEvents a: b
+DoEvents a Then
+DoEvents a,
+DoEvents = 1
+DoEvents As
+DoEvents To 1
+DoEvents (1, 2)
+DoEvents a.b
+DoEvents a!b
+DoEvents -1
+DoEvents Not a
+Do
+Do 1
+Do a
+Do a, b
+Do (a)
+Do a = 1
+Do .a
+Do #1
+Do #1, a
+Do a As Long
+Do x To y
+Do a(1)
+Do "s"
+Do a: b
+Do a Then
+Do a,
+Do = 1
+Do As
+Do To 1
+Do (1, 2)
+Do a.b
+Do a!b
+Do -1
+Do Not a
+Dir
+Dir 1
+Dir a
+Dir a, b
+Dir (a)
+Dir a = 1
+Dir .a
+Dir #1
+Dir #1, a
+Dir a As Long
+Dir x To y
+Dir a(1)
+Dir "s"
+Dir a: b
+Dir a Then
+Dir a,
+Dir = 1
+Dir As
+Dir To 1
+Dir (1, 2)
+Dir a.b
+Dir a!b
+Dir -1
+Dir Not a
+Dim
+Dim 1
+Dim a
+Dim a, b
+Dim (a)
+Dim a = 1
+Dim .a
+Dim #1
+Dim #1, a
+Dim a As Long
+Dim x To y
+Dim a(1)
+Dim "s"
+Dim a: b
+Dim a Then
+Dim a,
+Dim = 1
+Dim As
+Dim To 1
+Dim (1, 2)
+Dim a.b
+Dim a!b
+Dim -1
+Dim Not a
+DefVar
+DefVar 1
+DefVar a
+DefVar a, b
+DefVar (a)
+DefVar a = 1
+DefVar .a
+DefVar #1
+DefVar #1, a
+DefVar a As Long
+DefVar x To y
+DefVar a(1)
+DefVar "s"
+DefVar a: b
+DefVar a Then
+DefVar a,
+DefVar = 1
+DefVar As
+DefVar To 1
+DefVar (1, 2)
+DefVar a.b
+DefVar a!b
+DefVar -1
+DefVar Not a
+DefStr
+DefStr 1
+DefStr a
+DefStr a, b
+DefStr (a)
+DefStr a = 1
+DefStr .a
+DefStr #1
+DefStr #1, a
+DefStr a As Long
+DefStr x To y
+DefStr a(1)
+DefStr "s"
+DefStr a: b
+DefStr a Then
+DefStr a,
+DefStr = 1
+DefStr As
+DefStr To 1
+DefStr (1, 2)
+DefStr a.b
+DefStr a!b
+DefStr -1
+DefStr Not a
+DefSng
+DefSng 1
+DefSng a
+DefSng a, b
+DefSng (a)
+DefSng a = 1
+DefSng .a
+DefSng #1
+DefSng #1, a
+DefSng a As Long
+DefSng x To y
+DefSng a(1)
+DefSng "s"
+DefSng a: b
+DefSng a Then
+DefSng a,
+DefSng = 1
+DefSng As
+DefSng To 1
+DefSng (1, 2)
+DefSng a.b
+DefSng a!b
+DefSng -1
+DefSng Not a
+DefObj
+DefObj 1
+DefObj a
+DefObj a, b
+DefObj (a)
+DefObj a = 1
+DefObj .a
+DefObj #1
+DefObj #1, a
+DefObj a As Long
+DefObj x To y
+DefObj a(1)
+DefObj "s"
+DefObj a: b
+DefObj a Then
+DefObj a,
+DefObj = 1
+DefObj As
+DefObj To 1
+DefObj (1, 2)
+DefObj a.b
+DefObj a!b
+DefObj -1
+DefObj Not a
+DefLng
+DefLng 1
+DefLng a
+DefLng a, b
+DefLng (a)
+DefLng a = 1
+DefLng .a
+DefLng #1
+DefLng #1, a
+DefLng a As Long
+DefLng x To y
+DefLng a(1)
+DefLng "s"
+DefLng a: b
+DefLng a Then
+DefLng a,
+DefLng = 1
+DefLng As
+DefLng To 1
+DefLng (1, 2)
+DefLng a.b
+DefLng a!b
+DefLng -1
+DefLng Not a
+DefInt
+DefInt 1
+DefInt a
+DefInt a, b
+DefInt (a)
+DefInt a = 1
+DefInt .a
+DefInt #1
+DefInt #1, a
+DefInt a As Long
+DefInt x To y
+DefInt a(1)
+DefInt "s"
+DefInt a: b
+DefInt a Then
+DefInt a,
+DefInt = 1
+DefInt As
+DefInt To 1
+DefInt (1, 2)
+DefInt a.b
+DefInt a!b
+DefInt -1
+DefInt Not a
+DefDbl
+DefDbl 1
+DefDbl a
+DefDbl a, b
+DefDbl (a)
+DefDbl a = 1
+DefDbl .a
+DefDbl #1
+DefDbl #1, a
+DefDbl a As Long
+DefDbl x To y
+DefDbl a(1)
+DefDbl "s"
+DefDbl a: b
+DefDbl a Then
+DefDbl a,
+DefDbl = 1
+DefDbl As
+DefDbl To 1
+DefDbl (1, 2)
+DefDbl a.b
+DefDbl a!b
+DefDbl -1
+DefDbl Not a
+DefDec
+DefDec 1
+DefDec a
+DefDec a, b
+DefDec (a)
+DefDec a = 1
+DefDec .a
+DefDec #1
+DefDec #1, a
+DefDec a As Long
+DefDec x To y
+DefDec a(1)
+DefDec "s"
+DefDec a: b
+DefDec a Then
+DefDec a,
+DefDec = 1
+DefDec As
+DefDec To 1
+DefDec (1, 2)
+DefDec a.b
+DefDec a!b
+DefDec -1
+DefDec Not a
+DefDate
+DefDate 1
+DefDate a
+DefDate a, b
+DefDate (a)
+DefDate a = 1
+DefDate .a
+DefDate #1
+DefDate #1, a
+DefDate a As Long
+DefDate x To y
+DefDate a(1)
+DefDate "s"
+DefDate a: b
+DefDate a Then
+DefDate a,
+DefDate = 1
+DefDate As
+DefDate To 1
+DefDate (1, 2)
+DefDate a.b
+DefDate a!b
+DefDate -1
+DefDate Not a
+DefCur
+DefCur 1
+DefCur a
+DefCur a, b
+DefCur (a)
+DefCur a = 1
+DefCur .a
+DefCur #1
+DefCur #1, a
+DefCur a As Long
+DefCur x To y
+DefCur a(1)
+DefCur "s"
+DefCur a: b
+DefCur a Then
+DefCur a,
+DefCur = 1
+DefCur As
+DefCur To 1
+DefCur (1, 2)
+DefCur a.b
+DefCur a!b
+DefCur -1
+DefCur Not a
+DefByte
+DefByte 1
+DefByte a
+DefByte a, b
+DefByte (a)
+DefByte a = 1
+DefByte .a
+DefByte #1
+DefByte #1, a
+DefByte a As Long
+DefByte x To y
+DefByte a(1)
+DefByte "s"
+DefByte a: b
+DefByte a Then
+DefByte a,
+DefByte = 1
+DefByte As
+DefByte To 1
+DefByte (1, 2)
+DefByte a.b
+DefByte a!b
+DefByte -1
+DefByte Not a
+DefBool
+DefBool 1
+DefBool a
+DefBool a, b
+DefBool (a)
+DefBool a = 1
+DefBool .a
+DefBool #1
+DefBool #1, a
+DefBool a As Long
+DefBool x To y
+DefBool a(1)
+DefBool "s"
+DefBool a: b
+DefBool a Then
+DefBool a,
+DefBool = 1
+DefBool As
+DefBool To 1
+DefBool (1, 2)
+DefBool a.b
+DefBool a!b
+DefBool -1
+DefBool Not a
+Declare
+Declare 1
+Declare a
+Declare a, b
+Declare (a)
+Declare a = 1
+Declare .a
+Declare #1
+Declare #1, a
+Declare a As Long
+Declare x To y
+Declare a(1)
+Declare "s"
+Declare a: b
+Declare a Then
+Declare a,
+Declare = 1
+Declare As
+Declare To 1
+Declare (1, 2)
+Declare a.b
+Declare a!b
+Declare -1
+Declare Not a
+Decimal
+Decimal 1
+Decimal a
+Decimal a, b
+Decimal (a)
+Decimal a = 1
+Decimal .a
+Decimal #1
+Decimal #1, a
+Decimal a As Long
+Decimal x To y
+Decimal a(1)
+Decimal "s"
+Decimal a: b
+Decimal a Then
+Decimal a,
+Decimal = 1
+Decimal As
+Decimal To 1
+Decimal (1, 2)
+Decimal a.b
+Decimal a!b
+Decimal -1
+Decimal Not a
+Debug
+Debug 1
+Debug a
+Debug a, b
+Debug (a)
+Debug a = 1
+Debug .a
+Debug #1
+Debug #1, a
+Debug a As Long
+Debug x To y
+Debug a(1)
+Debug "s"
+Debug a: b
+Debug a Then
+Debug a,
+Debug = 1
+Debug As
+Debug To 1
+Debug (1, 2)
+Debug a.b
+Debug a!b
+Debug -1
+Debug Not a
+Date
+Date 1
+Date a
+Date a, b
+Date (a)
+Date a = 1
+Date .a
+Date #1
+Date #1, a
+Date a As Long
+Date x To y
+Date a(1)
+Date "s"
+Date a: b
+Date a Then
+Date a,
+Date = 1
+Date As
+Date To 1
+Date (1, 2)
+Date a.b
+Date a!b
+Date -1
+Date Not a
+Database
+Database 1
+Database a
+Database a, b
+Database (a)
+Database a = 1
+Database .a
+Database #1
+Database #1, a
+Database a As Long
+Database x To y
+Database a(1)
+Database "s"
+Database a: b
+Database a Then
+Database a,
+Database = 1
+Database As
+Database To 1
+Database (1, 2)
+Database a.b
+Database a!b
+Database -1
+Database Not a
+Currency
+Currency 1
+Currency a
+Currency a, b
+Currency (a)
+Currency a = 1
+Currency .a
+Currency #1
+Currency #1, a
+Currency a As Long
+Currency x To y
+Currency a(1)
+Currency "s"
+Currency a: b
+Currency a Then
+Currency a,
+Currency = 1
+Currency As
+Currency To 1
+Currency (1, 2)
+Currency a.b
+Currency a!b
+Currency -1
+Currency Not a
+CVErr
+CVErr 1
+CVErr a
+CVErr a, b
+CVErr (a)
+CVErr a = 1
+CVErr .a
+CVErr #1
+CVErr #1, a
+CVErr a As Long
+CVErr x To y
+CVErr a(1)
+CVErr "s"
+CVErr a: b
+CVErr a Then
+CVErr a,
+CVErr = 1
+CVErr As
+CVErr To 1
+CVErr (1, 2)
+CVErr a.b
+CVErr a!b
+CVErr -1
+CVErr Not a
+CVDate
+CVDate 1
+CVDate a
+CVDate a, b
+CVDate (a)
+CVDate a = 1
+CVDate .a
+CVDate #1
+CVDate #1, a
+CVDate a As Long
+CVDate x To y
+CVDate a(1)
+CVDate "s"
+CVDate a: b
+CVDate a Then
+CVDate a,
+CVDate = 1
+CVDate As
+CVDate To 1
+CVDate (1, 2)
+CVDate a.b
+CVDate a!b
+CVDate -1
+CVDate Not a
+CVar
+CVar 1
+CVar a
+CVar a, b
+CVar (a)
+CVar a = 1
+CVar .a
+CVar #1
+CVar #1, a
+CVar a As Long
+CVar x To y
+CVar a(1)
+CVar "s"
+CVar a: b
+CVar a Then
+CVar a,
+CVar = 1
+CVar As
+CVar To 1
+CVar (1, 2)
+CVar a.b
+CVar a!b
+CVar -1
+CVar Not a
+CurDir
+CurDir 1
+CurDir a
+CurDir a, b
+CurDir (a)
+CurDir a = 1
+CurDir .a
+CurDir #1
+CurDir #1, a
+CurDir a As Long
+CurDir x To y
+CurDir a(1)
+CurDir "s"
+CurDir a: b
+CurDir a Then
+CurDir a,
+CurDir = 1
+CurDir As
+CurDir To 1
+CurDir (1, 2)
+CurDir a.b
+CurDir a!b
+CurDir -1
+CurDir Not a
+CStr
+CStr 1
+CStr a
+CStr a, b
+CStr (a)
+CStr a = 1
+CStr .a
+CStr #1
+CStr #1, a
+CStr a As Long
+CStr x To y
+CStr a(1)
+CStr "s"
+CStr a: b
+CStr a Then
+CStr a,
+CStr = 1
+CStr As
+CStr To 1
+CStr (1, 2)
+CStr a.b
+CStr a!b
+CStr -1
+CStr Not a
+CSng
+CSng 1
+CSng a
+CSng a, b
+CSng (a)
+CSng a = 1
+CSng .a
+CSng #1
+CSng #1, a
+CSng a As Long
+CSng x To y
+CSng a(1)
+CSng "s"
+CSng a: b
+CSng a Then
+CSng a,
+CSng = 1
+CSng As
+CSng To 1
+CSng (1, 2)
+CSng a.b
+CSng a!b
+CSng -1
+CSng Not a
+Const
+Const 1
+Const a
+Const a, b
+Const (a)
+Const a = 1
+Const .a
+Const #1
+Const #1, a
+Const a As Long
+Const x To y
+Const a(1)
+Const "s"
+Const a: b
+Const a Then
+Const a,
+Const = 1
+Const As
+Const To 1
+Const (1, 2)
+Const a.b
+Const a!b
+Const -1
+Const Not a
+Compare
+Compare 1
+Compare a
+Compare a, b
+Compare (a)
+Compare a = 1
+Compare .a
+Compare #1
+Compare #1, a
+Compare a As Long
+Compare x To y
+Compare a(1)
+Compare "s"
+Compare a: b
+Compare a Then
+Compare a,
+Compare = 1
+Compare As
+Compare To 1
+Compare (1, 2)
+Compare a.b
+Compare a!b
+Compare -1
+Compare Not a
+Close
+Close 1
+Close a
+Close a, b
+Close (a)
+Close a = 1
+Close .a
+Close #1
+Close #1, a
+Close a As Long
+Close x To y
+Close a(1)
+Close "s"
+Close a: b
+Close a Then
+Close a,
+Close = 1
+Close As
+Close To 1
+Close (1, 2)
+Close a.b
+Close a!b
+Close -1
+Close Not a
+CLng
+CLng 1
+CLng a
+CLng a, b
+CLng (a)
+CLng a = 1
+CLng .a
+CLng #1
+CLng #1, a
+CLng a As Long
+CLng x To y
+CLng a(1)
+CLng "s"
+CLng a: b
+CLng a Then
+CLng a,
+CLng = 1
+CLng As
+CLng To 1
+CLng (1, 2)
+CLng a.b
+CLng a!b
+CLng -1
+CLng Not a
+Circle
+Circle 1
+Circle a
+Circle a, b
+Circle (a)
+Circle a = 1
+Circle .a
+Circle #1
+Circle #1, a
+Circle a As Long
+Circle x To y
+Circle a(1)
+Circle "s"
+Circle a: b
+Circle a Then
+Circle a,
+Circle = 1
+Circle As
+Circle To 1
+Circle (1, 2)
+Circle a.b
+Circle a!b
+Circle -1
+Circle Not a
+CInt
+CInt 1
+CInt a
+CInt a, b
+CInt (a)
+CInt a = 1
+CInt .a
+CInt #1
+CInt #1, a
+CInt a As Long
+CInt x To y
+CInt a(1)
+CInt "s"
+CInt a: b
+CInt a Then
+CInt a,
+CInt = 1
+CInt As
+CInt To 1
+CInt (1, 2)
+CInt a.b
+CInt a!b
+CInt -1
+CInt Not a
+ChDir
+ChDir 1
+ChDir a
+ChDir a, b
+ChDir (a)
+ChDir a = 1
+ChDir .a
+ChDir #1
+ChDir #1, a
+ChDir a As Long
+ChDir x To y
+ChDir a(1)
+ChDir "s"
+ChDir a: b
+ChDir a Then
+ChDir a,
+ChDir = 1
+ChDir As
+ChDir To 1
+ChDir (1, 2)
+ChDir a.b
+ChDir a!b
+ChDir -1
+ChDir Not a
+CDecl
+CDecl 1
+CDecl a
+CDecl a, b
+CDecl (a)
+CDecl a = 1
+CDecl .a
+CDecl #1
+CDecl #1, a
+CDecl a As Long
+CDecl x To y
+CDecl a(1)
+CDecl "s"
+CDecl a: b
+CDecl a Then
+CDecl a,
+CDecl = 1
+CDecl As
+CDecl To 1
+CDecl (1, 2)
+CDecl a.b
+CDecl a!b
+CDecl -1
+CDecl Not a
+CDbl
+CDbl 1
+CDbl a
+CDbl a, b
+CDbl (a)
+CDbl a = 1
+CDbl .a
+CDbl #1
+CDbl #1, a
+CDbl a As Long
+CDbl x To y
+CDbl a(1)
+CDbl "s"
+CDbl a: b
+CDbl a Then
+CDbl a,
+CDbl = 1
+CDbl As
+CDbl To 1
+CDbl (1, 2)
+CDbl a.b
+CDbl a!b
+CDbl -1
+CDbl Not a
+CDec
+CDec 1
+CDec a
+CDec a, b
+CDec (a)
+CDec a = 1
+CDec .a
+CDec #1
+CDec #1, a
+CDec a As Long
+CDec x To y
+CDec a(1)
+CDec "s"
+CDec a: b
+CDec a Then
+CDec a,
+CDec = 1
+CDec As
+CDec To 1
+CDec (1, 2)
+CDec a.b
+CDec a!b
+CDec -1
+CDec Not a
+CDate
+CDate 1
+CDate a
+CDate a, b
+CDate (a)
+CDate a = 1
+CDate .a
+CDate #1
+CDate #1, a
+CDate a As Long
+CDate x To y
+CDate a(1)
+CDate "s"
+CDate a: b
+CDate a Then
+CDate a,
+CDate = 1
+CDate As
+CDate To 1
+CDate (1, 2)
+CDate a.b
+CDate a!b
+CDate -1
+CDate Not a
+CCur
+CCur 1
+CCur a
+CCur a, b
+CCur (a)
+CCur a = 1
+CCur .a
+CCur #1
+CCur #1, a
+CCur a As Long
+CCur x To y
+CCur a(1)
+CCur "s"
+CCur a: b
+CCur a Then
+CCur a,
+CCur = 1
+CCur As
+CCur To 1
+CCur (1, 2)
+CCur a.b
+CCur a!b
+CCur -1
+CCur Not a
+CByte
+CByte 1
+CByte a
+CByte a, b
+CByte (a)
+CByte a = 1
+CByte .a
+CByte #1
+CByte #1, a
+CByte a As Long
+CByte x To y
+CByte a(1)
+CByte "s"
+CByte a: b
+CByte a Then
+CByte a,
+CByte = 1
+CByte As
+CByte To 1
+CByte (1, 2)
+CByte a.b
+CByte a!b
+CByte -1
+CByte Not a
+CBool
+CBool 1
+CBool a
+CBool a, b
+CBool (a)
+CBool a = 1
+CBool .a
+CBool #1
+CBool #1, a
+CBool a As Long
+CBool x To y
+CBool a(1)
+CBool "s"
+CBool a: b
+CBool a Then
+CBool a,
+CBool = 1
+CBool As
+CBool To 1
+CBool (1, 2)
+CBool a.b
+CBool a!b
+CBool -1
+CBool Not a
+Case
+Case 1
+Case a
+Case a, b
+Case (a)
+Case a = 1
+Case .a
+Case #1
+Case #1, a
+Case a As Long
+Case x To y
+Case a(1)
+Case "s"
+Case a: b
+Case a Then
+Case a,
+Case = 1
+Case As
+Case To 1
+Case (1, 2)
+Case a.b
+Case a!b
+Case -1
+Case Not a
+Call
+Call 1
+Call a
+Call a, b
+Call (a)
+Call a = 1
+Call .a
+Call #1
+Call #1, a
+Call a As Long
+Call x To y
+Call a(1)
+Call "s"
+Call a: b
+Call a Then
+Call a,
+Call = 1
+Call As
+Call To 1
+Call (1, 2)
+Call a.b
+Call a!b
+Call -1
+Call Not a
+ByVal
+ByVal 1
+ByVal a
+ByVal a, b
+ByVal (a)
+ByVal a = 1
+ByVal .a
+ByVal #1
+ByVal #1, a
+ByVal a As Long
+ByVal x To y
+ByVal a(1)
+ByVal "s"
+ByVal a: b
+ByVal a Then
+ByVal a,
+ByVal = 1
+ByVal As
+ByVal To 1
+ByVal (1, 2)
+ByVal a.b
+ByVal a!b
+ByVal -1
+ByVal Not a
+Byte
+Byte 1
+Byte a
+Byte a, b
+Byte (a)
+Byte a = 1
+Byte .a
+Byte #1
+Byte #1, a
+Byte a As Long
+Byte x To y
+Byte a(1)
+Byte "s"
+Byte a: b
+Byte a Then
+Byte a,
+Byte = 1
+Byte As
+Byte To 1
+Byte (1, 2)
+Byte a.b
+Byte a!b
+Byte -1
+Byte Not a
+ByRef
+ByRef 1
+ByRef a
+ByRef a, b
+ByRef (a)
+ByRef a = 1
+ByRef .a
+ByRef #1
+ByRef #1, a
+ByRef a As Long
+ByRef x To y
+ByRef a(1)
+ByRef "s"
+ByRef a: b
+ByRef a Then
+ByRef a,
+ByRef = 1
+ByRef As
+ByRef To 1
+ByRef (1, 2)
+ByRef a.b
+ByRef a!b
+ByRef -1
+ByRef Not a
+Boolean
+Boolean 1
+Boolean a
+Boolean a, b
+Boolean (a)
+Boolean a = 1
+Boolean .a
+Boolean #1
+Boolean #1, a
+Boolean a As Long
+Boolean x To y
+Boolean a(1)
+Boolean "s"
+Boolean a: b
+Boolean a Then
+Boolean a,
+Boolean = 1
+Boolean As
+Boolean To 1
+Boolean (1, 2)
+Boolean a.b
+Boolean a!b
+Boolean -1
+Boolean Not a
+Binary
+Binary 1
+Binary a
+Binary a, b
+Binary (a)
+Binary a = 1
+Binary .a
+Binary #1
+Binary #1, a
+Binary a As Long
+Binary x To y
+Binary a(1)
+Binary "s"
+Binary a: b
+Binary a Then
+Binary a,
+Binary = 1
+Binary As
+Binary To 1
+Binary (1, 2)
+Binary a.b
+Binary a!b
+Binary -1
+Binary Not a
+BF
+BF 1
+BF a
+BF a, b
+BF (a)
+BF a = 1
+BF .a
+BF #1
+BF #1, a
+BF a As Long
+BF x To y
+BF a(1)
+BF "s"
+BF a: b
+BF a Then
+BF a,
+BF = 1
+BF As
+BF To 1
+BF (1, 2)
+BF a.b
+BF a!b
+BF -1
+BF Not a
+Base
+Base 1
+Base a
+Base a, b
+Base (a)
+Base a = 1
+Base .a
+Base #1
+Base #1, a
+Base a As Long
+Base x To y
+Base a(1)
+Base "s"
+Base a: b
+Base a Then
+Base a,
+Base = 1
+Base As
+Base To 1
+Base (1, 2)
+Base a.b
+Base a!b
+Base -1
+Base Not a
+Assert
+Assert 1
+Assert a
+Assert a, b
+Assert (a)
+Assert a = 1
+Assert .a
+Assert #1
+Assert #1, a
+Assert a As Long
+Assert x To y
+Assert a(1)
+Assert "s"
+Assert a: b
+Assert a Then
+Assert a,
+Assert = 1
+Assert As
+Assert To 1
+Assert (1, 2)
+Assert a.b
+Assert a!b
+Assert -1
+Assert Not a
+As
+As 1
+As a
+As a, b
+As (a)
+As a = 1
+As .a
+As #1
+As #1, a
+As a As Long
+As x To y
+As a(1)
+As "s"
+As a: b
+As a Then
+As a,
+As = 1
+As As
+As To 1
+As (1, 2)
+As a.b
+As a!b
+As -1
+As Not a
+Array
+Array 1
+Array a
+Array a, b
+Array (a)
+Array a = 1
+Array .a
+Array #1
+Array #1, a
+Array a As Long
+Array x To y
+Array a(1)
+Array "s"
+Array a: b
+Array a Then
+Array a,
+Array = 1
+Array As
+Array To 1
+Array (1, 2)
+Array a.b
+Array a!b
+Array -1
+Array Not a
+Append
+Append 1
+Append a
+Append a, b
+Append (a)
+Append a = 1
+Append .a
+Append #1
+Append #1, a
+Append a As Long
+Append x To y
+Append a(1)
+Append "s"
+Append a: b
+Append a Then
+Append a,
+Append = 1
+Append As
+Append To 1
+Append (1, 2)
+Append a.b
+Append a!b
+Append -1
+Append Not a
+Any
+Any 1
+Any a
+Any a, b
+Any (a)
+Any a = 1
+Any .a
+Any #1
+Any #1, a
+Any a As Long
+Any x To y
+Any a(1)
+Any "s"
+Any a: b
+Any a Then
+Any a,
+Any = 1
+Any As
+Any To 1
+Any (1, 2)
+Any a.b
+Any a!b
+Any -1
+Any Not a
+And
+And 1
+And a
+And a, b
+And (a)
+And a = 1
+And .a
+And #1
+And #1, a
+And a As Long
+And x To y
+And a(1)
+And "s"
+And a: b
+And a Then
+And a,
+And = 1
+And As
+And To 1
+And (1, 2)
+And a.b
+And a!b
+And -1
+And Not a
+Alias
+Alias 1
+Alias a
+Alias a, b
+Alias (a)
+Alias a = 1
+Alias .a
+Alias #1
+Alias #1, a
+Alias a As Long
+Alias x To y
+Alias a(1)
+Alias "s"
+Alias a: b
+Alias a Then
+Alias a,
+Alias = 1
+Alias As
+Alias To 1
+Alias (1, 2)
+Alias a.b
+Alias a!b
+Alias -1
+Alias Not a
+AddressOf
+AddressOf 1
+AddressOf a
+AddressOf a, b
+AddressOf (a)
+AddressOf a = 1
+AddressOf .a
+AddressOf #1
+AddressOf #1, a
+AddressOf a As Long
+AddressOf x To y
+AddressOf a(1)
+AddressOf "s"
+AddressOf a: b
+AddressOf a Then
+AddressOf a,
+AddressOf = 1
+AddressOf As
+AddressOf To 1
+AddressOf (1, 2)
+AddressOf a.b
+AddressOf a!b
+AddressOf -1
+AddressOf Not a
+Access
+Access 1
+Access a
+Access a, b
+Access (a)
+Access a = 1
+Access .a
+Access #1
+Access #1, a
+Access a As Long
+Access x To y
+Access a(1)
+Access "s"
+Access a: b
+Access a Then
+Access a,
+Access = 1
+Access As
+Access To 1
+Access (1, 2)
+Access a.b
+Access a!b
+Access -1
+Access Not a
+Abs
+Abs 1
+Abs a
+Abs a, b
+Abs (a)
+Abs a = 1
+Abs .a
+Abs #1
+Abs #1, a
+Abs a As Long
+Abs x To y
+Abs a(1)
+Abs "s"
+Abs a: b
+Abs a Then
+Abs a,
+Abs = 1
+Abs As
+Abs To 1
+Abs (1, 2)
+Abs a.b
+Abs a!b
+Abs -1
+Abs Not a

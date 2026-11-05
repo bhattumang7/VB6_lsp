@@ -1,0 +1,4393 @@
+# template	word	class	message
+proc	Xor	syntax	Syntax error
+proc	Xor 1	syntax	Syntax error
+proc	Xor a	syntax	Syntax error
+proc	Xor a, b	syntax	Syntax error
+proc	Xor (a)	syntax	Syntax error
+proc	Xor a = 1	syntax	Syntax error
+proc	Xor .a	syntax	Syntax error
+proc	Xor #1	syntax	Syntax error
+proc	Xor #1, a	syntax	Syntax error
+proc	Xor a As Long	syntax	Syntax error
+proc	Xor x To y	syntax	Syntax error
+proc	Xor a(1)	syntax	Syntax error
+proc	Xor "s"	syntax	Syntax error
+proc	Xor a: b	syntax	Syntax error
+proc	Xor a Then	syntax	Syntax error
+proc	Xor a,	syntax	Syntax error
+proc	Xor = 1	syntax	Syntax error
+proc	Xor As	syntax	Syntax error
+proc	Xor To 1	syntax	Syntax error
+proc	Xor (1, 2)	syntax	Syntax error
+proc	Xor a.b	syntax	Syntax error
+proc	Xor a!b	syntax	Syntax error
+proc	Xor -1	syntax	Syntax error
+proc	Xor Not a	syntax	Syntax error
+proc	Write	syntax	Syntax error
+proc	Write 1	syntax	Syntax error
+proc	Write a	syntax	Syntax error
+proc	Write a, b	syntax	Syntax error
+proc	Write (a)	syntax	Syntax error
+proc	Write a = 1	syntax	Syntax error
+proc	Write .a	syntax	Syntax error
+proc	Write #1	syntax	Syntax error
+proc	Write #1, a	accepted	
+proc	Write a As Long	syntax	Syntax error
+proc	Write x To y	syntax	Syntax error
+proc	Write a(1)	syntax	Syntax error
+proc	Write "s"	syntax	Syntax error
+proc	Write a: b	syntax	Syntax error
+proc	Write a Then	syntax	Syntax error
+proc	Write a,	syntax	Syntax error
+proc	Write = 1	syntax	Syntax error
+proc	Write As	syntax	Syntax error
+proc	Write To 1	syntax	Syntax error
+proc	Write (1, 2)	syntax	Syntax error
+proc	Write a.b	syntax	Syntax error
+proc	Write a!b	syntax	Syntax error
+proc	Write -1	syntax	Syntax error
+proc	Write Not a	syntax	Syntax error
+proc	WithEvents	syntax	Syntax error
+proc	WithEvents 1	syntax	Syntax error
+proc	WithEvents a	syntax	Syntax error
+proc	WithEvents a, b	syntax	Syntax error
+proc	WithEvents (a)	syntax	Syntax error
+proc	WithEvents a = 1	syntax	Syntax error
+proc	WithEvents .a	syntax	Syntax error
+proc	WithEvents #1	syntax	Syntax error
+proc	WithEvents #1, a	syntax	Syntax error
+proc	WithEvents a As Long	syntax	Syntax error
+proc	WithEvents x To y	syntax	Syntax error
+proc	WithEvents a(1)	syntax	Syntax error
+proc	WithEvents "s"	syntax	Syntax error
+proc	WithEvents a: b	syntax	Syntax error
+proc	WithEvents a Then	syntax	Syntax error
+proc	WithEvents a,	syntax	Syntax error
+proc	WithEvents = 1	syntax	Syntax error
+proc	WithEvents As	syntax	Syntax error
+proc	WithEvents To 1	syntax	Syntax error
+proc	WithEvents (1, 2)	syntax	Syntax error
+proc	WithEvents a.b	syntax	Syntax error
+proc	WithEvents a!b	syntax	Syntax error
+proc	WithEvents -1	syntax	Syntax error
+proc	WithEvents Not a	syntax	Syntax error
+proc	With	syntax	Syntax error
+proc	With 1	semantic	With object must be user-defined type, Object, or Variant
+proc	With a	syntax	Expected End With
+proc	With a, b	syntax	Syntax error
+proc	With (a)	syntax	Expected End With
+proc	With a = 1	syntax	Expected End With
+proc	With .a	semantic	Invalid or unqualified reference
+proc	With #1	syntax	Syntax error
+proc	With #1, a	syntax	Syntax error
+proc	With a As Long	syntax	Syntax error
+proc	With x To y	syntax	Syntax error
+proc	With a(1)	syntax	Expected End With
+proc	With "s"	semantic	With object must be user-defined type, Object, or Variant
+proc	With a: b	semantic	Expected Sub, Function, or Property
+proc	With a Then	syntax	Syntax error
+proc	With a,	syntax	Syntax error
+proc	With = 1	syntax	Syntax error
+proc	With As	syntax	Syntax error
+proc	With To 1	syntax	Syntax error
+proc	With (1, 2)	syntax	Syntax error
+proc	With a.b	syntax	Expected End With
+proc	With a!b	syntax	Expected End With
+proc	With -1	semantic	With object must be user-defined type, Object, or Variant
+proc	With Not a	syntax	Expected End With
+proc	Width	syntax	Syntax error
+proc	Width 1	syntax	Syntax error
+proc	Width a	syntax	Syntax error
+proc	Width a, b	syntax	Syntax error
+proc	Width (a)	syntax	Syntax error
+proc	Width a = 1	syntax	Syntax error
+proc	Width .a	semantic	Invalid or unqualified reference
+proc	Width #1	syntax	Syntax error
+proc	Width #1, a	accepted	
+proc	Width a As Long	syntax	Syntax error
+proc	Width x To y	syntax	Syntax error
+proc	Width a(1)	syntax	Syntax error
+proc	Width "s"	syntax	Syntax error
+proc	Width a: b	syntax	Syntax error
+proc	Width a Then	syntax	Syntax error
+proc	Width a,	syntax	Syntax error
+proc	Width = 1	semantic	Argument not optional
+proc	Width As	syntax	Syntax error
+proc	Width To 1	syntax	Syntax error
+proc	Width (1, 2)	syntax	Syntax error
+proc	Width a.b	syntax	Syntax error
+proc	Width a!b	syntax	Syntax error
+proc	Width -1	syntax	Syntax error
+proc	Width Not a	syntax	Syntax error
+proc	While	syntax	Syntax error
+proc	While 1	syntax	While without Wend
+proc	While a	syntax	While without Wend
+proc	While a, b	syntax	Syntax error
+proc	While (a)	syntax	While without Wend
+proc	While a = 1	syntax	While without Wend
+proc	While .a	semantic	Invalid or unqualified reference
+proc	While #1	syntax	Syntax error
+proc	While #1, a	syntax	Syntax error
+proc	While a As Long	syntax	Syntax error
+proc	While x To y	syntax	Syntax error
+proc	While a(1)	syntax	While without Wend
+proc	While "s"	syntax	While without Wend
+proc	While a: b	semantic	Expected Sub, Function, or Property
+proc	While a Then	syntax	Syntax error
+proc	While a,	syntax	Syntax error
+proc	While = 1	syntax	Syntax error
+proc	While As	syntax	Syntax error
+proc	While To 1	syntax	Syntax error
+proc	While (1, 2)	syntax	Syntax error
+proc	While a.b	syntax	While without Wend
+proc	While a!b	syntax	While without Wend
+proc	While -1	syntax	While without Wend
+proc	While Not a	syntax	While without Wend
+proc	Wend	syntax	Wend without While
+proc	Wend 1	syntax	Syntax error
+proc	Wend a	syntax	Syntax error
+proc	Wend a, b	syntax	Syntax error
+proc	Wend (a)	syntax	Syntax error
+proc	Wend a = 1	syntax	Syntax error
+proc	Wend .a	syntax	Syntax error
+proc	Wend #1	syntax	Syntax error
+proc	Wend #1, a	syntax	Syntax error
+proc	Wend a As Long	syntax	Syntax error
+proc	Wend x To y	syntax	Syntax error
+proc	Wend a(1)	syntax	Syntax error
+proc	Wend "s"	syntax	Syntax error
+proc	Wend a: b	syntax	Syntax error
+proc	Wend a Then	syntax	Syntax error
+proc	Wend a,	syntax	Syntax error
+proc	Wend = 1	syntax	Syntax error
+proc	Wend As	syntax	Syntax error
+proc	Wend To 1	syntax	Syntax error
+proc	Wend (1, 2)	syntax	Syntax error
+proc	Wend a.b	syntax	Syntax error
+proc	Wend a!b	syntax	Syntax error
+proc	Wend -1	syntax	Syntax error
+proc	Wend Not a	syntax	Syntax error
+proc	Variant	syntax	Syntax error
+proc	Variant 1	syntax	Syntax error
+proc	Variant a	syntax	Syntax error
+proc	Variant a, b	syntax	Syntax error
+proc	Variant (a)	syntax	Syntax error
+proc	Variant a = 1	syntax	Syntax error
+proc	Variant .a	syntax	Syntax error
+proc	Variant #1	syntax	Syntax error
+proc	Variant #1, a	syntax	Syntax error
+proc	Variant a As Long	syntax	Syntax error
+proc	Variant x To y	syntax	Syntax error
+proc	Variant a(1)	syntax	Syntax error
+proc	Variant "s"	syntax	Syntax error
+proc	Variant a: b	syntax	Syntax error
+proc	Variant a Then	syntax	Syntax error
+proc	Variant a,	syntax	Syntax error
+proc	Variant = 1	syntax	Syntax error
+proc	Variant As	syntax	Syntax error
+proc	Variant To 1	syntax	Syntax error
+proc	Variant (1, 2)	syntax	Syntax error
+proc	Variant a.b	syntax	Syntax error
+proc	Variant a!b	syntax	Syntax error
+proc	Variant -1	syntax	Syntax error
+proc	Variant Not a	syntax	Syntax error
+proc	Until	syntax	Syntax error
+proc	Until 1	syntax	Syntax error
+proc	Until a	syntax	Syntax error
+proc	Until a, b	syntax	Syntax error
+proc	Until (a)	syntax	Syntax error
+proc	Until a = 1	syntax	Syntax error
+proc	Until .a	syntax	Syntax error
+proc	Until #1	syntax	Syntax error
+proc	Until #1, a	syntax	Syntax error
+proc	Until a As Long	syntax	Syntax error
+proc	Until x To y	syntax	Syntax error
+proc	Until a(1)	syntax	Syntax error
+proc	Until "s"	syntax	Syntax error
+proc	Until a: b	syntax	Syntax error
+proc	Until a Then	syntax	Syntax error
+proc	Until a,	syntax	Syntax error
+proc	Until = 1	syntax	Syntax error
+proc	Until As	syntax	Syntax error
+proc	Until To 1	syntax	Syntax error
+proc	Until (1, 2)	syntax	Syntax error
+proc	Until a.b	syntax	Syntax error
+proc	Until a!b	syntax	Syntax error
+proc	Until -1	syntax	Syntax error
+proc	Until Not a	syntax	Syntax error
+proc	Unknown	semantic	Sub or Function not defined
+proc	Unknown 1	semantic	Sub or Function not defined
+proc	Unknown a	semantic	Sub or Function not defined
+proc	Unknown a, b	semantic	Sub or Function not defined
+proc	Unknown (a)	semantic	Sub or Function not defined
+proc	Unknown a = 1	semantic	Sub or Function not defined
+proc	Unknown .a	semantic	Invalid or unqualified reference
+proc	Unknown #1	syntax	Syntax error
+proc	Unknown #1, a	syntax	Syntax error
+proc	Unknown a As Long	syntax	Syntax error
+proc	Unknown x To y	syntax	Syntax error
+proc	Unknown a(1)	semantic	Sub or Function not defined
+proc	Unknown "s"	semantic	Sub or Function not defined
+proc	Unknown a: b	semantic	Sub or Function not defined
+proc	Unknown a Then	syntax	Syntax error
+proc	Unknown a,	syntax	Syntax error
+proc	Unknown = 1	accepted	
+proc	Unknown As	syntax	Syntax error
+proc	Unknown To 1	syntax	Syntax error
+proc	Unknown (1, 2)	syntax	Syntax error
+proc	Unknown a.b	semantic	Sub or Function not defined
+proc	Unknown a!b	semantic	Sub or Function not defined
+proc	Unknown -1	semantic	Sub or Function not defined
+proc	Unknown Not a	semantic	Sub or Function not defined
+proc	Unlock	syntax	Syntax error
+proc	Unlock 1	accepted	
+proc	Unlock a	accepted	
+proc	Unlock a, b	accepted	
+proc	Unlock (a)	accepted	
+proc	Unlock a = 1	accepted	
+proc	Unlock .a	semantic	Invalid or unqualified reference
+proc	Unlock #1	accepted	
+proc	Unlock #1, a	accepted	
+proc	Unlock a As Long	syntax	Syntax error
+proc	Unlock x To y	syntax	Syntax error
+proc	Unlock a(1)	accepted	
+proc	Unlock "s"	accepted	
+proc	Unlock a: b	semantic	Expected Sub, Function, or Property
+proc	Unlock a Then	syntax	Syntax error
+proc	Unlock a,	syntax	Syntax error
+proc	Unlock = 1	syntax	Syntax error
+proc	Unlock As	syntax	Syntax error
+proc	Unlock To 1	syntax	Syntax error
+proc	Unlock (1, 2)	syntax	Syntax error
+proc	Unlock a.b	accepted	
+proc	Unlock a!b	accepted	
+proc	Unlock -1	accepted	
+proc	Unlock Not a	accepted	
+proc	Unload	semantic	Argument not optional
+proc	Unload 1	semantic	Type mismatch
+proc	Unload a	accepted	
+proc	Unload a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	Unload (a)	accepted	
+proc	Unload a = 1	accepted	
+proc	Unload .a	semantic	Invalid or unqualified reference
+proc	Unload #1	syntax	Syntax error
+proc	Unload #1, a	syntax	Syntax error
+proc	Unload a As Long	syntax	Syntax error
+proc	Unload x To y	syntax	Syntax error
+proc	Unload a(1)	accepted	
+proc	Unload "s"	semantic	Type mismatch
+proc	Unload a: b	semantic	Expected Sub, Function, or Property
+proc	Unload a Then	syntax	Syntax error
+proc	Unload a,	syntax	Syntax error
+proc	Unload = 1	semantic	Argument not optional
+proc	Unload As	syntax	Syntax error
+proc	Unload To 1	syntax	Syntax error
+proc	Unload (1, 2)	syntax	Syntax error
+proc	Unload a.b	accepted	
+proc	Unload a!b	accepted	
+proc	Unload -1	semantic	Type mismatch
+proc	Unload Not a	accepted	
+proc	UBound	syntax	Syntax error
+proc	UBound 1	syntax	Syntax error
+proc	UBound a	syntax	Syntax error
+proc	UBound a, b	syntax	Syntax error
+proc	UBound (a)	syntax	Syntax error
+proc	UBound a = 1	syntax	Syntax error
+proc	UBound .a	syntax	Syntax error
+proc	UBound #1	syntax	Syntax error
+proc	UBound #1, a	syntax	Syntax error
+proc	UBound a As Long	syntax	Syntax error
+proc	UBound x To y	syntax	Syntax error
+proc	UBound a(1)	syntax	Syntax error
+proc	UBound "s"	syntax	Syntax error
+proc	UBound a: b	syntax	Syntax error
+proc	UBound a Then	syntax	Syntax error
+proc	UBound a,	syntax	Syntax error
+proc	UBound = 1	syntax	Syntax error
+proc	UBound As	syntax	Syntax error
+proc	UBound To 1	syntax	Syntax error
+proc	UBound (1, 2)	syntax	Syntax error
+proc	UBound a.b	syntax	Syntax error
+proc	UBound a!b	syntax	Syntax error
+proc	UBound -1	syntax	Syntax error
+proc	UBound Not a	syntax	Syntax error
+proc	TypeOf	syntax	Syntax error
+proc	TypeOf 1	syntax	Syntax error
+proc	TypeOf a	syntax	Syntax error
+proc	TypeOf a, b	syntax	Syntax error
+proc	TypeOf (a)	syntax	Syntax error
+proc	TypeOf a = 1	syntax	Syntax error
+proc	TypeOf .a	syntax	Syntax error
+proc	TypeOf #1	syntax	Syntax error
+proc	TypeOf #1, a	syntax	Syntax error
+proc	TypeOf a As Long	syntax	Syntax error
+proc	TypeOf x To y	syntax	Syntax error
+proc	TypeOf a(1)	syntax	Syntax error
+proc	TypeOf "s"	syntax	Syntax error
+proc	TypeOf a: b	syntax	Syntax error
+proc	TypeOf a Then	syntax	Syntax error
+proc	TypeOf a,	syntax	Syntax error
+proc	TypeOf = 1	syntax	Syntax error
+proc	TypeOf As	syntax	Syntax error
+proc	TypeOf To 1	syntax	Syntax error
+proc	TypeOf (1, 2)	syntax	Syntax error
+proc	TypeOf a.b	syntax	Syntax error
+proc	TypeOf a!b	syntax	Syntax error
+proc	TypeOf -1	syntax	Syntax error
+proc	TypeOf Not a	syntax	Syntax error
+proc	Type	syntax	Syntax error
+proc	Type 1	syntax	Syntax error
+proc	Type a	syntax	Invalid inside procedure
+proc	Type a, b	syntax	Syntax error
+proc	Type (a)	syntax	Syntax error
+proc	Type a = 1	syntax	Syntax error
+proc	Type .a	syntax	Syntax error
+proc	Type #1	syntax	Syntax error
+proc	Type #1, a	syntax	Syntax error
+proc	Type a As Long	syntax	Syntax error
+proc	Type x To y	syntax	Syntax error
+proc	Type a(1)	syntax	Syntax error
+proc	Type "s"	syntax	Syntax error
+proc	Type a: b	syntax	Invalid inside procedure
+proc	Type a Then	syntax	Syntax error
+proc	Type a,	syntax	Syntax error
+proc	Type = 1	syntax	Syntax error
+proc	Type As	syntax	Syntax error
+proc	Type To 1	syntax	Syntax error
+proc	Type (1, 2)	syntax	Syntax error
+proc	Type a.b	syntax	Syntax error
+proc	Type a!b	syntax	Syntax error
+proc	Type -1	syntax	Syntax error
+proc	Type Not a	syntax	Syntax error
+proc	True	syntax	Syntax error
+proc	True 1	syntax	Syntax error
+proc	True a	syntax	Syntax error
+proc	True a, b	syntax	Syntax error
+proc	True (a)	syntax	Syntax error
+proc	True a = 1	syntax	Syntax error
+proc	True .a	syntax	Syntax error
+proc	True #1	syntax	Syntax error
+proc	True #1, a	syntax	Syntax error
+proc	True a As Long	syntax	Syntax error
+proc	True x To y	syntax	Syntax error
+proc	True a(1)	syntax	Syntax error
+proc	True "s"	syntax	Syntax error
+proc	True a: b	syntax	Syntax error
+proc	True a Then	syntax	Syntax error
+proc	True a,	syntax	Syntax error
+proc	True = 1	syntax	Syntax error
+proc	True As	syntax	Syntax error
+proc	True To 1	syntax	Syntax error
+proc	True (1, 2)	syntax	Syntax error
+proc	True a.b	syntax	Syntax error
+proc	True a!b	syntax	Syntax error
+proc	True -1	syntax	Syntax error
+proc	True Not a	syntax	Syntax error
+proc	To	syntax	Syntax error
+proc	To 1	syntax	Syntax error
+proc	To a	syntax	Syntax error
+proc	To a, b	syntax	Syntax error
+proc	To (a)	syntax	Syntax error
+proc	To a = 1	syntax	Syntax error
+proc	To .a	syntax	Syntax error
+proc	To #1	syntax	Syntax error
+proc	To #1, a	syntax	Syntax error
+proc	To a As Long	syntax	Syntax error
+proc	To x To y	syntax	Syntax error
+proc	To a(1)	syntax	Syntax error
+proc	To "s"	syntax	Syntax error
+proc	To a: b	syntax	Syntax error
+proc	To a Then	syntax	Syntax error
+proc	To a,	syntax	Syntax error
+proc	To = 1	syntax	Syntax error
+proc	To As	syntax	Syntax error
+proc	To To 1	syntax	Syntax error
+proc	To (1, 2)	syntax	Syntax error
+proc	To a.b	syntax	Syntax error
+proc	To a!b	syntax	Syntax error
+proc	To -1	syntax	Syntax error
+proc	To Not a	syntax	Syntax error
+proc	Then	syntax	Syntax error
+proc	Then 1	syntax	Syntax error
+proc	Then a	syntax	Syntax error
+proc	Then a, b	syntax	Syntax error
+proc	Then (a)	syntax	Syntax error
+proc	Then a = 1	syntax	Syntax error
+proc	Then .a	syntax	Syntax error
+proc	Then #1	syntax	Syntax error
+proc	Then #1, a	syntax	Syntax error
+proc	Then a As Long	syntax	Syntax error
+proc	Then x To y	syntax	Syntax error
+proc	Then a(1)	syntax	Syntax error
+proc	Then "s"	syntax	Syntax error
+proc	Then a: b	syntax	Syntax error
+proc	Then a Then	syntax	Syntax error
+proc	Then a,	syntax	Syntax error
+proc	Then = 1	syntax	Syntax error
+proc	Then As	syntax	Syntax error
+proc	Then To 1	syntax	Syntax error
+proc	Then (1, 2)	syntax	Syntax error
+proc	Then a.b	syntax	Syntax error
+proc	Then a!b	syntax	Syntax error
+proc	Then -1	syntax	Syntax error
+proc	Then Not a	syntax	Syntax error
+proc	Text	semantic	Sub or Function not defined
+proc	Text 1	semantic	Sub or Function not defined
+proc	Text a	semantic	Sub or Function not defined
+proc	Text a, b	semantic	Sub or Function not defined
+proc	Text (a)	semantic	Sub or Function not defined
+proc	Text a = 1	semantic	Sub or Function not defined
+proc	Text .a	semantic	Invalid or unqualified reference
+proc	Text #1	syntax	Syntax error
+proc	Text #1, a	syntax	Syntax error
+proc	Text a As Long	syntax	Syntax error
+proc	Text x To y	syntax	Syntax error
+proc	Text a(1)	semantic	Sub or Function not defined
+proc	Text "s"	semantic	Sub or Function not defined
+proc	Text a: b	semantic	Sub or Function not defined
+proc	Text a Then	syntax	Syntax error
+proc	Text a,	syntax	Syntax error
+proc	Text = 1	accepted	
+proc	Text As	syntax	Syntax error
+proc	Text To 1	syntax	Syntax error
+proc	Text (1, 2)	syntax	Syntax error
+proc	Text a.b	semantic	Sub or Function not defined
+proc	Text a!b	semantic	Sub or Function not defined
+proc	Text -1	semantic	Sub or Function not defined
+proc	Text Not a	semantic	Sub or Function not defined
+proc	Tab	syntax	Syntax error
+proc	Tab 1	syntax	Syntax error
+proc	Tab a	syntax	Syntax error
+proc	Tab a, b	syntax	Syntax error
+proc	Tab (a)	syntax	Syntax error
+proc	Tab a = 1	syntax	Syntax error
+proc	Tab .a	syntax	Syntax error
+proc	Tab #1	syntax	Syntax error
+proc	Tab #1, a	syntax	Syntax error
+proc	Tab a As Long	syntax	Syntax error
+proc	Tab x To y	syntax	Syntax error
+proc	Tab a(1)	syntax	Syntax error
+proc	Tab "s"	syntax	Syntax error
+proc	Tab a: b	syntax	Syntax error
+proc	Tab a Then	syntax	Syntax error
+proc	Tab a,	syntax	Syntax error
+proc	Tab = 1	syntax	Syntax error
+proc	Tab As	syntax	Syntax error
+proc	Tab To 1	syntax	Syntax error
+proc	Tab (1, 2)	syntax	Syntax error
+proc	Tab a.b	syntax	Syntax error
+proc	Tab a!b	syntax	Syntax error
+proc	Tab -1	syntax	Syntax error
+proc	Tab Not a	syntax	Syntax error
+proc	Sub	syntax	Syntax error
+proc	Sub 1	syntax	Syntax error
+proc	Sub a	syntax	Expected End Sub
+proc	Sub a, b	syntax	Syntax error
+proc	Sub (a)	syntax	Syntax error
+proc	Sub a = 1	syntax	Syntax error
+proc	Sub .a	syntax	Syntax error
+proc	Sub #1	syntax	Syntax error
+proc	Sub #1, a	syntax	Syntax error
+proc	Sub a As Long	syntax	Syntax error
+proc	Sub x To y	syntax	Syntax error
+proc	Sub a(1)	syntax	Syntax error
+proc	Sub "s"	syntax	Syntax error
+proc	Sub a: b	syntax	Expected End Sub
+proc	Sub a Then	syntax	Syntax error
+proc	Sub a,	syntax	Syntax error
+proc	Sub = 1	syntax	Syntax error
+proc	Sub As	syntax	Syntax error
+proc	Sub To 1	syntax	Syntax error
+proc	Sub (1, 2)	syntax	Syntax error
+proc	Sub a.b	syntax	Syntax error
+proc	Sub a!b	syntax	Syntax error
+proc	Sub -1	syntax	Syntax error
+proc	Sub Not a	syntax	Syntax error
+proc	String	syntax	Syntax error
+proc	String 1	syntax	Syntax error
+proc	String a	syntax	Syntax error
+proc	String a, b	syntax	Syntax error
+proc	String (a)	syntax	Syntax error
+proc	String a = 1	syntax	Syntax error
+proc	String .a	syntax	Syntax error
+proc	String #1	syntax	Syntax error
+proc	String #1, a	syntax	Syntax error
+proc	String a As Long	syntax	Syntax error
+proc	String x To y	syntax	Syntax error
+proc	String a(1)	syntax	Syntax error
+proc	String "s"	syntax	Syntax error
+proc	String a: b	syntax	Syntax error
+proc	String a Then	syntax	Syntax error
+proc	String a,	syntax	Syntax error
+proc	String = 1	syntax	Syntax error
+proc	String As	syntax	Syntax error
+proc	String To 1	syntax	Syntax error
+proc	String (1, 2)	syntax	Syntax error
+proc	String a.b	syntax	Syntax error
+proc	String a!b	syntax	Syntax error
+proc	String -1	syntax	Syntax error
+proc	String Not a	syntax	Syntax error
+proc	StrComp	semantic	Argument not optional
+proc	StrComp 1	semantic	Argument not optional
+proc	StrComp a	semantic	Argument not optional
+proc	StrComp a, b	accepted	
+proc	StrComp (a)	semantic	Argument not optional
+proc	StrComp a = 1	semantic	Argument not optional
+proc	StrComp .a	semantic	Invalid or unqualified reference
+proc	StrComp #1	syntax	Syntax error
+proc	StrComp #1, a	syntax	Syntax error
+proc	StrComp a As Long	syntax	Syntax error
+proc	StrComp x To y	syntax	Syntax error
+proc	StrComp a(1)	semantic	Argument not optional
+proc	StrComp "s"	semantic	Argument not optional
+proc	StrComp a: b	semantic	Argument not optional
+proc	StrComp a Then	syntax	Syntax error
+proc	StrComp a,	syntax	Syntax error
+proc	StrComp = 1	semantic	Argument not optional
+proc	StrComp As	syntax	Syntax error
+proc	StrComp To 1	syntax	Syntax error
+proc	StrComp (1, 2)	syntax	Syntax error
+proc	StrComp a.b	semantic	Argument not optional
+proc	StrComp a!b	semantic	Argument not optional
+proc	StrComp -1	semantic	Argument not optional
+proc	StrComp Not a	semantic	Argument not optional
+proc	Stop	accepted	
+proc	Stop 1	syntax	Syntax error
+proc	Stop a	syntax	Syntax error
+proc	Stop a, b	syntax	Syntax error
+proc	Stop (a)	syntax	Syntax error
+proc	Stop a = 1	syntax	Syntax error
+proc	Stop .a	syntax	Syntax error
+proc	Stop #1	syntax	Syntax error
+proc	Stop #1, a	syntax	Syntax error
+proc	Stop a As Long	syntax	Syntax error
+proc	Stop x To y	syntax	Syntax error
+proc	Stop a(1)	syntax	Syntax error
+proc	Stop "s"	syntax	Syntax error
+proc	Stop a: b	syntax	Syntax error
+proc	Stop a Then	syntax	Syntax error
+proc	Stop a,	syntax	Syntax error
+proc	Stop = 1	syntax	Syntax error
+proc	Stop As	syntax	Syntax error
+proc	Stop To 1	syntax	Syntax error
+proc	Stop (1, 2)	syntax	Syntax error
+proc	Stop a.b	syntax	Syntax error
+proc	Stop a!b	syntax	Syntax error
+proc	Stop -1	syntax	Syntax error
+proc	Stop Not a	syntax	Syntax error
+proc	Step	semantic	Sub or Function not defined
+proc	Step 1	semantic	Sub or Function not defined
+proc	Step a	semantic	Sub or Function not defined
+proc	Step a, b	semantic	Sub or Function not defined
+proc	Step (a)	semantic	Sub or Function not defined
+proc	Step a = 1	semantic	Sub or Function not defined
+proc	Step .a	semantic	Invalid or unqualified reference
+proc	Step #1	syntax	Syntax error
+proc	Step #1, a	syntax	Syntax error
+proc	Step a As Long	syntax	Syntax error
+proc	Step x To y	syntax	Syntax error
+proc	Step a(1)	semantic	Sub or Function not defined
+proc	Step "s"	semantic	Sub or Function not defined
+proc	Step a: b	semantic	Sub or Function not defined
+proc	Step a Then	syntax	Syntax error
+proc	Step a,	syntax	Syntax error
+proc	Step = 1	accepted	
+proc	Step As	syntax	Syntax error
+proc	Step To 1	syntax	Syntax error
+proc	Step (1, 2)	syntax	Syntax error
+proc	Step a.b	semantic	Sub or Function not defined
+proc	Step a!b	semantic	Sub or Function not defined
+proc	Step -1	semantic	Sub or Function not defined
+proc	Step Not a	semantic	Sub or Function not defined
+proc	Static	syntax	Syntax error
+proc	Static 1	syntax	Syntax error
+proc	Static a	semantic	Duplicate declaration in current scope
+proc	Static a, b	semantic	Duplicate declaration in current scope
+proc	Static (a)	syntax	Syntax error
+proc	Static a = 1	syntax	Syntax error
+proc	Static .a	syntax	Syntax error
+proc	Static #1	syntax	Syntax error
+proc	Static #1, a	syntax	Syntax error
+proc	Static a As Long	semantic	Duplicate declaration in current scope
+proc	Static x To y	syntax	Syntax error
+proc	Static a(1)	semantic	Duplicate declaration in current scope
+proc	Static "s"	syntax	Syntax error
+proc	Static a: b	semantic	Duplicate declaration in current scope
+proc	Static a Then	syntax	Syntax error
+proc	Static a,	syntax	Syntax error
+proc	Static = 1	syntax	Syntax error
+proc	Static As	syntax	Syntax error
+proc	Static To 1	syntax	Syntax error
+proc	Static (1, 2)	syntax	Syntax error
+proc	Static a.b	syntax	Syntax error
+proc	Static a!b	syntax	Syntax error
+proc	Static -1	syntax	Syntax error
+proc	Static Not a	syntax	Syntax error
+proc	Spc	syntax	Syntax error
+proc	Spc 1	syntax	Syntax error
+proc	Spc a	syntax	Syntax error
+proc	Spc a, b	syntax	Syntax error
+proc	Spc (a)	syntax	Syntax error
+proc	Spc a = 1	syntax	Syntax error
+proc	Spc .a	syntax	Syntax error
+proc	Spc #1	syntax	Syntax error
+proc	Spc #1, a	syntax	Syntax error
+proc	Spc a As Long	syntax	Syntax error
+proc	Spc x To y	syntax	Syntax error
+proc	Spc a(1)	syntax	Syntax error
+proc	Spc "s"	syntax	Syntax error
+proc	Spc a: b	syntax	Syntax error
+proc	Spc a Then	syntax	Syntax error
+proc	Spc a,	syntax	Syntax error
+proc	Spc = 1	syntax	Syntax error
+proc	Spc As	syntax	Syntax error
+proc	Spc To 1	syntax	Syntax error
+proc	Spc (1, 2)	syntax	Syntax error
+proc	Spc a.b	syntax	Syntax error
+proc	Spc a!b	syntax	Syntax error
+proc	Spc -1	syntax	Syntax error
+proc	Spc Not a	syntax	Syntax error
+proc	Single	syntax	Syntax error
+proc	Single 1	syntax	Syntax error
+proc	Single a	syntax	Syntax error
+proc	Single a, b	syntax	Syntax error
+proc	Single (a)	syntax	Syntax error
+proc	Single a = 1	syntax	Syntax error
+proc	Single .a	syntax	Syntax error
+proc	Single #1	syntax	Syntax error
+proc	Single #1, a	syntax	Syntax error
+proc	Single a As Long	syntax	Syntax error
+proc	Single x To y	syntax	Syntax error
+proc	Single a(1)	syntax	Syntax error
+proc	Single "s"	syntax	Syntax error
+proc	Single a: b	syntax	Syntax error
+proc	Single a Then	syntax	Syntax error
+proc	Single a,	syntax	Syntax error
+proc	Single = 1	syntax	Syntax error
+proc	Single As	syntax	Syntax error
+proc	Single To 1	syntax	Syntax error
+proc	Single (1, 2)	syntax	Syntax error
+proc	Single a.b	syntax	Syntax error
+proc	Single a!b	syntax	Syntax error
+proc	Single -1	syntax	Syntax error
+proc	Single Not a	syntax	Syntax error
+proc	Shared	syntax	Syntax error
+proc	Shared 1	syntax	Syntax error
+proc	Shared a	syntax	Syntax error
+proc	Shared a, b	syntax	Syntax error
+proc	Shared (a)	syntax	Syntax error
+proc	Shared a = 1	syntax	Syntax error
+proc	Shared .a	syntax	Syntax error
+proc	Shared #1	syntax	Syntax error
+proc	Shared #1, a	syntax	Syntax error
+proc	Shared a As Long	syntax	Syntax error
+proc	Shared x To y	syntax	Syntax error
+proc	Shared a(1)	syntax	Syntax error
+proc	Shared "s"	syntax	Syntax error
+proc	Shared a: b	syntax	Syntax error
+proc	Shared a Then	syntax	Syntax error
+proc	Shared a,	syntax	Syntax error
+proc	Shared = 1	syntax	Syntax error
+proc	Shared As	syntax	Syntax error
+proc	Shared To 1	syntax	Syntax error
+proc	Shared (1, 2)	syntax	Syntax error
+proc	Shared a.b	syntax	Syntax error
+proc	Shared a!b	syntax	Syntax error
+proc	Shared -1	syntax	Syntax error
+proc	Shared Not a	syntax	Syntax error
+proc	Sgn	syntax	Syntax error
+proc	Sgn 1	syntax	Syntax error
+proc	Sgn a	syntax	Syntax error
+proc	Sgn a, b	syntax	Syntax error
+proc	Sgn (a)	syntax	Syntax error
+proc	Sgn a = 1	syntax	Syntax error
+proc	Sgn .a	syntax	Syntax error
+proc	Sgn #1	syntax	Syntax error
+proc	Sgn #1, a	syntax	Syntax error
+proc	Sgn a As Long	syntax	Syntax error
+proc	Sgn x To y	syntax	Syntax error
+proc	Sgn a(1)	syntax	Syntax error
+proc	Sgn "s"	syntax	Syntax error
+proc	Sgn a: b	syntax	Syntax error
+proc	Sgn a Then	syntax	Syntax error
+proc	Sgn a,	syntax	Syntax error
+proc	Sgn = 1	syntax	Syntax error
+proc	Sgn As	syntax	Syntax error
+proc	Sgn To 1	syntax	Syntax error
+proc	Sgn (1, 2)	syntax	Syntax error
+proc	Sgn a.b	syntax	Syntax error
+proc	Sgn a!b	syntax	Syntax error
+proc	Sgn -1	syntax	Syntax error
+proc	Sgn Not a	syntax	Syntax error
+proc	Set	syntax	Syntax error
+proc	Set 1	syntax	Syntax error
+proc	Set a	syntax	Syntax error
+proc	Set a, b	syntax	Syntax error
+proc	Set (a)	syntax	Syntax error
+proc	Set a = 1	semantic	Object required
+proc	Set .a	syntax	Syntax error
+proc	Set #1	syntax	Syntax error
+proc	Set #1, a	syntax	Syntax error
+proc	Set a As Long	syntax	Syntax error
+proc	Set x To y	syntax	Syntax error
+proc	Set a(1)	syntax	Syntax error
+proc	Set "s"	syntax	Syntax error
+proc	Set a: b	syntax	Syntax error
+proc	Set a Then	syntax	Syntax error
+proc	Set a,	syntax	Syntax error
+proc	Set = 1	syntax	Syntax error
+proc	Set As	syntax	Syntax error
+proc	Set To 1	syntax	Syntax error
+proc	Set (1, 2)	syntax	Syntax error
+proc	Set a.b	syntax	Syntax error
+proc	Set a!b	syntax	Syntax error
+proc	Set -1	syntax	Syntax error
+proc	Set Not a	syntax	Syntax error
+proc	Select	syntax	Syntax error
+proc	Select 1	syntax	Syntax error
+proc	Select a	syntax	Syntax error
+proc	Select a, b	syntax	Syntax error
+proc	Select (a)	syntax	Syntax error
+proc	Select a = 1	syntax	Syntax error
+proc	Select .a	syntax	Syntax error
+proc	Select #1	syntax	Syntax error
+proc	Select #1, a	syntax	Syntax error
+proc	Select a As Long	syntax	Syntax error
+proc	Select x To y	syntax	Syntax error
+proc	Select a(1)	syntax	Syntax error
+proc	Select "s"	syntax	Syntax error
+proc	Select a: b	syntax	Syntax error
+proc	Select a Then	syntax	Syntax error
+proc	Select a,	syntax	Syntax error
+proc	Select = 1	syntax	Syntax error
+proc	Select As	syntax	Syntax error
+proc	Select To 1	syntax	Syntax error
+proc	Select (1, 2)	syntax	Syntax error
+proc	Select a.b	syntax	Syntax error
+proc	Select a!b	syntax	Syntax error
+proc	Select -1	syntax	Syntax error
+proc	Select Not a	syntax	Syntax error
+proc	Seek	syntax	Syntax error
+proc	Seek 1	syntax	Syntax error
+proc	Seek a	syntax	Syntax error
+proc	Seek a, b	accepted	
+proc	Seek (a)	syntax	Syntax error
+proc	Seek a = 1	syntax	Syntax error
+proc	Seek .a	syntax	Syntax error
+proc	Seek #1	syntax	Syntax error
+proc	Seek #1, a	accepted	
+proc	Seek a As Long	syntax	Syntax error
+proc	Seek x To y	syntax	Syntax error
+proc	Seek a(1)	syntax	Syntax error
+proc	Seek "s"	syntax	Syntax error
+proc	Seek a: b	syntax	Syntax error
+proc	Seek a Then	syntax	Syntax error
+proc	Seek a,	syntax	Syntax error
+proc	Seek = 1	syntax	Syntax error
+proc	Seek As	syntax	Syntax error
+proc	Seek To 1	syntax	Syntax error
+proc	Seek (1, 2)	syntax	Syntax error
+proc	Seek a.b	syntax	Syntax error
+proc	Seek a!b	syntax	Syntax error
+proc	Seek -1	syntax	Syntax error
+proc	Seek Not a	syntax	Syntax error
+proc	Scale	semantic	Method not valid without suitable object
+proc	Scale 1	syntax	Syntax error
+proc	Scale a	syntax	Syntax error
+proc	Scale a, b	syntax	Syntax error
+proc	Scale (a)	syntax	Syntax error
+proc	Scale a = 1	syntax	Syntax error
+proc	Scale .a	syntax	Syntax error
+proc	Scale #1	syntax	Syntax error
+proc	Scale #1, a	syntax	Syntax error
+proc	Scale a As Long	syntax	Syntax error
+proc	Scale x To y	syntax	Syntax error
+proc	Scale a(1)	syntax	Syntax error
+proc	Scale "s"	syntax	Syntax error
+proc	Scale a: b	syntax	Syntax error
+proc	Scale a Then	syntax	Syntax error
+proc	Scale a,	syntax	Syntax error
+proc	Scale = 1	syntax	Syntax error
+proc	Scale As	syntax	Syntax error
+proc	Scale To 1	syntax	Syntax error
+proc	Scale (1, 2)	syntax	Syntax error
+proc	Scale a.b	syntax	Syntax error
+proc	Scale a!b	syntax	Syntax error
+proc	Scale -1	syntax	Syntax error
+proc	Scale Not a	syntax	Syntax error
+proc	RSet	syntax	Syntax error
+proc	RSet 1	syntax	Syntax error
+proc	RSet a	syntax	Syntax error
+proc	RSet a, b	syntax	Syntax error
+proc	RSet (a)	syntax	Syntax error
+proc	RSet a = 1	accepted	
+proc	RSet .a	syntax	Syntax error
+proc	RSet #1	syntax	Syntax error
+proc	RSet #1, a	syntax	Syntax error
+proc	RSet a As Long	syntax	Syntax error
+proc	RSet x To y	syntax	Syntax error
+proc	RSet a(1)	syntax	Syntax error
+proc	RSet "s"	syntax	Syntax error
+proc	RSet a: b	syntax	Syntax error
+proc	RSet a Then	syntax	Syntax error
+proc	RSet a,	syntax	Syntax error
+proc	RSet = 1	syntax	Syntax error
+proc	RSet As	syntax	Syntax error
+proc	RSet To 1	syntax	Syntax error
+proc	RSet (1, 2)	syntax	Syntax error
+proc	RSet a.b	syntax	Syntax error
+proc	RSet a!b	syntax	Syntax error
+proc	RSet -1	syntax	Syntax error
+proc	RSet Not a	syntax	Syntax error
+proc	RGB	semantic	Argument not optional
+proc	RGB 1	semantic	Argument not optional
+proc	RGB a	semantic	Argument not optional
+proc	RGB a, b	semantic	Argument not optional
+proc	RGB (a)	semantic	Argument not optional
+proc	RGB a = 1	semantic	Argument not optional
+proc	RGB .a	semantic	Invalid or unqualified reference
+proc	RGB #1	syntax	Syntax error
+proc	RGB #1, a	syntax	Syntax error
+proc	RGB a As Long	syntax	Syntax error
+proc	RGB x To y	syntax	Syntax error
+proc	RGB a(1)	semantic	Argument not optional
+proc	RGB "s"	semantic	Argument not optional
+proc	RGB a: b	semantic	Argument not optional
+proc	RGB a Then	syntax	Syntax error
+proc	RGB a,	syntax	Syntax error
+proc	RGB = 1	semantic	Function call on left-hand side of assignment must return Variant or Object
+proc	RGB As	syntax	Syntax error
+proc	RGB To 1	syntax	Syntax error
+proc	RGB (1, 2)	syntax	Syntax error
+proc	RGB a.b	semantic	Argument not optional
+proc	RGB a!b	semantic	Argument not optional
+proc	RGB -1	semantic	Argument not optional
+proc	RGB Not a	semantic	Argument not optional
+proc	Return	accepted	
+proc	Return 1	syntax	Syntax error
+proc	Return a	syntax	Syntax error
+proc	Return a, b	syntax	Syntax error
+proc	Return (a)	syntax	Syntax error
+proc	Return a = 1	syntax	Syntax error
+proc	Return .a	syntax	Syntax error
+proc	Return #1	syntax	Syntax error
+proc	Return #1, a	syntax	Syntax error
+proc	Return a As Long	syntax	Syntax error
+proc	Return x To y	syntax	Syntax error
+proc	Return a(1)	syntax	Syntax error
+proc	Return "s"	syntax	Syntax error
+proc	Return a: b	syntax	Syntax error
+proc	Return a Then	syntax	Syntax error
+proc	Return a,	syntax	Syntax error
+proc	Return = 1	syntax	Syntax error
+proc	Return As	syntax	Syntax error
+proc	Return To 1	syntax	Syntax error
+proc	Return (1, 2)	syntax	Syntax error
+proc	Return a.b	syntax	Syntax error
+proc	Return a!b	syntax	Syntax error
+proc	Return -1	syntax	Syntax error
+proc	Return Not a	syntax	Syntax error
+proc	Resume	accepted	
+proc	Resume 1	syntax	Label not defined
+proc	Resume a	syntax	Label not defined
+proc	Resume a, b	syntax	Syntax error
+proc	Resume (a)	syntax	Syntax error
+proc	Resume a = 1	syntax	Syntax error
+proc	Resume .a	syntax	Syntax error
+proc	Resume #1	syntax	Syntax error
+proc	Resume #1, a	syntax	Syntax error
+proc	Resume a As Long	syntax	Syntax error
+proc	Resume x To y	syntax	Syntax error
+proc	Resume a(1)	syntax	Syntax error
+proc	Resume "s"	syntax	Syntax error
+proc	Resume a: b	semantic	Expected Sub, Function, or Property
+proc	Resume a Then	syntax	Syntax error
+proc	Resume a,	syntax	Syntax error
+proc	Resume = 1	syntax	Syntax error
+proc	Resume As	syntax	Syntax error
+proc	Resume To 1	syntax	Syntax error
+proc	Resume (1, 2)	syntax	Syntax error
+proc	Resume a.b	syntax	Syntax error
+proc	Resume a!b	syntax	Syntax error
+proc	Resume -1	syntax	Syntax error
+proc	Resume Not a	syntax	Syntax error
+proc	Rem	accepted	
+proc	Rem 1	accepted	
+proc	Rem a	accepted	
+proc	Rem a, b	accepted	
+proc	Rem (a)	accepted	
+proc	Rem a = 1	accepted	
+proc	Rem .a	accepted	
+proc	Rem #1	accepted	
+proc	Rem #1, a	accepted	
+proc	Rem a As Long	accepted	
+proc	Rem x To y	accepted	
+proc	Rem a(1)	accepted	
+proc	Rem "s"	accepted	
+proc	Rem a: b	accepted	
+proc	Rem a Then	accepted	
+proc	Rem a,	accepted	
+proc	Rem = 1	accepted	
+proc	Rem As	accepted	
+proc	Rem To 1	accepted	
+proc	Rem (1, 2)	accepted	
+proc	Rem a.b	accepted	
+proc	Rem a!b	accepted	
+proc	Rem -1	accepted	
+proc	Rem Not a	accepted	
+proc	ReDim	syntax	Syntax error
+proc	ReDim 1	syntax	Syntax error
+proc	ReDim a	syntax	Syntax error
+proc	ReDim a, b	syntax	Syntax error
+proc	ReDim (a)	syntax	Syntax error
+proc	ReDim a = 1	syntax	Syntax error
+proc	ReDim .a	syntax	Syntax error
+proc	ReDim #1	syntax	Syntax error
+proc	ReDim #1, a	syntax	Syntax error
+proc	ReDim a As Long	syntax	Syntax error
+proc	ReDim x To y	syntax	Syntax error
+proc	ReDim a(1)	accepted	
+proc	ReDim "s"	syntax	Syntax error
+proc	ReDim a: b	syntax	Syntax error
+proc	ReDim a Then	syntax	Syntax error
+proc	ReDim a,	syntax	Syntax error
+proc	ReDim = 1	syntax	Syntax error
+proc	ReDim As	syntax	Syntax error
+proc	ReDim To 1	syntax	Syntax error
+proc	ReDim (1, 2)	syntax	Syntax error
+proc	ReDim a.b	syntax	Syntax error
+proc	ReDim a!b	syntax	Syntax error
+proc	ReDim -1	syntax	Syntax error
+proc	ReDim Not a	syntax	Syntax error
+proc	Read	semantic	Sub or Function not defined
+proc	Read 1	semantic	Sub or Function not defined
+proc	Read a	semantic	Sub or Function not defined
+proc	Read a, b	semantic	Sub or Function not defined
+proc	Read (a)	semantic	Sub or Function not defined
+proc	Read a = 1	semantic	Sub or Function not defined
+proc	Read .a	semantic	Invalid or unqualified reference
+proc	Read #1	syntax	Syntax error
+proc	Read #1, a	syntax	Syntax error
+proc	Read a As Long	syntax	Syntax error
+proc	Read x To y	syntax	Syntax error
+proc	Read a(1)	semantic	Sub or Function not defined
+proc	Read "s"	semantic	Sub or Function not defined
+proc	Read a: b	semantic	Sub or Function not defined
+proc	Read a Then	syntax	Syntax error
+proc	Read a,	syntax	Syntax error
+proc	Read = 1	accepted	
+proc	Read As	syntax	Syntax error
+proc	Read To 1	syntax	Syntax error
+proc	Read (1, 2)	syntax	Syntax error
+proc	Read a.b	semantic	Sub or Function not defined
+proc	Read a!b	semantic	Sub or Function not defined
+proc	Read -1	semantic	Sub or Function not defined
+proc	Read Not a	semantic	Sub or Function not defined
+proc	Randomize	accepted	
+proc	Randomize 1	accepted	
+proc	Randomize a	accepted	
+proc	Randomize a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	Randomize (a)	accepted	
+proc	Randomize a = 1	accepted	
+proc	Randomize .a	semantic	Invalid or unqualified reference
+proc	Randomize #1	syntax	Syntax error
+proc	Randomize #1, a	syntax	Syntax error
+proc	Randomize a As Long	syntax	Syntax error
+proc	Randomize x To y	syntax	Syntax error
+proc	Randomize a(1)	accepted	
+proc	Randomize "s"	accepted	
+proc	Randomize a: b	semantic	Expected Sub, Function, or Property
+proc	Randomize a Then	syntax	Syntax error
+proc	Randomize a,	syntax	Syntax error
+proc	Randomize = 1	semantic	Expected Function or variable
+proc	Randomize As	syntax	Syntax error
+proc	Randomize To 1	syntax	Syntax error
+proc	Randomize (1, 2)	syntax	Syntax error
+proc	Randomize a.b	accepted	
+proc	Randomize a!b	accepted	
+proc	Randomize -1	accepted	
+proc	Randomize Not a	accepted	
+proc	Random	semantic	Sub or Function not defined
+proc	Random 1	semantic	Sub or Function not defined
+proc	Random a	semantic	Sub or Function not defined
+proc	Random a, b	semantic	Sub or Function not defined
+proc	Random (a)	semantic	Sub or Function not defined
+proc	Random a = 1	semantic	Sub or Function not defined
+proc	Random .a	semantic	Invalid or unqualified reference
+proc	Random #1	syntax	Syntax error
+proc	Random #1, a	syntax	Syntax error
+proc	Random a As Long	syntax	Syntax error
+proc	Random x To y	syntax	Syntax error
+proc	Random a(1)	semantic	Sub or Function not defined
+proc	Random "s"	semantic	Sub or Function not defined
+proc	Random a: b	semantic	Sub or Function not defined
+proc	Random a Then	syntax	Syntax error
+proc	Random a,	syntax	Syntax error
+proc	Random = 1	accepted	
+proc	Random As	syntax	Syntax error
+proc	Random To 1	syntax	Syntax error
+proc	Random (1, 2)	syntax	Syntax error
+proc	Random a.b	semantic	Sub or Function not defined
+proc	Random a!b	semantic	Sub or Function not defined
+proc	Random -1	semantic	Sub or Function not defined
+proc	Random Not a	semantic	Sub or Function not defined
+proc	RaiseEvent	syntax	Syntax error
+proc	RaiseEvent 1	syntax	Syntax error
+proc	RaiseEvent a	syntax	Syntax error
+proc	RaiseEvent a, b	syntax	Syntax error
+proc	RaiseEvent (a)	syntax	Syntax error
+proc	RaiseEvent a = 1	syntax	Syntax error
+proc	RaiseEvent .a	syntax	Syntax error
+proc	RaiseEvent #1	syntax	Syntax error
+proc	RaiseEvent #1, a	syntax	Syntax error
+proc	RaiseEvent a As Long	syntax	Syntax error
+proc	RaiseEvent x To y	syntax	Syntax error
+proc	RaiseEvent a(1)	syntax	Syntax error
+proc	RaiseEvent "s"	syntax	Syntax error
+proc	RaiseEvent a: b	syntax	Syntax error
+proc	RaiseEvent a Then	syntax	Syntax error
+proc	RaiseEvent a,	syntax	Syntax error
+proc	RaiseEvent = 1	syntax	Syntax error
+proc	RaiseEvent As	syntax	Syntax error
+proc	RaiseEvent To 1	syntax	Syntax error
+proc	RaiseEvent (1, 2)	syntax	Syntax error
+proc	RaiseEvent a.b	syntax	Syntax error
+proc	RaiseEvent a!b	syntax	Syntax error
+proc	RaiseEvent -1	syntax	Syntax error
+proc	RaiseEvent Not a	syntax	Syntax error
+proc	Put	syntax	Syntax error
+proc	Put 1	syntax	Syntax error
+proc	Put a	syntax	Syntax error
+proc	Put a, b	syntax	Syntax error
+proc	Put (a)	syntax	Syntax error
+proc	Put a = 1	syntax	Syntax error
+proc	Put .a	syntax	Syntax error
+proc	Put #1	syntax	Syntax error
+proc	Put #1, a	syntax	Syntax error
+proc	Put a As Long	syntax	Syntax error
+proc	Put x To y	syntax	Syntax error
+proc	Put a(1)	syntax	Syntax error
+proc	Put "s"	syntax	Syntax error
+proc	Put a: b	syntax	Syntax error
+proc	Put a Then	syntax	Syntax error
+proc	Put a,	syntax	Syntax error
+proc	Put = 1	syntax	Syntax error
+proc	Put As	syntax	Syntax error
+proc	Put To 1	syntax	Syntax error
+proc	Put (1, 2)	syntax	Syntax error
+proc	Put a.b	syntax	Syntax error
+proc	Put a!b	syntax	Syntax error
+proc	Put -1	syntax	Syntax error
+proc	Put Not a	syntax	Syntax error
+proc	Public	syntax	Syntax error
+proc	Public 1	syntax	Syntax error
+proc	Public a	syntax	Invalid attribute in Sub or Function
+proc	Public a, b	syntax	Invalid attribute in Sub or Function
+proc	Public (a)	syntax	Syntax error
+proc	Public a = 1	syntax	Syntax error
+proc	Public .a	syntax	Syntax error
+proc	Public #1	syntax	Syntax error
+proc	Public #1, a	syntax	Syntax error
+proc	Public a As Long	syntax	Invalid attribute in Sub or Function
+proc	Public x To y	syntax	Syntax error
+proc	Public a(1)	syntax	Invalid attribute in Sub or Function
+proc	Public "s"	syntax	Syntax error
+proc	Public a: b	syntax	Invalid attribute in Sub or Function
+proc	Public a Then	syntax	Syntax error
+proc	Public a,	syntax	Syntax error
+proc	Public = 1	syntax	Syntax error
+proc	Public As	syntax	Syntax error
+proc	Public To 1	syntax	Syntax error
+proc	Public (1, 2)	syntax	Syntax error
+proc	Public a.b	syntax	Syntax error
+proc	Public a!b	syntax	Syntax error
+proc	Public -1	syntax	Syntax error
+proc	Public Not a	syntax	Syntax error
+proc	PSet	syntax	Syntax error
+proc	PSet 1	syntax	Syntax error
+proc	PSet a	syntax	Syntax error
+proc	PSet a, b	syntax	Syntax error
+proc	PSet (a)	syntax	Syntax error
+proc	PSet a = 1	syntax	Syntax error
+proc	PSet .a	syntax	Syntax error
+proc	PSet #1	syntax	Syntax error
+proc	PSet #1, a	syntax	Syntax error
+proc	PSet a As Long	syntax	Syntax error
+proc	PSet x To y	syntax	Syntax error
+proc	PSet a(1)	syntax	Syntax error
+proc	PSet "s"	syntax	Syntax error
+proc	PSet a: b	syntax	Syntax error
+proc	PSet a Then	syntax	Syntax error
+proc	PSet a,	syntax	Syntax error
+proc	PSet = 1	syntax	Syntax error
+proc	PSet As	syntax	Syntax error
+proc	PSet To 1	syntax	Syntax error
+proc	PSet (1, 2)	semantic	Method not valid without suitable object
+proc	PSet a.b	syntax	Syntax error
+proc	PSet a!b	syntax	Syntax error
+proc	PSet -1	syntax	Syntax error
+proc	PSet Not a	syntax	Syntax error
+proc	Property	syntax	Syntax error
+proc	Property 1	syntax	Syntax error
+proc	Property a	syntax	Syntax error
+proc	Property a, b	syntax	Syntax error
+proc	Property (a)	syntax	Syntax error
+proc	Property a = 1	syntax	Syntax error
+proc	Property .a	semantic	Invalid or unqualified reference
+proc	Property #1	syntax	Syntax error
+proc	Property #1, a	syntax	Syntax error
+proc	Property a As Long	syntax	Syntax error
+proc	Property x To y	syntax	Syntax error
+proc	Property a(1)	syntax	Syntax error
+proc	Property "s"	syntax	Syntax error
+proc	Property a: b	syntax	Syntax error
+proc	Property a Then	syntax	Syntax error
+proc	Property a,	syntax	Syntax error
+proc	Property = 1	accepted	
+proc	Property As	syntax	Syntax error
+proc	Property To 1	syntax	Syntax error
+proc	Property (1, 2)	syntax	Syntax error
+proc	Property a.b	syntax	Syntax error
+proc	Property a!b	syntax	Syntax error
+proc	Property -1	syntax	Syntax error
+proc	Property Not a	syntax	Syntax error
+proc	Private	syntax	Syntax error
+proc	Private 1	syntax	Syntax error
+proc	Private a	syntax	Invalid attribute in Sub or Function
+proc	Private a, b	syntax	Invalid attribute in Sub or Function
+proc	Private (a)	syntax	Syntax error
+proc	Private a = 1	syntax	Syntax error
+proc	Private .a	syntax	Syntax error
+proc	Private #1	syntax	Syntax error
+proc	Private #1, a	syntax	Syntax error
+proc	Private a As Long	syntax	Invalid attribute in Sub or Function
+proc	Private x To y	syntax	Syntax error
+proc	Private a(1)	syntax	Invalid attribute in Sub or Function
+proc	Private "s"	syntax	Syntax error
+proc	Private a: b	syntax	Invalid attribute in Sub or Function
+proc	Private a Then	syntax	Syntax error
+proc	Private a,	syntax	Syntax error
+proc	Private = 1	syntax	Syntax error
+proc	Private As	syntax	Syntax error
+proc	Private To 1	syntax	Syntax error
+proc	Private (1, 2)	syntax	Syntax error
+proc	Private a.b	syntax	Syntax error
+proc	Private a!b	syntax	Syntax error
+proc	Private -1	syntax	Syntax error
+proc	Private Not a	syntax	Syntax error
+proc	Print	semantic	Method not valid without suitable object
+proc	Print 1	semantic	Method not valid without suitable object
+proc	Print a	semantic	Method not valid without suitable object
+proc	Print a, b	semantic	Method not valid without suitable object
+proc	Print (a)	semantic	Method not valid without suitable object
+proc	Print a = 1	semantic	Method not valid without suitable object
+proc	Print .a	semantic	Method not valid without suitable object
+proc	Print #1	syntax	Syntax error
+proc	Print #1, a	accepted	
+proc	Print a As Long	syntax	Syntax error
+proc	Print x To y	syntax	Syntax error
+proc	Print a(1)	semantic	Method not valid without suitable object
+proc	Print "s"	semantic	Method not valid without suitable object
+proc	Print a: b	semantic	Method not valid without suitable object
+proc	Print a Then	syntax	Syntax error
+proc	Print a,	semantic	Method not valid without suitable object
+proc	Print = 1	syntax	Syntax error
+proc	Print As	syntax	Syntax error
+proc	Print To 1	syntax	Syntax error
+proc	Print (1, 2)	syntax	Syntax error
+proc	Print a.b	semantic	Method not valid without suitable object
+proc	Print a!b	semantic	Method not valid without suitable object
+proc	Print -1	semantic	Method not valid without suitable object
+proc	Print Not a	semantic	Method not valid without suitable object
+proc	Preserve	syntax	Syntax error
+proc	Preserve 1	syntax	Syntax error
+proc	Preserve a	syntax	Syntax error
+proc	Preserve a, b	syntax	Syntax error
+proc	Preserve (a)	syntax	Syntax error
+proc	Preserve a = 1	syntax	Syntax error
+proc	Preserve .a	syntax	Syntax error
+proc	Preserve #1	syntax	Syntax error
+proc	Preserve #1, a	syntax	Syntax error
+proc	Preserve a As Long	syntax	Syntax error
+proc	Preserve x To y	syntax	Syntax error
+proc	Preserve a(1)	syntax	Syntax error
+proc	Preserve "s"	syntax	Syntax error
+proc	Preserve a: b	syntax	Syntax error
+proc	Preserve a Then	syntax	Syntax error
+proc	Preserve a,	syntax	Syntax error
+proc	Preserve = 1	syntax	Syntax error
+proc	Preserve As	syntax	Syntax error
+proc	Preserve To 1	syntax	Syntax error
+proc	Preserve (1, 2)	syntax	Syntax error
+proc	Preserve a.b	syntax	Syntax error
+proc	Preserve a!b	syntax	Syntax error
+proc	Preserve -1	syntax	Syntax error
+proc	Preserve Not a	syntax	Syntax error
+proc	ParamArray	syntax	Syntax error
+proc	ParamArray 1	syntax	Syntax error
+proc	ParamArray a	syntax	Syntax error
+proc	ParamArray a, b	syntax	Syntax error
+proc	ParamArray (a)	syntax	Syntax error
+proc	ParamArray a = 1	syntax	Syntax error
+proc	ParamArray .a	syntax	Syntax error
+proc	ParamArray #1	syntax	Syntax error
+proc	ParamArray #1, a	syntax	Syntax error
+proc	ParamArray a As Long	syntax	Syntax error
+proc	ParamArray x To y	syntax	Syntax error
+proc	ParamArray a(1)	syntax	Syntax error
+proc	ParamArray "s"	syntax	Syntax error
+proc	ParamArray a: b	syntax	Syntax error
+proc	ParamArray a Then	syntax	Syntax error
+proc	ParamArray a,	syntax	Syntax error
+proc	ParamArray = 1	syntax	Syntax error
+proc	ParamArray As	syntax	Syntax error
+proc	ParamArray To 1	syntax	Syntax error
+proc	ParamArray (1, 2)	syntax	Syntax error
+proc	ParamArray a.b	syntax	Syntax error
+proc	ParamArray a!b	syntax	Syntax error
+proc	ParamArray -1	syntax	Syntax error
+proc	ParamArray Not a	syntax	Syntax error
+proc	Output	semantic	Sub or Function not defined
+proc	Output 1	semantic	Sub or Function not defined
+proc	Output a	semantic	Sub or Function not defined
+proc	Output a, b	semantic	Sub or Function not defined
+proc	Output (a)	semantic	Sub or Function not defined
+proc	Output a = 1	semantic	Sub or Function not defined
+proc	Output .a	semantic	Invalid or unqualified reference
+proc	Output #1	syntax	Syntax error
+proc	Output #1, a	syntax	Syntax error
+proc	Output a As Long	syntax	Syntax error
+proc	Output x To y	syntax	Syntax error
+proc	Output a(1)	semantic	Sub or Function not defined
+proc	Output "s"	semantic	Sub or Function not defined
+proc	Output a: b	semantic	Sub or Function not defined
+proc	Output a Then	syntax	Syntax error
+proc	Output a,	syntax	Syntax error
+proc	Output = 1	accepted	
+proc	Output As	syntax	Syntax error
+proc	Output To 1	syntax	Syntax error
+proc	Output (1, 2)	syntax	Syntax error
+proc	Output a.b	semantic	Sub or Function not defined
+proc	Output a!b	semantic	Sub or Function not defined
+proc	Output -1	semantic	Sub or Function not defined
+proc	Output Not a	semantic	Sub or Function not defined
+proc	Or	syntax	Syntax error
+proc	Or 1	syntax	Syntax error
+proc	Or a	syntax	Syntax error
+proc	Or a, b	syntax	Syntax error
+proc	Or (a)	syntax	Syntax error
+proc	Or a = 1	syntax	Syntax error
+proc	Or .a	syntax	Syntax error
+proc	Or #1	syntax	Syntax error
+proc	Or #1, a	syntax	Syntax error
+proc	Or a As Long	syntax	Syntax error
+proc	Or x To y	syntax	Syntax error
+proc	Or a(1)	syntax	Syntax error
+proc	Or "s"	syntax	Syntax error
+proc	Or a: b	syntax	Syntax error
+proc	Or a Then	syntax	Syntax error
+proc	Or a,	syntax	Syntax error
+proc	Or = 1	syntax	Syntax error
+proc	Or As	syntax	Syntax error
+proc	Or To 1	syntax	Syntax error
+proc	Or (1, 2)	syntax	Syntax error
+proc	Or a.b	syntax	Syntax error
+proc	Or a!b	syntax	Syntax error
+proc	Or -1	syntax	Syntax error
+proc	Or Not a	syntax	Syntax error
+proc	Optional	syntax	Syntax error
+proc	Optional 1	syntax	Syntax error
+proc	Optional a	syntax	Syntax error
+proc	Optional a, b	syntax	Syntax error
+proc	Optional (a)	syntax	Syntax error
+proc	Optional a = 1	syntax	Syntax error
+proc	Optional .a	syntax	Syntax error
+proc	Optional #1	syntax	Syntax error
+proc	Optional #1, a	syntax	Syntax error
+proc	Optional a As Long	syntax	Syntax error
+proc	Optional x To y	syntax	Syntax error
+proc	Optional a(1)	syntax	Syntax error
+proc	Optional "s"	syntax	Syntax error
+proc	Optional a: b	syntax	Syntax error
+proc	Optional a Then	syntax	Syntax error
+proc	Optional a,	syntax	Syntax error
+proc	Optional = 1	syntax	Syntax error
+proc	Optional As	syntax	Syntax error
+proc	Optional To 1	syntax	Syntax error
+proc	Optional (1, 2)	syntax	Syntax error
+proc	Optional a.b	syntax	Syntax error
+proc	Optional a!b	syntax	Syntax error
+proc	Optional -1	syntax	Syntax error
+proc	Optional Not a	syntax	Syntax error
+proc	Option	syntax	Syntax error
+proc	Option 1	syntax	Syntax error
+proc	Option a	syntax	Syntax error
+proc	Option a, b	syntax	Syntax error
+proc	Option (a)	syntax	Syntax error
+proc	Option a = 1	syntax	Syntax error
+proc	Option .a	syntax	Syntax error
+proc	Option #1	syntax	Syntax error
+proc	Option #1, a	syntax	Syntax error
+proc	Option a As Long	syntax	Syntax error
+proc	Option x To y	syntax	Syntax error
+proc	Option a(1)	syntax	Syntax error
+proc	Option "s"	syntax	Syntax error
+proc	Option a: b	syntax	Syntax error
+proc	Option a Then	syntax	Syntax error
+proc	Option a,	syntax	Syntax error
+proc	Option = 1	syntax	Syntax error
+proc	Option As	syntax	Syntax error
+proc	Option To 1	syntax	Syntax error
+proc	Option (1, 2)	syntax	Syntax error
+proc	Option a.b	syntax	Syntax error
+proc	Option a!b	syntax	Syntax error
+proc	Option -1	syntax	Syntax error
+proc	Option Not a	syntax	Syntax error
+proc	Open	syntax	Syntax error
+proc	Open 1	syntax	Syntax error
+proc	Open a	syntax	Syntax error
+proc	Open a, b	syntax	Syntax error
+proc	Open (a)	syntax	Syntax error
+proc	Open a = 1	syntax	Syntax error
+proc	Open .a	syntax	Syntax error
+proc	Open #1	syntax	Syntax error
+proc	Open #1, a	syntax	Syntax error
+proc	Open a As Long	syntax	Syntax error
+proc	Open x To y	syntax	Syntax error
+proc	Open a(1)	syntax	Syntax error
+proc	Open "s"	syntax	Syntax error
+proc	Open a: b	syntax	Syntax error
+proc	Open a Then	syntax	Syntax error
+proc	Open a,	syntax	Syntax error
+proc	Open = 1	syntax	Syntax error
+proc	Open As	syntax	Syntax error
+proc	Open To 1	syntax	Syntax error
+proc	Open (1, 2)	syntax	Syntax error
+proc	Open a.b	syntax	Syntax error
+proc	Open a!b	syntax	Syntax error
+proc	Open -1	syntax	Syntax error
+proc	Open Not a	syntax	Syntax error
+proc	On	syntax	Syntax error
+proc	On 1	syntax	Syntax error
+proc	On a	syntax	Syntax error
+proc	On a, b	syntax	Syntax error
+proc	On (a)	syntax	Syntax error
+proc	On a = 1	syntax	Syntax error
+proc	On .a	syntax	Syntax error
+proc	On #1	syntax	Syntax error
+proc	On #1, a	syntax	Syntax error
+proc	On a As Long	syntax	Syntax error
+proc	On x To y	syntax	Syntax error
+proc	On a(1)	syntax	Syntax error
+proc	On "s"	syntax	Syntax error
+proc	On a: b	syntax	Syntax error
+proc	On a Then	syntax	Syntax error
+proc	On a,	syntax	Syntax error
+proc	On = 1	syntax	Syntax error
+proc	On As	syntax	Syntax error
+proc	On To 1	syntax	Syntax error
+proc	On (1, 2)	syntax	Syntax error
+proc	On a.b	syntax	Syntax error
+proc	On a!b	syntax	Syntax error
+proc	On -1	syntax	Syntax error
+proc	On Not a	syntax	Syntax error
+proc	Object	semantic	Sub or Function not defined
+proc	Object 1	semantic	Sub or Function not defined
+proc	Object a	semantic	Sub or Function not defined
+proc	Object a, b	semantic	Sub or Function not defined
+proc	Object (a)	semantic	Sub or Function not defined
+proc	Object a = 1	semantic	Sub or Function not defined
+proc	Object .a	semantic	Invalid or unqualified reference
+proc	Object #1	syntax	Syntax error
+proc	Object #1, a	syntax	Syntax error
+proc	Object a As Long	syntax	Syntax error
+proc	Object x To y	syntax	Syntax error
+proc	Object a(1)	semantic	Sub or Function not defined
+proc	Object "s"	semantic	Sub or Function not defined
+proc	Object a: b	semantic	Sub or Function not defined
+proc	Object a Then	syntax	Syntax error
+proc	Object a,	syntax	Syntax error
+proc	Object = 1	accepted	
+proc	Object As	syntax	Syntax error
+proc	Object To 1	syntax	Syntax error
+proc	Object (1, 2)	syntax	Syntax error
+proc	Object a.b	semantic	Sub or Function not defined
+proc	Object a!b	semantic	Sub or Function not defined
+proc	Object -1	semantic	Sub or Function not defined
+proc	Object Not a	semantic	Sub or Function not defined
+proc	Null	syntax	Syntax error
+proc	Null 1	syntax	Syntax error
+proc	Null a	syntax	Syntax error
+proc	Null a, b	syntax	Syntax error
+proc	Null (a)	syntax	Syntax error
+proc	Null a = 1	syntax	Syntax error
+proc	Null .a	syntax	Syntax error
+proc	Null #1	syntax	Syntax error
+proc	Null #1, a	syntax	Syntax error
+proc	Null a As Long	syntax	Syntax error
+proc	Null x To y	syntax	Syntax error
+proc	Null a(1)	syntax	Syntax error
+proc	Null "s"	syntax	Syntax error
+proc	Null a: b	syntax	Syntax error
+proc	Null a Then	syntax	Syntax error
+proc	Null a,	syntax	Syntax error
+proc	Null = 1	syntax	Syntax error
+proc	Null As	syntax	Syntax error
+proc	Null To 1	syntax	Syntax error
+proc	Null (1, 2)	syntax	Syntax error
+proc	Null a.b	syntax	Syntax error
+proc	Null a!b	syntax	Syntax error
+proc	Null -1	syntax	Syntax error
+proc	Null Not a	syntax	Syntax error
+proc	Nothing	syntax	Syntax error
+proc	Nothing 1	syntax	Syntax error
+proc	Nothing a	syntax	Syntax error
+proc	Nothing a, b	syntax	Syntax error
+proc	Nothing (a)	syntax	Syntax error
+proc	Nothing a = 1	syntax	Syntax error
+proc	Nothing .a	syntax	Syntax error
+proc	Nothing #1	syntax	Syntax error
+proc	Nothing #1, a	syntax	Syntax error
+proc	Nothing a As Long	syntax	Syntax error
+proc	Nothing x To y	syntax	Syntax error
+proc	Nothing a(1)	syntax	Syntax error
+proc	Nothing "s"	syntax	Syntax error
+proc	Nothing a: b	syntax	Syntax error
+proc	Nothing a Then	syntax	Syntax error
+proc	Nothing a,	syntax	Syntax error
+proc	Nothing = 1	syntax	Syntax error
+proc	Nothing As	syntax	Syntax error
+proc	Nothing To 1	syntax	Syntax error
+proc	Nothing (1, 2)	syntax	Syntax error
+proc	Nothing a.b	syntax	Syntax error
+proc	Nothing a!b	syntax	Syntax error
+proc	Nothing -1	syntax	Syntax error
+proc	Nothing Not a	syntax	Syntax error
+proc	Not	syntax	Syntax error
+proc	Not 1	syntax	Syntax error
+proc	Not a	syntax	Syntax error
+proc	Not a, b	syntax	Syntax error
+proc	Not (a)	syntax	Syntax error
+proc	Not a = 1	syntax	Syntax error
+proc	Not .a	syntax	Syntax error
+proc	Not #1	syntax	Syntax error
+proc	Not #1, a	syntax	Syntax error
+proc	Not a As Long	syntax	Syntax error
+proc	Not x To y	syntax	Syntax error
+proc	Not a(1)	syntax	Syntax error
+proc	Not "s"	syntax	Syntax error
+proc	Not a: b	syntax	Syntax error
+proc	Not a Then	syntax	Syntax error
+proc	Not a,	syntax	Syntax error
+proc	Not = 1	syntax	Syntax error
+proc	Not As	syntax	Syntax error
+proc	Not To 1	syntax	Syntax error
+proc	Not (1, 2)	syntax	Syntax error
+proc	Not a.b	syntax	Syntax error
+proc	Not a!b	syntax	Syntax error
+proc	Not -1	syntax	Syntax error
+proc	Not Not a	syntax	Syntax error
+proc	Next	syntax	Next without For
+proc	Next 1	syntax	Syntax error
+proc	Next a	syntax	Next without For
+proc	Next a, b	syntax	Next without For
+proc	Next (a)	syntax	Syntax error
+proc	Next a = 1	syntax	Syntax error
+proc	Next .a	semantic	Invalid or unqualified reference
+proc	Next #1	syntax	Syntax error
+proc	Next #1, a	syntax	Syntax error
+proc	Next a As Long	syntax	Syntax error
+proc	Next x To y	syntax	Syntax error
+proc	Next a(1)	syntax	Next without For
+proc	Next "s"	syntax	Syntax error
+proc	Next a: b	syntax	Next without For
+proc	Next a Then	syntax	Syntax error
+proc	Next a,	syntax	Syntax error
+proc	Next = 1	syntax	Syntax error
+proc	Next As	syntax	Syntax error
+proc	Next To 1	syntax	Syntax error
+proc	Next (1, 2)	syntax	Syntax error
+proc	Next a.b	syntax	Next without For
+proc	Next a!b	syntax	Next without For
+proc	Next -1	syntax	Syntax error
+proc	Next Not a	syntax	Syntax error
+proc	New	syntax	Syntax error
+proc	New 1	syntax	Syntax error
+proc	New a	syntax	Syntax error
+proc	New a, b	syntax	Syntax error
+proc	New (a)	syntax	Syntax error
+proc	New a = 1	syntax	Syntax error
+proc	New .a	syntax	Syntax error
+proc	New #1	syntax	Syntax error
+proc	New #1, a	syntax	Syntax error
+proc	New a As Long	syntax	Syntax error
+proc	New x To y	syntax	Syntax error
+proc	New a(1)	syntax	Syntax error
+proc	New "s"	syntax	Syntax error
+proc	New a: b	syntax	Syntax error
+proc	New a Then	syntax	Syntax error
+proc	New a,	syntax	Syntax error
+proc	New = 1	syntax	Syntax error
+proc	New As	syntax	Syntax error
+proc	New To 1	syntax	Syntax error
+proc	New (1, 2)	syntax	Syntax error
+proc	New a.b	syntax	Syntax error
+proc	New a!b	syntax	Syntax error
+proc	New -1	syntax	Syntax error
+proc	New Not a	syntax	Syntax error
+proc	Name	syntax	Syntax error
+proc	Name 1	syntax	Syntax error
+proc	Name a	syntax	Syntax error
+proc	Name a, b	syntax	Syntax error
+proc	Name (a)	syntax	Syntax error
+proc	Name a = 1	syntax	Syntax error
+proc	Name .a	semantic	Invalid or unqualified reference
+proc	Name #1	syntax	Syntax error
+proc	Name #1, a	syntax	Syntax error
+proc	Name a As Long	syntax	Syntax error
+proc	Name x To y	syntax	Syntax error
+proc	Name a(1)	syntax	Syntax error
+proc	Name "s"	syntax	Syntax error
+proc	Name a: b	syntax	Syntax error
+proc	Name a Then	syntax	Syntax error
+proc	Name a,	syntax	Syntax error
+proc	Name = 1	accepted	
+proc	Name As	syntax	Syntax error
+proc	Name To 1	syntax	Syntax error
+proc	Name (1, 2)	syntax	Syntax error
+proc	Name a.b	syntax	Syntax error
+proc	Name a!b	syntax	Syntax error
+proc	Name -1	syntax	Syntax error
+proc	Name Not a	syntax	Syntax error
+proc	Module	semantic	Sub or Function not defined
+proc	Module 1	semantic	Sub or Function not defined
+proc	Module a	semantic	Sub or Function not defined
+proc	Module a, b	semantic	Sub or Function not defined
+proc	Module (a)	semantic	Sub or Function not defined
+proc	Module a = 1	semantic	Sub or Function not defined
+proc	Module .a	semantic	Invalid or unqualified reference
+proc	Module #1	syntax	Syntax error
+proc	Module #1, a	syntax	Syntax error
+proc	Module a As Long	syntax	Syntax error
+proc	Module x To y	syntax	Syntax error
+proc	Module a(1)	semantic	Sub or Function not defined
+proc	Module "s"	semantic	Sub or Function not defined
+proc	Module a: b	semantic	Sub or Function not defined
+proc	Module a Then	syntax	Syntax error
+proc	Module a,	syntax	Syntax error
+proc	Module = 1	accepted	
+proc	Module As	syntax	Syntax error
+proc	Module To 1	syntax	Syntax error
+proc	Module (1, 2)	syntax	Syntax error
+proc	Module a.b	semantic	Sub or Function not defined
+proc	Module a!b	semantic	Sub or Function not defined
+proc	Module -1	semantic	Sub or Function not defined
+proc	Module Not a	semantic	Sub or Function not defined
+proc	Mod	syntax	Syntax error
+proc	Mod 1	syntax	Syntax error
+proc	Mod a	syntax	Syntax error
+proc	Mod a, b	syntax	Syntax error
+proc	Mod (a)	syntax	Syntax error
+proc	Mod a = 1	syntax	Syntax error
+proc	Mod .a	syntax	Syntax error
+proc	Mod #1	syntax	Syntax error
+proc	Mod #1, a	syntax	Syntax error
+proc	Mod a As Long	syntax	Syntax error
+proc	Mod x To y	syntax	Syntax error
+proc	Mod a(1)	syntax	Syntax error
+proc	Mod "s"	syntax	Syntax error
+proc	Mod a: b	syntax	Syntax error
+proc	Mod a Then	syntax	Syntax error
+proc	Mod a,	syntax	Syntax error
+proc	Mod = 1	syntax	Syntax error
+proc	Mod As	syntax	Syntax error
+proc	Mod To 1	syntax	Syntax error
+proc	Mod (1, 2)	syntax	Syntax error
+proc	Mod a.b	syntax	Syntax error
+proc	Mod a!b	syntax	Syntax error
+proc	Mod -1	syntax	Syntax error
+proc	Mod Not a	syntax	Syntax error
+proc	MidB	syntax	Syntax error
+proc	MidB 1	syntax	Syntax error
+proc	MidB a	syntax	Syntax error
+proc	MidB a, b	syntax	Syntax error
+proc	MidB (a)	syntax	Syntax error
+proc	MidB a = 1	syntax	Syntax error
+proc	MidB .a	semantic	Invalid or unqualified reference
+proc	MidB #1	syntax	Syntax error
+proc	MidB #1, a	syntax	Syntax error
+proc	MidB a As Long	syntax	Syntax error
+proc	MidB x To y	syntax	Syntax error
+proc	MidB a(1)	syntax	Syntax error
+proc	MidB "s"	syntax	Syntax error
+proc	MidB a: b	syntax	Syntax error
+proc	MidB a Then	syntax	Syntax error
+proc	MidB a,	syntax	Syntax error
+proc	MidB = 1	semantic	Argument not optional
+proc	MidB As	syntax	Syntax error
+proc	MidB To 1	syntax	Syntax error
+proc	MidB (1, 2)	syntax	Syntax error
+proc	MidB a.b	syntax	Syntax error
+proc	MidB a!b	syntax	Syntax error
+proc	MidB -1	syntax	Syntax error
+proc	MidB Not a	syntax	Syntax error
+proc	Mid	syntax	Syntax error
+proc	Mid 1	syntax	Syntax error
+proc	Mid a	syntax	Syntax error
+proc	Mid a, b	syntax	Syntax error
+proc	Mid (a)	syntax	Syntax error
+proc	Mid a = 1	syntax	Syntax error
+proc	Mid .a	semantic	Invalid or unqualified reference
+proc	Mid #1	syntax	Syntax error
+proc	Mid #1, a	syntax	Syntax error
+proc	Mid a As Long	syntax	Syntax error
+proc	Mid x To y	syntax	Syntax error
+proc	Mid a(1)	syntax	Syntax error
+proc	Mid "s"	syntax	Syntax error
+proc	Mid a: b	syntax	Syntax error
+proc	Mid a Then	syntax	Syntax error
+proc	Mid a,	syntax	Syntax error
+proc	Mid = 1	semantic	Argument not optional
+proc	Mid As	syntax	Syntax error
+proc	Mid To 1	syntax	Syntax error
+proc	Mid (1, 2)	syntax	Syntax error
+proc	Mid a.b	syntax	Syntax error
+proc	Mid a!b	syntax	Syntax error
+proc	Mid -1	syntax	Syntax error
+proc	Mid Not a	syntax	Syntax error
+proc	Me	syntax	Syntax error
+proc	Me 1	syntax	Syntax error
+proc	Me a	syntax	Syntax error
+proc	Me a, b	syntax	Syntax error
+proc	Me (a)	semantic	Invalid use of Me keyword
+proc	Me a = 1	syntax	Syntax error
+proc	Me .a	syntax	Syntax error
+proc	Me #1	syntax	Syntax error
+proc	Me #1, a	syntax	Syntax error
+proc	Me a As Long	syntax	Syntax error
+proc	Me x To y	syntax	Syntax error
+proc	Me a(1)	syntax	Syntax error
+proc	Me "s"	syntax	Syntax error
+proc	Me a: b	syntax	Syntax error
+proc	Me a Then	syntax	Syntax error
+proc	Me a,	syntax	Syntax error
+proc	Me = 1	semantic	Invalid use of Me keyword
+proc	Me As	syntax	Syntax error
+proc	Me To 1	syntax	Syntax error
+proc	Me (1, 2)	syntax	Syntax error
+proc	Me a.b	syntax	Syntax error
+proc	Me a!b	syntax	Syntax error
+proc	Me -1	syntax	Syntax error
+proc	Me Not a	syntax	Syntax error
+proc	LSet	syntax	Syntax error
+proc	LSet 1	syntax	Syntax error
+proc	LSet a	syntax	Syntax error
+proc	LSet a, b	syntax	Syntax error
+proc	LSet (a)	syntax	Syntax error
+proc	LSet a = 1	accepted	
+proc	LSet .a	syntax	Syntax error
+proc	LSet #1	syntax	Syntax error
+proc	LSet #1, a	syntax	Syntax error
+proc	LSet a As Long	syntax	Syntax error
+proc	LSet x To y	syntax	Syntax error
+proc	LSet a(1)	syntax	Syntax error
+proc	LSet "s"	syntax	Syntax error
+proc	LSet a: b	syntax	Syntax error
+proc	LSet a Then	syntax	Syntax error
+proc	LSet a,	syntax	Syntax error
+proc	LSet = 1	syntax	Syntax error
+proc	LSet As	syntax	Syntax error
+proc	LSet To 1	syntax	Syntax error
+proc	LSet (1, 2)	syntax	Syntax error
+proc	LSet a.b	syntax	Syntax error
+proc	LSet a!b	syntax	Syntax error
+proc	LSet -1	syntax	Syntax error
+proc	LSet Not a	syntax	Syntax error
+proc	Loop	syntax	Loop without Do
+proc	Loop 1	syntax	Syntax error
+proc	Loop a	syntax	Syntax error
+proc	Loop a, b	syntax	Syntax error
+proc	Loop (a)	syntax	Syntax error
+proc	Loop a = 1	syntax	Syntax error
+proc	Loop .a	syntax	Syntax error
+proc	Loop #1	syntax	Syntax error
+proc	Loop #1, a	syntax	Syntax error
+proc	Loop a As Long	syntax	Syntax error
+proc	Loop x To y	syntax	Syntax error
+proc	Loop a(1)	syntax	Syntax error
+proc	Loop "s"	syntax	Syntax error
+proc	Loop a: b	syntax	Syntax error
+proc	Loop a Then	syntax	Syntax error
+proc	Loop a,	syntax	Syntax error
+proc	Loop = 1	syntax	Syntax error
+proc	Loop As	syntax	Syntax error
+proc	Loop To 1	syntax	Syntax error
+proc	Loop (1, 2)	syntax	Syntax error
+proc	Loop a.b	syntax	Syntax error
+proc	Loop a!b	syntax	Syntax error
+proc	Loop -1	syntax	Syntax error
+proc	Loop Not a	syntax	Syntax error
+proc	Long	syntax	Syntax error
+proc	Long 1	syntax	Syntax error
+proc	Long a	syntax	Syntax error
+proc	Long a, b	syntax	Syntax error
+proc	Long (a)	syntax	Syntax error
+proc	Long a = 1	syntax	Syntax error
+proc	Long .a	syntax	Syntax error
+proc	Long #1	syntax	Syntax error
+proc	Long #1, a	syntax	Syntax error
+proc	Long a As Long	syntax	Syntax error
+proc	Long x To y	syntax	Syntax error
+proc	Long a(1)	syntax	Syntax error
+proc	Long "s"	syntax	Syntax error
+proc	Long a: b	syntax	Syntax error
+proc	Long a Then	syntax	Syntax error
+proc	Long a,	syntax	Syntax error
+proc	Long = 1	syntax	Syntax error
+proc	Long As	syntax	Syntax error
+proc	Long To 1	syntax	Syntax error
+proc	Long (1, 2)	syntax	Syntax error
+proc	Long a.b	syntax	Syntax error
+proc	Long a!b	syntax	Syntax error
+proc	Long -1	syntax	Syntax error
+proc	Long Not a	syntax	Syntax error
+proc	Lock	syntax	Syntax error
+proc	Lock 1	accepted	
+proc	Lock a	accepted	
+proc	Lock a, b	accepted	
+proc	Lock (a)	accepted	
+proc	Lock a = 1	accepted	
+proc	Lock .a	semantic	Invalid or unqualified reference
+proc	Lock #1	accepted	
+proc	Lock #1, a	accepted	
+proc	Lock a As Long	syntax	Syntax error
+proc	Lock x To y	syntax	Syntax error
+proc	Lock a(1)	accepted	
+proc	Lock "s"	accepted	
+proc	Lock a: b	semantic	Expected Sub, Function, or Property
+proc	Lock a Then	syntax	Syntax error
+proc	Lock a,	syntax	Syntax error
+proc	Lock = 1	syntax	Syntax error
+proc	Lock As	syntax	Syntax error
+proc	Lock To 1	syntax	Syntax error
+proc	Lock (1, 2)	syntax	Syntax error
+proc	Lock a.b	accepted	
+proc	Lock a!b	accepted	
+proc	Lock -1	accepted	
+proc	Lock Not a	accepted	
+proc	Local	syntax	Syntax error
+proc	Local 1	syntax	Syntax error
+proc	Local a	syntax	Syntax error
+proc	Local a, b	syntax	Syntax error
+proc	Local (a)	syntax	Syntax error
+proc	Local a = 1	syntax	Syntax error
+proc	Local .a	syntax	Syntax error
+proc	Local #1	syntax	Syntax error
+proc	Local #1, a	syntax	Syntax error
+proc	Local a As Long	syntax	Syntax error
+proc	Local x To y	syntax	Syntax error
+proc	Local a(1)	syntax	Syntax error
+proc	Local "s"	syntax	Syntax error
+proc	Local a: b	syntax	Syntax error
+proc	Local a Then	syntax	Syntax error
+proc	Local a,	syntax	Syntax error
+proc	Local = 1	syntax	Syntax error
+proc	Local As	syntax	Syntax error
+proc	Local To 1	syntax	Syntax error
+proc	Local (1, 2)	syntax	Syntax error
+proc	Local a.b	syntax	Syntax error
+proc	Local a!b	syntax	Syntax error
+proc	Local -1	syntax	Syntax error
+proc	Local Not a	syntax	Syntax error
+proc	Load	semantic	Argument not optional
+proc	Load 1	semantic	Type mismatch
+proc	Load a	accepted	
+proc	Load a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	Load (a)	accepted	
+proc	Load a = 1	accepted	
+proc	Load .a	semantic	Invalid or unqualified reference
+proc	Load #1	syntax	Syntax error
+proc	Load #1, a	syntax	Syntax error
+proc	Load a As Long	syntax	Syntax error
+proc	Load x To y	syntax	Syntax error
+proc	Load a(1)	accepted	
+proc	Load "s"	semantic	Type mismatch
+proc	Load a: b	semantic	Expected Sub, Function, or Property
+proc	Load a Then	syntax	Syntax error
+proc	Load a,	syntax	Syntax error
+proc	Load = 1	semantic	Argument not optional
+proc	Load As	syntax	Syntax error
+proc	Load To 1	syntax	Syntax error
+proc	Load (1, 2)	syntax	Syntax error
+proc	Load a.b	accepted	
+proc	Load a!b	accepted	
+proc	Load -1	semantic	Type mismatch
+proc	Load Not a	accepted	
+proc	LINEINPUT	syntax	Syntax error
+proc	LINEINPUT 1	syntax	Syntax error
+proc	LINEINPUT a	syntax	Syntax error
+proc	LINEINPUT a, b	syntax	Syntax error
+proc	LINEINPUT (a)	syntax	Syntax error
+proc	LINEINPUT a = 1	syntax	Syntax error
+proc	LINEINPUT .a	syntax	Syntax error
+proc	LINEINPUT #1	syntax	Syntax error
+proc	LINEINPUT #1, a	syntax	Syntax error
+proc	LINEINPUT a As Long	syntax	Syntax error
+proc	LINEINPUT x To y	syntax	Syntax error
+proc	LINEINPUT a(1)	syntax	Syntax error
+proc	LINEINPUT "s"	syntax	Syntax error
+proc	LINEINPUT a: b	syntax	Syntax error
+proc	LINEINPUT a Then	syntax	Syntax error
+proc	LINEINPUT a,	syntax	Syntax error
+proc	LINEINPUT = 1	syntax	Syntax error
+proc	LINEINPUT As	syntax	Syntax error
+proc	LINEINPUT To 1	syntax	Syntax error
+proc	LINEINPUT (1, 2)	syntax	Syntax error
+proc	LINEINPUT a.b	syntax	Syntax error
+proc	LINEINPUT a!b	syntax	Syntax error
+proc	LINEINPUT -1	syntax	Syntax error
+proc	LINEINPUT Not a	syntax	Syntax error
+proc	Line	syntax	Syntax error
+proc	Line 1	syntax	Syntax error
+proc	Line a	syntax	Syntax error
+proc	Line a, b	syntax	Syntax error
+proc	Line (a)	syntax	Syntax error
+proc	Line a = 1	syntax	Syntax error
+proc	Line .a	semantic	Invalid or unqualified reference
+proc	Line #1	syntax	Syntax error
+proc	Line #1, a	syntax	Syntax error
+proc	Line a As Long	syntax	Syntax error
+proc	Line x To y	syntax	Syntax error
+proc	Line a(1)	syntax	Syntax error
+proc	Line "s"	syntax	Syntax error
+proc	Line a: b	syntax	Syntax error
+proc	Line a Then	syntax	Syntax error
+proc	Line a,	syntax	Syntax error
+proc	Line = 1	accepted	
+proc	Line As	syntax	Syntax error
+proc	Line To 1	syntax	Syntax error
+proc	Line (1, 2)	syntax	Syntax error
+proc	Line a.b	syntax	Syntax error
+proc	Line a!b	syntax	Syntax error
+proc	Line -1	syntax	Syntax error
+proc	Line Not a	syntax	Syntax error
+proc	Like	syntax	Syntax error
+proc	Like 1	syntax	Syntax error
+proc	Like a	syntax	Syntax error
+proc	Like a, b	syntax	Syntax error
+proc	Like (a)	syntax	Syntax error
+proc	Like a = 1	syntax	Syntax error
+proc	Like .a	syntax	Syntax error
+proc	Like #1	syntax	Syntax error
+proc	Like #1, a	syntax	Syntax error
+proc	Like a As Long	syntax	Syntax error
+proc	Like x To y	syntax	Syntax error
+proc	Like a(1)	syntax	Syntax error
+proc	Like "s"	syntax	Syntax error
+proc	Like a: b	syntax	Syntax error
+proc	Like a Then	syntax	Syntax error
+proc	Like a,	syntax	Syntax error
+proc	Like = 1	syntax	Syntax error
+proc	Like As	syntax	Syntax error
+proc	Like To 1	syntax	Syntax error
+proc	Like (1, 2)	syntax	Syntax error
+proc	Like a.b	syntax	Syntax error
+proc	Like a!b	syntax	Syntax error
+proc	Like -1	syntax	Syntax error
+proc	Like Not a	syntax	Syntax error
+proc	Lib	semantic	Sub or Function not defined
+proc	Lib 1	semantic	Sub or Function not defined
+proc	Lib a	semantic	Sub or Function not defined
+proc	Lib a, b	semantic	Sub or Function not defined
+proc	Lib (a)	semantic	Sub or Function not defined
+proc	Lib a = 1	semantic	Sub or Function not defined
+proc	Lib .a	semantic	Invalid or unqualified reference
+proc	Lib #1	syntax	Syntax error
+proc	Lib #1, a	syntax	Syntax error
+proc	Lib a As Long	syntax	Syntax error
+proc	Lib x To y	syntax	Syntax error
+proc	Lib a(1)	semantic	Sub or Function not defined
+proc	Lib "s"	semantic	Sub or Function not defined
+proc	Lib a: b	semantic	Sub or Function not defined
+proc	Lib a Then	syntax	Syntax error
+proc	Lib a,	syntax	Syntax error
+proc	Lib = 1	accepted	
+proc	Lib As	syntax	Syntax error
+proc	Lib To 1	syntax	Syntax error
+proc	Lib (1, 2)	syntax	Syntax error
+proc	Lib a.b	semantic	Sub or Function not defined
+proc	Lib a!b	semantic	Sub or Function not defined
+proc	Lib -1	semantic	Sub or Function not defined
+proc	Lib Not a	semantic	Sub or Function not defined
+proc	Let	syntax	Syntax error
+proc	Let 1	syntax	Syntax error
+proc	Let a	syntax	Syntax error
+proc	Let a, b	syntax	Syntax error
+proc	Let (a)	syntax	Syntax error
+proc	Let a = 1	accepted	
+proc	Let .a	syntax	Syntax error
+proc	Let #1	syntax	Syntax error
+proc	Let #1, a	syntax	Syntax error
+proc	Let a As Long	syntax	Syntax error
+proc	Let x To y	syntax	Syntax error
+proc	Let a(1)	syntax	Syntax error
+proc	Let "s"	syntax	Syntax error
+proc	Let a: b	syntax	Syntax error
+proc	Let a Then	syntax	Syntax error
+proc	Let a,	syntax	Syntax error
+proc	Let = 1	syntax	Syntax error
+proc	Let As	syntax	Syntax error
+proc	Let To 1	syntax	Syntax error
+proc	Let (1, 2)	syntax	Syntax error
+proc	Let a.b	syntax	Syntax error
+proc	Let a!b	syntax	Syntax error
+proc	Let -1	syntax	Syntax error
+proc	Let Not a	syntax	Syntax error
+proc	LenB	syntax	Syntax error
+proc	LenB 1	syntax	Syntax error
+proc	LenB a	syntax	Syntax error
+proc	LenB a, b	syntax	Syntax error
+proc	LenB (a)	syntax	Syntax error
+proc	LenB a = 1	syntax	Syntax error
+proc	LenB .a	syntax	Syntax error
+proc	LenB #1	syntax	Syntax error
+proc	LenB #1, a	syntax	Syntax error
+proc	LenB a As Long	syntax	Syntax error
+proc	LenB x To y	syntax	Syntax error
+proc	LenB a(1)	syntax	Syntax error
+proc	LenB "s"	syntax	Syntax error
+proc	LenB a: b	syntax	Syntax error
+proc	LenB a Then	syntax	Syntax error
+proc	LenB a,	syntax	Syntax error
+proc	LenB = 1	syntax	Syntax error
+proc	LenB As	syntax	Syntax error
+proc	LenB To 1	syntax	Syntax error
+proc	LenB (1, 2)	syntax	Syntax error
+proc	LenB a.b	syntax	Syntax error
+proc	LenB a!b	syntax	Syntax error
+proc	LenB -1	syntax	Syntax error
+proc	LenB Not a	syntax	Syntax error
+proc	Len	syntax	Syntax error
+proc	Len 1	syntax	Syntax error
+proc	Len a	syntax	Syntax error
+proc	Len a, b	syntax	Syntax error
+proc	Len (a)	syntax	Syntax error
+proc	Len a = 1	syntax	Syntax error
+proc	Len .a	syntax	Syntax error
+proc	Len #1	syntax	Syntax error
+proc	Len #1, a	syntax	Syntax error
+proc	Len a As Long	syntax	Syntax error
+proc	Len x To y	syntax	Syntax error
+proc	Len a(1)	syntax	Syntax error
+proc	Len "s"	syntax	Syntax error
+proc	Len a: b	syntax	Syntax error
+proc	Len a Then	syntax	Syntax error
+proc	Len a,	syntax	Syntax error
+proc	Len = 1	syntax	Syntax error
+proc	Len As	syntax	Syntax error
+proc	Len To 1	syntax	Syntax error
+proc	Len (1, 2)	syntax	Syntax error
+proc	Len a.b	syntax	Syntax error
+proc	Len a!b	syntax	Syntax error
+proc	Len -1	syntax	Syntax error
+proc	Len Not a	syntax	Syntax error
+proc	Left	semantic	Argument not optional
+proc	Left 1	semantic	Argument not optional
+proc	Left a	semantic	Argument not optional
+proc	Left a, b	accepted	
+proc	Left (a)	semantic	Argument not optional
+proc	Left a = 1	semantic	Argument not optional
+proc	Left .a	semantic	Invalid or unqualified reference
+proc	Left #1	syntax	Syntax error
+proc	Left #1, a	syntax	Syntax error
+proc	Left a As Long	syntax	Syntax error
+proc	Left x To y	syntax	Syntax error
+proc	Left a(1)	semantic	Argument not optional
+proc	Left "s"	semantic	Argument not optional
+proc	Left a: b	semantic	Argument not optional
+proc	Left a Then	syntax	Syntax error
+proc	Left a,	syntax	Syntax error
+proc	Left = 1	semantic	Argument not optional
+proc	Left As	syntax	Syntax error
+proc	Left To 1	syntax	Syntax error
+proc	Left (1, 2)	syntax	Syntax error
+proc	Left a.b	semantic	Argument not optional
+proc	Left a!b	semantic	Argument not optional
+proc	Left -1	semantic	Argument not optional
+proc	Left Not a	semantic	Argument not optional
+proc	LBound	syntax	Syntax error
+proc	LBound 1	syntax	Syntax error
+proc	LBound a	syntax	Syntax error
+proc	LBound a, b	syntax	Syntax error
+proc	LBound (a)	syntax	Syntax error
+proc	LBound a = 1	syntax	Syntax error
+proc	LBound .a	syntax	Syntax error
+proc	LBound #1	syntax	Syntax error
+proc	LBound #1, a	syntax	Syntax error
+proc	LBound a As Long	syntax	Syntax error
+proc	LBound x To y	syntax	Syntax error
+proc	LBound a(1)	syntax	Syntax error
+proc	LBound "s"	syntax	Syntax error
+proc	LBound a: b	syntax	Syntax error
+proc	LBound a Then	syntax	Syntax error
+proc	LBound a,	syntax	Syntax error
+proc	LBound = 1	syntax	Syntax error
+proc	LBound As	syntax	Syntax error
+proc	LBound To 1	syntax	Syntax error
+proc	LBound (1, 2)	syntax	Syntax error
+proc	LBound a.b	syntax	Syntax error
+proc	LBound a!b	syntax	Syntax error
+proc	LBound -1	syntax	Syntax error
+proc	LBound Not a	syntax	Syntax error
+proc	Is	syntax	Syntax error
+proc	Is 1	syntax	Syntax error
+proc	Is a	syntax	Syntax error
+proc	Is a, b	syntax	Syntax error
+proc	Is (a)	syntax	Syntax error
+proc	Is a = 1	syntax	Syntax error
+proc	Is .a	syntax	Syntax error
+proc	Is #1	syntax	Syntax error
+proc	Is #1, a	syntax	Syntax error
+proc	Is a As Long	syntax	Syntax error
+proc	Is x To y	syntax	Syntax error
+proc	Is a(1)	syntax	Syntax error
+proc	Is "s"	syntax	Syntax error
+proc	Is a: b	syntax	Syntax error
+proc	Is a Then	syntax	Syntax error
+proc	Is a,	syntax	Syntax error
+proc	Is = 1	syntax	Syntax error
+proc	Is As	syntax	Syntax error
+proc	Is To 1	syntax	Syntax error
+proc	Is (1, 2)	syntax	Syntax error
+proc	Is a.b	syntax	Syntax error
+proc	Is a!b	syntax	Syntax error
+proc	Is -1	syntax	Syntax error
+proc	Is Not a	syntax	Syntax error
+proc	Integer	syntax	Syntax error
+proc	Integer 1	syntax	Syntax error
+proc	Integer a	syntax	Syntax error
+proc	Integer a, b	syntax	Syntax error
+proc	Integer (a)	syntax	Syntax error
+proc	Integer a = 1	syntax	Syntax error
+proc	Integer .a	syntax	Syntax error
+proc	Integer #1	syntax	Syntax error
+proc	Integer #1, a	syntax	Syntax error
+proc	Integer a As Long	syntax	Syntax error
+proc	Integer x To y	syntax	Syntax error
+proc	Integer a(1)	syntax	Syntax error
+proc	Integer "s"	syntax	Syntax error
+proc	Integer a: b	syntax	Syntax error
+proc	Integer a Then	syntax	Syntax error
+proc	Integer a,	syntax	Syntax error
+proc	Integer = 1	syntax	Syntax error
+proc	Integer As	syntax	Syntax error
+proc	Integer To 1	syntax	Syntax error
+proc	Integer (1, 2)	syntax	Syntax error
+proc	Integer a.b	syntax	Syntax error
+proc	Integer a!b	syntax	Syntax error
+proc	Integer -1	syntax	Syntax error
+proc	Integer Not a	syntax	Syntax error
+proc	Int	syntax	Syntax error
+proc	Int 1	syntax	Syntax error
+proc	Int a	syntax	Syntax error
+proc	Int a, b	syntax	Syntax error
+proc	Int (a)	syntax	Syntax error
+proc	Int a = 1	syntax	Syntax error
+proc	Int .a	syntax	Syntax error
+proc	Int #1	syntax	Syntax error
+proc	Int #1, a	syntax	Syntax error
+proc	Int a As Long	syntax	Syntax error
+proc	Int x To y	syntax	Syntax error
+proc	Int a(1)	syntax	Syntax error
+proc	Int "s"	syntax	Syntax error
+proc	Int a: b	syntax	Syntax error
+proc	Int a Then	syntax	Syntax error
+proc	Int a,	syntax	Syntax error
+proc	Int = 1	syntax	Syntax error
+proc	Int As	syntax	Syntax error
+proc	Int To 1	syntax	Syntax error
+proc	Int (1, 2)	syntax	Syntax error
+proc	Int a.b	syntax	Syntax error
+proc	Int a!b	syntax	Syntax error
+proc	Int -1	syntax	Syntax error
+proc	Int Not a	syntax	Syntax error
+proc	InStrB	accepted	
+proc	InStrB 1	accepted	
+proc	InStrB a	accepted	
+proc	InStrB a, b	accepted	
+proc	InStrB (a)	accepted	
+proc	InStrB a = 1	accepted	
+proc	InStrB .a	semantic	Invalid or unqualified reference
+proc	InStrB #1	syntax	Syntax error
+proc	InStrB #1, a	syntax	Syntax error
+proc	InStrB a As Long	syntax	Syntax error
+proc	InStrB x To y	syntax	Syntax error
+proc	InStrB a(1)	accepted	
+proc	InStrB "s"	accepted	
+proc	InStrB a: b	semantic	Expected Sub, Function, or Property
+proc	InStrB a Then	syntax	Syntax error
+proc	InStrB a,	syntax	Syntax error
+proc	InStrB = 1	accepted	
+proc	InStrB As	syntax	Syntax error
+proc	InStrB To 1	syntax	Syntax error
+proc	InStrB (1, 2)	syntax	Syntax error
+proc	InStrB a.b	accepted	
+proc	InStrB a!b	accepted	
+proc	InStrB -1	accepted	
+proc	InStrB Not a	accepted	
+proc	InStr	accepted	
+proc	InStr 1	accepted	
+proc	InStr a	accepted	
+proc	InStr a, b	accepted	
+proc	InStr (a)	accepted	
+proc	InStr a = 1	accepted	
+proc	InStr .a	semantic	Invalid or unqualified reference
+proc	InStr #1	syntax	Syntax error
+proc	InStr #1, a	syntax	Syntax error
+proc	InStr a As Long	syntax	Syntax error
+proc	InStr x To y	syntax	Syntax error
+proc	InStr a(1)	accepted	
+proc	InStr "s"	accepted	
+proc	InStr a: b	semantic	Expected Sub, Function, or Property
+proc	InStr a Then	syntax	Syntax error
+proc	InStr a,	syntax	Syntax error
+proc	InStr = 1	accepted	
+proc	InStr As	syntax	Syntax error
+proc	InStr To 1	syntax	Syntax error
+proc	InStr (1, 2)	syntax	Syntax error
+proc	InStr a.b	accepted	
+proc	InStr a!b	accepted	
+proc	InStr -1	accepted	
+proc	InStr Not a	accepted	
+proc	InputB	syntax	Syntax error
+proc	InputB 1	syntax	Syntax error
+proc	InputB a	syntax	Syntax error
+proc	InputB a, b	syntax	Syntax error
+proc	InputB (a)	syntax	Syntax error
+proc	InputB a = 1	syntax	Syntax error
+proc	InputB .a	syntax	Syntax error
+proc	InputB #1	syntax	Syntax error
+proc	InputB #1, a	accepted	
+proc	InputB a As Long	syntax	Syntax error
+proc	InputB x To y	syntax	Syntax error
+proc	InputB a(1)	syntax	Syntax error
+proc	InputB "s"	syntax	Syntax error
+proc	InputB a: b	syntax	Syntax error
+proc	InputB a Then	syntax	Syntax error
+proc	InputB a,	syntax	Syntax error
+proc	InputB = 1	syntax	Syntax error
+proc	InputB As	syntax	Syntax error
+proc	InputB To 1	syntax	Syntax error
+proc	InputB (1, 2)	syntax	Syntax error
+proc	InputB a.b	syntax	Syntax error
+proc	InputB a!b	syntax	Syntax error
+proc	InputB -1	syntax	Syntax error
+proc	InputB Not a	syntax	Syntax error
+proc	Input	syntax	Syntax error
+proc	Input 1	syntax	Syntax error
+proc	Input a	syntax	Syntax error
+proc	Input a, b	syntax	Syntax error
+proc	Input (a)	syntax	Syntax error
+proc	Input a = 1	syntax	Syntax error
+proc	Input .a	syntax	Syntax error
+proc	Input #1	syntax	Syntax error
+proc	Input #1, a	accepted	
+proc	Input a As Long	syntax	Syntax error
+proc	Input x To y	syntax	Syntax error
+proc	Input a(1)	syntax	Syntax error
+proc	Input "s"	syntax	Syntax error
+proc	Input a: b	syntax	Syntax error
+proc	Input a Then	syntax	Syntax error
+proc	Input a,	syntax	Syntax error
+proc	Input = 1	syntax	Syntax error
+proc	Input As	syntax	Syntax error
+proc	Input To 1	syntax	Syntax error
+proc	Input (1, 2)	syntax	Syntax error
+proc	Input a.b	syntax	Syntax error
+proc	Input a!b	syntax	Syntax error
+proc	Input -1	syntax	Syntax error
+proc	Input Not a	syntax	Syntax error
+proc	In	syntax	Syntax error
+proc	In 1	syntax	Syntax error
+proc	In a	syntax	Syntax error
+proc	In a, b	syntax	Syntax error
+proc	In (a)	syntax	Syntax error
+proc	In a = 1	syntax	Syntax error
+proc	In .a	syntax	Syntax error
+proc	In #1	syntax	Syntax error
+proc	In #1, a	syntax	Syntax error
+proc	In a As Long	syntax	Syntax error
+proc	In x To y	syntax	Syntax error
+proc	In a(1)	syntax	Syntax error
+proc	In "s"	syntax	Syntax error
+proc	In a: b	syntax	Syntax error
+proc	In a Then	syntax	Syntax error
+proc	In a,	syntax	Syntax error
+proc	In = 1	syntax	Syntax error
+proc	In As	syntax	Syntax error
+proc	In To 1	syntax	Syntax error
+proc	In (1, 2)	syntax	Syntax error
+proc	In a.b	syntax	Syntax error
+proc	In a!b	syntax	Syntax error
+proc	In -1	syntax	Syntax error
+proc	In Not a	syntax	Syntax error
+proc	Implements	syntax	Syntax error
+proc	Implements 1	syntax	Syntax error
+proc	Implements a	syntax	Syntax error
+proc	Implements a, b	syntax	Syntax error
+proc	Implements (a)	syntax	Syntax error
+proc	Implements a = 1	syntax	Syntax error
+proc	Implements .a	syntax	Syntax error
+proc	Implements #1	syntax	Syntax error
+proc	Implements #1, a	syntax	Syntax error
+proc	Implements a As Long	syntax	Syntax error
+proc	Implements x To y	syntax	Syntax error
+proc	Implements a(1)	syntax	Syntax error
+proc	Implements "s"	syntax	Syntax error
+proc	Implements a: b	syntax	Syntax error
+proc	Implements a Then	syntax	Syntax error
+proc	Implements a,	syntax	Syntax error
+proc	Implements = 1	syntax	Syntax error
+proc	Implements As	syntax	Syntax error
+proc	Implements To 1	syntax	Syntax error
+proc	Implements (1, 2)	syntax	Syntax error
+proc	Implements a.b	syntax	Syntax error
+proc	Implements a!b	syntax	Syntax error
+proc	Implements -1	syntax	Syntax error
+proc	Implements Not a	syntax	Syntax error
+proc	Imp	syntax	Syntax error
+proc	Imp 1	syntax	Syntax error
+proc	Imp a	syntax	Syntax error
+proc	Imp a, b	syntax	Syntax error
+proc	Imp (a)	syntax	Syntax error
+proc	Imp a = 1	syntax	Syntax error
+proc	Imp .a	syntax	Syntax error
+proc	Imp #1	syntax	Syntax error
+proc	Imp #1, a	syntax	Syntax error
+proc	Imp a As Long	syntax	Syntax error
+proc	Imp x To y	syntax	Syntax error
+proc	Imp a(1)	syntax	Syntax error
+proc	Imp "s"	syntax	Syntax error
+proc	Imp a: b	syntax	Syntax error
+proc	Imp a Then	syntax	Syntax error
+proc	Imp a,	syntax	Syntax error
+proc	Imp = 1	syntax	Syntax error
+proc	Imp As	syntax	Syntax error
+proc	Imp To 1	syntax	Syntax error
+proc	Imp (1, 2)	syntax	Syntax error
+proc	Imp a.b	syntax	Syntax error
+proc	Imp a!b	syntax	Syntax error
+proc	Imp -1	syntax	Syntax error
+proc	Imp Not a	syntax	Syntax error
+proc	If	syntax	Syntax error
+proc	If 1	syntax	Syntax error
+proc	If a	syntax	Syntax error
+proc	If a, b	syntax	Syntax error
+proc	If (a)	syntax	Syntax error
+proc	If a = 1	syntax	Syntax error
+proc	If .a	syntax	Syntax error
+proc	If #1	syntax	Syntax error
+proc	If #1, a	syntax	Syntax error
+proc	If a As Long	syntax	Syntax error
+proc	If x To y	syntax	Syntax error
+proc	If a(1)	syntax	Syntax error
+proc	If "s"	syntax	Syntax error
+proc	If a: b	syntax	Syntax error
+proc	If a Then	syntax	Block If without End If
+proc	If a,	syntax	Syntax error
+proc	If = 1	syntax	Syntax error
+proc	If As	syntax	Syntax error
+proc	If To 1	syntax	Syntax error
+proc	If (1, 2)	syntax	Syntax error
+proc	If a.b	syntax	Syntax error
+proc	If a!b	syntax	Syntax error
+proc	If -1	syntax	Syntax error
+proc	If Not a	syntax	Syntax error
+proc	GoTo	syntax	Syntax error
+proc	GoTo 1	syntax	Label not defined
+proc	GoTo a	syntax	Label not defined
+proc	GoTo a, b	syntax	Syntax error
+proc	GoTo (a)	syntax	Syntax error
+proc	GoTo a = 1	syntax	Syntax error
+proc	GoTo .a	syntax	Syntax error
+proc	GoTo #1	syntax	Syntax error
+proc	GoTo #1, a	syntax	Syntax error
+proc	GoTo a As Long	syntax	Syntax error
+proc	GoTo x To y	syntax	Syntax error
+proc	GoTo a(1)	syntax	Syntax error
+proc	GoTo "s"	syntax	Syntax error
+proc	GoTo a: b	semantic	Expected Sub, Function, or Property
+proc	GoTo a Then	syntax	Syntax error
+proc	GoTo a,	syntax	Syntax error
+proc	GoTo = 1	syntax	Syntax error
+proc	GoTo As	syntax	Syntax error
+proc	GoTo To 1	syntax	Syntax error
+proc	GoTo (1, 2)	syntax	Syntax error
+proc	GoTo a.b	syntax	Syntax error
+proc	GoTo a!b	syntax	Syntax error
+proc	GoTo -1	syntax	Syntax error
+proc	GoTo Not a	syntax	Syntax error
+proc	GoSub	syntax	Syntax error
+proc	GoSub 1	syntax	Label not defined
+proc	GoSub a	syntax	Label not defined
+proc	GoSub a, b	syntax	Syntax error
+proc	GoSub (a)	syntax	Syntax error
+proc	GoSub a = 1	syntax	Syntax error
+proc	GoSub .a	syntax	Syntax error
+proc	GoSub #1	syntax	Syntax error
+proc	GoSub #1, a	syntax	Syntax error
+proc	GoSub a As Long	syntax	Syntax error
+proc	GoSub x To y	syntax	Syntax error
+proc	GoSub a(1)	syntax	Syntax error
+proc	GoSub "s"	syntax	Syntax error
+proc	GoSub a: b	semantic	Expected Sub, Function, or Property
+proc	GoSub a Then	syntax	Syntax error
+proc	GoSub a,	syntax	Syntax error
+proc	GoSub = 1	syntax	Syntax error
+proc	GoSub As	syntax	Syntax error
+proc	GoSub To 1	syntax	Syntax error
+proc	GoSub (1, 2)	syntax	Syntax error
+proc	GoSub a.b	syntax	Syntax error
+proc	GoSub a!b	syntax	Syntax error
+proc	GoSub -1	syntax	Syntax error
+proc	GoSub Not a	syntax	Syntax error
+proc	Go	syntax	Syntax error
+proc	Go 1	syntax	Syntax error
+proc	Go a	syntax	Syntax error
+proc	Go a, b	syntax	Syntax error
+proc	Go (a)	syntax	Syntax error
+proc	Go a = 1	syntax	Syntax error
+proc	Go .a	semantic	Invalid or unqualified reference
+proc	Go #1	syntax	Syntax error
+proc	Go #1, a	syntax	Syntax error
+proc	Go a As Long	syntax	Syntax error
+proc	Go x To y	syntax	Syntax error
+proc	Go a(1)	syntax	Syntax error
+proc	Go "s"	syntax	Syntax error
+proc	Go a: b	syntax	Syntax error
+proc	Go a Then	syntax	Syntax error
+proc	Go a,	syntax	Syntax error
+proc	Go = 1	accepted	
+proc	Go As	syntax	Syntax error
+proc	Go To 1	syntax	Label not defined
+proc	Go (1, 2)	syntax	Syntax error
+proc	Go a.b	syntax	Syntax error
+proc	Go a!b	syntax	Syntax error
+proc	Go -1	syntax	Syntax error
+proc	Go Not a	syntax	Syntax error
+proc	Global	syntax	Syntax error
+proc	Global 1	syntax	Syntax error
+proc	Global a	syntax	Invalid attribute in Sub or Function
+proc	Global a, b	syntax	Invalid attribute in Sub or Function
+proc	Global (a)	syntax	Syntax error
+proc	Global a = 1	syntax	Syntax error
+proc	Global .a	syntax	Syntax error
+proc	Global #1	syntax	Syntax error
+proc	Global #1, a	syntax	Syntax error
+proc	Global a As Long	syntax	Invalid attribute in Sub or Function
+proc	Global x To y	syntax	Syntax error
+proc	Global a(1)	syntax	Invalid attribute in Sub or Function
+proc	Global "s"	syntax	Syntax error
+proc	Global a: b	syntax	Invalid attribute in Sub or Function
+proc	Global a Then	syntax	Syntax error
+proc	Global a,	syntax	Syntax error
+proc	Global = 1	syntax	Syntax error
+proc	Global As	syntax	Syntax error
+proc	Global To 1	syntax	Syntax error
+proc	Global (1, 2)	syntax	Syntax error
+proc	Global a.b	syntax	Syntax error
+proc	Global a!b	syntax	Syntax error
+proc	Global -1	syntax	Syntax error
+proc	Global Not a	syntax	Syntax error
+proc	Get	syntax	Syntax error
+proc	Get 1	syntax	Syntax error
+proc	Get a	syntax	Syntax error
+proc	Get a, b	syntax	Syntax error
+proc	Get (a)	syntax	Syntax error
+proc	Get a = 1	syntax	Syntax error
+proc	Get .a	syntax	Syntax error
+proc	Get #1	syntax	Syntax error
+proc	Get #1, a	syntax	Syntax error
+proc	Get a As Long	syntax	Syntax error
+proc	Get x To y	syntax	Syntax error
+proc	Get a(1)	syntax	Syntax error
+proc	Get "s"	syntax	Syntax error
+proc	Get a: b	syntax	Syntax error
+proc	Get a Then	syntax	Syntax error
+proc	Get a,	syntax	Syntax error
+proc	Get = 1	syntax	Syntax error
+proc	Get As	syntax	Syntax error
+proc	Get To 1	syntax	Syntax error
+proc	Get (1, 2)	syntax	Syntax error
+proc	Get a.b	syntax	Syntax error
+proc	Get a!b	syntax	Syntax error
+proc	Get -1	syntax	Syntax error
+proc	Get Not a	syntax	Syntax error
+proc	Function	syntax	Syntax error
+proc	Function 1	syntax	Syntax error
+proc	Function a	syntax	Expected End Sub
+proc	Function a, b	syntax	Syntax error
+proc	Function (a)	syntax	Syntax error
+proc	Function a = 1	syntax	Syntax error
+proc	Function .a	syntax	Syntax error
+proc	Function #1	syntax	Syntax error
+proc	Function #1, a	syntax	Syntax error
+proc	Function a As Long	syntax	Expected End Sub
+proc	Function x To y	syntax	Syntax error
+proc	Function a(1)	syntax	Syntax error
+proc	Function "s"	syntax	Syntax error
+proc	Function a: b	syntax	Expected End Sub
+proc	Function a Then	syntax	Syntax error
+proc	Function a,	syntax	Syntax error
+proc	Function = 1	syntax	Syntax error
+proc	Function As	syntax	Syntax error
+proc	Function To 1	syntax	Syntax error
+proc	Function (1, 2)	syntax	Syntax error
+proc	Function a.b	syntax	Syntax error
+proc	Function a!b	syntax	Syntax error
+proc	Function -1	syntax	Syntax error
+proc	Function Not a	syntax	Syntax error
+proc	Friend	syntax	Syntax error
+proc	Friend 1	syntax	Syntax error
+proc	Friend a	syntax	Syntax error
+proc	Friend a, b	syntax	Syntax error
+proc	Friend (a)	syntax	Syntax error
+proc	Friend a = 1	syntax	Syntax error
+proc	Friend .a	syntax	Syntax error
+proc	Friend #1	syntax	Syntax error
+proc	Friend #1, a	syntax	Syntax error
+proc	Friend a As Long	syntax	Syntax error
+proc	Friend x To y	syntax	Syntax error
+proc	Friend a(1)	syntax	Syntax error
+proc	Friend "s"	syntax	Syntax error
+proc	Friend a: b	syntax	Syntax error
+proc	Friend a Then	syntax	Syntax error
+proc	Friend a,	syntax	Syntax error
+proc	Friend = 1	syntax	Syntax error
+proc	Friend As	syntax	Syntax error
+proc	Friend To 1	syntax	Syntax error
+proc	Friend (1, 2)	syntax	Syntax error
+proc	Friend a.b	syntax	Syntax error
+proc	Friend a!b	syntax	Syntax error
+proc	Friend -1	syntax	Syntax error
+proc	Friend Not a	syntax	Syntax error
+proc	FreeFile	accepted	
+proc	FreeFile 1	accepted	
+proc	FreeFile a	accepted	
+proc	FreeFile a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	FreeFile (a)	accepted	
+proc	FreeFile a = 1	accepted	
+proc	FreeFile .a	semantic	Invalid or unqualified reference
+proc	FreeFile #1	syntax	Syntax error
+proc	FreeFile #1, a	syntax	Syntax error
+proc	FreeFile a As Long	syntax	Syntax error
+proc	FreeFile x To y	syntax	Syntax error
+proc	FreeFile a(1)	accepted	
+proc	FreeFile "s"	accepted	
+proc	FreeFile a: b	semantic	Expected Sub, Function, or Property
+proc	FreeFile a Then	syntax	Syntax error
+proc	FreeFile a,	syntax	Syntax error
+proc	FreeFile = 1	semantic	Function call on left-hand side of assignment must return Variant or Object
+proc	FreeFile As	syntax	Syntax error
+proc	FreeFile To 1	syntax	Syntax error
+proc	FreeFile (1, 2)	syntax	Syntax error
+proc	FreeFile a.b	accepted	
+proc	FreeFile a!b	accepted	
+proc	FreeFile -1	accepted	
+proc	FreeFile Not a	accepted	
+proc	Format	semantic	Argument not optional
+proc	Format 1	accepted	
+proc	Format a	accepted	
+proc	Format a, b	accepted	
+proc	Format (a)	accepted	
+proc	Format a = 1	accepted	
+proc	Format .a	semantic	Invalid or unqualified reference
+proc	Format #1	syntax	Syntax error
+proc	Format #1, a	syntax	Syntax error
+proc	Format a As Long	syntax	Syntax error
+proc	Format x To y	syntax	Syntax error
+proc	Format a(1)	accepted	
+proc	Format "s"	accepted	
+proc	Format a: b	semantic	Expected Sub, Function, or Property
+proc	Format a Then	syntax	Syntax error
+proc	Format a,	syntax	Syntax error
+proc	Format = 1	semantic	Argument not optional
+proc	Format As	syntax	Syntax error
+proc	Format To 1	syntax	Syntax error
+proc	Format (1, 2)	syntax	Syntax error
+proc	Format a.b	accepted	
+proc	Format a!b	accepted	
+proc	Format -1	accepted	
+proc	Format Not a	accepted	
+proc	For	syntax	Syntax error
+proc	For 1	syntax	Syntax error
+proc	For a	syntax	Syntax error
+proc	For a, b	syntax	Syntax error
+proc	For (a)	syntax	Syntax error
+proc	For a = 1	syntax	Syntax error
+proc	For .a	syntax	Syntax error
+proc	For #1	syntax	Syntax error
+proc	For #1, a	syntax	Syntax error
+proc	For a As Long	syntax	Syntax error
+proc	For x To y	syntax	Syntax error
+proc	For a(1)	syntax	Syntax error
+proc	For "s"	syntax	Syntax error
+proc	For a: b	syntax	Syntax error
+proc	For a Then	syntax	Syntax error
+proc	For a,	syntax	Syntax error
+proc	For = 1	syntax	Syntax error
+proc	For As	syntax	Syntax error
+proc	For To 1	syntax	Syntax error
+proc	For (1, 2)	syntax	Syntax error
+proc	For a.b	syntax	Syntax error
+proc	For a!b	syntax	Syntax error
+proc	For -1	syntax	Syntax error
+proc	For Not a	syntax	Syntax error
+proc	Fix	syntax	Syntax error
+proc	Fix 1	syntax	Syntax error
+proc	Fix a	syntax	Syntax error
+proc	Fix a, b	syntax	Syntax error
+proc	Fix (a)	syntax	Syntax error
+proc	Fix a = 1	syntax	Syntax error
+proc	Fix .a	syntax	Syntax error
+proc	Fix #1	syntax	Syntax error
+proc	Fix #1, a	syntax	Syntax error
+proc	Fix a As Long	syntax	Syntax error
+proc	Fix x To y	syntax	Syntax error
+proc	Fix a(1)	syntax	Syntax error
+proc	Fix "s"	syntax	Syntax error
+proc	Fix a: b	syntax	Syntax error
+proc	Fix a Then	syntax	Syntax error
+proc	Fix a,	syntax	Syntax error
+proc	Fix = 1	syntax	Syntax error
+proc	Fix As	syntax	Syntax error
+proc	Fix To 1	syntax	Syntax error
+proc	Fix (1, 2)	syntax	Syntax error
+proc	Fix a.b	syntax	Syntax error
+proc	Fix a!b	syntax	Syntax error
+proc	Fix -1	syntax	Syntax error
+proc	Fix Not a	syntax	Syntax error
+proc	False	syntax	Syntax error
+proc	False 1	syntax	Syntax error
+proc	False a	syntax	Syntax error
+proc	False a, b	syntax	Syntax error
+proc	False (a)	syntax	Syntax error
+proc	False a = 1	syntax	Syntax error
+proc	False .a	syntax	Syntax error
+proc	False #1	syntax	Syntax error
+proc	False #1, a	syntax	Syntax error
+proc	False a As Long	syntax	Syntax error
+proc	False x To y	syntax	Syntax error
+proc	False a(1)	syntax	Syntax error
+proc	False "s"	syntax	Syntax error
+proc	False a: b	syntax	Syntax error
+proc	False a Then	syntax	Syntax error
+proc	False a,	syntax	Syntax error
+proc	False = 1	syntax	Syntax error
+proc	False As	syntax	Syntax error
+proc	False To 1	syntax	Syntax error
+proc	False (1, 2)	syntax	Syntax error
+proc	False a.b	syntax	Syntax error
+proc	False a!b	syntax	Syntax error
+proc	False -1	syntax	Syntax error
+proc	False Not a	syntax	Syntax error
+proc	Explicit	semantic	Sub or Function not defined
+proc	Explicit 1	semantic	Sub or Function not defined
+proc	Explicit a	semantic	Sub or Function not defined
+proc	Explicit a, b	semantic	Sub or Function not defined
+proc	Explicit (a)	semantic	Sub or Function not defined
+proc	Explicit a = 1	semantic	Sub or Function not defined
+proc	Explicit .a	semantic	Invalid or unqualified reference
+proc	Explicit #1	syntax	Syntax error
+proc	Explicit #1, a	syntax	Syntax error
+proc	Explicit a As Long	syntax	Syntax error
+proc	Explicit x To y	syntax	Syntax error
+proc	Explicit a(1)	semantic	Sub or Function not defined
+proc	Explicit "s"	semantic	Sub or Function not defined
+proc	Explicit a: b	semantic	Sub or Function not defined
+proc	Explicit a Then	syntax	Syntax error
+proc	Explicit a,	syntax	Syntax error
+proc	Explicit = 1	accepted	
+proc	Explicit As	syntax	Syntax error
+proc	Explicit To 1	syntax	Syntax error
+proc	Explicit (1, 2)	syntax	Syntax error
+proc	Explicit a.b	semantic	Sub or Function not defined
+proc	Explicit a!b	semantic	Sub or Function not defined
+proc	Explicit -1	semantic	Sub or Function not defined
+proc	Explicit Not a	semantic	Sub or Function not defined
+proc	Exit	syntax	Syntax error
+proc	Exit 1	syntax	Syntax error
+proc	Exit a	syntax	Syntax error
+proc	Exit a, b	syntax	Syntax error
+proc	Exit (a)	syntax	Syntax error
+proc	Exit a = 1	syntax	Syntax error
+proc	Exit .a	syntax	Syntax error
+proc	Exit #1	syntax	Syntax error
+proc	Exit #1, a	syntax	Syntax error
+proc	Exit a As Long	syntax	Syntax error
+proc	Exit x To y	syntax	Syntax error
+proc	Exit a(1)	syntax	Syntax error
+proc	Exit "s"	syntax	Syntax error
+proc	Exit a: b	syntax	Syntax error
+proc	Exit a Then	syntax	Syntax error
+proc	Exit a,	syntax	Syntax error
+proc	Exit = 1	syntax	Syntax error
+proc	Exit As	syntax	Syntax error
+proc	Exit To 1	syntax	Syntax error
+proc	Exit (1, 2)	syntax	Syntax error
+proc	Exit a.b	syntax	Syntax error
+proc	Exit a!b	syntax	Syntax error
+proc	Exit -1	syntax	Syntax error
+proc	Exit Not a	syntax	Syntax error
+proc	Event	syntax	Syntax error
+proc	Event 1	syntax	Syntax error
+proc	Event a	syntax	Syntax error
+proc	Event a, b	syntax	Syntax error
+proc	Event (a)	syntax	Syntax error
+proc	Event a = 1	syntax	Syntax error
+proc	Event .a	syntax	Syntax error
+proc	Event #1	syntax	Syntax error
+proc	Event #1, a	syntax	Syntax error
+proc	Event a As Long	syntax	Syntax error
+proc	Event x To y	syntax	Syntax error
+proc	Event a(1)	syntax	Syntax error
+proc	Event "s"	syntax	Syntax error
+proc	Event a: b	syntax	Syntax error
+proc	Event a Then	syntax	Syntax error
+proc	Event a,	syntax	Syntax error
+proc	Event = 1	syntax	Syntax error
+proc	Event As	syntax	Syntax error
+proc	Event To 1	syntax	Syntax error
+proc	Event (1, 2)	syntax	Syntax error
+proc	Event a.b	syntax	Syntax error
+proc	Event a!b	syntax	Syntax error
+proc	Event -1	syntax	Syntax error
+proc	Event Not a	syntax	Syntax error
+proc	Error	syntax	Syntax error
+proc	Error 1	accepted	
+proc	Error a	accepted	
+proc	Error a, b	syntax	Syntax error
+proc	Error (a)	accepted	
+proc	Error a = 1	accepted	
+proc	Error .a	semantic	Invalid or unqualified reference
+proc	Error #1	syntax	Syntax error
+proc	Error #1, a	syntax	Syntax error
+proc	Error a As Long	syntax	Syntax error
+proc	Error x To y	syntax	Syntax error
+proc	Error a(1)	accepted	
+proc	Error "s"	accepted	
+proc	Error a: b	semantic	Expected Sub, Function, or Property
+proc	Error a Then	syntax	Syntax error
+proc	Error a,	syntax	Syntax error
+proc	Error = 1	accepted	
+proc	Error As	syntax	Syntax error
+proc	Error To 1	syntax	Syntax error
+proc	Error (1, 2)	syntax	Syntax error
+proc	Error a.b	accepted	
+proc	Error a!b	accepted	
+proc	Error -1	accepted	
+proc	Error Not a	accepted	
+proc	Erase	syntax	Syntax error
+proc	Erase 1	syntax	Syntax error
+proc	Erase a	accepted	
+proc	Erase a, b	accepted	
+proc	Erase (a)	syntax	Syntax error
+proc	Erase a = 1	syntax	Syntax error
+proc	Erase .a	semantic	Invalid or unqualified reference
+proc	Erase #1	syntax	Syntax error
+proc	Erase #1, a	syntax	Syntax error
+proc	Erase a As Long	syntax	Syntax error
+proc	Erase x To y	syntax	Syntax error
+proc	Erase a(1)	accepted	
+proc	Erase "s"	syntax	Syntax error
+proc	Erase a: b	semantic	Expected Sub, Function, or Property
+proc	Erase a Then	syntax	Syntax error
+proc	Erase a,	syntax	Syntax error
+proc	Erase = 1	syntax	Syntax error
+proc	Erase As	syntax	Syntax error
+proc	Erase To 1	syntax	Syntax error
+proc	Erase (1, 2)	syntax	Syntax error
+proc	Erase a.b	accepted	
+proc	Erase a!b	accepted	
+proc	Erase -1	syntax	Syntax error
+proc	Erase Not a	syntax	Syntax error
+proc	Eqv	syntax	Syntax error
+proc	Eqv 1	syntax	Syntax error
+proc	Eqv a	syntax	Syntax error
+proc	Eqv a, b	syntax	Syntax error
+proc	Eqv (a)	syntax	Syntax error
+proc	Eqv a = 1	syntax	Syntax error
+proc	Eqv .a	syntax	Syntax error
+proc	Eqv #1	syntax	Syntax error
+proc	Eqv #1, a	syntax	Syntax error
+proc	Eqv a As Long	syntax	Syntax error
+proc	Eqv x To y	syntax	Syntax error
+proc	Eqv a(1)	syntax	Syntax error
+proc	Eqv "s"	syntax	Syntax error
+proc	Eqv a: b	syntax	Syntax error
+proc	Eqv a Then	syntax	Syntax error
+proc	Eqv a,	syntax	Syntax error
+proc	Eqv = 1	syntax	Syntax error
+proc	Eqv As	syntax	Syntax error
+proc	Eqv To 1	syntax	Syntax error
+proc	Eqv (1, 2)	syntax	Syntax error
+proc	Eqv a.b	syntax	Syntax error
+proc	Eqv a!b	syntax	Syntax error
+proc	Eqv -1	syntax	Syntax error
+proc	Eqv Not a	syntax	Syntax error
+proc	Enum	syntax	Syntax error
+proc	Enum 1	syntax	Syntax error
+proc	Enum a	syntax	Invalid inside procedure
+proc	Enum a, b	syntax	Syntax error
+proc	Enum (a)	syntax	Syntax error
+proc	Enum a = 1	syntax	Syntax error
+proc	Enum .a	syntax	Syntax error
+proc	Enum #1	syntax	Syntax error
+proc	Enum #1, a	syntax	Syntax error
+proc	Enum a As Long	syntax	Syntax error
+proc	Enum x To y	syntax	Syntax error
+proc	Enum a(1)	syntax	Syntax error
+proc	Enum "s"	syntax	Syntax error
+proc	Enum a: b	syntax	Invalid inside procedure
+proc	Enum a Then	syntax	Syntax error
+proc	Enum a,	syntax	Syntax error
+proc	Enum = 1	syntax	Syntax error
+proc	Enum As	syntax	Syntax error
+proc	Enum To 1	syntax	Syntax error
+proc	Enum (1, 2)	syntax	Syntax error
+proc	Enum a.b	syntax	Syntax error
+proc	Enum a!b	syntax	Syntax error
+proc	Enum -1	syntax	Syntax error
+proc	Enum Not a	syntax	Syntax error
+proc	EndIf	syntax	End If without block If
+proc	EndIf 1	syntax	Syntax error
+proc	EndIf a	syntax	Syntax error
+proc	EndIf a, b	syntax	Syntax error
+proc	EndIf (a)	syntax	Syntax error
+proc	EndIf a = 1	syntax	Syntax error
+proc	EndIf .a	syntax	Syntax error
+proc	EndIf #1	syntax	Syntax error
+proc	EndIf #1, a	syntax	Syntax error
+proc	EndIf a As Long	syntax	Syntax error
+proc	EndIf x To y	syntax	Syntax error
+proc	EndIf a(1)	syntax	Syntax error
+proc	EndIf "s"	syntax	Syntax error
+proc	EndIf a: b	syntax	Syntax error
+proc	EndIf a Then	syntax	Syntax error
+proc	EndIf a,	syntax	Syntax error
+proc	EndIf = 1	syntax	Syntax error
+proc	EndIf As	syntax	Syntax error
+proc	EndIf To 1	syntax	Syntax error
+proc	EndIf (1, 2)	syntax	Syntax error
+proc	EndIf a.b	syntax	Syntax error
+proc	EndIf a!b	syntax	Syntax error
+proc	EndIf -1	syntax	Syntax error
+proc	EndIf Not a	syntax	Syntax error
+proc	End	accepted	
+proc	End 1	syntax	Syntax error
+proc	End a	syntax	Syntax error
+proc	End a, b	syntax	Syntax error
+proc	End (a)	syntax	Syntax error
+proc	End a = 1	syntax	Syntax error
+proc	End .a	syntax	Syntax error
+proc	End #1	syntax	Syntax error
+proc	End #1, a	syntax	Syntax error
+proc	End a As Long	syntax	Syntax error
+proc	End x To y	syntax	Syntax error
+proc	End a(1)	syntax	Syntax error
+proc	End "s"	syntax	Syntax error
+proc	End a: b	syntax	Syntax error
+proc	End a Then	syntax	Syntax error
+proc	End a,	syntax	Syntax error
+proc	End = 1	syntax	Syntax error
+proc	End As	syntax	Syntax error
+proc	End To 1	syntax	Syntax error
+proc	End (1, 2)	syntax	Syntax error
+proc	End a.b	syntax	Syntax error
+proc	End a!b	syntax	Syntax error
+proc	End -1	syntax	Syntax error
+proc	End Not a	syntax	Syntax error
+proc	Empty	syntax	Syntax error
+proc	Empty 1	syntax	Syntax error
+proc	Empty a	syntax	Syntax error
+proc	Empty a, b	syntax	Syntax error
+proc	Empty (a)	syntax	Syntax error
+proc	Empty a = 1	syntax	Syntax error
+proc	Empty .a	syntax	Syntax error
+proc	Empty #1	syntax	Syntax error
+proc	Empty #1, a	syntax	Syntax error
+proc	Empty a As Long	syntax	Syntax error
+proc	Empty x To y	syntax	Syntax error
+proc	Empty a(1)	syntax	Syntax error
+proc	Empty "s"	syntax	Syntax error
+proc	Empty a: b	syntax	Syntax error
+proc	Empty a Then	syntax	Syntax error
+proc	Empty a,	syntax	Syntax error
+proc	Empty = 1	syntax	Syntax error
+proc	Empty As	syntax	Syntax error
+proc	Empty To 1	syntax	Syntax error
+proc	Empty (1, 2)	syntax	Syntax error
+proc	Empty a.b	syntax	Syntax error
+proc	Empty a!b	syntax	Syntax error
+proc	Empty -1	syntax	Syntax error
+proc	Empty Not a	syntax	Syntax error
+proc	ElseIf	syntax	Syntax error
+proc	ElseIf 1	syntax	Syntax error
+proc	ElseIf a	syntax	Syntax error
+proc	ElseIf a, b	syntax	Syntax error
+proc	ElseIf (a)	syntax	Syntax error
+proc	ElseIf a = 1	syntax	Syntax error
+proc	ElseIf .a	syntax	Syntax error
+proc	ElseIf #1	syntax	Syntax error
+proc	ElseIf #1, a	syntax	Syntax error
+proc	ElseIf a As Long	syntax	Syntax error
+proc	ElseIf x To y	syntax	Syntax error
+proc	ElseIf a(1)	syntax	Syntax error
+proc	ElseIf "s"	syntax	Syntax error
+proc	ElseIf a: b	syntax	Syntax error
+proc	ElseIf a Then	syntax	Else without If
+proc	ElseIf a,	syntax	Syntax error
+proc	ElseIf = 1	syntax	Syntax error
+proc	ElseIf As	syntax	Syntax error
+proc	ElseIf To 1	syntax	Syntax error
+proc	ElseIf (1, 2)	syntax	Syntax error
+proc	ElseIf a.b	syntax	Syntax error
+proc	ElseIf a!b	syntax	Syntax error
+proc	ElseIf -1	syntax	Syntax error
+proc	ElseIf Not a	syntax	Syntax error
+proc	Else	syntax	Else without If
+proc	Else 1	syntax	Syntax error
+proc	Else a	syntax	Else without If
+proc	Else a, b	syntax	Else without If
+proc	Else (a)	syntax	Syntax error
+proc	Else a = 1	syntax	Else without If
+proc	Else .a	syntax	Else without If
+proc	Else #1	syntax	Syntax error
+proc	Else #1, a	syntax	Syntax error
+proc	Else a As Long	syntax	Else without If
+proc	Else x To y	syntax	Syntax error
+proc	Else a(1)	syntax	Else without If
+proc	Else "s"	syntax	Syntax error
+proc	Else a: b	syntax	Else without If
+proc	Else a Then	syntax	Syntax error
+proc	Else a,	syntax	Syntax error
+proc	Else = 1	syntax	Syntax error
+proc	Else As	syntax	Syntax error
+proc	Else To 1	syntax	Syntax error
+proc	Else (1, 2)	syntax	Syntax error
+proc	Else a.b	syntax	Else without If
+proc	Else a!b	syntax	Syntax error
+proc	Else -1	syntax	Syntax error
+proc	Else Not a	syntax	Syntax error
+proc	Each	syntax	Syntax error
+proc	Each 1	syntax	Syntax error
+proc	Each a	syntax	Syntax error
+proc	Each a, b	syntax	Syntax error
+proc	Each (a)	syntax	Syntax error
+proc	Each a = 1	syntax	Syntax error
+proc	Each .a	syntax	Syntax error
+proc	Each #1	syntax	Syntax error
+proc	Each #1, a	syntax	Syntax error
+proc	Each a As Long	syntax	Syntax error
+proc	Each x To y	syntax	Syntax error
+proc	Each a(1)	syntax	Syntax error
+proc	Each "s"	syntax	Syntax error
+proc	Each a: b	syntax	Syntax error
+proc	Each a Then	syntax	Syntax error
+proc	Each a,	syntax	Syntax error
+proc	Each = 1	syntax	Syntax error
+proc	Each As	syntax	Syntax error
+proc	Each To 1	syntax	Syntax error
+proc	Each (1, 2)	syntax	Syntax error
+proc	Each a.b	syntax	Syntax error
+proc	Each a!b	syntax	Syntax error
+proc	Each -1	syntax	Syntax error
+proc	Each Not a	syntax	Syntax error
+proc	Double	syntax	Syntax error
+proc	Double 1	syntax	Syntax error
+proc	Double a	syntax	Syntax error
+proc	Double a, b	syntax	Syntax error
+proc	Double (a)	syntax	Syntax error
+proc	Double a = 1	syntax	Syntax error
+proc	Double .a	syntax	Syntax error
+proc	Double #1	syntax	Syntax error
+proc	Double #1, a	syntax	Syntax error
+proc	Double a As Long	syntax	Syntax error
+proc	Double x To y	syntax	Syntax error
+proc	Double a(1)	syntax	Syntax error
+proc	Double "s"	syntax	Syntax error
+proc	Double a: b	syntax	Syntax error
+proc	Double a Then	syntax	Syntax error
+proc	Double a,	syntax	Syntax error
+proc	Double = 1	syntax	Syntax error
+proc	Double As	syntax	Syntax error
+proc	Double To 1	syntax	Syntax error
+proc	Double (1, 2)	syntax	Syntax error
+proc	Double a.b	syntax	Syntax error
+proc	Double a!b	syntax	Syntax error
+proc	Double -1	syntax	Syntax error
+proc	Double Not a	syntax	Syntax error
+proc	DoEvents	accepted	
+proc	DoEvents 1	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents a	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents (a)	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents a = 1	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents .a	semantic	Invalid or unqualified reference
+proc	DoEvents #1	syntax	Syntax error
+proc	DoEvents #1, a	syntax	Syntax error
+proc	DoEvents a As Long	syntax	Syntax error
+proc	DoEvents x To y	syntax	Syntax error
+proc	DoEvents a(1)	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents "s"	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents a: b	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents a Then	syntax	Syntax error
+proc	DoEvents a,	syntax	Syntax error
+proc	DoEvents = 1	semantic	Function call on left-hand side of assignment must return Variant or Object
+proc	DoEvents As	syntax	Syntax error
+proc	DoEvents To 1	syntax	Syntax error
+proc	DoEvents (1, 2)	syntax	Syntax error
+proc	DoEvents a.b	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents a!b	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents -1	semantic	Wrong number of arguments or invalid property assignment
+proc	DoEvents Not a	semantic	Wrong number of arguments or invalid property assignment
+proc	Do	syntax	Do without Loop
+proc	Do 1	syntax	Syntax error
+proc	Do a	syntax	Syntax error
+proc	Do a, b	syntax	Syntax error
+proc	Do (a)	syntax	Syntax error
+proc	Do a = 1	syntax	Syntax error
+proc	Do .a	syntax	Syntax error
+proc	Do #1	syntax	Syntax error
+proc	Do #1, a	syntax	Syntax error
+proc	Do a As Long	syntax	Syntax error
+proc	Do x To y	syntax	Syntax error
+proc	Do a(1)	syntax	Syntax error
+proc	Do "s"	syntax	Syntax error
+proc	Do a: b	syntax	Syntax error
+proc	Do a Then	syntax	Syntax error
+proc	Do a,	syntax	Syntax error
+proc	Do = 1	syntax	Syntax error
+proc	Do As	syntax	Syntax error
+proc	Do To 1	syntax	Syntax error
+proc	Do (1, 2)	syntax	Syntax error
+proc	Do a.b	syntax	Syntax error
+proc	Do a!b	syntax	Syntax error
+proc	Do -1	syntax	Syntax error
+proc	Do Not a	syntax	Syntax error
+proc	Dir	accepted	
+proc	Dir 1	accepted	
+proc	Dir a	accepted	
+proc	Dir a, b	accepted	
+proc	Dir (a)	accepted	
+proc	Dir a = 1	accepted	
+proc	Dir .a	semantic	Invalid or unqualified reference
+proc	Dir #1	syntax	Syntax error
+proc	Dir #1, a	syntax	Syntax error
+proc	Dir a As Long	syntax	Syntax error
+proc	Dir x To y	syntax	Syntax error
+proc	Dir a(1)	accepted	
+proc	Dir "s"	accepted	
+proc	Dir a: b	semantic	Expected Sub, Function, or Property
+proc	Dir a Then	syntax	Syntax error
+proc	Dir a,	syntax	Syntax error
+proc	Dir = 1	semantic	Function call on left-hand side of assignment must return Variant or Object
+proc	Dir As	syntax	Syntax error
+proc	Dir To 1	syntax	Syntax error
+proc	Dir (1, 2)	syntax	Syntax error
+proc	Dir a.b	accepted	
+proc	Dir a!b	accepted	
+proc	Dir -1	accepted	
+proc	Dir Not a	accepted	
+proc	Dim	syntax	Syntax error
+proc	Dim 1	syntax	Syntax error
+proc	Dim a	semantic	Duplicate declaration in current scope
+proc	Dim a, b	semantic	Duplicate declaration in current scope
+proc	Dim (a)	syntax	Syntax error
+proc	Dim a = 1	syntax	Syntax error
+proc	Dim .a	syntax	Syntax error
+proc	Dim #1	syntax	Syntax error
+proc	Dim #1, a	syntax	Syntax error
+proc	Dim a As Long	semantic	Duplicate declaration in current scope
+proc	Dim x To y	syntax	Syntax error
+proc	Dim a(1)	semantic	Duplicate declaration in current scope
+proc	Dim "s"	syntax	Syntax error
+proc	Dim a: b	semantic	Duplicate declaration in current scope
+proc	Dim a Then	syntax	Syntax error
+proc	Dim a,	syntax	Syntax error
+proc	Dim = 1	syntax	Syntax error
+proc	Dim As	syntax	Syntax error
+proc	Dim To 1	syntax	Syntax error
+proc	Dim (1, 2)	syntax	Syntax error
+proc	Dim a.b	syntax	Syntax error
+proc	Dim a!b	syntax	Syntax error
+proc	Dim -1	syntax	Syntax error
+proc	Dim Not a	syntax	Syntax error
+proc	DefVar	syntax	Syntax error
+proc	DefVar 1	syntax	Syntax error
+proc	DefVar a	syntax	Invalid inside procedure
+proc	DefVar a, b	syntax	Invalid inside procedure
+proc	DefVar (a)	syntax	Syntax error
+proc	DefVar a = 1	syntax	Syntax error
+proc	DefVar .a	syntax	Syntax error
+proc	DefVar #1	syntax	Syntax error
+proc	DefVar #1, a	syntax	Syntax error
+proc	DefVar a As Long	syntax	Syntax error
+proc	DefVar x To y	syntax	Syntax error
+proc	DefVar a(1)	syntax	Syntax error
+proc	DefVar "s"	syntax	Syntax error
+proc	DefVar a: b	syntax	Invalid inside procedure
+proc	DefVar a Then	syntax	Syntax error
+proc	DefVar a,	syntax	Invalid inside procedure
+proc	DefVar = 1	syntax	Syntax error
+proc	DefVar As	syntax	Syntax error
+proc	DefVar To 1	syntax	Syntax error
+proc	DefVar (1, 2)	syntax	Syntax error
+proc	DefVar a.b	syntax	Syntax error
+proc	DefVar a!b	syntax	Syntax error
+proc	DefVar -1	syntax	Syntax error
+proc	DefVar Not a	syntax	Syntax error
+proc	DefStr	syntax	Syntax error
+proc	DefStr 1	syntax	Syntax error
+proc	DefStr a	syntax	Invalid inside procedure
+proc	DefStr a, b	syntax	Invalid inside procedure
+proc	DefStr (a)	syntax	Syntax error
+proc	DefStr a = 1	syntax	Syntax error
+proc	DefStr .a	syntax	Syntax error
+proc	DefStr #1	syntax	Syntax error
+proc	DefStr #1, a	syntax	Syntax error
+proc	DefStr a As Long	syntax	Syntax error
+proc	DefStr x To y	syntax	Syntax error
+proc	DefStr a(1)	syntax	Syntax error
+proc	DefStr "s"	syntax	Syntax error
+proc	DefStr a: b	syntax	Invalid inside procedure
+proc	DefStr a Then	syntax	Syntax error
+proc	DefStr a,	syntax	Invalid inside procedure
+proc	DefStr = 1	syntax	Syntax error
+proc	DefStr As	syntax	Syntax error
+proc	DefStr To 1	syntax	Syntax error
+proc	DefStr (1, 2)	syntax	Syntax error
+proc	DefStr a.b	syntax	Syntax error
+proc	DefStr a!b	syntax	Syntax error
+proc	DefStr -1	syntax	Syntax error
+proc	DefStr Not a	syntax	Syntax error
+proc	DefSng	syntax	Syntax error
+proc	DefSng 1	syntax	Syntax error
+proc	DefSng a	syntax	Invalid inside procedure
+proc	DefSng a, b	syntax	Invalid inside procedure
+proc	DefSng (a)	syntax	Syntax error
+proc	DefSng a = 1	syntax	Syntax error
+proc	DefSng .a	syntax	Syntax error
+proc	DefSng #1	syntax	Syntax error
+proc	DefSng #1, a	syntax	Syntax error
+proc	DefSng a As Long	syntax	Syntax error
+proc	DefSng x To y	syntax	Syntax error
+proc	DefSng a(1)	syntax	Syntax error
+proc	DefSng "s"	syntax	Syntax error
+proc	DefSng a: b	syntax	Invalid inside procedure
+proc	DefSng a Then	syntax	Syntax error
+proc	DefSng a,	syntax	Invalid inside procedure
+proc	DefSng = 1	syntax	Syntax error
+proc	DefSng As	syntax	Syntax error
+proc	DefSng To 1	syntax	Syntax error
+proc	DefSng (1, 2)	syntax	Syntax error
+proc	DefSng a.b	syntax	Syntax error
+proc	DefSng a!b	syntax	Syntax error
+proc	DefSng -1	syntax	Syntax error
+proc	DefSng Not a	syntax	Syntax error
+proc	DefObj	syntax	Syntax error
+proc	DefObj 1	syntax	Syntax error
+proc	DefObj a	syntax	Invalid inside procedure
+proc	DefObj a, b	syntax	Invalid inside procedure
+proc	DefObj (a)	syntax	Syntax error
+proc	DefObj a = 1	syntax	Syntax error
+proc	DefObj .a	syntax	Syntax error
+proc	DefObj #1	syntax	Syntax error
+proc	DefObj #1, a	syntax	Syntax error
+proc	DefObj a As Long	syntax	Syntax error
+proc	DefObj x To y	syntax	Syntax error
+proc	DefObj a(1)	syntax	Syntax error
+proc	DefObj "s"	syntax	Syntax error
+proc	DefObj a: b	syntax	Invalid inside procedure
+proc	DefObj a Then	syntax	Syntax error
+proc	DefObj a,	syntax	Invalid inside procedure
+proc	DefObj = 1	syntax	Syntax error
+proc	DefObj As	syntax	Syntax error
+proc	DefObj To 1	syntax	Syntax error
+proc	DefObj (1, 2)	syntax	Syntax error
+proc	DefObj a.b	syntax	Syntax error
+proc	DefObj a!b	syntax	Syntax error
+proc	DefObj -1	syntax	Syntax error
+proc	DefObj Not a	syntax	Syntax error
+proc	DefLng	syntax	Syntax error
+proc	DefLng 1	syntax	Syntax error
+proc	DefLng a	syntax	Invalid inside procedure
+proc	DefLng a, b	syntax	Invalid inside procedure
+proc	DefLng (a)	syntax	Syntax error
+proc	DefLng a = 1	syntax	Syntax error
+proc	DefLng .a	syntax	Syntax error
+proc	DefLng #1	syntax	Syntax error
+proc	DefLng #1, a	syntax	Syntax error
+proc	DefLng a As Long	syntax	Syntax error
+proc	DefLng x To y	syntax	Syntax error
+proc	DefLng a(1)	syntax	Syntax error
+proc	DefLng "s"	syntax	Syntax error
+proc	DefLng a: b	syntax	Invalid inside procedure
+proc	DefLng a Then	syntax	Syntax error
+proc	DefLng a,	syntax	Invalid inside procedure
+proc	DefLng = 1	syntax	Syntax error
+proc	DefLng As	syntax	Syntax error
+proc	DefLng To 1	syntax	Syntax error
+proc	DefLng (1, 2)	syntax	Syntax error
+proc	DefLng a.b	syntax	Syntax error
+proc	DefLng a!b	syntax	Syntax error
+proc	DefLng -1	syntax	Syntax error
+proc	DefLng Not a	syntax	Syntax error
+proc	DefInt	syntax	Syntax error
+proc	DefInt 1	syntax	Syntax error
+proc	DefInt a	syntax	Invalid inside procedure
+proc	DefInt a, b	syntax	Invalid inside procedure
+proc	DefInt (a)	syntax	Syntax error
+proc	DefInt a = 1	syntax	Syntax error
+proc	DefInt .a	syntax	Syntax error
+proc	DefInt #1	syntax	Syntax error
+proc	DefInt #1, a	syntax	Syntax error
+proc	DefInt a As Long	syntax	Syntax error
+proc	DefInt x To y	syntax	Syntax error
+proc	DefInt a(1)	syntax	Syntax error
+proc	DefInt "s"	syntax	Syntax error
+proc	DefInt a: b	syntax	Invalid inside procedure
+proc	DefInt a Then	syntax	Syntax error
+proc	DefInt a,	syntax	Invalid inside procedure
+proc	DefInt = 1	syntax	Syntax error
+proc	DefInt As	syntax	Syntax error
+proc	DefInt To 1	syntax	Syntax error
+proc	DefInt (1, 2)	syntax	Syntax error
+proc	DefInt a.b	syntax	Syntax error
+proc	DefInt a!b	syntax	Syntax error
+proc	DefInt -1	syntax	Syntax error
+proc	DefInt Not a	syntax	Syntax error
+proc	DefDbl	syntax	Syntax error
+proc	DefDbl 1	syntax	Syntax error
+proc	DefDbl a	syntax	Invalid inside procedure
+proc	DefDbl a, b	syntax	Invalid inside procedure
+proc	DefDbl (a)	syntax	Syntax error
+proc	DefDbl a = 1	syntax	Syntax error
+proc	DefDbl .a	syntax	Syntax error
+proc	DefDbl #1	syntax	Syntax error
+proc	DefDbl #1, a	syntax	Syntax error
+proc	DefDbl a As Long	syntax	Syntax error
+proc	DefDbl x To y	syntax	Syntax error
+proc	DefDbl a(1)	syntax	Syntax error
+proc	DefDbl "s"	syntax	Syntax error
+proc	DefDbl a: b	syntax	Invalid inside procedure
+proc	DefDbl a Then	syntax	Syntax error
+proc	DefDbl a,	syntax	Invalid inside procedure
+proc	DefDbl = 1	syntax	Syntax error
+proc	DefDbl As	syntax	Syntax error
+proc	DefDbl To 1	syntax	Syntax error
+proc	DefDbl (1, 2)	syntax	Syntax error
+proc	DefDbl a.b	syntax	Syntax error
+proc	DefDbl a!b	syntax	Syntax error
+proc	DefDbl -1	syntax	Syntax error
+proc	DefDbl Not a	syntax	Syntax error
+proc	DefDec	syntax	Syntax error
+proc	DefDec 1	syntax	Syntax error
+proc	DefDec a	syntax	Syntax error
+proc	DefDec a, b	syntax	Syntax error
+proc	DefDec (a)	syntax	Syntax error
+proc	DefDec a = 1	syntax	Syntax error
+proc	DefDec .a	syntax	Syntax error
+proc	DefDec #1	syntax	Syntax error
+proc	DefDec #1, a	syntax	Syntax error
+proc	DefDec a As Long	syntax	Syntax error
+proc	DefDec x To y	syntax	Syntax error
+proc	DefDec a(1)	syntax	Syntax error
+proc	DefDec "s"	syntax	Syntax error
+proc	DefDec a: b	syntax	Syntax error
+proc	DefDec a Then	syntax	Syntax error
+proc	DefDec a,	syntax	Syntax error
+proc	DefDec = 1	syntax	Syntax error
+proc	DefDec As	syntax	Syntax error
+proc	DefDec To 1	syntax	Syntax error
+proc	DefDec (1, 2)	syntax	Syntax error
+proc	DefDec a.b	syntax	Syntax error
+proc	DefDec a!b	syntax	Syntax error
+proc	DefDec -1	syntax	Syntax error
+proc	DefDec Not a	syntax	Syntax error
+proc	DefDate	syntax	Syntax error
+proc	DefDate 1	syntax	Syntax error
+proc	DefDate a	syntax	Invalid inside procedure
+proc	DefDate a, b	syntax	Invalid inside procedure
+proc	DefDate (a)	syntax	Syntax error
+proc	DefDate a = 1	syntax	Syntax error
+proc	DefDate .a	syntax	Syntax error
+proc	DefDate #1	syntax	Syntax error
+proc	DefDate #1, a	syntax	Syntax error
+proc	DefDate a As Long	syntax	Syntax error
+proc	DefDate x To y	syntax	Syntax error
+proc	DefDate a(1)	syntax	Syntax error
+proc	DefDate "s"	syntax	Syntax error
+proc	DefDate a: b	syntax	Invalid inside procedure
+proc	DefDate a Then	syntax	Syntax error
+proc	DefDate a,	syntax	Invalid inside procedure
+proc	DefDate = 1	syntax	Syntax error
+proc	DefDate As	syntax	Syntax error
+proc	DefDate To 1	syntax	Syntax error
+proc	DefDate (1, 2)	syntax	Syntax error
+proc	DefDate a.b	syntax	Syntax error
+proc	DefDate a!b	syntax	Syntax error
+proc	DefDate -1	syntax	Syntax error
+proc	DefDate Not a	syntax	Syntax error
+proc	DefCur	syntax	Syntax error
+proc	DefCur 1	syntax	Syntax error
+proc	DefCur a	syntax	Invalid inside procedure
+proc	DefCur a, b	syntax	Invalid inside procedure
+proc	DefCur (a)	syntax	Syntax error
+proc	DefCur a = 1	syntax	Syntax error
+proc	DefCur .a	syntax	Syntax error
+proc	DefCur #1	syntax	Syntax error
+proc	DefCur #1, a	syntax	Syntax error
+proc	DefCur a As Long	syntax	Syntax error
+proc	DefCur x To y	syntax	Syntax error
+proc	DefCur a(1)	syntax	Syntax error
+proc	DefCur "s"	syntax	Syntax error
+proc	DefCur a: b	syntax	Invalid inside procedure
+proc	DefCur a Then	syntax	Syntax error
+proc	DefCur a,	syntax	Invalid inside procedure
+proc	DefCur = 1	syntax	Syntax error
+proc	DefCur As	syntax	Syntax error
+proc	DefCur To 1	syntax	Syntax error
+proc	DefCur (1, 2)	syntax	Syntax error
+proc	DefCur a.b	syntax	Syntax error
+proc	DefCur a!b	syntax	Syntax error
+proc	DefCur -1	syntax	Syntax error
+proc	DefCur Not a	syntax	Syntax error
+proc	DefByte	syntax	Syntax error
+proc	DefByte 1	syntax	Syntax error
+proc	DefByte a	syntax	Invalid inside procedure
+proc	DefByte a, b	syntax	Invalid inside procedure
+proc	DefByte (a)	syntax	Syntax error
+proc	DefByte a = 1	syntax	Syntax error
+proc	DefByte .a	syntax	Syntax error
+proc	DefByte #1	syntax	Syntax error
+proc	DefByte #1, a	syntax	Syntax error
+proc	DefByte a As Long	syntax	Syntax error
+proc	DefByte x To y	syntax	Syntax error
+proc	DefByte a(1)	syntax	Syntax error
+proc	DefByte "s"	syntax	Syntax error
+proc	DefByte a: b	syntax	Invalid inside procedure
+proc	DefByte a Then	syntax	Syntax error
+proc	DefByte a,	syntax	Invalid inside procedure
+proc	DefByte = 1	syntax	Syntax error
+proc	DefByte As	syntax	Syntax error
+proc	DefByte To 1	syntax	Syntax error
+proc	DefByte (1, 2)	syntax	Syntax error
+proc	DefByte a.b	syntax	Syntax error
+proc	DefByte a!b	syntax	Syntax error
+proc	DefByte -1	syntax	Syntax error
+proc	DefByte Not a	syntax	Syntax error
+proc	DefBool	syntax	Syntax error
+proc	DefBool 1	syntax	Syntax error
+proc	DefBool a	syntax	Invalid inside procedure
+proc	DefBool a, b	syntax	Invalid inside procedure
+proc	DefBool (a)	syntax	Syntax error
+proc	DefBool a = 1	syntax	Syntax error
+proc	DefBool .a	syntax	Syntax error
+proc	DefBool #1	syntax	Syntax error
+proc	DefBool #1, a	syntax	Syntax error
+proc	DefBool a As Long	syntax	Syntax error
+proc	DefBool x To y	syntax	Syntax error
+proc	DefBool a(1)	syntax	Syntax error
+proc	DefBool "s"	syntax	Syntax error
+proc	DefBool a: b	syntax	Invalid inside procedure
+proc	DefBool a Then	syntax	Syntax error
+proc	DefBool a,	syntax	Invalid inside procedure
+proc	DefBool = 1	syntax	Syntax error
+proc	DefBool As	syntax	Syntax error
+proc	DefBool To 1	syntax	Syntax error
+proc	DefBool (1, 2)	syntax	Syntax error
+proc	DefBool a.b	syntax	Syntax error
+proc	DefBool a!b	syntax	Syntax error
+proc	DefBool -1	syntax	Syntax error
+proc	DefBool Not a	syntax	Syntax error
+proc	Declare	syntax	Syntax error
+proc	Declare 1	syntax	Syntax error
+proc	Declare a	syntax	Syntax error
+proc	Declare a, b	syntax	Syntax error
+proc	Declare (a)	syntax	Syntax error
+proc	Declare a = 1	syntax	Syntax error
+proc	Declare .a	syntax	Syntax error
+proc	Declare #1	syntax	Syntax error
+proc	Declare #1, a	syntax	Syntax error
+proc	Declare a As Long	syntax	Syntax error
+proc	Declare x To y	syntax	Syntax error
+proc	Declare a(1)	syntax	Syntax error
+proc	Declare "s"	syntax	Syntax error
+proc	Declare a: b	syntax	Syntax error
+proc	Declare a Then	syntax	Syntax error
+proc	Declare a,	syntax	Syntax error
+proc	Declare = 1	syntax	Syntax error
+proc	Declare As	syntax	Syntax error
+proc	Declare To 1	syntax	Syntax error
+proc	Declare (1, 2)	syntax	Syntax error
+proc	Declare a.b	syntax	Syntax error
+proc	Declare a!b	syntax	Syntax error
+proc	Declare -1	syntax	Syntax error
+proc	Declare Not a	syntax	Syntax error
+proc	Decimal	syntax	Syntax error
+proc	Decimal 1	syntax	Syntax error
+proc	Decimal a	syntax	Syntax error
+proc	Decimal a, b	syntax	Syntax error
+proc	Decimal (a)	syntax	Syntax error
+proc	Decimal a = 1	syntax	Syntax error
+proc	Decimal .a	syntax	Syntax error
+proc	Decimal #1	syntax	Syntax error
+proc	Decimal #1, a	syntax	Syntax error
+proc	Decimal a As Long	syntax	Syntax error
+proc	Decimal x To y	syntax	Syntax error
+proc	Decimal a(1)	syntax	Syntax error
+proc	Decimal "s"	syntax	Syntax error
+proc	Decimal a: b	syntax	Syntax error
+proc	Decimal a Then	syntax	Syntax error
+proc	Decimal a,	syntax	Syntax error
+proc	Decimal = 1	syntax	Syntax error
+proc	Decimal As	syntax	Syntax error
+proc	Decimal To 1	syntax	Syntax error
+proc	Decimal (1, 2)	syntax	Syntax error
+proc	Decimal a.b	syntax	Syntax error
+proc	Decimal a!b	syntax	Syntax error
+proc	Decimal -1	syntax	Syntax error
+proc	Decimal Not a	syntax	Syntax error
+proc	Debug	syntax	Syntax error
+proc	Debug 1	syntax	Syntax error
+proc	Debug a	syntax	Syntax error
+proc	Debug a, b	syntax	Syntax error
+proc	Debug (a)	syntax	Syntax error
+proc	Debug a = 1	syntax	Syntax error
+proc	Debug .a	syntax	Syntax error
+proc	Debug #1	syntax	Syntax error
+proc	Debug #1, a	syntax	Syntax error
+proc	Debug a As Long	syntax	Syntax error
+proc	Debug x To y	syntax	Syntax error
+proc	Debug a(1)	syntax	Syntax error
+proc	Debug "s"	syntax	Syntax error
+proc	Debug a: b	syntax	Syntax error
+proc	Debug a Then	syntax	Syntax error
+proc	Debug a,	syntax	Syntax error
+proc	Debug = 1	syntax	Syntax error
+proc	Debug As	syntax	Syntax error
+proc	Debug To 1	syntax	Syntax error
+proc	Debug (1, 2)	syntax	Syntax error
+proc	Debug a.b	syntax	Syntax error
+proc	Debug a!b	syntax	Syntax error
+proc	Debug -1	syntax	Syntax error
+proc	Debug Not a	syntax	Syntax error
+proc	Date	semantic	Invalid use of property
+proc	Date 1	semantic	Invalid use of property
+proc	Date a	semantic	Invalid use of property
+proc	Date a, b	semantic	Invalid use of property
+proc	Date (a)	semantic	Invalid use of property
+proc	Date a = 1	semantic	Invalid use of property
+proc	Date .a	semantic	Invalid or unqualified reference
+proc	Date #1	syntax	Syntax error
+proc	Date #1, a	syntax	Syntax error
+proc	Date a As Long	syntax	Syntax error
+proc	Date x To y	syntax	Syntax error
+proc	Date a(1)	semantic	Invalid use of property
+proc	Date "s"	semantic	Invalid use of property
+proc	Date a: b	semantic	Invalid use of property
+proc	Date a Then	syntax	Syntax error
+proc	Date a,	syntax	Syntax error
+proc	Date = 1	accepted	
+proc	Date As	syntax	Syntax error
+proc	Date To 1	syntax	Syntax error
+proc	Date (1, 2)	syntax	Syntax error
+proc	Date a.b	semantic	Invalid use of property
+proc	Date a!b	semantic	Invalid use of property
+proc	Date -1	semantic	Invalid use of property
+proc	Date Not a	semantic	Invalid use of property
+proc	Database	semantic	Sub or Function not defined
+proc	Database 1	semantic	Sub or Function not defined
+proc	Database a	semantic	Sub or Function not defined
+proc	Database a, b	semantic	Sub or Function not defined
+proc	Database (a)	semantic	Sub or Function not defined
+proc	Database a = 1	semantic	Sub or Function not defined
+proc	Database .a	semantic	Invalid or unqualified reference
+proc	Database #1	syntax	Syntax error
+proc	Database #1, a	syntax	Syntax error
+proc	Database a As Long	syntax	Syntax error
+proc	Database x To y	syntax	Syntax error
+proc	Database a(1)	semantic	Sub or Function not defined
+proc	Database "s"	semantic	Sub or Function not defined
+proc	Database a: b	semantic	Sub or Function not defined
+proc	Database a Then	syntax	Syntax error
+proc	Database a,	syntax	Syntax error
+proc	Database = 1	accepted	
+proc	Database As	syntax	Syntax error
+proc	Database To 1	syntax	Syntax error
+proc	Database (1, 2)	syntax	Syntax error
+proc	Database a.b	semantic	Sub or Function not defined
+proc	Database a!b	semantic	Sub or Function not defined
+proc	Database -1	semantic	Sub or Function not defined
+proc	Database Not a	semantic	Sub or Function not defined
+proc	Currency	syntax	Syntax error
+proc	Currency 1	syntax	Syntax error
+proc	Currency a	syntax	Syntax error
+proc	Currency a, b	syntax	Syntax error
+proc	Currency (a)	syntax	Syntax error
+proc	Currency a = 1	syntax	Syntax error
+proc	Currency .a	syntax	Syntax error
+proc	Currency #1	syntax	Syntax error
+proc	Currency #1, a	syntax	Syntax error
+proc	Currency a As Long	syntax	Syntax error
+proc	Currency x To y	syntax	Syntax error
+proc	Currency a(1)	syntax	Syntax error
+proc	Currency "s"	syntax	Syntax error
+proc	Currency a: b	syntax	Syntax error
+proc	Currency a Then	syntax	Syntax error
+proc	Currency a,	syntax	Syntax error
+proc	Currency = 1	syntax	Syntax error
+proc	Currency As	syntax	Syntax error
+proc	Currency To 1	syntax	Syntax error
+proc	Currency (1, 2)	syntax	Syntax error
+proc	Currency a.b	syntax	Syntax error
+proc	Currency a!b	syntax	Syntax error
+proc	Currency -1	syntax	Syntax error
+proc	Currency Not a	syntax	Syntax error
+proc	CVErr	syntax	Syntax error
+proc	CVErr 1	syntax	Syntax error
+proc	CVErr a	syntax	Syntax error
+proc	CVErr a, b	syntax	Syntax error
+proc	CVErr (a)	syntax	Syntax error
+proc	CVErr a = 1	syntax	Syntax error
+proc	CVErr .a	syntax	Syntax error
+proc	CVErr #1	syntax	Syntax error
+proc	CVErr #1, a	syntax	Syntax error
+proc	CVErr a As Long	syntax	Syntax error
+proc	CVErr x To y	syntax	Syntax error
+proc	CVErr a(1)	syntax	Syntax error
+proc	CVErr "s"	syntax	Syntax error
+proc	CVErr a: b	syntax	Syntax error
+proc	CVErr a Then	syntax	Syntax error
+proc	CVErr a,	syntax	Syntax error
+proc	CVErr = 1	syntax	Syntax error
+proc	CVErr As	syntax	Syntax error
+proc	CVErr To 1	syntax	Syntax error
+proc	CVErr (1, 2)	syntax	Syntax error
+proc	CVErr a.b	syntax	Syntax error
+proc	CVErr a!b	syntax	Syntax error
+proc	CVErr -1	syntax	Syntax error
+proc	CVErr Not a	syntax	Syntax error
+proc	CVDate	semantic	Argument not optional
+proc	CVDate 1	accepted	
+proc	CVDate a	accepted	
+proc	CVDate a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	CVDate (a)	accepted	
+proc	CVDate a = 1	accepted	
+proc	CVDate .a	semantic	Invalid or unqualified reference
+proc	CVDate #1	syntax	Syntax error
+proc	CVDate #1, a	syntax	Syntax error
+proc	CVDate a As Long	syntax	Syntax error
+proc	CVDate x To y	syntax	Syntax error
+proc	CVDate a(1)	accepted	
+proc	CVDate "s"	accepted	
+proc	CVDate a: b	semantic	Expected Sub, Function, or Property
+proc	CVDate a Then	syntax	Syntax error
+proc	CVDate a,	syntax	Syntax error
+proc	CVDate = 1	semantic	Argument not optional
+proc	CVDate As	syntax	Syntax error
+proc	CVDate To 1	syntax	Syntax error
+proc	CVDate (1, 2)	syntax	Syntax error
+proc	CVDate a.b	accepted	
+proc	CVDate a!b	accepted	
+proc	CVDate -1	accepted	
+proc	CVDate Not a	accepted	
+proc	CVar	syntax	Syntax error
+proc	CVar 1	syntax	Syntax error
+proc	CVar a	syntax	Syntax error
+proc	CVar a, b	syntax	Syntax error
+proc	CVar (a)	syntax	Syntax error
+proc	CVar a = 1	syntax	Syntax error
+proc	CVar .a	syntax	Syntax error
+proc	CVar #1	syntax	Syntax error
+proc	CVar #1, a	syntax	Syntax error
+proc	CVar a As Long	syntax	Syntax error
+proc	CVar x To y	syntax	Syntax error
+proc	CVar a(1)	syntax	Syntax error
+proc	CVar "s"	syntax	Syntax error
+proc	CVar a: b	syntax	Syntax error
+proc	CVar a Then	syntax	Syntax error
+proc	CVar a,	syntax	Syntax error
+proc	CVar = 1	syntax	Syntax error
+proc	CVar As	syntax	Syntax error
+proc	CVar To 1	syntax	Syntax error
+proc	CVar (1, 2)	syntax	Syntax error
+proc	CVar a.b	syntax	Syntax error
+proc	CVar a!b	syntax	Syntax error
+proc	CVar -1	syntax	Syntax error
+proc	CVar Not a	syntax	Syntax error
+proc	CurDir	accepted	
+proc	CurDir 1	accepted	
+proc	CurDir a	accepted	
+proc	CurDir a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	CurDir (a)	accepted	
+proc	CurDir a = 1	accepted	
+proc	CurDir .a	semantic	Invalid or unqualified reference
+proc	CurDir #1	syntax	Syntax error
+proc	CurDir #1, a	syntax	Syntax error
+proc	CurDir a As Long	syntax	Syntax error
+proc	CurDir x To y	syntax	Syntax error
+proc	CurDir a(1)	accepted	
+proc	CurDir "s"	accepted	
+proc	CurDir a: b	semantic	Expected Sub, Function, or Property
+proc	CurDir a Then	syntax	Syntax error
+proc	CurDir a,	syntax	Syntax error
+proc	CurDir = 1	accepted	
+proc	CurDir As	syntax	Syntax error
+proc	CurDir To 1	syntax	Syntax error
+proc	CurDir (1, 2)	syntax	Syntax error
+proc	CurDir a.b	accepted	
+proc	CurDir a!b	accepted	
+proc	CurDir -1	accepted	
+proc	CurDir Not a	accepted	
+proc	CStr	syntax	Syntax error
+proc	CStr 1	syntax	Syntax error
+proc	CStr a	syntax	Syntax error
+proc	CStr a, b	syntax	Syntax error
+proc	CStr (a)	syntax	Syntax error
+proc	CStr a = 1	syntax	Syntax error
+proc	CStr .a	syntax	Syntax error
+proc	CStr #1	syntax	Syntax error
+proc	CStr #1, a	syntax	Syntax error
+proc	CStr a As Long	syntax	Syntax error
+proc	CStr x To y	syntax	Syntax error
+proc	CStr a(1)	syntax	Syntax error
+proc	CStr "s"	syntax	Syntax error
+proc	CStr a: b	syntax	Syntax error
+proc	CStr a Then	syntax	Syntax error
+proc	CStr a,	syntax	Syntax error
+proc	CStr = 1	syntax	Syntax error
+proc	CStr As	syntax	Syntax error
+proc	CStr To 1	syntax	Syntax error
+proc	CStr (1, 2)	syntax	Syntax error
+proc	CStr a.b	syntax	Syntax error
+proc	CStr a!b	syntax	Syntax error
+proc	CStr -1	syntax	Syntax error
+proc	CStr Not a	syntax	Syntax error
+proc	CSng	syntax	Syntax error
+proc	CSng 1	syntax	Syntax error
+proc	CSng a	syntax	Syntax error
+proc	CSng a, b	syntax	Syntax error
+proc	CSng (a)	syntax	Syntax error
+proc	CSng a = 1	syntax	Syntax error
+proc	CSng .a	syntax	Syntax error
+proc	CSng #1	syntax	Syntax error
+proc	CSng #1, a	syntax	Syntax error
+proc	CSng a As Long	syntax	Syntax error
+proc	CSng x To y	syntax	Syntax error
+proc	CSng a(1)	syntax	Syntax error
+proc	CSng "s"	syntax	Syntax error
+proc	CSng a: b	syntax	Syntax error
+proc	CSng a Then	syntax	Syntax error
+proc	CSng a,	syntax	Syntax error
+proc	CSng = 1	syntax	Syntax error
+proc	CSng As	syntax	Syntax error
+proc	CSng To 1	syntax	Syntax error
+proc	CSng (1, 2)	syntax	Syntax error
+proc	CSng a.b	syntax	Syntax error
+proc	CSng a!b	syntax	Syntax error
+proc	CSng -1	syntax	Syntax error
+proc	CSng Not a	syntax	Syntax error
+proc	Const	syntax	Syntax error
+proc	Const 1	syntax	Syntax error
+proc	Const a	syntax	Syntax error
+proc	Const a, b	syntax	Syntax error
+proc	Const (a)	syntax	Syntax error
+proc	Const a = 1	semantic	Duplicate declaration in current scope
+proc	Const .a	syntax	Syntax error
+proc	Const #1	syntax	Syntax error
+proc	Const #1, a	syntax	Syntax error
+proc	Const a As Long	syntax	Syntax error
+proc	Const x To y	syntax	Syntax error
+proc	Const a(1)	syntax	Syntax error
+proc	Const "s"	syntax	Syntax error
+proc	Const a: b	syntax	Syntax error
+proc	Const a Then	syntax	Syntax error
+proc	Const a,	syntax	Syntax error
+proc	Const = 1	syntax	Syntax error
+proc	Const As	syntax	Syntax error
+proc	Const To 1	syntax	Syntax error
+proc	Const (1, 2)	syntax	Syntax error
+proc	Const a.b	syntax	Syntax error
+proc	Const a!b	syntax	Syntax error
+proc	Const -1	syntax	Syntax error
+proc	Const Not a	syntax	Syntax error
+proc	Compare	semantic	Sub or Function not defined
+proc	Compare 1	semantic	Sub or Function not defined
+proc	Compare a	semantic	Sub or Function not defined
+proc	Compare a, b	semantic	Sub or Function not defined
+proc	Compare (a)	semantic	Sub or Function not defined
+proc	Compare a = 1	semantic	Sub or Function not defined
+proc	Compare .a	semantic	Invalid or unqualified reference
+proc	Compare #1	syntax	Syntax error
+proc	Compare #1, a	syntax	Syntax error
+proc	Compare a As Long	syntax	Syntax error
+proc	Compare x To y	syntax	Syntax error
+proc	Compare a(1)	semantic	Sub or Function not defined
+proc	Compare "s"	semantic	Sub or Function not defined
+proc	Compare a: b	semantic	Sub or Function not defined
+proc	Compare a Then	syntax	Syntax error
+proc	Compare a,	syntax	Syntax error
+proc	Compare = 1	accepted	
+proc	Compare As	syntax	Syntax error
+proc	Compare To 1	syntax	Syntax error
+proc	Compare (1, 2)	syntax	Syntax error
+proc	Compare a.b	semantic	Sub or Function not defined
+proc	Compare a!b	semantic	Sub or Function not defined
+proc	Compare -1	semantic	Sub or Function not defined
+proc	Compare Not a	semantic	Sub or Function not defined
+proc	Close	accepted	
+proc	Close 1	accepted	
+proc	Close a	accepted	
+proc	Close a, b	accepted	
+proc	Close (a)	accepted	
+proc	Close a = 1	accepted	
+proc	Close .a	semantic	Invalid or unqualified reference
+proc	Close #1	accepted	
+proc	Close #1, a	accepted	
+proc	Close a As Long	syntax	Syntax error
+proc	Close x To y	syntax	Syntax error
+proc	Close a(1)	accepted	
+proc	Close "s"	accepted	
+proc	Close a: b	semantic	Expected Sub, Function, or Property
+proc	Close a Then	syntax	Syntax error
+proc	Close a,	syntax	Syntax error
+proc	Close = 1	syntax	Syntax error
+proc	Close As	syntax	Syntax error
+proc	Close To 1	syntax	Syntax error
+proc	Close (1, 2)	syntax	Syntax error
+proc	Close a.b	accepted	
+proc	Close a!b	accepted	
+proc	Close -1	accepted	
+proc	Close Not a	accepted	
+proc	CLng	syntax	Syntax error
+proc	CLng 1	syntax	Syntax error
+proc	CLng a	syntax	Syntax error
+proc	CLng a, b	syntax	Syntax error
+proc	CLng (a)	syntax	Syntax error
+proc	CLng a = 1	syntax	Syntax error
+proc	CLng .a	syntax	Syntax error
+proc	CLng #1	syntax	Syntax error
+proc	CLng #1, a	syntax	Syntax error
+proc	CLng a As Long	syntax	Syntax error
+proc	CLng x To y	syntax	Syntax error
+proc	CLng a(1)	syntax	Syntax error
+proc	CLng "s"	syntax	Syntax error
+proc	CLng a: b	syntax	Syntax error
+proc	CLng a Then	syntax	Syntax error
+proc	CLng a,	syntax	Syntax error
+proc	CLng = 1	syntax	Syntax error
+proc	CLng As	syntax	Syntax error
+proc	CLng To 1	syntax	Syntax error
+proc	CLng (1, 2)	syntax	Syntax error
+proc	CLng a.b	syntax	Syntax error
+proc	CLng a!b	syntax	Syntax error
+proc	CLng -1	syntax	Syntax error
+proc	CLng Not a	syntax	Syntax error
+proc	Circle	syntax	Syntax error
+proc	Circle 1	syntax	Syntax error
+proc	Circle a	syntax	Syntax error
+proc	Circle a, b	syntax	Syntax error
+proc	Circle (a)	syntax	Syntax error
+proc	Circle a = 1	syntax	Syntax error
+proc	Circle .a	syntax	Syntax error
+proc	Circle #1	syntax	Syntax error
+proc	Circle #1, a	syntax	Syntax error
+proc	Circle a As Long	syntax	Syntax error
+proc	Circle x To y	syntax	Syntax error
+proc	Circle a(1)	syntax	Syntax error
+proc	Circle "s"	syntax	Syntax error
+proc	Circle a: b	syntax	Syntax error
+proc	Circle a Then	syntax	Syntax error
+proc	Circle a,	syntax	Syntax error
+proc	Circle = 1	syntax	Syntax error
+proc	Circle As	syntax	Syntax error
+proc	Circle To 1	syntax	Syntax error
+proc	Circle (1, 2)	syntax	Syntax error
+proc	Circle a.b	syntax	Syntax error
+proc	Circle a!b	syntax	Syntax error
+proc	Circle -1	syntax	Syntax error
+proc	Circle Not a	syntax	Syntax error
+proc	CInt	syntax	Syntax error
+proc	CInt 1	syntax	Syntax error
+proc	CInt a	syntax	Syntax error
+proc	CInt a, b	syntax	Syntax error
+proc	CInt (a)	syntax	Syntax error
+proc	CInt a = 1	syntax	Syntax error
+proc	CInt .a	syntax	Syntax error
+proc	CInt #1	syntax	Syntax error
+proc	CInt #1, a	syntax	Syntax error
+proc	CInt a As Long	syntax	Syntax error
+proc	CInt x To y	syntax	Syntax error
+proc	CInt a(1)	syntax	Syntax error
+proc	CInt "s"	syntax	Syntax error
+proc	CInt a: b	syntax	Syntax error
+proc	CInt a Then	syntax	Syntax error
+proc	CInt a,	syntax	Syntax error
+proc	CInt = 1	syntax	Syntax error
+proc	CInt As	syntax	Syntax error
+proc	CInt To 1	syntax	Syntax error
+proc	CInt (1, 2)	syntax	Syntax error
+proc	CInt a.b	syntax	Syntax error
+proc	CInt a!b	syntax	Syntax error
+proc	CInt -1	syntax	Syntax error
+proc	CInt Not a	syntax	Syntax error
+proc	ChDir	semantic	Argument not optional
+proc	ChDir 1	accepted	
+proc	ChDir a	accepted	
+proc	ChDir a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	ChDir (a)	accepted	
+proc	ChDir a = 1	accepted	
+proc	ChDir .a	semantic	Invalid or unqualified reference
+proc	ChDir #1	syntax	Syntax error
+proc	ChDir #1, a	syntax	Syntax error
+proc	ChDir a As Long	syntax	Syntax error
+proc	ChDir x To y	syntax	Syntax error
+proc	ChDir a(1)	accepted	
+proc	ChDir "s"	accepted	
+proc	ChDir a: b	semantic	Expected Sub, Function, or Property
+proc	ChDir a Then	syntax	Syntax error
+proc	ChDir a,	syntax	Syntax error
+proc	ChDir = 1	semantic	Argument not optional
+proc	ChDir As	syntax	Syntax error
+proc	ChDir To 1	syntax	Syntax error
+proc	ChDir (1, 2)	syntax	Syntax error
+proc	ChDir a.b	accepted	
+proc	ChDir a!b	accepted	
+proc	ChDir -1	accepted	
+proc	ChDir Not a	accepted	
+proc	CDecl	syntax	Syntax error
+proc	CDecl 1	syntax	Syntax error
+proc	CDecl a	syntax	Syntax error
+proc	CDecl a, b	syntax	Syntax error
+proc	CDecl (a)	syntax	Syntax error
+proc	CDecl a = 1	syntax	Syntax error
+proc	CDecl .a	syntax	Syntax error
+proc	CDecl #1	syntax	Syntax error
+proc	CDecl #1, a	syntax	Syntax error
+proc	CDecl a As Long	syntax	Syntax error
+proc	CDecl x To y	syntax	Syntax error
+proc	CDecl a(1)	syntax	Syntax error
+proc	CDecl "s"	syntax	Syntax error
+proc	CDecl a: b	syntax	Syntax error
+proc	CDecl a Then	syntax	Syntax error
+proc	CDecl a,	syntax	Syntax error
+proc	CDecl = 1	syntax	Syntax error
+proc	CDecl As	syntax	Syntax error
+proc	CDecl To 1	syntax	Syntax error
+proc	CDecl (1, 2)	syntax	Syntax error
+proc	CDecl a.b	syntax	Syntax error
+proc	CDecl a!b	syntax	Syntax error
+proc	CDecl -1	syntax	Syntax error
+proc	CDecl Not a	syntax	Syntax error
+proc	CDbl	syntax	Syntax error
+proc	CDbl 1	syntax	Syntax error
+proc	CDbl a	syntax	Syntax error
+proc	CDbl a, b	syntax	Syntax error
+proc	CDbl (a)	syntax	Syntax error
+proc	CDbl a = 1	syntax	Syntax error
+proc	CDbl .a	syntax	Syntax error
+proc	CDbl #1	syntax	Syntax error
+proc	CDbl #1, a	syntax	Syntax error
+proc	CDbl a As Long	syntax	Syntax error
+proc	CDbl x To y	syntax	Syntax error
+proc	CDbl a(1)	syntax	Syntax error
+proc	CDbl "s"	syntax	Syntax error
+proc	CDbl a: b	syntax	Syntax error
+proc	CDbl a Then	syntax	Syntax error
+proc	CDbl a,	syntax	Syntax error
+proc	CDbl = 1	syntax	Syntax error
+proc	CDbl As	syntax	Syntax error
+proc	CDbl To 1	syntax	Syntax error
+proc	CDbl (1, 2)	syntax	Syntax error
+proc	CDbl a.b	syntax	Syntax error
+proc	CDbl a!b	syntax	Syntax error
+proc	CDbl -1	syntax	Syntax error
+proc	CDbl Not a	syntax	Syntax error
+proc	CDec	semantic	Argument not optional
+proc	CDec 1	accepted	
+proc	CDec a	accepted	
+proc	CDec a, b	semantic	Wrong number of arguments or invalid property assignment
+proc	CDec (a)	accepted	
+proc	CDec a = 1	accepted	
+proc	CDec .a	semantic	Invalid or unqualified reference
+proc	CDec #1	syntax	Syntax error
+proc	CDec #1, a	syntax	Syntax error
+proc	CDec a As Long	syntax	Syntax error
+proc	CDec x To y	syntax	Syntax error
+proc	CDec a(1)	accepted	
+proc	CDec "s"	accepted	
+proc	CDec a: b	semantic	Expected Sub, Function, or Property
+proc	CDec a Then	syntax	Syntax error
+proc	CDec a,	syntax	Syntax error
+proc	CDec = 1	semantic	Argument not optional
+proc	CDec As	syntax	Syntax error
+proc	CDec To 1	syntax	Syntax error
+proc	CDec (1, 2)	syntax	Syntax error
+proc	CDec a.b	accepted	
+proc	CDec a!b	accepted	
+proc	CDec -1	accepted	
+proc	CDec Not a	accepted	
+proc	CDate	syntax	Syntax error
+proc	CDate 1	syntax	Syntax error
+proc	CDate a	syntax	Syntax error
+proc	CDate a, b	syntax	Syntax error
+proc	CDate (a)	syntax	Syntax error
+proc	CDate a = 1	syntax	Syntax error
+proc	CDate .a	syntax	Syntax error
+proc	CDate #1	syntax	Syntax error
+proc	CDate #1, a	syntax	Syntax error
+proc	CDate a As Long	syntax	Syntax error
+proc	CDate x To y	syntax	Syntax error
+proc	CDate a(1)	syntax	Syntax error
+proc	CDate "s"	syntax	Syntax error
+proc	CDate a: b	syntax	Syntax error
+proc	CDate a Then	syntax	Syntax error
+proc	CDate a,	syntax	Syntax error
+proc	CDate = 1	syntax	Syntax error
+proc	CDate As	syntax	Syntax error
+proc	CDate To 1	syntax	Syntax error
+proc	CDate (1, 2)	syntax	Syntax error
+proc	CDate a.b	syntax	Syntax error
+proc	CDate a!b	syntax	Syntax error
+proc	CDate -1	syntax	Syntax error
+proc	CDate Not a	syntax	Syntax error
+proc	CCur	syntax	Syntax error
+proc	CCur 1	syntax	Syntax error
+proc	CCur a	syntax	Syntax error
+proc	CCur a, b	syntax	Syntax error
+proc	CCur (a)	syntax	Syntax error
+proc	CCur a = 1	syntax	Syntax error
+proc	CCur .a	syntax	Syntax error
+proc	CCur #1	syntax	Syntax error
+proc	CCur #1, a	syntax	Syntax error
+proc	CCur a As Long	syntax	Syntax error
+proc	CCur x To y	syntax	Syntax error
+proc	CCur a(1)	syntax	Syntax error
+proc	CCur "s"	syntax	Syntax error
+proc	CCur a: b	syntax	Syntax error
+proc	CCur a Then	syntax	Syntax error
+proc	CCur a,	syntax	Syntax error
+proc	CCur = 1	syntax	Syntax error
+proc	CCur As	syntax	Syntax error
+proc	CCur To 1	syntax	Syntax error
+proc	CCur (1, 2)	syntax	Syntax error
+proc	CCur a.b	syntax	Syntax error
+proc	CCur a!b	syntax	Syntax error
+proc	CCur -1	syntax	Syntax error
+proc	CCur Not a	syntax	Syntax error
+proc	CByte	syntax	Syntax error
+proc	CByte 1	syntax	Syntax error
+proc	CByte a	syntax	Syntax error
+proc	CByte a, b	syntax	Syntax error
+proc	CByte (a)	syntax	Syntax error
+proc	CByte a = 1	syntax	Syntax error
+proc	CByte .a	syntax	Syntax error
+proc	CByte #1	syntax	Syntax error
+proc	CByte #1, a	syntax	Syntax error
+proc	CByte a As Long	syntax	Syntax error
+proc	CByte x To y	syntax	Syntax error
+proc	CByte a(1)	syntax	Syntax error
+proc	CByte "s"	syntax	Syntax error
+proc	CByte a: b	syntax	Syntax error
+proc	CByte a Then	syntax	Syntax error
+proc	CByte a,	syntax	Syntax error
+proc	CByte = 1	syntax	Syntax error
+proc	CByte As	syntax	Syntax error
+proc	CByte To 1	syntax	Syntax error
+proc	CByte (1, 2)	syntax	Syntax error
+proc	CByte a.b	syntax	Syntax error
+proc	CByte a!b	syntax	Syntax error
+proc	CByte -1	syntax	Syntax error
+proc	CByte Not a	syntax	Syntax error
+proc	CBool	syntax	Syntax error
+proc	CBool 1	syntax	Syntax error
+proc	CBool a	syntax	Syntax error
+proc	CBool a, b	syntax	Syntax error
+proc	CBool (a)	syntax	Syntax error
+proc	CBool a = 1	syntax	Syntax error
+proc	CBool .a	syntax	Syntax error
+proc	CBool #1	syntax	Syntax error
+proc	CBool #1, a	syntax	Syntax error
+proc	CBool a As Long	syntax	Syntax error
+proc	CBool x To y	syntax	Syntax error
+proc	CBool a(1)	syntax	Syntax error
+proc	CBool "s"	syntax	Syntax error
+proc	CBool a: b	syntax	Syntax error
+proc	CBool a Then	syntax	Syntax error
+proc	CBool a,	syntax	Syntax error
+proc	CBool = 1	syntax	Syntax error
+proc	CBool As	syntax	Syntax error
+proc	CBool To 1	syntax	Syntax error
+proc	CBool (1, 2)	syntax	Syntax error
+proc	CBool a.b	syntax	Syntax error
+proc	CBool a!b	syntax	Syntax error
+proc	CBool -1	syntax	Syntax error
+proc	CBool Not a	syntax	Syntax error
+proc	Case	syntax	Syntax error
+proc	Case 1	syntax	Case without Select Case
+proc	Case a	syntax	Case without Select Case
+proc	Case a, b	syntax	Case without Select Case
+proc	Case (a)	syntax	Case without Select Case
+proc	Case a = 1	syntax	Case without Select Case
+proc	Case .a	semantic	Invalid or unqualified reference
+proc	Case #1	syntax	Syntax error
+proc	Case #1, a	syntax	Syntax error
+proc	Case a As Long	syntax	Syntax error
+proc	Case x To y	syntax	Case without Select Case
+proc	Case a(1)	syntax	Case without Select Case
+proc	Case "s"	syntax	Case without Select Case
+proc	Case a: b	syntax	Case without Select Case
+proc	Case a Then	syntax	Syntax error
+proc	Case a,	syntax	Syntax error
+proc	Case = 1	syntax	Case without Select Case
+proc	Case As	syntax	Syntax error
+proc	Case To 1	syntax	Syntax error
+proc	Case (1, 2)	syntax	Syntax error
+proc	Case a.b	syntax	Case without Select Case
+proc	Case a!b	syntax	Case without Select Case
+proc	Case -1	syntax	Case without Select Case
+proc	Case Not a	syntax	Case without Select Case
+proc	Call	syntax	Syntax error
+proc	Call 1	syntax	Syntax error
+proc	Call a	semantic	Expected Sub, Function, or Property
+proc	Call a, b	syntax	Syntax error
+proc	Call (a)	syntax	Syntax error
+proc	Call a = 1	syntax	Syntax error
+proc	Call .a	semantic	Invalid or unqualified reference
+proc	Call #1	syntax	Syntax error
+proc	Call #1, a	syntax	Syntax error
+proc	Call a As Long	syntax	Syntax error
+proc	Call x To y	syntax	Syntax error
+proc	Call a(1)	semantic	Expected Sub, Function, or Property
+proc	Call "s"	syntax	Syntax error
+proc	Call a: b	semantic	Expected Sub, Function, or Property
+proc	Call a Then	syntax	Syntax error
+proc	Call a,	syntax	Syntax error
+proc	Call = 1	syntax	Syntax error
+proc	Call As	syntax	Syntax error
+proc	Call To 1	syntax	Syntax error
+proc	Call (1, 2)	syntax	Syntax error
+proc	Call a.b	accepted	
+proc	Call a!b	syntax	Syntax error
+proc	Call -1	syntax	Syntax error
+proc	Call Not a	syntax	Syntax error
+proc	ByVal	syntax	Syntax error
+proc	ByVal 1	syntax	Syntax error
+proc	ByVal a	syntax	Syntax error
+proc	ByVal a, b	syntax	Syntax error
+proc	ByVal (a)	syntax	Syntax error
+proc	ByVal a = 1	syntax	Syntax error
+proc	ByVal .a	syntax	Syntax error
+proc	ByVal #1	syntax	Syntax error
+proc	ByVal #1, a	syntax	Syntax error
+proc	ByVal a As Long	syntax	Syntax error
+proc	ByVal x To y	syntax	Syntax error
+proc	ByVal a(1)	syntax	Syntax error
+proc	ByVal "s"	syntax	Syntax error
+proc	ByVal a: b	syntax	Syntax error
+proc	ByVal a Then	syntax	Syntax error
+proc	ByVal a,	syntax	Syntax error
+proc	ByVal = 1	syntax	Syntax error
+proc	ByVal As	syntax	Syntax error
+proc	ByVal To 1	syntax	Syntax error
+proc	ByVal (1, 2)	syntax	Syntax error
+proc	ByVal a.b	syntax	Syntax error
+proc	ByVal a!b	syntax	Syntax error
+proc	ByVal -1	syntax	Syntax error
+proc	ByVal Not a	syntax	Syntax error
+proc	Byte	syntax	Syntax error
+proc	Byte 1	syntax	Syntax error
+proc	Byte a	syntax	Syntax error
+proc	Byte a, b	syntax	Syntax error
+proc	Byte (a)	syntax	Syntax error
+proc	Byte a = 1	syntax	Syntax error
+proc	Byte .a	syntax	Syntax error
+proc	Byte #1	syntax	Syntax error
+proc	Byte #1, a	syntax	Syntax error
+proc	Byte a As Long	syntax	Syntax error
+proc	Byte x To y	syntax	Syntax error
+proc	Byte a(1)	syntax	Syntax error
+proc	Byte "s"	syntax	Syntax error
+proc	Byte a: b	syntax	Syntax error
+proc	Byte a Then	syntax	Syntax error
+proc	Byte a,	syntax	Syntax error
+proc	Byte = 1	syntax	Syntax error
+proc	Byte As	syntax	Syntax error
+proc	Byte To 1	syntax	Syntax error
+proc	Byte (1, 2)	syntax	Syntax error
+proc	Byte a.b	syntax	Syntax error
+proc	Byte a!b	syntax	Syntax error
+proc	Byte -1	syntax	Syntax error
+proc	Byte Not a	syntax	Syntax error
+proc	ByRef	syntax	Syntax error
+proc	ByRef 1	syntax	Syntax error
+proc	ByRef a	syntax	Syntax error
+proc	ByRef a, b	syntax	Syntax error
+proc	ByRef (a)	syntax	Syntax error
+proc	ByRef a = 1	syntax	Syntax error
+proc	ByRef .a	syntax	Syntax error
+proc	ByRef #1	syntax	Syntax error
+proc	ByRef #1, a	syntax	Syntax error
+proc	ByRef a As Long	syntax	Syntax error
+proc	ByRef x To y	syntax	Syntax error
+proc	ByRef a(1)	syntax	Syntax error
+proc	ByRef "s"	syntax	Syntax error
+proc	ByRef a: b	syntax	Syntax error
+proc	ByRef a Then	syntax	Syntax error
+proc	ByRef a,	syntax	Syntax error
+proc	ByRef = 1	syntax	Syntax error
+proc	ByRef As	syntax	Syntax error
+proc	ByRef To 1	syntax	Syntax error
+proc	ByRef (1, 2)	syntax	Syntax error
+proc	ByRef a.b	syntax	Syntax error
+proc	ByRef a!b	syntax	Syntax error
+proc	ByRef -1	syntax	Syntax error
+proc	ByRef Not a	syntax	Syntax error
+proc	Boolean	syntax	Syntax error
+proc	Boolean 1	syntax	Syntax error
+proc	Boolean a	syntax	Syntax error
+proc	Boolean a, b	syntax	Syntax error
+proc	Boolean (a)	syntax	Syntax error
+proc	Boolean a = 1	syntax	Syntax error
+proc	Boolean .a	syntax	Syntax error
+proc	Boolean #1	syntax	Syntax error
+proc	Boolean #1, a	syntax	Syntax error
+proc	Boolean a As Long	syntax	Syntax error
+proc	Boolean x To y	syntax	Syntax error
+proc	Boolean a(1)	syntax	Syntax error
+proc	Boolean "s"	syntax	Syntax error
+proc	Boolean a: b	syntax	Syntax error
+proc	Boolean a Then	syntax	Syntax error
+proc	Boolean a,	syntax	Syntax error
+proc	Boolean = 1	syntax	Syntax error
+proc	Boolean As	syntax	Syntax error
+proc	Boolean To 1	syntax	Syntax error
+proc	Boolean (1, 2)	syntax	Syntax error
+proc	Boolean a.b	syntax	Syntax error
+proc	Boolean a!b	syntax	Syntax error
+proc	Boolean -1	syntax	Syntax error
+proc	Boolean Not a	syntax	Syntax error
+proc	Binary	semantic	Sub or Function not defined
+proc	Binary 1	semantic	Sub or Function not defined
+proc	Binary a	semantic	Sub or Function not defined
+proc	Binary a, b	semantic	Sub or Function not defined
+proc	Binary (a)	semantic	Sub or Function not defined
+proc	Binary a = 1	semantic	Sub or Function not defined
+proc	Binary .a	semantic	Invalid or unqualified reference
+proc	Binary #1	syntax	Syntax error
+proc	Binary #1, a	syntax	Syntax error
+proc	Binary a As Long	syntax	Syntax error
+proc	Binary x To y	syntax	Syntax error
+proc	Binary a(1)	semantic	Sub or Function not defined
+proc	Binary "s"	semantic	Sub or Function not defined
+proc	Binary a: b	semantic	Sub or Function not defined
+proc	Binary a Then	syntax	Syntax error
+proc	Binary a,	syntax	Syntax error
+proc	Binary = 1	accepted	
+proc	Binary As	syntax	Syntax error
+proc	Binary To 1	syntax	Syntax error
+proc	Binary (1, 2)	syntax	Syntax error
+proc	Binary a.b	semantic	Sub or Function not defined
+proc	Binary a!b	semantic	Sub or Function not defined
+proc	Binary -1	semantic	Sub or Function not defined
+proc	Binary Not a	semantic	Sub or Function not defined
+proc	BF	semantic	Sub or Function not defined
+proc	BF 1	semantic	Sub or Function not defined
+proc	BF a	semantic	Sub or Function not defined
+proc	BF a, b	semantic	Sub or Function not defined
+proc	BF (a)	semantic	Sub or Function not defined
+proc	BF a = 1	semantic	Sub or Function not defined
+proc	BF .a	semantic	Invalid or unqualified reference
+proc	BF #1	syntax	Syntax error
+proc	BF #1, a	syntax	Syntax error
+proc	BF a As Long	syntax	Syntax error
+proc	BF x To y	syntax	Syntax error
+proc	BF a(1)	semantic	Sub or Function not defined
+proc	BF "s"	semantic	Sub or Function not defined
+proc	BF a: b	semantic	Sub or Function not defined
+proc	BF a Then	syntax	Syntax error
+proc	BF a,	syntax	Syntax error
+proc	BF = 1	accepted	
+proc	BF As	syntax	Syntax error
+proc	BF To 1	syntax	Syntax error
+proc	BF (1, 2)	syntax	Syntax error
+proc	BF a.b	semantic	Sub or Function not defined
+proc	BF a!b	semantic	Sub or Function not defined
+proc	BF -1	semantic	Sub or Function not defined
+proc	BF Not a	semantic	Sub or Function not defined
+proc	Base	semantic	Sub or Function not defined
+proc	Base 1	semantic	Sub or Function not defined
+proc	Base a	semantic	Sub or Function not defined
+proc	Base a, b	semantic	Sub or Function not defined
+proc	Base (a)	semantic	Sub or Function not defined
+proc	Base a = 1	semantic	Sub or Function not defined
+proc	Base .a	semantic	Invalid or unqualified reference
+proc	Base #1	syntax	Syntax error
+proc	Base #1, a	syntax	Syntax error
+proc	Base a As Long	syntax	Syntax error
+proc	Base x To y	syntax	Syntax error
+proc	Base a(1)	semantic	Sub or Function not defined
+proc	Base "s"	semantic	Sub or Function not defined
+proc	Base a: b	semantic	Sub or Function not defined
+proc	Base a Then	syntax	Syntax error
+proc	Base a,	syntax	Syntax error
+proc	Base = 1	accepted	
+proc	Base As	syntax	Syntax error
+proc	Base To 1	syntax	Syntax error
+proc	Base (1, 2)	syntax	Syntax error
+proc	Base a.b	semantic	Sub or Function not defined
+proc	Base a!b	semantic	Sub or Function not defined
+proc	Base -1	semantic	Sub or Function not defined
+proc	Base Not a	semantic	Sub or Function not defined
+proc	Assert	semantic	Sub or Function not defined
+proc	Assert 1	semantic	Sub or Function not defined
+proc	Assert a	semantic	Sub or Function not defined
+proc	Assert a, b	semantic	Sub or Function not defined
+proc	Assert (a)	semantic	Sub or Function not defined
+proc	Assert a = 1	semantic	Sub or Function not defined
+proc	Assert .a	semantic	Invalid or unqualified reference
+proc	Assert #1	syntax	Syntax error
+proc	Assert #1, a	syntax	Syntax error
+proc	Assert a As Long	syntax	Syntax error
+proc	Assert x To y	syntax	Syntax error
+proc	Assert a(1)	semantic	Sub or Function not defined
+proc	Assert "s"	semantic	Sub or Function not defined
+proc	Assert a: b	semantic	Sub or Function not defined
+proc	Assert a Then	syntax	Syntax error
+proc	Assert a,	syntax	Syntax error
+proc	Assert = 1	accepted	
+proc	Assert As	syntax	Syntax error
+proc	Assert To 1	syntax	Syntax error
+proc	Assert (1, 2)	syntax	Syntax error
+proc	Assert a.b	semantic	Sub or Function not defined
+proc	Assert a!b	semantic	Sub or Function not defined
+proc	Assert -1	semantic	Sub or Function not defined
+proc	Assert Not a	semantic	Sub or Function not defined
+proc	As	syntax	Syntax error
+proc	As 1	syntax	Syntax error
+proc	As a	syntax	Syntax error
+proc	As a, b	syntax	Syntax error
+proc	As (a)	syntax	Syntax error
+proc	As a = 1	syntax	Syntax error
+proc	As .a	syntax	Syntax error
+proc	As #1	syntax	Syntax error
+proc	As #1, a	syntax	Syntax error
+proc	As a As Long	syntax	Syntax error
+proc	As x To y	syntax	Syntax error
+proc	As a(1)	syntax	Syntax error
+proc	As "s"	syntax	Syntax error
+proc	As a: b	syntax	Syntax error
+proc	As a Then	syntax	Syntax error
+proc	As a,	syntax	Syntax error
+proc	As = 1	syntax	Syntax error
+proc	As As	syntax	Syntax error
+proc	As To 1	syntax	Syntax error
+proc	As (1, 2)	syntax	Syntax error
+proc	As a.b	syntax	Syntax error
+proc	As a!b	syntax	Syntax error
+proc	As -1	syntax	Syntax error
+proc	As Not a	syntax	Syntax error
+proc	Array	syntax	Syntax error
+proc	Array 1	syntax	Syntax error
+proc	Array a	syntax	Syntax error
+proc	Array a, b	syntax	Syntax error
+proc	Array (a)	syntax	Syntax error
+proc	Array a = 1	syntax	Syntax error
+proc	Array .a	syntax	Syntax error
+proc	Array #1	syntax	Syntax error
+proc	Array #1, a	syntax	Syntax error
+proc	Array a As Long	syntax	Syntax error
+proc	Array x To y	syntax	Syntax error
+proc	Array a(1)	syntax	Syntax error
+proc	Array "s"	syntax	Syntax error
+proc	Array a: b	syntax	Syntax error
+proc	Array a Then	syntax	Syntax error
+proc	Array a,	syntax	Syntax error
+proc	Array = 1	syntax	Syntax error
+proc	Array As	syntax	Syntax error
+proc	Array To 1	syntax	Syntax error
+proc	Array (1, 2)	syntax	Syntax error
+proc	Array a.b	syntax	Syntax error
+proc	Array a!b	syntax	Syntax error
+proc	Array -1	syntax	Syntax error
+proc	Array Not a	syntax	Syntax error
+proc	Append	semantic	Sub or Function not defined
+proc	Append 1	semantic	Sub or Function not defined
+proc	Append a	semantic	Sub or Function not defined
+proc	Append a, b	semantic	Sub or Function not defined
+proc	Append (a)	semantic	Sub or Function not defined
+proc	Append a = 1	semantic	Sub or Function not defined
+proc	Append .a	semantic	Invalid or unqualified reference
+proc	Append #1	syntax	Syntax error
+proc	Append #1, a	syntax	Syntax error
+proc	Append a As Long	syntax	Syntax error
+proc	Append x To y	syntax	Syntax error
+proc	Append a(1)	semantic	Sub or Function not defined
+proc	Append "s"	semantic	Sub or Function not defined
+proc	Append a: b	semantic	Sub or Function not defined
+proc	Append a Then	syntax	Syntax error
+proc	Append a,	syntax	Syntax error
+proc	Append = 1	accepted	
+proc	Append As	syntax	Syntax error
+proc	Append To 1	syntax	Syntax error
+proc	Append (1, 2)	syntax	Syntax error
+proc	Append a.b	semantic	Sub or Function not defined
+proc	Append a!b	semantic	Sub or Function not defined
+proc	Append -1	semantic	Sub or Function not defined
+proc	Append Not a	semantic	Sub or Function not defined
+proc	Any	syntax	Syntax error
+proc	Any 1	syntax	Syntax error
+proc	Any a	syntax	Syntax error
+proc	Any a, b	syntax	Syntax error
+proc	Any (a)	syntax	Syntax error
+proc	Any a = 1	syntax	Syntax error
+proc	Any .a	syntax	Syntax error
+proc	Any #1	syntax	Syntax error
+proc	Any #1, a	syntax	Syntax error
+proc	Any a As Long	syntax	Syntax error
+proc	Any x To y	syntax	Syntax error
+proc	Any a(1)	syntax	Syntax error
+proc	Any "s"	syntax	Syntax error
+proc	Any a: b	syntax	Syntax error
+proc	Any a Then	syntax	Syntax error
+proc	Any a,	syntax	Syntax error
+proc	Any = 1	syntax	Syntax error
+proc	Any As	syntax	Syntax error
+proc	Any To 1	syntax	Syntax error
+proc	Any (1, 2)	syntax	Syntax error
+proc	Any a.b	syntax	Syntax error
+proc	Any a!b	syntax	Syntax error
+proc	Any -1	syntax	Syntax error
+proc	Any Not a	syntax	Syntax error
+proc	And	syntax	Syntax error
+proc	And 1	syntax	Syntax error
+proc	And a	syntax	Syntax error
+proc	And a, b	syntax	Syntax error
+proc	And (a)	syntax	Syntax error
+proc	And a = 1	syntax	Syntax error
+proc	And .a	syntax	Syntax error
+proc	And #1	syntax	Syntax error
+proc	And #1, a	syntax	Syntax error
+proc	And a As Long	syntax	Syntax error
+proc	And x To y	syntax	Syntax error
+proc	And a(1)	syntax	Syntax error
+proc	And "s"	syntax	Syntax error
+proc	And a: b	syntax	Syntax error
+proc	And a Then	syntax	Syntax error
+proc	And a,	syntax	Syntax error
+proc	And = 1	syntax	Syntax error
+proc	And As	syntax	Syntax error
+proc	And To 1	syntax	Syntax error
+proc	And (1, 2)	syntax	Syntax error
+proc	And a.b	syntax	Syntax error
+proc	And a!b	syntax	Syntax error
+proc	And -1	syntax	Syntax error
+proc	And Not a	syntax	Syntax error
+proc	Alias	semantic	Sub or Function not defined
+proc	Alias 1	semantic	Sub or Function not defined
+proc	Alias a	semantic	Sub or Function not defined
+proc	Alias a, b	semantic	Sub or Function not defined
+proc	Alias (a)	semantic	Sub or Function not defined
+proc	Alias a = 1	semantic	Sub or Function not defined
+proc	Alias .a	semantic	Invalid or unqualified reference
+proc	Alias #1	syntax	Syntax error
+proc	Alias #1, a	syntax	Syntax error
+proc	Alias a As Long	syntax	Syntax error
+proc	Alias x To y	syntax	Syntax error
+proc	Alias a(1)	semantic	Sub or Function not defined
+proc	Alias "s"	semantic	Sub or Function not defined
+proc	Alias a: b	semantic	Sub or Function not defined
+proc	Alias a Then	syntax	Syntax error
+proc	Alias a,	syntax	Syntax error
+proc	Alias = 1	accepted	
+proc	Alias As	syntax	Syntax error
+proc	Alias To 1	syntax	Syntax error
+proc	Alias (1, 2)	syntax	Syntax error
+proc	Alias a.b	semantic	Sub or Function not defined
+proc	Alias a!b	semantic	Sub or Function not defined
+proc	Alias -1	semantic	Sub or Function not defined
+proc	Alias Not a	semantic	Sub or Function not defined
+proc	AddressOf	syntax	Syntax error
+proc	AddressOf 1	syntax	Syntax error
+proc	AddressOf a	syntax	Syntax error
+proc	AddressOf a, b	syntax	Syntax error
+proc	AddressOf (a)	syntax	Syntax error
+proc	AddressOf a = 1	syntax	Syntax error
+proc	AddressOf .a	syntax	Syntax error
+proc	AddressOf #1	syntax	Syntax error
+proc	AddressOf #1, a	syntax	Syntax error
+proc	AddressOf a As Long	syntax	Syntax error
+proc	AddressOf x To y	syntax	Syntax error
+proc	AddressOf a(1)	syntax	Syntax error
+proc	AddressOf "s"	syntax	Syntax error
+proc	AddressOf a: b	syntax	Syntax error
+proc	AddressOf a Then	syntax	Syntax error
+proc	AddressOf a,	syntax	Syntax error
+proc	AddressOf = 1	syntax	Syntax error
+proc	AddressOf As	syntax	Syntax error
+proc	AddressOf To 1	syntax	Syntax error
+proc	AddressOf (1, 2)	syntax	Syntax error
+proc	AddressOf a.b	syntax	Syntax error
+proc	AddressOf a!b	syntax	Syntax error
+proc	AddressOf -1	syntax	Syntax error
+proc	AddressOf Not a	syntax	Syntax error
+proc	Access	semantic	Sub or Function not defined
+proc	Access 1	semantic	Sub or Function not defined
+proc	Access a	semantic	Sub or Function not defined
+proc	Access a, b	semantic	Sub or Function not defined
+proc	Access (a)	semantic	Sub or Function not defined
+proc	Access a = 1	semantic	Sub or Function not defined
+proc	Access .a	semantic	Invalid or unqualified reference
+proc	Access #1	syntax	Syntax error
+proc	Access #1, a	syntax	Syntax error
+proc	Access a As Long	syntax	Syntax error
+proc	Access x To y	syntax	Syntax error
+proc	Access a(1)	semantic	Sub or Function not defined
+proc	Access "s"	semantic	Sub or Function not defined
+proc	Access a: b	semantic	Sub or Function not defined
+proc	Access a Then	syntax	Syntax error
+proc	Access a,	syntax	Syntax error
+proc	Access = 1	accepted	
+proc	Access As	syntax	Syntax error
+proc	Access To 1	syntax	Syntax error
+proc	Access (1, 2)	syntax	Syntax error
+proc	Access a.b	semantic	Sub or Function not defined
+proc	Access a!b	semantic	Sub or Function not defined
+proc	Access -1	semantic	Sub or Function not defined
+proc	Access Not a	semantic	Sub or Function not defined
+proc	Abs	syntax	Syntax error
+proc	Abs 1	syntax	Syntax error
+proc	Abs a	syntax	Syntax error
+proc	Abs a, b	syntax	Syntax error
+proc	Abs (a)	syntax	Syntax error
+proc	Abs a = 1	syntax	Syntax error
+proc	Abs .a	syntax	Syntax error
+proc	Abs #1	syntax	Syntax error
+proc	Abs #1, a	syntax	Syntax error
+proc	Abs a As Long	syntax	Syntax error
+proc	Abs x To y	syntax	Syntax error
+proc	Abs a(1)	syntax	Syntax error
+proc	Abs "s"	syntax	Syntax error
+proc	Abs a: b	syntax	Syntax error
+proc	Abs a Then	syntax	Syntax error
+proc	Abs a,	syntax	Syntax error
+proc	Abs = 1	syntax	Syntax error
+proc	Abs As	syntax	Syntax error
+proc	Abs To 1	syntax	Syntax error
+proc	Abs (1, 2)	syntax	Syntax error
+proc	Abs a.b	syntax	Syntax error
+proc	Abs a!b	syntax	Syntax error
+proc	Abs -1	syntax	Syntax error
+proc	Abs Not a	syntax	Syntax error

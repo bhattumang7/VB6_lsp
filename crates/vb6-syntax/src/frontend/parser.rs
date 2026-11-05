@@ -188,6 +188,8 @@ pub struct Parser<'src> {
     peeked:      Option<Token>,
     /// Second lookahead slot (for `peek2`), filled lazily after `peeked`.
     peeked2:     Option<Token>,
+    /// Tokens read ahead of the grammar, handed out before the scanner is asked again.
+    pushback:    std::collections::VecDeque<Token>,
     /// Token read past a `_` to check whether it ended the line; returned by
     /// the next [`Parser::next_logical`] call.
     after_line_cont: Option<Token>,
@@ -401,6 +403,7 @@ impl<'src> Parser<'src> {
             src,
             peeked:      None,
             peeked2:     None,
+            pushback:    std::collections::VecDeque::new(),
             after_line_cont: None,
             diagnostics: Diagnostics::new(),
             node_spans:  NodeSpans::new(),
@@ -530,6 +533,37 @@ impl<'src> Parser<'src> {
     /// here, wherever they occur. A `_` that is not followed by an end of line
     /// is returned as a `LineCont` token for the grammar to reject.
     fn next_logical(&mut self) -> Token {
+        match self.pushback.pop_front() {
+            Some(token) => token,
+            None => self.fetch_logical(),
+        }
+    }
+
+    /// Reads the tokens up to the end of the statement without consuming them, and returns
+    /// them (the terminator last).
+    fn statement_tokens(&mut self) -> Vec<Token> {
+        let mut tokens: Vec<Token> = Vec::new();
+        tokens.extend(self.peeked.take());
+        tokens.extend(self.peeked2.take());
+        loop {
+            if let Some(last) = tokens.last() {
+                if last.is_stmt_end() || matches!(last.kind, TokenKind::Kw(Kw::Colon | Kw::Else)) {
+                    break;
+                }
+            }
+            let next = match self.pushback.pop_front() {
+                Some(token) => token,
+                None => self.fetch_logical(),
+            };
+            tokens.push(next);
+        }
+        for token in tokens.iter().rev() {
+            self.pushback.push_front(token.clone());
+        }
+        tokens
+    }
+
+    fn fetch_logical(&mut self) -> Token {
         loop {
             let tok = self.next_physical();
             if let TokenKind::Kw(kw @ (Kw::CcIf | Kw::CcElseIf | Kw::CcElse | Kw::CcEnd | Kw::CcConst)) =
@@ -814,6 +848,18 @@ impl<'src> Parser<'src> {
     /// in brackets, so a bracket holding anything else is not that statement.
     fn graphics_point_stmt(&mut self, arena: &mut ExprArena, t: Token) -> NodeId {
         let span = t.span;
+        // A bare graphics statement has one exact shape; anything else is a syntax error.
+        if let TokenKind::Kw(keyword @ (Kw::Scale | Kw::Line | Kw::Circle | Kw::PSet)) = t.kind {
+            let tokens = self.statement_tokens();
+            if !bare_graphics_shape_ok(keyword, &tokens) {
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                let sym = t.sym.map(|s| s as u32).unwrap_or(0);
+                let node = arena.alloc(ExprNode::NameRef { sym, suffix: t.type_suffix });
+                self.set_span(node, span);
+                return node;
+            }
+        }
         let node = self.parse_ident_stmt_with_tok(arena, t);
         let pair = match arena.get(node) {
             ExprNode::CallStmt { .. } => true,
@@ -1725,11 +1771,14 @@ impl<'src> Parser<'src> {
                 id
             }
             // Variable / constant declarations
-            TokenKind::Kw(Kw::Dim)
-            | TokenKind::Kw(Kw::Static)
-            | TokenKind::Kw(Kw::Public)
-            | TokenKind::Kw(Kw::Private)
-            | TokenKind::Kw(Kw::Global) => {
+            // An access word has no place in a procedure body.
+            TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Global) => {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_INVALID_ATTRIBUTE_IN_PROCEDURE, span);
+                self.skip_line();
+                return None;
+            }
+            TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::Static) => {
                 let is_static = matches!(kind, TokenKind::Kw(Kw::Static));
                 self.advance();
                 self.parse_dim_list_static(arena, false, is_static)
@@ -1972,6 +2021,17 @@ impl<'src> Parser<'src> {
                     TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang) | TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Eq)
                 ) =>
             {
+                // `Me` and its member access are written together.
+                let me_end = self.peek().span.start + self.peek().span.len;
+                let next = self.peek2().clone();
+                if matches!(next.kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang))
+                    && next.span.start > me_end
+                    && !self.src[me_end as usize..next.span.start as usize].iter().any(|&b| b == 10 || b == 13)
+                {
+                    self.diagnostics.push(ERR_SYNTAX_ERROR, next.span);
+                    self.skip_line();
+                    return None;
+                }
                 self.parse_ident_stmt(arena)
             }
             // A leading `!` is a With-object key.
@@ -3231,6 +3291,13 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_raise_event(&mut self, arena: &mut ExprArena) -> NodeId {
+        if self.module_kind == ModuleKind::Standard {
+            // Events belong to object modules; elsewhere the word starts nothing.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         self.advance(); // consume RaiseEvent
         let name = self.expect_decl_name();
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -4019,6 +4086,12 @@ impl<'src> Parser<'src> {
             self.eat(TokenKind::Kw(Kw::Hash));
             chs.push(self.parse_expr(arena, 0));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
+            if self.peek().is_stmt_end() {
+                // A comma needs a channel after it.
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                break;
+            }
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, open_mode: 0, open_flags: 0 })
@@ -5789,4 +5862,108 @@ fn attribute_line(line: &[u8]) -> bool {
     }
     let i = skip_blanks(line, i);
     i < line.len() && line[i] == b'='
+}
+
+/// True when `tokens` (the rest of the statement, its terminator last) form the operands a
+/// bare `Scale`, `Line`, `Circle` or `PSet` statement takes.
+fn bare_graphics_shape_ok(keyword: Kw, tokens: &[Token]) -> bool {
+    let body = match tokens.split_last() {
+        Some((_, body)) => body,
+        None => tokens,
+    };
+    let kind = |i: usize| body.get(i).map(|t| &t.kind);
+    let is = |i: usize, k: Kw| kind(i) == Some(&TokenKind::Kw(k));
+    // The index after a balanced bracket that starts at `open`.
+    let close_of = |open: usize| -> Option<usize> {
+        let mut depth = 0;
+        for (offset, t) in body[open..].iter().enumerate() {
+            match t.kind {
+                TokenKind::Kw(Kw::LParen) => depth += 1,
+                TokenKind::Kw(Kw::RParen) => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Some(open + offset);
+                    }
+                }
+                _ => {}
+            }
+        }
+        None
+    };
+    // The pieces of `range` between commas that stand outside brackets.
+    let pieces = |from: usize, to: usize| -> Vec<(usize, usize)> {
+        let mut out = Vec::new();
+        let (mut depth, mut start) = (0, from);
+        for i in from..to {
+            match body[i].kind {
+                TokenKind::Kw(Kw::LParen) => depth += 1,
+                TokenKind::Kw(Kw::RParen) => depth -= 1,
+                TokenKind::Kw(Kw::Comma) if depth == 0 => {
+                    out.push((start, i));
+                    start = i + 1;
+                }
+                _ => {}
+            }
+        }
+        out.push((start, to));
+        out
+    };
+    // A point: optional `Step` (when allowed), then `( x , y )`. Returns the index after it.
+    let point = |at: usize, step_ok: bool| -> Option<usize> {
+        let mut i = at;
+        if is(i, Kw::Step) {
+            if !step_ok {
+                return None;
+            }
+            i += 1;
+        }
+        if !is(i, Kw::LParen) {
+            return None;
+        }
+        let close = close_of(i)?;
+        let parts = pieces(i + 1, close);
+        (parts.len() == 2 && parts.iter().all(|(a, b)| a < b)).then_some(close + 1)
+    };
+    // `, a, b …` from `at` to the end: at most `max` pieces, the last of them not empty.
+    let tail = |at: usize, max: usize| -> bool {
+        if at == body.len() {
+            return true;
+        }
+        if !is(at, Kw::Comma) {
+            return false;
+        }
+        let parts = pieces(at + 1, body.len());
+        parts.len() <= max && parts.last().is_some_and(|(a, b)| a < b)
+    };
+    match keyword {
+        Kw::Scale => {
+            if body.is_empty() {
+                return true;
+            }
+            match point(0, false) {
+                Some(i) if is(i, Kw::Minus) => point(i + 1, false) == Some(body.len()),
+                _ => false,
+            }
+        }
+        Kw::Line => {
+            let after_first = if is(0, Kw::Minus) {
+                Some(0)
+            } else {
+                point(0, true).filter(|&i| is(i, Kw::Minus))
+            };
+            match after_first {
+                Some(i) => point(i + 1, true).is_some_and(|j| tail(j, 2)),
+                None => false,
+            }
+        }
+        Kw::Circle => match point(0, true) {
+            Some(i) if is(i, Kw::Comma) => {
+                let parts = pieces(i + 1, body.len());
+                parts.len() <= 5 && parts[0].0 < parts[0].1 && parts.last().is_some_and(|(a, b)| a < b)
+            }
+            _ => false,
+        },
+        Kw::PSet => point(0, true).is_some_and(|i| tail(i, 1)),
+        _ => true,
+    }
 }

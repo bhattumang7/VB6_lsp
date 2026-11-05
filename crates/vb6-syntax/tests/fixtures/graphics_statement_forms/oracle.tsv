@@ -1,0 +1,155 @@
+# template	word	class	message
+proc	Scale	semantic	Method not valid without suitable object
+proc	Scale (1, 2)	syntax	Syntax error
+proc	Scale (1, 2)-(3, 4)	semantic	Method not valid without suitable object
+proc	Scale (1, 2)-	syntax	Syntax error
+proc	Scale -(3, 4)	syntax	Syntax error
+proc	Scale (1, 2) - (3, 4)	semantic	Method not valid without suitable object
+proc	Scale (1)	syntax	Syntax error
+proc	Scale 1	syntax	Syntax error
+proc	Scale (1, 2, 3)	syntax	Syntax error
+proc	Scale Step (1, 2)-(3, 4)	syntax	Syntax error
+proc	Scale (1, 2)-Step (3, 4)	syntax	Syntax error
+proc	Scale a	syntax	Syntax error
+proc	Scale (a, b)-(x, y)	semantic	Method not valid without suitable object
+proc	Line	syntax	Syntax error
+proc	Line (1, 2)	syntax	Syntax error
+proc	Line (1, 2)-(3, 4)	semantic	Method not valid without suitable object
+proc	Line -(3, 4)	semantic	Method not valid without suitable object
+proc	Line (1, 2)-	syntax	Syntax error
+proc	Line -1	syntax	Syntax error
+proc	Line (1, 2)-(3, 4), 5	semantic	Method not valid without suitable object
+proc	Line (1, 2)-(3, 4), , B	semantic	Method not valid without suitable object
+proc	Line (1, 2)-(3, 4), 5, B	semantic	Method not valid without suitable object
+proc	Line (1, 2)-(3, 4), 5, BF	semantic	Method not valid without suitable object
+proc	Line (1, 2)-(3, 4), B	semantic	Method not valid without suitable object
+proc	Line (1, 2)-(3, 4), , BF	semantic	Method not valid without suitable object
+proc	Line Step (1, 2)-Step (3, 4)	semantic	Method not valid without suitable object
+proc	Line -Step (3, 4)	semantic	Method not valid without suitable object
+proc	Line (1, 2)-(3, 4), 5, B, 6	syntax	Syntax error
+proc	Line (1, 2)-(3, 4),	syntax	Syntax error
+proc	Line (1, 2)-(3, 4), ,	syntax	Syntax error
+proc	Line 1, 2	syntax	Syntax error
+proc	Line (1, 2), (3, 4)	syntax	Syntax error
+proc	Line (1, 2) (3, 4)	syntax	Syntax error
+proc	Circle	syntax	Syntax error
+proc	Circle (1, 2)	syntax	Syntax error
+proc	Circle (1, 2), 3	semantic	Method not valid without suitable object
+proc	Circle (1, 2), 3, 4	semantic	Method not valid without suitable object
+proc	Circle (1, 2), 3, 4, 5, 6	semantic	Method not valid without suitable object
+proc	Circle (1, 2), 3, , 5, 6, 7	semantic	Method not valid without suitable object
+proc	Circle (1, 2), 3, , -1, -2	semantic	Method not valid without suitable object
+proc	Circle Step (1, 2), 3	semantic	Method not valid without suitable object
+proc	Circle (1, 2), 3, 4, 5, 6, 7	semantic	Method not valid without suitable object
+proc	Circle (1, 2),	syntax	Syntax error
+proc	Circle (1, 2), , 4	syntax	Syntax error
+proc	Circle 1, 2	syntax	Syntax error
+proc	Circle (1, 2), 3,	syntax	Syntax error
+proc	Circle -(1, 2), 3	syntax	Syntax error
+proc	PSet	syntax	Syntax error
+proc	PSet (1, 2)	semantic	Method not valid without suitable object
+proc	PSet (1, 2), 3	semantic	Method not valid without suitable object
+proc	PSet Step (1, 2)	semantic	Method not valid without suitable object
+proc	PSet (1, 2),	syntax	Syntax error
+proc	PSet 1, 2	syntax	Syntax error
+proc	PSet (1, 2), 3, 4	syntax	Syntax error
+proc	PSet (1, 2)-(3, 4)	syntax	Syntax error
+proc	Print	semantic	Method not valid without suitable object
+proc	Print 1	semantic	Method not valid without suitable object
+proc	Print 1; 2	semantic	Method not valid without suitable object
+proc	Print 1, 2	semantic	Method not valid without suitable object
+proc	Print;	semantic	Method not valid without suitable object
+proc	Print ,	semantic	Method not valid without suitable object
+proc	Print Tab(5)	semantic	Method not valid without suitable object
+proc	Print Spc(5)	semantic	Method not valid without suitable object
+proc	Print Tab	semantic	Method not valid without suitable object
+proc	Print Tab(5); 1	semantic	Method not valid without suitable object
+proc	Print Spc(5), 1	semantic	Method not valid without suitable object
+proc	Print 1;	semantic	Method not valid without suitable object
+proc	Print a b	semantic	Method not valid without suitable object
+proc	Cls	semantic	Sub or Function not defined
+proc	Cls 1	semantic	Sub or Function not defined
+proc	a.Line (1, 2)-(3, 4)	accepted	
+proc	a.Circle (1, 2), 3	accepted	
+proc	a.PSet (1, 2)	accepted	
+proc	a.Scale (1, 2)-(3, 4)	accepted	
+proc	a.Scale	accepted	
+proc	a.Print 1	accepted	
+proc	a.Cls	accepted	
+form	Scale	semantic	Method or data member not found
+form	Scale (1, 2)	syntax	Syntax error
+form	Scale (1, 2)-(3, 4)	semantic	Method or data member not found
+form	Scale (1, 2)-	syntax	Syntax error
+form	Scale -(3, 4)	syntax	Syntax error
+form	Scale (1, 2) - (3, 4)	semantic	Method or data member not found
+form	Scale (1)	syntax	Syntax error
+form	Scale 1	syntax	Syntax error
+form	Scale (1, 2, 3)	syntax	Syntax error
+form	Scale Step (1, 2)-(3, 4)	syntax	Syntax error
+form	Scale (1, 2)-Step (3, 4)	syntax	Syntax error
+form	Scale a	syntax	Syntax error
+form	Scale (a, b)-(x, y)	semantic	Method or data member not found
+form	Line	syntax	Syntax error
+form	Line (1, 2)	syntax	Syntax error
+form	Line (1, 2)-(3, 4)	semantic	Method or data member not found
+form	Line -(3, 4)	semantic	Method or data member not found
+form	Line (1, 2)-	syntax	Syntax error
+form	Line -1	syntax	Syntax error
+form	Line (1, 2)-(3, 4), 5	semantic	Method or data member not found
+form	Line (1, 2)-(3, 4), , B	semantic	Method or data member not found
+form	Line (1, 2)-(3, 4), 5, B	semantic	Method or data member not found
+form	Line (1, 2)-(3, 4), 5, BF	semantic	Method or data member not found
+form	Line (1, 2)-(3, 4), B	semantic	Method or data member not found
+form	Line (1, 2)-(3, 4), , BF	semantic	Method or data member not found
+form	Line Step (1, 2)-Step (3, 4)	semantic	Method or data member not found
+form	Line -Step (3, 4)	semantic	Method or data member not found
+form	Line (1, 2)-(3, 4), 5, B, 6	syntax	Syntax error
+form	Line (1, 2)-(3, 4),	syntax	Syntax error
+form	Line (1, 2)-(3, 4), ,	syntax	Syntax error
+form	Line 1, 2	syntax	Syntax error
+form	Line (1, 2), (3, 4)	syntax	Syntax error
+form	Line (1, 2) (3, 4)	syntax	Syntax error
+form	Circle	syntax	Syntax error
+form	Circle (1, 2)	syntax	Syntax error
+form	Circle (1, 2), 3	semantic	Method or data member not found
+form	Circle (1, 2), 3, 4	semantic	Method or data member not found
+form	Circle (1, 2), 3, 4, 5, 6	semantic	Method or data member not found
+form	Circle (1, 2), 3, , 5, 6, 7	semantic	Method or data member not found
+form	Circle (1, 2), 3, , -1, -2	semantic	Method or data member not found
+form	Circle Step (1, 2), 3	semantic	Method or data member not found
+form	Circle (1, 2), 3, 4, 5, 6, 7	semantic	Method or data member not found
+form	Circle (1, 2),	syntax	Syntax error
+form	Circle (1, 2), , 4	syntax	Syntax error
+form	Circle 1, 2	syntax	Syntax error
+form	Circle (1, 2), 3,	syntax	Syntax error
+form	Circle -(1, 2), 3	syntax	Syntax error
+form	PSet	syntax	Syntax error
+form	PSet (1, 2)	semantic	Method or data member not found
+form	PSet (1, 2), 3	semantic	Method or data member not found
+form	PSet Step (1, 2)	semantic	Method or data member not found
+form	PSet (1, 2),	syntax	Syntax error
+form	PSet 1, 2	syntax	Syntax error
+form	PSet (1, 2), 3, 4	syntax	Syntax error
+form	PSet (1, 2)-(3, 4)	syntax	Syntax error
+form	Print	accepted	
+form	Print 1	accepted	
+form	Print 1; 2	accepted	
+form	Print 1, 2	accepted	
+form	Print;	accepted	
+form	Print ,	accepted	
+form	Print Tab(5)	accepted	
+form	Print Spc(5)	accepted	
+form	Print Tab	accepted	
+form	Print Tab(5); 1	accepted	
+form	Print Spc(5), 1	accepted	
+form	Print 1;	accepted	
+form	Print a b	accepted	
+form	Cls	semantic	Sub or Function not defined
+form	Cls 1	semantic	Sub or Function not defined
+form	a.Line (1, 2)-(3, 4)	accepted	
+form	a.Circle (1, 2), 3	accepted	
+form	a.PSet (1, 2)	accepted	
+form	a.Scale (1, 2)-(3, 4)	accepted	
+form	a.Scale	accepted	
+form	a.Print 1	accepted	
+form	a.Cls	accepted	

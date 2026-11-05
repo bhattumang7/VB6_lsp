@@ -1,0 +1,5 @@
+# {k} is replaced by each keyword followed by a tail.
+=== proc bas
+Sub P(a, b, x, y)
+{k}
+End Sub

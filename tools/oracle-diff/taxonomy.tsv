@@ -85,7 +85,7 @@ Invalid use of New keyword	syntax
 Invalid outside Enum	syntax
 Not a valid interface for Implements	semantic
 Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter	syntax
-Duplicate declaration in current scope	syntax
+Duplicate declaration in current scope	semantic
 Expected array	syntax
 Optional argument must be Variant or intrinsic type with a default value	syntax
 ParamArray must be declared as an array of Variant	syntax

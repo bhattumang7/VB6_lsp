@@ -1,0 +1,77 @@
+Scale
+Scale (1, 2)
+Scale (1, 2)-(3, 4)
+Scale (1, 2)-
+Scale -(3, 4)
+Scale (1, 2) - (3, 4)
+Scale (1)
+Scale 1
+Scale (1, 2, 3)
+Scale Step (1, 2)-(3, 4)
+Scale (1, 2)-Step (3, 4)
+Scale a
+Scale (a, b)-(x, y)
+Line
+Line (1, 2)
+Line (1, 2)-(3, 4)
+Line -(3, 4)
+Line (1, 2)-
+Line -1
+Line (1, 2)-(3, 4), 5
+Line (1, 2)-(3, 4), , B
+Line (1, 2)-(3, 4), 5, B
+Line (1, 2)-(3, 4), 5, BF
+Line (1, 2)-(3, 4), B
+Line (1, 2)-(3, 4), , BF
+Line Step (1, 2)-Step (3, 4)
+Line -Step (3, 4)
+Line (1, 2)-(3, 4), 5, B, 6
+Line (1, 2)-(3, 4),
+Line (1, 2)-(3, 4), ,
+Line 1, 2
+Line (1, 2), (3, 4)
+Line (1, 2) (3, 4)
+Circle
+Circle (1, 2)
+Circle (1, 2), 3
+Circle (1, 2), 3, 4
+Circle (1, 2), 3, 4, 5, 6
+Circle (1, 2), 3, , 5, 6, 7
+Circle (1, 2), 3, , -1, -2
+Circle Step (1, 2), 3
+Circle (1, 2), 3, 4, 5, 6, 7
+Circle (1, 2),
+Circle (1, 2), , 4
+Circle 1, 2
+Circle (1, 2), 3,
+Circle -(1, 2), 3
+PSet
+PSet (1, 2)
+PSet (1, 2), 3
+PSet Step (1, 2)
+PSet (1, 2),
+PSet 1, 2
+PSet (1, 2), 3, 4
+PSet (1, 2)-(3, 4)
+Print
+Print 1
+Print 1; 2
+Print 1, 2
+Print;
+Print ,
+Print Tab(5)
+Print Spc(5)
+Print Tab
+Print Tab(5); 1
+Print Spc(5), 1
+Print 1;
+Print a b
+Cls
+Cls 1
+a.Line (1, 2)-(3, 4)
+a.Circle (1, 2), 3
+a.PSet (1, 2)
+a.Scale (1, 2)-(3, 4)
+a.Scale
+a.Print 1
+a.Cls
