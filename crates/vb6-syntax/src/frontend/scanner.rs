@@ -138,6 +138,26 @@ impl ScannerContext {
         self.symbols.len()
     }
 
+    /// The code page the module's language implies when it is a double-byte one (Japanese 932,
+    /// Chinese 936 or 950, Korean 949).
+    pub fn dbcs_code_page(&self) -> Option<u16> {
+        match self.lcid & 0x3ff {
+            0x11 => Some(932),
+            0x12 => Some(949),
+            0x04 => Some(if matches!(self.lcid, 0x0804 | 0x1004) { 936 } else { 950 }),
+            _ => None,
+        }
+    }
+
+    /// Whether `b` leads a two-byte character in the module's code page.
+    pub fn is_dbcs_lead_byte(&self, b: u8) -> bool {
+        match self.dbcs_code_page() {
+            Some(932) => matches!(b, 0x81..=0x9F | 0xE0..=0xFC),
+            Some(_) => matches!(b, 0x81..=0xFE),
+            None => false,
+        }
+    }
+
     /// Look up an interned symbol by name (case-insensitive).
     pub fn lookup(&self, name: &str) -> Option<&Symbol> {
         self.by_key
@@ -796,6 +816,10 @@ impl<'a> Scanner<'a> {
                 }
                 _ => {}
             }
+            // A double-byte character starts a name.
+            if self.double_byte_at(start) {
+                return self.scan_ident(b, start);
+            }
             let cls = CHAR_CLASSES[b as usize];
             match cls {
                 0x00 => {
@@ -1400,7 +1424,18 @@ impl<'a> Scanner<'a> {
     fn scan_ident(&mut self, first: u8, start: usize) -> Token {
         self.tok_buf.clear();
         self.tok_buf.push(ansi_char(first));
+        if self.double_byte_at(start) {
+            // A lead byte and the trail byte after it are one character of the name.
+            self.tok_buf.push(ansi_char(self.src[self.pos]));
+            self.pos += 1;
+        }
         while let Some(&b) = self.src.get(self.pos) {
+            if self.double_byte_at(self.pos) {
+                self.tok_buf.push(ansi_char(b));
+                self.tok_buf.push(ansi_char(self.src[self.pos + 1]));
+                self.pos += 2;
+                continue;
+            }
             if !is_ident_continue(b) { break; }
             self.tok_buf.push(ansi_char(b));
             self.pos += 1;
@@ -1505,6 +1540,13 @@ impl<'a> Scanner<'a> {
     }
 
     // ── low-level helpers ────────────────────────────────────────────────────
+
+    /// Whether the byte at `at` leads a double-byte character of the module's code page and a
+    /// trail byte follows it on the same line.
+    fn double_byte_at(&self, at: usize) -> bool {
+        self.src.get(at).is_some_and(|&b| self.ctx.is_dbcs_lead_byte(b))
+            && !matches!(self.src.get(at + 1), None | Some(0) | Some(b'\r') | Some(b'\n'))
+    }
 
     /// Read the next byte and advance the position.
     #[inline]

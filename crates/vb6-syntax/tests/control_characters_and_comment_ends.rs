@@ -132,3 +132,20 @@ fn an_underscore_after_a_bang_does_not_start_a_member() {
     let (_, found) = in_sub("n = r!x");
     assert_eq!(found, vec![]);
 }
+
+#[test]
+fn a_double_byte_character_is_one_unit_of_a_name_in_a_double_byte_code_page() {
+    use vb6_syntax::frontend::ast::ExprArena;
+    use vb6_syntax::frontend::parser::Parser;
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    // Shift-JIS: 0x83 0x5C is one katakana letter whose trail byte is a backslash.
+    let src: Vec<u8> = b"Dim a\x83\x5Cb As Long\n".to_vec();
+    for (lcid, expect_errors) in [(0x0411u32, false), (0x0409u32, true)] {
+        let mut ctx = ScannerContext::new(1, 1, lcid);
+        ctx.intern_keywords();
+        let mut arena = ExprArena::new();
+        let mut parser = Parser::new(&mut ctx, &src);
+        parser.parse_module(&mut arena);
+        assert_eq!(!parser.diagnostics.items().is_empty(), expect_errors, "{lcid:#x}");
+    }
+}
