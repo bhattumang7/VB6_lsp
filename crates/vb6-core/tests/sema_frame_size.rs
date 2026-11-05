@@ -149,3 +149,24 @@ fn param_array_arguments_take_sixteen_bytes_each_and_later_calls_reuse_them() {
     assert!(!param_array_calls(2, 2039));
     assert!(param_array_calls(2, 2040));
 }
+
+fn variant_chain(terms: usize) -> bool {
+    let lines: Vec<String> = vec!["v"; terms].chunks(100).map(|c| c.join(" + ")).collect();
+    let src = format!("Sub Main()\nDim x As Long, v As Variant\nx = {}\nEnd Sub\n", lines.join(" + _\n"));
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    s.diagnostics(0).iter().any(|d| d.code == TOO_MANY_LOCALS)
+}
+
+#[test]
+fn every_operation_on_a_variant_takes_a_sixteen_byte_temporary() {
+    assert!(!variant_chain(2039));
+    assert!(variant_chain(2040));
+}
+
+#[test]
+fn the_longest_statement_the_compiler_accepts_is_analyzed_without_overflowing_the_stack() {
+    let lines: Vec<String> = vec!["1"; 2552].chunks(250).map(|c| c.join(" + ")).collect();
+    let src = format!("Sub Main()\nDim x As Long\nx = {}\nEnd Sub\n", lines.join(" + _\n"));
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    assert_eq!(s.diagnostics(0).len(), 0);
+}

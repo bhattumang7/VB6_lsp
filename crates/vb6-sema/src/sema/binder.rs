@@ -1348,6 +1348,29 @@ impl<'a> Binder<'a> {
         // A call's `ParamArray` arguments are boxed in 16-byte temporaries, which later
         // statements reuse: only the largest call counts.
         let mut call_temps: (usize, Option<NodeId>) = (0, None);
+        // The result of every operation on a Variant is a 16-byte temporary, and all of one
+        // statement's are alive together.
+        for &id in &order {
+            let ExprNode::Block { stmts } = self.arena.get(id) else { continue };
+            for &stmt in stmts {
+                let mut count = 0usize;
+                let mut walk = vec![stmt];
+                while let Some(n) = walk.pop() {
+                    if matches!(self.arena.get(n), ExprNode::Block { .. }) {
+                        continue;
+                    }
+                    if matches!(self.arena.get(n), ExprNode::BinOp { .. })
+                        && self.types.get(&n.0) == Some(&VbaType::Variant)
+                    {
+                        count += 1;
+                    }
+                    self.arena.get(n).for_each_child(&mut |c| walk.push(c));
+                }
+                if 16 * count > call_temps.0 {
+                    call_temps = (16 * count, Some(stmt));
+                }
+            }
+        }
         for id in order {
             if let ExprNode::CallStmt { callee: func, args } | ExprNode::Call { func, args } = self.arena.get(id) {
                 if let (Some(NameResolution::Proc(callee)), ExprNode::ArgList { args }) =

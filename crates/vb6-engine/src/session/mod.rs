@@ -369,6 +369,19 @@ impl Session {
     /// re-emit project-scoped diagnostics. Idempotent — safe to call after any
     /// edit.
     fn relink(&mut self) {
+        // Project-wide binding walks every statement as a tree: it runs on a stack deep enough
+        // for the longest statements the compiler accepts.
+        std::thread::scope(|scope| {
+            std::thread::Builder::new()
+                .stack_size(ANALYSIS_STACK_BYTES)
+                .spawn_scoped(scope, || self.relink_inline())
+                .expect("analysis thread")
+                .join()
+                .unwrap_or_else(|panic| std::panic::resume_unwind(panic))
+        })
+    }
+
+    fn relink_inline(&mut self) {
         let model = project_model::ProjectModel::build(
             &self.modules,
             self.config.project_name.as_deref(),
@@ -388,6 +401,17 @@ impl Session {
     /// Bind module `idx` again against the project model already built. Valid
     /// only when the module's interface is unchanged since that model was built.
     fn relink_module(&mut self, idx: usize) {
+        std::thread::scope(|scope| {
+            std::thread::Builder::new()
+                .stack_size(ANALYSIS_STACK_BYTES)
+                .spawn_scoped(scope, || self.relink_module_inline(idx))
+                .expect("analysis thread")
+                .join()
+                .unwrap_or_else(|panic| std::panic::resume_unwind(panic))
+        })
+    }
+
+    fn relink_module_inline(&mut self, idx: usize) {
         let Some(model) = self.model.take() else {
             return self.relink();
         };
@@ -1330,7 +1354,24 @@ fn conditional_constants(config: &SessionConfig) -> Vec<(String, CcValue)> {
 }
 
 /// Scan + parse + bind one module into [`ModuleData`].
+/// Stack the analysis of one module is given: an expression of a few thousand operands is a
+/// tree that deep, and the compiler reads such statements.
+const ANALYSIS_STACK_BYTES: usize = 256 * 1024 * 1024;
+
+/// Scan + parse + bind one module on a thread with a stack deep enough for the longest
+/// statements the compiler accepts.
 fn analyze_module(path: String, raw: Vec<u8>, conditional: &[(String, CcValue)]) -> ModuleData {
+    std::thread::scope(|scope| {
+        std::thread::Builder::new()
+            .stack_size(ANALYSIS_STACK_BYTES)
+            .spawn_scoped(scope, || analyze_module_inline(path, raw, conditional))
+            .expect("analysis thread")
+            .join()
+            .unwrap_or_else(|panic| std::panic::resume_unwind(panic))
+    })
+}
+
+fn analyze_module_inline(path: String, raw: Vec<u8>, conditional: &[(String, CcValue)]) -> ModuleData {
     let raw_source = raw.clone();
     // The designer section is read from the original bytes; the code parser
     // sees it blanked.
