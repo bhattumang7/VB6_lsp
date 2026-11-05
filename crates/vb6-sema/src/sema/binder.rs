@@ -35,6 +35,11 @@ pub const ERR_INVALID_OR_UNQUALIFIED_REFERENCE: u16 = 40136;
 /// "Event not found" (57150): `RaiseEvent` of an event the module does not
 /// declare.
 pub const ERR_EVENT_NOT_FOUND: u16 = 57150;
+/// "Too many local, nonstatic variables" (57028): the locals of a procedure do not fit its
+/// frame.
+pub const ERR_TOO_MANY_LOCALS: u16 = 57028;
+/// Most bytes the nonstatic locals of a procedure may take.
+const MAX_FRAME_BYTES: usize = 32636;
 /// "User-defined type may not be passed ByVal" (40140).
 pub const ERR_UDT_PASSED_BYVAL: u16 = 40140;
 /// "Can't assign to read-only property" (57094).
@@ -1012,6 +1017,7 @@ impl<'a> Binder<'a> {
         }
         self.proc_diag_mark = self.diagnostics.len();
         self.collect_locals(proc_idx, body_id, &mut locals, &mut local_names);
+        self.check_frame_size(&locals);
         if self.project.is_some() {
             let sems = locals
                 .iter()
@@ -1269,6 +1275,42 @@ impl<'a> Binder<'a> {
     /// uses — so a local declared inside any statement form (even one added
     /// later) is collected, never silently resolved to the wrong scope. A proc
     /// body contains no nested procedure declarations, so a full descent is safe.
+    /// The frame bytes a nonstatic local takes: 2 for Byte, Boolean and Integer, 4 for Long,
+    /// Single, String, Object and a dynamic array, 8 for Double, Currency and Date, 16 for
+    /// Variant, 2 per character of a fixed-length string, and 24 plus 8 per dimension for a
+    /// fixed-size array. `None` for a type whose size is not known.
+    fn frame_bytes(local: &BoundVar) -> Option<usize> {
+        if local.is_static || local.is_const {
+            return Some(0);
+        }
+        Some(match &local.vba_type {
+            VbaType::Array(_) => match local.array_dims {
+                Some(dims) => 24 + 8 * dims as usize,
+                None => 4,
+            },
+            VbaType::String => local.fixed_string_len.map_or(4, |n| 2 * n as usize),
+            VbaType::Byte | VbaType::Boolean | VbaType::Integer => 2,
+            VbaType::Long | VbaType::Single | VbaType::Object => 4,
+            VbaType::Double | VbaType::Currency | VbaType::Date => 8,
+            VbaType::Variant => 16,
+            _ => return None,
+        })
+    }
+
+    /// Reports the local whose frame bytes take the procedure's frame past its limit. A
+    /// procedure with a local of unknown size is not checked.
+    fn check_frame_size(&mut self, locals: &[BoundVar]) {
+        let mut total = 0usize;
+        for local in locals {
+            let Some(bytes) = Self::frame_bytes(local) else { return };
+            total += bytes;
+            if total > MAX_FRAME_BYTES {
+                self.diagnostics.push(ERR_TOO_MANY_LOCALS as u32, local.name_span);
+                return;
+            }
+        }
+    }
+
     fn collect_locals(
         &self,
         proc_idx: usize,

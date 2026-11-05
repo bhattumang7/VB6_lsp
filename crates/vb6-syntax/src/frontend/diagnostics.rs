@@ -131,6 +131,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         11 => "Division by zero",
         13 => "Type mismatch",
         94 => "Invalid use of Null",
+        0xdec4 => "Too many local, nonstatic variables", // 57028
         0x23 => "Sub or Function not defined",              // 35
         0x1cd => "Method or data member not found",         // 461
         0x9c74 => "Invalid inside procedure",               // 40052
