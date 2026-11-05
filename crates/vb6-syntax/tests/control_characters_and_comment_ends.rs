@@ -62,3 +62,24 @@ fn brackets_inside_a_bracketed_name_nest() {
     let (_, found) = in_sub("o.[a[b] = 1");
     assert!(!found.is_empty());
 }
+
+#[test]
+fn identifier_length_counts_source_bytes_not_utf8_bytes() {
+    use vb6_syntax::frontend::ast::ExprArena;
+    use vb6_syntax::frontend::parser::Parser;
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    // 130 accented letters are 130 bytes of source text.
+    let mut src = b"Dim ".to_vec();
+    src.extend(std::iter::repeat(0xE9u8).take(130));
+    src.extend_from_slice(b" As Long
+");
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, &src);
+    parser.parse_module(&mut arena);
+    assert_eq!(parser.diagnostics.items().len(), 0);
+    let long: String = "a".repeat(256);
+    assert_eq!(parse(&format!("Dim {long} As Long
+")).found.first().map(|f| f.0), Some(0x9c6d));
+}

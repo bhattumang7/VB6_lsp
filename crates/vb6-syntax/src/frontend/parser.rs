@@ -666,7 +666,7 @@ impl<'src> Parser<'src> {
             if tok.kind == TokenKind::Ident {
                 let too_long = tok
                     .sym
-                    .is_some_and(|id| self.scanner.sym_name(id as u32).len() > MAX_IDENTIFIER_LEN);
+                    .is_some_and(|id| self.scanner.sym_name(id as u32).chars().count() > MAX_IDENTIFIER_LEN);
                 if too_long {
                     self.diagnostics.push(ERR_IDENTIFIER_TOO_LONG, tok.span);
                 }
