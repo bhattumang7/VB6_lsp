@@ -61,6 +61,8 @@ pub struct ScannerContext {
     pub token_buf_size: u32,
     /// mode flags.
     pub mode_flags: u8,
+    /// A name could not be added because the symbol table is full.
+    pub symbol_table_full: bool,
     /// keyword-init flag.
     pub do_keyword_init: u8,
     /// scanner state flags. Bit 1 (`0x2`) guards "keywords interned".
@@ -109,6 +111,7 @@ impl ScannerContext {
             options,
             token_buf_size,
             mode_flags,
+            symbol_table_full: false,
             do_keyword_init,
             flags6: 0,
             field4: 0,
@@ -181,6 +184,7 @@ impl ScannerContext {
 
         // --- not found: allocate ---
         if self.mode_flags != 0 && self.counter > 0x7ffe {
+            self.symbol_table_full = true;
             return None;
         }
 
@@ -292,6 +296,7 @@ impl ScannerContext {
             return Some(existing);
         }
         if self.mode_flags != 0 && self.counter > 0x7ffe {
+            self.symbol_table_full = true;
             return None;
         }
         if self.mode_flags != 0 {
@@ -738,6 +743,11 @@ impl<'a> Scanner<'a> {
     /// Return the canonical name for a symbol by id.
     pub fn sym_name(&self, id: u32) -> &str {
         self.ctx.sym_name(id as usize)
+    }
+
+    /// Whether a name was refused because the symbol table is full.
+    pub fn symbol_table_full(&self) -> bool {
+        self.ctx.symbol_table_full
     }
 
     /// True if the symbol is a reserved word (which can never name a

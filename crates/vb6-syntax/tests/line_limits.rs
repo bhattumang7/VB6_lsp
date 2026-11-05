@@ -25,3 +25,16 @@ fn twenty_four_continuations_are_joined_and_a_twenty_fifth_is_an_error() {
     let p = parse(&joined(25));
     assert_eq!(p.found.first().map(|f| f.0), Some(0x9c00));
 }
+
+#[test]
+fn a_full_symbol_table_is_out_of_memory() {
+    // 32767 names fill the table of names; the next new one cannot be kept.
+    let mut src = String::from("Sub S()\n");
+    for chunk in (0..33000).collect::<Vec<usize>>().chunks(60) {
+        let names: Vec<String> = chunk.iter().map(|i| format!("q{i}")).collect();
+        src.push_str(&format!(" x = {}\n", names.join(" + ")));
+    }
+    src.push_str("End Sub\n");
+    let p = parse(&src);
+    assert!(p.found.iter().any(|f| f.0 == 7), "{:?}", p.found.first());
+}

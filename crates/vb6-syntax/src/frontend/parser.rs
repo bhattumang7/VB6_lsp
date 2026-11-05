@@ -660,6 +660,10 @@ impl<'src> Parser<'src> {
             if tok.kind == TokenKind::Eof {
                 self.report_open_cc_blocks();
             }
+            if tok.kind == TokenKind::Error && self.scanner.symbol_table_full() && self.cc_active() {
+                // The table of names is full: the name cannot be kept.
+                self.diagnostics.push(ERR_OUT_OF_MEMORY, tok.span);
+            }
             if !self.cc_active() {
                 if tok.kind == TokenKind::Eof {
                     return tok;
