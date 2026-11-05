@@ -5,6 +5,11 @@
 //! everything about that size in one place: the limit, what each kind of statement costs on top
 //! of an assignment, and the size of the expressions whose cost is known exactly.
 //!
+//! This is the compiler's concern, not the grammar's: the numbers describe the code generated for
+//! a line. They live here because the parser has the physical-line layout the size depends on and
+//! the project has no line-code emitter yet; when one exists the table below is its specification
+//! and the tests in `tests/line_limits.rs` its oracle, and the check moves there.
+//!
 //! Only shapes whose size has been established are measured. For any other shape
 //! [`expression_size`] returns `None` and the line is not checked, so a size is never
 //! overstated and a valid line is never rejected.
