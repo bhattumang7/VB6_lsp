@@ -172,3 +172,41 @@ fn a_block_statement_line_follows_the_same_size_rule_as_an_assignment() {
         assert_eq!(parse(&src(2549)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{head}");
     }
 }
+
+#[test]
+fn debug_print_of_one_expression_costs_two_bytes_more_than_an_assignment() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (terms per line, most terms that fit)
+    for (per, fits) in [(120, 2544), (135, 2546), (150, 2547), (170, 2549)] {
+        let src = |n| format!("Sub S()\nDebug.Print {}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "per {per}");
+    }
+}
+
+#[test]
+fn assignments_before_one_on_the_same_line_add_to_its_compiled_size() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (statements before, terms per line, most terms that fit)
+    for (before, per, fits) in [
+        ("y = 1: ", 120, 2542),
+        ("y = 1: ", 135, 2544),
+        ("y = 1: ", 150, 2546),
+        ("y = 1: ", 170, 2547),
+        ("y = 40000: ", 120, 2542),
+        ("y = 40000: ", 150, 2545),
+        ("y = 1: y = 1: ", 150, 2544),
+    ] {
+        let src = |n| format!("Sub S()\n{before}x = {}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{before} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before} per {per}");
+    }
+}

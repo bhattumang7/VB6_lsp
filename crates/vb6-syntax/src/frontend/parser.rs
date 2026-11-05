@@ -325,6 +325,12 @@ pub struct Parser<'src> {
     continuations: u32,
     /// Continuation marks the logical line that ended last had.
     line_continuations: u32,
+    /// Compiled bytes of the assignments already read on the current logical line, and
+    /// whether every statement before the current one was such an assignment.
+    line_cost: usize,
+    line_cost_valid: bool,
+    stmt_measured: bool,
+
     /// The argument values written with a call-site `ByVal`.
     pub by_val_args: Vec<NodeId>,
     /// The argument list about to be read follows another one directly (`f(1)(2)`).
@@ -511,6 +517,9 @@ impl<'src> Parser<'src> {
             group_depth: 0,
             continuations: 0,
             line_continuations: 0,
+            line_cost: 0,
+            line_cost_valid: true,
+            stmt_measured: true,
             by_val_args: Vec::new(),
             later_group: false,
             stmt_byval: None,
@@ -1897,6 +1906,17 @@ impl<'src> Parser<'src> {
         // Skip statement ends
         while self.eat(TokenKind::Eol) {}
         if self.peek().kind == TokenKind::Eof { return None; }
+        // A statement that follows another on a line adds to the line's compiled size only when
+        // the one before it was an assignment whose size is known.
+        if self.peek().kind != TokenKind::Kw(Kw::Colon) {
+            if !self.colon_on_line {
+                self.line_cost = 0;
+                self.line_cost_valid = true;
+            } else if !self.stmt_measured {
+                self.line_cost_valid = false;
+            }
+            self.stmt_measured = false;
+        }
 
         // `Else` or a line number in front of an attribute line does not change it.
         if self.at_prefixed_attribute_line() {
@@ -2258,18 +2278,28 @@ impl<'src> Parser<'src> {
         let eq_span = self.current_span();
         if self.eat(TokenKind::Kw(Kw::Eq)) {
             let value = self.parse_expr(arena, 0);
-            // The statement is alone on its line when the line end follows it.
-            let alone = self.peek().kind == TokenKind::Eol && !self.colon_on_line;
-            let physical_lines = self.line_continuations as usize + 1;
-            self.end_stmt();
-            // A line of compiled code holds 0x3c00 bytes.
-            if alone {
-                if let Some(size) = assignment_chain_size(arena, lhs, value, physical_lines) {
-                    if size > MAX_LINE_CODE_SIZE {
-                        self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, eq_span);
+            // A line of compiled code holds 0x3c00 bytes: the assignments before this one on the
+            // line (each followed by its 2-byte separator), this one, and 4 for each physical line.
+            if self.peek().kind == TokenKind::Eol {
+                let (before, valid) = (self.line_cost, self.line_cost_valid);
+                let lines = self.line_continuations as usize + 1;
+                if valid {
+                    if let Some(size) = assignment_chain_size(arena, lhs, value, lines) {
+                        if before + size > MAX_LINE_CODE_SIZE {
+                            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, eq_span);
+                        }
                     }
                 }
+            } else if self.peek().kind == TokenKind::Kw(Kw::Colon) {
+                match assignment_chain_size(arena, lhs, value, 0) {
+                    Some(size) => {
+                        self.line_cost += size + 2;
+                        self.stmt_measured = true;
+                    }
+                    None => self.line_cost_valid = false,
+                }
             }
+            self.end_stmt();
             arena.alloc(ExprNode::Assign { target: lhs, value })
         } else if self.peek().kind == TokenKind::Kw(Kw::ColonEq) {
             // A named argument is only meaningful inside an argument list, never as a statement.
@@ -3581,6 +3611,7 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_debug_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let debug_span = self.current_span();
         self.advance(); // consume Debug
         self.expect(TokenKind::Kw(Kw::Dot), ERR_UNEXPECTED_TOKEN);
         let is_member = self.peek().kind == TokenKind::Kw(Kw::Print)
@@ -3609,6 +3640,13 @@ impl<'src> Parser<'src> {
         let mut args = Vec::new();
         if list_follows {
             self.parse_print_method_items(arena, &mut args);
+        }
+        // `Debug.Print` of one expression costs 2 more than an assignment of it.
+        if channel.is_none() && args.len() == 1 && self.peek().kind == TokenKind::Eol && !self.colon_on_line {
+            let lines = self.line_continuations as usize + 1;
+            if expression_chain_size(arena, args[0], lines).is_some_and(|size| size + 2 > MAX_LINE_CODE_SIZE) {
+                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, debug_span);
+            }
         }
         self.end_stmt();
         arena.alloc(ExprNode::DebugPrint { channel, args })
