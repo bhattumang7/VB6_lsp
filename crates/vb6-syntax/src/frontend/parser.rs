@@ -321,6 +321,8 @@ pub struct Parser<'src> {
     /// Depth of the argument lists being read, and the first `ByVal` and first named
     /// argument met at depth one since the statement began.
     group_depth: u32,
+    /// The argument list about to be read follows another one directly (`f(1)(2)`).
+    later_group: bool,
     stmt_byval: Option<Span>,
     stmt_named: Option<Span>,
     /// Open `#If` blocks, innermost last.
@@ -501,6 +503,7 @@ impl<'src> Parser<'src> {
             phys_line_has_token: false,
             tok_first_on_line: true,
             group_depth: 0,
+            later_group: false,
             stmt_byval: None,
             stmt_named: None,
             cc_defs: vec![
@@ -5826,6 +5829,7 @@ impl<'src> Parser<'src> {
                 }
                 TokenKind::Kw(Kw::LParen) => {
                     self.advance();
+                    self.later_group = matches!(arena.get(base), ExprNode::Call { .. });
                     let args = self.parse_arg_list(arena);
                     self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
                     base = arena.alloc(ExprNode::Call { func: base, args });
@@ -5995,9 +5999,15 @@ impl<'src> Parser<'src> {
         }
         let mut args = Vec::new();
         let mut seen_named = false;
+        // A list that follows another takes neither an omitted argument nor a `ByVal`.
+        let later = std::mem::take(&mut self.later_group);
         loop {
             // Missing argument.
             if self.peek().kind == TokenKind::Kw(Kw::Comma) {
+                if later {
+                    let span = self.current_span();
+                    self.report_expected(span, "expression");
+                }
                 args.push(arena.alloc(ExprNode::MissingArg));
             } else if self.peek().kind == TokenKind::Kw(Kw::RParen) {
                 // A comma was the last thing before the bracket.
@@ -6012,6 +6022,10 @@ impl<'src> Parser<'src> {
                     // After a named argument every argument is named.
                     let span = self.current_span();
                     self.report_expected(span, "named argument");
+                }
+                if later && self.peek().kind == TokenKind::Kw(Kw::ByVal) {
+                    let span = self.current_span();
+                    self.report_expected(span, "expression");
                 }
                 self.argument_operand_prefix();
                 args.push(self.parse_expr(arena, 0));

@@ -47,3 +47,15 @@ fn as_cannot_name_the_first_argument_after_a_plain_name() {
         assert_eq!(found, vec![], "{body}");
     }
 }
+
+#[test]
+fn a_bracket_group_after_another_takes_neither_byval_nor_an_omitted_argument() {
+    for (body, at) in [("x = Bar(1)(ByVal 2)", "ByVal"), ("x = o.Foo(1)(ByVal 2)", "ByVal"), ("x = Bar(1)(, 2)", ", 2")] {
+        let (src, found) = in_sub(body);
+        assert_eq!(found.first().map(|f| f.1), Some(offset_of(&src, at, 0)), "{body}");
+    }
+    for body in ["x = Bar(1)(a:=2)", "x = Bar(1)()", "x = o.Foo(1)(AddressOf Bar)", "x = Bar(, 2)(3)", "x = Bar(ByVal 1)"] {
+        let (_, found) = in_sub(body);
+        assert_eq!(found, vec![], "{body}");
+    }
+}
