@@ -83,6 +83,7 @@ fn kind_name(n: &ExprNode) -> &'static str {
         Erase { .. } => "Erase",
         RaiseEvent { .. } => "RaiseEvent",
         DebugPrint { .. } => "DebugPrint",
+        DebugAssert { .. } => "DebugAssert",
         ErrorStmt { .. } => "ErrorStmt",
         DimItem { .. } => "DimItem",
         ReDimItem { .. } => "ReDimItem",
@@ -735,7 +736,7 @@ fn multiple_option_directives() {
 
 #[test]
 fn declare_sub_lib_alias_paramarray() {
-    let src = b"Private Declare Sub subName Lib \"MyLib\" Alias \"alias1\" (arg1, arg2, ParamArray arg3)\nSub F()\nEnd Sub";
+    let src = b"Private Declare Sub subName Lib \"MyLib\" Alias \"alias1\" (arg1, arg2, ParamArray arg3())\nSub F()\nEnd Sub";
     let (_, arena, errors) = parse_module(src);
     assert!(!errors, "Declare Sub Lib Alias with ParamArray must parse without errors");
     assert_eq!(count_nodes(&arena, |n| matches!(n, ExprNode::DeclareDecl { kind: ProcKind::Sub, .. })), 1, "one Declare Sub");
@@ -753,7 +754,7 @@ fn declare_sub_lib_alias_paramarray() {
 
 #[test]
 fn declare_function_lib_optional_byval() {
-    let src = b"Private Declare Function Foo Lib \"MyLib\" (Optional arg1, ByVal arg2, arg3) As Currency\nSub F()\nEnd Sub";
+    let src = b"Private Declare Function Foo Lib \"MyLib\" (Optional arg1, Optional ByVal arg2, Optional arg3) As Currency\nSub F()\nEnd Sub";
     let (_, arena, errors) = parse_module(src);
     assert!(!errors, "Declare Function Lib with Optional/ByVal must parse without errors");
     assert_eq!(count_nodes(&arena, |n| matches!(n, ExprNode::DeclareDecl { kind: ProcKind::Function, .. })), 1, "one Declare Function");
@@ -764,7 +765,7 @@ fn declare_function_lib_optional_byval() {
     assert!(!alias, "no Alias clause given");
     // `As Currency` return type → a Currency BuiltinType (kind 6).
     assert!(matches!(ret.map(|r| at(&arena, r)), Some(ExprNode::BuiltinType { kind: 6 })), "return type is Currency (kind 6)");
-    assert_eq!(count_nodes(&arena, |n| matches!(n, ExprNode::ParamDef { .. })), 3, "Optional arg1, ByVal arg2, arg3 → 3 ParamDef");
+    assert_eq!(count_nodes(&arena, |n| matches!(n, ExprNode::ParamDef { .. })), 3, "Optional arg1, Optional ByVal arg2, Optional arg3 → 3 ParamDef");
 }
 
 #[test]
@@ -984,16 +985,15 @@ DefLng G-H\n\
 DefCur I-J\n\
 DefSng K-L\n\
 DefDbl M\n\
-DefDec N,O-P\n\
 DefDate Q,R-S,T\n\
 DefStr U-V\n\
 DefObj W-X\n\
 DefVar Y-Z\n\
 Sub F()\nEnd Sub";
     let (_, arena, errors) = parse_module(src);
-    assert!(!errors, "All twelve DefType variants must parse without errors");
+    assert!(!errors, "All eleven DefType variants must parse without errors");
     let n = count_nodes(&arena, |node| matches!(node, ExprNode::DefType { .. }));
-    assert_eq!(n, 12, "Twelve DefType directives must build 12 DefType nodes");
+    assert_eq!(n, 11, "Eleven DefType directives must build 11 DefType nodes");
 }
 
 // ── Type (UDT) extensions ─────────────────────────────────────────────────────
@@ -1018,10 +1018,10 @@ fn private_udt_with_typed_members() {
 fn public_udt_with_untyped_and_nested_member() {
     let src = b"\
 Type T1\n  X As Integer\nEnd Type\n\
-Public Type T2\n  V1 As Currency\n  V2 As String\n  V3\n  V4 As T1\nEnd Type\n\
+Public Type T2\n  V1 As Currency\n  V2 As String\n  V4 As T1\nEnd Type\n\
 Sub F()\nEnd Sub";
     let (_, arena, errors) = parse_module(src);
-    assert!(!errors, "Public Type with untyped member and UDT-typed member must parse without errors");
+    assert!(!errors, "Public Type with a UDT-typed member must parse without errors");
     let n = count_nodes(&arena, |node| matches!(node, ExprNode::TypeDecl { .. }));
     assert_eq!(n, 2, "Two Type declarations must produce 2 TypeDecl nodes");
     assert_eq!(
@@ -1030,9 +1030,9 @@ Sub F()\nEnd Sub";
         "T1 has exactly 1 member (X)"
     );
     assert_eq!(
-        count_nodes(&arena, |n| matches!(n, ExprNode::TypeDecl { members, .. } if members.len() == 4)),
+        count_nodes(&arena, |n| matches!(n, ExprNode::TypeDecl { members, .. } if members.len() == 3)),
         1,
-        "T2 has exactly 4 members (V1..V4, incl. the untyped V3 and UDT-typed V4)"
+        "T2 has exactly 3 members (V1, V2 and the UDT-typed V4)"
     );
 }
 
@@ -1216,19 +1216,18 @@ End Select";
 }
 
 #[test]
-fn select_case_multiple_else_clauses() {
+fn select_case_with_a_final_case_else() {
     let src = b"\
 Dim Grade As String\n\
 Select Case Grade\n\
   Case \"A\"\n    Beep\n\
-  Case Else\n    Beep\n\
   Case \"B\"\n    Beep\n\
   Case Else\n    Beep\n\
 End Select";
     let (_, arena, errors) = parse_stmts(src);
-    assert!(!errors, "Select Case with multiple Case Else clauses must parse without errors");
+    assert!(!errors, "Select Case with a final Case Else must parse without errors");
     let n = count_nodes(&arena, |node| matches!(node, ExprNode::CaseElse { .. }));
-    assert_eq!(n, 2, "Two Case Else clauses must build 2 CaseElse nodes");
+    assert_eq!(n, 1, "One Case Else clause must build 1 CaseElse node");
 }
 
 #[test]

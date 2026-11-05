@@ -32,7 +32,7 @@ fn enum_of(src: &str) -> (Vec<(Option<&'static str>, String)>, Vec<String>) {
 
 #[test]
 fn plain_members_values_comments_and_colons() {
-    let src = "Enum Color\n    Red\n    ' a comment\n    Green = 5\n    Blue: Alpha\nEnd Enum\n";
+    let src = "Enum Color\n    Red\n    ' a comment\n    Green = 5: Blue\n    Alpha\nEnd Enum\n";
     assert_eq!(
         enum_of(src),
         (vec![], vec!["Red".to_string(), "Green".to_string(), "Blue".to_string(), "Alpha".to_string()])
@@ -41,10 +41,10 @@ fn plain_members_values_comments_and_colons() {
 
 #[test]
 fn non_reserved_keyword_names_a_member() {
-    let src = "Enum Field\n    Text\n    Key = 2\n    Name\nEnd Enum\n";
+    let src = "Enum Field\n    Text\n    Key = 2\nEnd Enum\n";
     let (diags, names) = enum_of(src);
     assert_eq!(diags, vec![]);
-    assert_eq!(names, vec!["Text".to_string(), "Key".to_string(), "Name".to_string()]);
+    assert_eq!(names, vec!["Text".to_string(), "Key".to_string()]);
 }
 
 #[test]

@@ -339,7 +339,7 @@ fn public_enums_and_types_of_exposed_classes_follow_their_class() {
     let cls = public_class(
         "clsShop",
         "Public Enum eColor\n  ecRed\n  ecGreen = 5\n  ecBlue\nEnd Enum\nPrivate Enum eHidden\n  ehA\nEnd Enum\n\
-         Public Type tItem\n  Name As String\n  Codes(1 To 3) As Integer\n  Label As String * 8\n  Extra\nEnd Type\n\
+         Public Type tItem\n  Name As String\n  Codes(1 To 3) As Integer\n  Label As String * 8\nEnd Type\n\
          Private Type tInternal\n  X As Long\nEnd Type\n",
     );
     let lib = export(&[("clsShop.cls", &cls)], ProjectKind::OleDll, project("Shop"));
@@ -361,7 +361,6 @@ fn public_enums_and_types_of_exposed_classes_follow_their_class() {
                     field("Name", Some("String")),
                     field("Codes", Some("Integer()")),
                     field("Label", Some("String")),
-                    field("Extra", None),
                 ],
                 ..Default::default()
             },

@@ -18,13 +18,13 @@ fn at(src: &str, ctx: &str, member: &str) -> u32 {
 
 #[test]
 fn module_and_local_constants_cannot_be_assigned() {
-    let src = "Const Limit = 5\nSub Run()\n    Const Local = 1\n    Limit = 6\n    Local = 2\nEnd Sub\n";
+    let src = "Const Limit = 5\nSub Run()\n    Const Fixed = 1\n    Limit = 6\n    Fixed = 2\nEnd Sub\n";
     let s = session(src);
     assert_eq!(
         codes(&s),
         vec![
             (ASSIGNMENT_TO_CONSTANT, at(src, "Limit = 6", "Limit"), 5),
-            (ASSIGNMENT_TO_CONSTANT, at(src, "Local = 2", "Local"), 5),
+            (ASSIGNMENT_TO_CONSTANT, at(src, "Fixed = 2", "Fixed"), 5),
         ]
     );
     assert_eq!(s.diagnostics(0)[0].message().as_deref(), Some("Assignment to constant not permitted"));

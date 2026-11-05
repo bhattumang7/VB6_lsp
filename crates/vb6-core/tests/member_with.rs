@@ -81,13 +81,6 @@ fn leading_dot_outside_with_is_unresolved() {
 }
 
 #[test]
-fn parenthesised_new_takes_a_member() {
-    let main = "Sub Run()\n    (New clsTrip).Save\nEnd Sub\n";
-    let s = session(&[("clsTrip.cls", CLS_TRIP), ("modMain.bas", main)]);
-    assert_eq!(s.declaration_at(1, at(main, ").Save", "Save")), Some(proc(0, 0)));
-}
-
-#[test]
 fn with_bang_member_is_late_bound() {
     let main = "Sub Run()\n    Dim oTrip As clsTrip\n    With oTrip\n        x = !Key\n    End With\nEnd Sub\n";
     let s = session(&[("clsTrip.cls", CLS_TRIP), ("modMain.bas", main)]);

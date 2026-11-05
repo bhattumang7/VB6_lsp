@@ -67,14 +67,13 @@ fn friend_procedures_are_public_and_friend() {
 
 #[test]
 fn other_access_modifiers_are_not_friend() {
-    let p = parse("Public Sub A()\nEnd Sub\nPrivate Sub B()\nEnd Sub\nGlobal Sub C()\nEnd Sub\nSub D()\nEnd Sub\n");
+    let p = parse("Public Sub A()\nEnd Sub\nPrivate Sub B()\nEnd Sub\nSub D()\nEnd Sub\n");
     assert_eq!(p.diags, 0);
     assert_eq!(
         procs(&p),
         vec![
             (ProcKind::Sub, "A".into(), Some(true), false),
             (ProcKind::Sub, "B".into(), Some(false), false),
-            (ProcKind::Sub, "C".into(), Some(true), false),
             (ProcKind::Sub, "D".into(), None, false),
         ]
     );

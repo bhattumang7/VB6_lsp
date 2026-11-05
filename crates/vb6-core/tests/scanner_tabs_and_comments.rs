@@ -112,7 +112,7 @@ fn rem_comment_continues_too() {
     let src = "Rem a _\n b\nnTotal = 1\n";
     assert_eq!(
         tokens(src),
-        vec![tok("Apos", "Rem a _\n b"), tok("Eol", ""), tok("Ident", "nTotal"), tok("Eq", "="),
+        vec![tok("Rem", "Rem a _\n b"), tok("Eol", ""), tok("Ident", "nTotal"), tok("Eq", "="),
              tok("IntLit", "1"), tok("Eol", "")]
     );
 }
@@ -143,7 +143,7 @@ fn bare_underscore_comment_continues() {
 }
 
 #[test]
-fn comment_continuation_at_end_of_file_stops_there() {
+fn a_last_line_continued_into_the_end_of_the_text_is_not_read() {
     let src = "' a _";
-    assert_eq!(tokens(src), vec![tok("Apos", "' a _")]);
+    assert_eq!(tokens(src), vec![]);
 }

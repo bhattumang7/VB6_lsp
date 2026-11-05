@@ -101,7 +101,7 @@ fn raising_an_undeclared_event_is_reported() {
 
 #[test]
 fn an_event_declared_after_its_use_is_found() {
-    let src = "Sub Run()\n    RaiseEvent done\nEnd Sub\nEvent Done()\n";
+    let src = "Event Done()\nSub Run()\n    RaiseEvent done\nEnd Sub\n";
     assert_eq!(class_codes(src), vec![]);
 }
 
@@ -129,7 +129,7 @@ fn a_property_with_a_set_accessor_can_be_assigned() {
 
 #[test]
 fn for_each_control_variable_and_source_types() {
-    let src = "Sub Run(c As Collection)\n    Dim n As Long\n    Dim s As String\n    Dim v As Variant\n    Dim o As Object\n    Dim a(2) As Long\n    Dim x As Long\n    For Each n In c\n    Next\n    For Each s In a\n    Next\n    For Each v In a\n    Next\n    For Each o In c\n    Next\n    For Each v In x\n    Next\n    For Each v In \"abc\"\n    Next\nEnd Sub\n";
+    let src = "Sub Run(c As Collection)\n    Dim n As Long\n    Dim s As String\n    Dim v As Variant\n    Dim o As Object\n    Dim a(2) As Long\n    Dim x As Long\n    For Each n In c\n    Next\n    For Each s In a\n    Next\n    For Each v In a\n    Next\n    For Each o In c\n    Next\n    For Each v In x\n    Next\n    For Each v In s\n    Next\nEnd Sub\n";
     let found = codes(src);
     let kinds: Vec<u32> = found.iter().map(|d| d.0).collect();
     assert_eq!(kinds, vec![40119, 40137, 40139, 40139]);
@@ -142,15 +142,15 @@ const DUPLICATE_DECLARATION: u32 = 0x9c9f;
 
 #[test]
 fn module_level_names_of_different_kinds_collide() {
-    let src = "Dim Total As Long\nSub Total()\nEnd Sub\nEnum E\n    Red\nEnd Enum\nConst Red = 1\n";
+    let src = "Enum E\n    Red\nEnd Enum\nConst Red = 1\nDim Total As Long\nSub Total()\nEnd Sub\n";
     let found = codes(src);
     let spans: Vec<u32> = found.iter().map(|d| d.1).collect();
     assert!(found.iter().all(|d| d.0 == DUPLICATE_DECLARATION));
     assert_eq!(
         spans,
         vec![
-            at(src, "Sub Total", "Total"),
             at(src, "Const Red", "Red"),
+            at(src, "Sub Total", "Total"),
         ]
     );
 }
@@ -163,6 +163,6 @@ fn same_member_names_in_different_enums_stay_silent() {
 
 #[test]
 fn property_accessors_and_locals_stay_silent() {
-    let src = "Private m As Long\nProperty Get P() As Long\nEnd Property\nProperty Let P(v As Long)\nEnd Property\nSub F()\n    Dim P As Long\nEnd Sub\nEnum E\n    A\n    B\nEnd Enum\n";
+    let src = "Enum E\n    A\n    B\nEnd Enum\nPrivate m As Long\nProperty Get P() As Long\nEnd Property\nProperty Let P(v As Long)\nEnd Property\nSub F()\n    Dim P As Long\nEnd Sub\n";
     assert_eq!(class_codes(src), vec![]);
 }

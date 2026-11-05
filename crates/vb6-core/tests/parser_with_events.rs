@@ -153,10 +153,10 @@ fn with_events_inside_a_property_and_a_function_is_rejected() {
 }
 
 #[test]
-fn with_events_after_a_procedure_is_accepted_again() {
+fn with_events_after_a_procedure_is_rejected_like_any_declaration() {
     let src = "Sub Go()\nEnd Sub\nPrivate WithEvents m As Clock\n";
     let p = parse(src, ModuleKind::Class);
-    assert_eq!(p.diags, vec![]);
+    assert_eq!(p.diags, vec![(0x9c91, src.find("Private").unwrap() as u32, 7)]);
 }
 
 #[test]

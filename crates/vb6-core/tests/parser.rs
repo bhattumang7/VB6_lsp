@@ -453,7 +453,8 @@ fn erase_accepts() {
 
 #[test]
 fn raise_event_accepts() {
-    let (_, arena, errors) = parse_stmts(b"RaiseEvent MyEvent(x, y)");
+    // RaiseEvent is a statement of class and form modules only.
+    let (_, arena, errors) = parse_class_module(b"Event MyEvent(a, b)\nSub Test()\nRaiseEvent MyEvent(x, y)\nEnd Sub");
     assert!(!errors);
     let r = find_node(&arena, |n| matches!(n, ExprNode::RaiseEvent { .. }))
         .expect("must build RaiseEvent");

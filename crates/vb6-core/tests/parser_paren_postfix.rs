@@ -1,10 +1,28 @@
-//! A parenthesised expression takes member access and the calls that follow it
-//! like any object value: `(New Foo).Bar`, `(o).M(1)`, `(a)!Key`. A group
-//! that is not followed by `.` or `!` is unchanged.
+//! A parenthesised expression is a value on its own: a member access or bang after the
+//! closing bracket (`(New Foo).Bar`, `(o).M(1)`, `(a)!Key`) is a syntax error, and no
+//! statement starts with a group.
 
 use vb6_core::frontend::ast::{ExprArena, ExprNode, NodeId};
 use vb6_core::frontend::parser::{ModuleKind, Parser};
 use vb6_core::frontend::scanner::ScannerContext;
+
+/// The first diagnostic as (code, start, len), and the body statements of `Sub T` rendered.
+fn body_with_first_error(stmts_src: &str) -> (Option<(u32, u32, u32)>, Vec<String>) {
+    let src = format!("Sub T()
+{stmts_src}
+End Sub
+");
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), ModuleKind::Standard);
+    let nodes = parser.parse_module(&mut arena);
+    let first = parser.diagnostics.items().first().map(|d| (d.code, d.span.start, d.span.len));
+    drop(parser);
+    let ExprNode::ProcDecl { body, .. } = arena.get(nodes[0]) else { panic!("expected ProcDecl") };
+    let ExprNode::Block { stmts } = arena.get(*body) else { panic!("expected Block") };
+    (first, stmts.iter().map(|s| render(&ctx, &arena, *s)).collect())
+}
 
 /// (diagnostics, the body statements of `Sub T` rendered).
 fn body(stmts_src: &str) -> (usize, Vec<String>) {
@@ -53,61 +71,39 @@ fn render(ctx: &ScannerContext, arena: &ExprArena, id: NodeId) -> String {
 }
 
 #[test]
-fn new_in_parentheses_takes_a_member_statement() {
-    assert_eq!(body("(New clsTrip).Save"), (0, vec!["(. (paren (new clsTrip)) Save)".to_string()]));
+fn a_group_cannot_take_a_member() {
+    // (statement, text whose offset within the statement is where the error is reported)
+    for (stmt, at) in [
+        ("x = (o).M(1)", ".M"),
+        ("x = (o).Child.Name", ".Child"),
+        ("x = (a)!Key", "!Key"),
+        ("x = (New clsTrip).Save", ".Save"),
+        ("x = (New Proj.clsTrip).Save", ".Save"),
+        ("Set o = (New clsTrip).Child", ".Child"),
+    ] {
+        let (found, rendered) = body_with_first_error(stmt);
+        let src = format!("Sub T()\n{stmt}\nEnd Sub\n");
+        let want = src.find(at).unwrap() as u32;
+        assert_eq!(found.map(|f| f.1), Some(want), "{stmt}");
+        assert_eq!(rendered.len(), 1, "{stmt}");
+    }
 }
 
 #[test]
-fn new_in_parentheses_takes_a_member_call_with_arguments() {
-    assert_eq!(
-        body("(New clsTrip).Save 1, \"a\""),
-        (0, vec!["(stmt (. (paren (new clsTrip)) Save) [Int(1) Str(\"a\")])".to_string()])
-    );
+fn a_group_keeps_its_value_when_a_member_follows() {
+    assert_eq!(body("x = (o).M(1)"), (1, vec!["(= x (paren o))".to_string()]));
+    assert_eq!(body("x = (a)!Key"), (1, vec!["(= x (paren a))".to_string()]));
+    assert_eq!(body("x = (New clsTrip).Save"), (1, vec!["(= x (paren (new clsTrip)))".to_string()]));
+    assert_eq!(body("Set o = (New clsTrip).Child"), (1, vec!["(set o (paren (new clsTrip)))".to_string()]));
 }
 
 #[test]
-fn new_in_parentheses_takes_a_member_in_an_expression() {
-    assert_eq!(
-        body("x = (New clsTrip).Save"),
-        (0, vec!["(= x (. (paren (new clsTrip)) Save))".to_string()])
-    );
-}
-
-#[test]
-fn qualified_new_in_parentheses() {
-    assert_eq!(
-        body("x = (New Proj.clsTrip).Save"),
-        (0, vec!["(= x (. (paren (new Proj.clsTrip)) Save))".to_string()])
-    );
-}
-
-#[test]
-fn group_member_followed_by_a_call() {
-    assert_eq!(
-        body("x = (o).M(1)"),
-        (0, vec!["(= x (call (. (paren o) M) [Int(1)]))".to_string()])
-    );
-}
-
-#[test]
-fn group_member_chain() {
-    assert_eq!(
-        body("x = (o).Child.Name"),
-        (0, vec!["(= x (. (. (paren o) Child) Name))".to_string()])
-    );
-}
-
-#[test]
-fn group_bang_member() {
-    assert_eq!(body("x = (a)!Key"), (0, vec!["(= x (! (paren a) Key))".to_string()]));
-}
-
-#[test]
-fn set_target_value_takes_a_member() {
-    assert_eq!(
-        body("Set o = (New clsTrip).Child"),
-        (0, vec!["(set o (. (paren (new clsTrip)) Child))".to_string()])
-    );
+fn a_statement_cannot_start_with_a_group() {
+    for stmt in ["(New clsTrip).Save", "(New clsTrip).Save 1, \"a\""] {
+        let (found, rendered) = body_with_first_error(stmt);
+        assert_eq!(found.map(|f| f.1), Some("Sub T()\n".len() as u32), "{stmt}");
+        assert_eq!(rendered, Vec::<String>::new(), "{stmt}");
+    }
 }
 
 #[test]
