@@ -1,0 +1,51 @@
+# template	word	class	message
+p	Mid(s, 1) = "a"	accepted	
+p	Mid(s, 1, 2) = "a"	accepted	
+p	Mid$(s, 1) = "a"	accepted	
+p	MidB(s, 1, 2) = "a"	accepted	
+p	MidB$(s, 1) = "a"	accepted	
+p	Mid(s) = "a"	syntax	Syntax error
+p	Mid(s, 1, 2, 3) = "a"	syntax	Syntax error
+p	Mid s, 1 = "a"	syntax	Syntax error
+p	Mid(s, 1)	syntax	Syntax error
+p	Mid(s, 1) "a"	syntax	Syntax error
+p	Mid (s, 1) = "a"	accepted	
+p	Mid(s, 1, ) = "a"	syntax	Syntax error
+p	Mid(, 1) = "a"	syntax	Syntax error
+p	Mid(s,, 2) = "a"	syntax	Syntax error
+p	Mid(s, 1, 2) += 1	syntax	Syntax error
+p	Mid(o.p, 1) = "a"	semantic	Variable required - can't assign to this expression
+p	Mid(a(1), 1) = "a"	accepted	
+p	Mid(s, 1) =	syntax	Syntax error
+p	Mid = 1	semantic	Argument not optional
+p	Mid.x = 1	semantic	Argument not optional
+p	Mid(s, 1).x = 1	syntax	Syntax error
+p	x = Mid(s, 1)	accepted	
+p	RSet s = "a"	accepted	
+p	LSet s = "a"	accepted	
+p	RSet s	syntax	Syntax error
+p	RSet = 1	syntax	Syntax error
+p	LSet o.p = "a"	semantic	Variable required - can't assign to this expression
+p	LSet a(1) = "a"	accepted	
+p	RSet s "a"	syntax	Syntax error
+p	RSet (s) = "a"	syntax	Syntax error
+p	RSet 1 = 2	syntax	Syntax error
+p	RSet s =	syntax	Syntax error
+p	Input #1, s	accepted	
+p	Input 1, s	syntax	Syntax error
+p	Input #1	syntax	Syntax error
+p	Input #1, s, t	accepted	
+p	Input #1,	syntax	Syntax error
+p	Input #1 s	syntax	Syntax error
+p	Input #, s	syntax	Syntax error
+p	Name "a" As "b"	accepted	
+p	Name "a" "b"	syntax	Syntax error
+p	Name "a" As	syntax	Syntax error
+p	Name As "b"	syntax	Syntax error
+p	Name	syntax	Syntax error
+p	Name = 1	accepted	
+p	Name "a" As "b", 1	syntax	Syntax error
+p	Name x As y	accepted	
+p	Name(1) = 2	syntax	Syntax error
+p	Name.a = 1	accepted	
+p	Name a, b	syntax	Syntax error

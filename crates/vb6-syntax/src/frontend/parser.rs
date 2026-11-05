@@ -2333,11 +2333,15 @@ impl<'src> Parser<'src> {
         self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
         let args = self.parse_arg_list(arena);
         // `Mid(target, start [, length])`
-        let arg_count = match arena.get(args) {
-            ExprNode::ArgList { args } => args.len(),
-            _ => 0,
+        let (arg_count, any_missing) = match arena.get(args) {
+            ExprNode::ArgList { args } => (
+                args.len(),
+                args.iter().any(|a| matches!(arena.get(*a), ExprNode::MissingArg)),
+            ),
+            _ => (0, false),
         };
-        if !(2..=3).contains(&arg_count) {
+        // No argument of the assignment may be left out.
+        if !(2..=3).contains(&arg_count) || any_missing {
             let span = self.current_span();
             self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
         }

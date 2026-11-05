@@ -1,0 +1,5 @@
+# x
+=== p bas
+Sub P(s, o As Object, a() As String, x, y)
+{k}
+End Sub

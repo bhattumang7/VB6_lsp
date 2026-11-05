@@ -129,3 +129,14 @@ fn built_in_function_shapes_hold_inside_the_arguments_of_a_call_statement() {
         assert_eq!(parse(&in_sub(stmt)).found, vec![], "{stmt}");
     }
 }
+
+#[test]
+fn a_mid_assignment_leaves_no_argument_out() {
+    for stmt in ["Mid(, 1) = \"a\"", "Mid(a,, 2) = \"a\"", "Mid(a, 1, ) = \"a\"", "MidB$(, 1, 2) = \"a\""] {
+        let src = in_sub(stmt);
+        assert!(!parse(&src).found.is_empty(), "{stmt}");
+    }
+    for stmt in ["Mid(a, 1) = \"a\"", "Mid$(a, 1, 2) = \"a\"", "MidB(a, 1) = \"a\""] {
+        assert_eq!(parse(&in_sub(stmt)).found, vec![], "{stmt}");
+    }
+}

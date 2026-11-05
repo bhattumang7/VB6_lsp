@@ -1,0 +1,50 @@
+Mid(s, 1) = "a"
+Mid(s, 1, 2) = "a"
+Mid$(s, 1) = "a"
+MidB(s, 1, 2) = "a"
+MidB$(s, 1) = "a"
+Mid(s) = "a"
+Mid(s, 1, 2, 3) = "a"
+Mid s, 1 = "a"
+Mid(s, 1)
+Mid(s, 1) "a"
+Mid (s, 1) = "a"
+Mid(s, 1, ) = "a"
+Mid(, 1) = "a"
+Mid(s,, 2) = "a"
+Mid(s, 1, 2) += 1
+Mid(o.p, 1) = "a"
+Mid(a(1), 1) = "a"
+Mid(s, 1) = 
+Mid = 1
+Mid.x = 1
+Mid(s, 1).x = 1
+x = Mid(s, 1)
+RSet s = "a"
+LSet s = "a"
+RSet s
+RSet = 1
+LSet o.p = "a"
+LSet a(1) = "a"
+RSet s "a"
+RSet (s) = "a"
+RSet 1 = 2
+RSet s = 
+Input #1, s
+Input 1, s
+Input #1
+Input #1, s, t
+Input #1,
+Input #1 s
+Input #, s
+Name "a" As "b"
+Name "a" "b"
+Name "a" As
+Name As "b"
+Name
+Name = 1
+Name "a" As "b", 1
+Name x As y
+Name(1) = 2
+Name.a = 1
+Name a, b
