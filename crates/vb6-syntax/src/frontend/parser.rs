@@ -4438,6 +4438,7 @@ impl<'src> Parser<'src> {
     /// (access: none=0, Read=1, Write=2, ReadWrite=3; lock: none=0,
     /// `Lock Read Write`=1, `Lock Write`=2, `Lock Read`=3, `Shared`=4).
     fn parse_file_open(&mut self, arena: &mut ExprArena) -> NodeId {
+        let open_span = self.current_span();
         self.advance(); // Open
         let path = self.parse_expr(arena, 0);
 
@@ -4511,6 +4512,12 @@ impl<'src> Parser<'src> {
         if self.eat(TokenKind::Kw(Kw::Len)) {
             self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
             args.push(self.parse_expr(arena, 0)); // `Len = <expr>` is a real use site
+        }
+        // The clauses of an `Open` of a path expression cost 8 more than an assignment of it.
+        let channel_is_simple =
+            matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
+        if channel_is_simple && args.len() == 1 && self.output_list_too_complex(arena, &args, 8) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, open_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt {

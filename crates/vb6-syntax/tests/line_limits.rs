@@ -288,3 +288,19 @@ fn is_costs_what_an_operator_does() {
     let found = parse(&chain("(o Is o)", "+", 1093, 80)).found;
     assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX));
 }
+
+#[test]
+fn open_costs_eight_bytes_more_than_assigning_its_path() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["s"; n];
+        terms.chunks(per).map(|c| c.join(" & ")).collect::<Vec<_>>().join(" & _\n")
+    };
+    for clauses in [" For Output As #1", " For Input As #1", " For Binary As #1", " As #1", " For Output Access Write As #1"] {
+        for (per, fits) in [(150, 2546), (170, 2548), (200, 2549)] {
+            let src = |n| format!("Sub S()\nOpen {}{clauses}\nEnd Sub\n", expr(n, per));
+            assert_eq!(parse(&src(fits)).found, vec![], "{clauses} per {per}");
+            assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{clauses} per {per}");
+        }
+    }
+}
