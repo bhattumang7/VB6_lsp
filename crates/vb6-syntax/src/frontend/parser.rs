@@ -234,6 +234,8 @@ pub struct Parser<'src> {
     after_colon: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
+    /// The property procedures read so far, by property name.
+    property_sigs: Vec<(u32, PropertySig)>,
     /// True once a procedure has been read: no declaration may follow it.
     procedure_seen: bool,
     /// True while the parameter list of a `Property Let` or `Property Set` is being read.
@@ -325,6 +327,57 @@ enum ParamOwner {
     Event,
 }
 
+/// The type of a property's value or index, as far as the procedures of one property
+/// have to agree on it.
+#[derive(Clone, PartialEq)]
+enum PropType {
+    Variant,
+    Builtin(u8),
+    String,
+    Object,
+    User(u32),
+    Array,
+}
+
+/// What the procedures of one property have to agree on.
+#[derive(Clone)]
+struct PropertySig {
+    kind: ProcKind,
+    /// Name, pass-by-value, array and type of each index parameter.
+    index: Vec<(u32, bool, bool, PropType)>,
+    value: PropType,
+}
+
+impl PropertySig {
+    /// True when `self` and `other`, two procedures of one property, agree.
+    fn agrees_with(&self, other: &PropertySig) -> bool {
+        if self.index != other.index {
+            return false;
+        }
+        let (get, let_) = match (self.kind, other.kind) {
+            (ProcKind::PropGet, ProcKind::PropLet) => (self, other),
+            (ProcKind::PropLet, ProcKind::PropGet) => (other, self),
+            // A `Set` value is an object whatever the getter returns.
+            _ => return true,
+        };
+        get.value == let_.value
+            || (matches!(get.value, PropType::Object | PropType::User(_)) && let_.value == PropType::Variant)
+    }
+}
+
+fn prop_type(arena: &ExprArena, node: Option<NodeId>) -> PropType {
+    let Some(node) = node else { return PropType::Variant };
+    match arena.get(node) {
+        ExprNode::BuiltinType { kind: 12 } => PropType::Variant,
+        ExprNode::BuiltinType { kind: 9 } => PropType::Object,
+        ExprNode::BuiltinType { kind } => PropType::Builtin(*kind as u8),
+        ExprNode::StringType { .. } => PropType::String,
+        ExprNode::UserType { name, .. } => PropType::User(*name),
+        ExprNode::ArrayType { .. } => PropType::Array,
+        _ => PropType::Variant,
+    }
+}
+
 /// State of one open `#If … #End If` block.
 #[derive(Clone, Copy)]
 struct CcFrame {
@@ -366,6 +419,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             module_decl_seen: false,
+            property_sigs: Vec::new(),
             procedure_seen: false,
             class_exposed: false,
             value_owner_params: false,
@@ -4355,6 +4409,7 @@ impl<'src> Parser<'src> {
                 None
             }
         } else { None };
+        self.check_property_agreement(arena, kind, name_id, name.span, params, ret_type);
         let trailing_static = self.eat(TokenKind::Kw(Kw::Static));
         self.end_stmt();
         let body = self.parse_procedure_body(arena, kind);
@@ -4364,6 +4419,47 @@ impl<'src> Parser<'src> {
             self.decl_static.insert(id.0);
         }
         id
+    }
+
+    /// The procedures of one property must agree on its index parameters and value type.
+    fn check_property_agreement(
+        &mut self,
+        arena: &ExprArena,
+        kind: ProcKind,
+        name: u32,
+        span: Span,
+        params: Option<NodeId>,
+        ret_type: Option<NodeId>,
+    ) {
+        let list: Vec<NodeId> = match params.map(|p| arena.get(p)) {
+            Some(ExprNode::ArgList { args }) => args.clone(),
+            _ => Vec::new(),
+        };
+        let describe = |param: NodeId| match arena.get(param) {
+            ExprNode::ParamDef { flags, name, type_node, .. } => {
+                Some((*name, flags & 0x02 != 0, flags & 0x28 != 0, prop_type(arena, *type_node)))
+            }
+            _ => None,
+        };
+        let (index_params, value) = if kind == ProcKind::PropGet {
+            (&list[..], prop_type(arena, ret_type))
+        } else {
+            let Some((last, rest)) = list.split_last() else { return };
+            let value = match arena.get(*last) {
+                ExprNode::ParamDef { type_node, .. } => prop_type(arena, *type_node),
+                _ => return,
+            };
+            (rest, value)
+        };
+        let sig = PropertySig { kind, index: index_params.iter().filter_map(|&p| describe(p)).collect(), value };
+        let clash = self
+            .property_sigs
+            .iter()
+            .any(|(other_name, other)| *other_name == name && other.kind != kind && !other.agrees_with(&sig));
+        if clash {
+            self.diagnostics.push(ERR_PROPERTY_PROCEDURES_INCONSISTENT, span);
+        }
+        self.property_sigs.push((name, sig));
     }
 
     /// Parses an Event declaration.
