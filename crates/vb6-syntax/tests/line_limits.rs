@@ -444,3 +444,26 @@ fn randomize_redim_mid_and_put_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
     }
 }
+
+#[test]
+fn every_mid_spelling_and_put_or_get_with_a_record_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    for (before, after) in [
+        ("Mid(s, 1) = ", ""),
+        ("MidB(s, 1) = ", ""),
+        ("MidB$(s, 1) = ", ""),
+        ("Mid$(s, 1) = ", ""),
+        ("Put #1, ", ", y"),
+        ("Get #1, ", ", y"),
+    ] {
+        for (per, fits) in [(120, 2543), (165, 2547)] {
+            let src = |n| format!("Sub S()\n{before}{}{after}\nEnd Sub\n", expr(n, per));
+            assert_eq!(parse(&src(fits)).found, vec![], "{before:?} per {per}");
+            assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
+        }
+    }
+}

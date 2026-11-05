@@ -2666,8 +2666,9 @@ impl<'src> Parser<'src> {
         self.advance(); // )
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
-        // `Mid$(s, a [, n]) = v` costs its operands and nothing more than an assignment's store.
-        if dollar && !byte_oriented {
+        // `Mid(s, a [, n]) = v` costs its operands and nothing more than an assignment's store,
+        // in each of its four spellings.
+        {
             let parts = line_size::expression_part(arena, value).and_then(|value| {
                 let ExprNode::ArgList { args } = arena.get(args) else { return None };
                 args.iter().try_fold(value, |total, arg| Some(total + line_size::expression_part(arena, *arg)?))
@@ -4729,6 +4730,14 @@ impl<'src> Parser<'src> {
                     .map(|(channel, value)| cost::MISSING_RECORD + channel + value);
                 self.check_parts_size(parts, put_span);
             }
+        }
+        // With the record given, `Put` and `Get` cost the channel, the record and the value or
+        // variable, and nothing more than an assignment's store.
+        if let [record, value] = args.as_slice() {
+            let parts = [ch, *record, *value]
+                .iter()
+                .try_fold(0, |total, part| Some(total + line_size::expression_part(arena, *part)?));
+            self.check_parts_size(parts, put_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
