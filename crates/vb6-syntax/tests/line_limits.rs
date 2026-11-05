@@ -238,3 +238,25 @@ fn a_continuation_mark_past_the_cut_is_not_part_of_the_text() {
     let ok = format!("Sub S()\n{line}{pad} _\n + 1\nEnd Sub\n");
     assert_eq!(parse(&ok).found, vec![]);
 }
+
+#[test]
+fn wrapped_single_currency_and_date_literals_and_file_output_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    for (term, per, fits) in [("(1.5!)", 100, 1529), ("-1.5!", 100, 1529), ("(1.5@)", 100, 1093), ("(#1/1/2000#)", 60, 1091)] {
+        assert_eq!(parse(&chain(term, "+", fits, per)).found, vec![], "{term} x {fits}");
+        let found = parse(&chain(term, "+", fits + 1, per)).found;
+        assert_eq!(found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term} x {}", fits + 1);
+    }
+    // Print #n and Write #n of one expression cost 6 more than assigning it.
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    for head in ["Print #1, ", "Write #1, "] {
+        for (per, fits) in [(120, 2543), (150, 2547), (170, 2548)] {
+            let src = |n| format!("Sub S()\n{head}{}\nEnd Sub\n", expr(n, per));
+            assert_eq!(parse(&src(fits)).found, vec![], "{head} per {per}");
+            assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{head} per {per}");
+        }
+    }
+}

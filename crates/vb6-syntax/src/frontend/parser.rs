@@ -446,8 +446,6 @@ fn prop_type(arena: &ExprArena, node: Option<NodeId>) -> PropType {
 /// State of one open `#If … #End If` block.
 #[derive(Clone, Copy)]
 struct CcFrame {
-    /// Where the `#If` is.
-    open: Span,
     /// An `#Else` has been seen: only `#End If` may follow.
     else_seen: bool,
     /// The enclosing region is active.
@@ -3829,7 +3827,7 @@ impl<'src> Parser<'src> {
                 if self.cc_stack.len() >= MAX_CC_NESTING {
                     self.diagnostics.push(ERR_OUT_OF_MEMORY, span);
                 }
-                self.cc_stack.push(CcFrame { open: span, else_seen: false, parent_active, active: taken, taken });
+                self.cc_stack.push(CcFrame { else_seen: false, parent_active, active: taken, taken });
             }
             Kw::CcElseIf => {
                 let Some(frame) = self.cc_stack.last().copied() else {
@@ -4525,8 +4523,19 @@ impl<'src> Parser<'src> {
         self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
+        let first_span = self.current_span();
         if self.expect_comma() {
             self.parse_print_method_items(arena, &mut args);
+        }
+        // `Print #n, expr` and `Write #n, expr` cost 6 more than an assignment of the expression:
+        // the channel and the statement's own code.
+        let channel_is_simple =
+            matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
+        if channel_is_simple && args.len() == 1 && self.peek().kind == TokenKind::Eol && !self.colon_on_line {
+            let lines = self.line_continuations as usize + 1;
+            if expression_chain_size(arena, args[0], lines).is_some_and(|size| size + 6 > MAX_LINE_CODE_SIZE) {
+                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, first_span);
+            }
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
@@ -6277,9 +6286,7 @@ fn assignment_chain_size(arena: &ExprArena, target: NodeId, value: NodeId, physi
 /// `Select Case` lines, whose own code costs what an assignment's store does.
 fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize) -> Option<usize> {
     let mut total = 6 + 4 * physical_lines;
-    // A sign, `Not` or bracket pair costs 2 more than what it holds, measured on names and on
-    // Integer, Long and Double literals.
-    let (mut wrapped, mut unmeasured_literal) = (false, false);
+    // A sign, `Not` or bracket pair costs 2 more than what it holds.
     let mut stack = vec![value];
     while let Some(id) = stack.pop() {
         match arena.get(id) {
@@ -6292,12 +6299,10 @@ fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize
                 stack.push(*rhs);
             }
             ExprNode::UnOp { op: UnOpKind::Neg | UnOpKind::Not, operand } => {
-                wrapped = true;
                 total += 2;
                 stack.push(*operand);
             }
             ExprNode::Paren { inner } => {
-                wrapped = true;
                 total += 2;
                 stack.push(*inner);
             }
@@ -6306,22 +6311,13 @@ fn expression_chain_size(arena: &ExprArena, value: NodeId, physical_lines: usize
                 AstLit::Int(_) => total += 4,
                 AstLit::Long(_) => total += 6,
                 AstLit::Double(_) => total += 10,
-                AstLit::Single(_) => {
-                    unmeasured_literal = true;
-                    total += 6;
-                }
-                AstLit::Currency(_) | AstLit::Date(_) => {
-                    unmeasured_literal = true;
-                    total += 10;
-                }
+                AstLit::Single(_) => total += 6,
+                AstLit::Currency(_) | AstLit::Date(_) => total += 10,
                 AstLit::Str(s) => total += 4 + s.chars().count().next_multiple_of(2),
                 _ => return None,
             },
             _ => return None,
         }
-    }
-    if wrapped && unmeasured_literal {
-        return None;
     }
     Some(total)
 }
