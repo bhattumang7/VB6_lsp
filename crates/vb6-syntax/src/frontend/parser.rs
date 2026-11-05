@@ -5302,8 +5302,21 @@ impl<'src> Parser<'src> {
     /// `TypeOf <expr> Is <type>`
     fn parse_typeof_expr(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume TypeOf
-        let expr = self.parse_primary(arena);
+        // The operand names something: a bracket, a literal or `Nothing` does not.
+        let expr = self.parse_target_expr(arena);
         self.expect(TokenKind::Kw(Kw::Is), ERR_EXPECTED_IS);
+        // The type is an object type: `Object` or a class name, never a built-in value type
+        // and never `New`.
+        if matches!(
+            self.peek().kind,
+            TokenKind::Kw(
+                Kw::New | Kw::Integer | Kw::Long | Kw::Single | Kw::Double | Kw::Currency | Kw::Date
+                    | Kw::Byte | Kw::Boolean | Kw::Variant | Kw::String
+            )
+        ) {
+            let span = self.current_span();
+            self.report_expected(span, "identifier");
+        }
         let type_spec = self.parse_type_spec(arena, false);
         arena.alloc(ExprNode::TypeOf { expr, type_spec })
     }

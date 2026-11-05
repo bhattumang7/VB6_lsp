@@ -1,0 +1,5 @@
+# x
+=== q bas
+Sub P(x, y, o As Object, f)
+{k}
+End Sub
