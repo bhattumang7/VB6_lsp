@@ -211,3 +211,24 @@ fn a_boolean_joined_with_ampersand_takes_a_thirty_two_byte_temporary() {
     // Operands that are not Boolean are not converted that way.
     assert!(!boolean_concat("y", 2000));
 }
+
+fn variant_param_calls(param: &str, arg: &str, n: usize) -> bool {
+    let lines: Vec<String> = vec![format!("g({arg})"); n].chunks(80).map(|c| c.join(" + ")).collect();
+    let src = format!(
+        "Function g({param}) As Long\nEnd Function\nSub Main()\nDim x As Long, y As Long\nx = {}\nEnd Sub\n",
+        lines.join(" + _\n")
+    );
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    s.diagnostics(0).iter().any(|d| d.code == TOO_MANY_LOCALS)
+}
+
+#[test]
+fn an_integer_literal_passed_by_reference_to_a_variant_takes_a_thirty_two_byte_temporary() {
+    for param in ["Optional v As Variant", "v As Variant"] {
+        assert!(!variant_param_calls(param, "1", 1019), "{param}");
+        assert!(variant_param_calls(param, "1", 1020), "{param}");
+    }
+    // By value, or from a variable, no temporary is needed.
+    assert!(!variant_param_calls("ByVal v As Variant", "1", 1500));
+    assert!(!variant_param_calls("v As Variant", "y", 1500));
+}

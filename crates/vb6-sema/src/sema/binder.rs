@@ -1365,6 +1365,24 @@ impl<'a> Binder<'a> {
                     {
                         count += 1;
                     }
+                    // An Integer literal passed by reference to a Variant parameter is boxed in a
+                    // 32-byte temporary; passed by value, or as a variable, it needs none.
+                    if let ExprNode::CallStmt { callee: func, args } | ExprNode::Call { func, args } = self.arena.get(n) {
+                        if let (Some(NameResolution::Proc(callee)), ExprNode::ArgList { args }) =
+                            (self.resolutions.get(&func.0), self.arena.get(*args))
+                        {
+                            let params = &self.procs[*callee].params;
+                            for (param, arg) in params.iter().zip(args) {
+                                if param.vba_type == VbaType::Variant
+                                    && !param.flags.by_val
+                                    && !param.flags.param_array
+                                    && matches!(self.arena.get(*arg), ExprNode::Literal { lit: crate::frontend::ast::AstLit::Int(_) })
+                                {
+                                    booleans += 1;
+                                }
+                            }
+                        }
+                    }
                     // A `&` that joins a Boolean converts it to text in a 32-byte temporary.
                     if let ExprNode::BinOp { op: crate::frontend::ast::BinOpKind::Cat, lhs, rhs } = self.arena.get(n) {
                         let is_boolean = |mut operand: NodeId| {
