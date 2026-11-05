@@ -1,0 +1,43 @@
+Sub P() Static\nEnd Sub
+Static Sub P() Static\nEnd Sub
+Public Static Sub P() Static\nEnd Sub
+Sub P() Static Static\nEnd Sub
+Function P() As Long Static\nEnd Function
+Function P() Static As Long\nEnd Function
+Property Get P() As Long Static\nEnd Property
+Property Let P(v) Static\nEnd Property
+Static Property Get P() As Long Static\nEnd Property
+Private Static Sub P() Static\nEnd Sub
+Static Public Sub P()\nEnd Sub
+Static Private Function P() As Long Static\nEnd Function
+Sub P() As Long\nEnd Sub
+Sub P() As Long Static\nEnd Sub
+Function P() As Long As Long\nEnd Function
+Function P() As\nEnd Function
+Function P()As Long\nEnd Function
+Function P$() As Long\nEnd Function
+Function P$()\nEnd Function
+Function P%() Static\nEnd Function
+Sub P$()\nEnd Sub
+Sub P\nEnd Sub
+Sub P Static\nEnd Sub
+Function P As Long\nEnd Function
+Property Get P As Long\nEnd Property
+Property Get P() As Long()\nEnd Property
+Function P() As Long()\nEnd Function
+Function P() As String * 3\nEnd Function
+Function P() As New Foo\nEnd Function
+Property Get P() As New Foo\nEnd Property
+Sub P(): End Sub
+Sub P() : x = 1 : End Sub
+Sub P() Static: End Sub
+Function P() As Long: End Function
+Sub P() _\nStatic\nEnd Sub
+Sub P(x As Long = 1)\nEnd Sub
+Sub P(Optional x)\nEnd Sub
+Sub P(Optional x, y)\nEnd Sub
+Sub P(x,)\nEnd Sub
+Sub P(,x)\nEnd Sub
+Sub P(x y)\nEnd Sub
+Sub P (x)\nEnd Sub
+Sub P(x) (y)\nEnd Sub

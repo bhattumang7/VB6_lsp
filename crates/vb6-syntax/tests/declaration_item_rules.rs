@@ -89,3 +89,41 @@ fn a_constant_takes_a_built_in_type_only() {
         assert_eq!(parse(text).found, vec![], "{text}");
     }
 }
+
+#[test]
+fn a_function_or_getter_returns_neither_a_new_object_nor_a_fixed_string() {
+    for (text, at) in [
+        ("Function F() As New Foo\nEnd Function\n", "New"),
+        ("Property Get P() As New Foo\nEnd Property\n", "New"),
+        ("Declare Function f Lib \"k\" () As New Foo\n", "New"),
+    ] {
+        let found = parse(text).found;
+        assert_eq!(found[0], (EXPECTED, offset_of(text, at, 0), 3), "{text}");
+    }
+    for text in ["Function F() As String * 3\nEnd Function\n", "Property Get P() As String * 3\nEnd Property\n"] {
+        let found = parse(text).found;
+        assert_eq!(found[0].0, EXPECTED, "{text}");
+        assert_eq!(found[0].1, offset_of(text, "String", 0), "{text}");
+    }
+    for text in ["Function F() As String\nEnd Function\n", "Function F() As Long()\nEnd Function\n", "Function F() As Foo\nEnd Function\n"] {
+        assert_eq!(parse(text).found, vec![], "{text}");
+    }
+}
+
+#[test]
+fn static_is_given_once_on_a_procedure() {
+    for text in [
+        "Static Sub S() Static\nEnd Sub\n",
+        "Public Static Sub S() Static\nEnd Sub\n",
+        "Static Private Function F() As Long Static\nEnd Function\n",
+        "Static Property Get P() As Long Static\nEnd Property\n",
+    ] {
+        let found = parse(text).found;
+        assert_eq!(found.len(), 1, "{text}");
+        assert_eq!(found[0].0, SYNTAX_ERROR, "{text}");
+        assert_eq!(found[0].1, text.rfind("Static").unwrap() as u32, "{text}");
+    }
+    for text in ["Static Sub S()\nEnd Sub\n", "Sub S() Static\nEnd Sub\n", "Private Static Sub S()\nEnd Sub\n"] {
+        assert_eq!(parse(text).found, vec![], "{text}");
+    }
+}

@@ -236,6 +236,8 @@ pub struct Parser<'src> {
     after_colon: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
+    /// True while the header of a procedure written with a leading `Static` is read.
+    static_prefix: bool,
     /// The property procedures read so far, by property name.
     property_sigs: Vec<(u32, PropertySig)>,
     /// True once a procedure has been read: no declaration may follow it.
@@ -422,6 +424,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             module_decl_seen: false,
+            static_prefix: false,
             property_sigs: Vec::new(),
             procedure_seen: false,
             class_exposed: false,
@@ -4264,6 +4267,7 @@ impl<'src> Parser<'src> {
             self.skip_to_stmt_end();
             return arena.alloc(ExprNode::Block { stmts: vec![] });
         }
+        self.static_prefix = static_proc;
         let node = match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Sub)      => self.parse_proc_decl(arena, ProcKind::Sub),
             TokenKind::Kw(Kw::Function) => self.parse_proc_decl(arena, ProcKind::Function),
@@ -4291,6 +4295,7 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
         };
+        self.static_prefix = false;
         if let Some(is_public) = vis {
             self.mark_decl_visibility(arena, node, is_public);
         }
@@ -4365,7 +4370,7 @@ impl<'src> Parser<'src> {
         self.check_param_list(arena, params, ParamOwner::Procedure);
         // Return type.
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
-            let t = self.parse_type_spec(arena, true);
+            let t = self.parse_return_type(arena);
             if name.type_suffix != TypeSuffix::None {
                 self.diagnostics.push(ERR_UNEXPECTED_TOKEN, name.span);
             }
@@ -4378,7 +4383,12 @@ impl<'src> Parser<'src> {
                 None
             }
         } else { None };
+        let static_span = self.current_span();
         let trailing_static = self.eat(TokenKind::Kw(Kw::Static));
+        if trailing_static && self.static_prefix {
+            // `Static` is given once.
+            self.diagnostics.push(ERR_SYNTAX_ERROR, static_span);
+        }
         self.end_stmt();
         let body = self.parse_procedure_body(arena, kind);
         let id = arena.alloc(ExprNode::ProcDecl { kind, name: name_id, params, ret_type, body });
@@ -4489,7 +4499,7 @@ impl<'src> Parser<'src> {
             }
         }
         let ret_type = if kind == ProcKind::PropGet && self.eat(TokenKind::Kw(Kw::As)) {
-            Some(self.parse_type_spec(arena, true))
+            Some(self.parse_return_type(arena))
         } else if name.type_suffix != TypeSuffix::None {
             if kind == ProcKind::PropGet {
                 self.type_node_from_suffix(arena, name.type_suffix)
@@ -4499,7 +4509,12 @@ impl<'src> Parser<'src> {
             }
         } else { None };
         self.check_property_agreement(arena, kind, name_id, name.span, params, ret_type);
+        let static_span = self.current_span();
         let trailing_static = self.eat(TokenKind::Kw(Kw::Static));
+        if trailing_static && self.static_prefix {
+            // `Static` is given once.
+            self.diagnostics.push(ERR_SYNTAX_ERROR, static_span);
+        }
         self.end_stmt();
         let body = self.parse_procedure_body(arena, kind);
         let id = arena.alloc(ExprNode::ProcDecl { kind, name: name_id, params, ret_type, body });
@@ -4652,12 +4667,7 @@ impl<'src> Parser<'src> {
             self.reject_suffix_with_as(&name_tok, "end of statement");
         }
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
-            if self.peek().kind == TokenKind::Kw(Kw::New) {
-                // A return type is never a new object.
-                let span = self.current_span();
-                self.report_expected(span, "type name");
-            }
-            Some(self.parse_type_spec(arena, true))
+            Some(self.parse_return_type(arena))
         } else {
             None
         };
@@ -4896,6 +4906,21 @@ impl<'src> Parser<'src> {
         let id = arena.alloc(ExprNode::UserType { name: nid, child });
         self.set_span(id, name.span);
         id
+    }
+
+    /// The type after `As` in a function or property getter header: never a new object, and
+    /// never a fixed-length string.
+    fn parse_return_type(&mut self, arena: &mut ExprArena) -> NodeId {
+        if self.peek().kind == TokenKind::Kw(Kw::New) {
+            let span = self.current_span();
+            self.report_expected(span, "type name");
+        }
+        let type_span = self.current_span();
+        let t = self.parse_type_spec(arena, true);
+        if matches!(arena.get(t), ExprNode::StringType { fixed_len: Some(_) }) {
+            self.report_expected(type_span, "end of statement");
+        }
+        t
     }
 
     /// Parse a type specifier.  `allow_array_suffix` controls whether a trailing

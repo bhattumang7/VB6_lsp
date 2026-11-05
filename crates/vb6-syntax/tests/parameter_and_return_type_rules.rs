@@ -44,11 +44,11 @@ fn new_before_a_built_in_type_is_expected_type_name() {
 }
 
 #[test]
-fn new_before_a_class_name_is_clean_in_a_return_type() {
-    let p = parse("Function F() As New Foo
+fn new_in_a_return_type_is_expected_type_name_at_new() {
+    let src = "Function F() As New Foo
 End Function
-");
-    assert_eq!(p.found, vec![]);
+";
+    assert_eq!(parse(src).found, vec![(ERR_EXPECTED, offset_of(src, "New", 0), 3)]);
 }
 
 #[test]

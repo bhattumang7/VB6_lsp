@@ -1,0 +1,87 @@
+# template	word	class	message
+bas	Sub P() Static\nEnd Sub	accepted	
+bas	Static Sub P() Static\nEnd Sub	syntax	Syntax error
+bas	Public Static Sub P() Static\nEnd Sub	syntax	Syntax error
+bas	Sub P() Static Static\nEnd Sub	syntax	Expected: end of statement
+bas	Function P() As Long Static\nEnd Function	accepted	
+bas	Function P() Static As Long\nEnd Function	syntax	Expected: end of statement
+bas	Property Get P() As Long Static\nEnd Property	accepted	
+bas	Property Let P(v) Static\nEnd Property	accepted	
+bas	Static Property Get P() As Long Static\nEnd Property	syntax	Syntax error
+bas	Private Static Sub P() Static\nEnd Sub	syntax	Syntax error
+bas	Static Public Sub P()\nEnd Sub	accepted	
+bas	Static Private Function P() As Long Static\nEnd Function	syntax	Syntax error
+bas	Sub P() As Long\nEnd Sub	syntax	Expected: end of statement
+bas	Sub P() As Long Static\nEnd Sub	syntax	Expected: end of statement
+bas	Function P() As Long As Long\nEnd Function	syntax	Expected: end of statement
+bas	Function P() As\nEnd Function	syntax	Expected: type name
+bas	Function P()As Long\nEnd Function	accepted	
+bas	Function P$() As Long\nEnd Function	syntax	Expected: end of statement
+bas	Function P$()\nEnd Function	accepted	
+bas	Function P%() Static\nEnd Function	accepted	
+bas	Sub P$()\nEnd Sub	syntax	Expected: Identifier without type suffix
+bas	Sub P\nEnd Sub	accepted	
+bas	Sub P Static\nEnd Sub	accepted	
+bas	Function P As Long\nEnd Function	accepted	
+bas	Property Get P As Long\nEnd Property	accepted	
+bas	Property Get P() As Long()\nEnd Property	accepted	
+bas	Function P() As Long()\nEnd Function	accepted	
+bas	Function P() As String * 3\nEnd Function	syntax	Expected: end of statement
+bas	Function P() As New Foo\nEnd Function	syntax	Expected: type name
+bas	Property Get P() As New Foo\nEnd Property	syntax	Expected: type name
+bas	Sub P(): End Sub	accepted	
+bas	Sub P() : x = 1 : End Sub	accepted	
+bas	Sub P() Static: End Sub	accepted	
+bas	Function P() As Long: End Function	accepted	
+bas	Sub P() _\nStatic\nEnd Sub	accepted	
+bas	Sub P(x As Long = 1)\nEnd Sub	syntax	Expected: list separator or )
+bas	Sub P(Optional x)\nEnd Sub	accepted	
+bas	Sub P(Optional x, y)\nEnd Sub	syntax	Expected: Optional
+bas	Sub P(x,)\nEnd Sub	syntax	Expected: identifier
+bas	Sub P(,x)\nEnd Sub	syntax	Expected: identifier
+bas	Sub P(x y)\nEnd Sub	syntax	Expected: list separator or )
+bas	Sub P (x)\nEnd Sub	accepted	
+bas	Sub P(x) (y)\nEnd Sub	syntax	Expected: end of statement
+cls	Sub P() Static\nEnd Sub	accepted	
+cls	Static Sub P() Static\nEnd Sub	syntax	Syntax error
+cls	Public Static Sub P() Static\nEnd Sub	syntax	Syntax error
+cls	Sub P() Static Static\nEnd Sub	syntax	Expected: end of statement
+cls	Function P() As Long Static\nEnd Function	accepted	
+cls	Function P() Static As Long\nEnd Function	syntax	Expected: end of statement
+cls	Property Get P() As Long Static\nEnd Property	accepted	
+cls	Property Let P(v) Static\nEnd Property	accepted	
+cls	Static Property Get P() As Long Static\nEnd Property	syntax	Syntax error
+cls	Private Static Sub P() Static\nEnd Sub	syntax	Syntax error
+cls	Static Public Sub P()\nEnd Sub	accepted	
+cls	Static Private Function P() As Long Static\nEnd Function	syntax	Syntax error
+cls	Sub P() As Long\nEnd Sub	syntax	Expected: end of statement
+cls	Sub P() As Long Static\nEnd Sub	syntax	Expected: end of statement
+cls	Function P() As Long As Long\nEnd Function	syntax	Expected: end of statement
+cls	Function P() As\nEnd Function	syntax	Expected: type name
+cls	Function P()As Long\nEnd Function	accepted	
+cls	Function P$() As Long\nEnd Function	syntax	Expected: end of statement
+cls	Function P$()\nEnd Function	accepted	
+cls	Function P%() Static\nEnd Function	accepted	
+cls	Sub P$()\nEnd Sub	syntax	Expected: Identifier without type suffix
+cls	Sub P\nEnd Sub	accepted	
+cls	Sub P Static\nEnd Sub	accepted	
+cls	Function P As Long\nEnd Function	accepted	
+cls	Property Get P As Long\nEnd Property	accepted	
+cls	Property Get P() As Long()\nEnd Property	accepted	
+cls	Function P() As Long()\nEnd Function	accepted	
+cls	Function P() As String * 3\nEnd Function	syntax	Expected: end of statement
+cls	Function P() As New Foo\nEnd Function	syntax	Expected: type name
+cls	Property Get P() As New Foo\nEnd Property	syntax	Expected: type name
+cls	Sub P(): End Sub	accepted	
+cls	Sub P() : x = 1 : End Sub	accepted	
+cls	Sub P() Static: End Sub	accepted	
+cls	Function P() As Long: End Function	accepted	
+cls	Sub P() _\nStatic\nEnd Sub	accepted	
+cls	Sub P(x As Long = 1)\nEnd Sub	syntax	Expected: list separator or )
+cls	Sub P(Optional x)\nEnd Sub	accepted	
+cls	Sub P(Optional x, y)\nEnd Sub	syntax	Expected: Optional
+cls	Sub P(x,)\nEnd Sub	syntax	Expected: identifier
+cls	Sub P(,x)\nEnd Sub	syntax	Expected: identifier
+cls	Sub P(x y)\nEnd Sub	syntax	Expected: list separator or )
+cls	Sub P (x)\nEnd Sub	accepted	
+cls	Sub P(x) (y)\nEnd Sub	syntax	Expected: end of statement
