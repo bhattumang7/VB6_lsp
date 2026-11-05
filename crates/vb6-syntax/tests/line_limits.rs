@@ -517,3 +517,27 @@ fn module_level_and_listed_const_values_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "list per {per}");
     }
 }
+
+#[test]
+fn erase_and_close_lists_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let list = |term: &str, n: usize, per: usize| {
+        let terms = vec![term; n];
+        terms.chunks(per).map(|c| c.join(", ")).collect::<Vec<_>>().join(", _\n")
+    };
+    // (statement, item, items per line, most items that fit)
+    for (head, term, per, fits) in [
+        ("Erase ", "a", 160, 3814),
+        ("Erase ", "a", 175, 3816),
+        ("Erase ", "a", 190, 3817),
+        ("Erase ", "a", 199, 3818),
+        ("Close ", "#1", 120, 2544),
+        ("Close ", "#1", 145, 2547),
+        ("Close ", "#1", 165, 2548),
+        ("Close ", "#1", 175, 2549),
+    ] {
+        let src = |n| format!("Sub S()\n{head}{}\nEnd Sub\n", list(term, n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{head} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{head} per {per}");
+    }
+}

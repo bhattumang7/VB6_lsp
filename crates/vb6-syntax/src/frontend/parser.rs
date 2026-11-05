@@ -3727,11 +3727,17 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_erase_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let erase_span = self.current_span();
         self.advance(); // consume Erase
         let mut vars = Vec::new();
         loop {
             vars.push(self.parse_target_expr(arena));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
+        }
+        // `Erase a, b` costs 2 for each array name, a separator between them and 2 over a store.
+        if vars.iter().all(|v| matches!(arena.get(*v), ExprNode::NameRef { .. })) {
+            let parts = cost::ERASE + vars.len() * cost::ARRAY_NAME + (vars.len() - 1) * cost::ITEM_SEPARATOR;
+            self.check_parts_size(Some(parts), erase_span);
         }
         self.end_stmt_before_rem_is_error();
         arena.alloc(ExprNode::Erase { vars })
@@ -4670,6 +4676,7 @@ impl<'src> Parser<'src> {
 
     /// `Close [[#]filenum, ...]`
     fn parse_file_close(&mut self, arena: &mut ExprArena) -> NodeId {
+        let close_span = self.current_span();
         self.advance(); // Close
         let mut chs = Vec::new();
         while !self.peek().is_stmt_end()
@@ -4684,6 +4691,14 @@ impl<'src> Parser<'src> {
                 self.diagnostics.push(ERR_SYNTAX_ERROR, span);
                 break;
             }
+        }
+        // `Close #a, #b` costs its channels, a separator between them and 2 over a store.
+        if !chs.is_empty() && !matches!(self.last_consumed, TokenKind::Kw(Kw::Comma)) {
+            let parts = chs.iter().enumerate().try_fold(cost::CLOSE, |total, (i, ch)| {
+                let sep = if i > 0 { cost::ITEM_SEPARATOR } else { 0 };
+                Some(total + line_size::expression_part(arena, *ch)? + sep)
+            });
+            self.check_parts_size(parts, close_span);
         }
         self.end_stmt_before_rem_is_error();
         arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, open_mode: 0, open_flags: 0 })

@@ -54,6 +54,12 @@ pub mod cost {
     pub const LOCK: usize = 2;
     /// `Width #n, w` over an assignment of `w`, besides the channel.
     pub const WIDTH: usize = 4;
+    /// `Close #a, #b` over an assignment's store, besides its channels and separators.
+    pub const CLOSE: usize = 2;
+    /// `Erase a, b` over an assignment's store, besides its array names and separators.
+    pub const ERASE: usize = 2;
+    /// An array name in an `Erase` list.
+    pub const ARRAY_NAME: usize = 2;
     /// A name or Integer literal operand.
     pub const NAME_OR_INTEGER: usize = 4;
 }
