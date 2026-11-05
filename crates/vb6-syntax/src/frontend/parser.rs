@@ -837,7 +837,6 @@ impl<'src> Parser<'src> {
                     bad = true; // a named argument
                     args.push(named);
                 } else {
-                    self.eat(TokenKind::Kw(Kw::ByVal));
                     args.push(self.parse_expr(arena, 0));
                 }
                 if !self.eat(TokenKind::Kw(Kw::Comma)) {
@@ -5475,7 +5474,11 @@ impl<'src> Parser<'src> {
     /// `TypeOf <expr> Is <type>`
     fn parse_typeof_expr(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume TypeOf
-        // The operand names something: a bracket, a literal or `Nothing` does not.
+        // The operand names something: a bracket, a literal, `Nothing` or `Array(...)` does not.
+        if self.at_array_call() {
+            let span = self.current_span();
+            self.report_expected(span, "expression");
+        }
         let expr = self.parse_target_expr(arena);
         self.expect(TokenKind::Kw(Kw::Is), ERR_EXPECTED_IS);
         // The type is an object type: `Object` or a class name, never a built-in value type
@@ -5685,7 +5688,10 @@ impl<'src> Parser<'src> {
 
     /// The qualified name of a procedure after `AddressOf`: names joined by dots.
     fn parse_procedure_name(&mut self, arena: &mut ExprArena) -> NodeId {
+        // A bracketed name is read as written: it names a procedure declared elsewhere.
+        self.label_target = self.src.get(self.peek().span.start as usize) == Some(&b'[');
         let first = self.expect_decl_name();
+        self.label_target = false;
         let sym = first.sym.map(|s| s as u32).unwrap_or(0);
         let mut base = arena.alloc(ExprNode::NameRef { sym, suffix: first.type_suffix });
         self.set_span(base, first.span);
@@ -5697,6 +5703,20 @@ impl<'src> Parser<'src> {
             self.set_span(base, member.span);
         }
         base
+    }
+
+    /// Reads the call-site `ByVal` that may come before an argument's value; an `AddressOf`
+    /// may start the value only when no `ByVal` came before it.
+    fn argument_operand_prefix(&mut self) {
+        if self.eat(TokenKind::Kw(Kw::ByVal)) {
+            self.address_of_ok = false;
+            if self.at_argument_end() {
+                let span = self.current_span();
+                self.report_expected(span, "expression");
+            }
+        } else {
+            self.allow_address_of_here();
+        }
     }
 
     /// Notes that an `AddressOf` may start the argument that follows.
@@ -5838,12 +5858,7 @@ impl<'src> Parser<'src> {
                     let span = self.current_span();
                     self.report_expected(span, "named argument");
                 }
-                // A call-site `ByVal` qualifies the argument that follows.
-                if self.eat(TokenKind::Kw(Kw::ByVal)) && self.at_argument_end() {
-                    let span = self.current_span();
-                    self.report_expected(span, "expression");
-                }
-                self.allow_address_of_here();
+                self.argument_operand_prefix();
                 args.push(self.parse_expr(arena, 0));
             }
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
@@ -5871,12 +5886,7 @@ impl<'src> Parser<'src> {
                     let span = self.current_span();
                     self.report_expected(span, "named argument");
                 }
-                // A call-site `ByVal` qualifies the argument that follows.
-                if self.eat(TokenKind::Kw(Kw::ByVal)) && self.at_argument_end() {
-                    let span = self.current_span();
-                    self.report_expected(span, "expression");
-                }
-                self.allow_address_of_here();
+                self.argument_operand_prefix();
                 if let Some(expr) = self.try_parse_expr(arena) {
                     expr
                 } else {
@@ -5924,6 +5934,7 @@ impl<'src> Parser<'src> {
         let name_tok = self.advance(); // parameter name
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
         self.advance(); // `:=`
+        self.argument_operand_prefix();
         let value = self.parse_expr(arena, 0);
         let id = arena.alloc(ExprNode::NamedArg { name, value });
         self.set_span(id, name_tok.span);
