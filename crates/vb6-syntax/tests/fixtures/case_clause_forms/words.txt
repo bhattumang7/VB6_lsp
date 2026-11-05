@@ -1,0 +1,59 @@
+1
+1, 2
+1 To 5
+Is > 5
+Is = 5
+Is <> 5
+Is < 5
+Is >= 5
+Is <= 5
+Is
+Is >
+To 5
+1 To
+Else
+Is > 5, 7
+"a" To "z"
+1 To 5, 7 To 9
+Is >= 1 To 5
+1,
+,1
+5 To 1
+Is Like "a"
+Is Is 1
+x
+x To y
+Not 1
+(1)
+(1 To 5)
+Is > 1 + 1
+1 To 5 To 9
+Else, 1
+1, Else
+Is > 5 And 3
+Is Not 1
+Is = = 5
+> 5
+= 5
+Is 5
+Case 1
+Else 1
+1: 
+1 To 2, Is > 3, 4
+Nothing
+Null
+Is Nothing
+TypeOf x
+Is TypeOf x
+-1
++1
+1 + 1 To 3
+Is > x.y
+x(1)
+1 To (2)
+&H10 To &H20
+#1/1/2000# To #1/1/2001#
+"a", "b", "c"
+True
+1 2
+1 To 2 3

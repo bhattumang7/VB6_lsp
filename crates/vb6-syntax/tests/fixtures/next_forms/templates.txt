@@ -1,0 +1,12 @@
+# {k} is replaced by each form.
+=== next bas
+Sub P(x, y, o As Object, c, i, j, a() As Long)
+For i = 1 To 2
+For j = 1 To 2
+{k}
+End Sub
+=== next1 bas
+Sub P(x, y, o As Object, c, i, j, a() As Long)
+For i = 1 To 2
+{k}
+End Sub

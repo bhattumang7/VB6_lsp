@@ -1,0 +1,60 @@
+# template	word	class	message
+case	1	accepted	
+case	1, 2	accepted	
+case	1 To 5	accepted	
+case	Is > 5	accepted	
+case	Is = 5	accepted	
+case	Is <> 5	accepted	
+case	Is < 5	accepted	
+case	Is >= 5	accepted	
+case	Is <= 5	accepted	
+case	Is	syntax	Syntax error
+case	Is >	syntax	Syntax error
+case	To 5	syntax	Syntax error
+case	1 To	syntax	Syntax error
+case	Else	accepted	
+case	Is > 5, 7	accepted	
+case	"a" To "z"	accepted	
+case	1 To 5, 7 To 9	accepted	
+case	Is >= 1 To 5	syntax	Syntax error
+case	1,	syntax	Syntax error
+case	,1	syntax	Syntax error
+case	5 To 1	accepted	
+case	Is Like "a"	syntax	Syntax error
+case	Is Is 1	syntax	Syntax error
+case	x	accepted	
+case	x To y	accepted	
+case	Not 1	accepted	
+case	(1)	accepted	
+case	(1 To 5)	syntax	Syntax error
+case	Is > 1 + 1	accepted	
+case	1 To 5 To 9	syntax	Syntax error
+case	Else, 1	syntax	Syntax error
+case	1, Else	syntax	Syntax error
+case	Is > 5 And 3	accepted	
+case	Is Not 1	syntax	Syntax error
+case	Is = = 5	syntax	Syntax error
+case	> 5	accepted	
+case	= 5	accepted	
+case	Is 5	syntax	Syntax error
+case	Case 1	syntax	Syntax error
+case	Else 1	syntax	Syntax error
+case	1:	accepted	
+case	1 To 2, Is > 3, 4	accepted	
+case	Nothing	accepted	
+case	Null	accepted	
+case	Is Nothing	syntax	Syntax error
+case	TypeOf x	syntax	Syntax error
+case	Is TypeOf x	syntax	Syntax error
+case	-1	accepted	
+case	+1	accepted	
+case	1 + 1 To 3	accepted	
+case	Is > x.y	accepted	
+case	x(1)	accepted	
+case	1 To (2)	accepted	
+case	&H10 To &H20	accepted	
+case	#1/1/2000# To #1/1/2001#	accepted	
+case	"a", "b", "c"	accepted	
+case	True	accepted	
+case	1 2	syntax	Syntax error
+case	1 To 2 3	syntax	Syntax error

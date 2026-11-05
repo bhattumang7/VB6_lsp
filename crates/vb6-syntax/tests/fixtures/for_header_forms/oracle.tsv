@@ -1,0 +1,77 @@
+# template	word	class	message
+for	For i = 1 To 5	accepted	
+for	For i = 1 To 5 Step 2	accepted	
+for	For i = 1 To 5 Step	syntax	Syntax error
+for	For i = 1	syntax	Syntax error
+for	For i 1 To 5	syntax	Syntax error
+for	For i = To 5	syntax	Syntax error
+for	For i = 1 To	syntax	Syntax error
+for	For i As Long = 1 To 2	syntax	Syntax error
+for	For i% = 1 To 2	semantic	Type-declaration character does not match declared data type
+for	For i$ = 1 To 2	semantic	Type-declaration character does not match declared data type
+for	For a(1) = 1 To 2	accepted	
+for	For o.p = 1 To 2	semantic	Variable required - can't assign to this expression
+for	For o!p = 1 To 2	semantic	Variable required - can't assign to this expression
+for	For Each i In c	accepted	
+for	For Each i	syntax	Syntax error
+for	For Each i In	syntax	Syntax error
+for	For Each a(1) In c	semantic	For Each control variable must be Variant or Object
+for	For Each o.p In c	semantic	Variable required - can't assign to this expression
+for	For Each i, j In c	syntax	Syntax error
+for	For Each i In c, d	syntax	Syntax error
+for	For = 1 To 2	syntax	Syntax error
+for	For i = 1 To 5 Step 2 Step 3	syntax	Syntax error
+for	For i = 1 To 5 To 6	syntax	Syntax error
+for	For Each In c	syntax	Syntax error
+for	For Each i In c Step 1	syntax	Syntax error
+for	For Step = 1 To 2	accepted	
+for	For To = 1 To 2	syntax	Syntax error
+for	For i = 1 To 5: Next	syntax	Next without For
+for	For i = (1) To (5)	accepted	
+for	For i = 1, 2 To 5	syntax	Syntax error
+for	For i = 1 To 5, 6	syntax	Syntax error
+for	For i = 1 To 5 Step -1	accepted	
+for	For ii = 1 To 2	accepted	
+for	For Each v In Array(1, 2)	accepted	
+for	For Each v In c.Items	accepted	
+for	For Each i In Nothing	syntax	Syntax error
+for	For i = 1 To 5 'c	accepted	
+for	For New = 1 To 2	syntax	Syntax error
+foreach_nextless	For i = 1 To 5	syntax	For without Next
+foreach_nextless	For i = 1 To 5 Step 2	syntax	For without Next
+foreach_nextless	For i = 1 To 5 Step	syntax	Syntax error
+foreach_nextless	For i = 1	syntax	Syntax error
+foreach_nextless	For i 1 To 5	syntax	Syntax error
+foreach_nextless	For i = To 5	syntax	Syntax error
+foreach_nextless	For i = 1 To	syntax	Syntax error
+foreach_nextless	For i As Long = 1 To 2	syntax	Syntax error
+foreach_nextless	For i% = 1 To 2	semantic	Type-declaration character does not match declared data type
+foreach_nextless	For i$ = 1 To 2	semantic	Type-declaration character does not match declared data type
+foreach_nextless	For a(1) = 1 To 2	syntax	For without Next
+foreach_nextless	For o.p = 1 To 2	semantic	Variable required - can't assign to this expression
+foreach_nextless	For o!p = 1 To 2	semantic	Variable required - can't assign to this expression
+foreach_nextless	For Each i In c	syntax	For without Next
+foreach_nextless	For Each i	syntax	Syntax error
+foreach_nextless	For Each i In	syntax	Syntax error
+foreach_nextless	For Each a(1) In c	semantic	For Each control variable must be Variant or Object
+foreach_nextless	For Each o.p In c	semantic	Variable required - can't assign to this expression
+foreach_nextless	For Each i, j In c	syntax	Syntax error
+foreach_nextless	For Each i In c, d	syntax	Syntax error
+foreach_nextless	For = 1 To 2	syntax	Syntax error
+foreach_nextless	For i = 1 To 5 Step 2 Step 3	syntax	Syntax error
+foreach_nextless	For i = 1 To 5 To 6	syntax	Syntax error
+foreach_nextless	For Each In c	syntax	Syntax error
+foreach_nextless	For Each i In c Step 1	syntax	Syntax error
+foreach_nextless	For Step = 1 To 2	syntax	For without Next
+foreach_nextless	For To = 1 To 2	syntax	Syntax error
+foreach_nextless	For i = 1 To 5: Next	accepted	
+foreach_nextless	For i = (1) To (5)	syntax	For without Next
+foreach_nextless	For i = 1, 2 To 5	syntax	Syntax error
+foreach_nextless	For i = 1 To 5, 6	syntax	Syntax error
+foreach_nextless	For i = 1 To 5 Step -1	syntax	For without Next
+foreach_nextless	For ii = 1 To 2	syntax	For without Next
+foreach_nextless	For Each v In Array(1, 2)	syntax	For without Next
+foreach_nextless	For Each v In c.Items	syntax	For without Next
+foreach_nextless	For Each i In Nothing	syntax	Syntax error
+foreach_nextless	For i = 1 To 5 'c	syntax	For without Next
+foreach_nextless	For New = 1 To 2	syntax	Syntax error

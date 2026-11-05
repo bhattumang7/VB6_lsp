@@ -1,0 +1,31 @@
+# template	word	class	message
+next	Next	syntax	For without Next
+next	Next i	syntax	Invalid Next control variable reference
+next	Next i, j	syntax	Invalid Next control variable reference
+next	Next i j	syntax	Syntax error
+next	Next (i)	syntax	Syntax error
+next	Next a(1)	syntax	Invalid Next control variable reference
+next	Next o.p	syntax	Invalid Next control variable reference
+next	Next ,	syntax	Syntax error
+next	Next i,	syntax	Syntax error
+next	Next j	syntax	For without Next
+next	Next i%	semantic	Type-declaration character does not match declared data type
+next	Next Next	syntax	Syntax error
+next	Next 1	syntax	Syntax error
+next	Next i: Next	syntax	Invalid Next control variable reference
+next	Next: Next	accepted	
+next1	Next	accepted	
+next1	Next i	accepted	
+next1	Next i, j	syntax	Next without For
+next1	Next i j	syntax	Syntax error
+next1	Next (i)	syntax	Syntax error
+next1	Next a(1)	syntax	Invalid Next control variable reference
+next1	Next o.p	syntax	Invalid Next control variable reference
+next1	Next ,	syntax	Syntax error
+next1	Next i,	syntax	Syntax error
+next1	Next j	syntax	Invalid Next control variable reference
+next1	Next i%	semantic	Type-declaration character does not match declared data type
+next1	Next Next	syntax	Syntax error
+next1	Next 1	syntax	Syntax error
+next1	Next i: Next	syntax	Next without For
+next1	Next: Next	syntax	Next without For

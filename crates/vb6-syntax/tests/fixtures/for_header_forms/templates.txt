@@ -1,0 +1,10 @@
+# {k} is replaced by each form.
+=== for bas
+Sub P(x, y, o As Object, c, i, j, a() As Long, ii As Long)
+{k}
+Next
+End Sub
+=== foreach_nextless bas
+Sub P(x, y, o As Object, c, i, j, a() As Long, ii As Long)
+{k}
+End Sub

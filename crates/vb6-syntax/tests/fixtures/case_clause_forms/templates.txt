@@ -1,0 +1,7 @@
+# {k} is replaced by each form.
+=== case bas
+Sub P(x, y, o As Object, c, i, j)
+Select Case x
+Case {k}
+End Select
+End Sub

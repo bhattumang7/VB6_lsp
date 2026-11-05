@@ -1,0 +1,38 @@
+For i = 1 To 5
+For i = 1 To 5 Step 2
+For i = 1 To 5 Step
+For i = 1
+For i 1 To 5
+For i = To 5
+For i = 1 To
+For i As Long = 1 To 2
+For i% = 1 To 2
+For i$ = 1 To 2
+For a(1) = 1 To 2
+For o.p = 1 To 2
+For o!p = 1 To 2
+For Each i In c
+For Each i
+For Each i In
+For Each a(1) In c
+For Each o.p In c
+For Each i, j In c
+For Each i In c, d
+For = 1 To 2
+For i = 1 To 5 Step 2 Step 3
+For i = 1 To 5 To 6
+For Each In c
+For Each i In c Step 1
+For Step = 1 To 2
+For To = 1 To 2
+For i = 1 To 5: Next
+For i = (1) To (5)
+For i = 1, 2 To 5
+For i = 1 To 5, 6
+For i = 1 To 5 Step -1
+For ii = 1 To 2
+For Each v In Array(1, 2)
+For Each v In c.Items
+For Each i In Nothing
+For i = 1 To 5 'c
+For New = 1 To 2
