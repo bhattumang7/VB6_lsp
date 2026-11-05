@@ -1,0 +1,25 @@
+Dim x As _
+Dim x As Long _
+Const c = _
+Declare Function f _
+Declare Function f Lib _
+Option Explicit _
+Option _
+Sub P _
+Sub P() _
+Public _
+x = _
+Type T _
+Enum E _
+Attribute VB_Name = _
+_
+Dim _
+Dim x, _
+Dim x As Long, _
+Sub P()\nx = _
+Sub P()\nEnd Sub _
+Sub P()\nEnd _
+DefInt _
+' c _
+Rem c _
+Sub P()\nIf x Then _

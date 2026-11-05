@@ -1,0 +1,61 @@
+Declare Function f Lib "k" () As Long
+Declare Function f Lib "k" Alias "g" () As Long
+Declare Function f Lib "k" Alias "g" ()
+Declare Function f Lib "k"
+Declare Function f Lib "k" As Long
+Declare Function f Lib "k" (ByVal a As Long) As Long
+Declare Function f Lib "k" (a As Any) As Long
+Declare Function f Lib "k" (ByVal a As Any) As Long
+Declare Function f Lib "k" (ByVal a As String) As Long
+Declare Function f Lib "k" (a As String * 3) As Long
+Declare Function f Lib "k" (ByRef a As Long) As Long
+Declare Function f Lib "k" (a() As Long) As Long
+Declare Function f Lib "k" (Optional a As Long) As Long
+Declare Function f Lib "k" (ParamArray a() As Variant) As Long
+Declare Function f Lib "k" (a As Any, b As Any) As Any
+Declare Function f Lib "k" () As Any
+Declare Function f Lib "k" () As String
+Declare Function f Lib "k" () As Variant
+Declare Function f Lib "k" () As Object
+Declare Function f Lib "k" () As Long()
+Declare Function f$ Lib "k" ()
+Declare Function f% Lib "k" ()
+Declare Function f% Lib "k" () As Long
+Declare Sub f Lib "k" ()
+Declare Sub f Lib "k" () As Long
+Declare Sub f Lib "k" Alias "g" (ByVal a As Long)
+Declare Sub f Lib "k" CDecl ()
+Declare Function f CDecl Lib "k" ()
+Declare Function f Lib CDecl "k" ()
+Declare Function f Lib "k" Alias "g" Alias "h" ()
+Declare Function f Alias "g" Lib "k" ()
+Declare Function f Lib k ()
+Declare Function f Lib "" ()
+Declare Function f Lib "k" Alias "" ()
+Declare Function f Lib "k" Alias g ()
+Declare Function Lib "k" ()
+Declare Lib "k" ()
+Declare f Lib "k" ()
+Declare Function f Lib "k" (a, b)
+Declare Function f Lib "k" (a, )
+Declare Function f Lib "k" (,)
+Declare Function f Lib "k" (a As Long) (b)
+Declare Function f Lib "k" (ByVal a As Long, ByVal b As Long) As Long Rem x
+Declare Function f Lib "k" () As Long: Dim x
+Declare Function f Lib "k" ((a))
+Declare Function f Lib "k" (a As Class1) As Long
+Declare Function f Lib "k" (a As New Class1) As Long
+Declare Function f Lib "k" () As New Class1
+Private Declare Function f Lib "k" ()
+Public Declare Function f Lib "k" ()
+Friend Declare Function f Lib "k" ()
+Static Declare Function f Lib "k" ()
+Global Declare Function f Lib "k" ()
+Declare Property f Lib "k" ()
+Declare Event f Lib "k" ()
+Declare Function f Lib "k" ' c
+Declare Function f Lib "k" _
+()
+Declare Function f _
+Lib "k" ()
+Declare Function f Lib "k" Alias "g" Lib "j" ()

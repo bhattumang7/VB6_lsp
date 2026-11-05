@@ -1,0 +1,76 @@
+# template	word	class	message
+bas	Dim x As _	accepted	
+bas	Dim x As Long _	accepted	
+bas	Const c = _	accepted	
+bas	Declare Function f _	accepted	
+bas	Declare Function f Lib _	accepted	
+bas	Option Explicit _	accepted	
+bas	Option _	accepted	
+bas	Sub P _	accepted	
+bas	Sub P() _	accepted	
+bas	Public _	accepted	
+bas	x = _	accepted	
+bas	Type T _	accepted	
+bas	Enum E _	accepted	
+bas	Attribute VB_Name = _	accepted	
+bas	_	syntax	Invalid character
+bas	Dim _	accepted	
+bas	Dim x, _	accepted	
+bas	Dim x As Long, _	accepted	
+bas	Sub P()\nx = _	syntax	Expected End Sub
+bas	Sub P()\nEnd Sub _	syntax	Expected End Sub
+bas	Sub P()\nEnd _	syntax	Expected End Sub
+bas	DefInt _	accepted	
+bas	' c _	accepted	
+bas	Rem c _	accepted	
+bas	Sub P()\nIf x Then _	syntax	Expected End Sub
+proc	Dim x As _	syntax	Syntax error
+proc	Dim x As Long _	syntax	Syntax error
+proc	Const c = _	syntax	Syntax error
+proc	Declare Function f _	syntax	Syntax error
+proc	Declare Function f Lib _	syntax	Syntax error
+proc	Option Explicit _	syntax	Syntax error
+proc	Option _	syntax	Syntax error
+proc	Sub P _	syntax	Syntax error
+proc	Sub P() _	syntax	Syntax error
+proc	Public _	syntax	Syntax error
+proc	x = _	syntax	Syntax error
+proc	Type T _	syntax	Syntax error
+proc	Enum E _	syntax	Syntax error
+proc	Attribute VB_Name = _	syntax	Expected End Sub
+proc	_	syntax	Syntax error
+proc	Dim _	syntax	Syntax error
+proc	Dim x, _	syntax	Syntax error
+proc	Dim x As Long, _	syntax	Syntax error
+proc	Sub P()\nx = _	semantic	Ambiguous name detected: P
+proc	Sub P()\nEnd Sub _	semantic	Ambiguous name detected: P
+proc	Sub P()\nEnd _	semantic	Ambiguous name detected: P
+proc	DefInt _	syntax	Syntax error
+proc	' c _	syntax	Expected End Sub
+proc	Rem c _	syntax	Expected End Sub
+proc	Sub P()\nIf x Then _	semantic	Ambiguous name detected: P
+cls	Dim x As _	accepted	
+cls	Dim x As Long _	accepted	
+cls	Const c = _	accepted	
+cls	Declare Function f _	accepted	
+cls	Declare Function f Lib _	accepted	
+cls	Option Explicit _	accepted	
+cls	Option _	accepted	
+cls	Sub P _	accepted	
+cls	Sub P() _	accepted	
+cls	Public _	accepted	
+cls	x = _	accepted	
+cls	Type T _	accepted	
+cls	Enum E _	accepted	
+cls	Attribute VB_Name = _	accepted	
+cls	_	syntax	Invalid character
+cls	Dim _	accepted	
+cls	Dim x, _	accepted	
+cls	Dim x As Long, _	accepted	
+cls	Sub P()\nx = _	syntax	Expected End Sub
+cls	Sub P()\nEnd Sub _	syntax	Expected End Sub
+cls	Sub P()\nEnd _	syntax	Expected End Sub
+cls	DefInt _	accepted	
+cls	' c _	accepted	
+cls	Rem c _	accepted	
+cls	Sub P()\nIf x Then _	syntax	Expected End Sub

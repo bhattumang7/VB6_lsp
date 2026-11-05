@@ -4563,7 +4563,12 @@ impl<'src> Parser<'src> {
             self.reject_suffix_with_as(&name_tok, "end of statement");
         }
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
-            Some(self.parse_type_spec(arena, false))
+            if self.peek().kind == TokenKind::Kw(Kw::New) {
+                // A return type is never a new object.
+                let span = self.current_span();
+                self.report_expected(span, "type name");
+            }
+            Some(self.parse_type_spec(arena, true))
         } else {
             None
         };

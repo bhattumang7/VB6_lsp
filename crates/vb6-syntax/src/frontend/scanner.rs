@@ -657,6 +657,7 @@ impl<'a> Scanner<'a> {
 
     /// Create a scanner for `src`, borrowing `ctx` for symbol interning.
     pub fn new(ctx: &'a mut ScannerContext, src: &'a [u8]) -> Self {
+        let src = &src[..without_open_continuation(src)];
         Self { ctx, src, pos: 0, tok_buf: String::with_capacity(64), after_member_operator: false }
     }
 
@@ -1366,4 +1367,44 @@ fn currency_units(text: &str) -> Option<i64> {
         (digits + div / 2) / div
     };
     i64::try_from(units).ok()
+}
+
+
+/// The length of `src` without its last logical line when that line ends in a continuation
+/// mark with nothing after it: a line continued into the end of the text is not read at all.
+fn without_open_continuation(src: &[u8]) -> usize {
+    let blank = |b: u8| matches!(b, b' ' | 9);
+    let ends_in_mark = |line: &[u8]| {
+        let mut end = line.len();
+        while end > 0 && blank(line[end - 1]) {
+            end -= 1;
+        }
+        end >= 2 && line[end - 1] == b'_' && blank(line[end - 2])
+    };
+    // The text without the line end of its last line: a further empty line would be joined to
+    // the continued one instead.
+    let mut end = src.len();
+    if end > 0 && src[end - 1] == 10 {
+        end -= 1;
+        if end > 0 && src[end - 1] == 13 {
+            end -= 1;
+        }
+    }
+    let last_line_start = src[..end].iter().rposition(|&b| b == 10).map_or(0, |i| i + 1);
+    if !ends_in_mark(&src[last_line_start..end]) {
+        return src.len();
+    }
+    // Back to the first physical line of the logical line.
+    let line_start = |before: usize| src[..before].iter().rposition(|&b| b == 10).map_or(0, |i| i + 1);
+    let mut start = line_start(end);
+    while start > 0 {
+        let previous_end = src[..start - 1].iter().rposition(|&b| b != 13).map_or(0, |i| i + 1);
+        let previous_start = line_start(previous_end);
+        if ends_in_mark(&src[previous_start..previous_end]) {
+            start = previous_start;
+        } else {
+            break;
+        }
+    }
+    start
 }

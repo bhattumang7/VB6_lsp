@@ -1,0 +1,123 @@
+# template	word	class	message
+bas	Declare Function f Lib "k" () As Long	accepted	
+bas	Declare Function f Lib "k" Alias "g" () As Long	accepted	
+bas	Declare Function f Lib "k" Alias "g" ()	accepted	
+bas	Declare Function f Lib "k"	accepted	
+bas	Declare Function f Lib "k" As Long	accepted	
+bas	Declare Function f Lib "k" (ByVal a As Long) As Long	accepted	
+bas	Declare Function f Lib "k" (a As Any) As Long	accepted	
+bas	Declare Function f Lib "k" (ByVal a As Any) As Long	accepted	
+bas	Declare Function f Lib "k" (ByVal a As String) As Long	accepted	
+bas	Declare Function f Lib "k" (a As String * 3) As Long	syntax	Expected array
+bas	Declare Function f Lib "k" (ByRef a As Long) As Long	accepted	
+bas	Declare Function f Lib "k" (a() As Long) As Long	accepted	
+bas	Declare Function f Lib "k" (Optional a As Long) As Long	accepted	
+bas	Declare Function f Lib "k" (ParamArray a() As Variant) As Long	accepted	
+bas	Declare Function f Lib "k" (a As Any, b As Any) As Any	syntax	Expected: type name
+bas	Declare Function f Lib "k" () As Any	syntax	Expected: type name
+bas	Declare Function f Lib "k" () As String	accepted	
+bas	Declare Function f Lib "k" () As Variant	accepted	
+bas	Declare Function f Lib "k" () As Object	accepted	
+bas	Declare Function f Lib "k" () As Long()	accepted	
+bas	Declare Function f$ Lib "k" ()	accepted	
+bas	Declare Function f% Lib "k" ()	accepted	
+bas	Declare Function f% Lib "k" () As Long	syntax	Expected: end of statement
+bas	Declare Sub f Lib "k" ()	accepted	
+bas	Declare Sub f Lib "k" () As Long	syntax	Expected: end of statement
+bas	Declare Sub f Lib "k" Alias "g" (ByVal a As Long)	accepted	
+bas	Declare Sub f Lib "k" CDecl ()	syntax	Expected: end of statement
+bas	Declare Function f CDecl Lib "k" ()	accepted	
+bas	Declare Function f Lib CDecl "k" ()	syntax	Expected: string constant
+bas	Declare Function f Lib "k" Alias "g" Alias "h" ()	syntax	Expected: end of statement
+bas	Declare Function f Alias "g" Lib "k" ()	syntax	Expected: Lib
+bas	Declare Function f Lib k ()	syntax	Expected: string constant
+bas	Declare Function f Lib "" ()	accepted	
+bas	Declare Function f Lib "k" Alias "" ()	accepted	
+bas	Declare Function f Lib "k" Alias g ()	syntax	Expected: string constant
+bas	Declare Function Lib "k" ()	syntax	Expected: Lib
+bas	Declare Lib "k" ()	syntax	Expected: Sub or Function
+bas	Declare f Lib "k" ()	syntax	Expected: Sub or Function
+bas	Declare Function f Lib "k" (a, b)	accepted	
+bas	Declare Function f Lib "k" (a, )	syntax	Expected: identifier
+bas	Declare Function f Lib "k" (,)	syntax	Expected: identifier
+bas	Declare Function f Lib "k" (a As Long) (b)	syntax	Expected: end of statement
+bas	Declare Function f Lib "k" (ByVal a As Long, ByVal b As Long) As Long Rem x	syntax	Expected: end of statement
+bas	Declare Function f Lib "k" () As Long: Dim x	accepted	
+bas	Declare Function f Lib "k" ((a))	syntax	Expected: identifier
+bas	Declare Function f Lib "k" (a As Class1) As Long	semantic	User-defined type not defined
+bas	Declare Function f Lib "k" (a As New Class1) As Long	syntax	Expected: type name
+bas	Declare Function f Lib "k" () As New Class1	syntax	Expected: type name
+bas	Private Declare Function f Lib "k" ()	accepted	
+bas	Public Declare Function f Lib "k" ()	accepted	
+bas	Friend Declare Function f Lib "k" ()	syntax	Only valid in object module
+bas	Static Declare Function f Lib "k" ()	syntax	Expected: identifier
+bas	Global Declare Function f Lib "k" ()	accepted	
+bas	Declare Property f Lib "k" ()	syntax	Expected: Sub or Function
+bas	Declare Event f Lib "k" ()	syntax	Expected: Sub or Function
+bas	Declare Function f Lib "k" ' c	accepted	
+bas	Declare Function f Lib "k" _	accepted	
+bas	()	syntax	Expected: line number or label or statement or end of statement
+bas	Declare Function f _	accepted	
+bas	Lib "k" ()	syntax	Expected: end of statement
+bas	Declare Function f Lib "k" Alias "g" Lib "j" ()	syntax	Expected: end of statement
+proc	Declare Function f Lib "k" () As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" Alias "g" () As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" Alias "g" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k"	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (ByVal a As Long) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (a As Any) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (ByVal a As Any) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (ByVal a As String) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (a As String * 3) As Long	syntax	Syntax error
+proc	Declare Function f Lib "k" (ByRef a As Long) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (a() As Long) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (Optional a As Long) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (ParamArray a() As Variant) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (a As Any, b As Any) As Any	syntax	Syntax error
+proc	Declare Function f Lib "k" () As Any	syntax	Syntax error
+proc	Declare Function f Lib "k" () As String	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" () As Variant	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" () As Object	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" () As Long()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f$ Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f% Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f% Lib "k" () As Long	syntax	Syntax error
+proc	Declare Sub f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Sub f Lib "k" () As Long	syntax	Syntax error
+proc	Declare Sub f Lib "k" Alias "g" (ByVal a As Long)	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Sub f Lib "k" CDecl ()	syntax	Syntax error
+proc	Declare Function f CDecl Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib CDecl "k" ()	syntax	Syntax error
+proc	Declare Function f Lib "k" Alias "g" Alias "h" ()	syntax	Syntax error
+proc	Declare Function f Alias "g" Lib "k" ()	syntax	Syntax error
+proc	Declare Function f Lib k ()	syntax	Syntax error
+proc	Declare Function f Lib "" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" Alias "" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" Alias g ()	syntax	Syntax error
+proc	Declare Function Lib "k" ()	syntax	Syntax error
+proc	Declare Lib "k" ()	syntax	Syntax error
+proc	Declare f Lib "k" ()	syntax	Syntax error
+proc	Declare Function f Lib "k" (a, b)	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (a, )	syntax	Syntax error
+proc	Declare Function f Lib "k" (,)	syntax	Syntax error
+proc	Declare Function f Lib "k" (a As Long) (b)	syntax	Syntax error
+proc	Declare Function f Lib "k" (ByVal a As Long, ByVal b As Long) As Long Rem x	syntax	Syntax error
+proc	Declare Function f Lib "k" () As Long: Dim x	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" ((a))	syntax	Syntax error
+proc	Declare Function f Lib "k" (a As Class1) As Long	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" (a As New Class1) As Long	syntax	Syntax error
+proc	Declare Function f Lib "k" () As New Class1	syntax	Syntax error
+proc	Private Declare Function f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Public Declare Function f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Friend Declare Function f Lib "k" ()	syntax	Syntax error
+proc	Static Declare Function f Lib "k" ()	syntax	Syntax error
+proc	Global Declare Function f Lib "k" ()	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Property f Lib "k" ()	syntax	Syntax error
+proc	Declare Event f Lib "k" ()	syntax	Syntax error
+proc	Declare Function f Lib "k" ' c	syntax	Only comments may appear after End Sub, End Function, or End Property
+proc	Declare Function f Lib "k" _	syntax	Syntax error
+proc	()	syntax	Syntax error
+proc	Declare Function f _	syntax	Syntax error
+proc	Lib "k" ()	syntax	Syntax error
+proc	Declare Function f Lib "k" Alias "g" Lib "j" ()	syntax	Syntax error

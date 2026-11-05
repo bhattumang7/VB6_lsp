@@ -1,0 +1,7 @@
+# {k} is replaced by each form.
+=== bas bas
+{k}
+=== proc bas
+Sub P()
+{k}
+End Sub
