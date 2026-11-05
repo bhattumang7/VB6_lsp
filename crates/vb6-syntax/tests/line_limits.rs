@@ -492,3 +492,28 @@ fn lset_rset_width_lock_and_unlock_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
     }
 }
+
+#[test]
+fn module_level_and_listed_const_values_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (statement before the expression, terms per line, most terms that fit)
+    for (before, per, fits) in [
+        ("Const c = ", 120, 2544),
+        ("Const c = ", 150, 2547),
+        ("Public Const c = ", 165, 2548),
+        ("Private Const c = ", 120, 2544),
+    ] {
+        let src = |n| format!("{before}{}\nSub S()\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{before:?} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
+    }
+    for (per, fits) in [(120, 2542), (150, 2545), (165, 2546)] {
+        let src = |n| format!("Sub S()\nConst a = 1, c = {}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "list per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "list per {per}");
+    }
+}

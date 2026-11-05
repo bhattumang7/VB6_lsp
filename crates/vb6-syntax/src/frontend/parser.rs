@@ -333,6 +333,8 @@ pub struct Parser<'src> {
     line_cost: usize,
     line_cost_valid: bool,
     stmt_measured: bool,
+    /// Bytes of the items of the `Const` statement read so far, while they are all measured.
+    const_items_cost: Option<usize>,
 
     /// The argument values written with a call-site `ByVal`.
     pub by_val_args: Vec<NodeId>,
@@ -522,6 +524,7 @@ impl<'src> Parser<'src> {
             line_cost: 0,
             line_cost_valid: true,
             stmt_measured: true,
+            const_items_cost: None,
             by_val_args: Vec::new(),
             later_group: false,
             stmt_byval: None,
@@ -2759,8 +2762,10 @@ impl<'src> Parser<'src> {
         value_required: bool,
     ) -> NodeId {
         // A member named `WithEvents` is followed by its type, not by a name.
-        // The first item of a `Const` statement in a procedure: its line is measured.
-        let first_const_item = is_const && self.in_procedure && matches!(self.last_consumed, TokenKind::Kw(Kw::Const));
+        // The first item of a `Const` statement starts the sum of its items' bytes.
+        if is_const && matches!(self.last_consumed, TokenKind::Kw(Kw::Const)) {
+            self.const_items_cost = Some(0);
+        }
         let item_span = self.current_span();
         let with_events = !is_const
             && self.peek().kind == TokenKind::Kw(Kw::WithEvents)
@@ -2850,9 +2855,16 @@ impl<'src> Parser<'src> {
             } else if self.eat(TokenKind::Kw(Kw::Eq)) {
                 Some(self.parse_expr(arena, 0))
             } else { None };
-            if let (true, Some(value)) = (first_const_item, value) {
-                let parts = line_size::expression_part(arena, value).map(|part| cost::CONST + part);
-                self.check_parts_size(parts, item_span);
+            if is_const {
+                // Each item costs its name and its value; items are separated by 2 bytes.
+                let item = value.and_then(|v| line_size::expression_part(arena, v)).map(|part| cost::CONST + part);
+                self.const_items_cost = self.const_items_cost.zip(item).map(|(total, item)| total + item);
+                if self.peek().kind == TokenKind::Kw(Kw::Comma) {
+                    self.const_items_cost = self.const_items_cost.map(|total| total + cost::ITEM_SEPARATOR);
+                } else {
+                    let total = self.const_items_cost.take();
+                    self.check_parts_size(total, item_span);
+                }
             }
             value
         } else { None };
