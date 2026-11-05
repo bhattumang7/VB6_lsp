@@ -420,3 +420,27 @@ fn loop_conditions_seek_and_local_const_follow_the_size_rule() {
         assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
     }
 }
+
+#[test]
+fn randomize_redim_mid_and_put_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let expr = |n: usize, per: usize| {
+        let terms = vec!["1"; n];
+        terms.chunks(per).map(|c| c.join(" + ")).collect::<Vec<_>>().join(" + _\n")
+    };
+    // (statement before the expression, after it, terms per line, most terms that fit)
+    for (before, after, per, fits) in [
+        ("Randomize ", "", 150, 2547),
+        ("Randomize ", "", 170, 2549),
+        ("ReDim a(", ")", 150, 2546),
+        ("ReDim a(", ")", 170, 2548),
+        ("Mid$(s, 1) = ", "", 150, 2546),
+        ("Mid$(s, 1) = ", "", 170, 2548),
+        ("Put #1, , ", "", 120, 2543),
+        ("Put #1, , ", "", 165, 2547),
+    ] {
+        let src = |n| format!("Sub S()\n{before}{}{after}\nEnd Sub\n", expr(n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{before:?} per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{before:?} per {per}");
+    }
+}

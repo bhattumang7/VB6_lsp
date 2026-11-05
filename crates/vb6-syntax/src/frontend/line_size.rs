@@ -39,6 +39,12 @@ pub mod cost {
     pub const FOR: usize = 2;
     /// A local `Const name =` over an assignment of its value: the name.
     pub const CONST: usize = 4;
+    /// `Randomize seed` over an assignment of the seed.
+    pub const RANDOMIZE: usize = 2;
+    /// The record left out of a `Put #n, , value`.
+    pub const MISSING_RECORD: usize = 2;
+    /// `ReDim a(n)` over an assignment of the bound: the array name and the statement's code.
+    pub const REDIM: usize = 8;
     /// A name or Integer literal operand.
     pub const NAME_OR_INTEGER: usize = 4;
 }

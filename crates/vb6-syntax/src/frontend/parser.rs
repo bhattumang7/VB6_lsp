@@ -2514,7 +2514,15 @@ impl<'src> Parser<'src> {
                 self.skip_line();
                 return lhs;
             }
+            let call_span = self.current_span();
             let args = self.parse_stmt_arg_list(arena);
+            // `Randomize seed` costs 2 over an assignment of the seed.
+            if let (ExprNode::NameRef { sym, .. }, [seed]) = (arena.get(lhs), args.as_slice()) {
+                if self.scanner.sym_name(*sym).eq_ignore_ascii_case("Randomize") {
+                    let parts = line_size::expression_part(arena, *seed).map(|part| cost::RANDOMIZE + part);
+                    self.check_parts_size(parts, call_span);
+                }
+            }
             self.end_stmt();
             if args.is_empty() {
                 lhs
@@ -2624,6 +2632,7 @@ impl<'src> Parser<'src> {
     /// The spelling selects the variant flag: `MidB`/`MidB$` are byte-oriented;
     /// `Mid$`/`MidB$` carry the `$` bit.
     fn parse_mid_assign(&mut self, arena: &mut ExprArena) -> NodeId {
+        let mid_span = self.current_span();
         let (byte_oriented, dollar) = match self.peek().kind {
             TokenKind::Kw(Kw::Mid)   => (false, false),
             TokenKind::Kw(Kw::MidS)  => (false, true),
@@ -2657,6 +2666,14 @@ impl<'src> Parser<'src> {
         self.advance(); // )
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
+        // `Mid$(s, a [, n]) = v` costs its operands and nothing more than an assignment's store.
+        if dollar && !byte_oriented {
+            let parts = line_size::expression_part(arena, value).and_then(|value| {
+                let ExprNode::ArgList { args } = arena.get(args) else { return None };
+                args.iter().try_fold(value, |total, arg| Some(total + line_size::expression_part(arena, *arg)?))
+            });
+            self.check_parts_size(parts, mid_span);
+        }
         self.end_stmt();
         arena.alloc(ExprNode::MidAssign { byte_oriented, dollar, args, value })
     }
@@ -2866,6 +2883,7 @@ impl<'src> Parser<'src> {
 
     /// Parses a ReDim statement.
     fn parse_redim_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let redim_span = self.current_span();
         self.advance(); // consume ReDim
         let preserve = self.eat(TokenKind::Kw(Kw::Preserve));
         let mut stmts = Vec::new();
@@ -2938,6 +2956,17 @@ impl<'src> Parser<'src> {
             self.set_span(item, name.span);
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
+        }
+        // `ReDim a(n)` of one array with one bound costs 8 over an assignment of the bound.
+        if let [only] = stmts.as_slice() {
+            if let ExprNode::ReDimItem { preserve: false, base: None, bounds: Some(list), type_node: None, .. } = arena.get(*only) {
+                if let ExprNode::ArgList { args } = arena.get(*list) {
+                    if let [bound] = args.as_slice() {
+                        let parts = line_size::expression_part(arena, *bound).map(|part| cost::REDIM + part);
+                        self.check_parts_size(parts, redim_span);
+                    }
+                }
+            }
         }
         self.end_stmt();
         arena.alloc(ExprNode::Block { stmts })
@@ -4678,6 +4707,7 @@ impl<'src> Parser<'src> {
 
     /// `Get #filenum, [recnum], var` or `Put #filenum, [recnum], val`.
     fn parse_file_get_put_after_keyword(&mut self, arena: &mut ExprArena, kind: FileIoKind) -> NodeId {
+        let put_span = self.current_span();
         self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
@@ -4688,6 +4718,16 @@ impl<'src> Parser<'src> {
             }
             if self.expect_comma() {
                 args.push(self.parse_expr(arena, 0));
+            }
+        }
+        // `Put #n, , value`, the record left out, costs the channel's expression and 2 over an
+        // assignment of the value.
+        if kind == FileIoKind::Put {
+            if let [value] = args.as_slice() {
+                let parts = line_size::expression_part(arena, ch)
+                    .zip(line_size::expression_part(arena, *value))
+                    .map(|(channel, value)| cost::MISSING_RECORD + channel + value);
+                self.check_parts_size(parts, put_span);
             }
         }
         self.end_stmt();
