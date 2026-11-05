@@ -304,3 +304,22 @@ fn open_costs_eight_bytes_more_than_assigning_its_path() {
         }
     }
 }
+
+#[test]
+fn spc_tab_and_the_length_clause_of_open_follow_the_size_rule() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let list = |term: &str, sep: &str, n: usize, per: usize| {
+        let terms = vec![term; n];
+        terms.chunks(per).map(|c| c.join(&format!(" {sep} "))).collect::<Vec<_>>().join(&format!(" {sep} _\n"))
+    };
+    for term in ["Spc(1)", "Tab(1)"] {
+        let src = |n| format!("Sub S()\nPrint #1, {}\nEnd Sub\n", list(term, ";", n, 100));
+        assert_eq!(parse(&src(1908)).found, vec![], "{term}");
+        assert_eq!(parse(&src(1909)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{term}");
+    }
+    for (per, fits) in [(120, 2543), (150, 2546), (170, 2547)] {
+        let src = |n| format!("Sub S()\nOpen s For Output As #1 Len = {}\nEnd Sub\n", list("1", "+", n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "Len per {per}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "Len per {per}");
+    }
+}

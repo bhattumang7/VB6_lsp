@@ -1124,10 +1124,40 @@ impl<'src> Parser<'src> {
         // the lines' bytes.
         let mut total = 6 + 4 * lines + extra;
         for (i, item) in items.iter().enumerate() {
-            let Some(size) = expression_chain_size(arena, *item, 0) else { return false };
-            total += size - 6 + if i > 0 { 2 } else { 0 };
+            // `Spc(n)` and `Tab(n)` cost 2 more than `n`.
+            let (expr, wrapper) = match arena.get(*item) {
+                ExprNode::Call { func, args } if self.is_spc_or_tab(arena, *func) => match arena.get(*args) {
+                    ExprNode::ArgList { args } if args.len() == 1 => (args[0], 2),
+                    _ => return false,
+                },
+                _ => (*item, 0),
+            };
+            let Some(size) = expression_chain_size(arena, expr, 0) else { return false };
+            total += size - 6 + wrapper + if i > 0 { 2 } else { 0 };
         }
         total > MAX_LINE_CODE_SIZE
+    }
+
+    fn is_spc_or_tab(&self, arena: &ExprArena, func: NodeId) -> bool {
+        match arena.get(func) {
+            ExprNode::NameRef { sym, .. } => {
+                let name = self.scanner.sym_name(*sym);
+                name.eq_ignore_ascii_case("Spc") || name.eq_ignore_ascii_case("Tab")
+            }
+            _ => false,
+        }
+    }
+
+    /// Reports a line that ends in the expression `value` and costs `extra` more than an
+    /// assignment of it when that takes the line's compiled code past its limit.
+    fn length_clause_too_complex(&mut self, arena: &ExprArena, value: NodeId, extra: usize, at: Span) {
+        if self.peek().kind != TokenKind::Eol || self.colon_on_line {
+            return;
+        }
+        let lines = self.line_continuations as usize + 1;
+        if expression_chain_size(arena, value, lines).is_some_and(|size| size + extra > MAX_LINE_CODE_SIZE) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, at);
+        }
     }
 
     fn end_stmt(&mut self) {
@@ -4518,6 +4548,11 @@ impl<'src> Parser<'src> {
             matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
         if channel_is_simple && args.len() == 1 && self.output_list_too_complex(arena, &args, 8) {
             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, open_span);
+        }
+        // With `Len = n` the clauses and the path cost 10 more than assigning `n` when the
+        // path is a name, and the path's own bytes differ from a name's by as much as its size.
+        if channel_is_simple && args.len() == 2 && matches!(arena.get(args[0]), ExprNode::NameRef { .. }) {
+            self.length_clause_too_complex(arena, args[1], 10, open_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt {
