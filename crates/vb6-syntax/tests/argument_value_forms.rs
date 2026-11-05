@@ -99,3 +99,20 @@ fn call_site_byval_is_recorded_for_the_argument() {
     let spelled: Vec<String> = names.iter().map(|s| ctx.sym_name(*s as usize).to_string()).collect();
     assert_eq!(spelled, vec!["x", "p", "r"]);
 }
+
+#[test]
+fn the_operand_of_addressof_is_the_whole_expression() {
+    use vb6_syntax::frontend::ast::BinOpKind;
+    let (_, p) = in_sub("x = Dcl(AddressOf Bar + 1)");
+    assert_eq!(p.found, vec![]);
+    let b = p.proc_body(0);
+    let ExprNode::Assign { value, .. } = p.node(b[0]) else { panic!("not an assignment") };
+    let ExprNode::Call { args, .. } = p.node(*value) else { panic!("not a call") };
+    let ExprNode::ArgList { args } = p.node(*args) else { panic!("no args") };
+    let ExprNode::AddressOf { operand } = p.node(args[0]) else { panic!("not AddressOf") };
+    assert!(matches!(p.node(*operand), ExprNode::BinOp { op: BinOpKind::Add, .. }));
+    for body in ["x = Dcl(AddressOf Bar = 1)", "x = Dcl(AddressOf Bar Is Nothing)"] {
+        let (_, p) = in_sub(body);
+        assert_eq!(p.found, vec![], "{body}");
+    }
+}

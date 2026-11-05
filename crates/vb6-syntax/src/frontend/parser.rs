@@ -5753,7 +5753,10 @@ impl<'src> Parser<'src> {
                 if !std::mem::take(&mut self.address_of_ok) {
                     self.report_expected(at.span, "expression");
                 }
-                let operand = self.parse_procedure_name(arena);
+                let name = self.parse_procedure_name(arena);
+                // The operand is a whole expression that starts with the procedure's name:
+                // `AddressOf Bar + 1` takes the operators that follow.
+                let operand = self.parse_infix(arena, name, 0);
                 arena.alloc(ExprNode::AddressOf { operand })
             }
             // Leading `.`/`!` — With-block member reference in expression
