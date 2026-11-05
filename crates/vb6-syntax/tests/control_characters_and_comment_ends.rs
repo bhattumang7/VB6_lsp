@@ -83,3 +83,22 @@ fn identifier_length_counts_source_bytes_not_utf8_bytes() {
     assert_eq!(parse(&format!("Dim {long} As Long
 ")).found.first().map(|f| f.0), Some(0x9c6d));
 }
+
+#[test]
+fn names_differing_in_the_case_of_an_accented_letter_are_one_symbol() {
+    use vb6_syntax::frontend::ast::ExprArena;
+    use vb6_syntax::frontend::parser::Parser;
+    use vb6_syntax::frontend::scanner::ScannerContext;
+    // 0xE9 and 0xC9 are the lower and upper case of the same letter.
+    let src: Vec<u8> = b"Dim \xE9 As Long\n\xC9 = 1\n".to_vec();
+    let mut ctx = ScannerContext::new(1, 1, 0x0409);
+    ctx.intern_keywords();
+    let mut arena = ExprArena::new();
+    let mut parser = Parser::new(&mut ctx, &src);
+    parser.parse_module(&mut arena);
+    drop(parser);
+    let a = ctx.lookup("\u{e9}").map(|s| s.name.clone());
+    let b = ctx.lookup("\u{c9}").map(|s| s.name.clone());
+    assert_eq!(a, b);
+    assert!(a.is_some());
+}

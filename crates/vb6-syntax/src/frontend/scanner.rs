@@ -138,7 +138,7 @@ impl ScannerContext {
     /// Look up an interned symbol by name (case-insensitive).
     pub fn lookup(&self, name: &str) -> Option<&Symbol> {
         self.by_key
-            .get(&name.to_ascii_lowercase())
+            .get(&fold_name(name))
             .map(|&id| &self.symbols[id])
     }
 
@@ -172,7 +172,7 @@ impl ScannerContext {
 
     /// Look up `name` returning the existing symbol, or allocate and link a new one.
     fn intern_core(&mut self, name: &str, param_4: u32) -> Option<SymId> {
-        let key = name.to_ascii_lowercase();
+        let key = fold_name(name);
 
         // --- found path ---
         if let Some(&existing) = self.by_key.get(&key) {
@@ -287,7 +287,7 @@ impl ScannerContext {
 
     /// Intern a user-defined identifier name, returning its arena index.
     pub fn intern_ident(&mut self, name: &str) -> Option<SymId> {
-        let key = name.to_ascii_lowercase();
+        let key = fold_name(name);
         if let Some(&existing) = self.by_key.get(&key) {
             return Some(existing);
         }
@@ -330,6 +330,17 @@ impl ScannerContext {
     pub fn keyword_string(index: usize) -> &'static str {
         KEYWORD_TABLE[index].name
     }
+}
+
+/// A name as symbols are keyed: letters fold to lower case, the accented Latin-1 letters
+/// along with the ASCII ones.
+pub fn fold_name(name: &str) -> String {
+    name.chars()
+        .map(|c| match c {
+            '\u{c0}'..='\u{de}' if c != '\u{d7}' => char::from_u32(c as u32 + 0x20).unwrap_or(c),
+            _ => c.to_ascii_lowercase(),
+        })
+        .collect()
 }
 
 // ── Char-class table ──────────────────────────────────────────────────────────
