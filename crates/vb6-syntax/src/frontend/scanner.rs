@@ -433,9 +433,9 @@ fn vba_date_serial(y: i32, m: i32, d: i32) -> f64 {
     (gregorian_to_days(y, m, d) - VBA_EPOCH) as f64
 }
 
-/// Expand a two-digit year: 00–29 → 2000–2029, 30–99 → 1930–1999.
+/// Expand a two-digit year: 00–49 → 2000–2049, 50–99 → 1950–1999.
 fn expand_two_digit_year(yy: i32) -> i32 {
-    if yy < 30 { 2000 + yy } else { 1900 + yy }
+    if yy < 50 { 2000 + yy } else { 1900 + yy }
 }
 
 const MONTH_NAMES: [&str; 12] = [
@@ -461,8 +461,18 @@ fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
     let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut i = 0;
+    // Two separators in a row (`//`, `--`, `,,`) are not a date.
+    let mut last_sep: Option<u8> = None;
     while i < bytes.len() {
         let b = bytes[i];
+        if matches!(b, b'/' | b'-' | b',') {
+            if last_sep == Some(b) {
+                return None;
+            }
+            last_sep = Some(b);
+        } else if !matches!(b, b' ' | b'\t') {
+            last_sep = None;
+        }
         match b {
             b' ' | b'\t' | b',' => i += 1,
             b':' => { out.push(DateTok::Colon); i += 1; }
@@ -486,14 +496,12 @@ fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
 }
 
 fn month_from_word(w: &str) -> Option<i32> {
+    // Any prefix of a month's name of at least three letters.
     let w = w.to_ascii_lowercase();
     if w.len() < 3 {
         return None;
     }
-    MONTH_NAMES
-        .iter()
-        .position(|m| *m == w || (w.len() == 3 && m[..3] == w))
-        .map(|i| i as i32 + 1)
+    MONTH_NAMES.iter().position(|m| m.starts_with(&w)).map(|i| i as i32 + 1)
 }
 
 fn is_weekday_word(w: &str) -> bool {
@@ -512,7 +520,8 @@ fn days_in_month(y: i32, m: i32) -> i32 {
 
 /// A year as written: two digits expand, the result must lie in 100..=9999.
 fn full_year(value: i32, digits: usize) -> Option<i32> {
-    let y = if digits <= 2 { expand_two_digit_year(value) } else { value };
+    // A year below 100 expands, however many zeros pad it (`050` is 1950).
+    let y = if value < 100 && digits <= 3 { expand_two_digit_year(value) } else { value };
     (100..=9999).contains(&y).then_some(y)
 }
 
@@ -587,7 +596,8 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
         match t {
             DateTok::Word(w) if w.eq_ignore_ascii_case("am") => meridiem = Some(false),
             DateTok::Word(w) if w.eq_ignore_ascii_case("pm") => meridiem = Some(true),
-            DateTok::Word(w) if is_weekday_word(w) => {}
+            // A weekday name makes the text invalid.
+            DateTok::Word(w) if is_weekday_word(w) => return None,
             other => rest.push(other),
         }
     }
@@ -636,7 +646,9 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
         (None, false) => numeric_date(&nums)?,
         (Some(m), _) => named_date(m, &nums)?,
     };
-    Some(date + time.unwrap_or(0.0))
+    // Before the epoch the fraction of a date is the time of day counted as a magnitude.
+    let time = time.unwrap_or(0.0);
+    Some(if date < 0.0 { date - time } else { date + time })
 }
 
 // ── Scanner ───────────────────────────────────────────────────────────────────
@@ -1431,7 +1443,9 @@ fn currency_units(text: &str) -> Option<i64> {
         digits.checked_mul(10i128.checked_pow(shift as u32)?)?
     } else {
         let div = 10i128.checked_pow((-shift) as u32)?;
-        (digits + div / 2) / div
+        // Halves round to the even unit.
+        let (q, r) = (digits / div, digits % div);
+        if 2 * r > div || (2 * r == div && q % 2 == 1) { q + 1 } else { q }
     };
     i64::try_from(units).ok()
 }

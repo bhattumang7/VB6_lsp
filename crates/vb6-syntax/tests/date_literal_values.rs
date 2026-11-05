@@ -39,7 +39,10 @@ fn leading_year_means_year_month_day() {
 #[test]
 fn two_digit_years_expand() {
     assert_eq!(date("1/1/29"), Some(47119.0));
-    assert_eq!(date("1/1/30"), Some(10959.0));
+    assert_eq!(date("1/1/30"), Some(47484.0));
+    assert_eq!(date("1/1/49"), Some(54424.0));
+    assert_eq!(date("1/1/50"), Some(18264.0));
+    assert_eq!(date("1/1/050"), Some(18264.0));
 }
 
 #[test]
@@ -50,7 +53,33 @@ fn month_names_give_real_values() {
     assert_eq!(date("1-Jan-2000"), Some(36526.0));
     assert_eq!(date("December, 24, 2000"), Some(36884.0));
     assert_eq!(date("January 2000"), Some(36526.0));
-    assert_eq!(date("Saturday, January 1, 2000"), Some(36526.0));
+}
+
+#[test]
+fn weekday_names_make_the_text_invalid() {
+    assert_eq!(date("Saturday, January 1, 2000"), None);
+    assert_eq!(date("Mon Jan 1 2000"), None);
+}
+
+#[test]
+fn a_month_name_may_be_cut_short_to_three_letters_or_more() {
+    assert_eq!(date("Sept 1 2000"), Some(36770.0));
+    assert_eq!(date("Septe 1 2000"), Some(36770.0));
+    assert_eq!(date("Janu 1 2000"), Some(36526.0));
+    assert_eq!(date("Ja 1 2000"), None);
+    assert_eq!(date("Jann 1 2000"), None);
+}
+
+#[test]
+fn doubled_separators_are_not_a_date() {
+    assert_eq!(date("1//1//2000"), None);
+    assert_eq!(date("1--1--2000"), None);
+    assert_eq!(date("1,,1,2000"), None);
+}
+
+#[test]
+fn before_the_epoch_the_time_is_a_magnitude() {
+    assert_eq!(date("1/1/1850 6:00 AM"), Some(-18260.25));
 }
 
 #[test]

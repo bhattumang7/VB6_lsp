@@ -142,7 +142,12 @@ fn floating_literals_beyond_their_range_are_syntax_errors() {
 fn currency_literal_is_exact() {
     assert_eq!(literal("123456789012345@"), AstLit::Currency(1_234_567_890_123_450_000));
     assert_eq!(literal("1.5@"), AstLit::Currency(15_000));
-    assert_eq!(literal("0.00005@"), AstLit::Currency(1));
+    // Halves round to the even unit.
+    assert_eq!(literal("0.00005@"), AstLit::Currency(0));
+    assert_eq!(literal("0.00015@"), AstLit::Currency(2));
+    assert_eq!(literal("0.00025@"), AstLit::Currency(2));
+    assert_eq!(literal("0.00035@"), AstLit::Currency(4));
+    assert_eq!(literal("5E-5@"), AstLit::Currency(0));
     assert_eq!(literal("922337203685477.5807@"), AstLit::Currency(i64::MAX));
     assert_eq!(rejected("922337203685478@"), vec![(ERR_SYNTAX_ERROR, 0, 16)]);
 }
