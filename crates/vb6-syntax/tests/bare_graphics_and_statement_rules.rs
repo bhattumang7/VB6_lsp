@@ -119,3 +119,13 @@ fn raise_event_is_not_a_statement_of_a_standard_module() {
     let src = in_sub("RaiseEvent E");
     assert_eq!(parse(&src).found[0], (SYNTAX_ERROR, offset_of(&src, "RaiseEvent", 0), 10));
 }
+
+#[test]
+fn built_in_function_shapes_hold_inside_the_arguments_of_a_call_statement() {
+    for stmt in ["Call f(UBound)", "Call f(UBound())", "Call f(String(1))", "Call f(StrComp(1))", "Call f(a, UBound.a)"] {
+        assert!(!parse(&in_sub(stmt)).found.is_empty(), "{stmt}");
+    }
+    for stmt in ["Call f(UBound(a))", "Call f(String(3, \"x\"))", "Call f(StrComp(a, b))", "f UBound(a, 1)"] {
+        assert_eq!(parse(&in_sub(stmt)).found, vec![], "{stmt}");
+    }
+}

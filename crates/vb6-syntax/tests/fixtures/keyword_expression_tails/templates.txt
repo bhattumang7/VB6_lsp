@@ -1,0 +1,9 @@
+# {k} is replaced by each keyword followed by a tail.
+=== assign bas
+Sub P(a, b, x)
+x = {k}
+End Sub
+=== arg bas
+Sub P(a, b, x)
+Call f({k})
+End Sub

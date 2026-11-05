@@ -5553,6 +5553,14 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_arg_list(&mut self, arena: &mut ExprArena) -> NodeId {
+        // The arguments of a call are expressions, even when the call is itself a target.
+        let was_target = std::mem::replace(&mut self.in_target, false);
+        let list = self.parse_arg_list_items(arena);
+        self.in_target = was_target;
+        list
+    }
+
+    fn parse_arg_list_items(&mut self, arena: &mut ExprArena) -> NodeId {
         if self.peek().kind == TokenKind::Kw(Kw::RParen) {
             return arena.alloc(ExprNode::ArgList { args: vec![] });
         }

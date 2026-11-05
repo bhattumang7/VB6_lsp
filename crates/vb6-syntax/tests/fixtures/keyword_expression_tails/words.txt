@@ -1,0 +1,2928 @@
+Xor
+Xor(1)
+Xor(1, 2)
+Xor()
+Xor.a
+Xor!a
+Xor + 1
+Xor = 1
+Xor a
+Xor To 1
+Xor(1).a
+Xor(a)(b)
+Xor(,)
+Xor(1,)
+Xor(a:=1)
+Xor$
+Write
+Write(1)
+Write(1, 2)
+Write()
+Write.a
+Write!a
+Write + 1
+Write = 1
+Write a
+Write To 1
+Write(1).a
+Write(a)(b)
+Write(,)
+Write(1,)
+Write(a:=1)
+Write$
+WithEvents
+WithEvents(1)
+WithEvents(1, 2)
+WithEvents()
+WithEvents.a
+WithEvents!a
+WithEvents + 1
+WithEvents = 1
+WithEvents a
+WithEvents To 1
+WithEvents(1).a
+WithEvents(a)(b)
+WithEvents(,)
+WithEvents(1,)
+WithEvents(a:=1)
+WithEvents$
+With
+With(1)
+With(1, 2)
+With()
+With.a
+With!a
+With + 1
+With = 1
+With a
+With To 1
+With(1).a
+With(a)(b)
+With(,)
+With(1,)
+With(a:=1)
+With$
+Width
+Width(1)
+Width(1, 2)
+Width()
+Width.a
+Width!a
+Width + 1
+Width = 1
+Width a
+Width To 1
+Width(1).a
+Width(a)(b)
+Width(,)
+Width(1,)
+Width(a:=1)
+Width$
+While
+While(1)
+While(1, 2)
+While()
+While.a
+While!a
+While + 1
+While = 1
+While a
+While To 1
+While(1).a
+While(a)(b)
+While(,)
+While(1,)
+While(a:=1)
+While$
+Wend
+Wend(1)
+Wend(1, 2)
+Wend()
+Wend.a
+Wend!a
+Wend + 1
+Wend = 1
+Wend a
+Wend To 1
+Wend(1).a
+Wend(a)(b)
+Wend(,)
+Wend(1,)
+Wend(a:=1)
+Wend$
+Variant
+Variant(1)
+Variant(1, 2)
+Variant()
+Variant.a
+Variant!a
+Variant + 1
+Variant = 1
+Variant a
+Variant To 1
+Variant(1).a
+Variant(a)(b)
+Variant(,)
+Variant(1,)
+Variant(a:=1)
+Variant$
+Until
+Until(1)
+Until(1, 2)
+Until()
+Until.a
+Until!a
+Until + 1
+Until = 1
+Until a
+Until To 1
+Until(1).a
+Until(a)(b)
+Until(,)
+Until(1,)
+Until(a:=1)
+Until$
+Unknown
+Unknown(1)
+Unknown(1, 2)
+Unknown()
+Unknown.a
+Unknown!a
+Unknown + 1
+Unknown = 1
+Unknown a
+Unknown To 1
+Unknown(1).a
+Unknown(a)(b)
+Unknown(,)
+Unknown(1,)
+Unknown(a:=1)
+Unknown$
+Unlock
+Unlock(1)
+Unlock(1, 2)
+Unlock()
+Unlock.a
+Unlock!a
+Unlock + 1
+Unlock = 1
+Unlock a
+Unlock To 1
+Unlock(1).a
+Unlock(a)(b)
+Unlock(,)
+Unlock(1,)
+Unlock(a:=1)
+Unlock$
+Unload
+Unload(1)
+Unload(1, 2)
+Unload()
+Unload.a
+Unload!a
+Unload + 1
+Unload = 1
+Unload a
+Unload To 1
+Unload(1).a
+Unload(a)(b)
+Unload(,)
+Unload(1,)
+Unload(a:=1)
+Unload$
+UBound
+UBound(1)
+UBound(1, 2)
+UBound()
+UBound.a
+UBound!a
+UBound + 1
+UBound = 1
+UBound a
+UBound To 1
+UBound(1).a
+UBound(a)(b)
+UBound(,)
+UBound(1,)
+UBound(a:=1)
+UBound$
+TypeOf
+TypeOf(1)
+TypeOf(1, 2)
+TypeOf()
+TypeOf.a
+TypeOf!a
+TypeOf + 1
+TypeOf = 1
+TypeOf a
+TypeOf To 1
+TypeOf(1).a
+TypeOf(a)(b)
+TypeOf(,)
+TypeOf(1,)
+TypeOf(a:=1)
+TypeOf$
+Type
+Type(1)
+Type(1, 2)
+Type()
+Type.a
+Type!a
+Type + 1
+Type = 1
+Type a
+Type To 1
+Type(1).a
+Type(a)(b)
+Type(,)
+Type(1,)
+Type(a:=1)
+Type$
+True
+True(1)
+True(1, 2)
+True()
+True.a
+True!a
+True + 1
+True = 1
+True a
+True To 1
+True(1).a
+True(a)(b)
+True(,)
+True(1,)
+True(a:=1)
+True$
+To
+To(1)
+To(1, 2)
+To()
+To.a
+To!a
+To + 1
+To = 1
+To a
+To To 1
+To(1).a
+To(a)(b)
+To(,)
+To(1,)
+To(a:=1)
+To$
+Then
+Then(1)
+Then(1, 2)
+Then()
+Then.a
+Then!a
+Then + 1
+Then = 1
+Then a
+Then To 1
+Then(1).a
+Then(a)(b)
+Then(,)
+Then(1,)
+Then(a:=1)
+Then$
+Text
+Text(1)
+Text(1, 2)
+Text()
+Text.a
+Text!a
+Text + 1
+Text = 1
+Text a
+Text To 1
+Text(1).a
+Text(a)(b)
+Text(,)
+Text(1,)
+Text(a:=1)
+Text$
+Tab
+Tab(1)
+Tab(1, 2)
+Tab()
+Tab.a
+Tab!a
+Tab + 1
+Tab = 1
+Tab a
+Tab To 1
+Tab(1).a
+Tab(a)(b)
+Tab(,)
+Tab(1,)
+Tab(a:=1)
+Tab$
+Sub
+Sub(1)
+Sub(1, 2)
+Sub()
+Sub.a
+Sub!a
+Sub + 1
+Sub = 1
+Sub a
+Sub To 1
+Sub(1).a
+Sub(a)(b)
+Sub(,)
+Sub(1,)
+Sub(a:=1)
+Sub$
+String
+String(1)
+String(1, 2)
+String()
+String.a
+String!a
+String + 1
+String = 1
+String a
+String To 1
+String(1).a
+String(a)(b)
+String(,)
+String(1,)
+String(a:=1)
+String$
+StrComp
+StrComp(1)
+StrComp(1, 2)
+StrComp()
+StrComp.a
+StrComp!a
+StrComp + 1
+StrComp = 1
+StrComp a
+StrComp To 1
+StrComp(1).a
+StrComp(a)(b)
+StrComp(,)
+StrComp(1,)
+StrComp(a:=1)
+StrComp$
+Stop
+Stop(1)
+Stop(1, 2)
+Stop()
+Stop.a
+Stop!a
+Stop + 1
+Stop = 1
+Stop a
+Stop To 1
+Stop(1).a
+Stop(a)(b)
+Stop(,)
+Stop(1,)
+Stop(a:=1)
+Stop$
+Step
+Step(1)
+Step(1, 2)
+Step()
+Step.a
+Step!a
+Step + 1
+Step = 1
+Step a
+Step To 1
+Step(1).a
+Step(a)(b)
+Step(,)
+Step(1,)
+Step(a:=1)
+Step$
+Static
+Static(1)
+Static(1, 2)
+Static()
+Static.a
+Static!a
+Static + 1
+Static = 1
+Static a
+Static To 1
+Static(1).a
+Static(a)(b)
+Static(,)
+Static(1,)
+Static(a:=1)
+Static$
+Spc
+Spc(1)
+Spc(1, 2)
+Spc()
+Spc.a
+Spc!a
+Spc + 1
+Spc = 1
+Spc a
+Spc To 1
+Spc(1).a
+Spc(a)(b)
+Spc(,)
+Spc(1,)
+Spc(a:=1)
+Spc$
+Single
+Single(1)
+Single(1, 2)
+Single()
+Single.a
+Single!a
+Single + 1
+Single = 1
+Single a
+Single To 1
+Single(1).a
+Single(a)(b)
+Single(,)
+Single(1,)
+Single(a:=1)
+Single$
+Shared
+Shared(1)
+Shared(1, 2)
+Shared()
+Shared.a
+Shared!a
+Shared + 1
+Shared = 1
+Shared a
+Shared To 1
+Shared(1).a
+Shared(a)(b)
+Shared(,)
+Shared(1,)
+Shared(a:=1)
+Shared$
+Sgn
+Sgn(1)
+Sgn(1, 2)
+Sgn()
+Sgn.a
+Sgn!a
+Sgn + 1
+Sgn = 1
+Sgn a
+Sgn To 1
+Sgn(1).a
+Sgn(a)(b)
+Sgn(,)
+Sgn(1,)
+Sgn(a:=1)
+Sgn$
+Set
+Set(1)
+Set(1, 2)
+Set()
+Set.a
+Set!a
+Set + 1
+Set = 1
+Set a
+Set To 1
+Set(1).a
+Set(a)(b)
+Set(,)
+Set(1,)
+Set(a:=1)
+Set$
+Select
+Select(1)
+Select(1, 2)
+Select()
+Select.a
+Select!a
+Select + 1
+Select = 1
+Select a
+Select To 1
+Select(1).a
+Select(a)(b)
+Select(,)
+Select(1,)
+Select(a:=1)
+Select$
+Seek
+Seek(1)
+Seek(1, 2)
+Seek()
+Seek.a
+Seek!a
+Seek + 1
+Seek = 1
+Seek a
+Seek To 1
+Seek(1).a
+Seek(a)(b)
+Seek(,)
+Seek(1,)
+Seek(a:=1)
+Seek$
+Scale
+Scale(1)
+Scale(1, 2)
+Scale()
+Scale.a
+Scale!a
+Scale + 1
+Scale = 1
+Scale a
+Scale To 1
+Scale(1).a
+Scale(a)(b)
+Scale(,)
+Scale(1,)
+Scale(a:=1)
+Scale$
+RSet
+RSet(1)
+RSet(1, 2)
+RSet()
+RSet.a
+RSet!a
+RSet + 1
+RSet = 1
+RSet a
+RSet To 1
+RSet(1).a
+RSet(a)(b)
+RSet(,)
+RSet(1,)
+RSet(a:=1)
+RSet$
+RGB
+RGB(1)
+RGB(1, 2)
+RGB()
+RGB.a
+RGB!a
+RGB + 1
+RGB = 1
+RGB a
+RGB To 1
+RGB(1).a
+RGB(a)(b)
+RGB(,)
+RGB(1,)
+RGB(a:=1)
+RGB$
+Return
+Return(1)
+Return(1, 2)
+Return()
+Return.a
+Return!a
+Return + 1
+Return = 1
+Return a
+Return To 1
+Return(1).a
+Return(a)(b)
+Return(,)
+Return(1,)
+Return(a:=1)
+Return$
+Resume
+Resume(1)
+Resume(1, 2)
+Resume()
+Resume.a
+Resume!a
+Resume + 1
+Resume = 1
+Resume a
+Resume To 1
+Resume(1).a
+Resume(a)(b)
+Resume(,)
+Resume(1,)
+Resume(a:=1)
+Resume$
+Rem
+Rem(1)
+Rem(1, 2)
+Rem()
+Rem.a
+Rem!a
+Rem + 1
+Rem = 1
+Rem a
+Rem To 1
+Rem(1).a
+Rem(a)(b)
+Rem(,)
+Rem(1,)
+Rem(a:=1)
+Rem$
+ReDim
+ReDim(1)
+ReDim(1, 2)
+ReDim()
+ReDim.a
+ReDim!a
+ReDim + 1
+ReDim = 1
+ReDim a
+ReDim To 1
+ReDim(1).a
+ReDim(a)(b)
+ReDim(,)
+ReDim(1,)
+ReDim(a:=1)
+ReDim$
+Read
+Read(1)
+Read(1, 2)
+Read()
+Read.a
+Read!a
+Read + 1
+Read = 1
+Read a
+Read To 1
+Read(1).a
+Read(a)(b)
+Read(,)
+Read(1,)
+Read(a:=1)
+Read$
+Randomize
+Randomize(1)
+Randomize(1, 2)
+Randomize()
+Randomize.a
+Randomize!a
+Randomize + 1
+Randomize = 1
+Randomize a
+Randomize To 1
+Randomize(1).a
+Randomize(a)(b)
+Randomize(,)
+Randomize(1,)
+Randomize(a:=1)
+Randomize$
+Random
+Random(1)
+Random(1, 2)
+Random()
+Random.a
+Random!a
+Random + 1
+Random = 1
+Random a
+Random To 1
+Random(1).a
+Random(a)(b)
+Random(,)
+Random(1,)
+Random(a:=1)
+Random$
+RaiseEvent
+RaiseEvent(1)
+RaiseEvent(1, 2)
+RaiseEvent()
+RaiseEvent.a
+RaiseEvent!a
+RaiseEvent + 1
+RaiseEvent = 1
+RaiseEvent a
+RaiseEvent To 1
+RaiseEvent(1).a
+RaiseEvent(a)(b)
+RaiseEvent(,)
+RaiseEvent(1,)
+RaiseEvent(a:=1)
+RaiseEvent$
+Put
+Put(1)
+Put(1, 2)
+Put()
+Put.a
+Put!a
+Put + 1
+Put = 1
+Put a
+Put To 1
+Put(1).a
+Put(a)(b)
+Put(,)
+Put(1,)
+Put(a:=1)
+Put$
+Public
+Public(1)
+Public(1, 2)
+Public()
+Public.a
+Public!a
+Public + 1
+Public = 1
+Public a
+Public To 1
+Public(1).a
+Public(a)(b)
+Public(,)
+Public(1,)
+Public(a:=1)
+Public$
+PSet
+PSet(1)
+PSet(1, 2)
+PSet()
+PSet.a
+PSet!a
+PSet + 1
+PSet = 1
+PSet a
+PSet To 1
+PSet(1).a
+PSet(a)(b)
+PSet(,)
+PSet(1,)
+PSet(a:=1)
+PSet$
+Property
+Property(1)
+Property(1, 2)
+Property()
+Property.a
+Property!a
+Property + 1
+Property = 1
+Property a
+Property To 1
+Property(1).a
+Property(a)(b)
+Property(,)
+Property(1,)
+Property(a:=1)
+Property$
+Private
+Private(1)
+Private(1, 2)
+Private()
+Private.a
+Private!a
+Private + 1
+Private = 1
+Private a
+Private To 1
+Private(1).a
+Private(a)(b)
+Private(,)
+Private(1,)
+Private(a:=1)
+Private$
+Print
+Print(1)
+Print(1, 2)
+Print()
+Print.a
+Print!a
+Print + 1
+Print = 1
+Print a
+Print To 1
+Print(1).a
+Print(a)(b)
+Print(,)
+Print(1,)
+Print(a:=1)
+Print$
+Preserve
+Preserve(1)
+Preserve(1, 2)
+Preserve()
+Preserve.a
+Preserve!a
+Preserve + 1
+Preserve = 1
+Preserve a
+Preserve To 1
+Preserve(1).a
+Preserve(a)(b)
+Preserve(,)
+Preserve(1,)
+Preserve(a:=1)
+Preserve$
+ParamArray
+ParamArray(1)
+ParamArray(1, 2)
+ParamArray()
+ParamArray.a
+ParamArray!a
+ParamArray + 1
+ParamArray = 1
+ParamArray a
+ParamArray To 1
+ParamArray(1).a
+ParamArray(a)(b)
+ParamArray(,)
+ParamArray(1,)
+ParamArray(a:=1)
+ParamArray$
+Output
+Output(1)
+Output(1, 2)
+Output()
+Output.a
+Output!a
+Output + 1
+Output = 1
+Output a
+Output To 1
+Output(1).a
+Output(a)(b)
+Output(,)
+Output(1,)
+Output(a:=1)
+Output$
+Or
+Or(1)
+Or(1, 2)
+Or()
+Or.a
+Or!a
+Or + 1
+Or = 1
+Or a
+Or To 1
+Or(1).a
+Or(a)(b)
+Or(,)
+Or(1,)
+Or(a:=1)
+Or$
+Optional
+Optional(1)
+Optional(1, 2)
+Optional()
+Optional.a
+Optional!a
+Optional + 1
+Optional = 1
+Optional a
+Optional To 1
+Optional(1).a
+Optional(a)(b)
+Optional(,)
+Optional(1,)
+Optional(a:=1)
+Optional$
+Option
+Option(1)
+Option(1, 2)
+Option()
+Option.a
+Option!a
+Option + 1
+Option = 1
+Option a
+Option To 1
+Option(1).a
+Option(a)(b)
+Option(,)
+Option(1,)
+Option(a:=1)
+Option$
+Open
+Open(1)
+Open(1, 2)
+Open()
+Open.a
+Open!a
+Open + 1
+Open = 1
+Open a
+Open To 1
+Open(1).a
+Open(a)(b)
+Open(,)
+Open(1,)
+Open(a:=1)
+Open$
+On
+On(1)
+On(1, 2)
+On()
+On.a
+On!a
+On + 1
+On = 1
+On a
+On To 1
+On(1).a
+On(a)(b)
+On(,)
+On(1,)
+On(a:=1)
+On$
+Object
+Object(1)
+Object(1, 2)
+Object()
+Object.a
+Object!a
+Object + 1
+Object = 1
+Object a
+Object To 1
+Object(1).a
+Object(a)(b)
+Object(,)
+Object(1,)
+Object(a:=1)
+Object$
+Null
+Null(1)
+Null(1, 2)
+Null()
+Null.a
+Null!a
+Null + 1
+Null = 1
+Null a
+Null To 1
+Null(1).a
+Null(a)(b)
+Null(,)
+Null(1,)
+Null(a:=1)
+Null$
+Nothing
+Nothing(1)
+Nothing(1, 2)
+Nothing()
+Nothing.a
+Nothing!a
+Nothing + 1
+Nothing = 1
+Nothing a
+Nothing To 1
+Nothing(1).a
+Nothing(a)(b)
+Nothing(,)
+Nothing(1,)
+Nothing(a:=1)
+Nothing$
+Not
+Not(1)
+Not(1, 2)
+Not()
+Not.a
+Not!a
+Not + 1
+Not = 1
+Not a
+Not To 1
+Not(1).a
+Not(a)(b)
+Not(,)
+Not(1,)
+Not(a:=1)
+Not$
+Next
+Next(1)
+Next(1, 2)
+Next()
+Next.a
+Next!a
+Next + 1
+Next = 1
+Next a
+Next To 1
+Next(1).a
+Next(a)(b)
+Next(,)
+Next(1,)
+Next(a:=1)
+Next$
+New
+New(1)
+New(1, 2)
+New()
+New.a
+New!a
+New + 1
+New = 1
+New a
+New To 1
+New(1).a
+New(a)(b)
+New(,)
+New(1,)
+New(a:=1)
+New$
+Name
+Name(1)
+Name(1, 2)
+Name()
+Name.a
+Name!a
+Name + 1
+Name = 1
+Name a
+Name To 1
+Name(1).a
+Name(a)(b)
+Name(,)
+Name(1,)
+Name(a:=1)
+Name$
+Module
+Module(1)
+Module(1, 2)
+Module()
+Module.a
+Module!a
+Module + 1
+Module = 1
+Module a
+Module To 1
+Module(1).a
+Module(a)(b)
+Module(,)
+Module(1,)
+Module(a:=1)
+Module$
+Mod
+Mod(1)
+Mod(1, 2)
+Mod()
+Mod.a
+Mod!a
+Mod + 1
+Mod = 1
+Mod a
+Mod To 1
+Mod(1).a
+Mod(a)(b)
+Mod(,)
+Mod(1,)
+Mod(a:=1)
+Mod$
+MidB
+MidB(1)
+MidB(1, 2)
+MidB()
+MidB.a
+MidB!a
+MidB + 1
+MidB = 1
+MidB a
+MidB To 1
+MidB(1).a
+MidB(a)(b)
+MidB(,)
+MidB(1,)
+MidB(a:=1)
+MidB$
+Mid
+Mid(1)
+Mid(1, 2)
+Mid()
+Mid.a
+Mid!a
+Mid + 1
+Mid = 1
+Mid a
+Mid To 1
+Mid(1).a
+Mid(a)(b)
+Mid(,)
+Mid(1,)
+Mid(a:=1)
+Mid$
+Me
+Me(1)
+Me(1, 2)
+Me()
+Me.a
+Me!a
+Me + 1
+Me = 1
+Me a
+Me To 1
+Me(1).a
+Me(a)(b)
+Me(,)
+Me(1,)
+Me(a:=1)
+Me$
+LSet
+LSet(1)
+LSet(1, 2)
+LSet()
+LSet.a
+LSet!a
+LSet + 1
+LSet = 1
+LSet a
+LSet To 1
+LSet(1).a
+LSet(a)(b)
+LSet(,)
+LSet(1,)
+LSet(a:=1)
+LSet$
+Loop
+Loop(1)
+Loop(1, 2)
+Loop()
+Loop.a
+Loop!a
+Loop + 1
+Loop = 1
+Loop a
+Loop To 1
+Loop(1).a
+Loop(a)(b)
+Loop(,)
+Loop(1,)
+Loop(a:=1)
+Loop$
+Long
+Long(1)
+Long(1, 2)
+Long()
+Long.a
+Long!a
+Long + 1
+Long = 1
+Long a
+Long To 1
+Long(1).a
+Long(a)(b)
+Long(,)
+Long(1,)
+Long(a:=1)
+Long$
+Lock
+Lock(1)
+Lock(1, 2)
+Lock()
+Lock.a
+Lock!a
+Lock + 1
+Lock = 1
+Lock a
+Lock To 1
+Lock(1).a
+Lock(a)(b)
+Lock(,)
+Lock(1,)
+Lock(a:=1)
+Lock$
+Local
+Local(1)
+Local(1, 2)
+Local()
+Local.a
+Local!a
+Local + 1
+Local = 1
+Local a
+Local To 1
+Local(1).a
+Local(a)(b)
+Local(,)
+Local(1,)
+Local(a:=1)
+Local$
+Load
+Load(1)
+Load(1, 2)
+Load()
+Load.a
+Load!a
+Load + 1
+Load = 1
+Load a
+Load To 1
+Load(1).a
+Load(a)(b)
+Load(,)
+Load(1,)
+Load(a:=1)
+Load$
+LINEINPUT
+LINEINPUT(1)
+LINEINPUT(1, 2)
+LINEINPUT()
+LINEINPUT.a
+LINEINPUT!a
+LINEINPUT + 1
+LINEINPUT = 1
+LINEINPUT a
+LINEINPUT To 1
+LINEINPUT(1).a
+LINEINPUT(a)(b)
+LINEINPUT(,)
+LINEINPUT(1,)
+LINEINPUT(a:=1)
+LINEINPUT$
+Line
+Line(1)
+Line(1, 2)
+Line()
+Line.a
+Line!a
+Line + 1
+Line = 1
+Line a
+Line To 1
+Line(1).a
+Line(a)(b)
+Line(,)
+Line(1,)
+Line(a:=1)
+Line$
+Like
+Like(1)
+Like(1, 2)
+Like()
+Like.a
+Like!a
+Like + 1
+Like = 1
+Like a
+Like To 1
+Like(1).a
+Like(a)(b)
+Like(,)
+Like(1,)
+Like(a:=1)
+Like$
+Lib
+Lib(1)
+Lib(1, 2)
+Lib()
+Lib.a
+Lib!a
+Lib + 1
+Lib = 1
+Lib a
+Lib To 1
+Lib(1).a
+Lib(a)(b)
+Lib(,)
+Lib(1,)
+Lib(a:=1)
+Lib$
+Let
+Let(1)
+Let(1, 2)
+Let()
+Let.a
+Let!a
+Let + 1
+Let = 1
+Let a
+Let To 1
+Let(1).a
+Let(a)(b)
+Let(,)
+Let(1,)
+Let(a:=1)
+Let$
+LenB
+LenB(1)
+LenB(1, 2)
+LenB()
+LenB.a
+LenB!a
+LenB + 1
+LenB = 1
+LenB a
+LenB To 1
+LenB(1).a
+LenB(a)(b)
+LenB(,)
+LenB(1,)
+LenB(a:=1)
+LenB$
+Len
+Len(1)
+Len(1, 2)
+Len()
+Len.a
+Len!a
+Len + 1
+Len = 1
+Len a
+Len To 1
+Len(1).a
+Len(a)(b)
+Len(,)
+Len(1,)
+Len(a:=1)
+Len$
+Left
+Left(1)
+Left(1, 2)
+Left()
+Left.a
+Left!a
+Left + 1
+Left = 1
+Left a
+Left To 1
+Left(1).a
+Left(a)(b)
+Left(,)
+Left(1,)
+Left(a:=1)
+Left$
+LBound
+LBound(1)
+LBound(1, 2)
+LBound()
+LBound.a
+LBound!a
+LBound + 1
+LBound = 1
+LBound a
+LBound To 1
+LBound(1).a
+LBound(a)(b)
+LBound(,)
+LBound(1,)
+LBound(a:=1)
+LBound$
+Is
+Is(1)
+Is(1, 2)
+Is()
+Is.a
+Is!a
+Is + 1
+Is = 1
+Is a
+Is To 1
+Is(1).a
+Is(a)(b)
+Is(,)
+Is(1,)
+Is(a:=1)
+Is$
+Integer
+Integer(1)
+Integer(1, 2)
+Integer()
+Integer.a
+Integer!a
+Integer + 1
+Integer = 1
+Integer a
+Integer To 1
+Integer(1).a
+Integer(a)(b)
+Integer(,)
+Integer(1,)
+Integer(a:=1)
+Integer$
+Int
+Int(1)
+Int(1, 2)
+Int()
+Int.a
+Int!a
+Int + 1
+Int = 1
+Int a
+Int To 1
+Int(1).a
+Int(a)(b)
+Int(,)
+Int(1,)
+Int(a:=1)
+Int$
+InStrB
+InStrB(1)
+InStrB(1, 2)
+InStrB()
+InStrB.a
+InStrB!a
+InStrB + 1
+InStrB = 1
+InStrB a
+InStrB To 1
+InStrB(1).a
+InStrB(a)(b)
+InStrB(,)
+InStrB(1,)
+InStrB(a:=1)
+InStrB$
+InStr
+InStr(1)
+InStr(1, 2)
+InStr()
+InStr.a
+InStr!a
+InStr + 1
+InStr = 1
+InStr a
+InStr To 1
+InStr(1).a
+InStr(a)(b)
+InStr(,)
+InStr(1,)
+InStr(a:=1)
+InStr$
+InputB
+InputB(1)
+InputB(1, 2)
+InputB()
+InputB.a
+InputB!a
+InputB + 1
+InputB = 1
+InputB a
+InputB To 1
+InputB(1).a
+InputB(a)(b)
+InputB(,)
+InputB(1,)
+InputB(a:=1)
+InputB$
+Input
+Input(1)
+Input(1, 2)
+Input()
+Input.a
+Input!a
+Input + 1
+Input = 1
+Input a
+Input To 1
+Input(1).a
+Input(a)(b)
+Input(,)
+Input(1,)
+Input(a:=1)
+Input$
+In
+In(1)
+In(1, 2)
+In()
+In.a
+In!a
+In + 1
+In = 1
+In a
+In To 1
+In(1).a
+In(a)(b)
+In(,)
+In(1,)
+In(a:=1)
+In$
+Implements
+Implements(1)
+Implements(1, 2)
+Implements()
+Implements.a
+Implements!a
+Implements + 1
+Implements = 1
+Implements a
+Implements To 1
+Implements(1).a
+Implements(a)(b)
+Implements(,)
+Implements(1,)
+Implements(a:=1)
+Implements$
+Imp
+Imp(1)
+Imp(1, 2)
+Imp()
+Imp.a
+Imp!a
+Imp + 1
+Imp = 1
+Imp a
+Imp To 1
+Imp(1).a
+Imp(a)(b)
+Imp(,)
+Imp(1,)
+Imp(a:=1)
+Imp$
+If
+If(1)
+If(1, 2)
+If()
+If.a
+If!a
+If + 1
+If = 1
+If a
+If To 1
+If(1).a
+If(a)(b)
+If(,)
+If(1,)
+If(a:=1)
+If$
+GoTo
+GoTo(1)
+GoTo(1, 2)
+GoTo()
+GoTo.a
+GoTo!a
+GoTo + 1
+GoTo = 1
+GoTo a
+GoTo To 1
+GoTo(1).a
+GoTo(a)(b)
+GoTo(,)
+GoTo(1,)
+GoTo(a:=1)
+GoTo$
+GoSub
+GoSub(1)
+GoSub(1, 2)
+GoSub()
+GoSub.a
+GoSub!a
+GoSub + 1
+GoSub = 1
+GoSub a
+GoSub To 1
+GoSub(1).a
+GoSub(a)(b)
+GoSub(,)
+GoSub(1,)
+GoSub(a:=1)
+GoSub$
+Go
+Go(1)
+Go(1, 2)
+Go()
+Go.a
+Go!a
+Go + 1
+Go = 1
+Go a
+Go To 1
+Go(1).a
+Go(a)(b)
+Go(,)
+Go(1,)
+Go(a:=1)
+Go$
+Global
+Global(1)
+Global(1, 2)
+Global()
+Global.a
+Global!a
+Global + 1
+Global = 1
+Global a
+Global To 1
+Global(1).a
+Global(a)(b)
+Global(,)
+Global(1,)
+Global(a:=1)
+Global$
+Get
+Get(1)
+Get(1, 2)
+Get()
+Get.a
+Get!a
+Get + 1
+Get = 1
+Get a
+Get To 1
+Get(1).a
+Get(a)(b)
+Get(,)
+Get(1,)
+Get(a:=1)
+Get$
+Function
+Function(1)
+Function(1, 2)
+Function()
+Function.a
+Function!a
+Function + 1
+Function = 1
+Function a
+Function To 1
+Function(1).a
+Function(a)(b)
+Function(,)
+Function(1,)
+Function(a:=1)
+Function$
+Friend
+Friend(1)
+Friend(1, 2)
+Friend()
+Friend.a
+Friend!a
+Friend + 1
+Friend = 1
+Friend a
+Friend To 1
+Friend(1).a
+Friend(a)(b)
+Friend(,)
+Friend(1,)
+Friend(a:=1)
+Friend$
+FreeFile
+FreeFile(1)
+FreeFile(1, 2)
+FreeFile()
+FreeFile.a
+FreeFile!a
+FreeFile + 1
+FreeFile = 1
+FreeFile a
+FreeFile To 1
+FreeFile(1).a
+FreeFile(a)(b)
+FreeFile(,)
+FreeFile(1,)
+FreeFile(a:=1)
+FreeFile$
+Format
+Format(1)
+Format(1, 2)
+Format()
+Format.a
+Format!a
+Format + 1
+Format = 1
+Format a
+Format To 1
+Format(1).a
+Format(a)(b)
+Format(,)
+Format(1,)
+Format(a:=1)
+Format$
+For
+For(1)
+For(1, 2)
+For()
+For.a
+For!a
+For + 1
+For = 1
+For a
+For To 1
+For(1).a
+For(a)(b)
+For(,)
+For(1,)
+For(a:=1)
+For$
+Fix
+Fix(1)
+Fix(1, 2)
+Fix()
+Fix.a
+Fix!a
+Fix + 1
+Fix = 1
+Fix a
+Fix To 1
+Fix(1).a
+Fix(a)(b)
+Fix(,)
+Fix(1,)
+Fix(a:=1)
+Fix$
+False
+False(1)
+False(1, 2)
+False()
+False.a
+False!a
+False + 1
+False = 1
+False a
+False To 1
+False(1).a
+False(a)(b)
+False(,)
+False(1,)
+False(a:=1)
+False$
+Explicit
+Explicit(1)
+Explicit(1, 2)
+Explicit()
+Explicit.a
+Explicit!a
+Explicit + 1
+Explicit = 1
+Explicit a
+Explicit To 1
+Explicit(1).a
+Explicit(a)(b)
+Explicit(,)
+Explicit(1,)
+Explicit(a:=1)
+Explicit$
+Exit
+Exit(1)
+Exit(1, 2)
+Exit()
+Exit.a
+Exit!a
+Exit + 1
+Exit = 1
+Exit a
+Exit To 1
+Exit(1).a
+Exit(a)(b)
+Exit(,)
+Exit(1,)
+Exit(a:=1)
+Exit$
+Event
+Event(1)
+Event(1, 2)
+Event()
+Event.a
+Event!a
+Event + 1
+Event = 1
+Event a
+Event To 1
+Event(1).a
+Event(a)(b)
+Event(,)
+Event(1,)
+Event(a:=1)
+Event$
+Error
+Error(1)
+Error(1, 2)
+Error()
+Error.a
+Error!a
+Error + 1
+Error = 1
+Error a
+Error To 1
+Error(1).a
+Error(a)(b)
+Error(,)
+Error(1,)
+Error(a:=1)
+Error$
+Erase
+Erase(1)
+Erase(1, 2)
+Erase()
+Erase.a
+Erase!a
+Erase + 1
+Erase = 1
+Erase a
+Erase To 1
+Erase(1).a
+Erase(a)(b)
+Erase(,)
+Erase(1,)
+Erase(a:=1)
+Erase$
+Eqv
+Eqv(1)
+Eqv(1, 2)
+Eqv()
+Eqv.a
+Eqv!a
+Eqv + 1
+Eqv = 1
+Eqv a
+Eqv To 1
+Eqv(1).a
+Eqv(a)(b)
+Eqv(,)
+Eqv(1,)
+Eqv(a:=1)
+Eqv$
+Enum
+Enum(1)
+Enum(1, 2)
+Enum()
+Enum.a
+Enum!a
+Enum + 1
+Enum = 1
+Enum a
+Enum To 1
+Enum(1).a
+Enum(a)(b)
+Enum(,)
+Enum(1,)
+Enum(a:=1)
+Enum$
+EndIf
+EndIf(1)
+EndIf(1, 2)
+EndIf()
+EndIf.a
+EndIf!a
+EndIf + 1
+EndIf = 1
+EndIf a
+EndIf To 1
+EndIf(1).a
+EndIf(a)(b)
+EndIf(,)
+EndIf(1,)
+EndIf(a:=1)
+EndIf$
+End
+End(1)
+End(1, 2)
+End()
+End.a
+End!a
+End + 1
+End = 1
+End a
+End To 1
+End(1).a
+End(a)(b)
+End(,)
+End(1,)
+End(a:=1)
+End$
+Empty
+Empty(1)
+Empty(1, 2)
+Empty()
+Empty.a
+Empty!a
+Empty + 1
+Empty = 1
+Empty a
+Empty To 1
+Empty(1).a
+Empty(a)(b)
+Empty(,)
+Empty(1,)
+Empty(a:=1)
+Empty$
+ElseIf
+ElseIf(1)
+ElseIf(1, 2)
+ElseIf()
+ElseIf.a
+ElseIf!a
+ElseIf + 1
+ElseIf = 1
+ElseIf a
+ElseIf To 1
+ElseIf(1).a
+ElseIf(a)(b)
+ElseIf(,)
+ElseIf(1,)
+ElseIf(a:=1)
+ElseIf$
+Else
+Else(1)
+Else(1, 2)
+Else()
+Else.a
+Else!a
+Else + 1
+Else = 1
+Else a
+Else To 1
+Else(1).a
+Else(a)(b)
+Else(,)
+Else(1,)
+Else(a:=1)
+Else$
+Each
+Each(1)
+Each(1, 2)
+Each()
+Each.a
+Each!a
+Each + 1
+Each = 1
+Each a
+Each To 1
+Each(1).a
+Each(a)(b)
+Each(,)
+Each(1,)
+Each(a:=1)
+Each$
+Double
+Double(1)
+Double(1, 2)
+Double()
+Double.a
+Double!a
+Double + 1
+Double = 1
+Double a
+Double To 1
+Double(1).a
+Double(a)(b)
+Double(,)
+Double(1,)
+Double(a:=1)
+Double$
+DoEvents
+DoEvents(1)
+DoEvents(1, 2)
+DoEvents()
+DoEvents.a
+DoEvents!a
+DoEvents + 1
+DoEvents = 1
+DoEvents a
+DoEvents To 1
+DoEvents(1).a
+DoEvents(a)(b)
+DoEvents(,)
+DoEvents(1,)
+DoEvents(a:=1)
+DoEvents$
+Do
+Do(1)
+Do(1, 2)
+Do()
+Do.a
+Do!a
+Do + 1
+Do = 1
+Do a
+Do To 1
+Do(1).a
+Do(a)(b)
+Do(,)
+Do(1,)
+Do(a:=1)
+Do$
+Dir
+Dir(1)
+Dir(1, 2)
+Dir()
+Dir.a
+Dir!a
+Dir + 1
+Dir = 1
+Dir a
+Dir To 1
+Dir(1).a
+Dir(a)(b)
+Dir(,)
+Dir(1,)
+Dir(a:=1)
+Dir$
+Dim
+Dim(1)
+Dim(1, 2)
+Dim()
+Dim.a
+Dim!a
+Dim + 1
+Dim = 1
+Dim a
+Dim To 1
+Dim(1).a
+Dim(a)(b)
+Dim(,)
+Dim(1,)
+Dim(a:=1)
+Dim$
+DefVar
+DefVar(1)
+DefVar(1, 2)
+DefVar()
+DefVar.a
+DefVar!a
+DefVar + 1
+DefVar = 1
+DefVar a
+DefVar To 1
+DefVar(1).a
+DefVar(a)(b)
+DefVar(,)
+DefVar(1,)
+DefVar(a:=1)
+DefVar$
+DefStr
+DefStr(1)
+DefStr(1, 2)
+DefStr()
+DefStr.a
+DefStr!a
+DefStr + 1
+DefStr = 1
+DefStr a
+DefStr To 1
+DefStr(1).a
+DefStr(a)(b)
+DefStr(,)
+DefStr(1,)
+DefStr(a:=1)
+DefStr$
+DefSng
+DefSng(1)
+DefSng(1, 2)
+DefSng()
+DefSng.a
+DefSng!a
+DefSng + 1
+DefSng = 1
+DefSng a
+DefSng To 1
+DefSng(1).a
+DefSng(a)(b)
+DefSng(,)
+DefSng(1,)
+DefSng(a:=1)
+DefSng$
+DefObj
+DefObj(1)
+DefObj(1, 2)
+DefObj()
+DefObj.a
+DefObj!a
+DefObj + 1
+DefObj = 1
+DefObj a
+DefObj To 1
+DefObj(1).a
+DefObj(a)(b)
+DefObj(,)
+DefObj(1,)
+DefObj(a:=1)
+DefObj$
+DefLng
+DefLng(1)
+DefLng(1, 2)
+DefLng()
+DefLng.a
+DefLng!a
+DefLng + 1
+DefLng = 1
+DefLng a
+DefLng To 1
+DefLng(1).a
+DefLng(a)(b)
+DefLng(,)
+DefLng(1,)
+DefLng(a:=1)
+DefLng$
+DefInt
+DefInt(1)
+DefInt(1, 2)
+DefInt()
+DefInt.a
+DefInt!a
+DefInt + 1
+DefInt = 1
+DefInt a
+DefInt To 1
+DefInt(1).a
+DefInt(a)(b)
+DefInt(,)
+DefInt(1,)
+DefInt(a:=1)
+DefInt$
+DefDbl
+DefDbl(1)
+DefDbl(1, 2)
+DefDbl()
+DefDbl.a
+DefDbl!a
+DefDbl + 1
+DefDbl = 1
+DefDbl a
+DefDbl To 1
+DefDbl(1).a
+DefDbl(a)(b)
+DefDbl(,)
+DefDbl(1,)
+DefDbl(a:=1)
+DefDbl$
+DefDec
+DefDec(1)
+DefDec(1, 2)
+DefDec()
+DefDec.a
+DefDec!a
+DefDec + 1
+DefDec = 1
+DefDec a
+DefDec To 1
+DefDec(1).a
+DefDec(a)(b)
+DefDec(,)
+DefDec(1,)
+DefDec(a:=1)
+DefDec$
+DefDate
+DefDate(1)
+DefDate(1, 2)
+DefDate()
+DefDate.a
+DefDate!a
+DefDate + 1
+DefDate = 1
+DefDate a
+DefDate To 1
+DefDate(1).a
+DefDate(a)(b)
+DefDate(,)
+DefDate(1,)
+DefDate(a:=1)
+DefDate$
+DefCur
+DefCur(1)
+DefCur(1, 2)
+DefCur()
+DefCur.a
+DefCur!a
+DefCur + 1
+DefCur = 1
+DefCur a
+DefCur To 1
+DefCur(1).a
+DefCur(a)(b)
+DefCur(,)
+DefCur(1,)
+DefCur(a:=1)
+DefCur$
+DefByte
+DefByte(1)
+DefByte(1, 2)
+DefByte()
+DefByte.a
+DefByte!a
+DefByte + 1
+DefByte = 1
+DefByte a
+DefByte To 1
+DefByte(1).a
+DefByte(a)(b)
+DefByte(,)
+DefByte(1,)
+DefByte(a:=1)
+DefByte$
+DefBool
+DefBool(1)
+DefBool(1, 2)
+DefBool()
+DefBool.a
+DefBool!a
+DefBool + 1
+DefBool = 1
+DefBool a
+DefBool To 1
+DefBool(1).a
+DefBool(a)(b)
+DefBool(,)
+DefBool(1,)
+DefBool(a:=1)
+DefBool$
+Declare
+Declare(1)
+Declare(1, 2)
+Declare()
+Declare.a
+Declare!a
+Declare + 1
+Declare = 1
+Declare a
+Declare To 1
+Declare(1).a
+Declare(a)(b)
+Declare(,)
+Declare(1,)
+Declare(a:=1)
+Declare$
+Decimal
+Decimal(1)
+Decimal(1, 2)
+Decimal()
+Decimal.a
+Decimal!a
+Decimal + 1
+Decimal = 1
+Decimal a
+Decimal To 1
+Decimal(1).a
+Decimal(a)(b)
+Decimal(,)
+Decimal(1,)
+Decimal(a:=1)
+Decimal$
+Debug
+Debug(1)
+Debug(1, 2)
+Debug()
+Debug.a
+Debug!a
+Debug + 1
+Debug = 1
+Debug a
+Debug To 1
+Debug(1).a
+Debug(a)(b)
+Debug(,)
+Debug(1,)
+Debug(a:=1)
+Debug$
+Date
+Date(1)
+Date(1, 2)
+Date()
+Date.a
+Date!a
+Date + 1
+Date = 1
+Date a
+Date To 1
+Date(1).a
+Date(a)(b)
+Date(,)
+Date(1,)
+Date(a:=1)
+Date$
+Database
+Database(1)
+Database(1, 2)
+Database()
+Database.a
+Database!a
+Database + 1
+Database = 1
+Database a
+Database To 1
+Database(1).a
+Database(a)(b)
+Database(,)
+Database(1,)
+Database(a:=1)
+Database$
+Currency
+Currency(1)
+Currency(1, 2)
+Currency()
+Currency.a
+Currency!a
+Currency + 1
+Currency = 1
+Currency a
+Currency To 1
+Currency(1).a
+Currency(a)(b)
+Currency(,)
+Currency(1,)
+Currency(a:=1)
+Currency$
+CVErr
+CVErr(1)
+CVErr(1, 2)
+CVErr()
+CVErr.a
+CVErr!a
+CVErr + 1
+CVErr = 1
+CVErr a
+CVErr To 1
+CVErr(1).a
+CVErr(a)(b)
+CVErr(,)
+CVErr(1,)
+CVErr(a:=1)
+CVErr$
+CVDate
+CVDate(1)
+CVDate(1, 2)
+CVDate()
+CVDate.a
+CVDate!a
+CVDate + 1
+CVDate = 1
+CVDate a
+CVDate To 1
+CVDate(1).a
+CVDate(a)(b)
+CVDate(,)
+CVDate(1,)
+CVDate(a:=1)
+CVDate$
+CVar
+CVar(1)
+CVar(1, 2)
+CVar()
+CVar.a
+CVar!a
+CVar + 1
+CVar = 1
+CVar a
+CVar To 1
+CVar(1).a
+CVar(a)(b)
+CVar(,)
+CVar(1,)
+CVar(a:=1)
+CVar$
+CurDir
+CurDir(1)
+CurDir(1, 2)
+CurDir()
+CurDir.a
+CurDir!a
+CurDir + 1
+CurDir = 1
+CurDir a
+CurDir To 1
+CurDir(1).a
+CurDir(a)(b)
+CurDir(,)
+CurDir(1,)
+CurDir(a:=1)
+CurDir$
+CStr
+CStr(1)
+CStr(1, 2)
+CStr()
+CStr.a
+CStr!a
+CStr + 1
+CStr = 1
+CStr a
+CStr To 1
+CStr(1).a
+CStr(a)(b)
+CStr(,)
+CStr(1,)
+CStr(a:=1)
+CStr$
+CSng
+CSng(1)
+CSng(1, 2)
+CSng()
+CSng.a
+CSng!a
+CSng + 1
+CSng = 1
+CSng a
+CSng To 1
+CSng(1).a
+CSng(a)(b)
+CSng(,)
+CSng(1,)
+CSng(a:=1)
+CSng$
+Const
+Const(1)
+Const(1, 2)
+Const()
+Const.a
+Const!a
+Const + 1
+Const = 1
+Const a
+Const To 1
+Const(1).a
+Const(a)(b)
+Const(,)
+Const(1,)
+Const(a:=1)
+Const$
+Compare
+Compare(1)
+Compare(1, 2)
+Compare()
+Compare.a
+Compare!a
+Compare + 1
+Compare = 1
+Compare a
+Compare To 1
+Compare(1).a
+Compare(a)(b)
+Compare(,)
+Compare(1,)
+Compare(a:=1)
+Compare$
+Close
+Close(1)
+Close(1, 2)
+Close()
+Close.a
+Close!a
+Close + 1
+Close = 1
+Close a
+Close To 1
+Close(1).a
+Close(a)(b)
+Close(,)
+Close(1,)
+Close(a:=1)
+Close$
+CLng
+CLng(1)
+CLng(1, 2)
+CLng()
+CLng.a
+CLng!a
+CLng + 1
+CLng = 1
+CLng a
+CLng To 1
+CLng(1).a
+CLng(a)(b)
+CLng(,)
+CLng(1,)
+CLng(a:=1)
+CLng$
+Circle
+Circle(1)
+Circle(1, 2)
+Circle()
+Circle.a
+Circle!a
+Circle + 1
+Circle = 1
+Circle a
+Circle To 1
+Circle(1).a
+Circle(a)(b)
+Circle(,)
+Circle(1,)
+Circle(a:=1)
+Circle$
+CInt
+CInt(1)
+CInt(1, 2)
+CInt()
+CInt.a
+CInt!a
+CInt + 1
+CInt = 1
+CInt a
+CInt To 1
+CInt(1).a
+CInt(a)(b)
+CInt(,)
+CInt(1,)
+CInt(a:=1)
+CInt$
+ChDir
+ChDir(1)
+ChDir(1, 2)
+ChDir()
+ChDir.a
+ChDir!a
+ChDir + 1
+ChDir = 1
+ChDir a
+ChDir To 1
+ChDir(1).a
+ChDir(a)(b)
+ChDir(,)
+ChDir(1,)
+ChDir(a:=1)
+ChDir$
+CDecl
+CDecl(1)
+CDecl(1, 2)
+CDecl()
+CDecl.a
+CDecl!a
+CDecl + 1
+CDecl = 1
+CDecl a
+CDecl To 1
+CDecl(1).a
+CDecl(a)(b)
+CDecl(,)
+CDecl(1,)
+CDecl(a:=1)
+CDecl$
+CDbl
+CDbl(1)
+CDbl(1, 2)
+CDbl()
+CDbl.a
+CDbl!a
+CDbl + 1
+CDbl = 1
+CDbl a
+CDbl To 1
+CDbl(1).a
+CDbl(a)(b)
+CDbl(,)
+CDbl(1,)
+CDbl(a:=1)
+CDbl$
+CDec
+CDec(1)
+CDec(1, 2)
+CDec()
+CDec.a
+CDec!a
+CDec + 1
+CDec = 1
+CDec a
+CDec To 1
+CDec(1).a
+CDec(a)(b)
+CDec(,)
+CDec(1,)
+CDec(a:=1)
+CDec$
+CDate
+CDate(1)
+CDate(1, 2)
+CDate()
+CDate.a
+CDate!a
+CDate + 1
+CDate = 1
+CDate a
+CDate To 1
+CDate(1).a
+CDate(a)(b)
+CDate(,)
+CDate(1,)
+CDate(a:=1)
+CDate$
+CCur
+CCur(1)
+CCur(1, 2)
+CCur()
+CCur.a
+CCur!a
+CCur + 1
+CCur = 1
+CCur a
+CCur To 1
+CCur(1).a
+CCur(a)(b)
+CCur(,)
+CCur(1,)
+CCur(a:=1)
+CCur$
+CByte
+CByte(1)
+CByte(1, 2)
+CByte()
+CByte.a
+CByte!a
+CByte + 1
+CByte = 1
+CByte a
+CByte To 1
+CByte(1).a
+CByte(a)(b)
+CByte(,)
+CByte(1,)
+CByte(a:=1)
+CByte$
+CBool
+CBool(1)
+CBool(1, 2)
+CBool()
+CBool.a
+CBool!a
+CBool + 1
+CBool = 1
+CBool a
+CBool To 1
+CBool(1).a
+CBool(a)(b)
+CBool(,)
+CBool(1,)
+CBool(a:=1)
+CBool$
+Case
+Case(1)
+Case(1, 2)
+Case()
+Case.a
+Case!a
+Case + 1
+Case = 1
+Case a
+Case To 1
+Case(1).a
+Case(a)(b)
+Case(,)
+Case(1,)
+Case(a:=1)
+Case$
+Call
+Call(1)
+Call(1, 2)
+Call()
+Call.a
+Call!a
+Call + 1
+Call = 1
+Call a
+Call To 1
+Call(1).a
+Call(a)(b)
+Call(,)
+Call(1,)
+Call(a:=1)
+Call$
+ByVal
+ByVal(1)
+ByVal(1, 2)
+ByVal()
+ByVal.a
+ByVal!a
+ByVal + 1
+ByVal = 1
+ByVal a
+ByVal To 1
+ByVal(1).a
+ByVal(a)(b)
+ByVal(,)
+ByVal(1,)
+ByVal(a:=1)
+ByVal$
+Byte
+Byte(1)
+Byte(1, 2)
+Byte()
+Byte.a
+Byte!a
+Byte + 1
+Byte = 1
+Byte a
+Byte To 1
+Byte(1).a
+Byte(a)(b)
+Byte(,)
+Byte(1,)
+Byte(a:=1)
+Byte$
+ByRef
+ByRef(1)
+ByRef(1, 2)
+ByRef()
+ByRef.a
+ByRef!a
+ByRef + 1
+ByRef = 1
+ByRef a
+ByRef To 1
+ByRef(1).a
+ByRef(a)(b)
+ByRef(,)
+ByRef(1,)
+ByRef(a:=1)
+ByRef$
+Boolean
+Boolean(1)
+Boolean(1, 2)
+Boolean()
+Boolean.a
+Boolean!a
+Boolean + 1
+Boolean = 1
+Boolean a
+Boolean To 1
+Boolean(1).a
+Boolean(a)(b)
+Boolean(,)
+Boolean(1,)
+Boolean(a:=1)
+Boolean$
+Binary
+Binary(1)
+Binary(1, 2)
+Binary()
+Binary.a
+Binary!a
+Binary + 1
+Binary = 1
+Binary a
+Binary To 1
+Binary(1).a
+Binary(a)(b)
+Binary(,)
+Binary(1,)
+Binary(a:=1)
+Binary$
+BF
+BF(1)
+BF(1, 2)
+BF()
+BF.a
+BF!a
+BF + 1
+BF = 1
+BF a
+BF To 1
+BF(1).a
+BF(a)(b)
+BF(,)
+BF(1,)
+BF(a:=1)
+BF$
+Base
+Base(1)
+Base(1, 2)
+Base()
+Base.a
+Base!a
+Base + 1
+Base = 1
+Base a
+Base To 1
+Base(1).a
+Base(a)(b)
+Base(,)
+Base(1,)
+Base(a:=1)
+Base$
+Assert
+Assert(1)
+Assert(1, 2)
+Assert()
+Assert.a
+Assert!a
+Assert + 1
+Assert = 1
+Assert a
+Assert To 1
+Assert(1).a
+Assert(a)(b)
+Assert(,)
+Assert(1,)
+Assert(a:=1)
+Assert$
+As
+As(1)
+As(1, 2)
+As()
+As.a
+As!a
+As + 1
+As = 1
+As a
+As To 1
+As(1).a
+As(a)(b)
+As(,)
+As(1,)
+As(a:=1)
+As$
+Array
+Array(1)
+Array(1, 2)
+Array()
+Array.a
+Array!a
+Array + 1
+Array = 1
+Array a
+Array To 1
+Array(1).a
+Array(a)(b)
+Array(,)
+Array(1,)
+Array(a:=1)
+Array$
+Append
+Append(1)
+Append(1, 2)
+Append()
+Append.a
+Append!a
+Append + 1
+Append = 1
+Append a
+Append To 1
+Append(1).a
+Append(a)(b)
+Append(,)
+Append(1,)
+Append(a:=1)
+Append$
+Any
+Any(1)
+Any(1, 2)
+Any()
+Any.a
+Any!a
+Any + 1
+Any = 1
+Any a
+Any To 1
+Any(1).a
+Any(a)(b)
+Any(,)
+Any(1,)
+Any(a:=1)
+Any$
+And
+And(1)
+And(1, 2)
+And()
+And.a
+And!a
+And + 1
+And = 1
+And a
+And To 1
+And(1).a
+And(a)(b)
+And(,)
+And(1,)
+And(a:=1)
+And$
+Alias
+Alias(1)
+Alias(1, 2)
+Alias()
+Alias.a
+Alias!a
+Alias + 1
+Alias = 1
+Alias a
+Alias To 1
+Alias(1).a
+Alias(a)(b)
+Alias(,)
+Alias(1,)
+Alias(a:=1)
+Alias$
+AddressOf
+AddressOf(1)
+AddressOf(1, 2)
+AddressOf()
+AddressOf.a
+AddressOf!a
+AddressOf + 1
+AddressOf = 1
+AddressOf a
+AddressOf To 1
+AddressOf(1).a
+AddressOf(a)(b)
+AddressOf(,)
+AddressOf(1,)
+AddressOf(a:=1)
+AddressOf$
+Access
+Access(1)
+Access(1, 2)
+Access()
+Access.a
+Access!a
+Access + 1
+Access = 1
+Access a
+Access To 1
+Access(1).a
+Access(a)(b)
+Access(,)
+Access(1,)
+Access(a:=1)
+Access$
+Abs
+Abs(1)
+Abs(1, 2)
+Abs()
+Abs.a
+Abs!a
+Abs + 1
+Abs = 1
+Abs a
+Abs To 1
+Abs(1).a
+Abs(a)(b)
+Abs(,)
+Abs(1,)
+Abs(a:=1)
+Abs$
