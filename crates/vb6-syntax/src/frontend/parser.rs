@@ -261,6 +261,8 @@ pub struct Parser<'src> {
     /// A token other than a line end has been read on the current logical line: a
     /// `Name:` is a line label only as the first thing on its line.
     line_has_content: bool,
+    /// Kind of the token consumed last.
+    last_consumed: TokenKind,
     /// Line ends read so far: a block opener inside a single-line `If` must be closed
     /// before the line ends.
     eols_read: u32,
@@ -483,6 +485,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             line_has_content: false,
+            last_consumed: TokenKind::Eol,
             eols_read: 0,
             colon_on_line: false,
             module_decl_seen: false,
@@ -563,6 +566,7 @@ impl<'src> Parser<'src> {
         };
         self.last_was_eol = tok.kind == TokenKind::Eol;
         self.line_has_content = tok.kind != TokenKind::Eol;
+        self.last_consumed = tok.kind.clone();
         self.last_token_end = tok.span.start + tok.span.len;
         match tok.kind {
             TokenKind::Kw(Kw::Colon) => {
@@ -1100,6 +1104,30 @@ impl<'src> Parser<'src> {
         if expression_chain_size(arena, condition, lines).is_some_and(|size| size > MAX_LINE_CODE_SIZE) {
             self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, at);
         }
+    }
+
+    /// Whether an output list `a; b, c` that ends the line (with no separator after the last item)
+    /// takes the line's compiled code past its limit: the first item as an assignment costs it,
+    /// each further item its expression and a 2-byte separator, and `extra` is what the statement
+    /// itself costs beyond an assignment. Lists with an item that is not a plain expression are not
+    /// measured.
+    fn output_list_too_complex(&mut self, arena: &ExprArena, items: &[NodeId], extra: usize) -> bool {
+        if items.is_empty()
+            || self.peek().kind != TokenKind::Eol
+            || self.colon_on_line
+            || matches!(self.last_consumed, TokenKind::Kw(Kw::Semi) | TokenKind::Kw(Kw::Comma))
+        {
+            return false;
+        }
+        let lines = self.line_continuations as usize + 1;
+        // Every item's own bytes are its size as the sole item without the statement's 6 and
+        // the lines' bytes.
+        let mut total = 6 + 4 * lines + extra;
+        for (i, item) in items.iter().enumerate() {
+            let Some(size) = expression_chain_size(arena, *item, 0) else { return false };
+            total += size - 6 + if i > 0 { 2 } else { 0 };
+        }
+        total > MAX_LINE_CODE_SIZE
     }
 
     fn end_stmt(&mut self) {
@@ -3639,12 +3667,9 @@ impl<'src> Parser<'src> {
         if list_follows {
             self.parse_print_method_items(arena, &mut args);
         }
-        // `Debug.Print` of one expression costs 2 more than an assignment of it.
-        if channel.is_none() && args.len() == 1 && self.peek().kind == TokenKind::Eol && !self.colon_on_line {
-            let lines = self.line_continuations as usize + 1;
-            if expression_chain_size(arena, args[0], lines).is_some_and(|size| size + 2 > MAX_LINE_CODE_SIZE) {
-                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, debug_span);
-            }
+        // `Debug.Print` of expressions costs 2 more than an assignment of the first.
+        if channel.is_none() && self.output_list_too_complex(arena, &args, 2) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, debug_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::DebugPrint { channel, args })
@@ -4527,15 +4552,12 @@ impl<'src> Parser<'src> {
         if self.expect_comma() {
             self.parse_print_method_items(arena, &mut args);
         }
-        // `Print #n, expr` and `Write #n, expr` cost 6 more than an assignment of the expression:
-        // the channel and the statement's own code.
+        // `Print #n, expr` and `Write #n, expr` cost 6 more than an assignment of the first
+        // expression: the channel and the statement's own code.
         let channel_is_simple =
             matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
-        if channel_is_simple && args.len() == 1 && self.peek().kind == TokenKind::Eol && !self.colon_on_line {
-            let lines = self.line_continuations as usize + 1;
-            if expression_chain_size(arena, args[0], lines).is_some_and(|size| size + 6 > MAX_LINE_CODE_SIZE) {
-                self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, first_span);
-            }
+        if channel_is_simple && self.output_list_too_complex(arena, &args, 6) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, first_span);
         }
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })

@@ -260,3 +260,23 @@ fn wrapped_single_currency_and_date_literals_and_file_output_follow_the_size_rul
         }
     }
 }
+
+#[test]
+fn output_lists_cost_a_two_byte_separator_between_items() {
+    const TOO_COMPLEX: u32 = 0x9c6e;
+    let list = |term: &str, sep: &str, n: usize, per: usize| {
+        let terms = vec![term; n];
+        terms.chunks(per).map(|c| c.join(&format!(" {sep} "))).collect::<Vec<_>>().join(&format!(" {sep} _\n"))
+    };
+    // (statement start, term, separator, terms per line, most terms that fit)
+    for (head, term, sep, per, fits) in [
+        ("Print #1, ", "1", ";", 200, 2549),
+        ("Print #1, ", "1", ",", 200, 2549),
+        ("Write #1, ", "1", ",", 200, 2549),
+        ("Print #1, ", "\"ab\"", ";", 100, 1908),
+    ] {
+        let src = |n| format!("Sub S()\n{head}{}\nEnd Sub\n", list(term, sep, n, per));
+        assert_eq!(parse(&src(fits)).found, vec![], "{head}{term} {sep}");
+        assert_eq!(parse(&src(fits + 1)).found.first().map(|f| f.0), Some(TOO_COMPLEX), "{head}{term} {sep}");
+    }
+}
