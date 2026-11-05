@@ -318,6 +318,11 @@ pub struct Parser<'src> {
     phys_line_has_token: bool,
     /// The token read last was the first on its physical line.
     tok_first_on_line: bool,
+    /// Depth of the argument lists being read, and the first `ByVal` and first named
+    /// argument met at depth one since the statement began.
+    group_depth: u32,
+    stmt_byval: Option<Span>,
+    stmt_named: Option<Span>,
     /// Open `#If` blocks, innermost last.
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
@@ -495,6 +500,9 @@ impl<'src> Parser<'src> {
             cc_line_done: false,
             phys_line_has_token: false,
             tok_first_on_line: true,
+            group_depth: 0,
+            stmt_byval: None,
+            stmt_named: None,
             cc_defs: vec![
                 ("win32".into(), CcValue::Integer(-1)),
             ],
@@ -2180,6 +2188,8 @@ impl<'src> Parser<'src> {
     /// property call without `Set`.
     fn parse_ident_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.target_at_statement_start = true;
+        self.stmt_byval = None;
+        self.stmt_named = None;
         let lhs = self.parse_target_expr(arena);
         self.finish_ident_stmt(arena, lhs)
     }
@@ -2187,6 +2197,16 @@ impl<'src> Parser<'src> {
     /// The rest of a statement that starts with a target expression `lhs`:
     /// an assignment, a graphics coordinate call, or an implicit call.
     fn finish_ident_stmt(&mut self, arena: &mut ExprArena, lhs: NodeId) -> NodeId {
+        // Without `Call`, the brackets after the callee hold plain expressions: a `ByVal` or a
+        // named argument there is a syntax error, except that a named argument may stand in
+        // the brackets of something assigned to.
+        let (byval, named) = (self.stmt_byval.take(), self.stmt_named.take());
+        let assigned = self.peek().kind == TokenKind::Kw(Kw::Eq);
+        if let Some(span) = byval.or(if assigned { None } else { named }) {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return lhs;
+        }
         // A member named like a graphics statement cannot be assigned to (`Line` excepted).
         if self.peek().kind == TokenKind::Kw(Kw::Eq)
             && ["Scale", "PSet", "Print", "LineInput", "Circle"]
@@ -2257,6 +2277,16 @@ impl<'src> Parser<'src> {
             self.skip_line();
             lhs
         } else {
+            // After a plain name `As` opens an As clause, so it cannot name the first argument.
+            if matches!(arena.get(lhs), ExprNode::NameRef { .. })
+                && self.peek().kind == TokenKind::Kw(Kw::As)
+                && self.peek2().kind == TokenKind::Kw(Kw::ColonEq)
+            {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                return lhs;
+            }
             // Implicit call with optional trailing arguments: `Foo a, b`. After
             // a parenthesised coordinate pair (`PSet (x, y), color`) the comma
             // only separates the pair from the remaining arguments.
@@ -4463,6 +4493,8 @@ impl<'src> Parser<'src> {
         let sym = first.sym.map(|s| s as u32).unwrap_or(0);
         let lhs_base = arena.alloc(ExprNode::NameRef { sym, suffix: first.type_suffix });
         self.set_span(lhs_base, first.span);
+        self.stmt_byval = None;
+        self.stmt_named = None;
         // Apply any postfix operators (.member, (args), etc.)
         let lhs = self.parse_postfix(arena, lhs_base);
         self.finish_ident_stmt(arena, lhs)
@@ -5826,6 +5858,9 @@ impl<'src> Parser<'src> {
     /// Reads the call-site `ByVal` that may come before an argument's value; an `AddressOf`
     /// may start the value only when no `ByVal` came before it.
     fn argument_operand_prefix(&mut self) {
+        if self.peek().kind == TokenKind::Kw(Kw::ByVal) && self.group_depth == 1 && self.stmt_byval.is_none() {
+            self.stmt_byval = Some(self.current_span());
+        }
         if self.eat(TokenKind::Kw(Kw::ByVal)) {
             self.address_of_ok = false;
             if self.at_argument_end() {
@@ -5947,7 +5982,9 @@ impl<'src> Parser<'src> {
     fn parse_arg_list(&mut self, arena: &mut ExprArena) -> NodeId {
         // The arguments of a call are expressions, even when the call is itself a target.
         let was_target = std::mem::replace(&mut self.in_target, false);
+        self.group_depth += 1;
         let list = self.parse_arg_list_items(arena);
+        self.group_depth -= 1;
         self.in_target = was_target;
         list
     }
@@ -6050,6 +6087,9 @@ impl<'src> Parser<'src> {
             return None;
         }
         let name_tok = self.advance(); // parameter name
+        if self.group_depth == 1 && self.stmt_named.is_none() {
+            self.stmt_named = Some(name_tok.span);
+        }
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
         self.advance(); // `:=`
         self.argument_operand_prefix();
