@@ -1354,6 +1354,7 @@ impl<'a> Binder<'a> {
             let ExprNode::Block { stmts } = self.arena.get(id) else { continue };
             for &stmt in stmts {
                 let mut count = 0usize;
+                let mut booleans = 0usize;
                 let mut walk = vec![stmt];
                 while let Some(n) = walk.pop() {
                     if matches!(self.arena.get(n), ExprNode::Block { .. }) {
@@ -1364,10 +1365,28 @@ impl<'a> Binder<'a> {
                     {
                         count += 1;
                     }
+                    // A `&` that joins a Boolean converts it to text in a 32-byte temporary.
+                    if let ExprNode::BinOp { op: crate::frontend::ast::BinOpKind::Cat, lhs, rhs } = self.arena.get(n) {
+                        let is_boolean = |mut operand: NodeId| {
+                            loop {
+                                if self.types.get(&operand.0) == Some(&VbaType::Boolean) {
+                                    return true;
+                                }
+                                match self.arena.get(operand) {
+                                    ExprNode::Paren { inner } => operand = *inner,
+                                    _ => return false,
+                                }
+                            }
+                        };
+                        if is_boolean(*lhs) || is_boolean(*rhs) {
+                            booleans += 1;
+                        }
+                    }
                     self.arena.get(n).for_each_child(&mut |c| walk.push(c));
                 }
-                if 16 * count > call_temps.0 {
-                    call_temps = (16 * count, Some(stmt));
+                let temps = 16 * count + 32 * booleans;
+                if temps > call_temps.0 {
+                    call_temps = (temps, Some(stmt));
                 }
             }
         }

@@ -191,3 +191,23 @@ fn brackets_nested_four_thousand_deep_are_analyzed() {
     let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
     assert_eq!(s.diagnostics(0).len(), 0);
 }
+
+fn boolean_concat(term: &str, n: usize) -> bool {
+    let lines: Vec<String> = vec![term; n].chunks(60).map(|c| c.join(" & ")).collect();
+    let src = format!(
+        "Sub Main()\nDim x As String, y As Long, s As String\nx = {}\nEnd Sub\n",
+        lines.join(" & _\n")
+    );
+    let s = Session::from_sources(vec![("m.bas".to_string(), src.into_bytes())]);
+    s.diagnostics(0).iter().any(|d| d.code == TOO_MANY_LOCALS)
+}
+
+#[test]
+fn a_boolean_joined_with_ampersand_takes_a_thirty_two_byte_temporary() {
+    for term in ["(y = y)", "(y < y)", "(s = s)", "(1 = 2)", "(True)"] {
+        assert!(!boolean_concat(term, 1020), "{term}");
+        assert!(boolean_concat(term, 1021), "{term}");
+    }
+    // Operands that are not Boolean are not converted that way.
+    assert!(!boolean_concat("y", 2000));
+}
