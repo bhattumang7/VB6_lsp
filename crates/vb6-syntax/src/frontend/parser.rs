@@ -3746,6 +3746,10 @@ impl<'src> Parser<'src> {
             Kw::CcIf => {
                 let parent_active = self.cc_active();
                 let taken = self.cc_condition(parent_active, span);
+                // The compiler holds at most 4079 open blocks.
+                if self.cc_stack.len() >= MAX_CC_NESTING {
+                    self.diagnostics.push(ERR_OUT_OF_MEMORY, span);
+                }
                 self.cc_stack.push(CcFrame { open: span, else_seen: false, parent_active, active: taken, taken });
             }
             Kw::CcElseIf => {
@@ -6168,6 +6172,9 @@ impl<'src> Parser<'src> {
 // 0xdee1 = 57057 "Only valid in object module"
 /// Longest identifier, in bytes.
 const MAX_IDENTIFIER_LEN: usize = 255;
+/// Most `#If` blocks that may be open at once.
+const MAX_CC_NESTING: usize = 4079;
+const ERR_OUT_OF_MEMORY: u32 = 7;
 /// Most dimensions an array declaration may list.
 const MAX_DIMENSIONS: usize = 60;
 /// A fixed-length string holds 1 to this many characters, exclusive.

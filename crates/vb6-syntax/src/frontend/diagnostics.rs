@@ -126,6 +126,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0x9c9f => "Duplicate declaration in current scope", // 40095
         5 => "Invalid procedure call or argument",
         6 => "Overflow",
+        7 => "Out of memory",
         11 => "Division by zero",
         13 => "Type mismatch",
         94 => "Invalid use of Null",

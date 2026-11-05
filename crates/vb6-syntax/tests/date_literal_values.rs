@@ -143,3 +143,12 @@ fn a_date_without_a_year_takes_the_current_year() {
     assert_eq!(date("2 Jan"), jan_2);
     assert_eq!(date("2000-2"), Some(36557.0));
 }
+
+#[test]
+fn an_hour_of_zero_with_pm_and_a_leading_meridiem() {
+    close(date("0:30 PM"), 12.5 / 24.0);
+    close(date("0 PM"), 0.5);
+    close(date("13:30 AM"), 13.5 / 24.0);
+    close(date("0:30 AM"), 0.5 / 24.0);
+    assert_eq!(date("PM 1/1/2000"), Some(36526.0));
+}

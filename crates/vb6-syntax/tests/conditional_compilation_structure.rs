@@ -158,3 +158,11 @@ fn a_directive_is_only_read_at_the_start_of_a_line() {
     // Blanks before the directive do not matter.
     assert_eq!(parse("Sub S()\n   #If True Then\n x = 1\n   #End If\nEnd Sub\n").found, vec![]);
 }
+
+#[test]
+fn at_most_4079_blocks_may_be_open() {
+    let nest = |n: usize| format!("{}{}", "#If True Then\n".repeat(n), "#End If\n".repeat(n));
+    assert_eq!(parse(&nest(4079)).found, vec![]);
+    let found = parse(&nest(4080)).found;
+    assert_eq!(found.first().map(|f| f.0), Some(7));
+}
