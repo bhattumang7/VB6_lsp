@@ -234,6 +234,9 @@ pub struct Parser<'src> {
     last_was_eol: bool,
     /// A `:` statement separator has been consumed on the current line.
     after_colon: bool,
+    /// A token other than a line end has been read on the current logical line: a
+    /// `Name:` is a line label only as the first thing on its line.
+    line_has_content: bool,
     /// A module-level variable, procedure or `Declare` has been parsed.
     module_decl_seen: bool,
     /// True while the header of a procedure written with a leading `Static` is read.
@@ -423,6 +426,7 @@ impl<'src> Parser<'src> {
             blocks: Vec::new(),
             last_was_eol: false,
             after_colon: false,
+            line_has_content: false,
             module_decl_seen: false,
             static_prefix: false,
             property_sigs: Vec::new(),
@@ -490,6 +494,7 @@ impl<'src> Parser<'src> {
             None    => self.peeked2.take().unwrap_or_else(|| self.next_logical()),
         };
         self.last_was_eol = tok.kind == TokenKind::Eol;
+        self.line_has_content = tok.kind != TokenKind::Eol;
         self.last_token_end = tok.span.start + tok.span.len;
         match tok.kind {
             TokenKind::Kw(Kw::Colon) => self.after_colon = true,
@@ -1785,6 +1790,8 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(_)
                 if self.peek().sym.is_some()
                     && self.peek2().kind == TokenKind::Kw(Kw::Colon)
+                    && !self.line_has_content
+                    && self.peek().kind != TokenKind::Kw(Kw::Randomize)
                     && !self.at_reserved_word() =>
             {
                 let name = self.advance();
@@ -1987,7 +1994,7 @@ impl<'src> Parser<'src> {
                 return None;
             }
             // Identifier — could be a line label (`Foo:`), assignment, or implicit call.
-            TokenKind::Ident if self.peek2().kind == TokenKind::Kw(Kw::Colon) => {
+            TokenKind::Ident if self.peek2().kind == TokenKind::Kw(Kw::Colon) && !self.line_has_content => {
                 let name = self.advance(); // identifier
                 self.advance();            // colon
                 self.after_colon = false;  // the colon belongs to the label
@@ -2027,6 +2034,9 @@ impl<'src> Parser<'src> {
                 let line = line_label_value(&tok.lit);
                 if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
                     self.after_colon = false;
+                } else {
+                    // A line number alone does not make a later `Name:` a mid-line label.
+                    self.line_has_content = false;
                 }
                 self.define_label(LabelRef::Line(line), tok.span);
                 let id = arena.alloc(ExprNode::Label { target: LabelRef::Line(line) });
@@ -2357,21 +2367,28 @@ impl<'src> Parser<'src> {
         };
         self.advance(); // consume Mid / Mid$ / MidB / MidB$
         self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
-        let args = self.parse_arg_list(arena);
-        // `Mid(target, start [, length])`
-        let (arg_count, any_missing) = match arena.get(args) {
-            ExprNode::ArgList { args } => (
-                args.len(),
-                args.iter().any(|a| matches!(arena.get(*a), ExprNode::MissingArg)),
-            ),
-            _ => (0, false),
-        };
-        // No argument of the assignment may be left out.
-        if !(2..=3).contains(&arg_count) || any_missing {
+        // `Mid(target, start [, length])`: the first operand is a target, the others are
+        // plain expressions; none can be named, left out or written with a call-site `ByVal`.
+        let mut items = vec![self.parse_target_expr(arena)];
+        let mut well_formed = self.peek().kind == TokenKind::Kw(Kw::Comma);
+        if well_formed {
+            self.advance();
+            items.push(self.parse_expr(arena, 0));
+            if self.eat(TokenKind::Kw(Kw::Comma)) {
+                items.push(self.parse_expr(arena, 0));
+            }
+            well_formed = self.peek().kind == TokenKind::Kw(Kw::RParen);
+        }
+        let args = arena.alloc(ExprNode::ArgList { args: items });
+        if !well_formed {
+            // The statement is abandoned at the first operand error, as the compiler does.
             let span = self.current_span();
             self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+            self.skip_to_stmt_end();
+            let value = self.parse_primary_placeholder(arena);
+            return arena.alloc(ExprNode::MidAssign { byte_oriented, dollar, args, value });
         }
-        self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
+        self.advance(); // )
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
         self.end_stmt();

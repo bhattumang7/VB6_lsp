@@ -158,6 +158,7 @@ fn mid_statement_takes_two_or_three_arguments() {
     assert_eq!(found, vec![]);
     let (src, found) = in_sub("Mid(s) = \"a\"");
     assert_eq!(found, vec![(EXPECTED, offset_of(&src, ")", 1), 1)]);
+    // A fourth operand is rejected where the closing bracket was due.
     let (src, found) = in_sub("Mid(s, 1, 2, 3) = \"a\"");
-    assert_eq!(found, vec![(EXPECTED, offset_of(&src, ")", 1), 1)]);
+    assert_eq!(found, vec![(EXPECTED, offset_of(&src, ", 3", 0), 1)]);
 }
