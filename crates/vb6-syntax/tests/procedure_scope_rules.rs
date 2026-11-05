@@ -57,7 +57,6 @@ fn procedure_declarations_inside_a_procedure_are_reported_and_skipped() {
         ("Property Get Inner()", 8),
         ("Declare Sub D Lib \"k\" ()", 7),
         ("Event Ev()", 5),
-        ("Implements IFoo", 10),
         ("Option Explicit", 6),
         ("DefInt A-Z", 6),
     ] {

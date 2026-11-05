@@ -1,0 +1,46 @@
+a As Long
+a As Long, b As Long
+a As Long: b As Long
+a As String * 3
+a(3) As Long
+a(1 To 3) As Long
+a As Variant
+a As Object
+a As Class1
+a As New Class1
+a As Long = 1
+a = 1
+a
+a()
+a$
+a%
+a$ As String
+a As T
+a As E
+End
+Rem x
+a As Long 'c
+Dim a As Long
+Public a As Long
+Private a As Long
+Static a As Long
+Const a = 1
+Sub a()
+Type U
+a As Any
+a As Decimal
+a As Integer()
+a As String * n
+a As String * 0
+a As String * 65526
+Date As Long
+Error As Long
+New As Long
+Me As Long
+Name As Long
+Nothing As Long
+a As Long: End Type
+_a As Long
+[a b] As Long
+a As Long _\n, b As Long
+a As _\nLong

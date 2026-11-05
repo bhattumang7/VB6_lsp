@@ -1,0 +1,93 @@
+# template	word	class	message
+bas	a As Long	accepted	
+bas	a As Long, b As Long	syntax	Statement invalid inside Type block
+bas	a As Long: b As Long	accepted	
+bas	a As String * 3	accepted	
+bas	a(3) As Long	accepted	
+bas	a(1 To 3) As Long	accepted	
+bas	a As Variant	accepted	
+bas	a As Object	accepted	
+bas	a As Class1	semantic	User-defined type not defined
+bas	a As New Class1	semantic	User-defined type not defined
+bas	a As Long = 1	syntax	Expected: end of statement
+bas	a = 1	syntax	Statement invalid inside Type block
+bas	a	syntax	Statement invalid inside Type block
+bas	a()	syntax	Expected: =
+bas	a$	syntax	Statement invalid inside Type block
+bas	a%	syntax	Statement invalid inside Type block
+bas	a$ As String	syntax	Expected: end of statement
+bas	a As T	accepted	
+bas	a As E	accepted	
+bas	End	syntax	Statement invalid inside Type block
+bas	Rem x	syntax	User-defined type without members not allowed
+bas	a As Long 'c	accepted	
+bas	Dim a As Long	syntax	Statement invalid inside Type block
+bas	Public a As Long	syntax	Statement invalid inside Type block
+bas	Private a As Long	syntax	Statement invalid inside Type block
+bas	Static a As Long	syntax	Statement invalid inside Type block
+bas	Const a = 1	syntax	Statement invalid inside Type block
+bas	Sub a()	syntax	Statement invalid inside Type block
+bas	Type U	syntax	Statement invalid inside Type block
+bas	a As Any	syntax	Expected: New or type name
+bas	a As Decimal	syntax	Expected: New or type name
+bas	a As Integer()	syntax	Expected: end of statement
+bas	a As String * n	semantic	Constant expression required
+bas	a As String * 0	syntax	Invalid length for fixed-length string
+bas	a As String * 65526	semantic	Fixed or static data can't be larger than 64K
+bas	Date As Long	accepted	
+bas	Error As Long	accepted	
+bas	New As Long	accepted	
+bas	Me As Long	syntax	Expected: =
+bas	Name As Long	accepted	
+bas	Nothing As Long	accepted	
+bas	a As Long: End Type	syntax	Statement invalid outside Type block
+bas	_a As Long	syntax	Invalid character
+bas	[a b] As Long	syntax	Expected: expression or end of statement
+bas	a As Long _\n, b As Long	syntax	Statement invalid inside Type block
+bas	a As _\nLong	accepted	
+onlyone	a As Long	accepted	
+onlyone	a As Long, b As Long	syntax	Statement invalid inside Type block
+onlyone	a As Long: b As Long	accepted	
+onlyone	a As String * 3	accepted	
+onlyone	a(3) As Long	accepted	
+onlyone	a(1 To 3) As Long	accepted	
+onlyone	a As Variant	accepted	
+onlyone	a As Object	accepted	
+onlyone	a As Class1	semantic	User-defined type not defined
+onlyone	a As New Class1	semantic	User-defined type not defined
+onlyone	a As Long = 1	syntax	Expected: end of statement
+onlyone	a = 1	syntax	Statement invalid inside Type block
+onlyone	a	syntax	Statement invalid inside Type block
+onlyone	a()	syntax	Expected: =
+onlyone	a$	syntax	Statement invalid inside Type block
+onlyone	a%	syntax	Statement invalid inside Type block
+onlyone	a$ As String	syntax	Expected: end of statement
+onlyone	a As T	semantic	User-defined type not defined
+onlyone	a As E	semantic	User-defined type not defined
+onlyone	End	syntax	Statement invalid inside Type block
+onlyone	Rem x	syntax	User-defined type without members not allowed
+onlyone	a As Long 'c	accepted	
+onlyone	Dim a As Long	syntax	Statement invalid inside Type block
+onlyone	Public a As Long	syntax	Statement invalid inside Type block
+onlyone	Private a As Long	syntax	Statement invalid inside Type block
+onlyone	Static a As Long	syntax	Statement invalid inside Type block
+onlyone	Const a = 1	syntax	Statement invalid inside Type block
+onlyone	Sub a()	syntax	Statement invalid inside Type block
+onlyone	Type U	syntax	Statement invalid inside Type block
+onlyone	a As Any	syntax	Expected: New or type name
+onlyone	a As Decimal	syntax	Expected: New or type name
+onlyone	a As Integer()	syntax	Expected: end of statement
+onlyone	a As String * n	semantic	Constant expression required
+onlyone	a As String * 0	syntax	Invalid length for fixed-length string
+onlyone	a As String * 65526	semantic	Fixed or static data can't be larger than 64K
+onlyone	Date As Long	accepted	
+onlyone	Error As Long	accepted	
+onlyone	New As Long	accepted	
+onlyone	Me As Long	syntax	Expected: =
+onlyone	Name As Long	accepted	
+onlyone	Nothing As Long	accepted	
+onlyone	a As Long: End Type	syntax	Statement invalid outside Type block
+onlyone	_a As Long	syntax	Invalid character
+onlyone	[a b] As Long	syntax	Expected: expression or end of statement
+onlyone	a As Long _\n, b As Long	syntax	Statement invalid inside Type block
+onlyone	a As _\nLong	accepted	

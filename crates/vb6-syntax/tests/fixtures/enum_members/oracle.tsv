@@ -1,0 +1,91 @@
+# template	word	class	message
+bas	A	accepted	
+bas	A = 1	accepted	
+bas	A = -1	accepted	
+bas	A = 1 + 1	accepted	
+bas	A = c	accepted	
+bas	A = "x"	semantic	Type mismatch
+bas	A = 1.5	accepted	
+bas	A = &HFF	accepted	
+bas	A = 2147483647	accepted	
+bas	A = 2147483648	syntax	Overflow
+bas	A = x	semantic	Constant expression required
+bas	A, B	syntax	Invalid inside Enum
+bas	A: B	syntax	Invalid inside Enum
+bas	A = 1: B = 2	accepted	
+bas	A B	syntax	Invalid inside Enum
+bas	A =	syntax	Expected: expression
+bas	= 1	syntax	Expected: line number or label or statement or end of statement
+bas	A As Long	syntax	Invalid inside Enum
+bas	A()	syntax	Expected: =
+bas	A(1)	syntax	Invalid inside Enum
+bas	A.B	syntax	Invalid inside Enum
+bas	Rem x	syntax	Enum without members not allowed
+bas	A 'c	accepted	
+bas	Date	accepted	
+bas	Error	syntax	Expected: expression
+bas	Dim	syntax	Expected: identifier
+bas	Sub	syntax	Expected: identifier
+bas	Private A	syntax	Invalid inside Enum
+bas	Public A	syntax	Invalid inside Enum
+bas	End	syntax	Invalid inside Enum
+bas	End Enum	syntax	Enum without members not allowed
+bas	A = A	semantic	Constant expression required
+bas	A = B	semantic	Constant expression required
+bas	A = (1)	accepted	
+bas	A = Not 1	accepted	
+bas	A = 1 To 2	syntax	Expected: end of statement
+bas	[A b]	accepted	
+bas	A$	accepted	
+bas	A%	accepted	
+bas	_A	syntax	Invalid character
+bas	A = 1 _\n+ 2	syntax	Invalid inside Enum
+bas	A = Enum	syntax	Expected: expression
+bas	A = -2147483648	accepted	
+bas	A = &H7FFFFFFF	accepted	
+bas	A = &HFFFFFFFF	accepted	
+onelinedup	A	semantic	Ambiguous name detected: A
+onelinedup	A = 1	semantic	Ambiguous name detected: A
+onelinedup	A = -1	semantic	Ambiguous name detected: A
+onelinedup	A = 1 + 1	semantic	Ambiguous name detected: A
+onelinedup	A = c	semantic	Ambiguous name detected: A
+onelinedup	A = "x"	semantic	Ambiguous name detected: A
+onelinedup	A = 1.5	semantic	Ambiguous name detected: A
+onelinedup	A = &HFF	semantic	Ambiguous name detected: A
+onelinedup	A = 2147483647	semantic	Ambiguous name detected: A
+onelinedup	A = 2147483648	semantic	Ambiguous name detected: A
+onelinedup	A = x	semantic	Ambiguous name detected: A
+onelinedup	A, B	syntax	Invalid inside Enum
+onelinedup	A: B	syntax	Invalid inside Enum
+onelinedup	A = 1: B = 2	semantic	Ambiguous name detected: A
+onelinedup	A B	syntax	Invalid inside Enum
+onelinedup	A =	syntax	Expected: expression
+onelinedup	= 1	syntax	Expected: line number or label or statement or end of statement
+onelinedup	A As Long	syntax	Invalid inside Enum
+onelinedup	A()	syntax	Expected: =
+onelinedup	A(1)	syntax	Invalid inside Enum
+onelinedup	A.B	syntax	Invalid inside Enum
+onelinedup	Rem x	accepted	
+onelinedup	A 'c	semantic	Ambiguous name detected: A
+onelinedup	Date	accepted	
+onelinedup	Error	syntax	Expected: expression
+onelinedup	Dim	syntax	Expected: identifier
+onelinedup	Sub	syntax	Expected: identifier
+onelinedup	Private A	syntax	Invalid inside Enum
+onelinedup	Public A	syntax	Invalid inside Enum
+onelinedup	End	syntax	Invalid inside Enum
+onelinedup	End Enum	syntax	Invalid outside Enum
+onelinedup	A = A	semantic	Ambiguous name detected: A
+onelinedup	A = B	semantic	Ambiguous name detected: A
+onelinedup	A = (1)	semantic	Ambiguous name detected: A
+onelinedup	A = Not 1	semantic	Ambiguous name detected: A
+onelinedup	A = 1 To 2	syntax	Expected: end of statement
+onelinedup	[A b]	accepted	
+onelinedup	A$	semantic	Ambiguous name detected: A
+onelinedup	A%	semantic	Ambiguous name detected: A
+onelinedup	_A	syntax	Invalid character
+onelinedup	A = 1 _\n+ 2	syntax	Invalid inside Enum
+onelinedup	A = Enum	syntax	Expected: expression
+onelinedup	A = -2147483648	semantic	Ambiguous name detected: A
+onelinedup	A = &H7FFFFFFF	semantic	Ambiguous name detected: A
+onelinedup	A = &HFFFFFFFF	semantic	Ambiguous name detected: A

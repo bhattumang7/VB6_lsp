@@ -1,0 +1,63 @@
+Option Explicit
+Option Explicit On
+Option Base 0
+Option Base 1
+Option Base 2
+Option Base
+Option Base -1
+Option Base 1.5
+Option Base x
+Option Compare Text
+Option Compare Binary
+Option Compare Database
+Option Compare
+Option Private Module
+Option Private
+Option Private Class
+Option Strict
+Option Explicit Off
+Option
+Option Explicit: Option Base 1
+Option Explicit 'c
+Option Explicit Rem x
+Option _\nExplicit
+Option Explicit _\n
+Option Base "1"
+Option Base (1)
+Option Base &H1
+Option Base 1 _\n
+Option Base 1: Dim x
+DefInt A-Z
+DefInt A
+DefInt A-
+DefInt -Z
+DefInt A-Z, a
+DefInt a-z
+DefInt Z-A
+DefInt A-Z,
+DefInt
+DefInt 1
+DefInt A To Z
+DefInt AB
+DefInt A-B-C
+DefInt "A"
+DefBool A
+DefByte A
+DefCur A
+DefDate A
+DefDbl A
+DefDec A
+DefLng A
+DefObj A
+DefSng A
+DefStr A
+DefVar A
+DefInt A, B-C, D
+DefInt [A]
+DefInt _
+DefInt A-Z 'c
+DefInt A-Z: DefLng A
+Def A-Z
+DefAny A
+DefChar A
+DefString A

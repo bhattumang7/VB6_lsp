@@ -41,14 +41,15 @@ fn option_base_value_is_kept() {
 }
 
 #[test]
-fn option_compare_takes_binary_text_or_database() {
-    for (src, mode) in [("Option Compare Binary\n", 0u8), ("Option Compare Text\n", 1), ("Option Compare Database\n", 2)] {
+fn option_compare_takes_binary_or_text_only() {
+    for (src, mode) in [("Option Compare Binary\n", 0u8), ("Option Compare Text\n", 1)] {
         let p = parse(src);
         assert_eq!(p.found, vec![], "{src:?}");
         assert!(matches!(p.node(p.top[0]), ExprNode::OptionCompare { mode: m } if *m == mode));
     }
-    let src = "Option Compare Foo\n";
-    assert_eq!(module(src), vec![(EXPECTED, 15, 3)]);
+    for (src, len) in [("Option Compare Foo\n", 3), ("Option Compare Database\n", 8)] {
+        assert_eq!(module(src), vec![(EXPECTED, 15, len)], "{src:?}");
+    }
 }
 
 #[test]

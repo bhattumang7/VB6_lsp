@@ -1,0 +1,15 @@
+# {k} is replaced by each form (\n separates lines).
+=== bas bas
+Enum E
+Z
+End Enum
+Type T
+x As Long
+End Type
+Type U
+{k}
+End Type
+=== onlyone bas
+Type U
+{k}
+End Type

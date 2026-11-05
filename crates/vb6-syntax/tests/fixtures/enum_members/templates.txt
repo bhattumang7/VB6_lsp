@@ -1,0 +1,11 @@
+# {k} is replaced by each form (\n separates lines).
+=== bas bas
+Const c = 1
+Enum E
+{k}
+End Enum
+=== onelinedup bas
+Enum E
+A = 1
+{k}
+End Enum

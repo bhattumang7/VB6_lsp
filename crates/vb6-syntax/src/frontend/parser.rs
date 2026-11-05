@@ -113,7 +113,7 @@ fn def_type_kw(k: Kw) -> Option<u16> {
     use Kw::*;
     matches!(
         k,
-        DefBool | DefByte | DefCur | DefDate | DefDec | DefDbl
+        DefBool | DefByte | DefCur | DefDate | DefDbl
             | DefInt | DefLng | DefObj | DefSng | DefStr | DefVar
     )
     .then_some(k as u16)
@@ -1874,9 +1874,12 @@ impl<'src> Parser<'src> {
                     self.statement_without_operands(arena, t)
                 }
             }
+            // `Implements` is read wherever it stands; whether it is allowed there is the binder's
+            // question.
+            TokenKind::Kw(Kw::Implements) => self.parse_implements_stmt(arena),
             // Sub / Function / Property — nested (error but recover)
             TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
-            | TokenKind::Kw(Kw::Declare) | TokenKind::Kw(Kw::Event) | TokenKind::Kw(Kw::Implements)
+            | TokenKind::Kw(Kw::Declare) | TokenKind::Kw(Kw::Event)
             | TokenKind::Kw(Kw::Option) => {
                 let span = self.current_span();
                 self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
@@ -3229,7 +3232,7 @@ impl<'src> Parser<'src> {
 
     fn parse_raise_event(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume RaiseEvent
-        let name = self.expect_ident();
+        let name = self.expect_decl_name();
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
         let args = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let a = self.parse_arg_list(arena);
@@ -3662,10 +3665,9 @@ impl<'src> Parser<'src> {
                 let mode = match self.peek().kind.clone() {
                     TokenKind::Kw(Kw::Binary) => { self.advance(); 0u8 }
                     TokenKind::Kw(Kw::Text)   => { self.advance(); 1u8 }
-                    TokenKind::Kw(Kw::Database) => { self.advance(); 2u8 }
                     _ => {
                         let span = self.current_span();
-                        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                        self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Text or Binary");
                         self.skip_line();
                         return arena.alloc(ExprNode::Block { stmts: vec![] });
                     }
@@ -5040,24 +5042,27 @@ impl<'src> Parser<'src> {
                     self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
                     break;
                 }
-                // A comment line between members is a blank line, and `:`
-                // separates members written on one line.
+                // A comment line between members is a blank line, and so is a lone colon.
                 TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => {
                     self.advance();
                 }
                 TokenKind::Ident => {
+                    let start = self.current_span();
+                    self.label_target = self.src.get(start.start as usize) == Some(&b'[');
                     let m = self.parse_dim_item(arena, true, false, false);
-                    self.end_stmt();
+                    self.label_target = false;
+                    self.finish_enum_member(arena, m, start);
                     members.push(m);
                 }
                 // A non-reserved keyword (`Text`, `Key`) can name a member, unless it
                 // starts a statement that needs operands (`Name`, `Width`, ...).
                 // `Date`, `DoEvents` and `CDec` are reserved but name a member too.
                 TokenKind::Kw(_) if self.names_enum_member() => {
+                    let start = self.current_span();
                     self.reserved_names_allowed = true;
                     let m = self.parse_dim_item(arena, true, false, false);
                     self.reserved_names_allowed = false;
-                    self.end_stmt();
+                    self.finish_enum_member(arena, m, start);
                     members.push(m);
                 }
                 _ => {
@@ -5071,6 +5076,23 @@ impl<'src> Parser<'src> {
         let id = arena.alloc(ExprNode::EnumDecl { name: nid, members });
         self.set_span(id, name.span);
         id
+    }
+
+    /// The end of an `Enum` member: the member takes no type, stands on one physical line, and
+    /// a colon may follow it only when it has a value.
+    fn finish_enum_member(&mut self, arena: &ExprArena, member: NodeId, start: Span) {
+        let has_value = matches!(arena.get(member), ExprNode::DimItem { init: Some(_), .. });
+        let end = self.peek().span.start as usize;
+        let joined = self
+            .src
+            .get(start.start as usize..end)
+            .is_some_and(|text| text.iter().any(|&b| b == 10 || b == 13));
+        if self.last_item_had_as || joined || (!has_value && self.peek().kind == TokenKind::Kw(Kw::Colon)) {
+            self.diagnostics.push(ERR_INVALID_IN_ENUM, start);
+            self.skip_line();
+        } else {
+            self.end_stmt();
+        }
     }
 
     // ── Expression parser (Pratt) ─────────────────────────────────────────────

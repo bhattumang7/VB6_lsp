@@ -1,0 +1,50 @@
+Event E()
+Event E(a As Long)
+Event E(ByVal a As Long)
+Event E(ByRef a As Long)
+Event E(a)
+Event E(a, b)
+Event E(Optional a)
+Event E(ParamArray a())
+Event E(a As Long) As Long
+Event E As Long
+Event E
+Event
+Event E.F()
+Event E$()
+Event E_F()
+Event Date()
+Event Error()
+Event E() 'c
+Event E(): Event F()
+Public Event E()
+Private Event E()
+Friend Event E()
+Event Event()
+Event E(a(), b)
+Event E(a() As Long)
+Event E(ByVal a() As Long)
+Event E(a As New Class1)
+Event E(a As Class1)
+Event E(a As Any)
+Event E(a As String * 3)
+Event E(a, a)
+Implements Class1
+Implements
+Implements Class1.Sub
+Implements VB.Form
+Implements Class1, Class2
+Implements Class1: Implements Class1
+Implements Class1 'c
+Implements Date
+Implements [x y]
+Implements Class1.
+Implements New Class1
+Implements Object
+Implements Variant
+Implements Nothing
+Implements "x"
+Implements Class1()
+Private Implements Class1
+Public Implements Class1
+Static Implements Class1

@@ -1,0 +1,45 @@
+A
+A = 1
+A = -1
+A = 1 + 1
+A = c
+A = "x"
+A = 1.5
+A = &HFF
+A = 2147483647
+A = 2147483648
+A = x
+A, B
+A: B
+A = 1: B = 2
+A B
+A = 
+= 1
+A As Long
+A()
+A(1)
+A.B
+Rem x
+A 'c
+Date
+Error
+Dim
+Sub
+Private A
+Public A
+End
+End Enum
+A = A
+A = B
+A = (1)
+A = Not 1
+A = 1 To 2
+[A b]
+A$
+A%
+_A
+A = 1 _\n+ 2
+A = Enum
+A = -2147483648
+A = &H7FFFFFFF
+A = &HFFFFFFFF

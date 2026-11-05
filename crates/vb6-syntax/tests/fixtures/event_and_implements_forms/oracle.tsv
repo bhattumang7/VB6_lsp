@@ -1,0 +1,201 @@
+# template	word	class	message
+cls	Event E()	accepted	
+cls	Event E(a As Long)	accepted	
+cls	Event E(ByVal a As Long)	accepted	
+cls	Event E(ByRef a As Long)	accepted	
+cls	Event E(a)	accepted	
+cls	Event E(a, b)	accepted	
+cls	Event E(Optional a)	syntax	Syntax error
+cls	Event E(ParamArray a())	syntax	Syntax error
+cls	Event E(a As Long) As Long	syntax	Expected: end of statement
+cls	Event E As Long	syntax	Expected: end of statement
+cls	Event E	accepted	
+cls	Event	syntax	Expected: identifier
+cls	Event E.F()	syntax	Expected: end of statement
+cls	Event E$()	syntax	Expected: Identifier without type suffix
+cls	Event E_F()	syntax	Invalid event name
+cls	Event Date()	syntax	Expected: identifier
+cls	Event Error()	accepted	
+cls	Event E() 'c	accepted	
+cls	Event E(): Event F()	syntax	Expected: statement or end of statement
+cls	Public Event E()	accepted	
+cls	Private Event E()	syntax	Expected: Sub or Function or Property
+cls	Friend Event E()	syntax	Expected: Sub or Function or Property
+cls	Event Event()	syntax	Expected: identifier
+cls	Event E(a(), b)	accepted	
+cls	Event E(a() As Long)	accepted	
+cls	Event E(ByVal a() As Long)	syntax	Array argument must be ByRef
+cls	Event E(a As New Class1)	syntax	Expected: type name
+cls	Event E(a As Class1)	accepted	
+cls	Event E(a As Any)	syntax	Expected: type name
+cls	Event E(a As String * 3)	syntax	Expected array
+cls	Event E(a, a)	accepted	
+cls	Implements Class1	semantic	Not a valid interface for Implements
+cls	Implements	syntax	Expected: identifier
+cls	Implements Class1.Sub	semantic	User-defined type not defined
+cls	Implements VB.Form	semantic	Bad interface for Implements: method has underscore in name
+cls	Implements Class1, Class2	syntax	Expected: end of statement
+cls	Implements Class1: Implements Class1	semantic	Ambiguous name detected: Class1
+cls	Implements Class1 'c	semantic	Not a valid interface for Implements
+cls	Implements Date	syntax	Expected: identifier
+cls	Implements [x y]	syntax	Expected: identifier
+cls	Implements Class1.	syntax	Expected: identifier
+cls	Implements New Class1	syntax	Expected: identifier
+cls	Implements Object	syntax	Expected: identifier
+cls	Implements Variant	syntax	Expected: identifier
+cls	Implements Nothing	syntax	Expected: identifier
+cls	Implements "x"	syntax	Expected: identifier
+cls	Implements Class1()	syntax	Expected: end of statement
+cls	Private Implements Class1	syntax	Expected: identifier
+cls	Public Implements Class1	syntax	Expected: identifier
+cls	Static Implements Class1	syntax	Expected: identifier
+bas	Event E()	syntax	Only valid in object module
+bas	Event E(a As Long)	syntax	Only valid in object module
+bas	Event E(ByVal a As Long)	syntax	Only valid in object module
+bas	Event E(ByRef a As Long)	syntax	Only valid in object module
+bas	Event E(a)	syntax	Only valid in object module
+bas	Event E(a, b)	syntax	Only valid in object module
+bas	Event E(Optional a)	syntax	Only valid in object module
+bas	Event E(ParamArray a())	syntax	Only valid in object module
+bas	Event E(a As Long) As Long	syntax	Only valid in object module
+bas	Event E As Long	syntax	Only valid in object module
+bas	Event E	syntax	Only valid in object module
+bas	Event	syntax	Only valid in object module
+bas	Event E.F()	syntax	Only valid in object module
+bas	Event E$()	syntax	Only valid in object module
+bas	Event E_F()	syntax	Only valid in object module
+bas	Event Date()	syntax	Only valid in object module
+bas	Event Error()	syntax	Only valid in object module
+bas	Event E() 'c	syntax	Only valid in object module
+bas	Event E(): Event F()	syntax	Only valid in object module
+bas	Public Event E()	syntax	Only valid in object module
+bas	Private Event E()	syntax	Expected: Sub or Function or Property
+bas	Friend Event E()	syntax	Only valid in object module
+bas	Event Event()	syntax	Only valid in object module
+bas	Event E(a(), b)	syntax	Only valid in object module
+bas	Event E(a() As Long)	syntax	Only valid in object module
+bas	Event E(ByVal a() As Long)	syntax	Only valid in object module
+bas	Event E(a As New Class1)	syntax	Only valid in object module
+bas	Event E(a As Class1)	syntax	Only valid in object module
+bas	Event E(a As Any)	syntax	Only valid in object module
+bas	Event E(a As String * 3)	syntax	Only valid in object module
+bas	Event E(a, a)	syntax	Only valid in object module
+bas	Implements Class1	syntax	Only valid in object module
+bas	Implements	syntax	Only valid in object module
+bas	Implements Class1.Sub	syntax	Only valid in object module
+bas	Implements VB.Form	syntax	Only valid in object module
+bas	Implements Class1, Class2	syntax	Only valid in object module
+bas	Implements Class1: Implements Class1	syntax	Only valid in object module
+bas	Implements Class1 'c	syntax	Only valid in object module
+bas	Implements Date	syntax	Only valid in object module
+bas	Implements [x y]	syntax	Only valid in object module
+bas	Implements Class1.	syntax	Only valid in object module
+bas	Implements New Class1	syntax	Only valid in object module
+bas	Implements Object	syntax	Only valid in object module
+bas	Implements Variant	syntax	Only valid in object module
+bas	Implements Nothing	syntax	Only valid in object module
+bas	Implements "x"	syntax	Only valid in object module
+bas	Implements Class1()	syntax	Only valid in object module
+bas	Private Implements Class1	syntax	Expected: identifier
+bas	Public Implements Class1	syntax	Expected: identifier
+bas	Static Implements Class1	syntax	Expected: identifier
+proc	Event E()	syntax	Invalid inside procedure
+proc	Event E(a As Long)	syntax	Invalid inside procedure
+proc	Event E(ByVal a As Long)	syntax	Invalid inside procedure
+proc	Event E(ByRef a As Long)	syntax	Invalid inside procedure
+proc	Event E(a)	syntax	Invalid inside procedure
+proc	Event E(a, b)	syntax	Invalid inside procedure
+proc	Event E(Optional a)	syntax	Syntax error
+proc	Event E(ParamArray a())	syntax	Syntax error
+proc	Event E(a As Long) As Long	syntax	Syntax error
+proc	Event E As Long	syntax	Syntax error
+proc	Event E	syntax	Invalid inside procedure
+proc	Event	syntax	Syntax error
+proc	Event E.F()	syntax	Syntax error
+proc	Event E$()	syntax	Syntax error
+proc	Event E_F()	syntax	Syntax error
+proc	Event Date()	syntax	Syntax error
+proc	Event Error()	syntax	Invalid inside procedure
+proc	Event E() 'c	syntax	Invalid inside procedure
+proc	Event E(): Event F()	syntax	Syntax error
+proc	Public Event E()	syntax	Invalid inside procedure
+proc	Private Event E()	syntax	Syntax error
+proc	Friend Event E()	syntax	Syntax error
+proc	Event Event()	syntax	Syntax error
+proc	Event E(a(), b)	syntax	Invalid inside procedure
+proc	Event E(a() As Long)	syntax	Invalid inside procedure
+proc	Event E(ByVal a() As Long)	syntax	Syntax error
+proc	Event E(a As New Class1)	syntax	Syntax error
+proc	Event E(a As Class1)	syntax	Invalid inside procedure
+proc	Event E(a As Any)	syntax	Syntax error
+proc	Event E(a As String * 3)	syntax	Syntax error
+proc	Event E(a, a)	syntax	Invalid inside procedure
+proc	Implements Class1	semantic	Not a valid interface for Implements
+proc	Implements	syntax	Syntax error
+proc	Implements Class1.Sub	semantic	User-defined type not defined
+proc	Implements VB.Form	semantic	Bad interface for Implements: method has underscore in name
+proc	Implements Class1, Class2	syntax	Syntax error
+proc	Implements Class1: Implements Class1	semantic	Ambiguous name detected: Class1
+proc	Implements Class1 'c	semantic	Not a valid interface for Implements
+proc	Implements Date	syntax	Syntax error
+proc	Implements [x y]	syntax	Syntax error
+proc	Implements Class1.	syntax	Syntax error
+proc	Implements New Class1	syntax	Syntax error
+proc	Implements Object	syntax	Syntax error
+proc	Implements Variant	syntax	Syntax error
+proc	Implements Nothing	syntax	Syntax error
+proc	Implements "x"	syntax	Syntax error
+proc	Implements Class1()	syntax	Syntax error
+proc	Private Implements Class1	syntax	Syntax error
+proc	Public Implements Class1	syntax	Syntax error
+proc	Static Implements Class1	syntax	Syntax error
+raise	Event E()	syntax	Syntax error
+raise	Event E(a As Long)	syntax	Syntax error
+raise	Event E(ByVal a As Long)	syntax	Syntax error
+raise	Event E(ByRef a As Long)	syntax	Syntax error
+raise	Event E(a)	syntax	Syntax error
+raise	Event E(a, b)	syntax	Syntax error
+raise	Event E(Optional a)	syntax	Syntax error
+raise	Event E(ParamArray a())	syntax	Syntax error
+raise	Event E(a As Long) As Long	syntax	Syntax error
+raise	Event E As Long	syntax	Syntax error
+raise	Event E	syntax	Syntax error
+raise	Event	syntax	Syntax error
+raise	Event E.F()	syntax	Syntax error
+raise	Event E$()	syntax	Syntax error
+raise	Event E_F()	syntax	Syntax error
+raise	Event Date()	syntax	Syntax error
+raise	Event Error()	syntax	Syntax error
+raise	Event E() 'c	syntax	Syntax error
+raise	Event E(): Event F()	syntax	Syntax error
+raise	Public Event E()	syntax	Syntax error
+raise	Private Event E()	syntax	Syntax error
+raise	Friend Event E()	syntax	Syntax error
+raise	Event Event()	syntax	Syntax error
+raise	Event E(a(), b)	syntax	Syntax error
+raise	Event E(a() As Long)	syntax	Syntax error
+raise	Event E(ByVal a() As Long)	syntax	Syntax error
+raise	Event E(a As New Class1)	syntax	Syntax error
+raise	Event E(a As Class1)	syntax	Syntax error
+raise	Event E(a As Any)	syntax	Syntax error
+raise	Event E(a As String * 3)	syntax	Syntax error
+raise	Event E(a, a)	syntax	Syntax error
+raise	Implements Class1	syntax	Syntax error
+raise	Implements	syntax	Syntax error
+raise	Implements Class1.Sub	syntax	Syntax error
+raise	Implements VB.Form	syntax	Syntax error
+raise	Implements Class1, Class2	syntax	Syntax error
+raise	Implements Class1: Implements Class1	syntax	Syntax error
+raise	Implements Class1 'c	syntax	Syntax error
+raise	Implements Date	syntax	Syntax error
+raise	Implements [x y]	syntax	Syntax error
+raise	Implements Class1.	syntax	Syntax error
+raise	Implements New Class1	syntax	Syntax error
+raise	Implements Object	syntax	Syntax error
+raise	Implements Variant	syntax	Syntax error
+raise	Implements Nothing	syntax	Syntax error
+raise	Implements "x"	syntax	Syntax error
+raise	Implements Class1()	syntax	Syntax error
+raise	Private Implements Class1	syntax	Syntax error
+raise	Public Implements Class1	syntax	Syntax error
+raise	Static Implements Class1	syntax	Syntax error

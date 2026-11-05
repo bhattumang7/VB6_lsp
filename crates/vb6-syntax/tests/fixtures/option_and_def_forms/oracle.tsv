@@ -1,0 +1,127 @@
+# template	word	class	message
+bas	Option Explicit	accepted	
+bas	Option Explicit On	syntax	Expected: end of statement
+bas	Option Base 0	accepted	
+bas	Option Base 1	accepted	
+bas	Option Base 2	syntax	Expected: 0 or 1
+bas	Option Base	syntax	Expected: 0 or 1
+bas	Option Base -1	syntax	Expected: 0 or 1
+bas	Option Base 1.5	syntax	Expected: 0 or 1
+bas	Option Base x	syntax	Expected: 0 or 1
+bas	Option Compare Text	accepted	
+bas	Option Compare Binary	accepted	
+bas	Option Compare Database	syntax	Expected: Text or Binary
+bas	Option Compare	syntax	Expected: Text or Binary
+bas	Option Private Module	accepted	
+bas	Option Private	syntax	Expected: Module
+bas	Option Private Class	syntax	Expected: Module
+bas	Option Strict	syntax	Expected: Base or Compare or Explicit or Private
+bas	Option Explicit Off	syntax	Expected: end of statement
+bas	Option	syntax	Expected: Base or Compare or Explicit or Private
+bas	Option Explicit: Option Base 1	accepted	
+bas	Option Explicit 'c	accepted	
+bas	Option Explicit Rem x	syntax	Expected: end of statement
+bas	Option _\nExplicit	accepted	
+bas	Option Explicit _\n	accepted	
+bas	Option Base "1"	syntax	Expected: 0 or 1
+bas	Option Base (1)	syntax	Expected: 0 or 1
+bas	Option Base &H1	accepted	
+bas	Option Base 1 _\n	accepted	
+bas	Option Base 1: Dim x	accepted	
+bas	DefInt A-Z	accepted	
+bas	DefInt A	accepted	
+bas	DefInt A-	syntax	Expected: letter
+bas	DefInt -Z	syntax	Expected: letter
+bas	DefInt A-Z, a	accepted	
+bas	DefInt a-z	accepted	
+bas	DefInt Z-A	accepted	
+bas	DefInt A-Z,	semantic	Sub or Function not defined
+bas	DefInt	syntax	Expected: letter
+bas	DefInt 1	syntax	Expected: letter
+bas	DefInt A To Z	syntax	Expected: end of statement
+bas	DefInt AB	syntax	Expected: letter
+bas	DefInt A-B-C	syntax	Expected: end of statement
+bas	DefInt "A"	syntax	Expected: letter
+bas	DefBool A	accepted	
+bas	DefByte A	accepted	
+bas	DefCur A	accepted	
+bas	DefDate A	accepted	
+bas	DefDbl A	accepted	
+bas	DefDec A	syntax	Expected: line number or label or statement or end of statement
+bas	DefLng A	accepted	
+bas	DefObj A	accepted	
+bas	DefSng A	accepted	
+bas	DefStr A	accepted	
+bas	DefVar A	accepted	
+bas	DefInt A, B-C, D	accepted	
+bas	DefInt [A]	accepted	
+bas	DefInt _	accepted	
+bas	DefInt A-Z 'c	accepted	
+bas	DefInt A-Z: DefLng A	syntax	Duplicate Deftype statement
+bas	Def A-Z	syntax	Invalid outside procedure
+bas	DefAny A	syntax	Invalid outside procedure
+bas	DefChar A	syntax	Invalid outside procedure
+bas	DefString A	syntax	Invalid outside procedure
+cls	Option Explicit	accepted	
+cls	Option Explicit On	syntax	Expected: end of statement
+cls	Option Base 0	accepted	
+cls	Option Base 1	accepted	
+cls	Option Base 2	syntax	Expected: 0 or 1
+cls	Option Base	syntax	Expected: 0 or 1
+cls	Option Base -1	syntax	Expected: 0 or 1
+cls	Option Base 1.5	syntax	Expected: 0 or 1
+cls	Option Base x	syntax	Expected: 0 or 1
+cls	Option Compare Text	accepted	
+cls	Option Compare Binary	accepted	
+cls	Option Compare Database	syntax	Expected: Text or Binary
+cls	Option Compare	syntax	Expected: Text or Binary
+cls	Option Private Module	syntax	Option Private Module not permitted in a object module
+cls	Option Private	syntax	Expected: Module
+cls	Option Private Class	syntax	Expected: Module
+cls	Option Strict	syntax	Expected: Base or Compare or Explicit or Private
+cls	Option Explicit Off	syntax	Expected: end of statement
+cls	Option	syntax	Expected: Base or Compare or Explicit or Private
+cls	Option Explicit: Option Base 1	accepted	
+cls	Option Explicit 'c	accepted	
+cls	Option Explicit Rem x	syntax	Expected: end of statement
+cls	Option _\nExplicit	accepted	
+cls	Option Explicit _\n	accepted	
+cls	Option Base "1"	syntax	Expected: 0 or 1
+cls	Option Base (1)	syntax	Expected: 0 or 1
+cls	Option Base &H1	accepted	
+cls	Option Base 1 _\n	accepted	
+cls	Option Base 1: Dim x	accepted	
+cls	DefInt A-Z	accepted	
+cls	DefInt A	accepted	
+cls	DefInt A-	syntax	Expected: letter
+cls	DefInt -Z	syntax	Expected: letter
+cls	DefInt A-Z, a	accepted	
+cls	DefInt a-z	accepted	
+cls	DefInt Z-A	accepted	
+cls	DefInt A-Z,	accepted	
+cls	DefInt	syntax	Expected: letter
+cls	DefInt 1	syntax	Expected: letter
+cls	DefInt A To Z	syntax	Expected: end of statement
+cls	DefInt AB	syntax	Expected: letter
+cls	DefInt A-B-C	syntax	Expected: end of statement
+cls	DefInt "A"	syntax	Expected: letter
+cls	DefBool A	accepted	
+cls	DefByte A	accepted	
+cls	DefCur A	accepted	
+cls	DefDate A	accepted	
+cls	DefDbl A	accepted	
+cls	DefDec A	syntax	Expected: line number or label or statement or end of statement
+cls	DefLng A	accepted	
+cls	DefObj A	accepted	
+cls	DefSng A	accepted	
+cls	DefStr A	accepted	
+cls	DefVar A	accepted	
+cls	DefInt A, B-C, D	accepted	
+cls	DefInt [A]	accepted	
+cls	DefInt _	accepted	
+cls	DefInt A-Z 'c	accepted	
+cls	DefInt A-Z: DefLng A	syntax	Duplicate Deftype statement
+cls	Def A-Z	syntax	Invalid outside procedure
+cls	DefAny A	syntax	Invalid outside procedure
+cls	DefChar A	syntax	Invalid outside procedure
+cls	DefString A	syntax	Invalid outside procedure
