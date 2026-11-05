@@ -107,7 +107,27 @@ fn times_of_day() {
 
 #[test]
 fn impossible_times_are_not_literals() {
-    for t in ["25:00", "13 PM", "0 PM", "12:60", "12:00:60"] {
+    for t in ["25:00", "12:60", "12:00:60", "12:30 A.M.", "12:30 am pm", "1/1/2000 PM 1:00", "1/1/2000 AM", "2000.1.1", "1.1.2000"] {
         assert_eq!(date(t), None, "{t}");
     }
+}
+
+#[test]
+fn a_meridiem_may_be_a_letter_and_follows_any_hour() {
+    close(date("12:30p"), 12.5 / 24.0);
+    close(date("12:30 a"), 0.5 / 24.0);
+    close(date("12:30 p"), 12.5 / 24.0);
+    close(date("13:30 PM"), 13.5 / 24.0);
+    close(date("23:59 PM"), 23.0 / 24.0 + 59.0 / 1440.0);
+    close(date("0:00 AM"), 0.0);
+    close(date("13 pm"), 13.0 / 24.0);
+    close(date("0 am"), 0.0);
+    assert_eq!(date("AM 1/1/2000"), Some(36526.0));
+}
+
+#[test]
+fn a_period_between_numbers_separates_time_parts() {
+    close(date("1.2"), 62.0 / 1440.0);
+    close(date("12:30.5"), 12.5 / 24.0 + 5.0 / 86400.0);
+    assert_eq!(date("Jan. 1, 2000"), Some(36526.0));
 }

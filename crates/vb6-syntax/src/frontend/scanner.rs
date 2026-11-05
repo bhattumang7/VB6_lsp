@@ -475,6 +475,17 @@ fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
         }
         match b {
             b' ' | b'\t' | b',' => i += 1,
+            // A period between numbers separates the parts of a time; after a word it is dropped.
+            b'.' => {
+                match out.last() {
+                    Some(DateTok::Num { .. }) if bytes.get(i + 1).is_some_and(|d| d.is_ascii_digit()) => {
+                        out.push(DateTok::Colon)
+                    }
+                    Some(DateTok::Word(_)) => {}
+                    _ => return None,
+                }
+                i += 1;
+            }
             b':' => { out.push(DateTok::Colon); i += 1; }
             b'/' => { out.push(DateTok::Slash); i += 1; }
             b'-' => { out.push(DateTok::Dash); i += 1; }
@@ -563,15 +574,14 @@ fn named_date(month: i32, nums: &[(i32, usize)]) -> Option<f64> {
 /// The time of day as a fraction of a day: `H:M[:S]` with optional AM/PM, or
 /// an hour followed by AM/PM.
 fn time_fraction(hour: i32, minute: i32, second: i32, meridiem: Option<bool>) -> Option<f64> {
+    if !(0..=23).contains(&hour) {
+        return None;
+    }
+    // A meridiem shifts an hour of 12 or less; a later hour stands as written.
     let hour = match meridiem {
-        Some(pm) => {
-            if !(1..=12).contains(&hour) { return None; }
-            (hour % 12) + if pm { 12 } else { 0 }
-        }
-        None => {
-            if !(0..=23).contains(&hour) { return None; }
-            hour
-        }
+        Some(false) if hour == 12 => 0,
+        Some(true) if hour < 12 => hour + 12,
+        _ => hour,
     };
     if !(0..=59).contains(&minute) || !(0..=59).contains(&second) {
         return None;
@@ -591,15 +601,27 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
         return None;
     }
     let mut meridiem = None;
+    let mut meridiem_at = 0;
     let mut rest: Vec<DateTok> = Vec::new();
     for t in toks {
         match t {
-            DateTok::Word(w) if w.eq_ignore_ascii_case("am") => meridiem = Some(false),
-            DateTok::Word(w) if w.eq_ignore_ascii_case("pm") => meridiem = Some(true),
+            DateTok::Word(w) if matches!(w.to_ascii_lowercase().as_str(), "a" | "am" | "p" | "pm") => {
+                // One meridiem at most.
+                if meridiem.is_some() {
+                    return None;
+                }
+                meridiem = Some(w.to_ascii_lowercase().starts_with('p'));
+                meridiem_at = rest.len();
+            }
             // A weekday name makes the text invalid.
             DateTok::Word(w) if is_weekday_word(w) => return None,
             other => rest.push(other),
         }
+    }
+    // A meridiem opens the text or follows the number that ends the time.
+    let leading_meridiem = meridiem.is_some() && meridiem_at == 0;
+    if meridiem.is_some() && !leading_meridiem && !matches!(rest.get(meridiem_at - 1), Some(DateTok::Num { .. })) {
+        return None;
     }
     // The time is `Num (: Num)+`, or the last number before AM/PM.
     let mut time: Option<f64> = None;
@@ -616,13 +638,20 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
         } else {
             (0, c + 1)
         };
+        if meridiem.is_some() && !leading_meridiem && end + 1 != meridiem_at {
+            return None;
+        }
         time = Some(time_fraction(hour, minute, second, meridiem)?);
         rest.drain(start..=end);
     } else if let Some(pm) = meridiem {
-        let last = rest.iter().rposition(|t| matches!(t, DateTok::Num { .. }))?;
-        let DateTok::Num { value, .. } = rest[last] else { return None };
-        time = Some(time_fraction(value, 0, 0, Some(pm))?);
-        rest.remove(last);
+        if leading_meridiem {
+            // `AM 1/1/2000`: nothing for it to qualify.
+        } else {
+            // An hour alone before the meridiem.
+            let DateTok::Num { value, .. } = rest[meridiem_at - 1] else { return None };
+            time = Some(time_fraction(value, 0, 0, Some(pm))?);
+            rest.remove(meridiem_at - 1);
+        }
     }
     let mut nums: Vec<(i32, usize)> = Vec::new();
     let mut month: Option<i32> = None;
