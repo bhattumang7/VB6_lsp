@@ -68,7 +68,7 @@ pub fn full_diagnostics(source: &[u8], kind: ModuleKind) -> Vec<OurDiagnostic> {
 
 fn describe(source: &[u8], d: &Diagnostic) -> OurDiagnostic {
     let start = (d.span.start as usize).min(source.len());
-    let line = 1 + source[..start].iter().filter(|b| **b == b'\n').count() as u32;
+    let line = Some(LineTable::new(source).logical_line_of(start as u32));
     let base = message_for_code(d.code)
         .map(str::to_string)
         .unwrap_or_else(|| format!("(code {:#x})", d.code));

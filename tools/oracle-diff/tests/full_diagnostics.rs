@@ -10,7 +10,7 @@ fn undefined_variable_is_reported_by_the_full_engine_only() {
     assert_eq!(diagnostics(UNDEFINED, ModuleKind::Bas), Vec::<OurDiagnostic>::new());
     assert_eq!(
         full_diagnostics(UNDEFINED, ModuleKind::Bas),
-        vec![OurDiagnostic { code: 0x9caf, line: 3, message: "Variable not defined".to_string() }]
+        vec![OurDiagnostic { code: 0x9caf, line: Some(3), message: "Variable not defined".to_string() }]
     );
 }
 
@@ -28,8 +28,8 @@ fn parse_errors_are_kept_in_the_full_engine() {
 End Sub
 ";
     let expected = vec![
-        OurDiagnostic { code: 40047, line: 2, message: "Expected: <token>".to_string() },
-        OurDiagnostic { code: 40047, line: 2, message: "Expected: end of statement".to_string() },
+        OurDiagnostic { code: 40047, line: Some(2), message: "Expected: <token>".to_string() },
+        OurDiagnostic { code: 40047, line: Some(2), message: "Expected: end of statement".to_string() },
     ];
     assert_eq!(diagnostics(source, ModuleKind::Bas), expected);
     assert_eq!(full_diagnostics(source, ModuleKind::Bas), expected);
