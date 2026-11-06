@@ -140,12 +140,23 @@ fn for_each_control_variable_and_source_types() {
 
 const DUPLICATE_DECLARATION: u32 = 0x9c9f;
 
+const AMBIGUOUS_NAME: u32 = 0x802c;
+
 #[test]
 fn module_level_names_of_different_kinds_collide() {
-    let src = "Enum E\n    Red\nEnd Enum\nConst Red = 1\nDim Total As Long\nSub Total()\nEnd Sub\n";
+    let src = "Enum E
+    Red
+End Enum
+Const Red = 1
+Dim Total As Long
+Sub Total()
+End Sub
+";
     let found = codes(src);
-    let spans: Vec<u32> = found.iter().map(|d| d.1).collect();
-    assert!(found.iter().all(|d| d.0 == DUPLICATE_DECLARATION));
+    // The parser reports the first repeated name; the semantic pass still reports each one.
+    assert_eq!(found[0], (AMBIGUOUS_NAME, at(src, "Const Red", "Red"), 3));
+    let spans: Vec<u32> = found[1..].iter().map(|d| d.1).collect();
+    assert!(found[1..].iter().all(|d| d.0 == DUPLICATE_DECLARATION));
     assert_eq!(
         spans,
         vec![

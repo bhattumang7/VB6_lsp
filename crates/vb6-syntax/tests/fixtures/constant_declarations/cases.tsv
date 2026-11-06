@@ -4957,3 +4957,352 @@ bas			Const kc As Currency = 1.5@\r\nConst kb As Currency = 900000000000000@\r\n
 bas			Const kc As Currency = 1.5@\r\nConst kb As Currency = 900000000000000@\r\nConst kd As Double = 1E20\r\nConst kn As Double = -1E20\r\nConst ks As Single = 1E20!\r\nConst kv As Variant = 1E20\r\nConst kz As Double = 9.3E14\r\nConst kw As Double = 9.2E14\r\nConst r = 1 \\ ((kn = kb) + 1)\r\nPublic Sub Main()\r\nEnd Sub\r\n
 bas			Const kc As Currency = 1.5@\r\nConst kb As Currency = 900000000000000@\r\nConst kd As Double = 1E20\r\nConst kn As Double = -1E20\r\nConst ks As Single = 1E20!\r\nConst kv As Variant = 1E20\r\nConst kz As Double = 9.3E14\r\nConst kw As Double = 9.2E14\r\nConst r = 1 \\ ((kb < kn) + 1)\r\nPublic Sub Main()\r\nEnd Sub\r\n
 bas	Division by zero	9	Const kc As Currency = 1.5@\r\nConst kb As Currency = 900000000000000@\r\nConst kd As Double = 1E20\r\nConst kn As Double = -1E20\r\nConst ks As Single = 1E20!\r\nConst kv As Variant = 1E20\r\nConst kz As Double = 9.3E14\r\nConst kw As Double = 9.2E14\r\nConst r = 1 \\ ((kn < kb) + 1)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 0\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 1\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65537\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65537\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 70000\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 100000\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 2147483647\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * &H10000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * &HFFFF\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * &HFFFF&\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65536&\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 70000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65527&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 0&\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 00065536\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * &O200000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * &O177777\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 100000\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 0\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 1\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 32767\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 32768\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65525\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65526\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65527\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65528\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65535\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 65536\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 2147483647\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 65537\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 70000\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 100000\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 2147483647\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * &H10000\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * &HFFFF\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * &HFFFF&\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 65536&\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65526&\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 65527&\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 0&\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * 1&\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * 00065536\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim s As String * &O200000\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s As String * &O177777\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * &H10000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 0\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nType T\r\n    s As String * 1\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65527\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65528\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65535\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65536\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * &HFFFF\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65537\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 70000\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 100000\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 2147483647\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * &H10000\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * &HFFFF\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * &HFFFF&\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65536&\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * &HFFFF&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 65527&\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 0&\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nType T\r\n    s As String * 1&\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * 00065536\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * &O200000\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\n    s As String * &O177777\r\nEnd Type\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65536&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 0 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 1 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 32767 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 32768 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 65525 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 65526 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65527 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65528 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65535 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65536 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65526&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65537 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 70000 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 100000 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 2147483647 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * &H10000 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * &HFFFF = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * &HFFFF& = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65536& = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 65526& = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 32767\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65527&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 65527& = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 0& = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas			Option Explicit\r\nConst c As String * 1& = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * 00065536 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * &O200000 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nConst c As String * &O177777 = "a"\r\nPublic Sub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 0&\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 1&\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 00065536\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * &O200000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * &O177777\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 32768\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 0\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 1\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 32767\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 32768\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65525\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65526\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65527\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65528\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65535\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65536\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65525\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65537\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 70000\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 100000\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 2147483647\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * &H10000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * &HFFFF\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * &HFFFF&\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65536&\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65526&\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65526\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 65527&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 0&\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 1&\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * 00065536\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * &O200000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s(3) As String * &O177777\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65527\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 0\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 1\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 32767\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 32768\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65525\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65526\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65527\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65528\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65535\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65536\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65528\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65537\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 70000\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 100000\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 2147483647\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * &H10000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * &HFFFF\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * &HFFFF&\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65536&\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65526&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65535\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 65527&\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 0&\r\nEnd Sub\r\n
+bas			Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 1&\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * 00065536\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * &O200000\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nPublic Sub S()\r\n    Static s As String * &O177777\r\nEnd Sub\r\n
+bas	Syntax error	3	Option Explicit\r\nPublic Sub S()\r\n    Dim s As String * 65536\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 0\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65527\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65528\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65535\r\nEnd Sub\r\n
+bas	Syntax error	4	Option Explicit\r\nPublic Sub S()\r\n    Dim s() As String * 4\r\n    ReDim s(3) As String * 65536\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v As String * 0\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nDim v As String * 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	6	Option Explicit\r\nConst k = 0\r\nDim v As String * k\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nConst k = 0\r\nDim v As String * k\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nConst k = 70000\r\nDim v As String * k\r\n
+bas	Ambiguous name detected: s	6	Option Explicit\r\nConst k = 70000\r\nDim v As String * k\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nConst k = 70000\r\nDim v As String * k\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v(2) As String * 0\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nDim v(2) As String * 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v(2) As String * 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v(1 To 0)\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nDim v(1 To 0)\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v As String * 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Range has no values	2	Option Explicit\r\nDim v(1 To 0)\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nConst c As Byte = 300\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nConst c As Byte = 300\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Overflow	2	Option Explicit\r\nConst c As Byte = 300\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nConst c = 1 / 0\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nConst c = 1 / 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Division by zero	2	Option Explicit\r\nConst c = 1 / 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nEnum E\r\na = 1 / 0\r\nEnd Enum\r\n
+bas	Ambiguous name detected: s	7	Option Explicit\r\nEnum E\r\na = 1 / 0\r\nEnd Enum\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Division by zero	3	Option Explicit\r\nEnum E\r\na = 1 / 0\r\nEnd Enum\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v As String * 65527\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nType T\r\nv As String * 0\r\nEnd Type\r\n
+bas	Ambiguous name detected: s	7	Option Explicit\r\nType T\r\nv As String * 0\r\nEnd Type\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\nv As String * 0\r\nEnd Type\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nType T\r\nv As String * 65536\r\nEnd Type\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\nv As String * 65536\r\nEnd Type\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nType T\r\nv As String * 65536\r\nEnd Type\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nType T\r\nv(1 To 0) As Long\r\nEnd Type\r\n
+bas	Ambiguous name detected: s	7	Option Explicit\r\nType T\r\nv(1 To 0) As Long\r\nEnd Type\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Range has no values	3	Option Explicit\r\nType T\r\nv(1 To 0) As Long\r\nEnd Type\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nPublic v As String * 0\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nDim v As String * 65527\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nPublic v As String * 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nPublic v As String * 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v As String * 0\r\nConst c = 1 / 0\r\n
+bas	Ambiguous name detected: s	6	Option Explicit\r\nDim v As String * 0\r\nConst c = 1 / 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v As String * 0\r\nConst c = 1 / 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nConst c = 1 / 0\r\nDim v As String * 0\r\n
+bas	Ambiguous name detected: s	6	Option Explicit\r\nConst c = 1 / 0\r\nDim v As String * 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Division by zero	2	Option Explicit\r\nConst c = 1 / 0\r\nDim v As String * 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v As String * 0\r\nDim a(1 To 0)\r\n
+bas	Ambiguous name detected: s	6	Option Explicit\r\nDim v As String * 0\r\nDim a(1 To 0)\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v As String * 65527\r\nSub S()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v As String * 0\r\nDim a(1 To 0)\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim a(1 To 0)\r\nDim v As String * 0\r\n
+bas	Ambiguous name detected: s	6	Option Explicit\r\nDim a(1 To 0)\r\nDim v As String * 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Range has no values	2	Option Explicit\r\nDim a(1 To 0)\r\nDim v As String * 0\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v As String * 0\r\nDim w As String * 65536\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nDim v As String * 0\r\nDim w As String * 65536\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	3	Option Explicit\r\nDim v As String * 0\r\nDim w As String * 65536\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim v As String * 65536\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v As String * 65536\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\n
+bas	Invalid length for fixed-length string	2	Option Explicit\r\nDim v As String * 65536\r\nSub S()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nConst k = 0\r\nDim v As String * k\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nConst c As Byte = 300\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nDim qa(1 To 0)\r\nDim s\r\nSub S()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s\r\nSub S()\r\nEnd Sub\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nDim qs As String * 0\r\nDim s\r\nSub S()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s\r\nSub S()\r\nEnd Sub\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	5	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nDim s\r\nSub S()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s\r\nSub S()\r\nEnd Sub\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nConst c As Byte = 300\r\nDim s\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nDim s\r\nDim S\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nDim qa(1 To 0)\r\nDim s\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nDim s\r\nDim S\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nDim qa(1 To 0)\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nDim qs As String * 0\r\nDim s\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nDim s\r\nDim S\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	6	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nDim s\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nDim s\r\nDim S\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nConst c As Byte = 300\r\nConst s = 1\r\nConst S = 2\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nConst S = 2\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nDim qa(1 To 0)\r\nConst s = 1\r\nConst S = 2\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nConst S = 2\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nDim qs As String * 0\r\nConst s = 1\r\nConst S = 2\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nConst S = 2\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	6	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nConst s = 1\r\nConst S = 2\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nConst S = 2\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nConst c As Byte = 300\r\nConst s = 1\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nDim S\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nDim qa(1 To 0)\r\nConst s = 1\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nDim S\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	4	Option Explicit\r\nDim qs As String * 0\r\nConst s = 1\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nDim S\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	6	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nConst s = 1\r\nDim S\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst s = 1\r\nDim S\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	5	Option Explicit\r\nDim qs As String * 0\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	4	Option Explicit\r\nConst c As Byte = 300\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	3	Option Explicit\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	4	Option Explicit\r\nDim qa(1 To 0)\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	3	Option Explicit\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	4	Option Explicit\r\nDim qs As String * 0\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	3	Option Explicit\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	6	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	3	Option Explicit\r\nEnum E\r\nm\r\nM\r\nEnd Enum\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	6	Option Explicit\r\nConst c As Byte = 300\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	5	Option Explicit\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	6	Option Explicit\r\nDim qa(1 To 0)\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	5	Option Explicit\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	6	Option Explicit\r\nDim qs As String * 0\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	5	Option Explicit\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	8	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: M	5	Option Explicit\r\nEnum E\r\nm\r\nEnd Enum\r\nConst M = 1\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	5	Option Explicit\r\nConst c As Byte = 300\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	4	Option Explicit\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	5	Option Explicit\r\nDim qa(1 To 0)\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	4	Option Explicit\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	7	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	5	Option Explicit\r\nDim qs As String * 0\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	4	Option Explicit\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	7	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: p	4	Option Explicit\r\nProperty Get P() As Long\r\nEnd Property\r\nProperty Get p() As Long\r\nEnd Property\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	4	Option Explicit\r\nConst c As Byte = 300\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	3	Option Explicit\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	4	Option Explicit\r\nDim qa(1 To 0)\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	3	Option Explicit\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	4	Option Explicit\r\nDim qs As String * 0\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	3	Option Explicit\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: s	4	Option Explicit\r\nSub S()\r\nEnd Sub\r\nSub s()\r\nEnd Sub\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	6	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: A	3	Option Explicit\r\nType T\r\na As Long\r\nA As Long\r\nEnd Type\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	3	Option Explicit\r\nConst c As Byte = 300\r\nDim s\r\nSub S()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	4	Option Explicit\r\nConst c As Byte = 300\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	3	Option Explicit\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	4	Option Explicit\r\nDim qa(1 To 0)\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	3	Option Explicit\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nDim qa(1 To 0)\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	4	Option Explicit\r\nDim qs As String * 0\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	3	Option Explicit\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nDim qs As String * 0\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	6	Option Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: d	3	Option Explicit\r\nDeclare Sub D Lib "k" ()\r\nSub d()\r\nEnd Sub\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: S	2	Option Explicit\r\nDim s\r\nSub S()\r\nEnd Sub\r\nConst c As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+cls	Ambiguous name detected: ev	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nConst c As Byte = 300\r\nPublic Event Ev()\r\nPublic Event ev()\r\n
+cls	Ambiguous name detected: ev	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic Event ev()\r\nConst c As Byte = 300\r\n
+cls	Range has no values	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qa(1 To 0)\r\nPublic Event Ev()\r\nPublic ev As Long\r\n
+cls	Range has no values	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic ev As Long\r\nDim qa(1 To 0)\r\n
+cls	Invalid length for fixed-length string	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qs As String * 0\r\nPublic Event Ev()\r\nPublic ev As Long\r\n
+cls	Invalid length for fixed-length string	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic ev As Long\r\nDim qs As String * 0\r\n
+cls	Division by zero	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Event Ev()\r\nPublic ev As Long\r\n
+cls	Division by zero	10	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic ev As Long\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\n
+cls	Ambiguous name detected: W	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nConst c As Byte = 300\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\n
+cls	Ambiguous name detected: W	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\nConst c As Byte = 300\r\n
+cls	Ambiguous name detected: W	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qa(1 To 0)\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\n
+cls	Ambiguous name detected: W	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\nDim qa(1 To 0)\r\n
+cls	Ambiguous name detected: ev	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qa(1 To 0)\r\nPublic Event Ev()\r\nPublic Event ev()\r\n
+cls	Ambiguous name detected: W	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qs As String * 0\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\n
+cls	Ambiguous name detected: W	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\nDim qs As String * 0\r\n
+cls	Ambiguous name detected: W	11	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\n
+cls	Ambiguous name detected: W	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic WithEvents w As Collection\r\nPublic W As Long\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\n
+cls	Overflow	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nConst c As Byte = 300\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	10	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\nConst c As Byte = 300\r\n
+cls	Range has no values	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qa(1 To 0)\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	10	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\nDim qa(1 To 0)\r\n
+cls	Invalid length for fixed-length string	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qs As String * 0\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	10	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\nDim qs As String * 0\r\n
+cls	Ambiguous name detected: ev	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic Event ev()\r\nDim qa(1 To 0)\r\n
+cls	Division by zero	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	10	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nSub ev()\r\nEnd Sub\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\n
+cls	Overflow	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nConst c As Byte = 300\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\nConst c As Byte = 300\r\n
+cls	Range has no values	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qa(1 To 0)\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\nDim qa(1 To 0)\r\n
+cls	Invalid length for fixed-length string	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qs As String * 0\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\nDim qs As String * 0\r\n
+cls	Division by zero	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\n
+cls	Only comments may appear after End Sub, End Function, or End Property	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nSub ev()\r\nEnd Sub\r\nPublic Event Ev()\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\n
+cls	Ambiguous name detected: ev	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nDim qs As String * 0\r\nPublic Event Ev()\r\nPublic Event ev()\r\n
+cls	Ambiguous name detected: ev	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic Event ev()\r\nDim qs As String * 0\r\n
+cls	Ambiguous name detected: ev	11	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\nPublic Event Ev()\r\nPublic Event ev()\r\n
+cls	Ambiguous name detected: ev	8	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic Event ev()\r\nEnum F\r\nz = 1 / 0\r\nEnd Enum\r\n
+cls	Overflow	7	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nConst c As Byte = 300\r\nPublic Event Ev()\r\nPublic ev As Long\r\n
+cls	Overflow	9	VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1\r\nEND\r\nAttribute VB_Name = "Class1"\r\nOption Explicit\r\nPublic Event Ev()\r\nPublic ev As Long\r\nConst c As Byte = 300\r\n
+bas	Overflow	2	Option Explicit\r\nConst m As Byte = 300\r\nSub Q()\r\nEnd Sub\r\nDim late As Long\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Only comments may appear after End Sub, End Function, or End Property	4	Option Explicit\r\nSub Q()\r\nEnd Sub\r\nDim late As Long\r\nConst m As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Overflow	3	Option Explicit\r\nSub P1()\r\nConst l As Byte = 300\r\nEnd Sub\r\nDim late As Long\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Only comments may appear after End Sub, End Function, or End Property	4	Option Explicit\r\nSub Q()\r\nEnd Sub\r\nDim late As Long\r\nSub P1()\r\nConst l As Byte = 300\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Overflow	2	Option Explicit\r\nSub P2(Optional o As Byte = 300)\r\nEnd Sub\r\nDim late As Long\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Overflow	5	Option Explicit\r\nSub Q()\r\nEnd Sub\r\nDim late As Long\r\nSub P2(Optional o As Byte = 300)\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Overflow	2	Option Explicit\r\nSub P2(Optional o As Byte = 300)\r\nEnd Sub\r\nDim late As Long\r\nConst m As Byte = 300\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Ambiguous name detected: Q	5	Option Explicit\r\nSub Q()\r\nEnd Sub\r\nDim late As Long\r\nSub Q()\r\nEnd Sub\r\nPublic Sub Main()\r\nEnd Sub\r\n
+bas	Only comments may appear after End Sub, End Function, or End Property	5	Option Explicit\r\nDim v\r\nSub Q()\r\nEnd Sub\r\nDim V\r\nPublic Sub Main()\r\nEnd Sub\r\n
