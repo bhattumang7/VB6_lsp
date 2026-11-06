@@ -19,7 +19,7 @@ use std::collections::HashMap;
 
 use super::keyword_table::KEYWORD_TABLE;
 use super::line_reader::{self, LineLimits, ReadProblem};
-use super::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
+use super::token::{Kw, Lit, NumberFailure, Span, Token, TokenKind, TypeSuffix};
 
 /// `E_OUTOFMEMORY` — returned by `intern_keywords` when a symbol can't be
 /// allocated (`0x8007000e`).
@@ -1148,10 +1148,17 @@ impl<'a> Scanner<'a> {
                         has_exp = true;
                     } else {
                         // An exponent mark must be followed by digits (after an optional sign).
+                        // A sign with no digits after it reads as an exponent too large to
+                        // hold; a mark with no sign is malformed.
+                        let signed = matches!(self.src.get(self.pos + 1), Some(b'+' | b'-'));
+                        if signed {
+                            self.pos += 2;
+                        }
                         while matches!(self.src.get(self.pos), Some(b) if is_ident_continue(*b)) {
                             self.pos += 1;
                         }
-                        return self.number_error(self.span(start));
+                        let failure = if signed { NumberFailure::Overflow } else { NumberFailure::Malformed };
+                        return Token::number_failure(self.span(start), failure);
                     }
                 }
                 _ => break,
@@ -1257,13 +1264,13 @@ impl<'a> Scanner<'a> {
     fn finish_double(&mut self, span: Span) -> Token {
         match self.tok_buf.parse::<f64>() {
             Ok(v) if v.is_finite() => Token::lit(TokenKind::DblLit, Lit::Double(v), span),
-            _ => self.number_error(span),
+            _ => Token::number_failure(span, NumberFailure::Overflow),
         }
     }
 
-    /// A numeric literal that does not fit its type is a token error.
+    /// A numeric literal that does not fit the type its suffix asks for is a token error.
     fn number_error(&mut self, span: Span) -> Token {
-        Token::error(span)
+        Token::number_failure(span, NumberFailure::Unreadable)
     }
 
     /// Handle `'#'`: conditional-compile directives or date literals.

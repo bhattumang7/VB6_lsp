@@ -21,7 +21,7 @@ use crate::frontend::ast::{
 };
 use crate::frontend::diagnostics::*;
 use crate::frontend::scanner::{fold_name, Scanner, ScannerContext};
-use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
+use crate::frontend::token::{Kw, Lit, NumberFailure, Span, Token, TokenKind, TypeSuffix};
 
 mod graphics;
 use graphics::{ChainStart, GraphicsWord};
@@ -6602,11 +6602,17 @@ impl<'src> Parser<'src> {
                     .expect("peek was Dot/Bang");
                 { self.graphics_chain = chain; self.parse_postfix(arena, access) }
             }
-            // A literal the scanner rejected (out of range, no digits).
+            // A literal the scanner rejected (out of range, no digits). Inside a procedure
+            // every such failure is a syntax error; outside one the kind of failure shows.
             TokenKind::Error => {
-                let span = self.current_span();
-                self.advance();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                let tok = self.advance();
+                match tok.lit {
+                    Some(Lit::Failed(NumberFailure::Overflow)) if !self.in_procedure => {
+                        self.diagnostics.push(ERR_OVERFLOW, tok.span);
+                    }
+                    Some(Lit::Failed(NumberFailure::Unreadable)) => self.report_expected(tok.span, "expression"),
+                    _ => self.diagnostics.push(ERR_SYNTAX_ERROR, tok.span),
+                }
                 arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
             }
             // Keyword that can start a primary (e.g. built-in functions)

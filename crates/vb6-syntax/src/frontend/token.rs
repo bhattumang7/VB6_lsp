@@ -68,6 +68,20 @@ pub enum Lit {
     Str(Box<str>),
     /// Date literal — Julian day serial as f64 (VBA's internal date format).
     Date(f64),
+    /// Carried by an error token that started as a number: how the number failed.
+    Failed(NumberFailure),
+}
+
+/// Why the text of a number could not be made into a literal.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NumberFailure {
+    /// A floating value beyond the Double range, or an exponent mark and sign with no
+    /// digits after them.
+    Overflow,
+    /// An exponent mark with neither digits nor a sign after it.
+    Malformed,
+    /// A value that does not fit the type its suffix asks for, or a suffix a number cannot take.
+    Unreadable,
 }
 
 // ── TypeSuffix ──────────────────────────────────────────────────────────────────
@@ -683,6 +697,11 @@ impl Token {
     /// End-of-file token.
     pub fn eof(pos: u32) -> Self {
         Self { kind: TokenKind::Eof, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span: Span { start: pos, len: 0 } }
+    }
+
+    /// Error token for a number that could not be read.
+    pub fn number_failure(span: Span, failure: NumberFailure) -> Self {
+        Self { kind: TokenKind::Error, sym: None, lit: Some(Lit::Failed(failure)), type_suffix: TypeSuffix::None, span }
     }
 
     /// Scan-error token.
