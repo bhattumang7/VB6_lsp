@@ -1,7 +1,9 @@
 //! Runs the `vb6-syntax` parser on a case and reports its diagnostics in the
 //! same shape the compiler's verdicts use.
 
+use vb6_engine::session::Session;
 use vb6_syntax::frontend::ast::ExprArena;
+use vb6_syntax::frontend::diagnostics::Diagnostic;
 use vb6_syntax::frontend::diagnostics::message_for_code;
 use crate::oracle::ModuleKind;
 use vb6_syntax::frontend::parser::{ModuleKind as ParserModuleKind, Parser};
@@ -44,4 +46,28 @@ pub fn diagnostics(source: &[u8], kind: ModuleKind) -> Vec<OurDiagnostic> {
             OurDiagnostic { code: d.code, line, message }
         })
         .collect()
+}
+
+/// Every diagnostic the language server would show for `source` as the only module of a
+/// standard project (bundled runtime libraries): parse errors and name-resolution errors.
+pub fn full_diagnostics(source: &[u8], kind: ModuleKind) -> Vec<OurDiagnostic> {
+    let path = match kind {
+        ModuleKind::Bas => "m.bas",
+        ModuleKind::Cls => "m.cls",
+    };
+    let session = Session::from_sources(vec![(path.to_string(), source.to_vec())]);
+    session.diagnostics(0).iter().map(|d| describe(source, d)).collect()
+}
+
+fn describe(source: &[u8], d: &Diagnostic) -> OurDiagnostic {
+    let start = (d.span.start as usize).min(source.len());
+    let line = 1 + source[..start].iter().filter(|b| **b == b'\n').count() as u32;
+    let base = message_for_code(d.code)
+        .map(str::to_string)
+        .unwrap_or_else(|| format!("(code {:#x})", d.code));
+    let message = match d.label {
+        Some(label) if d.code == 0x9c6f => format!("Expected: {label}"),
+        _ => base,
+    };
+    OurDiagnostic { code: d.code, line, message }
 }

@@ -941,6 +941,7 @@ name = "oracle-diff"
 version = "0.1.0"
 dependencies = [
  "serde_json",
+ "vb6-engine",
  "vb6-syntax",
 ]
 

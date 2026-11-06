@@ -64,6 +64,18 @@ fn module_headers_are_never_mutated_and_are_not_counted_in_lines() {
 }
 
 #[test]
+fn only_the_leading_block_is_header_and_later_attribute_or_end_lines_are_code() {
+    let std_module = b"Attribute VB_Name = \"M\"\r\nSub S()\r\nEnd\r\nEnd Sub\r\nAttribute VB_Foo = 1\r\n";
+    assert_eq!(header_lines(std_module), 1);
+    let blank_between = b"\r\nAttribute VB_Name = \"M\"\r\n\r\nSub S()\r\nEnd Sub\r\n";
+    assert_eq!(header_lines(blank_between), 2);
+    let no_header = b"Sub S()\r\nEnd\r\nEnd Sub\r\n";
+    assert_eq!(header_lines(no_header), 0);
+    let class = b"VERSION 1.0 CLASS\r\nBEGIN\r\n  MultiUse = -1  'True\r\nEND\r\nAttribute VB_Name = \"C\"\r\nSub S()\r\nEnd\r\nEnd Sub\r\n";
+    assert_eq!(header_lines(class), 5);
+}
+
+#[test]
 fn rng_is_deterministic_and_bounded() {
     let mut a = Rng::new(9);
     let mut b = Rng::new(9);

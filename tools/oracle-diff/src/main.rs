@@ -30,6 +30,16 @@ fn build_oracle() -> std::io::Result<Oracle> {
     Oracle::new(env_path("VB6_EXE", default_vb6_exe), work, cache)
 }
 
+/// Our side of a comparison. By default every diagnostic the language server shows (parse errors
+/// and name-resolution errors); `ORACLE_LAYERS=parser` limits it to the parser.
+fn our_diagnostics(source: &[u8], kind: ModuleKind) -> Vec<ours::OurDiagnostic> {
+    if std::env::var("ORACLE_LAYERS").is_ok_and(|v| v == "parser") {
+        ours::diagnostics(source, kind)
+    } else {
+        ours::full_diagnostics(source, kind)
+    }
+}
+
 fn collect(path: &Path, out: &mut Vec<PathBuf>) {
     if path.is_dir() {
         if let Ok(entries) = std::fs::read_dir(path) {
@@ -135,7 +145,7 @@ fn compare_all(
     let mut unclassified: BTreeMap<String, usize> = BTreeMap::new();
     let mut report = String::from("case\toutcome\toracle\toracle_line\tours\tours_line\n");
     for (case, verdict) in cases.iter().zip(&verdicts) {
-        let diags = ours::diagnostics(&case.source, case.kind);
+        let diags = our_diagnostics(&case.source, case.kind);
         let outcome = classify(verdict, &diags, taxonomy);
         *counts.entry(format!("{outcome:?}")).or_default() += 1;
         if let (Outcome::Unclassified, Verdict::Rejected { message, .. }) = (&outcome, verdict) {
@@ -214,7 +224,7 @@ fn mutate(args: &[String]) -> Result<ExitCode, String> {
     let parents: Vec<Case> = parents
         .into_iter()
         .zip(parent_verdicts)
-        .filter(|(c, v)| *v == Verdict::Accepted && ours::diagnostics(&c.source, c.kind).is_empty())
+        .filter(|(c, v)| *v == Verdict::Accepted && our_diagnostics(&c.source, c.kind).is_empty())
         .map(|(c, _)| c)
         .collect();
     if parents.is_empty() {
@@ -284,7 +294,7 @@ fn main() -> ExitCode {
             args[1..].iter().for_each(|a| collect(Path::new(a), &mut inputs));
             for path in &inputs {
                 let source = std::fs::read(path).unwrap_or_default();
-                let diags = ours::diagnostics(&source, kind_of(path));
+                let diags = our_diagnostics(&source, kind_of(path));
                 println!("{}: {} diagnostics", path.display(), diags.len());
                 for d in diags {
                     println!("  line {}: {} ({:#x})", d.line, d.message, d.code);

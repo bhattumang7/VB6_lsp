@@ -7,4 +7,5 @@ publish = false
 
 [dependencies]
 vb6-syntax = { path = "../../crates/vb6-syntax" }
+vb6-engine = { path = "../../crates/vb6-engine" }
 serde_json = "1"

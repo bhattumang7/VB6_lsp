@@ -107,6 +107,10 @@ fn header_end(source: &[u8]) -> usize {
             || t.starts_with("mtstransaction")
         {
             end = offset + line.len();
+        } else if !t.trim().is_empty() {
+            // The header is only the leading block: a code line ends it, so a later
+            // `End` or `Attribute VB_...` line belongs to the code and is counted.
+            break;
         }
         offset += line.len();
     }
