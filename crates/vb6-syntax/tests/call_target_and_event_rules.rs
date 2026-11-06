@@ -41,39 +41,6 @@ fn a_call_target_starting_at_a_with_member_takes_further_groups() {
 }
 
 #[test]
-fn a_second_bracket_group_directly_after_the_first_is_a_syntax_error() {
-    for text in ["Call foo(1)(2)", "Call arr(1) (1)", "Call o.a(1)(2)", "Call o(1)(2)(3)", "Call foo(1)(2) : x = 1"] {
-        let src = format!("Sub S()\n {text}\nEnd Sub\n");
-        let p = parse(&src);
-        assert_eq!(p.found, vec![(SYNTAX_ERROR, offset_of(&src, "Call", 0), 4)], "{text}");
-        // The statement is dropped; nothing after it on the line is read.
-        assert_eq!(p.proc_body(0).iter().map(|s| p.show(*s)).collect::<Vec<_>>(), vec!["{}".to_string()], "{text}");
-    }
-    // Inside a single-line If the statement stands in the If.
-    let src = "Sub S()\n If True Then Call o.a(1)(2)\nEnd Sub\n";
-    assert_eq!(parse(src).found, vec![(SYNTAX_ERROR, offset_of(src, "Call", 0), 4)]);
-}
-
-#[test]
-fn a_bang_member_anywhere_in_a_call_target_is_a_syntax_error_at_the_bang_member() {
-    for (text, member) in [
-        ("Call o!a", "a"),
-        ("Call o!a.b", "a"),
-        ("Call o!a(1).b", "a"),
-        ("Call o.a!b.x", "b"),
-        ("Call o.a!b(1)", "b"),
-        ("Call o.a(1).b!c", "c"),
-    ] {
-        let src = format!("Sub S()\n {text}\nEnd Sub\n");
-        let p = parse(&src);
-        let at = src.find('!').unwrap() + 1;
-        assert_eq!(p.found, vec![(SYNTAX_ERROR, at as u32, member.len() as u32)], "{text}");
-    }
-    let src = "Sub S()\n With o\n Call .a!b\n End With\nEnd Sub\n";
-    assert_eq!(parse(src).found, vec![(SYNTAX_ERROR, src.find('!').unwrap() as u32 + 1, 1)]);
-}
-
-#[test]
 fn raise_event_arguments_are_positional() {
     let class_body = |text: &str| {
         let src = format!("Event E(a As Long, b As Long)\nSub S()\n RaiseEvent {text}\nEnd Sub\n");

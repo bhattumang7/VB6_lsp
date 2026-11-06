@@ -1604,10 +1604,13 @@ impl<'src> Parser<'src> {
             let head_mark = nodes.len();
             let mut line_taken = false;
 
-            // After a procedure only procedures (and attribute lines, conditional compilation,
-            // `Implements`) may stand; any other declaration is reported alone.
-            // After a procedure no `Event` or `Implements` may stand.
-            if self.procedure_seen && trailing_attribute.is_none() && self.starts_event_or_implements() {
+            // After a procedure a standard module takes no `Event` or `Implements`. A class module
+            // takes `Implements`, and an `Event` there is text after the procedure's end.
+            if self.procedure_seen
+                && self.module_kind == ModuleKind::Standard
+                && trailing_attribute.is_none()
+                && self.starts_event_or_implements()
+            {
                 let span = self.current_span();
                 self.diagnostics.push(ERR_SYNTAX_ERROR, span);
                 self.skip_line();
@@ -1802,7 +1805,7 @@ impl<'src> Parser<'src> {
             return false;
         }
         match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::Attribute | Kw::Rem | Kw::Apos) => false,
+            TokenKind::Kw(Kw::Attribute | Kw::Rem | Kw::Apos | Kw::Implements) => false,
             // Access words are read by the module-level rules.
             TokenKind::Kw(Kw::Public | Kw::Private | Kw::Global | Kw::Friend) => false,
             TokenKind::Ident => {
@@ -2956,6 +2959,7 @@ impl<'src> Parser<'src> {
         call_of_call && matches!(arena.get(root), ExprNode::NameRef { .. })
     }
 
+
     /// If `lhs` is a call with exactly one plain argument and the statement
     /// goes on with an operator or another argument, return `(callee, arg)`:
     /// that parenthesised argument starts the first argument expression. A
@@ -4000,7 +4004,6 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_call_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-        let call_span = self.current_span();
         self.advance(); // consume Call
         if self.peek().kind == TokenKind::Kw(Kw::Rem) {
             let span = self.current_span();
@@ -6111,6 +6114,7 @@ impl<'src> Parser<'src> {
             TokenKind::IntLit | TokenKind::LongLit => {
                 let tok = self.advance();
                 let node = self.literal_node(arena, &tok);
+                self.set_span(node, len_span);
                 // A literal length too large for 16 bits is refused as it is read: inside a
                 // procedure as a syntax error, elsewhere as an invalid length. A length from 65527
                 // up to 65535, or zero, is judged with the other declarations afterwards.

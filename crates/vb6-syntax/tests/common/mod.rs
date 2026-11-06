@@ -117,7 +117,7 @@ impl Parsed {
                 };
                 format!("({n} {})", self.show(*operand))
             }
-            ExprNode::MemberAccess { base, member, bang } => {
+            ExprNode::MemberAccess { base, member, bang, .. } => {
                 format!("({} {} {})", if *bang { "bang" } else { "dot" }, self.show(*base), self.name(*member))
             }
             ExprNode::Call { func, args } => format!("(call {} {})", self.show(*func), self.show(*args)),

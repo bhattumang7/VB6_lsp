@@ -91,7 +91,7 @@ fn structure_error(arena: &ExprArena, node: NodeId, env: &dyn ConstEnv, ctx: Con
             })
         }
         ExprNode::NameRef { sym, .. } => binding_error(env.lookup(*sym)),
-        ExprNode::MemberAccess { base, member, bang } => {
+        ExprNode::MemberAccess { base, member, bang, .. } => {
             let path = qualified_path(arena, *base)?;
             // A member of a constant has nothing to name it by.
             if let [first] = path.as_slice() {
@@ -153,7 +153,7 @@ fn left_spine(arena: &ExprArena, node: NodeId) -> (NodeId, Vec<NodeId>) {
 fn qualified_path(arena: &ExprArena, node: NodeId) -> Option<Vec<u32>> {
     match arena.get(node) {
         ExprNode::NameRef { sym, .. } => Some(vec![*sym]),
-        ExprNode::MemberAccess { base, member, bang: false } => {
+        ExprNode::MemberAccess { base, member, bang: false, .. } => {
             let mut path = qualified_path(arena, *base)?;
             path.push(*member);
             Some(path)

@@ -88,7 +88,6 @@ pub const ERR_MAIN_NOT_ALLOWED_AS_NAME: u32 = 0x5ab5; // 23221
 pub const ERR_NAME_CONFLICTS: u32 = 0x802d; // 32813
 pub const ERR_METHOD_NOT_VALID_WITHOUT_OBJECT: u32 = 0xdec8; // 57032
 pub const ERR_INVALID_PROCEDURE_CALL: u32 = 5;
-pub const ERR_OVERFLOW: u32 = 6;
 pub const ERR_DIVISION_BY_ZERO: u32 = 11;
 pub const ERR_TYPE_MISMATCH: u32 = 13;
 pub const ERR_OBJECT_VARIABLE_NOT_SET: u32 = 91;
@@ -335,9 +334,6 @@ impl Diagnostics {
         let mut merged = std::mem::take(&mut self.directive_pass);
         merged.append(&mut self.items);
         self.items = merged;
-    /// Record a diagnostic built elsewhere.
-    pub fn push_diagnostic(&mut self, diagnostic: Diagnostic) {
-        self.items.push(diagnostic);
     }
 
     /// Record a diagnostic built elsewhere, ahead of the first one with `code` when there is one.
