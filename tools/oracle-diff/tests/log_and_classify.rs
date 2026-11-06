@@ -3,7 +3,7 @@ use oracle_diff::oracle::{normalize_crlf, parse_log, Case, ModuleKind, Verdict};
 use oracle_diff::ours::OurDiagnostic;
 
 fn diag(message: &str) -> OurDiagnostic {
-    OurDiagnostic { code: 1, line: 1, message: message.to_string() }
+    OurDiagnostic { code: 1, line: Some(1), message: message.to_string() }
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn every_outcome_is_reachable() {
     assert_eq!(classify(&Verdict::Accepted, &[], &taxonomy), Outcome::AgreeAccept);
     assert_eq!(classify(&Verdict::Accepted, &[diag("x")], &taxonomy), Outcome::FalseReject);
     // A semantic stop gives no verdict on a parser diagnostic, wherever it is.
-    let late = OurDiagnostic { code: 1, line: 5, message: "Expected: =".to_string() };
+    let late = OurDiagnostic { code: 1, line: Some(5), message: "Expected: =".to_string() };
     assert_eq!(
         classify(&rejected("Variable not defined"), &[diag("Expected: =")], &taxonomy),
         Outcome::Unverifiable

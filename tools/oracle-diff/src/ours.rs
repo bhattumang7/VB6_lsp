@@ -7,14 +7,18 @@ use vb6_syntax::frontend::diagnostics::Diagnostic;
 use vb6_syntax::frontend::diagnostics::message_for_code;
 use crate::oracle::ModuleKind;
 use vb6_syntax::frontend::parser::{ModuleKind as ParserModuleKind, Parser};
+use vb6_syntax::frontend::line_reader::LineTable;
 use vb6_syntax::frontend::scanner::ScannerContext;
 
 /// One parser diagnostic.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct OurDiagnostic {
     pub code: u32,
-    /// 1-based line of the start of the diagnostic's span.
-    pub line: u32,
+    /// The line the compiler would report: counted as it counts (every line feed, carriage return
+    /// or carriage return with line feed is one break, and every piece of a long line is a line),
+    /// and for an error inside a continued statement the first line of that statement. `None`
+    /// when the compiler gives the error no line.
+    pub line: Option<u32>,
     pub message: String,
 }
 
@@ -29,13 +33,16 @@ pub fn diagnostics(source: &[u8], kind: ModuleKind) -> Vec<OurDiagnostic> {
     };
     let mut parser = Parser::with_module_kind(&mut ctx, source, parser_kind);
     parser.parse_module(&mut arena);
+    let table = LineTable::new(source);
+    // A limit broken while the text is read comes first and has no line.
+    let unnumbered = usize::from(parser.read_problem().is_some());
     parser
         .diagnostics
         .items()
         .iter()
-        .map(|d| {
-            let start = (d.span.start as usize).min(source.len());
-            let line = 1 + source[..start].iter().filter(|b| **b == b'\n').count() as u32;
+        .enumerate()
+        .map(|(n, d)| {
+            let line = (n >= unnumbered).then(|| table.logical_line_of(d.span.start));
             let base = message_for_code(d.code)
                 .map(str::to_string)
                 .unwrap_or_else(|| format!("(code {:#x})", d.code));

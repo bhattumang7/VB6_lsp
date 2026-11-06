@@ -152,7 +152,7 @@ fn compare_all(
             *unclassified.entry(message.clone()).or_default() += 1;
         }
         let (omsg, oline) = describe(verdict, header_lines(&case.source));
-        let (umsg, uline) = diags.first().map(|d| (d.message.clone(), d.line.to_string())).unwrap_or_default();
+        let (umsg, uline) = diags.first().map(|d| (d.message.clone(), d.line.map(|l| l.to_string()).unwrap_or_default())).unwrap_or_default();
         report.push_str(&format!("{}\t{outcome:?}\t{omsg}\t{oline}\t{umsg}\t{uline}\n", case.id));
         outcomes.push(outcome);
     }
@@ -297,7 +297,7 @@ fn main() -> ExitCode {
                 let diags = our_diagnostics(&source, kind_of(path));
                 println!("{}: {} diagnostics", path.display(), diags.len());
                 for d in diags {
-                    println!("  line {}: {} ({:#x})", d.line, d.message, d.code);
+                    println!("  line {}: {} ({:#x})", d.line.map(|l| l.to_string()).unwrap_or_else(|| "-".into()), d.message, d.code);
                 }
             }
             Ok(ExitCode::SUCCESS)

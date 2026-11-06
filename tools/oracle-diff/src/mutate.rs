@@ -90,29 +90,27 @@ fn line_of(source: &[u8], offset: usize) -> u32 {
 /// reports.
 pub fn header_lines(source: &[u8]) -> u32 {
     let end = header_end(source);
-    source[..end].iter().filter(|b| **b == b'\n').count() as u32
+    vb6_syntax::frontend::line_reader::physical_line_starts(&source[..end]).len() as u32 - 1
 }
 
 /// End of the module header (class `VERSION` block and leading `Attribute` lines):
 /// tokens before it are not mutated.
 fn header_end(source: &[u8]) -> usize {
-    let text = String::from_utf8_lossy(source);
-    let mut offset = 0;
     let mut end = 0;
-    for line in text.split_inclusive('\n').take(40) {
-        let t = line.trim_start().to_ascii_lowercase();
+    for line in vb6_syntax::frontend::line_reader::physical_lines(source).take(40) {
+        let text = String::from_utf8_lossy(&source[line.start..line.end]);
+        let t = text.trim_start().to_ascii_lowercase();
         if t.starts_with("attribute vb_") || t.starts_with("version ") || t.starts_with("begin")
-            || t.starts_with("end\r") || t == "end\n" || t == "end" || t.starts_with("multiuse")
+            || t.trim_end() == "end" || t.starts_with("multiuse")
             || t.starts_with("persistable") || t.starts_with("databinding") || t.starts_with("datasource")
             || t.starts_with("mtstransaction")
         {
-            end = offset + line.len();
+            end = line.next;
         } else if !t.trim().is_empty() {
             // The header is only the leading block: a code line ends it, so a later
             // `End` or `Attribute VB_...` line belongs to the code and is counted.
             break;
         }
-        offset += line.len();
     }
     end
 }

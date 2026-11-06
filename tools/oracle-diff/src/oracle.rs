@@ -60,8 +60,8 @@ impl Case {
     }
 }
 
-/// Rewrites every line break (`LF`, `CR` or `CRLF`) as `CRLF`, the only form
-/// the compiler loads.
+/// Rewrites every line break (`LF`, `CR` or `CRLF`) as `CRLF`. A case that holds
+/// bytes of its own is written as it is: the compiler reads every kind of line break.
 pub fn normalize_crlf(bytes: &[u8]) -> Vec<u8> {
     let mut out = Vec::with_capacity(bytes.len() + 16);
     let mut i = 0;
@@ -295,7 +295,7 @@ impl Oracle {
             "Type=Exe\r\n{module_line}\r\n{harness_line}Startup=\"Sub Main\"\r\nExeName32=\"p.exe\"\r\n"
         );
         if (!own_main && fs::write(dir.join("h.bas"), HARNESS_MAIN).is_err())
-            || fs::write(dir.join(&module), normalize_crlf(&case.source)).is_err()
+            || fs::write(dir.join(&module), &case.source).is_err()
             || fs::write(dir.join("p.vbp"), project).is_err()
         {
             return Verdict::Unrecognised { exit_code: None, log: "case files unwritable".into() };
