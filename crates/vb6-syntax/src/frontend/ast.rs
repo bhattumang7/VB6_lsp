@@ -39,6 +39,15 @@ pub enum AstLit {
     Null,
 }
 
+/// How a whole-number literal was written. A hexadecimal or octal literal keeps the
+/// value of its bit pattern in the node (`&HFFFF` is the Integer -1); the radix says
+/// that the number was written in that base.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Radix {
+    Octal,
+    Hexadecimal,
+}
+
 /// Binary operator kinds for [`ExprNode::BinOp`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BinOpKind {

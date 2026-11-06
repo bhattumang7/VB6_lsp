@@ -17,7 +17,7 @@ const CC_NOT_BP: u8 = 10;
 const CC_SIGN_BP: u8 = 26;
 use crate::frontend::ast::{
     AstLit, BinOpKind, DoKind, ExitKind, ExprArena, ExprNode, FileIoKind, LabelRef, NodeId,
-    NodeSpans, OnErrorKind, ProcKind, ResumeTarget, UnOpKind,
+    NodeSpans, OnErrorKind, ProcKind, Radix, ResumeTarget, UnOpKind,
 };
 use crate::frontend::diagnostics::*;
 use crate::frontend::scanner::{fold_name, Scanner, ScannerContext};
@@ -234,6 +234,9 @@ pub struct Parser<'src> {
     /// (they are also in `decl_public` as public) but not part of the class's
     /// interface to other projects.
     pub decl_friend: std::collections::HashSet<u32>,
+    /// Literal nodes (`NodeId.0`) written as octal or hexadecimal whole numbers
+    /// (`&O17`, `&17`, `&H1F`). A decimal literal is absent.
+    pub literal_radix: std::collections::HashMap<u32, Radix>,
     /// Procedures declared `Static` (`Static Sub`, `Private Static Function`):
     /// all of their locals are static.
     pub decl_static: std::collections::HashSet<u32>,
@@ -547,6 +550,7 @@ impl<'src> Parser<'src> {
             node_spans:  NodeSpans::new(),
             decl_public: std::collections::HashMap::new(),
             decl_friend: std::collections::HashSet::new(),
+            literal_radix: std::collections::HashMap::new(),
             decl_static: std::collections::HashSet::new(),
             in_procedure: false,
             reserved_names_allowed: false,
@@ -712,6 +716,20 @@ impl<'src> Parser<'src> {
 
     /// Record the source span of a symbol-naming node — the identifier span of
     /// a `NameRef` use site, or the declared-name identifier of a declaration.
+    /// A literal node for the number, string or date token `tok`, remembering how a
+    /// whole number was written when that was in octal or hexadecimal.
+    fn literal_node(&mut self, arena: &mut ExprArena, tok: &Token) -> NodeId {
+        let id = arena.alloc(ExprNode::Literal { lit: ast_lit_from_token(tok) });
+        if matches!(tok.kind, TokenKind::IntLit | TokenKind::LongLit) {
+            let text = self.src.get(tok.span.start as usize..).unwrap_or(&[]);
+            if let [b'&', marker, ..] = text {
+                let radix = if marker.eq_ignore_ascii_case(&b'h') { Radix::Hexadecimal } else { Radix::Octal };
+                self.literal_radix.insert(id.0, radix);
+            }
+        }
+        id
+    }
+
     fn set_span(&mut self, id: NodeId, span: Span) {
         self.node_spans.set(id, span);
     }
@@ -6037,14 +6055,14 @@ impl<'src> Parser<'src> {
         match self.peek().kind {
             TokenKind::IntLit | TokenKind::LongLit => {
                 let tok = self.advance();
-                let lit = ast_lit_from_token(&tok);
+                let node = self.literal_node(arena, &tok);
                 // A literal length must be 1 up to (not including) 65527.
-                if let AstLit::Int(n) | AstLit::Long(n) = &lit {
+                if let ExprNode::Literal { lit: AstLit::Int(n) | AstLit::Long(n) } = arena.get(node) {
                     if *n <= 0 || *n >= FIXED_STRING_LIMIT {
                         self.diagnostics.push(ERR_INVALID_FIXED_STRING_LENGTH, len_span);
                     }
                 }
-                arena.alloc(ExprNode::Literal { lit })
+                node
             }
             TokenKind::Ident => {
                 let tok = self.advance();
@@ -6515,7 +6533,7 @@ impl<'src> Parser<'src> {
             | TokenKind::StrLit
             | TokenKind::DateLit => {
                 let tok = self.advance();
-                arena.alloc(ExprNode::Literal { lit: ast_lit_from_token(&tok) })
+                self.literal_node(arena, &tok)
             }
             // Boolean literals
             TokenKind::Kw(Kw::True) => {
