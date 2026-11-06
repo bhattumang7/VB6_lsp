@@ -237,7 +237,9 @@ pub enum ExprNode {
     UnOp { op: UnOpKind, operand: NodeId },
 
     /// Member access: `base.member` or `base!member` — opcodes `DOT`/`BANG` (0x22/0x23).
-    MemberAccess { base: NodeId, member: u32, bang: bool },
+    /// `bracketed` is set when the member name was written in square brackets
+    /// (`o.[Print]`): such a name is never taken for a keyword.
+    MemberAccess { base: NodeId, member: u32, bang: bool, bracketed: bool },
 
     /// `AddressOf proc` — function-pointer operand (token 3, parsed via the
     /// general keyword path).  `operand` is the (possibly qualified) procedure
@@ -400,9 +402,8 @@ pub enum ExprNode {
     /// Absent argument in a call arg list (consecutive commas).
     MissingArg,
     /// A graphics point as one node: `Step (x, y)` (relative to the current
-    /// drawing position, `step`) or a plain `(x, y)`. A plain point that
-    /// begins the statement as `Obj.Line (x, y)` stays the call's argument
-    /// list instead, and one continuing it (`-(x2, y2)`) is two arguments.
+    /// drawing position, `step`) or a plain `(x, y)`. Every point of a
+    /// `PSet`, `Circle`, `Scale` or `Line` statement is one of these.
     GraphicsPoint { step: bool, x: NodeId, y: NodeId },
     /// The `B` / `BF` box flag of a `Line` statement (`filled` for `BF`).
     LineBox { filled: bool },
@@ -439,9 +440,14 @@ pub enum ExprNode {
     /// clauses as `(lock_code << 4) | access_code` (access: none=0, Read=1,
     /// Write=2, ReadWrite=3; lock: none=0, `Lock Read Write`=1,
     /// `Lock Write`=2, `Lock Read`=3, `Shared`=4).
+    ///
+    /// `channel_marks` has one entry per channel operand, telling whether it was
+    /// written with a leading `#`: one entry for the `channel` of a statement that
+    /// has one, one per listed channel (`args`) for `Close`, and none otherwise.
     FileIoStmt {
         kind: FileIoKind,
         channel: Option<NodeId>,
+        channel_marks: Vec<bool>,
         args: Vec<NodeId>,
         open_mode: u8,
         open_flags: u8,

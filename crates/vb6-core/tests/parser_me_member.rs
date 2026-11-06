@@ -32,7 +32,7 @@ fn render(ctx: &ScannerContext, arena: &ExprArena, id: NodeId) -> String {
         ExprNode::Me => "Me".into(),
         ExprNode::NameRef { sym, .. } => name(*sym),
         ExprNode::Literal { lit } => format!("{lit:?}"),
-        ExprNode::MemberAccess { base, member, bang } => {
+        ExprNode::MemberAccess { base, member, bang, .. } => {
             format!("({} {} {})", if *bang { "!" } else { "." }, render(ctx, arena, *base), name(*member))
         }
         ExprNode::Call { func, args } => format!("(call {} [{}])", render(ctx, arena, *func), list(*args)),

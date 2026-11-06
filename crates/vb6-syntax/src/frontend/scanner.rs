@@ -772,6 +772,22 @@ impl<'a> Scanner<'a> {
         self.ctx.sym_name(id as usize)
     }
 
+    /// The keyword a symbol is the name of (a bracketed name carries the symbol of the word it
+    /// spells), or `None` for a symbol that is no keyword.
+    pub fn keyword_of(&self, sym: u32) -> Option<Kw> {
+        let token = self.ctx.symbols.get(sym as usize)?.token;
+        if token > 0 {
+            Kw::from_token_id(token as u16)
+        } else {
+            None
+        }
+    }
+
+    /// The symbol that stands for `name` (the one already interned for it, or a new one).
+    pub fn symbol_for(&mut self, name: &str) -> u32 {
+        self.ctx.intern_ident(name).unwrap_or(0) as u32
+    }
+
     /// Whether a name was refused because the symbol table is full.
     pub fn symbol_table_full(&self) -> bool {
         self.ctx.symbol_table_full

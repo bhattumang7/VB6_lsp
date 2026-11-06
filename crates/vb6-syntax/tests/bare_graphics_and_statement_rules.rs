@@ -3,9 +3,11 @@
 //! trailing comma in `Close`, and `RaiseEvent` in a standard module.
 
 mod common;
-use common::{offset_of, parse};
+use common::{offset_of, parse, parse_kind};
+use vb6_syntax::frontend::parser::ModuleKind;
 
 const SYNTAX_ERROR: u32 = 0x9c70;
+const METHOD_NOT_VALID_WITHOUT_OBJECT: u32 = 0xdec8;
 const INVALID_ATTRIBUTE_IN_PROCEDURE: u32 = 0x9cd3;
 
 fn in_sub(stmt: &str) -> String {
@@ -37,7 +39,70 @@ fn bare_graphics_statements_with_a_complete_shape_are_clean() {
         "PSet (1, 2), 3",
         "Line (1, 2)-(3, 4): a = 1",
     ] {
+        // A class module and a form have a surface of their own to draw on.
+        for kind in [ModuleKind::Class, ModuleKind::Form] {
+            assert_eq!(parse_kind(&in_sub(stmt), kind).found, vec![], "{stmt}");
+        }
+    }
+}
+
+#[test]
+fn bare_graphics_statements_of_a_standard_module_have_no_object_to_draw_on() {
+    for (stmt, word) in [
+        ("Scale", "Scale"),
+        ("Scale (1, 2)-(3, 4)", "Scale"),
+        ("Line (1, 2)-(3, 4)", "Line"),
+        ("Line -(3, 4), 5, BF", "Line"),
+        ("Circle (1, 2), 3", "Circle"),
+        ("PSet Step (1, 2), 3", "PSet"),
+        ("Print 1; 2", "Print"),
+        ("Print", "Print"),
+        ("? 1", "?"),
+        ("?", "?"),
+        ("Line (1, 2)-(3, 4): a = 1", "Line"),
+        ("If a Then PSet (1, 2) Else b = 1", "PSet"),
+    ] {
+        let src = in_sub(stmt);
+        let found = parse(&src).found;
+        assert_eq!(
+            found,
+            vec![(METHOD_NOT_VALID_WITHOUT_OBJECT, offset_of(&src, word, 0), word.len() as u32)],
+            "{stmt}"
+        );
+    }
+    // Printing to a file needs no surface.
+    for stmt in ["Print #1, 2", "? #1, 2", "Line Input #1, a"] {
         assert_eq!(parse(&in_sub(stmt)).found, vec![], "{stmt}");
+    }
+}
+
+#[test]
+fn a_bracketed_graphics_word_that_starts_a_statement_is_the_statement() {
+    for stmt in ["[Print] 1", "[Circle] (1, 2), 3", "[Line] (1, 2)-(3, 4)", "[PSet] (1, 2)", "[Scale]"] {
+        let src = in_sub(stmt);
+        assert_eq!(
+            parse(&src).found,
+            vec![(METHOD_NOT_VALID_WITHOUT_OBJECT, offset_of(&src, "[", 0), stmt.find(']').unwrap() as u32 + 1)],
+            "{stmt}"
+        );
+        assert_eq!(parse_kind(&src, ModuleKind::Class).found, vec![], "{stmt}");
+    }
+}
+
+#[test]
+fn bare_circle_pset_and_scale_name_nothing_but_the_statement() {
+    for stmt in ["Circle = 1", "Circle.x = 1", "PSet = 1", "PSet!x = 1", "Scale = 1", "Scale.x", "Circle(1) = 2"] {
+        let src = in_sub(stmt);
+        let word = stmt.split(|c| c == ' ' || c == '.' || c == '!' || c == '(').next().unwrap();
+        assert_eq!(
+            parse_kind(&src, ModuleKind::Class).found,
+            vec![(SYNTAX_ERROR, offset_of(&src, word, 0), word.len() as u32)],
+            "{stmt}"
+        );
+    }
+    // `Line` is not reserved: it can be a variable.
+    for stmt in ["Line = 1", "Line.x = 1"] {
+        assert_eq!(parse_kind(&in_sub(stmt), ModuleKind::Class).found, vec![], "{stmt}");
     }
 }
 

@@ -47,6 +47,9 @@ fn render(ctx: &ScannerContext, arena: &ExprArena, id: NodeId) -> String {
         ExprNode::Call { func, args } => format!("(call {} [{}])", render(ctx, arena, *func), list(*args)),
         ExprNode::CallStmt { callee, args } => format!("(stmt {} [{}])", render(ctx, arena, *callee), list(*args)),
         ExprNode::Assign { target, value } => format!("(= {} {})", render(ctx, arena, *target), render(ctx, arena, *value)),
+        ExprNode::GraphicsPoint { step, x, y } => {
+            format!("({} {} {})", if *step { "step" } else { "pt" }, render(ctx, arena, *x), render(ctx, arena, *y))
+        }
         _ => panic!("unexpected node"),
     }
 }
@@ -105,11 +108,11 @@ fn omitted_arguments_in_a_call_statement() {
 fn graphics_line_coordinate_pairs_keep_their_form() {
     assert_eq!(
         one("Me.Line (0, 0)-(10, 10), vbRed"),
-        "(stmt (call (. Me Line) [Int(0) Int(0)]) [Int(10) Int(10) vbRed])"
+        "(stmt (. Me Line) [(pt Int(0) Int(0)) (pt Int(10) Int(10)) vbRed])"
     );
 }
 
 #[test]
 fn graphics_pset_coordinate_pair_keeps_its_form() {
-    assert_eq!(one("PSet (nX, nY), vbRed"), "(stmt (call PSet [nX nY]) [vbRed])");
+    assert_eq!(one("PSet (nX, nY), vbRed"), "(stmt PSet [(pt nX nY) vbRed])");
 }

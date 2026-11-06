@@ -2,7 +2,8 @@
 //! nothing, and the item ends at the closing bracket.
 
 mod common;
-use common::{offset_of, parse, Parsed};
+use common::{offset_of, parse, parse_kind, Parsed};
+use vb6_syntax::frontend::parser::ModuleKind;
 use vb6_syntax::frontend::ast::{AstLit, ExprNode, FileIoKind, NodeId};
 
 fn print_args(p: &Parsed) -> Vec<NodeId> {
@@ -27,7 +28,7 @@ fn call_with_one_int(p: &Parsed, id: NodeId, callee: &str, want: i32) -> bool {
 
 #[test]
 fn spc_and_tab_with_one_expression() {
-    let p = parse("Sub S()\n Print Spc(3); Tab(5)\nEnd Sub\n");
+    let p = parse_kind("Sub S()\n Print Spc(3); Tab(5)\nEnd Sub\n", ModuleKind::Class);
     assert_eq!(p.diags, 0);
     let a = print_args(&p);
     assert_eq!(a.len(), 2);
@@ -37,7 +38,7 @@ fn spc_and_tab_with_one_expression() {
 
 #[test]
 fn bare_tab_is_a_name() {
-    let p = parse("Sub S()\n Print Tab; 1\nEnd Sub\n");
+    let p = parse_kind("Sub S()\n Print Tab; 1\nEnd Sub\n", ModuleKind::Class);
     assert_eq!(p.diags, 0);
     let a = print_args(&p);
     assert_eq!(a.len(), 2);
@@ -46,7 +47,7 @@ fn bare_tab_is_a_name() {
 
 #[test]
 fn the_item_ends_at_the_closing_bracket() {
-    let p = parse("Sub S()\n Print Tab(1)(2)\nEnd Sub\n");
+    let p = parse_kind("Sub S()\n Print Tab(1)(2)\nEnd Sub\n", ModuleKind::Class);
     assert_eq!(p.diags, 0);
     let a = print_args(&p);
     assert_eq!(a.len(), 2);

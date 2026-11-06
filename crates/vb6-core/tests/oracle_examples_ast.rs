@@ -184,7 +184,7 @@ fn the_assign(a: &ExprArena) -> (NodeId, NodeId) {
 /// member symbol resolving (case-insensitively) to `name`.
 fn assert_with_member(c: &ScannerContext, a: &ExprArena, id: NodeId, name: &str, bang: bool) {
     match a.get(id) {
-        ExprNode::MemberAccess { base, member, bang: b } => {
+        ExprNode::MemberAccess { base, member, bang: b, .. } => {
             assert_eq!(*b, bang, "wrong bang flag for `{name}`");
             assert!(matches!(a.get(*base), ExprNode::WithContext),
                 "base of `{name}` must be the implicit WithContext node");

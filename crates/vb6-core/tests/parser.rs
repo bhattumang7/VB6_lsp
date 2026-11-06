@@ -1046,7 +1046,9 @@ fn rset_builds_right_justify_range_assign() {
 fn question_builds_print_stmt() {
     // `?` is the Print shortcut — it builds a Print FileIoStmt with no channel,
     // not an implicit call.
-    let (_, arena, errors) = parse_stmts(b"? \"hello\"");
+    let (_, arena, errors) = parse_class_module(b"Sub Test()
+? \"hello\"
+End Sub");
     assert!(!errors, "? (Print alias) must parse without errors");
     let found = find_node(&arena, |n| {
         matches!(n, ExprNode::FileIoStmt { kind: FileIoKind::Print, channel: None, .. })
@@ -1058,7 +1060,9 @@ fn question_builds_print_stmt() {
 fn bare_print_builds_print_stmt() {
     // Regression: bare `Print "x"` (no #channel) must be accepted as a Print
     // statement; routing it through the implicit-call path used to wrongly reject it.
-    let (_, arena, errors) = parse_stmts(b"Print \"x\"");
+    let (_, arena, errors) = parse_class_module(b"Sub Test()
+Print \"x\"
+End Sub");
     assert!(!errors, "bare Print must parse without errors");
     let found = find_node(&arena, |n| {
         matches!(n, ExprNode::FileIoStmt { kind: FileIoKind::Print, channel: None, .. })

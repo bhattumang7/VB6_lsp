@@ -58,6 +58,9 @@ const MISSING_END_CODES: [u32; 15] = [
     0x9c9f,
 ];
 
+/// The code of "Method not valid without suitable object".
+const METHOD_NOT_VALID_WITHOUT_OBJECT: u32 = 0xdec8;
+
 pub fn diagnostics(source: &str, kind: ModuleKind) -> usize {
     diagnostic_codes(source, kind).len()
 }
@@ -98,6 +101,15 @@ pub fn disagreements(
         let source = t.text.replace("{k}", &unescape(word));
         let codes = diagnostic_codes(&source, t.kind);
         let found = codes.len();
+        // A statement that needs an object to draw on or print to, written in a standard module,
+        // is reported by the parser first, once.
+        if class == "semantic" && message == "Method not valid without suitable object" {
+            checked += 1;
+            if codes.first() != Some(&METHOD_NOT_VALID_WITHOUT_OBJECT) || codes.iter().filter(|c| **c == METHOD_NOT_VALID_WITHOUT_OBJECT).count() != 1 {
+                wrong.push(format!("{template} {word}: the compiler reports `{message}`, parser reported {codes:?}"));
+            }
+            continue;
+        }
         // A semantic answer hides a block that is left open.
         let masked = class == "semantic" && !codes.is_empty() && codes.iter().all(|c| MISSING_END_CODES.contains(c));
         checked += 1;

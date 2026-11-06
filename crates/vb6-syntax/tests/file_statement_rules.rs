@@ -6,8 +6,9 @@ mod common;
 use common::{offset_of, parse};
 use vb6_syntax::frontend::ast::{AstLit, ExprNode, FileIoKind};
 
-const BAD_FILE_MODE: u32 = 54;
+const SYNTAX_ERROR: u32 = 0x9c70;
 const EXPECTED: u32 = 0x9c6f;
+const UNEXPECTED_TOKEN: u32 = 40047;
 
 fn in_sub(body: &str) -> (String, Vec<(u32, u32, u32)>) {
     let src = format!("Sub S()\n{body}\nEnd Sub\n");
@@ -25,7 +26,7 @@ fn open_access_must_suit_the_mode() {
         "Open \"a\" For Output Access Read Write As #1",
     ] {
         let (src, found) = in_sub(stmt);
-        assert_eq!(found, vec![(BAD_FILE_MODE, offset_of(&src, "Access", 0), 6)], "{stmt}");
+        assert_eq!(found, vec![(SYNTAX_ERROR, offset_of(&src, "Access", 0), 6)], "{stmt}");
     }
     for stmt in [
         "Open \"a\" For Input Access Read As #1",
@@ -35,6 +36,33 @@ fn open_access_must_suit_the_mode() {
         "Open \"a\" For Random Access Read Write As #1",
         "Open \"a\" For Binary Access Read As #1",
         "Open \"a\" Access Read Write As #1",
+    ] {
+        assert_eq!(in_sub(stmt).1, vec![], "{stmt}");
+    }
+}
+
+#[test]
+fn open_access_and_lock_name_what_they_restrict() {
+    // `Access` and `Lock` with neither `Read` nor `Write` after them: a syntax error at the token
+    // that stands in their place.
+    for (stmt, at) in [
+        ("Open \"a\" For Input Access As #1", "As"),
+        ("Open \"a\" For Binary Lock As #1", "As"),
+        ("Open \"a\" For Input Access Foo As #1", "Foo"),
+        ("Open \"a\" For Binary Lock Foo As #1", "Foo"),
+        ("Open \"a\" For Binary Access", ""),
+        ("Open \"a\" For Binary Lock", ""),
+    ] {
+        let (src, found) = in_sub(stmt);
+        let offset = if at.is_empty() { src.find("\nEnd Sub").unwrap() as u32 } else { offset_of(&src, at, 0) };
+        // At the end of the line the error has no text of its own.
+        assert_eq!(found, vec![(SYNTAX_ERROR, offset, at.len() as u32)], "{stmt}");
+    }
+    for stmt in [
+        "Open \"a\" For Binary Lock Read As #1",
+        "Open \"a\" For Binary Lock Write As #1",
+        "Open \"a\" For Binary Lock Read Write As #1",
+        "Open \"a\" For Binary Access Read Lock Write As #1",
     ] {
         assert_eq!(in_sub(stmt).1, vec![], "{stmt}");
     }
@@ -56,8 +84,90 @@ fn lock_range_may_start_with_to() {
         panic!("not a Lock")
     };
     assert_eq!(args.len(), 2);
-    assert!(matches!(p.node(args[0]), ExprNode::Literal { lit: AstLit::Int(0) }));
+    // The first record is left out, not a record number of its own.
+    assert!(matches!(p.node(args[0]), ExprNode::MissingArg));
     assert!(matches!(p.node(args[1]), ExprNode::Literal { lit: AstLit::Int(10) }));
+}
+
+#[test]
+fn open_mode_access_and_the_first_lock_word_may_be_written_in_brackets() {
+    let cases: &[(&str, u8, u8)] = &[
+        ("Open \"a\" For [Input] As #1", 1, 0),
+        ("Open \"a\" For [input] As #1", 1, 0),
+        ("Open \"a\" For [Output] As #1", 2, 0),
+        ("Open \"a\" For [Random] As #1", 4, 0),
+        ("Open \"a\" For [Append] As #1", 8, 0),
+        ("Open \"a\" For [Binary] As #1", 0x20, 0),
+        ("Open \"a\" For Binary [Access] Read As #1", 0x20, 1),
+        ("Open \"a\" For Binary Access [Read] As #1", 0x20, 1),
+        ("Open \"a\" For Binary Access [Write] As #1", 0x20, 2),
+        ("Open \"a\" For Binary Access [Read] Write As #1", 0x20, 3),
+        ("Open \"a\" For [Input] Access Read As #1", 1, 1),
+        ("Open \"a\" For Binary Lock [Read] As #1", 0x20, 0x30),
+        ("Open \"a\" For Binary Lock [Write] As #1", 0x20, 0x20),
+        ("Open \"a\" For Binary Lock [Read] Write As #1", 0x20, 0x10),
+    ];
+    for (stmt, mode, flags) in cases {
+        let p = parse(&format!("Sub S()\n {stmt}\nEnd Sub\n"));
+        assert_eq!(p.found, vec![], "{stmt}");
+        let body = p.proc_body(0);
+        let ExprNode::FileIoStmt { kind: FileIoKind::Open, open_mode, open_flags, .. } = p.node(body[0]) else {
+            panic!("not an Open: {stmt}")
+        };
+        assert_eq!((*open_mode, *open_flags), (*mode, *flags), "{stmt}");
+    }
+    // The second of `Read Write` is the plain word, and the other words of the statement
+    // are not words that can be bracketed.
+    for stmt in [
+        "Open \"a\" For Binary Access Read [Write] As #1",
+        "Open \"a\" For Binary Access [Read] [Write] As #1",
+        "Open \"a\" For Binary Lock Read [Write] As #1",
+        "Open \"a\" [For] Input As #1",
+        "Open \"a\" For Input [As] #1",
+        "Open \"a\" For Binary [Lock] Read As #1",
+        "Open \"a\" For Binary [Shared] As #1",
+        "Open \"a\" For Output Access [Read] As #1",
+    ] {
+        let (_, found) = in_sub(stmt);
+        assert_eq!(found.first().map(|d| d.0), Some(SYNTAX_ERROR), "{stmt}: {found:?}");
+    }
+    // `[Len]` is a name after the channel, where the statement should end.
+    let (src, found) = in_sub("Open \"a\" For Random As #1 [Len] = 5");
+    assert_eq!(found, vec![(UNEXPECTED_TOKEN, offset_of(&src, "[Len]", 0), 5)]);
+}
+
+/// The `#` marks of the channel operands, statement by statement.
+#[test]
+fn channel_marks_follow_the_written_hash() {
+    let cases: &[(&str, FileIoKind, &[bool])] = &[
+        ("Print #1, 2", FileIoKind::Print, &[true]),
+        ("Write #1, 2", FileIoKind::Write, &[true]),
+        ("Input #1, a", FileIoKind::Input, &[true]),
+        ("Line Input #1, a", FileIoKind::LineInput, &[true]),
+        ("Get #1, , a", FileIoKind::Get, &[true]),
+        ("Get 1, , a", FileIoKind::Get, &[false]),
+        ("Put #1, , a", FileIoKind::Put, &[true]),
+        ("Put 1, , a", FileIoKind::Put, &[false]),
+        ("Seek #1, 2", FileIoKind::Seek, &[true]),
+        ("Seek 1, 2", FileIoKind::Seek, &[false]),
+        ("Width #1, 2", FileIoKind::Width, &[true]),
+        ("Lock #1", FileIoKind::Lock, &[true]),
+        ("Lock 1, 2 To 3", FileIoKind::Lock, &[false]),
+        ("Unlock #1, 2", FileIoKind::Unlock, &[true]),
+        ("Open \"a\" For Input As #1", FileIoKind::Open, &[true]),
+        ("Open \"a\" For Input As 1", FileIoKind::Open, &[false]),
+        ("Close", FileIoKind::Close, &[]),
+        ("Close #1", FileIoKind::Close, &[true]),
+        ("Close 1", FileIoKind::Close, &[false]),
+        ("Close #1, b, #3", FileIoKind::Close, &[true, false, true]),
+    ];
+    for (stmt, want_kind, want_marks) in cases {
+        let p = parse(&format!("Sub S()\n {stmt}\nEnd Sub\n"));
+        assert_eq!(p.found, vec![], "{stmt}");
+        let body = p.proc_body(0);
+        let ExprNode::FileIoStmt { kind, channel_marks, .. } = p.node(body[0]) else { panic!("{stmt}") };
+        assert_eq!((*kind, channel_marks.as_slice()), (*want_kind, *want_marks), "{stmt}");
+    }
 }
 
 #[test]

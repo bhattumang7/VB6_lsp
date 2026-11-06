@@ -201,7 +201,8 @@ fn a_bare_close_is_accepted_and_a_close_with_channels_is_not() {
         let (p, pre, _) = select(&sub(text));
         assert_eq!(p.found, vec![], "{text}");
         for stmt in &pre {
-            let ExprNode::FileIoStmt { kind, channel, args, open_mode, open_flags } = p.node(*stmt) else { panic!("{text}") };
+            let ExprNode::FileIoStmt { kind, channel, channel_marks, args, open_mode, open_flags } = p.node(*stmt) else { panic!("{text}") };
+            assert!(channel_marks.is_empty(), "{text}");
             assert_eq!((*kind, channel.is_none(), args.len(), *open_mode, *open_flags), (FileIoKind::Close, true, 0, 0, 0), "{text}");
         }
         assert_eq!(pre.len(), if text == "Close: Close" { 2 } else { 1 }, "{text}");
@@ -246,18 +247,18 @@ fn graphics(p: &Parsed, id: NodeId) -> (String, Option<usize>, Option<usize>) {
 #[test]
 fn the_graphics_methods_of_an_object_are_accepted() {
     let cases: &[(&str, &str, Option<usize>, Option<usize>)] = &[
-        ("f.Circle (1, 1), 2", "circle", Some(2), Some(1)),
+        ("f.Circle (1, 1), 2", "circle", None, Some(2)),
         ("f.Circle Step (1, 1), 2, 3, 4, 5, 6", "circle", None, Some(6)),
-        ("f.Line (1, 1)-(2, 2)", "line", Some(2), Some(2)),
+        ("f.Line (1, 1)-(2, 2)", "line", None, Some(2)),
         ("f.Line -(2, 2)", "line", None, Some(2)),
-        ("f.Line (1, 1)-(2, 2), , B", "line", Some(2), Some(4)),
+        ("f.Line (1, 1)-(2, 2), , B", "line", None, Some(4)),
         ("f.Line Step (1, 1)-Step (2, 2), 3, BF", "line", None, Some(4)),
-        ("f.PSet (1, 1)", "pset", Some(2), None),
+        ("f.PSet (1, 1)", "pset", None, Some(1)),
         ("f.PSet Step (1, 1), 3", "pset", None, Some(2)),
         ("f.Scale", "scale", None, None),
-        ("f.Scale (1, 1)-(2, 2)", "scale", Some(2), Some(2)),
-        ("f.Controls.Circle (1, 1), 2", "circle", Some(2), Some(1)),
-        ("f.Pset (1, 1)", "pset", Some(2), None),
+        ("f.Scale (1, 1)-(2, 2)", "scale", None, Some(2)),
+        ("f.Controls.Circle (1, 1), 2", "circle", None, Some(2)),
+        ("f.Pset (1, 1)", "pset", None, Some(1)),
     ];
     for (text, name, inner, outer) in cases {
         let (p, pre, selects) = select(&sub(&format!("Dim f As Form\n{text}")));

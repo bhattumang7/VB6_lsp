@@ -85,6 +85,7 @@ pub const ERR_NOT_LEGAL_OBJECT_NAME: u32 = 0x5a5c; // 23132
 pub const ERR_MAIN_NOT_ALLOWED_AS_NAME: u32 = 0x5ab5; // 23221
 /// `Name conflicts with existing module, project, or object library`.
 pub const ERR_NAME_CONFLICTS: u32 = 0x802d; // 32813
+pub const ERR_METHOD_NOT_VALID_WITHOUT_OBJECT: u32 = 0xdec8; // 57032
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -173,6 +174,7 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         57094 => "Can't assign to read-only property",
         57150 => "Event not found",
         ERR_LABEL_NOT_DEFINED => "Label not defined",
+        ERR_METHOD_NOT_VALID_WITHOUT_OBJECT => "Method not valid without suitable object",
         ERR_SYNTAX_ERROR => "Syntax error",
         ERR_ARRAY_ARGUMENT_MUST_BE_BYREF => "Array argument must be ByRef",
         ERR_PROPERTY_ARGUMENT_REQUIRED => "Argument required for Property Let or Property Set",

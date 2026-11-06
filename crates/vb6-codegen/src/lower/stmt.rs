@@ -488,6 +488,7 @@ pub(super) fn lower_stmt(
             kind: FileIoKind::Open,
             channel: Some(channel),
             args,
+            channel_marks: _,
             open_mode,
             open_flags,
         } => {

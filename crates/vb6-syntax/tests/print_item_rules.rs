@@ -2,11 +2,12 @@
 //! items; `Seek` as a function.
 
 mod common;
-use common::parse;
+use common::{parse, parse_kind};
+use vb6_syntax::frontend::parser::ModuleKind;
 use vb6_syntax::frontend::ast::{ExprNode, FileIoKind};
 
 fn clean(body: &str) {
-    let p = parse(&format!("Sub S()\n{body}\nEnd Sub\n"));
+    let p = parse_kind(&format!("Sub S()\n{body}\nEnd Sub\n"), ModuleKind::Class);
     assert_eq!(p.found, vec![], "{body}");
     assert_eq!(p.proc_body(0).len(), 1, "{body}");
 }

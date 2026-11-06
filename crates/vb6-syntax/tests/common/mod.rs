@@ -23,6 +23,11 @@ pub fn parse(src: &str) -> Parsed {
 }
 
 /// Parses `src` as a module of the given kind.
+pub fn parse_kind(src: &str, kind: ModuleKind) -> Parsed {
+    parse_as(src, kind)
+}
+
+/// Parses `src` as a module of the given kind.
 pub fn parse_as(src: &str, kind: ModuleKind) -> Parsed {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();

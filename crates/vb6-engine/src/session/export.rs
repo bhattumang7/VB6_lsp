@@ -402,7 +402,7 @@ impl Exporter<'_> {
         match m.arena.get(id) {
             ExprNode::Literal { lit } => lit_text(lit),
             ExprNode::NameRef { sym, .. } => self.spell(*sym),
-            ExprNode::MemberAccess { base, member, bang } => {
+            ExprNode::MemberAccess { base, member, bang, .. } => {
                 format!("{}{}{}", self.expr_text(*base), if *bang { "!" } else { "." }, self.spell(*member))
             }
             ExprNode::Paren { inner } => format!("({})", self.expr_text(*inner)),

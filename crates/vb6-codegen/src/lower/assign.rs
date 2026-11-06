@@ -21,7 +21,7 @@ pub(super) fn lower_assign(
     // vtable-dispatch chain, not the scalar bypass store this function
     // otherwise builds — neither has a frame slot of its own to feed
     // `emit_var_store`.
-    if let ExprNode::MemberAccess { base, member, bang } = expr_arena.get(target_id) {
+    if let ExprNode::MemberAccess { base, member, bang, .. } = expr_arena.get(target_id) {
         let (base, member, bang) = (*base, *member, *bang);
         if member_access_base_is_class(ctx.module, base) {
             return lower_class_field_store(ctx, base, target_id, bang, value_id, expr_arena, out);

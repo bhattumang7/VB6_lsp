@@ -1,0 +1,706 @@
+bas	Circle (1, 1)	syntax	Syntax error
+bas	Circle (1, 1), 1,	syntax	Syntax error
+bas	Line (1, 1)	syntax	Syntax error
+bas	Line (1, 1)-(2, 2), ,	syntax	Syntax error
+bas	Line (1, 1)-(2, 2), 1, X	syntax	Syntax error
+bas	Print #1	syntax	Syntax error
+bas	Print #1,	accepted	
+bas	PSet (1, 1),	syntax	Syntax error
+bas	PSet (1, 1) 2	syntax	Syntax error
+bas	Scale (1, 1)	syntax	Syntax error
+bas	Scale (1, 1)-	syntax	Syntax error
+bas	Scale 1, 2	syntax	Syntax error
+bas	Call	syntax	Syntax error
+bas	With o\nCall .M\nEnd With	accepted	
+cls	Call Me.Main	accepted	
+bas	i = 1: Call P	accepted	
+bas	Call 1	syntax	Syntax error
+bas	Call o.M	accepted	
+bas	Call P	accepted	
+bas	Call P()	accepted	
+bas	Debug.Print ' c	accepted	
+bas	Debug.Line	syntax	Syntax error
+bas	Debug.Print	accepted	
+bas	Debug.?	accepted	
+bas	Debug .Print 1	syntax	Syntax error
+bas	Debug. Print 1	accepted	
+bas	Debug\t.Print 1	syntax	Syntax error
+bas	Circle	syntax	Syntax error
+bas	Circle 1	syntax	Syntax error
+bas	Debug.Print 1	accepted	
+bas	Line 1	syntax	Syntax error
+bas	Print #1, 1	accepted	
+bas	PSet	syntax	Syntax error
+bas	PSet 1	syntax	Syntax error
+bas	Scale 1	syntax	Syntax error
+bas	Call Printer.Circle(1, 1)	syntax	Syntax error
+bas	Call Printer.PSet(1, 1)	accepted	
+bas	Printer.Circle (1, 1), 2, 3	accepted	
+bas	Printer.Circle (1, 1),, 3	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2, 3, 4, 5	accepted	
+bas	Printer.Circle (1, 1), 2, 3, 4, 5, 6	accepted	
+bas	Printer.Circle (1, 1, 2	syntax	Syntax error
+bas	Printer.Circle (1 1), 2	syntax	Syntax error
+bas	Printer.Circle 1, 2	syntax	Syntax error
+bas	Printer.Circle (1, 1): i = 1	syntax	Syntax error
+bas	Printer.Circle (1, 1)	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2	accepted	
+bas	Printer.Circle (1, 1), 2, , , , 6	accepted	
+bas	Printer.Circle (1, 1), 2, 3, 4, 5,	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2, , 4	accepted	
+bas	Printer.Circle (1, 1), 2, 3, 4, , 6	accepted	
+bas	Printer.Circle (1, 1), 2, 3, , 5	accepted	
+bas	Printer.Circle (1, 1), , 3	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2, 3, 4, 5, 6, 7	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2, 3, 4	accepted	
+bas	Printer.Circle Step%(1, 1), 2	accepted	
+bas	Printer.Circle Step(1, 1), 2	accepted	
+bas	Printer.Circle Step (1, 1), 2	accepted	
+bas	Printer.Circle Step, 2	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2,	syntax	Syntax error
+bas	Printer.Circle (1, 1), 2, 3,	syntax	Syntax error
+bas	i = Printer.Circle	semantic	Argument not optional
+bas	i = Printer.PSet	semantic	Argument not optional
+bas	If i Then Printer.Circle (1, 1), 2 Else i = 1	accepted	
+bas	If i Then Printer.Line (1, 1)-(2, 2) Else i = 1	accepted	
+bas	If i Then Printer.PSet Else i = 1	syntax	Syntax error
+bas	If i Then Printer.PSet (1, 1) Else i = 1	accepted	
+bas	If i Then Printer.Scale (1, 1)-(2, 2) Else i = 1	accepted	
+bas	Line Input #1, s & s	syntax	Syntax error
+bas	Line Input #, s	syntax	Syntax error
+bas	Line Input #1 s	syntax	Syntax error
+bas	Line Input #1,	syntax	Syntax error
+bas	Line Input 1, s	syntax	Syntax error
+bas	Line Input #1, s	accepted	
+bas	Line Input #1, s, i	syntax	Syntax error
+bas	Printer.Line (1, 1)-(2, 2), 5, BF	accepted	
+bas	Printer.Line (1, 1)-(2, 2), 5, B	accepted	
+bas	Printer.Line (1, 1)-(2, 2), 5	accepted	
+bas	Printer.Line (1, 1)-2	syntax	Syntax error
+bas	Printer.Line (1, 1)-(2, 2), , B	accepted	
+bas	Printer.Line -Step(2, 2)	accepted	
+bas	Printer.Line -(2, 2)	accepted	
+bas	Printer.Line (1, 1)	syntax	Syntax error
+bas	Printer.Line (1, 1)-(2, 2)	accepted	
+bas	Printer.Line (1)-(2, 2)	syntax	Syntax error
+bas	Printer.Line Step(1, 1)-(2, 2)	accepted	
+bas	Printer.Line (1, 1)-Step(2, 2)	accepted	
+bas	Printer.Scale Step(1, 1)-Step(2, 2)	syntax	Syntax error
+bas	Printer.Line Step-(2, 2)	syntax	Syntax error
+bas	Printer.Line (1, 1)-(2, 2), 5, B, 7	syntax	Syntax error
+bas	Printer.Line (1, 1)-(2, 2),	syntax	Syntax error
+bas	Lock #1	accepted	
+bas	Lock #1,	syntax	Syntax error
+bas	Lock #1, To 2	accepted	
+bas	Lock 1	accepted	
+bas	Lock #1, 1	accepted	
+bas	Lock #1, 1 To 2	accepted	
+bas	Lock #1, 1 To	syntax	Syntax error
+bas	Lock 1, 1 To 2	accepted	
+bas	Lock #1, To	syntax	Syntax error
+bas	Lock #1, 1 To 2 To 3	syntax	Syntax error
+cls	Me.Circle (1, 1)	syntax	Syntax error
+cls	Me.PSet (1, 1)	semantic	Method or data member not found
+bas	Printer.PSet((1, 1))	syntax	Syntax error
+bas	Printer.PSet	syntax	Syntax error
+bas	Printer.PSet (1, 1),	syntax	Syntax error
+bas	Printer.PSet (1, 1), 5	accepted	
+bas	Printer.PSet ()	syntax	Syntax error
+bas	Printer.PSet #1, 1	syntax	Syntax error
+bas	Printer.PSet i, 1	syntax	Syntax error
+bas	Printer.PSet (1, 1	syntax	Syntax error
+bas	Printer.PSet (1 1)	syntax	Syntax error
+bas	Printer.PSet 1, 1	syntax	Syntax error
+bas	Printer.PSet (1, 1)	accepted	
+bas	Printer.PSet (1)	syntax	Syntax error
+bas	Printer.PSet Step$(1, 1)	accepted	
+bas	Printer.PSet Step 1, 1	syntax	Syntax error
+bas	Printer.PSet Step (1, 1)	accepted	
+bas	Printer.PSet Step%(1, 1)	accepted	
+bas	Printer.PSet Step(1, 1)	accepted	
+bas	Printer.PSet Step	syntax	Syntax error
+bas	Printer.PSet (1, 1, 1)	syntax	Syntax error
+bas	Printer.PSet (1, 1) 5	syntax	Syntax error
+bas	If i Then Printer.Scale	accepted	
+bas	Printer.Scale	accepted	
+bas	Printer.Scale: i = 1	accepted	
+bas	Printer.Scale ' c	accepted	
+bas	Printer.Scale (1, 1)-	syntax	Syntax error
+bas	Printer.Scale (1, 1)-2	syntax	Syntax error
+bas	If i Then Printer.Scale Else i = 1	syntax	Syntax error
+bas	Printer.Scale (1, 1)-(2, 2), 5	syntax	Syntax error
+bas	If i Then Printer.Scale: i = 1	accepted	
+bas	Printer.Scale -(2, 2)	syntax	Syntax error
+bas	Printer.Scale (1, 1)	syntax	Syntax error
+bas	Printer.Scale 1, 1	syntax	Syntax error
+bas	Printer.Scale (1, 1)-(2, 2)	accepted	
+bas	Printer.Scale (1, 1)-(2, 2): i = 1	accepted	
+bas	Printer.Scale Step(1, 1)-(2, 2)	syntax	Syntax error
+bas	Printer.Scale (1, 1)-Step(2, 2)	syntax	Syntax error
+bas	Unlock #1	accepted	
+bas	Unlock #1,	syntax	Syntax error
+bas	Unlock #1, To 2	accepted	
+bas	Unlock 1, 1 To 2	accepted	
+bas	Unlock #1, 1	accepted	
+bas	Unlock #1, 1 To 2	accepted	
+bas	Unlock #1, 1 To	syntax	Syntax error
+bas	With Printer\n.Circle (1, 1)\nEnd With	syntax	Syntax error
+bas	With Printer\n.Circle (1, 1), 2\nEnd With	syntax	Syntax error
+bas	With Printer\n.Circle 1, 2\nEnd With	semantic	Argument not optional
+bas	With Printer\n.Line (1, 1)-(2, 2)\nEnd With	syntax	Syntax error
+bas	With Printer\n.PSet 1, 1\nEnd With	semantic	Argument not optional
+bas	With Printer\n.PSet (1, 1)\nEnd With	syntax	Syntax error
+bas	With Printer\n.Scale\nEnd With	semantic	Argument not optional
+bas	With Printer\n.Scale (1, 1)-(2, 2)\nEnd With	syntax	Syntax error
+bas	With Printer\n.PSet Step(1, 1)\nEnd With	semantic	Sub or Function not defined
+bas	With Printer\n.Line (1, 1)\nEnd With	syntax	Syntax error
+bas	With Printer\n.PSet (1)\nEnd With	semantic	Argument not optional
+bas	With Printer\n.Scale (1, 1)\nEnd With	syntax	Syntax error
+cls	Circle (1, 1), 2	semantic	Method or data member not found
+cls	Me.Print "a"; 1	accepted	
+cls	Class1.Print "a"	semantic	Variable not defined
+cls	Debug.Print "a"	accepted	
+cls	Line (1, 1)-(2, 2)	semantic	Method or data member not found
+cls	Me.Print "a"	accepted	
+cls	Print "a", "b"	accepted	
+cls	Print	accepted	
+cls	Print 1 + 2	accepted	
+cls	Print "a"; "b"	accepted	
+cls	Print Spc(2); "a"	accepted	
+cls	Print Spc; "a"	syntax	Syntax error
+cls	Print Tab(3); "a"	accepted	
+cls	Print Tab; "a"	accepted	
+cls	Print "a";	accepted	
+cls	Print "a",	accepted	
+cls	Print "a"	accepted	
+cls	Print #1, "a"	accepted	
+cls	Print "a"; 1	accepted	
+cls	PSet (1, 1)	semantic	Method or data member not found
+cls	Scale (0, 0)-(5, 5)	semantic	Method or data member not found
+bas	o.[Print] "a"	accepted	
+bas	o.[Line] (1,2)-(3,4)	syntax	Syntax error
+bas	o.Circle	syntax	Syntax error
+bas	Debug.? 1	accepted	
+bas	o.Line (1,2)-(3,4)	accepted	
+bas	o.Print 1	accepted	
+bas	o.PSet (1)	syntax	Syntax error
+bas	o.? "a"	accepted	
+bas	o.?	accepted	
+bas	o.? 1; 2	accepted	
+bas	o!?	syntax	Syntax error
+bas	With o\n.? "a"\nEnd With	accepted	
+bas	Call o.? "a"	accepted	
+bas	o.Scale (1,2)	syntax	Syntax error
+bas	o .Print "a"	syntax	Syntax error
+bas	Call Q(1)(2)	syntax	Syntax error
+bas	With o\nCall .x\nEnd With	accepted	
+bas	Call Q 1	syntax	Syntax error
+bas	Call Q(1) 2	syntax	Syntax error
+bas	Call Q 1, 2	syntax	Syntax error
+bas	Call Q(1)	accepted	
+bas	Call o.Foo	accepted	
+bas	Call o!Foo	syntax	Syntax error
+bas	Call n = 1	syntax	Syntax error
+bas	Call o.a!b	syntax	Syntax error
+bas	Call o!a.b	syntax	Syntax error
+bas	Call o!a(1).b	syntax	Syntax error
+bas	Call Q(1) : Q	accepted	
+bas	If n Then Call Q Else Q	accepted	
+bas	Call o.a(1)(2)	syntax	Syntax error
+bas	Call o.a(1) (2)	syntax	Syntax error
+bas	Call Q(, 1)	accepted	
+bas	Call Q(a:=1)	accepted	
+bas	Call Q	accepted	
+bas	Call Q(1 To 2)	syntax	Syntax error
+bas	With o\nCall .a(1)(2)\nEnd With	accepted	
+bas	Call arr(1) (1)	syntax	Syntax error
+bas	o.p(1).Print 1; 2	accepted	
+bas	o.[Print] 1; 2	syntax	Syntax error
+bas	Call o.Print(1)	accepted	
+bas	o.Circle = 1	syntax	Syntax error
+bas	o.Circle.x = 1	accepted	
+bas	o.Circle (1, 1), 2	accepted	
+bas	Debug.Print.x = 1	semantic	Invalid or unqualified reference
+bas	Debug.Print 1; 2	accepted	
+bas	o.Line = 1	accepted	
+bas	o.Line (1, 1)-(2, 2), 3, B	accepted	
+bas	o.Line (1)	syntax	Syntax error
+bas	If o.Line = 1 Then x = 1	accepted	
+bas	o.Line.x = 1	accepted	
+bas	v = o.Line	accepted	
+bas	x = o.Line + 1	accepted	
+bas	o.Line	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2)	accepted	
+bas	o.Line (1, 1)-(2, 2); 3	syntax	Syntax error
+bas	o.p.Line = 1	accepted	
+bas	o.p.Line (1, 1)-(2, 2)	accepted	
+bas	o.p.Print 1; 2	accepted	
+bas	o.Print = 1	syntax	Syntax error
+bas	o!Print 1; 2	syntax	Syntax error
+bas	o.Print 1, 2	accepted	
+bas	o.Print.x = 1	semantic	Invalid or unqualified reference
+bas	If o.Print = 1 Then x = 1	accepted	
+bas	v = o.Print	accepted	
+bas	o.Print	accepted	
+bas	o.Print (1)	accepted	
+bas	o.Print 1; 2	accepted	
+bas	o.Print% = 1	syntax	Syntax error
+bas	o.PSet = 1	syntax	Syntax error
+bas	o.PSet	syntax	Syntax error
+bas	o.PSet (1, 1)	accepted	
+bas	o.Scale.x = 1	accepted	
+bas	o.Scale	accepted	
+bas	o.Scale (1, 1)-(2, 2)	accepted	
+bas	Set v = o.Print	accepted	
+bas	With o\n!Print = 1\nEnd With	accepted	
+bas	With o\n.Circle (1, 1), 2\nEnd With	syntax	Syntax error
+bas	With Debug\n.Print 1; 2\nEnd With	syntax	Syntax error
+bas	With o\n.Line (1, 1)-(2, 2)\nEnd With	syntax	Syntax error
+bas	With o\n.Print.x = 1\nEnd With	accepted	
+bas	With o\n.Print 1; 2\nEnd With	syntax	Syntax error
+bas	With o\n.PSet (1, 1)\nEnd With	syntax	Syntax error
+cls	Me!Print 1; 2	syntax	Syntax error
+cls	Circle	syntax	Syntax error
+cls	Line	syntax	Syntax error
+cls	Line = 5	accepted	
+cls	Line (0, 0)-(1, 1)	semantic	Method or data member not found
+cls	Me.Circle	syntax	Syntax error
+cls	Me.[Circle] (1, 1), 2	syntax	Syntax error
+cls	Me.Circle (1, 1), 2	semantic	Method or data member not found
+cls	Me.Line (0, 0)-(1, 1)	semantic	Method or data member not found
+cls	Me.Print = 1	syntax	Syntax error
+cls	Me.[Print] 1; 2	syntax	Syntax error
+cls	Me.Print 1; 2	accepted	
+cls	Me.Scale (0, 0)-(1, 1)	semantic	Method or data member not found
+cls	o.Circle	syntax	Syntax error
+cls	o.Line	syntax	Syntax error
+cls	o.Print 1; 2	accepted	
+cls	o.PSet	syntax	Syntax error
+cls	[Print] "x"	accepted	
+cls	Print = 5	syntax	Syntax error
+cls	Print #1, 2	accepted	
+cls	Print (1)	accepted	
+cls	Print 1; 2	accepted	
+cls	If i Then Print 1 Else Print 2	accepted	
+cls	Print "x"	accepted	
+cls	PSet	syntax	Syntax error
+cls	o.Scale (0, 0)-(1, 1)	accepted	
+cls	Scale	semantic	Method or data member not found
+cls	Scale (0, 0)-(1, 1)	semantic	Method or data member not found
+cls	With Me\n.Circle (1, 1), 2\nEnd With	syntax	Syntax error
+cls	With o\n.Print 1; 2\nEnd With	syntax	Syntax error
+cls	With Me\n.Print 1; 2\nEnd With	syntax	Syntax error
+cls	Circle (1, 1)	syntax	Syntax error
+cls	Circle (1, 1), 2, , , , 1	semantic	Method or data member not found
+cls	Line (1, 1)	syntax	Syntax error
+cls	Line -	syntax	Syntax error
+cls	Line Rem	syntax	Syntax error
+cls	Print ,,	accepted	
+cls	PSet 1	syntax	Syntax error
+cls	Scale (0, 0)-	syntax	Syntax error
+cls	Scale ,	syntax	Syntax error
+bas	o.x.Print 1; 2	accepted	
+bas	Circle (1, 1), 2	semantic	Method not valid without suitable object
+bas	a(1).Print 1; 2	semantic	Type mismatch
+bas	Line (0, 0)-(1, 1)	semantic	Method not valid without suitable object
+bas	o.[Circle] (1, 1), 2	syntax	Syntax error
+bas	o.Circle (1, 1), 2; 3	syntax	Syntax error
+bas	o.Font.Print 1; 2	accepted	
+bas	o.Line = 5	accepted	
+bas	o.Line (0, 0)-(1, 1), 2, B	accepted	
+bas	o.[Line] (0, 0)-(1, 1)	syntax	Syntax error
+bas	o.Line 1 = 2	syntax	Syntax error
+bas	o.Line Step(0, 0)-(1, 1)	accepted	
+bas	o.Line (0, 0)-(1, 1)	accepted	
+bas	o.Print = 5	syntax	Syntax error
+bas	i = o.Print	accepted	
+bas	o.Print 1; 2: i = 1	accepted	
+bas	If i Then\no.Print 1; 2\nEnd If	accepted	
+bas	o.Print #1, 2	syntax	Syntax error
+bas	If i Then o.Print 1; 2	accepted	
+bas	o.Print.Foo 1; 2	semantic	Invalid or unqualified reference
+bas	o.Print Tab(2); 3	accepted	
+bas	o.[PSet] (1, 1)	syntax	Syntax error
+bas	o.PSet Step(1, 1)	accepted	
+bas	o.[Scale] (0, 0)-(1, 1)	syntax	Syntax error
+bas	o.Scale (0, 0)-(1, 1)	accepted	
+bas	o.Print 1 = 2	accepted	
+bas	Print	semantic	Method not valid without suitable object
+bas	[Print] "x"	semantic	Method not valid without suitable object
+bas	Print 1; 2	semantic	Method not valid without suitable object
+bas	Print "x"	semantic	Method not valid without suitable object
+bas	PSet (1, 1)	semantic	Method not valid without suitable object
+bas	Scale (0, 0)-(1, 1)	semantic	Method not valid without suitable object
+bas	With o\n.Line = 1\nEnd With	accepted	
+bas	With o\n.Line (0, 0)-(1, 1)\nEnd With	syntax	Syntax error
+bas	With o\n.[Print] 1; 2\nEnd With	syntax	Syntax error
+bas	Open "f" For Binary Access Read Lock Write As #1	accepted	
+bas	Open "f" For Binary Access Read Shared As #1	accepted	
+bas	Open "f" For Binary Access [Read] As #1	accepted	
+bas	Open "f" For Binary Access [Read] [Write] As #1	syntax	Syntax error
+bas	Open "f" For Binary Access [Write] As #1	accepted	
+bas	Open "f" For Binary [Access] Read As #1	accepted	
+bas	Open "f" For Input Access Foo As #1	syntax	Syntax error
+bas	Open "f" For Input Access As #1	syntax	Syntax error
+bas	Open "f" For Binary Access Read [Write] As #1	syntax	Syntax error
+bas	Open "f" For Binary Access Read Read As #1	syntax	Syntax error
+bas	Open "f" For Binary Access Write Read As #1	syntax	Syntax error
+bas	Open	syntax	Syntax error
+bas	Open "f" For Append Access Read As #1	syntax	Syntax error
+bas	Open "f" For Append Access Read Write As #1	accepted	
+bas	Open "f" For Append Access Write As #1	accepted	
+bas	Open "f" For Input As i + 1	accepted	
+bas	Open "f" For Input As #	syntax	Syntax error
+bas	Open "f" For Input As 1	accepted	
+bas	Open "f" For Binary Access Read As #1	accepted	
+bas	Open "f" For Binary Access Read Write As #1	accepted	
+bas	Open "f" For Binary Access Write As #1	accepted	
+bas	Open "f" For Binary As #1	accepted	
+bas	Open "f" For Input As #1, 2	syntax	Syntax error
+bas	Open "f" For Foo As #1	syntax	Syntax error
+bas	Open "f" For Binary Access Read Lock Read Write Shared As #1	syntax	Syntax error
+bas	Open "f" For [Append] As #1	accepted	
+bas	Open "f" For [Binary] As #1	accepted	
+bas	Open "f" For [Foo] As #1	syntax	Syntax error
+bas	Open "f" For [Input] As #1	accepted	
+bas	Open "f" For [Output] As #1	accepted	
+bas	Open "f" For [Random] As #1	accepted	
+bas	Open "f" for append as #1	accepted	
+bas	Open "f" For	syntax	Syntax error
+bas	Open "f" For Input For Output As #1	syntax	Syntax error
+bas	Open "f" For #1	syntax	Syntax error
+bas	Open "f" For Read As #1	syntax	Syntax error
+bas	Open #1 For Input As #1	syntax	Syntax error
+bas	Open "f" For Input Access Read As #1	accepted	
+bas	Open "f" For Input Access Read Write As #1	syntax	Syntax error
+bas	Open "f" For Input Access Write As #1	syntax	Syntax error
+bas	Open "f" For Input As #1	accepted	
+bas	Open "f" For Random As #1 Len	syntax	Syntax error
+bas	Open "f" For Random As #1 Len = 128 + i	accepted	
+bas	Open "f" For Random As #1 [Len] = 128	syntax	Syntax error
+bas	Open "f" For Random As #1 Len 128	syntax	Syntax error
+bas	Open "f" For Random As #1 Len =	syntax	Syntax error
+bas	Open "f" For Random As #1 Len = 128	accepted	
+bas	Open "f" For Binary Lock Read Access Read As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock [Read] As #1	accepted	
+bas	Open "f" For Binary Lock [Write] As #1	accepted	
+bas	Open "f" For Binary Lock Foo As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock Read [Write] As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock Read As #1	accepted	
+bas	Open "f" For Binary Lock Read Write As #1	accepted	
+bas	Open "f" For Binary Lock Read Shared As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock Write Read As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock Write As #1	accepted	
+bas	Open "f" For Input #1	syntax	Syntax error
+bas	Open "f" Access Read As #1	accepted	
+bas	Open "f" Access Read Write As #1	accepted	
+bas	Open "f" Access Write As #1	accepted	
+bas	Open "f" As #1	accepted	
+bas	Open "f" For Output Access Read As #1	syntax	Syntax error
+bas	Open "f" For Output Access Read Write As #1	syntax	Syntax error
+bas	Open "f" For Output Access Write As #1	accepted	
+bas	Open "f" For Output As #1	accepted	
+bas	Open "f"	syntax	Syntax error
+bas	Open "f" For Random As #1	accepted	
+bas	Open "f" For Random Access Read As #1	accepted	
+bas	Open "f" For Random Access Read Write As #1	accepted	
+bas	Open "f" For Random Access Write As #1	accepted	
+bas	Open "f" For Binary [Shared] As #1	syntax	Syntax error
+bas	Open "f" For Binary Shared Lock Read As #1	syntax	Syntax error
+bas	Open "f" For Binary Shared As #1	accepted	
+bas	Open "f" For Input As ##1	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, B: i = 1	accepted	
+bas	If i = 0 Then o.Line (1, 1)-(2, 2), 5, B Else i = 1	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, B F	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, B, F	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, B i	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, BB	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, [B]	accepted	
+bas	If i = 0 Then o.Line (1, 1)-(2, 2), , BF Else i = 1	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, BF i	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, BF	accepted	
+bas	o.Line (1, 1)-(2, 2), 5: i = 1	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, x	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, 6	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5 ' c	accepted	
+bas	o.Line (1, 1)-(2, 2), 5,	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5	accepted	
+bas	o.Line (1, 1)-(2, 2), , , B	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), RGB(1, 2, 3), B	accepted	
+bas	o.Line (1, 1)-(2, 2), #1	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2); 5	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), : i = 1	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, : i = 1	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), ' c	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), ,	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, B, 1	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, F	syntax	Syntax error
+bas	o.Line (1, 1)	syntax	Syntax error
+bas	o.Line Input #1, s	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, b	accepted	
+bas	o.Line (1, 1)-(2, 2), , B	accepted	
+bas	o.Line -(2, 2), 5, B	accepted	
+bas	o.Line 1, 2	syntax	Syntax error
+bas	o.Line (1, 1)(2, 2)	syntax	Syntax error
+bas	o.Line Input	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), (5)	accepted	
+bas	o.Line Step(1, 1)-Step(2, 2), 5, B	accepted	
+bas	o.Line (1, 1)-Step(2, 2)	accepted	
+bas	o.Line Step(1, 1)-Step(2, 2), , B	accepted	
+bas	o.Line -Step(2, 2)	accepted	
+bas	o.Line (1, 1)-(2, 2),	syntax	Syntax error
+bas	o.Line (1, 1)-	syntax	Syntax error
+bas	o.Print i,, i	accepted	
+bas	If i = 0 Then o.Print Else i = 1	accepted	
+bas	o.Print #1, i	syntax	Syntax error
+bas	o.Print Spc 1	syntax	Syntax error
+bas	o.Print Tab; i	accepted	
+bas	o.Print Tab(	syntax	Syntax error
+bas	o.Print Tab; Spc(1); i	accepted	
+bas	o.Print i; Spc(1)	accepted	
+bas	o!Circle (1, 1), 2	syntax	Syntax error
+bas	o!Line (1, 1)-(2, 2)	syntax	Syntax error
+bas	o!Scale	syntax	Syntax error
+cls	If i Then Circle (1, 1), 2 Else i = 1	semantic	Method or data member not found
+cls	If i Then Line (1, 1)-(2, 2) Else i = 1	semantic	Method or data member not found
+cls	If i Then Print Else i = 1	accepted	
+cls	If i Then Print 1 Else i = 1	accepted	
+cls	If i Then PSet (1, 1) Else i = 1	semantic	Method or data member not found
+cls	Scale: i = 1	semantic	Method or data member not found
+cls	If i Then Scale Else i = 1	syntax	Syntax error
+cls	Scale ' c	semantic	Method or data member not found
+bas	[Circle] (1, 1), 2	semantic	Method not valid without suitable object
+cls	[Circle] (1, 1), 2	semantic	Method or data member not found
+bas	[Line] (1, 1)-(2, 2)	semantic	Method not valid without suitable object
+cls	[Line] (1, 1)-(2, 2)	semantic	Method or data member not found
+cls	[Print] 1; 2	accepted	
+bas	[PSet] (1, 1)	semantic	Method not valid without suitable object
+cls	[PSet] (1, 1)	semantic	Method or data member not found
+cls	[Scale] (1, 1)-(2, 2)	semantic	Method or data member not found
+bas	[Scale]	semantic	Method not valid without suitable object
+cls	[Scale]	semantic	Method or data member not found
+bas	Call o!Circle	syntax	Syntax error
+cls	Call Circle (1, 1), 2	syntax	Syntax error
+cls	Call Print	syntax	Syntax error
+cls	Call Scale	syntax	Syntax error
+bas	Call o.[Circle] (1, 1), 2	syntax	Syntax error
+bas	Call o.Circle (1, 1), 2	accepted	
+bas	Call o.Line	syntax	Syntax error
+bas	Call o.Line (1, 1)-(2, 2), 5, B	accepted	
+bas	Call o.Print	accepted	
+bas	Call o.Print 1; 2	accepted	
+bas	Call o.PSet	syntax	Syntax error
+bas	Call o.PSet (1, 1), 3	accepted	
+bas	Call o.?	accepted	
+bas	Call o.Scale.x	accepted	
+bas	Call o.Scale (1, 1)-(2, 2)	accepted	
+bas	Call o.Scale	accepted	
+bas	With o\nCall .Circle (1, 1), 2\nEnd With	syntax	Syntax error
+bas	o.Circle!x	syntax	Syntax error
+bas	o.Circle (1, 1), _\n2, 3, 4, 5, 6	accepted	
+bas	o.Circle (1, 1), _\n2, 3, 4, 5, 6, 7	syntax	Syntax error
+bas	o.Circle.x(1)	accepted	
+bas	If x Then o.Circle (1, 1), 2 Else x = 1	accepted	
+bas	o.Circle (x + 1, G(2)), F(1, 2)	accepted	
+bas	o.Circle (-1, -1), -2	accepted	
+bas	o.Circle ((1), (2)), 3	accepted	
+bas	If x Then o.Circle (1, 1), 2, , , , 6 Else x = 1	accepted	
+bas	o.Circle(1).x = 3	syntax	Syntax error
+bas	o.Circle (1, 1), Step(2, 2)	semantic	Sub or Function not defined
+bas	If x Then o.Circle (1, 1), 2, Else x = 1	syntax	Syntax error
+bas	Debug!?	syntax	Syntax error
+bas	Debug.[Print] 1	syntax	Syntax error
+bas	[Debug].Print 1	semantic	External name not defined
+bas	Debug .? 1	syntax	Syntax error
+bas	Debug.?(1)	accepted	
+bas	Debug.? 1; 2	accepted	
+bas	v = o.?(1)	syntax	Syntax error
+bas	v = o.?	syntax	Syntax error
+bas	o .Circle (1, 1), 2	semantic	Invalid or unqualified reference
+bas	o. Circle (1, 1), 2	accepted	
+bas	o. Print 1; 2	accepted	
+bas	Let o!Print = 1	accepted	
+bas	Let o.p.Print = 1	syntax	Syntax error
+bas	Let o.Circle = 1	syntax	Syntax error
+bas	Let o.Line = 1	accepted	
+bas	Let o.Print = 1	syntax	Syntax error
+bas	Let o.Scale.x = 1	accepted	
+bas	o.LineInput	syntax	Syntax error
+bas	o.LineInput 1	syntax	Syntax error
+bas	Call o.LineInput	syntax	Syntax error
+bas	o.LineInput.x = 1	accepted	
+bas	o.LineInput = 1	syntax	Syntax error
+bas	o.LineInput (1)	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, [B] F	accepted	
+bas	If x Then o.Line (1, 1)-(2, 2), 5, B F Else x = 1	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, B F F	syntax	Syntax error
+bas	o.Line!x = 1	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, [BF]	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, B F: i = 1	semantic	Variable not defined
+bas	o.Line (1, 1)-(2, 2), 5, BF F	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, F, B	syntax	Syntax error
+bas	o.Line (1, 2) = 3	syntax	Syntax error
+bas	o.Line (1, 1) = 2	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), B, B	semantic	Variable not defined
+bas	o.Line (1, 1)-(2, 2), B	semantic	Variable not defined
+bas	o.Line (1, 1)-(2, 2), F	accepted	
+bas	If x Then o.Line (1, 1)-(2, 2), Else x = 1	syntax	Syntax error
+bas	v = 1: o.Line (1, 1)-\ns = ""	syntax	Syntax error
+cls	Line -(1, 1)	semantic	Method or data member not found
+bas	o.Line (1, 1)-(2, 2), 5, B [F]	accepted	
+bas	o.Line -	syntax	Syntax error
+bas	o.Line(1) = 3	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2)-(3, 3)	syntax	Syntax error
+bas	If i Then o.Print Else i = 1	semantic	Variable not defined
+bas	If i Then o.Scale: i = 1 Else i = 2	semantic	Variable not defined
+bas	If i Then o.Scale (1, 1)-(2, 2) Else i = 1	semantic	Variable not defined
+bas	o.Print!x	semantic	Invalid or unqualified reference
+bas	o.Print.x(1)	semantic	Invalid or unqualified reference
+bas	o.Print.x.y = 1	semantic	Invalid or unqualified reference
+bas	o.Print (1) + 2; 3	accepted	
+bas	Print #1, "a"	accepted	
+bas	If x Then o.Print 1 Rem c	accepted	
+bas	If x Then o.PSet (1, 1), 3 Else x = 1	accepted	
+bas	o.PSet (1, 1), (5)	accepted	
+bas	If x Then o.PSet (1, 1) Else x = 1	accepted	
+bas	x = 1: o.PSet (1, 1) Rem c	accepted	
+bas	o.PSet (, 1)	syntax	Syntax error
+bas	o.PSet (1, )	syntax	Syntax error
+bas	o.PSet (F(1, 2), 3)	accepted	
+bas	If x Then o.PSet (1, 1) Rem c	accepted	
+bas	o.PSet (1, 1)-(2, 2)	syntax	Syntax error
+bas	?	semantic	Method not valid without suitable object
+bas	? "a"	semantic	Method not valid without suitable object
+bas	? #1, "a"	accepted	
+bas	o.? #1, 2	syntax	Syntax error
+bas	o.?(1)	accepted	
+bas	o.Scale = 1	syntax	Syntax error
+bas	x = 1: o.Scale Rem c	syntax	Syntax error
+bas	o.Scale (-1, -1)-(1, 1)	accepted	
+bas	If x Then o.Scale (1, 1)-(2, 2) Rem c	accepted	
+bas	If x Then o.Scale Rem c	syntax	Syntax error
+bas	o.Scale (1, 1)-(2, 2)-(3, 3)	syntax	Syntax error
+bas	Set o.Line = Nothing	accepted	
+bas	Set o.Scale = Nothing	syntax	Syntax error
+bas	With o\n!?\nEnd With	syntax	Syntax error
+bas	With o\n.p.Circle (1, 1), 2\nEnd With	accepted	
+bas	With o\n.p.Print 1; 2\nEnd With	accepted	
+bas	With o\n.Circle\nEnd With	accepted	
+bas	With o\n.Circle = 1\nEnd With	accepted	
+bas	With o\n.Print\nEnd With	accepted	
+bas	With o\n.Print 1, 2\nEnd With	accepted	
+bas	With o\n.Print = 1\nEnd With	accepted	
+bas	With o\n.Print 1;\nEnd With	syntax	Syntax error
+bas	With o\n.PSet Step(1, 1)\nEnd With	semantic	Sub or Function not defined
+bas	With o\n.?\nEnd With	accepted	
+bas	With o\n.? 1; 2\nEnd With	accepted	
+bas	With o\n.Scale (1, 1)-(2, 2)\nEnd With	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, [B]$	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, B$	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, B%	accepted	
+cls	Circle.x = 1	syntax	Syntax error
+cls	Circle = 1	syntax	Syntax error
+cls	Circle(1) = 2	syntax	Syntax error
+cls	Line.x = 1	accepted	
+cls	Print #1 2	syntax	Syntax error
+bas	Print 1 2	semantic	Method not valid without suitable object
+cls	Print 1 2	accepted	
+cls	PSet!x = 1	syntax	Syntax error
+cls	Scale.x	syntax	Syntax error
+cls	Scale 1	syntax	Syntax error
+cls	Scale Step(1, 1)-(2, 2)	syntax	Syntax error
+bas	o.Line (1, 1)-(2, 2), 5, BF$	accepted	
+bas	Call o!a(1)	syntax	Syntax error
+bas	With o\nCall .? 1; 2\nEnd With	syntax	Syntax error
+bas	o.Circle (1, _\n1)	syntax	Syntax error
+bas	o.Circle (1, _\n1), 2	accepted	
+cls	Circle$ (1, 1), 2	semantic	Method or data member not found
+bas	o.Circle% (1, 1), 2	accepted	
+bas	If x Then o.Circle (1, 1), 2 Rem c	accepted	
+bas	o.Line (1, 1)-(2, 2), 5, B F$	accepted	
+bas	Global.Print "a"	syntax	Syntax error
+bas	If o.? = 1 Then x = 1	syntax	Syntax error
+bas	Let o.? = 1	syntax	Syntax error
+bas	With o\nLet .? = 1\nEnd With	syntax	Syntax error
+bas	o!LineInput	syntax	Syntax error
+bas	o.LineInput (1, 1), 2	syntax	Syntax error
+cls	LineInput 1	syntax	Syntax error
+cls	LineInput = 1	syntax	Syntax error
+cls	LineInput	syntax	Syntax error
+bas	o.LineInput: x = 1	syntax	Syntax error
+bas	o.LineInput -(1, 1)	syntax	Syntax error
+bas	v = o.LineInput	accepted	
+bas	o.LineInput (1, 1)	syntax	Syntax error
+bas	o.LineInput (1, 1)-(2, 2)	syntax	Syntax error
+bas	o.LineInput (1, 1)-(2, 2), 3	syntax	Syntax error
+bas	o.LineInput 1; 2	syntax	Syntax error
+bas	o.LineInput Step(1, 1)-(2, 2)	syntax	Syntax error
+bas	With o\n.LineInput\nEnd With	accepted	
+bas	o.Line (1, 1)-(2, 2), , BF Rem c	syntax	Syntax error
+bas	If x Then o.Line (1, 1)-(2, 2), , BF Rem c	accepted	
+bas	o.Line% (1, 1)-(2, 2)	accepted	
+bas	o.Line (1, 1)-(2, 2) Rem c	syntax	Syntax error
+bas	If x Then o.Line (1, 1)-(2, 2), , B Else x = 1	accepted	
+bas	Lock 1, To 5	accepted	
+bas	Lock #1, To 5	accepted	
+bas	o.?: x = 1	accepted	
+bas	If x Then o.? Else x = 1	accepted	
+bas	Open "f" For Input Access Read, Write As #1	syntax	Syntax error
+bas	Open "f" For Binary Access Read Lock As #1	syntax	Syntax error
+bas	Open "f" For Binary Access	syntax	Syntax error
+bas	Open "f" For Binary Lock	syntax	Syntax error
+bas	o.Print ;	accepted	
+bas	o.Print 1,	accepted	
+cls	Print$ 1	accepted	
+bas	o.Print$ 1	accepted	
+bas	o.Print 1;; 2	accepted	
+bas	o.Print 1)	syntax	Syntax error
+bas	o.Print 1 2	accepted	
+bas	o.Print Rem c	syntax	Syntax error
+bas	o.Print 1 Rem c	syntax	Syntax error
+bas	Print 1;	semantic	Method not valid without suitable object
+bas	Private.Print "a"	syntax	Syntax error
+bas	o.PSet& (1, 1)	accepted	
+bas	o.PSet (1, 1) Rem c	syntax	Syntax error
+bas	Public.Print "a"	syntax	Syntax error
+cls	?(1)	accepted	
+bas	o.?.x = 1	semantic	Invalid or unqualified reference
+bas	o.? = 1	syntax	Syntax error
+bas	arr(1).? 1; 2	semantic	Type mismatch
+bas	o.p.? 1; 2	accepted	
+cls	? 1; 2	accepted	
+bas	o.Scale$	accepted	
+bas	o.Scale (1, 1)-(2, 2) Rem c	syntax	Syntax error
+bas	Set v = o.?	syntax	Syntax error
+bas	o.PSet Step&(1, 1)	accepted	
+bas	o.PSet Step@(1, 1)	accepted	
+bas	o.PSet Step!(1, 1)	accepted	
+bas	o.Line [Step](1, 1)-(2, 2)	accepted	
+bas	o.Line (1, 1)-[Step](2, 2)	accepted	
+bas	o.PSet [Step](1, 1)	accepted	
+bas	o.PSet Step#(1, 1)	accepted	
+bas	Unlock #1, To 5	accepted	
+bas	With o\nCall .?\nEnd With	syntax	Syntax error
+bas	With o\n.?.x = 1\nEnd With	accepted	
+bas	With o\n.? = 1\nEnd With	syntax	Syntax error
+bas	With o\n.? #1, 2\nEnd With	syntax	Syntax error
+bas	Line [Input] #1, s	syntax	Syntax error
+bas	Lock #1, 1 [To] 2	syntax	Syntax error
+bas	Open "f" For Input [Access] [Write] As #1	syntax	Syntax error
+bas	Open "f" For Input [As] #1	syntax	Syntax error
+bas	Open "f" [For] Input As #1	syntax	Syntax error
+bas	Open "f" For Random As #1 [Len] = 5	syntax	Syntax error
+bas	Open "f" For Binary Access Read [Shared] As #1	syntax	Syntax error
+bas	Open "f" For Binary [Lock] Read As #1	syntax	Syntax error
+cls	Open "f" For [Output] As #1	accepted	
+bas	Open "f" For Input Access [Read] As #1	accepted	
+bas	Open "f" For Output Access [Read] As #1	syntax	Syntax error
+bas	Open "f" For Binary Access [Read] Write As #1	accepted	
+bas	Open "f" For Random Access [Read] Write As #1	accepted	
+bas	Open "f" For Input Access [Write] As #1	syntax	Syntax error
+bas	Open "f" For Output Access [Write] As #1	accepted	
+bas	Open "f" For Binary [Access] [Read] As #1	accepted	
+bas	Open "f" For Binary Lock [Read] [Write] As #1	syntax	Syntax error
+bas	Open "f" For Binary Lock [Read] Write As #1	accepted	
+bas	Open "f" For [Input] Access Read As #1	accepted	

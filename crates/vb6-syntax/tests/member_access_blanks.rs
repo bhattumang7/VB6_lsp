@@ -14,7 +14,7 @@ fn name_of(p: &Parsed, id: NodeId) -> String {
 
 /// `base.member` / `base!member`: the base node, the member name and the bang flag.
 fn member(p: &Parsed, id: NodeId) -> (NodeId, String, bool) {
-    let ExprNode::MemberAccess { base, member, bang } = p.node(id) else { panic!("expected member access") };
+    let ExprNode::MemberAccess { base, member, bang, .. } = p.node(id) else { panic!("expected member access") };
     (*base, p.name(*member).to_string(), *bang)
 }
 

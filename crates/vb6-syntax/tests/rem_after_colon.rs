@@ -3,8 +3,9 @@
 //! `Close`, `Input`, `Call` and `Erase` it is an error.
 
 mod common;
-use common::{offset_of, parse};
+use common::{offset_of, parse, parse_kind};
 use vb6_syntax::frontend::ast::ExprNode;
+use vb6_syntax::frontend::parser::ModuleKind;
 
 const EXPECTED: u32 = 0x9c6f;
 
@@ -25,7 +26,8 @@ fn colon_then_assignment_then_rem_is_two_statements() {
 #[test]
 fn colon_then_other_statements_then_rem_are_accepted() {
     for stmt in ["Print 1", "Open \"a\" For Input As #1", "Dim a As Long", "GoTo L"] {
-        let p = parse(&format!("Sub S()\nL:\n x = 1 : {stmt} Rem c\nEnd Sub\n"));
+        // A class module has a surface for a bare `Print` to draw on.
+        let p = parse_kind(&format!("Sub S()\nL:\n x = 1 : {stmt} Rem c\nEnd Sub\n"), ModuleKind::Class);
         assert_eq!(p.diags, 0, "{stmt}");
     }
 }

@@ -1851,7 +1851,7 @@ impl<'a> Binder<'a> {
                 }
                 self.types.insert(id.0, ret);
             }
-            ExprNode::MemberAccess { base, member, bang } => {
+            ExprNode::MemberAccess { base, member, bang, .. } => {
                 let base_id = *base;
                 let member_sym = *member;
                 if self.project.is_some() {

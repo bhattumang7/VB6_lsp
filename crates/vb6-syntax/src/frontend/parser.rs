@@ -23,6 +23,8 @@ use crate::frontend::diagnostics::*;
 use crate::frontend::scanner::{fold_name, Scanner, ScannerContext};
 use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 
+mod graphics;
+use graphics::{ChainStart, GraphicsWord};
 
 // ── Binding-power table (Pratt) ───────────────────────────────────────────────
 
@@ -361,6 +363,14 @@ pub struct Parser<'src> {
     later_group: bool,
     stmt_byval: Option<Span>,
     stmt_named: Option<Span>,
+    /// What the member chain being read at the start of a statement is the target of, while a
+    /// graphics word after a dot may still end it.
+    graphics_chain: Option<ChainStart>,
+    /// The graphics word the member chain just read ended in.
+    graphics_stop: Option<GraphicsWord>,
+    /// The statements read as graphics method statements, by node: the word, and whether it was
+    /// written as a member of an object (`true`) rather than bare.
+    graphics_stmts: std::collections::HashMap<u32, (GraphicsWord, bool)>,
     /// Open `#If` blocks, innermost last.
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
@@ -564,6 +574,9 @@ impl<'src> Parser<'src> {
             later_group: false,
             stmt_byval: None,
             stmt_named: None,
+            graphics_chain: None,
+            graphics_stop: None,
+            graphics_stmts: std::collections::HashMap::new(),
             cc_defs: vec![
                 ("win16".into(), CcValue::Integer(0)),
                 ("win32".into(), CcValue::Integer(1)),
@@ -681,30 +694,6 @@ impl<'src> Parser<'src> {
             Some(token) => token,
             None => self.fetch_logical(),
         }
-    }
-
-    /// Reads the tokens up to the end of the statement without consuming them, and returns
-    /// them (the terminator last).
-    fn statement_tokens(&mut self) -> Vec<Token> {
-        let mut tokens: Vec<Token> = Vec::new();
-        tokens.extend(self.peeked.take());
-        tokens.extend(self.peeked2.take());
-        loop {
-            if let Some(last) = tokens.last() {
-                if last.is_stmt_end() || matches!(last.kind, TokenKind::Kw(Kw::Colon | Kw::Else)) {
-                    break;
-                }
-            }
-            let next = match self.pushback.pop_front() {
-                Some(token) => token,
-                None => self.fetch_logical(),
-            };
-            tokens.push(next);
-        }
-        for token in tokens.iter().rev() {
-            self.pushback.push_front(token.clone());
-        }
-        tokens
     }
 
     fn fetch_logical(&mut self) -> Token {
@@ -879,6 +868,11 @@ impl<'src> Parser<'src> {
         } else {
             false
         }
+    }
+
+    /// True when `tok` was written in square brackets (`[Print]`).
+    fn is_bracketed(&self, tok: &Token) -> bool {
+        self.src.get(tok.span.start as usize) == Some(&b'[')
     }
 
     fn expect_ident(&mut self) -> Token {
@@ -1154,35 +1148,6 @@ impl<'src> Parser<'src> {
         }
     }
 
-    /// `Scale` or `Line` followed by a coordinate pair: the points are two values
-    /// in brackets, so a bracket holding anything else is not that statement.
-    fn graphics_point_stmt(&mut self, arena: &mut ExprArena, t: Token) -> NodeId {
-        let span = t.span;
-        // A bare graphics statement has one exact shape; anything else is a syntax error.
-        if let TokenKind::Kw(keyword @ (Kw::Scale | Kw::Line | Kw::Circle | Kw::PSet)) = t.kind {
-            let tokens = self.statement_tokens();
-            if !bare_graphics_shape_ok(keyword, &tokens) {
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                let sym = t.sym.map(|s| s as u32).unwrap_or(0);
-                let node = arena.alloc(ExprNode::NameRef { sym, suffix: t.type_suffix });
-                self.set_span(node, span);
-                return node;
-            }
-        }
-        let node = self.parse_ident_stmt_with_tok(arena, t);
-        let pair = match arena.get(node) {
-            ExprNode::CallStmt { .. } => true,
-            ExprNode::Call { args, .. } => {
-                matches!(arena.get(*args), ExprNode::ArgList { args } if args.len() == 2)
-            }
-            _ => false,
-        };
-        if !pair {
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-        }
-        node
-    }
 
     /// Reports a statement keyword whose operands are missing, and skips the line.
     fn statement_without_operands(&mut self, arena: &mut ExprArena, t: Token) -> NodeId {
@@ -1880,11 +1845,17 @@ impl<'src> Parser<'src> {
     /// `Print`/`?`: `Print #n, …` writes to a file; bare `Print …` writes to the
     /// immediate window.
     fn parse_print_keyword_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.advance();
+        let word = self.advance();
         if self.peek().kind == TokenKind::Kw(Kw::Hash) {
             self.parse_file_print_after_keyword(arena, FileIoKind::Print)
         } else {
-            self.parse_print_list(arena, None)
+            let mark = self.diagnostics.len();
+            let node = self.parse_print_list(arena);
+            // A standard module has no surface to print to.
+            if self.module_kind == ModuleKind::Standard && self.diagnostics.len() == mark {
+                self.diagnostics.push(ERR_METHOD_NOT_VALID_WITHOUT_OBJECT, word.span);
+            }
+            node
         }
     }
 
@@ -1915,7 +1886,8 @@ impl<'src> Parser<'src> {
         if self.eat(TokenKind::Kw(Kw::Input)) {
             // The `#` before the channel is required here (unlike `Input`, where it
             // is what tells the statement from a call).
-            if !self.eat(TokenKind::Kw(Kw::Hash)) {
+            let marked = self.eat(TokenKind::Kw(Kw::Hash));
+            if !marked {
                 let span = self.current_span();
                 self.report_expected(span, "#");
             }
@@ -1926,6 +1898,7 @@ impl<'src> Parser<'src> {
             arena.alloc(ExprNode::FileIoStmt {
                 kind: FileIoKind::LineInput,
                 channel: Some(ch),
+                channel_marks: vec![marked],
                 args: vec![var],
                 open_mode: 0,
                 open_flags: 0,
@@ -1933,23 +1906,12 @@ impl<'src> Parser<'src> {
         } else {
             // `Line [Step](x1,y1)-(x2,y2)[,color[,B|BF]]` is the graphics method
             // of the enclosing form; otherwise an ordinary name.
-            if matches!(self.peek().kind, TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Minus) | TokenKind::Kw(Kw::Step)) {
-                self.graphics_point_stmt(arena, t)
-            } else {
+            if self.graphics_word_is_name() {
                 self.keyword_as_name_stmt(arena, t)
+            } else {
+                self.parse_bare_graphics_stmt(arena, t)
             }
         }
-    }
-
-    /// Parse `(x, y)` — a VB6 graphics coordinate pair.
-    /// Returns `(x_node, y_node)`.
-    fn parse_coord_pair(&mut self, arena: &mut ExprArena) -> (NodeId, NodeId) {
-        self.expect(TokenKind::Kw(Kw::LParen), ERR_UNEXPECTED_TOKEN);
-        let x = self.parse_expr(arena, 0);
-        self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
-        let y = self.parse_expr(arena, 0);
-        self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
-        (x, y)
     }
 
     /// The items of a `Print` method statement, separated by `;` or `,`
@@ -1992,84 +1954,6 @@ impl<'src> Parser<'src> {
             return Some(base);
         }
         self.try_parse_expr(arena)
-    }
-
-    /// `Step (x, y)` as a single [`ExprNode::GraphicsPoint`].
-    fn parse_step_point(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.advance(); // `Step`
-        let (x, y) = self.parse_coord_pair(arena);
-        arena.alloc(ExprNode::GraphicsPoint { step: true, x, y })
-    }
-
-    /// The member (or bare) name `lhs` ends in, lower-cased, when `lhs` is a
-    /// name, a member access, or a call of one of those.
-    fn graphics_target_is(&self, arena: &ExprArena, lhs: NodeId, wanted: &str) -> bool {
-        let target = match arena.get(lhs) {
-            ExprNode::Call { func, .. } => *func,
-            _ => lhs,
-        };
-        let sym = match arena.get(target) {
-            ExprNode::NameRef { sym, .. } => *sym,
-            ExprNode::MemberAccess { member, .. } => *member,
-            _ => return false,
-        };
-        self.scanner.sym_name(sym).eq_ignore_ascii_case(wanted)
-    }
-
-    /// True at the `-` that continues a graphics point pair: after
-    /// `Obj.Line (x1, y1)` (a call), or at the start of `Obj.Line -(x, y)` /
-    /// `Obj.Line -Step(x, y)` where the first point is omitted.
-    fn at_graphics_continuation(&mut self, arena: &ExprArena, lhs: NodeId) -> bool {
-        if self.peek().kind != TokenKind::Kw(Kw::Minus) {
-            return false;
-        }
-        let follows = matches!(
-            self.peek2().kind,
-            TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Step)
-        );
-        follows
-            && (matches!(arena.get(lhs), ExprNode::Call { .. })
-                || self.graphics_target_is(arena, lhs, "line")
-                || self.graphics_target_is(arena, lhs, "scale"))
-    }
-
-    /// The `, arg, arg …` after the points of a graphics statement. An
-    /// omitted argument is a `MissingArg`; in a `Line` statement the second
-    /// argument may be the `B` / `BF` box flag.
-    fn parse_graphics_tail(&mut self, arena: &mut ExprArena, args: &mut Vec<NodeId>, is_line: bool) {
-        let mut position = 0;
-        while self.eat(TokenKind::Kw(Kw::Comma)) {
-            let arg = if matches!(self.peek().kind, TokenKind::Kw(Kw::Comma)) || self.peek().is_stmt_end() {
-                arena.alloc(ExprNode::MissingArg)
-            } else if let Some(flag) = self.try_parse_line_box(arena, is_line && position == 1) {
-                flag
-            } else if self.peek().kind == TokenKind::Kw(Kw::Step) && self.peek2().kind == TokenKind::Kw(Kw::LParen) {
-                self.parse_step_point(arena)
-            } else if let Some(expr) = self.try_parse_expr(arena) {
-                expr
-            } else {
-                arena.alloc(ExprNode::MissingArg)
-            };
-            args.push(arg);
-            position += 1;
-        }
-    }
-
-    /// `B` / `BF` where a `Line` statement takes its box flag.
-    fn try_parse_line_box(&mut self, arena: &mut ExprArena, allowed: bool) -> Option<NodeId> {
-        if !allowed {
-            return None;
-        }
-        let filled = match self.peek().kind {
-            TokenKind::Kw(Kw::B) => false,
-            TokenKind::Kw(Kw::BF) => true,
-            _ => return None,
-        };
-        let span = self.current_span();
-        self.advance();
-        let id = arena.alloc(ExprNode::LineBox { filled });
-        self.set_span(id, span);
-        Some(id)
     }
 
     /// `Get`/`Put` random-access I/O: `#n, …`; otherwise an implicit call.
@@ -2124,7 +2008,7 @@ impl<'src> Parser<'src> {
             self.peek().kind == TokenKind::Kw(Kw::Hash)
         };
         if has_channel {
-            self.eat(TokenKind::Kw(Kw::Hash));
+            let marked = self.eat(TokenKind::Kw(Kw::Hash));
             let ch = self.parse_expr(arena, 0);
             self.expect(TokenKind::Kw(Kw::Comma), ERR_UNEXPECTED_TOKEN);
             let val = self.parse_expr(arena, 0);
@@ -2139,6 +2023,7 @@ impl<'src> Parser<'src> {
             arena.alloc(ExprNode::FileIoStmt {
                 kind,
                 channel: Some(ch),
+                channel_marks: vec![marked],
                 args: vec![val],
                 open_mode: 0,
                 open_flags: 0,
@@ -2172,6 +2057,7 @@ impl<'src> Parser<'src> {
             return arena.alloc(ExprNode::FileIoStmt {
                 kind: FileIoKind::Name,
                 channel: None,
+                channel_marks: Vec::new(),
                 args: vec![old_path, new_path],
                 open_mode: 0,
                 open_flags: 0,
@@ -2273,6 +2159,7 @@ impl<'src> Parser<'src> {
             }
         }
 
+        self.promote_bracketed_graphics_word();
         let kind = self.peek().kind.clone();
         let node = match &kind {
             // A keyword that is not reserved names a line label like any name;
@@ -2298,7 +2185,13 @@ impl<'src> Parser<'src> {
             // An access word has no place in a procedure body.
             TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Global) => {
                 let span = self.current_span();
-                self.diagnostics.push(ERR_INVALID_ATTRIBUTE_IN_PROCEDURE, span);
+                // An access word used as a name (`Global.Print`), or alone, is no declaration.
+                let code = if self.peek2().kind == TokenKind::Kw(Kw::Dot) || self.peek2().kind == TokenKind::Kw(Kw::Bang) {
+                    ERR_SYNTAX_ERROR
+                } else {
+                    ERR_INVALID_ATTRIBUTE_IN_PROCEDURE
+                };
+                self.diagnostics.push(code, span);
                 self.skip_line();
                 return None;
             }
@@ -2428,24 +2321,10 @@ impl<'src> Parser<'src> {
                 self.parse_ident_stmt_with_tok(arena, t)
             }
             // `Scale` alone, or with a coordinate pair, is the graphics method.
-            TokenKind::Kw(Kw::Scale) => {
+            // `PSet`, `Circle` and `Scale` are reserved: they name no variable, only the statement.
+            TokenKind::Kw(Kw::PSet) | TokenKind::Kw(Kw::Circle) | TokenKind::Kw(Kw::Scale) => {
                 let t = self.advance();
-                if self.peek().is_stmt_end()
-                    || matches!(
-                        self.peek().kind,
-                        TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else) | TokenKind::Eof
-                    )
-                {
-                    self.end_stmt();
-                    let sym = t.sym.map(|s| s as u32).unwrap_or(0);
-                    let node = arena.alloc(ExprNode::NameRef { sym, suffix: t.type_suffix });
-                    self.set_span(node, t.span);
-                    node
-                } else if self.peek().kind == TokenKind::Kw(Kw::LParen) {
-                    self.graphics_point_stmt(arena, t)
-                } else {
-                    self.statement_without_operands(arena, t)
-                }
+                self.parse_bare_graphics_stmt(arena, t)
             }
             // `Implements` is read wherever it stands; whether it is allowed there is the binder's
             // question.
@@ -2536,13 +2415,6 @@ impl<'src> Parser<'src> {
                 self.set_span(id, tok.span);
                 id
             }
-            // `PSet` and `Circle` take a coordinate pair, `Step`-relative or not.
-            TokenKind::Kw(Kw::PSet) | TokenKind::Kw(Kw::Circle)
-                if matches!(self.peek2().kind, TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Step)) =>
-            {
-                let t = self.advance();
-                self.graphics_point_stmt(arena, t)
-            }
             // `Me` starts a statement only as the object of a member, an element or an assignment.
             TokenKind::Kw(Kw::Me)
                 if matches!(
@@ -2595,13 +2467,18 @@ impl<'src> Parser<'src> {
         self.target_at_statement_start = true;
         self.stmt_byval = None;
         self.stmt_named = None;
+        let start = self.current_span();
+        self.graphics_chain = Some(ChainStart::Statement);
+        self.graphics_stop = None;
         let lhs = self.parse_target_expr(arena);
-        self.finish_ident_stmt(arena, lhs)
+        self.graphics_chain = None;
+        self.finish_ident_stmt(arena, lhs, start)
     }
 
-    /// The rest of a statement that starts with a target expression `lhs`:
-    /// an assignment, a graphics coordinate call, or an implicit call.
-    fn finish_ident_stmt(&mut self, arena: &mut ExprArena, lhs: NodeId) -> NodeId {
+    /// The rest of a statement that starts with a target expression `lhs` (read from `start`):
+    /// an assignment, a graphics method statement, or an implicit call.
+    fn finish_ident_stmt(&mut self, arena: &mut ExprArena, lhs: NodeId, start: Span) -> NodeId {
+        let graphics_word = self.graphics_stop.take();
         // Without `Call`, the brackets after the callee hold plain expressions: a `ByVal` or a
         // named argument there is a syntax error, except that a named argument may stand in
         // the brackets of something assigned to.
@@ -2612,16 +2489,10 @@ impl<'src> Parser<'src> {
             self.skip_line();
             return lhs;
         }
-        // A member named like a graphics statement cannot be assigned to (`Line` excepted).
-        if self.peek().kind == TokenKind::Kw(Kw::Eq)
-            && ["Scale", "PSet", "Print", "LineInput", "Circle"]
-                .iter()
-                .any(|name| self.member_named(arena, lhs, name))
-        {
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
-            return lhs;
+        // A member chain that ended in a graphics word hands the rest of the line to the reader
+        // of that word's operands.
+        if let Some(word) = graphics_word {
+            return self.finish_graphics_method(arena, lhs, word, ChainStart::Statement, start);
         }
         let eq_span = self.current_span();
         if self.eat(TokenKind::Kw(Kw::Eq)) {
@@ -2662,37 +2533,19 @@ impl<'src> Parser<'src> {
             let first = arena.alloc(ExprNode::Paren { inner: arg });
             let first = self.parse_infix(arena, first, 0);
             let mut args = vec![first];
-            if self.graphics_target_is(arena, callee, "print") {
-                self.parse_print_method_items(arena, &mut args);
-            } else if self.eat(TokenKind::Kw(Kw::Comma)) {
+            if self.eat(TokenKind::Kw(Kw::Comma)) {
+                // A comma needs another argument after it, empty or not, before the line ends.
+                if self.peek().is_stmt_end()
+                    || matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
+                {
+                    let span = self.current_span();
+                    self.report_expected(span, "expression");
+                }
                 args.extend(self.parse_stmt_arg_list(arena));
             }
             self.end_stmt();
             let args = arena.alloc(ExprNode::ArgList { args });
             arena.alloc(ExprNode::CallStmt { callee, args })
-        } else if self.at_graphics_continuation(arena, lhs) {
-            // `Obj.Line (x1,y1)-(x2,y2)` — postfix consumed `(x1,y1)` as a call
-            // arg-list; the `-(x2,y2)` continuation signals a graphics coord-pair
-            // call. `Obj.Line -(x2,y2)` omits the first point.
-            let is_line = self.graphics_target_is(arena, lhs, "line");
-            let mut args = Vec::new();
-            if !matches!(arena.get(lhs), ExprNode::Call { .. }) {
-                args.push(arena.alloc(ExprNode::MissingArg));
-            }
-            self.advance(); // consume `-`
-            if self.peek().kind == TokenKind::Kw(Kw::Step) {
-                args.push(self.parse_step_point(arena));
-            } else if matches!(arena.get(lhs), ExprNode::Call { .. }) {
-                let (x2, y2) = self.parse_coord_pair(arena);
-                args.extend([x2, y2]);
-            } else {
-                let (x2, y2) = self.parse_coord_pair(arena);
-                args.push(arena.alloc(ExprNode::GraphicsPoint { step: false, x: x2, y: y2 }));
-            }
-            self.parse_graphics_tail(arena, &mut args, is_line);
-            self.end_stmt();
-            let args = arena.alloc(ExprNode::ArgList { args });
-            arena.alloc(ExprNode::CallStmt { callee: lhs, args })
         } else if self.has_empty_call(arena, lhs)
             || self.call_with_address_of_argument(arena, lhs)
             || self.call_with_several_arguments(arena, lhs)
@@ -2730,52 +2583,9 @@ impl<'src> Parser<'src> {
                     return lhs;
                 }
             }
-            if self.graphics_target_is(arena, lhs, "print") {
-                // `Obj.Print a; b, c;` — `;` and `,` separate the items.
-                let mut args = Vec::new();
-                self.parse_print_method_items(arena, &mut args);
-                self.end_stmt();
-                if args.is_empty() {
-                    return lhs;
-                }
-                let args = arena.alloc(ExprNode::ArgList { args });
-                return arena.alloc(ExprNode::CallStmt { callee: lhs, args });
-            }
-            if self.peek().kind == TokenKind::Kw(Kw::Step) && self.peek2().kind == TokenKind::Kw(Kw::LParen) {
-                // `Obj.PSet Step(x, y)`, `Obj.Line Step(x1, y1)-Step(x2, y2)`.
-                let is_line = self.graphics_target_is(arena, lhs, "line");
-                let mut args = vec![self.parse_step_point(arena)];
-                if self.peek().kind == TokenKind::Kw(Kw::Minus)
-                    && matches!(self.peek2().kind, TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Step))
-                {
-                    self.advance(); // `-`
-                    if self.peek().kind == TokenKind::Kw(Kw::Step) {
-                        args.push(self.parse_step_point(arena));
-                    } else {
-                        let (x, y) = self.parse_coord_pair(arena);
-                        args.push(arena.alloc(ExprNode::GraphicsPoint { step: false, x, y }));
-                    }
-                }
-                self.parse_graphics_tail(arena, &mut args, is_line);
-                self.end_stmt();
-                let args = arena.alloc(ExprNode::ArgList { args });
-                return arena.alloc(ExprNode::CallStmt { callee: lhs, args });
-            }
-            // Such a member takes coordinate pairs only, never a plain argument list (`Print` excepted).
-            if !self.peek().is_stmt_end()
-                && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
-                && ["Scale", "PSet", "Line", "LineInput", "Circle"]
-                    .iter()
-                    .any(|name| self.member_named(arena, lhs, name))
-            {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return lhs;
-            }
             // A statement cannot end in a bang access, with or without arguments.
             if self.ends_in_bang_member(arena, lhs) {
-                let span = if self.peek().is_stmt_end() { self.node_spans.get(lhs) } else { self.current_span() };
+                let span = if self.peek().is_stmt_end() { self.chain_span(arena, lhs) } else { self.current_span() };
                 self.diagnostics.push(ERR_SYNTAX_ERROR, span);
                 self.skip_line();
                 return lhs;
@@ -2806,15 +2616,10 @@ impl<'src> Parser<'src> {
         empty || self.has_empty_call(arena, *func)
     }
 
-    /// True when `lhs` is a bracketed call of two or more arguments, which only the
-    /// graphics statements (`PSet (x, y)`, ...) may be without `Call`.
+    /// True when `lhs` is a bracketed call of two or more arguments, which needs `Call`.
     fn call_with_several_arguments(&self, arena: &ExprArena, lhs: NodeId) -> bool {
         let ExprNode::Call { args, .. } = arena.get(lhs) else { return false };
-        let several = matches!(arena.get(*args), ExprNode::ArgList { args } if args.len() >= 2);
-        several
-            && !["PSet", "Circle", "Line", "Scale"]
-                .iter()
-                .any(|name| self.graphics_target_is(arena, lhs, name))
+        matches!(arena.get(*args), ExprNode::ArgList { args } if args.len() >= 2)
     }
 
     /// True when `lhs` is a bracketed call that has an `AddressOf` argument.
@@ -2822,6 +2627,15 @@ impl<'src> Parser<'src> {
         let ExprNode::Call { args, .. } = arena.get(lhs) else { return false };
         matches!(arena.get(*args), ExprNode::ArgList { args }
             if args.iter().any(|a| matches!(arena.get(*a), ExprNode::AddressOf { .. })))
+    }
+
+    /// Where the chain `target` ends in a member or a name: a call has no span of its own, so
+    /// this is the span of the thing that is called.
+    fn chain_span(&self, arena: &ExprArena, mut target: NodeId) -> Span {
+        while let ExprNode::Call { func, .. } = arena.get(target) {
+            target = *func;
+        }
+        self.node_spans.get(target)
     }
 
     /// True when `target` is a `!` member access, or a call of one.
@@ -2833,14 +2647,24 @@ impl<'src> Parser<'src> {
         }
     }
 
-    /// True when `target` is a member access (not a plain name) whose member is `wanted`.
-    fn member_named(&self, arena: &ExprArena, target: NodeId, wanted: &str) -> bool {
-        let ExprNode::MemberAccess { base, member, .. } = arena.get(target) else { return false };
-        // Inside a `With` the members are ordinary names; the rule is for an explicit object.
-        if matches!(arena.get(*base), ExprNode::WithContext) {
-            return false;
+    /// True when a `Call` target cannot be called: a `!` access anywhere in its chain, or, in a
+    /// chain that starts at a plain name, a call whose callee is itself a call (`Call f(1)(2)`).
+    /// A chain that starts at `Me` or at the object of a `With` may have bracket groups in a row.
+    fn call_target_is_malformed(&self, arena: &ExprArena, target: NodeId) -> bool {
+        let mut root = target;
+        let mut call_of_call = false;
+        loop {
+            match arena.get(root) {
+                ExprNode::MemberAccess { bang: true, .. } => return true,
+                ExprNode::MemberAccess { base, .. } => root = *base,
+                ExprNode::Call { func, .. } => {
+                    call_of_call |= matches!(arena.get(*func), ExprNode::Call { .. });
+                    root = *func;
+                }
+                _ => break,
+            }
         }
-        self.scanner.sym_name(*member).eq_ignore_ascii_case(wanted)
+        call_of_call && matches!(arena.get(root), ExprNode::NameRef { .. })
     }
 
     /// If `lhs` is a call with exactly one plain argument and the statement
@@ -2860,16 +2684,31 @@ impl<'src> Parser<'src> {
             return None;
         }
         let kind = self.peek().kind.clone();
-        // `Obj.Print (a); b`: `;` separates the items of a `Print` method.
-        let semi = kind == TokenKind::Kw(Kw::Semi) && self.graphics_target_is(arena, func, "print");
-        let continues = kind == TokenKind::Kw(Kw::Comma) || infix_bp(&kind).is_some() || semi;
+        let continues = kind == TokenKind::Kw(Kw::Comma) || infix_bp(&kind).is_some();
         continues.then_some((func, arg))
+    }
+
+    /// The target of a `Let` or `Set` statement. `Err` carries the target of a statement that
+    /// has been reported already: a graphics word cannot be assigned to.
+    fn parse_assignment_target(&mut self, arena: &mut ExprArena) -> Result<NodeId, NodeId> {
+        let start = self.current_span();
+        self.graphics_chain = Some(ChainStart::Assignment);
+        self.graphics_stop = None;
+        let target = self.parse_target_expr(arena);
+        self.graphics_chain = None;
+        match self.graphics_stop.take() {
+            Some(word) => Err(self.finish_graphics_method(arena, target, word, ChainStart::Assignment, start)),
+            None => Ok(target),
+        }
     }
 
     /// Parses a `Let` assignment statement.
     fn parse_let_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Let
-        let target = self.parse_target_expr(arena);
+        let target = match self.parse_assignment_target(arena) {
+            Ok(target) => target,
+            Err(reported) => return reported,
+        };
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
         self.end_stmt();
@@ -2879,7 +2718,10 @@ impl<'src> Parser<'src> {
     /// Parses a `Set` assignment statement.
     fn parse_set_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Set
-        let target = self.parse_target_expr(arena);
+        let target = match self.parse_assignment_target(arena) {
+            Ok(target) => target,
+            Err(reported) => return reported,
+        };
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
         self.end_stmt();
@@ -2939,11 +2781,18 @@ impl<'src> Parser<'src> {
     }
 
     /// Parse a `Print`/`?` output list.
-    fn parse_print_list(&mut self, arena: &mut ExprArena, channel: Option<NodeId>) -> NodeId {
+    fn parse_print_list(&mut self, arena: &mut ExprArena) -> NodeId {
         let mut args = Vec::new();
         self.parse_print_method_items(arena, &mut args);
         self.end_stmt();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Print, channel, args, open_mode: 0, open_flags: 0 })
+        arena.alloc(ExprNode::FileIoStmt {
+            kind: FileIoKind::Print,
+            channel: None,
+            channel_marks: Vec::new(),
+            args,
+            open_mode: 0,
+            open_flags: 0,
+        })
     }
 
     /// Materialise the declared type implied by a type-declaration suffix.
@@ -3199,7 +3048,7 @@ impl<'src> Parser<'src> {
                     // An index into the element named so far.
                     let element = match base {
                         None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
-                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false }),
+                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false, bracketed: self.is_bracketed(&name) }),
                     };
                     self.set_span(element, name.span);
                     let args = list.unwrap_or_else(|| arena.alloc(ExprNode::ArgList { args: vec![] }));
@@ -3209,7 +3058,7 @@ impl<'src> Parser<'src> {
                 } else if self.eat(TokenKind::Kw(Kw::Dot)) {
                     let node = match base {
                         None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
-                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false }),
+                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false, bracketed: self.is_bracketed(&name) }),
                     };
                     self.set_span(node, name.span);
                     base = Some(node);
@@ -3708,30 +3557,11 @@ impl<'src> Parser<'src> {
             }
             ExprNode::ExitStmt { kind: ExitKind::For } => PreambleRule::Allowed,
             ExprNode::ExitStmt { .. } => PreambleRule::ReportedInstead,
-            ExprNode::CallStmt { callee, .. } if *first != TokenKind::Kw(Kw::Call) => {
-                self.graphics_method_rule(arena, *callee)
-            }
-            ExprNode::Call { func, .. } => self.graphics_method_rule(arena, *func),
-            ExprNode::MemberAccess { .. } => self.graphics_method_rule(arena, stmt),
-            _ => PreambleRule::Reported,
-        }
-    }
-
-    /// `Allowed` when `callee` is the `Circle`, `Line`, `PSet` or `Scale` member of an object.
-    fn graphics_method_rule(&self, arena: &ExprArena, callee: NodeId) -> PreambleRule {
-        let callee = match arena.get(callee) {
-            ExprNode::Call { func, .. } => *func,
-            _ => callee,
-        };
-        match arena.get(callee) {
-            ExprNode::MemberAccess { member, bang: false, .. }
-                if ["Circle", "Line", "PSet", "Scale"]
-                    .iter()
-                    .any(|m| self.scanner.sym_name(*member).eq_ignore_ascii_case(m)) =>
-            {
-                PreambleRule::Allowed
-            }
-            _ => PreambleRule::Reported,
+            // A drawing method of an object is not tested; any other statement is.
+            _ => match self.graphics_stmts.get(&stmt.0) {
+                Some((word, true)) if word.draws() => PreambleRule::Allowed,
+                _ => PreambleRule::Reported,
+            },
         }
     }
 
@@ -3818,9 +3648,16 @@ impl<'src> Parser<'src> {
             self.skip_line();
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
+        let start = self.current_span();
+        self.graphics_chain = Some(ChainStart::Call);
+        self.graphics_stop = None;
         let callee = self.parse_target_expr(arena);
-        if self.ends_in_bang_member(arena, callee) {
-            let span = self.node_spans.get(callee);
+        self.graphics_chain = None;
+        if let Some(word) = self.graphics_stop.take() {
+            return self.finish_graphics_method(arena, callee, word, ChainStart::Call, start);
+        }
+        if self.call_target_is_malformed(arena, callee) {
+            let span = self.chain_span(arena, callee);
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
             self.skip_line();
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
@@ -4082,7 +3919,7 @@ impl<'src> Parser<'src> {
         };
         let (nid, qualifier) = match arena.get(callee) {
             ExprNode::NameRef { sym, .. } => (*sym, None),
-            ExprNode::MemberAccess { base, member, bang: false } => (*member, Some(*base)),
+            ExprNode::MemberAccess { base, member, bang: false, .. } => (*member, Some(*base)),
             _ => {
                 let span = self.current_span();
                 self.report_expected(span, "end of statement");
@@ -4100,8 +3937,16 @@ impl<'src> Parser<'src> {
     fn parse_debug_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let debug_span = self.current_span();
         self.advance(); // consume Debug
+        // The dot follows `Debug` directly: blanks between them make a different statement.
+        if self.blank_before_next() {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, debug_span);
+            self.skip_line();
+            return arena.alloc(ExprNode::DebugPrint { channel: None, args: Vec::new() });
+        }
         self.expect(TokenKind::Kw(Kw::Dot), ERR_UNEXPECTED_TOKEN);
-        let is_member = self.peek().kind == TokenKind::Kw(Kw::Print)
+        // `Debug.?` is `Debug.Print`.
+        let is_print = matches!(self.peek().kind, TokenKind::Kw(Kw::Print) | TokenKind::Kw(Kw::Question));
+        let is_member = is_print
             || self.peek().sym.is_some_and(|sym| self.scanner.sym_name(sym as u32).eq_ignore_ascii_case("Assert"));
         if !is_member {
             let span = self.current_span();
@@ -4109,8 +3954,7 @@ impl<'src> Parser<'src> {
             self.skip_line();
             return arena.alloc(ExprNode::DebugPrint { channel: None, args: Vec::new() });
         }
-        let is_print = self.peek().kind == TokenKind::Kw(Kw::Print);
-        self.advance(); // consume Print / Assert
+        self.advance(); // consume Print / ? / Assert
         if !is_print {
             // `Debug.Assert` takes exactly one expression.
             let cond = self.parse_expr(arena, 0);
@@ -4814,6 +4658,13 @@ impl<'src> Parser<'src> {
         let access_span = self.current_span();
         if self.eat_word(Kw::Access) {
             let (has_read, has_write) = self.read_write_words();
+            // `Access` names what the file is opened for.
+            if !has_read && !has_write {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+            }
             // The access must be possible in the open mode: Read is not
             // available to Output, Write not to Input, and Read Write to
             // neither Input nor Output.
@@ -4823,7 +4674,7 @@ impl<'src> Parser<'src> {
                 // Append writes, so read-only access cannot go with it.
                 || (has_read && !has_write && open_mode == 8);
             if conflict {
-                self.diagnostics.push(ERR_BAD_FILE_MODE, access_span);
+                self.diagnostics.push(ERR_SYNTAX_ERROR, access_span);
             }
             access_code = match (has_read, has_write) {
                 (true, true) => 3,
@@ -4842,10 +4693,12 @@ impl<'src> Parser<'src> {
                 (true, true) => 1,
                 (true, false) => 3,
                 (false, true) => 2,
-                // Bare `Lock` with neither `Read` nor `Write` is not a
-                // grounded shape (never captured); 0xf marks it so codegen
-                // rejects it loudly instead of guessing a byte.
-                (false, false) => 0xf,
+                (false, false) => {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                    self.skip_line();
+                    return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+                }
             };
         }
         let open_flags = (lock_code << 4) | access_code;
@@ -4855,7 +4708,7 @@ impl<'src> Parser<'src> {
             let span = self.current_span();
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         }
-        self.eat(TokenKind::Kw(Kw::Hash));
+        let marked = self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = vec![path];
         if self.eat(TokenKind::Kw(Kw::Len)) {
@@ -4877,6 +4730,7 @@ impl<'src> Parser<'src> {
         arena.alloc(ExprNode::FileIoStmt {
             kind: FileIoKind::Open,
             channel: Some(ch),
+            channel_marks: vec![marked],
             args,
             open_mode,
             open_flags,
@@ -4900,10 +4754,11 @@ impl<'src> Parser<'src> {
         let close_span = self.current_span();
         self.advance(); // Close
         let mut chs = Vec::new();
+        let mut marks = Vec::new();
         while !self.peek().is_stmt_end()
             && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
         {
-            self.eat(TokenKind::Kw(Kw::Hash));
+            marks.push(self.eat(TokenKind::Kw(Kw::Hash)));
             chs.push(self.parse_expr(arena, 0));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             if self.peek().is_stmt_end() {
@@ -4922,12 +4777,19 @@ impl<'src> Parser<'src> {
             self.check_parts_size(parts, close_span);
         }
         self.end_stmt_before_rem_is_error();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, open_mode: 0, open_flags: 0 })
+        arena.alloc(ExprNode::FileIoStmt {
+            kind: FileIoKind::Close,
+            channel: None,
+            channel_marks: marks,
+            args: chs,
+            open_mode: 0,
+            open_flags: 0,
+        })
     }
 
     /// `Print #filenum, [args]` or `Write #filenum, [args]`.
     fn parse_file_print_after_keyword(&mut self, arena: &mut ExprArena, kind: FileIoKind) -> NodeId {
-        self.eat(TokenKind::Kw(Kw::Hash));
+        let marked = self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
         let first_span = self.current_span();
@@ -4942,12 +4804,12 @@ impl<'src> Parser<'src> {
             }
         }
         self.end_stmt();
-        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
+        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), channel_marks: vec![marked], args, open_mode: 0, open_flags: 0 })
     }
 
     /// `Input #filenum, varlist`.
     fn parse_file_input_after_keyword(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.eat(TokenKind::Kw(Kw::Hash));
+        let marked = self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut vars = Vec::new();
         if self.expect_comma() {
@@ -4957,13 +4819,13 @@ impl<'src> Parser<'src> {
             }
         }
         self.end_stmt_before_rem_is_error();
-        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Input, channel: Some(ch), args: vars, open_mode: 0, open_flags: 0 })
+        arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Input, channel: Some(ch), channel_marks: vec![marked], args: vars, open_mode: 0, open_flags: 0 })
     }
 
     /// `Get #filenum, [recnum], var` or `Put #filenum, [recnum], val`.
     fn parse_file_get_put_after_keyword(&mut self, arena: &mut ExprArena, kind: FileIoKind) -> NodeId {
         let put_span = self.current_span();
-        self.eat(TokenKind::Kw(Kw::Hash));
+        let marked = self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
         // `Get/Put [#]file, [record], variable`: both commas are required.
@@ -4994,7 +4856,7 @@ impl<'src> Parser<'src> {
             self.check_parts_size(parts, put_span);
         }
         self.end_stmt();
-        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
+        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), channel_marks: vec![marked], args, open_mode: 0, open_flags: 0 })
     }
 
     /// Consume a `,`, or report that one is expected; true when it was there.
@@ -5010,14 +4872,14 @@ impl<'src> Parser<'src> {
     /// `Lock #filenum [, from [To to]]` or `Unlock ...`.
     fn parse_file_lock_after_keyword(&mut self, arena: &mut ExprArena, kind: FileIoKind) -> NodeId {
         let lock_span = self.current_span();
-        self.eat(TokenKind::Kw(Kw::Hash));
+        let marked = self.eat(TokenKind::Kw(Kw::Hash));
         let ch = self.parse_expr(arena, 0);
         let mut args = Vec::new();
         if self.eat(TokenKind::Kw(Kw::Comma)) {
             if self.peek().kind == TokenKind::Kw(Kw::To) {
-                // `Lock #1, To 10`: the range starts at the first record.
+                // `Lock #1, To 10`: the first record of the range is left out.
                 self.advance();
-                args.push(arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) }));
+                args.push(arena.alloc(ExprNode::MissingArg));
                 args.push(self.parse_expr(arena, 0));
             } else {
                 args.push(self.parse_expr(arena, 0));
@@ -5035,7 +4897,7 @@ impl<'src> Parser<'src> {
             self.check_parts_size(parts, lock_span);
         }
         self.end_stmt();
-        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), args, open_mode: 0, open_flags: 0 })
+        arena.alloc(ExprNode::FileIoStmt { kind, channel: Some(ch), channel_marks: vec![marked], args, open_mode: 0, open_flags: 0 })
     }
 
     /// Parse ident-statement starting from a token already consumed from the stream.
@@ -5045,9 +4907,12 @@ impl<'src> Parser<'src> {
         self.set_span(lhs_base, first.span);
         self.stmt_byval = None;
         self.stmt_named = None;
+        self.graphics_chain = Some(ChainStart::Statement);
+        self.graphics_stop = None;
         // Apply any postfix operators (.member, (args), etc.)
         let lhs = self.parse_postfix(arena, lhs_base);
-        self.finish_ident_stmt(arena, lhs)
+        self.graphics_chain = None;
+        self.finish_ident_stmt(arena, lhs, first.span)
     }
 
     // ── Procedure / declaration parsers ───────────────────────────────────────
@@ -6297,6 +6162,9 @@ impl<'src> Parser<'src> {
 
     /// Parses primary expressions.
     fn parse_primary(&mut self, arena: &mut ExprArena) -> NodeId {
+        // The chain that follows the primary is the one that may end in a graphics word; what is
+        // read inside the primary (a group, the operands of a function) is expression text.
+        let chain = self.graphics_chain.take();
         let tok = self.peek().kind.clone();
         match tok {
             // Grouped expression
@@ -6336,7 +6204,7 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Me) => {
                 self.advance();
                 let base = arena.alloc(ExprNode::Me);
-                self.parse_postfix(arena, base)
+                { self.graphics_chain = chain; self.parse_postfix(arena, base) }
             }
             // Empty / Null
             TokenKind::Kw(Kw::Empty) => {
@@ -6363,7 +6231,7 @@ impl<'src> Parser<'src> {
                         return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
                     }
                 }
-                self.parse_postfix(arena, base)
+                { self.graphics_chain = chain; self.parse_postfix(arena, base) }
             }
             // `AddressOf proc` — function-pointer operand.
             TokenKind::Kw(Kw::AddressOf) => {
@@ -6383,7 +6251,7 @@ impl<'src> Parser<'src> {
                 let access = self
                     .try_parse_leading_with_member(arena)
                     .expect("peek was Dot/Bang");
-                self.parse_postfix(arena, access)
+                { self.graphics_chain = chain; self.parse_postfix(arena, access) }
             }
             // A literal the scanner rejected (out of range, no digits).
             TokenKind::Error => {
@@ -6419,7 +6287,7 @@ impl<'src> Parser<'src> {
                     self.report_expected(tok.span, "(");
                     base
                 } else {
-                    self.parse_postfix(arena, base)
+                    { self.graphics_chain = chain; self.parse_postfix(arena, base) }
                 }
             }
             // Unexpected — emit error, return placeholder
@@ -6447,6 +6315,9 @@ impl<'src> Parser<'src> {
 
     /// Postfix: member access and call/index.
     fn parse_postfix(&mut self, arena: &mut ExprArena, mut base: NodeId) -> NodeId {
+        // Only the chain that is the target of the statement can end in a graphics word; what is
+        // read inside its brackets is expression text.
+        let chain = self.graphics_chain.take();
         loop {
             // A `.` or `!` after blanks on the same line starts a With-member
             // argument of the statement, not a member of what precedes it.
@@ -6458,9 +6329,22 @@ impl<'src> Parser<'src> {
             match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::Dot) => {
                     self.advance();
+                    let graphics = match chain {
+                        Some(_) => self.graphics_word_after_dot(arena, base),
+                        None => None,
+                    };
+                    if let Some(word) = graphics {
+                        // The word ends the chain: the rest of the statement is its operands.
+                        let member = self.advance();
+                        let mid = self.graphics_member_symbol(&member);
+                        base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false, bracketed: false });
+                        self.set_span(base, member.span);
+                        self.graphics_stop = Some(word);
+                        break;
+                    }
                     let member = self.expect_ident();
                     let mid = member.sym.map(|s| s as u32).unwrap_or(0);
-                    base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false });
+                    base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false, bracketed: self.is_bracketed(&member) });
                     self.set_span(base, member.span);
                 }
                 TokenKind::Kw(Kw::Bang) => {
@@ -6472,7 +6356,7 @@ impl<'src> Parser<'src> {
                     }
                     let member = self.expect_ident();
                     let mid = member.sym.map(|s| s as u32).unwrap_or(0);
-                    base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: true });
+                    base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: true, bracketed: self.is_bracketed(&member) });
                     self.set_span(base, member.span);
                 }
                 TokenKind::Kw(Kw::LParen) => {
@@ -6501,7 +6385,7 @@ impl<'src> Parser<'src> {
             self.advance();
             let member = self.expect_ident();
             let mid = member.sym.map(|s| s as u32).unwrap_or(0);
-            base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false });
+            base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false, bracketed: self.is_bracketed(&member) });
             self.set_span(base, member.span);
         }
         base
@@ -6538,6 +6422,11 @@ impl<'src> Parser<'src> {
         // to the active With object), so build a `MemberAccess` on an implicit
         // `WithContext` base — never a bare `NameRef`, which would drop it.
         if let Some(access) = self.try_parse_leading_with_member(arena) {
+            if self.graphics_stop.is_some() {
+                // `.?` ended the chain.
+                self.graphics_chain = None;
+                return access;
+            }
             return self.parse_postfix(arena, access);
         }
         // A target names something: a reserved word does not (`Me` and the few reserved
@@ -6612,11 +6501,19 @@ impl<'src> Parser<'src> {
         };
         let dot_span = self.current_span();
         self.advance(); // consume `.` / `!`
-        let member = self.expect_ident();
-        let mid = member.sym.map(|s| s as u32).unwrap_or(0);
+        // At the start of a statement a question mark after the dot is the `Print` method of the
+        // object of the `With`, and ends the chain.
+        let question = !bang
+            && self.graphics_chain == Some(ChainStart::Statement)
+            && self.peek().kind == TokenKind::Kw(Kw::Question);
+        let member = if question { self.advance() } else { self.expect_ident() };
+        let mid = if question { self.graphics_member_symbol(&member) } else { member.sym.map(|s| s as u32).unwrap_or(0) };
+        if question {
+            self.graphics_stop = Some(GraphicsWord::Print);
+        }
         let base = arena.alloc(ExprNode::WithContext);
         self.set_span(base, dot_span);
-        let access = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang });
+        let access = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang, bracketed: self.is_bracketed(&member) });
         self.set_span(access, member.span);
         Some(access)
     }
@@ -6804,8 +6701,6 @@ const ERR_EXPECTED_EXPR:        u32 = 0x9c6f;
 const ERR_EXPECTED_IDENT:       u32 = 0x9c6f;
 const ERR_OBJECT_MODULE_ONLY:   u32 = 0xdee1;
 const ERR_UNEXPECTED_TOKEN:     u32 = 0x9c6f;
-/// "Bad file mode" (54): an `Open` access the file mode cannot have.
-const ERR_BAD_FILE_MODE:        u32 = 54;
 /// "Invalid inside procedure".
 const ERR_INVALID_IN_PROCEDURE: u32 = 0x9c74;
 /// "Invalid inside Enum".
@@ -6947,106 +6842,3 @@ const INTRINSIC_SHAPES: &[IntrinsicShape] = &[
     IntrinsicShape { name: "Date", min: 0, max: 0, name_first: false, bare_ok: true },
 ];
 
-/// True when `tokens` (the rest of the statement, its terminator last) form the operands a
-/// bare `Scale`, `Line`, `Circle` or `PSet` statement takes.
-fn bare_graphics_shape_ok(keyword: Kw, tokens: &[Token]) -> bool {
-    let body = match tokens.split_last() {
-        Some((_, body)) => body,
-        None => tokens,
-    };
-    let kind = |i: usize| body.get(i).map(|t| &t.kind);
-    let is = |i: usize, k: Kw| kind(i) == Some(&TokenKind::Kw(k));
-    // The index after a balanced bracket that starts at `open`.
-    let close_of = |open: usize| -> Option<usize> {
-        let mut depth = 0;
-        for (offset, t) in body[open..].iter().enumerate() {
-            match t.kind {
-                TokenKind::Kw(Kw::LParen) => depth += 1,
-                TokenKind::Kw(Kw::RParen) => {
-                    depth -= 1;
-                    if depth == 0 {
-                        return Some(open + offset);
-                    }
-                }
-                _ => {}
-            }
-        }
-        None
-    };
-    // The pieces of `range` between commas that stand outside brackets.
-    let pieces = |from: usize, to: usize| -> Vec<(usize, usize)> {
-        let mut out = Vec::new();
-        let (mut depth, mut start) = (0, from);
-        for i in from..to {
-            match body[i].kind {
-                TokenKind::Kw(Kw::LParen) => depth += 1,
-                TokenKind::Kw(Kw::RParen) => depth -= 1,
-                TokenKind::Kw(Kw::Comma) if depth == 0 => {
-                    out.push((start, i));
-                    start = i + 1;
-                }
-                _ => {}
-            }
-        }
-        out.push((start, to));
-        out
-    };
-    // A point: optional `Step` (when allowed), then `( x , y )`. Returns the index after it.
-    let point = |at: usize, step_ok: bool| -> Option<usize> {
-        let mut i = at;
-        if is(i, Kw::Step) {
-            if !step_ok {
-                return None;
-            }
-            i += 1;
-        }
-        if !is(i, Kw::LParen) {
-            return None;
-        }
-        let close = close_of(i)?;
-        let parts = pieces(i + 1, close);
-        (parts.len() == 2 && parts.iter().all(|(a, b)| a < b)).then_some(close + 1)
-    };
-    // `, a, b …` from `at` to the end: at most `max` pieces, the last of them not empty.
-    let tail = |at: usize, max: usize| -> bool {
-        if at == body.len() {
-            return true;
-        }
-        if !is(at, Kw::Comma) {
-            return false;
-        }
-        let parts = pieces(at + 1, body.len());
-        parts.len() <= max && parts.last().is_some_and(|(a, b)| a < b)
-    };
-    match keyword {
-        Kw::Scale => {
-            if body.is_empty() {
-                return true;
-            }
-            match point(0, false) {
-                Some(i) if is(i, Kw::Minus) => point(i + 1, false) == Some(body.len()),
-                _ => false,
-            }
-        }
-        Kw::Line => {
-            let after_first = if is(0, Kw::Minus) {
-                Some(0)
-            } else {
-                point(0, true).filter(|&i| is(i, Kw::Minus))
-            };
-            match after_first {
-                Some(i) => point(i + 1, true).is_some_and(|j| tail(j, 2)),
-                None => false,
-            }
-        }
-        Kw::Circle => match point(0, true) {
-            Some(i) if is(i, Kw::Comma) => {
-                let parts = pieces(i + 1, body.len());
-                parts.len() <= 5 && parts[0].0 < parts[0].1 && parts.last().is_some_and(|(a, b)| a < b)
-            }
-            _ => false,
-        },
-        Kw::PSet => point(0, true).is_some_and(|i| tail(i, 1)),
-        _ => true,
-    }
-}

@@ -62,7 +62,7 @@ fn statement_calls_with_empty_or_several_bracketed_arguments_need_call() {
         assert!(!p.found.is_empty(), "{text}");
         assert_eq!(p.found[0].0, 0x9c70, "{text}");
     }
-    for text in ["Foo(1)", "Foo 1, 2", "Foo (1), 2", "PSet (1, 2)"] {
+    for text in ["Foo(1)", "Foo 1, 2", "Foo (1), 2"] {
         let (p, _, _) = only(text);
         assert_eq!(p.found, vec![], "{text}");
     }

@@ -155,7 +155,7 @@ fn block_node(ea: &mut ExprArena, stmts: Vec<NodeId>) -> NodeId {
 }
 
 fn member_access_node(ea: &mut ExprArena, base: NodeId, member: u32) -> NodeId {
-    ea.alloc(ExprNode::MemberAccess { base, member, bang: false })
+    ea.alloc(ExprNode::MemberAccess { base, member, bang: false, bracketed: false })
 }
 
 fn int_lit_node(ea: &mut ExprArena, v: i32) -> NodeId {

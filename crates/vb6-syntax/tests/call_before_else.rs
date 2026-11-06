@@ -11,7 +11,7 @@ fn name_of(p: &Parsed, id: NodeId) -> String {
 }
 
 fn member_of_me(p: &Parsed, id: NodeId) -> String {
-    let ExprNode::MemberAccess { base, member, bang } = p.node(id) else { panic!("expected a member") };
+    let ExprNode::MemberAccess { base, member, bang, .. } = p.node(id) else { panic!("expected a member") };
     assert!(matches!(p.node(*base), ExprNode::Me));
     assert!(!*bang);
     p.name(*member).to_string()

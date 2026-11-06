@@ -65,7 +65,7 @@ pub(super) fn lower_expr_coerced(
             lower_lit_coerced(lit, coerce_tag, arena)
         }
         ExprNode::NameRef { .. } => lower_name_ref(ctx, node_id, arena),
-        ExprNode::MemberAccess { base, member, bang } => {
+        ExprNode::MemberAccess { base, member, bang, .. } => {
             let (base, member, bang) = (*base, *member, *bang);
             if member_access_base_is_class(ctx.module, base) {
                 lower_class_field_get(ctx, base, node_id, bang, arena)

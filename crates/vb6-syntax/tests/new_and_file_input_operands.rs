@@ -93,8 +93,9 @@ End Sub
 fn line_input_target_and_channel() {
     let (p, b) = body("Sub S()\n Line Input #1, target\nEnd Sub\n");
     assert_eq!(p.diags, 0);
-    let ExprNode::FileIoStmt { kind: FileIoKind::LineInput, channel: Some(ch), args, open_mode: 0, open_flags: 0 } = p.node(b[0]) else { panic!("not Line Input") };
+    let ExprNode::FileIoStmt { kind: FileIoKind::LineInput, channel: Some(ch), channel_marks, args, open_mode: 0, open_flags: 0 } = p.node(b[0]) else { panic!("not Line Input") };
     assert!(matches!(p.node(*ch), ExprNode::Literal { lit: AstLit::Int(1) }));
+    assert_eq!(channel_marks, &vec![true]);
     assert_eq!(args.len(), 1);
     assert_eq!(name_of(&p, args[0]), "target");
 }
