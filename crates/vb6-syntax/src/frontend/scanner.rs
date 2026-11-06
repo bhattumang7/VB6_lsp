@@ -314,6 +314,12 @@ impl ScannerContext {
     pub fn intern_ident(&mut self, name: &str) -> Option<SymId> {
         let key = fold_name(name);
         if let Some(&existing) = self.by_key.get(&key) {
+            // A name written again in other letter case takes the new spelling (unless it is
+            // longer), which every use of the name then shows. Keywords keep theirs.
+            let sym = &mut self.symbols[existing];
+            if sym.token == 0 && sym.flags & 8 == 0 && sym.name != name && name.chars().count() <= sym.name.chars().count() {
+                sym.name = name.to_string();
+            }
             return Some(existing);
         }
         if self.mode_flags != 0 && self.counter + HOST_SYMBOLS > 0x7ffe {
