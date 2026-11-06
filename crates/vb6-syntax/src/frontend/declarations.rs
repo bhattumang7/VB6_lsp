@@ -3,7 +3,8 @@
 //! string, the default of every `Optional` parameter, and the rule that a name is declared
 //! once.
 //!
-//! Declarations are taken in the order they are written. A constant may use the constants and
+//! A repeated name is reported before any value is worked out. Declarations are then taken in
+//! the order they are written. A constant may use the constants and
 //! enumeration members declared before it (a name declared later, a variable, a procedure, a
 //! type, is not a constant), and a procedure's own constants see what the procedure declared
 //! before them as well as the module's names. A name the module does not declare cannot be
@@ -38,7 +39,10 @@ pub struct CheckInput<'a> {
 
 /// The result of the checks.
 pub struct Checked {
+    /// A repeated name, the declarations of the module, then the headers of its procedures.
     pub diagnostics: Vec<Diagnostic>,
+    /// What the bodies of the procedures raise, in the order the procedures are written.
+    pub body_diagnostics: Vec<Diagnostic>,
     pub names: ModuleNames,
 }
 
@@ -147,9 +151,26 @@ struct Checker<'a> {
     parameters: Vec<u32>,
 }
 
+/// Whether a top-level node is a declaration that stands after the end of a procedure. Such a
+/// declaration is refused where it is read, so it declares nothing and is not checked.
+fn is_late(arena: &ExprArena, top: &[NodeId], index: usize) -> bool {
+    let first_procedure = top.iter().position(|&n| matches!(arena.get(n), ExprNode::ProcDecl { .. }));
+    first_procedure.is_some_and(|p| index > p)
+        && matches!(
+            arena.get(top[index]),
+            ExprNode::Block { .. }
+                | ExprNode::EnumDecl { .. }
+                | ExprNode::TypeDecl { .. }
+                | ExprNode::DeclareDecl { .. }
+                | ExprNode::EventDecl { .. }
+        )
+}
+
 /// Runs every check on the module whose top-level nodes are `input.top`.
 pub fn check_declarations(input: &CheckInput<'_>) -> Checked {
-    let source = NameSource { arena: input.arena, spans: input.spans, src: input.src, top: input.top, spelling: input.spelling };
+    let top: Vec<NodeId> =
+        input.top.iter().enumerate().filter(|&(i, _)| !is_late(input.arena, input.top, i)).map(|(_, &n)| n).collect();
+    let source = NameSource { arena: input.arena, spans: input.spans, src: input.src, top: &top, spelling: input.spelling };
     let names = ModuleNames::collect(&source);
     let mut mode = CompareMode::Binary;
     let mut option_base = 0;
@@ -163,7 +184,7 @@ pub fn check_declarations(input: &CheckInput<'_>) -> Checked {
     let mut checker = Checker { input, names, values: HashMap::new(), locals: None, mode, option_base, diagnostics: Vec::new(), parameters: Vec::new() };
     let mut headers = Vec::new();
     // Declarations first, in the order written; procedures after, as they come.
-    for &node in input.top {
+    for &node in &top {
         match input.arena.get(node) {
             ExprNode::Block { stmts } => {
                 for &item in stmts {
@@ -180,15 +201,25 @@ pub fn check_declarations(input: &CheckInput<'_>) -> Checked {
             _ => {}
         }
     }
-    let mut declaration_diagnostics = std::mem::take(&mut checker.diagnostics);
+    // A repeated name is found before any value is worked out.
+    let mut declaration_diagnostics = Vec::new();
     if let Some(clash) = checker.names.first_clash(&source) {
         declaration_diagnostics.push(clash);
     }
+    declaration_diagnostics.append(&mut checker.diagnostics);
+    // The defaults of every procedure are worked out before any body.
+    let mut bodies = Vec::new();
     for node in headers {
-        checker.check_procedure(node);
+        let (parameters, body) = checker.check_header(node);
+        if let Some(body) = body {
+            bodies.push((parameters, body));
+        }
     }
     declaration_diagnostics.append(&mut checker.diagnostics);
-    Checked { diagnostics: declaration_diagnostics, names: checker.names }
+    for (parameters, body) in bodies {
+        checker.check_body(parameters, body);
+    }
+    Checked { diagnostics: declaration_diagnostics, body_diagnostics: std::mem::take(&mut checker.diagnostics), names: checker.names }
 }
 
 impl Checker<'_> {
@@ -249,7 +280,10 @@ impl Checker<'_> {
         init: Option<NodeId>,
     ) -> Result<Known, u32> {
         if let Some(t) = type_node {
-            self.check_fixed_length(t)?;
+            if let Err((code, span)) = self.check_fixed_length(t) {
+                self.report(code, span);
+                return Ok(Known::Open);
+            }
         }
         if let Some(b) = bounds {
             self.check_bounds(b)?;
@@ -304,21 +338,19 @@ impl Checker<'_> {
     }
 
     /// The size of a fixed-length string: a constant from 1 to 65526 after rounding.
-    fn check_fixed_length(&mut self, type_node: NodeId) -> Result<(), u32> {
+    fn check_fixed_length(&mut self, type_node: NodeId) -> Result<(), (u32, Span)> {
         let ExprNode::StringType { fixed_len: Some(len) } = self.input.arena.get(type_node) else { return Ok(()) };
-        // A length written as a number is checked where it is read.
-        if matches!(self.input.arena.get(*len), ExprNode::Literal { .. }) {
-            return Ok(());
-        }
-        match self.eval(*len, Context::Other).map_err(EvalError::code)? {
+        let at = self.input.spans.get(*len);
+        let written = matches!(self.input.arena.get(*len), ExprNode::Literal { .. });
+        match self.eval(*len, Context::Other).map_err(|e| (e.code(), at))? {
             Evaluated::Unresolved => Ok(()),
-            Evaluated::Value(op) => {
-                match op.value.as_long() {
-                    Ok(n) if (1..65527).contains(&n) => Ok(()),
-                    Ok(_) | Err(EvalError::Overflow) => Err(ERR_INVALID_FIXED_STRING_LENGTH),
-                    Err(e) => Err(e.code()),
-                }
-            }
+            Evaluated::Value(op) => match op.value.as_long() {
+                Ok(n) if (1..65527).contains(&n) => Ok(()),
+                // A literal too large for 16 bits was refused where it was read.
+                Ok(n) if written && n > 0xffff => Ok(()),
+                Ok(_) | Err(EvalError::Overflow) => Err((ERR_INVALID_FIXED_STRING_LENGTH, at)),
+                Err(e) => Err((e.code(), at)),
+            },
         }
     }
 
@@ -391,12 +423,14 @@ impl Checker<'_> {
 
     /// A procedure, a `Declare` or an event: the defaults of its `Optional` parameters, and for
     /// a procedure the declarations in its body.
-    fn check_procedure(&mut self, node: NodeId) {
+    /// Works out the defaults in the header of a procedure. Returns the names of its
+    /// parameters and its body, if it has one.
+    fn check_header(&mut self, node: NodeId) -> (Vec<u32>, Option<NodeId>) {
         let (params, body) = match self.input.arena.get(node) {
             ExprNode::ProcDecl { params, body, .. } => (*params, Some(*body)),
             ExprNode::DeclareDecl { params, .. } => (*params, None),
             ExprNode::EventDecl { params, .. } => (Some(*params), None),
-            _ => return,
+            _ => return (Vec::new(), None),
         };
         let span = self.input.spans.get(node);
         // The defaults are read in the module's scope; the body adds the parameters to it.
@@ -409,21 +443,24 @@ impl Checker<'_> {
                 }
             }
         }
-        if let Some(body) = body {
-            self.locals = Some(self.parameters.drain(..).map(|p| (p, Binding::NotConstant)).collect());
-            let mut items = Vec::new();
-            collect_items(self.input.arena, body, &mut items);
-            items.sort_by_key(|n| n.0);
-            for item in items {
-                match self.input.arena.get(item) {
-                    ExprNode::ReDimItem { type_node: Some(t), .. } => {
-                        // A redimensioned array may be of fixed-length strings.
-                        if let Err(code) = self.check_fixed_length(*t) {
-                            self.report(code, self.input.spans.get(item));
-                        }
+        (std::mem::take(&mut self.parameters), body)
+    }
+
+    /// Checks the constants, bounds and lengths declared in a body.
+    fn check_body(&mut self, parameters: Vec<u32>, body: NodeId) {
+        self.locals = Some(parameters.into_iter().map(|p| (p, Binding::NotConstant)).collect());
+        let mut items = Vec::new();
+        collect_items(self.input.arena, body, &mut items);
+        items.sort_by_key(|n| n.0);
+        for item in items {
+            match self.input.arena.get(item) {
+                ExprNode::ReDimItem { type_node: Some(t), .. } => {
+                    // A redimensioned array may be of fixed-length strings.
+                    if let Err((code, span)) = self.check_fixed_length(*t) {
+                        self.report(code, span);
                     }
-                    _ => self.check_item(item),
                 }
+                _ => self.check_item(item),
             }
         }
         self.locals = None;

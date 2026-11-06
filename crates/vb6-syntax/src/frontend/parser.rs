@@ -1932,8 +1932,15 @@ impl<'src> Parser<'src> {
             spelling: &spelling,
             external: self.external_names.as_deref(),
         });
+        // A declaration after the end of a procedure is refused where it is read, which is after
+        // the names and the declarations are checked and the headers' defaults are worked out,
+        // and among the bodies as they come.
         for d in checked.diagnostics {
-            self.diagnostics.push_diagnostic(d);
+            self.diagnostics.push_diagnostic_before(ERR_AFTER_END_OF_PROCEDURE, d);
+        }
+        for d in checked.body_diagnostics {
+            let at = d.span.start;
+            self.diagnostics.push_diagnostic_before_position(ERR_AFTER_END_OF_PROCEDURE, at, d);
         }
         self.module_names = checked.names;
     }
@@ -6104,10 +6111,13 @@ impl<'src> Parser<'src> {
             TokenKind::IntLit | TokenKind::LongLit => {
                 let tok = self.advance();
                 let node = self.literal_node(arena, &tok);
-                // A literal length must be 1 up to (not including) 65527.
+                // A literal length too large for 16 bits is refused as it is read: inside a
+                // procedure as a syntax error, elsewhere as an invalid length. A length from 65527
+                // up to 65535, or zero, is judged with the other declarations afterwards.
                 if let ExprNode::Literal { lit: AstLit::Int(n) | AstLit::Long(n) } = arena.get(node) {
-                    if *n <= 0 || *n >= FIXED_STRING_LIMIT {
-                        self.diagnostics.push(ERR_INVALID_FIXED_STRING_LENGTH, len_span);
+                    if *n > 0xffff {
+                        let code = if self.in_procedure { ERR_SYNTAX_ERROR } else { ERR_INVALID_FIXED_STRING_LENGTH };
+                        self.diagnostics.push(code, len_span);
                     }
                 }
                 node
@@ -7097,8 +7107,6 @@ const MAX_IDENTIFIER_LEN: usize = 255;
 const MAX_CC_NESTING: usize = 4079;
 /// Most dimensions an array declaration may list.
 const MAX_DIMENSIONS: usize = 60;
-/// A fixed-length string holds 1 to this many characters, exclusive.
-const FIXED_STRING_LIMIT: i32 = 0xfff7;
 
 const ERR_EXPECTED_EXPR:        u32 = 0x9c6f;
 const ERR_EXPECTED_IDENT:       u32 = 0x9c6f;

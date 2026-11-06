@@ -3,6 +3,7 @@
 
 use vb6_engine::session::Session;
 use vb6_syntax::frontend::ast::ExprArena;
+use vb6_syntax::frontend::diagnostics::Diagnostic;
 use crate::oracle::ModuleKind;
 use vb6_syntax::frontend::parser::{ModuleKind as ParserModuleKind, Parser};
 use vb6_syntax::frontend::line_reader::LineTable;

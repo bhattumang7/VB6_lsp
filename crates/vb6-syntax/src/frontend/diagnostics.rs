@@ -340,6 +340,23 @@ impl Diagnostics {
         self.items.push(diagnostic);
     }
 
+    /// Record a diagnostic built elsewhere, ahead of the first one with `code` when there is one.
+    pub fn push_diagnostic_before(&mut self, code: u32, diagnostic: Diagnostic) {
+        match self.items.iter().position(|d| d.code == code) {
+            Some(at) => self.items.insert(at, diagnostic),
+            None => self.items.push(diagnostic),
+        }
+    }
+
+    /// Record a diagnostic built elsewhere, ahead of the first one with `code` that starts after
+    /// `position`, when there is one.
+    pub fn push_diagnostic_before_position(&mut self, code: u32, position: u32, diagnostic: Diagnostic) {
+        match self.items.iter().position(|d| d.code == code && d.span.start > position) {
+            Some(at) => self.items.insert(at, diagnostic),
+            None => self.items.push(diagnostic),
+        }
+    }
+
     /// Number of diagnostics recorded so far.
     pub fn len(&self) -> usize {
         self.items.len()
