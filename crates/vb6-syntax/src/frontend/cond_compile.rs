@@ -507,7 +507,7 @@ fn like_from(t: &[char], p: &[char]) -> bool {
 }
 
 /// A number written as text: decimal (with exponent) or `&H` / `&O`, with blanks around.
-fn parse_number(s: &str) -> Option<f64> {
+pub(crate) fn parse_number(s: &str) -> Option<f64> {
     let t = s.trim();
     if t.is_empty() {
         return None;
@@ -532,7 +532,7 @@ fn radix_value(v: i64, digits: usize, integer_digits: usize) -> f64 {
     if digits <= integer_digits && v >= 0x8000 && v <= 0xFFFF { (v - 0x10000) as f64 } else { v as f64 }
 }
 
-fn round_half_even(n: f64) -> f64 {
+pub(crate) fn round_half_even(n: f64) -> f64 {
     let r = n.round();
     if (n - n.trunc()).abs() == 0.5 && r % 2.0 != 0.0 {
         r - n.signum()
@@ -543,7 +543,7 @@ fn round_half_even(n: f64) -> f64 {
 
 /// A Double (Single) as `&` shows it: at most `sig` significant digits, scientific
 /// below 1E-4 or from 1E`sig`.
-fn format_float(d: f64, sig: usize) -> String {
+pub(crate) fn format_float(d: f64, sig: usize) -> String {
     if d == 0.0 {
         return "0".into();
     }
@@ -574,7 +574,7 @@ fn format_float(d: f64, sig: usize) -> String {
     }
 }
 
-fn format_currency(c: i64) -> String {
+pub(crate) fn format_currency(c: i64) -> String {
     let whole = c / 10_000;
     let frac = (c % 10_000).abs();
     let sign = if c < 0 && whole == 0 { "-" } else { "" };

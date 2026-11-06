@@ -6,6 +6,10 @@
 
 pub mod ast;
 pub mod cond_compile;
+pub mod const_eval;
+pub mod const_value;
+pub mod declarations;
+pub mod declared_names;
 pub mod diagnostics;
 pub mod keyword_table;
 pub mod line_reader;

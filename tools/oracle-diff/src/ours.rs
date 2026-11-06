@@ -3,8 +3,6 @@
 
 use vb6_engine::session::Session;
 use vb6_syntax::frontend::ast::ExprArena;
-use vb6_syntax::frontend::diagnostics::Diagnostic;
-use vb6_syntax::frontend::diagnostics::message_for_code;
 use crate::oracle::ModuleKind;
 use vb6_syntax::frontend::parser::{ModuleKind as ParserModuleKind, Parser};
 use vb6_syntax::frontend::line_reader::LineTable;
@@ -43,13 +41,7 @@ pub fn diagnostics(source: &[u8], kind: ModuleKind) -> Vec<OurDiagnostic> {
         .enumerate()
         .map(|(n, d)| {
             let line = (n >= unnumbered).then(|| table.logical_line_of(d.span.start));
-            let base = message_for_code(d.code)
-                .map(str::to_string)
-                .unwrap_or_else(|| format!("(code {:#x})", d.code));
-            let message = match d.label {
-                Some(label) if d.code == 0x9c6f => format!("Expected: {label}"),
-                _ => base,
-            };
+            let message = d.message().unwrap_or_else(|| format!("(code {:#x})", d.code));
             OurDiagnostic { code: d.code, line, message }
         })
         .collect()
@@ -69,12 +61,6 @@ pub fn full_diagnostics(source: &[u8], kind: ModuleKind) -> Vec<OurDiagnostic> {
 fn describe(source: &[u8], d: &Diagnostic) -> OurDiagnostic {
     let start = (d.span.start as usize).min(source.len());
     let line = Some(LineTable::new(source).logical_line_of(start as u32));
-    let base = message_for_code(d.code)
-        .map(str::to_string)
-        .unwrap_or_else(|| format!("(code {:#x})", d.code));
-    let message = match d.label {
-        Some(label) if d.code == 0x9c6f => format!("Expected: {label}"),
-        _ => base,
-    };
+    let message = d.message().unwrap_or_else(|| format!("(code {:#x})", d.code));
     OurDiagnostic { code: d.code, line, message }
 }

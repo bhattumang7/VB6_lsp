@@ -137,7 +137,7 @@ fn nothing_but_a_procedure_may_follow_a_procedure() {
         "Public n As Long",
         "Private n As Long",
         "Const n = 1",
-        "Declare Sub F Lib \"k\" ()",
+        "Declare Sub D Lib \"k\" ()",
         "Type T\n    a As Long\nEnd Type",
         "Enum E\n    A\nEnd Enum",
     ] {

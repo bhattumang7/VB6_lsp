@@ -66,12 +66,17 @@ pub fn diagnostics(source: &str, kind: ModuleKind) -> usize {
 }
 
 pub fn diagnostic_codes(source: &str, kind: ModuleKind) -> Vec<u32> {
+    diagnostic_messages(source, kind).into_iter().map(|(code, _)| code).collect()
+}
+
+/// Every diagnostic as `(code, message)`, in report order.
+pub fn diagnostic_messages(source: &str, kind: ModuleKind) -> Vec<(u32, String)> {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
     let mut parser = Parser::with_module_kind(&mut ctx, source.as_bytes(), kind);
     parser.parse_module(&mut arena);
-    parser.diagnostics.items().iter().map(|d| d.code).collect()
+    parser.diagnostics.items().iter().map(|d| (d.code, d.message().unwrap_or_default())).collect()
 }
 
 /// Every row on which the parser and the compiler disagree, as readable lines.
@@ -99,7 +104,8 @@ pub fn disagreements(
         }
         let t = &templates[template];
         let source = t.text.replace("{k}", &unescape(word));
-        let codes = diagnostic_codes(&source, t.kind);
+        let reported = diagnostic_messages(&source, t.kind);
+        let codes: Vec<u32> = reported.iter().map(|(c, _)| *c).collect();
         let found = codes.len();
         // A statement that needs an object to draw on or print to, written in a standard module,
         // is reported by the parser first, once.
@@ -111,7 +117,10 @@ pub fn disagreements(
             continue;
         }
         // A semantic answer hides a block that is left open.
-        let masked = class == "semantic" && !codes.is_empty() && codes.iter().all(|c| MISSING_END_CODES.contains(c));
+        let mut masked = class == "semantic" && !codes.is_empty() && codes.iter().all(|c| MISSING_END_CODES.contains(c));
+        // A semantic answer is also met by the parser reporting that same message: the checks
+        // of constants, bounds and names run once the module is read.
+        masked |= class == "semantic" && reported.iter().any(|(_, m)| m == message);
         checked += 1;
         if !masked && (found == 0) != expect_parses {
             let verdict = if expect_parses { "accepts" } else { "rejects" };

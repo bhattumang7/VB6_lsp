@@ -9,6 +9,7 @@
 
 mod attribute;
 
+use crate::frontend::{declarations, declared_names};
 use crate::frontend::line_size::{self, cost, MAX_LINE_CODE_SIZE};
 use crate::frontend::cond_compile::{CcOp, CcResult, CcValue, ERR_VARIABLE_NOT_DEFINED as CC_ERR_VARIABLE_NOT_DEFINED};
 
@@ -373,6 +374,10 @@ pub struct Parser<'src> {
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
     cc_pending: Option<Token>,
+    /// How names the module does not declare are resolved in constant expressions.
+    external_names: Option<Box<declarations::ExternalResolver>>,
+    /// The module-level names found by the declaration checks once the module is read.
+    pub module_names: declared_names::ModuleNames,
 }
 
 /// Which part of an `If` line a list of statements is: after `Then` or after `Else` of a
@@ -580,6 +585,8 @@ impl<'src> Parser<'src> {
             module_kind: ModuleKind::Standard,
             cc_stack: Vec::new(),
             cc_pending: None,
+            external_names: None,
+            module_names: declared_names::ModuleNames::default(),
             cc_module_consts: Vec::new(),
             cc_line_done: false,
             logical_line_start: 0,
@@ -1753,6 +1760,7 @@ impl<'src> Parser<'src> {
                 nodes.truncate(head_mark);
             }
         }
+        self.check_declarations(arena, &nodes);
         self.diagnostics.merge_directive_pass();
         nodes
     }
@@ -1909,6 +1917,32 @@ impl<'src> Parser<'src> {
             }
         }
         None
+    }
+
+    /// Hands the module's declarations to the checks of constants, bounds, sizes, defaults and
+    /// names, and records what they report and the names they found.
+    fn check_declarations(&mut self, arena: &ExprArena, top: &[NodeId]) {
+        let scanner = &self.scanner;
+        let spelling = |sym: u32| scanner.sym_name(sym).to_string();
+        let checked = declarations::check_declarations(&declarations::CheckInput {
+            arena,
+            spans: &self.node_spans,
+            src: self.src,
+            top,
+            spelling: &spelling,
+            external: self.external_names.as_deref(),
+        });
+        for d in checked.diagnostics {
+            self.diagnostics.push_diagnostic(d);
+        }
+        self.module_names = checked.names;
+    }
+
+    /// Sets how names the module does not declare are resolved in constant expressions: the
+    /// constants of the project and of the libraries it uses. Without it such a name leaves the
+    /// value of the expression open.
+    pub fn set_external_names(&mut self, resolver: Box<declarations::ExternalResolver>) {
+        self.external_names = Some(resolver);
     }
 
     /// True when the next tokens begin a declaration that belongs before the procedures of a
@@ -3134,6 +3168,17 @@ impl<'src> Parser<'src> {
             let span = self.current_span();
             self.report_expected(span, "As or =");
         }
+        if with_events && self.peek().kind == TokenKind::Kw(Kw::LParen) {
+            // An event source is one object variable: it takes no array bounds.
+            let span = self.current_span();
+            self.report_expected(span, "As");
+            self.skip_line();
+            let id = arena.alloc(ExprNode::DimItem {
+                name: name_id, is_const, is_static, is_new: false, with_events, bounds: None, type_node: None, init: None,
+            });
+            self.set_span(id, name.span);
+            return id;
+        }
         let bounds = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let d = self.parse_array_bounds(arena);
             self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
@@ -3948,6 +3993,7 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_call_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        let call_span = self.current_span();
         self.advance(); // consume Call
         if self.peek().kind == TokenKind::Kw(Kw::Rem) {
             let span = self.current_span();
@@ -4240,6 +4286,14 @@ impl<'src> Parser<'src> {
             }
         };
         let args = args.unwrap_or_else(|| arena.alloc(ExprNode::ArgList { args: vec![] }));
+        // The arguments of an event are positional: there is no `name:=value` form.
+        let named = matches!(arena.get(args), ExprNode::ArgList { args }
+            if args.iter().any(|a| matches!(arena.get(*a), ExprNode::NamedArg { .. })));
+        if named {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, name_span);
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        }
         self.end_stmt();
         let id = arena.alloc(ExprNode::RaiseEvent { name: nid, qualifier, args });
         self.set_span(id, name_span);

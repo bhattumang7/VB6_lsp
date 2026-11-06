@@ -87,6 +87,22 @@ pub const ERR_MAIN_NOT_ALLOWED_AS_NAME: u32 = 0x5ab5; // 23221
 /// `Name conflicts with existing module, project, or object library`.
 pub const ERR_NAME_CONFLICTS: u32 = 0x802d; // 32813
 pub const ERR_METHOD_NOT_VALID_WITHOUT_OBJECT: u32 = 0xdec8; // 57032
+pub const ERR_INVALID_PROCEDURE_CALL: u32 = 5;
+pub const ERR_OVERFLOW: u32 = 6;
+pub const ERR_DIVISION_BY_ZERO: u32 = 11;
+pub const ERR_TYPE_MISMATCH: u32 = 13;
+pub const ERR_OBJECT_VARIABLE_NOT_SET: u32 = 91;
+pub const ERR_INVALID_PATTERN: u32 = 93;
+pub const ERR_INVALID_USE_OF_NULL: u32 = 94;
+pub const ERR_AMBIGUOUS_NAME: u32 = 0x802c; // 32812
+pub const ERR_EXPECTED_FUNCTION_OR_VARIABLE: u32 = 0x9c8c; // 40076
+pub const ERR_RANGE_HAS_NO_VALUES: u32 = 0x9cad; // 40109
+pub const ERR_INVALID_DATA_TYPE_FOR_CONSTANT: u32 = 0x9cae; // 40110
+pub const ERR_CONSTANT_EXPRESSION_REQUIRED: u32 = 0x9cb2; // 40114
+pub const ERR_INVALID_USE_OF_OBJECT: u32 = 0x9cb9; // 40121
+pub const ERR_METHOD_OR_DATA_MEMBER_NOT_FOUND: u32 = 0x1cd; // 461
+pub const ERR_INVALID_QUALIFIER: u32 = 0x9c9e; // 40094
+pub const ERR_QUALIFIER_MUST_BE_COLLECTION: u32 = 0x9cb6; // 40118
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -118,6 +134,11 @@ impl Diagnostic {
         Self { code, span, label: None, subject: Some(subject) }
     }
 
+    /// A diagnostic whose message names an identifier.
+    pub fn with_name(code: u32, span: Span, name: &str) -> Self {
+        Self::with_subject(code, span, name.to_string())
+    }
+
     /// Human-readable text for this diagnostic.
     ///
     /// For `0x9c6f` with a label, returns `"Expected: <label>"`.
@@ -131,6 +152,9 @@ impl Diagnostic {
         }
         if let (ERR_NOT_LEGAL_OBJECT_NAME, Some(subject)) = (self.code, &self.subject) {
             return Some(format!("Not a legal object name: '{subject}'"));
+        }
+        if let (ERR_AMBIGUOUS_NAME, Some(subject)) = (self.code, &self.subject) {
+            return Some(format!("Ambiguous name detected: {subject}"));
         }
         message_for_code(self.code).map(|s| s.to_string())
     }
@@ -146,12 +170,21 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         0xdee1 => "Only valid in object module",            // 57057
         0x9caf => "Variable not defined",                   // 40111
         0x9c9f => "Duplicate declaration in current scope", // 40095
-        5 => "Invalid procedure call or argument",
-        6 => "Overflow",
+        ERR_INVALID_PROCEDURE_CALL => "Invalid procedure call or argument",
+        ERR_OVERFLOW => "Overflow",
         7 => "Out of memory",
-        11 => "Division by zero",
-        13 => "Type mismatch",
-        94 => "Invalid use of Null",
+        ERR_DIVISION_BY_ZERO => "Division by zero",
+        ERR_TYPE_MISMATCH => "Type mismatch",
+        ERR_OBJECT_VARIABLE_NOT_SET => "Object variable or With block variable not set",
+        ERR_INVALID_PATTERN => "Invalid pattern string",
+        ERR_INVALID_USE_OF_NULL => "Invalid use of Null",
+        ERR_EXPECTED_FUNCTION_OR_VARIABLE => "Expected Function or variable",
+        ERR_RANGE_HAS_NO_VALUES => "Range has no values",
+        ERR_INVALID_DATA_TYPE_FOR_CONSTANT => "Invalid data type for constant",
+        ERR_CONSTANT_EXPRESSION_REQUIRED => "Constant expression required",
+        ERR_INVALID_USE_OF_OBJECT => "Invalid use of object",
+        ERR_INVALID_QUALIFIER => "Invalid qualifier",
+        ERR_QUALIFIER_MUST_BE_COLLECTION => "Qualifier must be collection",
         0xdec4 => "Too many local, nonstatic variables", // 57028
         0x23 => "Sub or Function not defined",              // 35
         0x1cd => "Method or data member not found",         // 461
@@ -164,7 +197,6 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         450 => "Wrong number of arguments or invalid property assignment",
         40067 => "Definitions of property procedures for the same property are inconsistent, or property procedure has an optional parameter, a ParamArray, or an invalid Set final parameter",
         40074 => "Expected array",
-        40109 => "Range has no values",
         40128 => "Named argument already specified",
         40136 => "Invalid or unqualified reference",
         40119 => "For Each control variable must be Variant or Object",
@@ -303,6 +335,9 @@ impl Diagnostics {
         let mut merged = std::mem::take(&mut self.directive_pass);
         merged.append(&mut self.items);
         self.items = merged;
+    /// Record a diagnostic built elsewhere.
+    pub fn push_diagnostic(&mut self, diagnostic: Diagnostic) {
+        self.items.push(diagnostic);
     }
 
     /// Number of diagnostics recorded so far.

@@ -3,8 +3,10 @@
 
 pub mod answers;
 
-use vb6_syntax::frontend::ast::{ExprArena, ExprNode, NodeId};
-use vb6_syntax::frontend::parser::{ModuleKind, Parser};
+use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprArena, ExprNode, NodeId, ProcKind, UnOpKind};
+use vb6_syntax::frontend::declared_names::ModuleNames;
+use vb6_syntax::frontend::parser::ModuleKind;
+use vb6_syntax::frontend::parser::Parser;
 use vb6_syntax::frontend::scanner::ScannerContext;
 
 pub struct Parsed {
@@ -14,8 +16,10 @@ pub struct Parsed {
     pub diags: usize,
     /// Every diagnostic as `(code, start offset, length)`, in report order.
     pub found: Vec<(u32, u32, u32)>,
-    /// The text of every diagnostic, in report order (`Expected: ...` carries its list).
+    /// Every diagnostic's message, in report order.
     pub messages: Vec<String>,
+    /// The module-level names the declaration checks found.
+    pub names: ModuleNames,
 }
 
 pub fn parse(src: &str) -> Parsed {
@@ -32,7 +36,7 @@ pub fn parse_as(src: &str, kind: ModuleKind) -> Parsed {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let (top, diags, found, messages) = {
+    let (top, diags, found, messages, names) = {
         let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), kind);
         let top = parser.parse_module(&mut arena);
         let found = parser
@@ -47,9 +51,9 @@ pub fn parse_as(src: &str, kind: ModuleKind) -> Parsed {
             .iter()
             .map(|d| d.message().unwrap_or_else(|| format!("(code {:#x})", d.code)))
             .collect();
-        (top, parser.diagnostics.items().len(), found, messages)
+        (top, parser.diagnostics.items().len(), found, messages, parser.module_names.clone())
     };
-    Parsed { ctx, arena, top, diags, found, messages }
+    Parsed { ctx, arena, top, diags, found, messages, names }
 }
 
 impl Parsed {
@@ -80,6 +84,117 @@ impl Parsed {
 
     pub fn name(&self, sym: u32) -> &str {
         self.ctx.sym_name(sym as usize)
+    }
+
+    /// The tree below `id` as an S-expression, naming every part that matters.
+    pub fn show(&self, id: NodeId) -> String {
+        let list = |ids: &[NodeId]| ids.iter().map(|n| self.show(*n)).collect::<Vec<_>>().join(" ");
+        let opt = |o: &Option<NodeId>| o.map_or("-".to_string(), |n| self.show(n));
+        match self.node(id) {
+            ExprNode::Literal { lit } => match lit {
+                AstLit::Int(v) => format!("{v}%"),
+                AstLit::Long(v) => format!("{v}&"),
+                AstLit::Single(v) => format!("{v}!"),
+                AstLit::Double(v) => format!("{v}#"),
+                AstLit::Currency(v) => format!("{v}@"),
+                AstLit::Str(s) => format!("{s:?}"),
+                AstLit::Date(v) => format!("date({v})"),
+                AstLit::Bool(b) => format!("{b}"),
+                AstLit::Empty => "Empty".into(),
+                AstLit::Null => "Null".into(),
+            },
+            ExprNode::NameRef { sym, .. } => self.name(*sym).to_string(),
+            ExprNode::Nothing => "Nothing".into(),
+            ExprNode::Me => "Me".into(),
+            ExprNode::WithContext => "<with>".into(),
+            ExprNode::Paren { inner } => format!("(paren {})", self.show(*inner)),
+            ExprNode::BinOp { op, lhs, rhs } => format!("({} {} {})", bin_name(*op), self.show(*lhs), self.show(*rhs)),
+            ExprNode::UnOp { op, operand } => {
+                let n = match op {
+                    UnOpKind::Neg => "neg",
+                    UnOpKind::Pos => "pos",
+                    UnOpKind::Not => "not",
+                };
+                format!("({n} {})", self.show(*operand))
+            }
+            ExprNode::MemberAccess { base, member, bang } => {
+                format!("({} {} {})", if *bang { "bang" } else { "dot" }, self.show(*base), self.name(*member))
+            }
+            ExprNode::Call { func, args } => format!("(call {} {})", self.show(*func), self.show(*args)),
+            ExprNode::ArgList { args } => format!("[{}]", list(args)),
+            ExprNode::NamedArg { name, value } => format!("(named {} {})", self.name(*name), self.show(*value)),
+            ExprNode::MissingArg => "<missing>".into(),
+            ExprNode::CallStmt { callee, args } => format!("(Call {} {})", self.show(*callee), self.show(*args)),
+            ExprNode::RaiseEvent { name, qualifier, args } => {
+                format!("(RaiseEvent {} {} {})", opt(qualifier), self.name(*name), self.show(*args))
+            }
+            ExprNode::Block { stmts } => format!("{{{}}}", list(stmts)),
+            ExprNode::With { obj, body } => format!("(With {} {})", self.show(*obj), self.show(*body)),
+            ExprNode::BuiltinType { kind } => format!("type{kind}"),
+            ExprNode::StringType { fixed_len } => format!("(String {})", opt(fixed_len)),
+            ExprNode::UserType { name, child } => format!("(usertype {} {})", self.name(*name), opt(child)),
+            ExprNode::ArrayType { elem } => format!("(array {})", self.show(*elem)),
+            ExprNode::RangeTo { lo, hi } => format!("(to {} {})", self.show(*lo), self.show(*hi)),
+            ExprNode::DimItem { name, is_const, is_static, is_new, with_events, bounds, type_node, init } => {
+                let mut flags = String::new();
+                for (on, tag) in [(*is_const, "const"), (*is_static, "static"), (*is_new, "new"), (*with_events, "withevents")] {
+                    if on {
+                        flags.push_str(&format!(" {tag}"));
+                    }
+                }
+                format!("(item {}{flags} bounds={} type={} init={})", self.name(*name), opt(bounds), opt(type_node), opt(init))
+            }
+            ExprNode::ParamDef { flags, name, type_node, default } => {
+                format!("(param {} flags={flags:#x} type={} default={})", self.name(*name), opt(type_node), opt(default))
+            }
+            ExprNode::EnumDecl { name, members } => format!("(Enum {} {})", self.name(*name), list(members)),
+            ExprNode::TypeDecl { name, members } => format!("(Type {} {})", self.name(*name), list(members)),
+            ExprNode::EventDecl { name, params } => format!("(Event {} {})", self.name(*name), self.show(*params)),
+            ExprNode::ProcDecl { kind, name, params, ret_type, body } => {
+                let k = match kind {
+                    ProcKind::Sub => "Sub",
+                    ProcKind::Function => "Function",
+                    ProcKind::PropGet => "PropGet",
+                    ProcKind::PropLet => "PropLet",
+                    ProcKind::PropSet => "PropSet",
+                };
+                format!("({k} {} params={} ret={} {})", self.name(*name), opt(params), opt(ret_type), self.show(*body))
+            }
+            ExprNode::DeclareDecl { kind, name, params, ret_type, .. } => {
+                let k = if *kind == ProcKind::Sub { "Sub" } else { "Function" };
+                format!("(Declare{k} {} params={} ret={})", self.name(*name), opt(params), opt(ret_type))
+            }
+            ExprNode::OptionCompare { mode } => format!("(OptionCompare {mode})"),
+            ExprNode::OptionBase { value } => format!("(OptionBase {value})"),
+            _ => "?".into(),
+        }
+    }
+}
+
+fn bin_name(op: BinOpKind) -> &'static str {
+    match op {
+        BinOpKind::Add => "+",
+        BinOpKind::Sub => "-",
+        BinOpKind::Mul => "*",
+        BinOpKind::Div => "/",
+        BinOpKind::IDiv => "\\",
+        BinOpKind::Mod => "Mod",
+        BinOpKind::Pow => "^",
+        BinOpKind::Cat => "&",
+        BinOpKind::Eq => "=",
+        BinOpKind::Ne => "<>",
+        BinOpKind::Lt => "<",
+        BinOpKind::Gt => ">",
+        BinOpKind::Le => "<=",
+        BinOpKind::Ge => ">=",
+        BinOpKind::Like => "Like",
+        BinOpKind::Is => "Is",
+        BinOpKind::And => "And",
+        BinOpKind::Or => "Or",
+        BinOpKind::Xor => "Xor",
+        BinOpKind::Eqv => "Eqv",
+        BinOpKind::Imp => "Imp",
+        BinOpKind::Not => "Not",
     }
 }
 
