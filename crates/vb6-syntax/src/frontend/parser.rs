@@ -4880,8 +4880,9 @@ impl<'src> Parser<'src> {
             if !self.eat(TokenKind::Kw(Kw::Comma)) {
                 break;
             }
-            // A comma may end the list.
-            if self.peek().is_stmt_end() {
+            // The list goes on only while a name follows the comma; anything else
+            // (a colon, a comment, the end of the line) ends it.
+            if !self.at_name() {
                 break;
             }
         }
@@ -4895,6 +4896,13 @@ impl<'src> Parser<'src> {
         arena.alloc(ExprNode::DefType { type_kw, ranges })
     }
 
+    /// Whether the next token reads as a name: an identifier, or a word that is also
+    /// accepted where a name stands.
+    fn at_name(&mut self) -> bool {
+        let t = self.peek();
+        t.kind == TokenKind::Ident || (matches!(t.kind, TokenKind::Kw(_)) && t.sym.is_some())
+    }
+
     /// A `Def<Type>` letter: an identifier of exactly one character.
     fn def_letter(&mut self) -> u32 {
         let tok = self.expect_ident();
@@ -4906,8 +4914,8 @@ impl<'src> Parser<'src> {
     }
 
     /// Bit mask (bit 0 = `A`) of the letters from the first letter of the
-    /// name `lo` to that of `hi`; empty when either is not a letter or the
-    /// range runs backwards.
+    /// name `lo` to that of `hi`; empty when either is not a letter. A range
+    /// written backwards (`Z-X`) covers the same letters as the forward one.
     fn letter_range_mask(&self, lo: u32, hi: u32) -> u32 {
         let letter = |sym: u32| {
             self.scanner
@@ -4918,7 +4926,10 @@ impl<'src> Parser<'src> {
                 .map(|b| b.to_ascii_lowercase() - b'a')
         };
         match (letter(lo), letter(hi)) {
-            (Some(a), Some(b)) if a <= b => ((1u32 << (b + 1)) - 1) & !((1u32 << a) - 1),
+            (Some(a), Some(b)) => {
+                let (a, b) = if a <= b { (a, b) } else { (b, a) };
+                ((1u32 << (b + 1)) - 1) & !((1u32 << a) - 1)
+            }
             _ => 0,
         }
     }
