@@ -163,6 +163,6 @@ fn an_attribute_line_between_select_and_the_first_case_is_accepted() {
 
 #[test]
 fn a_statement_between_select_and_the_first_case_is_still_reported() {
-    let p = parse("Public Sub Q()\nSelect Case 1\nDim a\nCase 1\nEnd Select\nEnd Sub\n");
+    let p = parse("Public Sub Q()\nSelect Case 1\nx = 1\nCase 1\nEnd Select\nEnd Sub\n");
     assert_eq!(p.found.len(), 1);
 }
