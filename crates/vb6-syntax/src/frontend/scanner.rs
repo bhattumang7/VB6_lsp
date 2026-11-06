@@ -1207,6 +1207,12 @@ impl<'a> Scanner<'a> {
                     _ => self.finish_double(span),
                 }
             }
+            // A number cannot take `$`: the whole of it is one unreadable token.
+            Some(b'$') => {
+                self.pos += 1;
+                let span = Span { len: span.len + 1, ..span };
+                self.number_error(span)
+            }
             Some(b'!') => {
                 self.pos += 1;
                 let span = Span { len: span.len + 1, ..span };
@@ -1424,9 +1430,21 @@ impl<'a> Scanner<'a> {
 
     /// Finish a `&H`/`&O` literal. Without a suffix a value that fits 16 bits
     /// is an Integer (its bit pattern, so `&HFFFF` is -1) and a larger one is
-    /// a Long; `&` makes it a Long; `%` requires 16 bits.
+    /// a Long; `&` makes it a Long; `%` requires 16 bits. A hexadecimal or octal
+    /// literal cannot take `!`, `#`, `@` or `$`, nor `%` on a value beyond 16 bits: the
+    /// text is then not a literal at all, the `&` is the operator, and what follows
+    /// it is read again as ordinary tokens.
     fn finish_radix_literal(&mut self, val: Option<u32>, start: usize) -> Token {
         let suffix = self.src.get(self.pos).copied();
+        let cannot_take = match (suffix, val) {
+            (Some(b'!' | b'#' | b'@' | b'$'), _) => true,
+            (Some(b'%'), Some(v)) => v > 0xFFFF,
+            _ => false,
+        };
+        if cannot_take {
+            self.pos = start + 1;
+            return Token::op(Kw::Amp, self.span(start));
+        }
         if suffix == Some(b'&') || suffix == Some(b'%') {
             self.pos += 1;
         }
@@ -1434,7 +1452,6 @@ impl<'a> Scanner<'a> {
         let Some(val) = val else { return self.number_error(span) };
         match suffix {
             Some(b'&') => Token::lit(TokenKind::LongLit, Lit::Long(val as i32), span),
-            Some(b'%') if val > 0xFFFF => self.number_error(span),
             _ if val <= 0xFFFF => {
                 Token::lit(TokenKind::IntLit, Lit::Int(val as u16 as i16 as i32), span)
             }

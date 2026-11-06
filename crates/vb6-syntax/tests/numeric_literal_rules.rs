@@ -103,11 +103,6 @@ fn an_eight_or_nine_after_octal_digits_makes_the_ampersand_an_operator() {
 }
 
 #[test]
-fn a_hex_literal_with_the_integer_suffix_must_fit_sixteen_bits() {
-    assert_eq!(rejected("&H10000%"), vec![(ERR_SYNTAX_ERROR, 0, 8)]);
-}
-
-#[test]
 fn whole_number_literals_are_sized_by_range() {
     assert_eq!(literal("32767"), AstLit::Int(32767));
     assert_eq!(literal("32768"), AstLit::Long(32768));
