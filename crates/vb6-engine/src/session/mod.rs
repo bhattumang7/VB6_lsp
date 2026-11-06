@@ -1305,31 +1305,26 @@ fn class_multi_use(path: &str, raw: &[u8]) -> Option<bool> {
 /// For .frm / .cls / .ctl / .dob / .pag files, replace the designer-section
 /// bytes (VERSION + Object lines + root Begin/End block) with spaces so the
 /// VB parser sees only whitespace there. Newlines are preserved so that all
-/// diagnostic byte offsets and line numbers remain correct.
-fn strip_designer_header(path: &str, mut source: Vec<u8>) -> Vec<u8> {
+/// diagnostic byte offsets and line numbers remain correct. Also returns how many lines
+/// the designer section takes.
+fn strip_designer_header(path: &str, mut source: Vec<u8>) -> (Vec<u8>, usize) {
     let ext = path.rsplit('.').next().unwrap_or("").to_ascii_lowercase();
     if !matches!(ext.as_str(), "frm" | "ctl" | "dob" | "pag" | "cls") {
-        return source;
+        return (source, 0);
     }
     let src_str = String::from_utf8_lossy(&source);
     let Ok(frm) = parse_frm(&src_str) else {
-        return source;
+        return (source, 0);
     };
     if frm.designer_lines == 0 {
-        return source;
+        return (source, 0);
     }
-    let mut lines_seen = 0usize;
-    for byte in source.iter_mut() {
-        if lines_seen >= frm.designer_lines {
-            break;
-        }
-        match *byte {
-            b'\n' => lines_seen += 1,
-            b'\r' => {}
-            _ => *byte = b' ',
-        }
+    // The designer lines are blanked; their line breaks stay, so offsets and lines do not move.
+    let designer: Vec<_> = crate::frontend::line_reader::physical_lines(&source).take(frm.designer_lines).collect();
+    for line in designer {
+        source[line.start..line.end].fill(b' ');
     }
-    source
+    (source, frm.designer_lines)
 }
 
 /// The module kind a file's extension implies. Only `.bas` is a standard
@@ -1381,12 +1376,13 @@ fn analyze_module_inline(path: String, raw: Vec<u8>, conditional: &[(String, CcV
         Vec::new()
     };
     let multi_use = class_multi_use(&path, &raw);
-    let source = strip_designer_header(&path, raw);
+    let (source, designer_lines) = strip_designer_header(&path, raw);
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
     let kind = module_kind_for_path(&path);
     let mut parser = Parser::with_module_kind(&mut ctx, &source, kind);
+    parser.set_header_lines(designer_lines);
     parser.set_conditional_constants(conditional.to_vec());
     let top = parser.parse_module(&mut arena);
     let spans = std::mem::take(&mut parser.node_spans);

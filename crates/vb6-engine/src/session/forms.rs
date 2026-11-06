@@ -64,9 +64,7 @@ fn controls_of(text: &str, raw: &[u8]) -> Vec<FormControl> {
 
 /// Byte offset of the start of each line (index 0 = line 1).
 fn line_starts(raw: &[u8]) -> Vec<usize> {
-    let mut starts = vec![0];
-    starts.extend(raw.iter().enumerate().filter(|(_, &b)| b == b'\n').map(|(i, _)| i + 1));
-    starts
+    crate::frontend::line_reader::physical_line_starts(raw).into_iter().map(|s| s as usize).collect()
 }
 
 fn walk(block: &BeginBlock, depth: u32, raw: &[u8], lines: &[usize], out: &mut Vec<FormControl>) {
@@ -224,64 +222,5 @@ fn lossy_preview(data: &[u8]) -> String {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::frx::records::PictureRecord;
-    use crate::frx::records::StdFontRecord;
-
-    #[test]
-    fn lists_form_controls() {
-        let src = "VERSION 5.00\n\
-                   Begin VB.Form Form1\n\
-                   Caption = \"Hi\"\n\
-                   Begin VB.CommandButton cmdOK\n\
-                   End\n\
-                   End\n\
-                   Attribute VB_Name = \"Form1\"\n";
-        let controls = form_controls(src);
-        assert_eq!(controls.len(), 2);
-        assert_eq!(controls[0].name, "Form1");
-        assert_eq!(controls[0].control_type, "VB.Form");
-        assert_eq!(controls[0].depth, 0);
-        assert_eq!(controls[1].name, "cmdOK");
-        assert_eq!(controls[1].depth, 1);
-        // Span points at the control name in source.
-        let s = controls[1].span;
-        assert_eq!(&src[s.start as usize..(s.start + s.len) as usize], "cmdOK");
-    }
-
-    /// Build a minimal `.frx` containing a single record at offset 0.
-    fn frx_with(record: &FrxRecord) -> Vec<u8> {
-        let mut out = Vec::new();
-        record.write(&mut out);
-        out
-    }
-
-    #[test]
-    fn describes_picture_reference() {
-        // A 4-byte BMP-magic "image".
-        let pic = FrxRecord::Picture(PictureRecord { clsid: None, data: &[0x42, 0x4D, 0x01, 0x02] });
-        let frx = frx_with(&pic);
-        let desc = describe_frx_reference("Icon", "\"Form1.frx\":0000", &frx).unwrap();
-        assert_eq!(desc, "Picture: BMP (4 bytes)");
-    }
-
-    #[test]
-    fn describes_font_reference() {
-        let font = FrxRecord::Font(StdFontRecord {
-            charset: 0,
-            flags: 0x01, // italic
-            weight: 700, // bold
-            size_times_10k: 82_500,
-            name: b"MS Sans Serif".to_vec(),
-        });
-        let frx = frx_with(&font);
-        let desc = describe_frx_reference("Font", "\"Form1.frx\":0000", &frx).unwrap();
-        assert_eq!(desc, "Font: MS Sans Serif 8.25pt, bold italic");
-    }
-
-    #[test]
-    fn non_frx_value_is_none() {
-        assert!(describe_frx_reference("Caption", "\"plain text\"", &[]).is_none());
-    }
-}
+#[path = "tests/forms.rs"]
+mod tests;

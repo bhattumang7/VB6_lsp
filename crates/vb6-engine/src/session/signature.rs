@@ -71,7 +71,7 @@ fn find_call_context(source: &[u8], offset: u32) -> Option<(String, usize)> {
             }
             b',' if depth == 0 => commas += 1,
             // VB6 is line-based; don't cross a line boundary
-            b'\n' => return None,
+            b'\n' | b'\r' => return None,
             _ => {}
         }
     }
@@ -134,3 +134,7 @@ fn build(
     let clamped = if p.params.is_empty() { 0 } else { active_param.min(p.params.len() - 1) };
     SigHelp { label, params, active_param: clamped }
 }
+
+#[cfg(test)]
+#[path = "tests/signature.rs"]
+mod tests;

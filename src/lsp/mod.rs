@@ -78,6 +78,13 @@ impl Vb6LanguageServer {
     }
 }
 
+/// The text of line `line` (from 0) of `content`, without its break. Lines are counted as the
+/// editor counts them: a line feed, a carriage return, or both together end a line.
+fn line_text(content: &str, line: u32) -> Option<&str> {
+    let physical = vb6_engine::frontend::line_reader::physical_lines(content.as_bytes()).nth(line as usize)?;
+    Some(&content[physical.start..physical.end])
+}
+
 /// Hover content for a designer resource reference in a `.frm`/`.ctl`/`.pag`/`.dob`.
 ///
 /// When the cursor is on a line like `Icon = "Form1.frx":0000`, this reads the
@@ -91,7 +98,7 @@ fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<H
         return None;
     }
 
-    let line = content.lines().nth(position.line as usize)?;
+    let line = line_text(content, position.line)?;
     let (name, value) = line.split_once('=')?;
     let prop = name.trim();
     let fref = frx::parse_frx_reference(value.trim())?;
@@ -610,3 +617,7 @@ impl LanguageServer for Vb6LanguageServer {
         Ok(Some(calls))
     }
 }
+
+#[cfg(test)]
+#[path = "tests/line_text.rs"]
+mod tests;

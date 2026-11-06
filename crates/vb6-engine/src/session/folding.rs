@@ -25,12 +25,14 @@ impl Session {
 
 pub(super) fn folding_ranges_for_source(source: &[u8]) -> Vec<FoldRange> {
     // Interpret as Latin-1 (VB6 is Windows-1252; ASCII subset is identical)
-    let text: String = source.iter().map(|&b| b as char).collect();
+    let lines: Vec<String> = crate::frontend::line_reader::physical_lines(source)
+        .map(|line| source[line.start..line.end].iter().map(|&b| b as char).collect())
+        .collect();
     let mut ranges = Vec::new();
     // Stack of (start_line, BlockKind)
     let mut stack: Vec<(u32, Block)> = Vec::new();
 
-    for (line_num, raw_line) in text.lines().enumerate() {
+    for (line_num, raw_line) in lines.iter().enumerate() {
         let line_num = line_num as u32;
         let trimmed = raw_line.trim();
         if trimmed.is_empty() || trimmed.starts_with('\'') {
@@ -169,55 +171,5 @@ fn is_block_if(up: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn fold(src: &str) -> Vec<(u32, u32)> {
-        folding_ranges_for_source(src.as_bytes())
-            .into_iter()
-            .map(|r| (r.start_line, r.end_line))
-            .collect()
-    }
-
-    #[test]
-    fn folds_sub() {
-        let src = "Private Sub Foo()\n    Dim x As Long\nEnd Sub\n";
-        assert_eq!(fold(src), vec![(0, 2)]);
-    }
-
-    #[test]
-    fn folds_function() {
-        let src = "Public Function Add(a As Long) As Long\n    Add = a\nEnd Function\n";
-        assert_eq!(fold(src), vec![(0, 2)]);
-    }
-
-    #[test]
-    fn folds_block_if() {
-        let src = "Sub Foo()\n    If x > 0 Then\n        y = 1\n    End If\nEnd Sub\n";
-        let ranges = fold(src);
-        assert!(ranges.contains(&(0, 4)), "proc range missing: {:?}", ranges);
-        assert!(ranges.contains(&(1, 3)), "if range missing: {:?}", ranges);
-    }
-
-    #[test]
-    fn single_line_if_not_folded() {
-        let src = "Sub Foo()\n    If x > 0 Then y = 1\nEnd Sub\n";
-        let ranges = fold(src);
-        // Only the Sub should fold, not the single-line If
-        assert_eq!(ranges.len(), 1);
-        assert_eq!(ranges[0], (0, 2));
-    }
-
-    #[test]
-    fn folds_for_loop() {
-        let src = "Sub Foo()\n    For i = 1 To 10\n        x = i\n    Next i\nEnd Sub\n";
-        let ranges = fold(src);
-        assert!(ranges.contains(&(1, 3)), "for range missing: {:?}", ranges);
-    }
-
-    #[test]
-    fn folds_nested_procs() {
-        let src = "Sub A()\nEnd Sub\nSub B()\nEnd Sub\n";
-        assert_eq!(fold(src), vec![(0, 1), (2, 3)]);
-    }
-}
+#[path = "tests/folding.rs"]
+mod tests;
