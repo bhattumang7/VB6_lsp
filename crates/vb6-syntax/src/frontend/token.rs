@@ -701,7 +701,7 @@ impl Token {
 
     /// Error token for a number that could not be read.
     pub fn number_failure(span: Span, failure: NumberFailure) -> Self {
-        Self { kind: TokenKind::Error, sym: None, lit: Some(Lit::Failed(failure)), type_suffix: TypeSuffix::None, span }
+        Self { kind: TokenKind::Error, sym: None, lit: Some(Lit::Failed(failure)), type_suffix: TypeSuffix::None, bracketed: false, span }
     }
 
     /// Scan-error token.

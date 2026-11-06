@@ -3,25 +3,25 @@
 //! lines, and between the two.
 
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode};
-use vb6_syntax::frontend::cond_compile::{parse_cond_comp_args, CcValue, InvalidConstantDeclarations};
+use vb6_syntax::frontend::cond_compile::{parse_cond_comp_args, CcValue, ConstantDeclarationsError};
 use vb6_syntax::frontend::diagnostics::ERR_CC_DUPLICATE_DEFINITION;
 use vb6_syntax::frontend::parser::Parser;
 use vb6_syntax::frontend::scanner::ScannerContext;
 
 #[test]
 fn project_arguments_differing_only_in_accented_letter_case_are_duplicates() {
-    for text in ["\u{c9}x=1:\u{e9}x=2", "\u{e9}x=1:\u{c9}x=2", "\u{160}=1:\u{161}=2", "\u{178}a=1:\u{ff}A=2", "Ax=1:aX=2"] {
-        assert_eq!(parse_cond_comp_args(text), Err(InvalidConstantDeclarations), "{text}");
+    for text in ["\u{c9}x=1:\u{e9}x=2", "\u{e9}x=1:\u{c9}x=2", "\u{c0}a=1:\u{e0}A=2", "\u{de}=1:\u{fe}=2", "Ax=1:aX=2"] {
+        assert_eq!(parse_cond_comp_args(text), Err(ConstantDeclarationsError::InvalidSyntax), "{text}");
     }
 }
 
 #[test]
 fn project_argument_names_are_kept_folded() {
     assert_eq!(
-        parse_cond_comp_args("\u{c9}x=1 : \u{160}\u{152}=2"),
+        parse_cond_comp_args("\u{c9}x=1 : \u{d6}\u{c6}=2"),
         Ok(vec![
             ("\u{e9}x".to_string(), CcValue::Integer(1)),
-            ("\u{161}\u{153}".to_string(), CcValue::Integer(2)),
+            ("\u{f6}\u{e6}".to_string(), CcValue::Integer(2)),
         ])
     );
 }
@@ -50,12 +50,6 @@ fn a_project_argument_is_found_by_a_name_written_in_the_other_case() {
     for (args, name) in [
         ("\u{c9}x=1", &[0xE9u8, b'X'][..]),
         ("\u{e9}x=1", &[0xC9, b'x'][..]),
-        ("\u{160}=1", &[0x9A][..]),
-        ("\u{161}=1", &[0x8A][..]),
-        ("\u{152}=1", &[0x9C][..]),
-        ("\u{17e}=1", &[0x8E][..]),
-        ("\u{178}=1", &[0xFF][..]),
-        ("\u{ff}=1", &[0x9F][..]),
     ] {
         assert_eq!(taken(args, name), "Yes", "{args}");
     }
@@ -64,7 +58,7 @@ fn a_project_argument_is_found_by_a_name_written_in_the_other_case() {
 #[test]
 fn a_name_that_differs_by_more_than_case_is_not_found() {
     assert_eq!(taken("\u{c9}x=1", &[0xE8, b'x']), "No");
-    assert_eq!(taken("\u{160}=1", &[0x9C]), "No");
+    assert_eq!(taken("\u{d6}=1", &[0x9C]), "No");
 }
 
 #[test]

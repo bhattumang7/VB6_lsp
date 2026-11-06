@@ -440,8 +440,6 @@ fn is_ident_continue(b: u8) -> bool {
     matches!(b, b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'_' | 0x80..=0xFF)
 }
 
-/// True if `b` can begin an identifier (or a bracketed/member name).
-#[inline]
 /// The character a source byte stands for in the Windows ANSI code page (1252): the bytes
 /// 0x80-0x9F that name no character stand for themselves.
 fn ansi_char(b: u8) -> char {
@@ -456,6 +454,14 @@ fn ansi_char(b: u8) -> char {
     }
 }
 
+/// True when `c` is the character that some source byte from 0x80 up stands for: such a byte
+/// is a letter in a name.
+pub fn is_high_ansi_char(c: char) -> bool {
+    (0x80u8..=0xFF).any(|b| ansi_char(b) == c)
+}
+
+/// True if `b` can begin an identifier (or a bracketed/member name).
+#[inline]
 fn is_ident_start(b: u8) -> bool {
     matches!(b, b'A'..=b'Z' | b'a'..=b'z' | b'_' | b'[' | 0x80..=0xFF)
 }
@@ -963,13 +969,7 @@ impl<'a> Scanner<'a> {
         let starts_number = match text.first() {
             Some(b'0'..=b'9' | b'.' | b'&') => true,
             Some(_) => text.len() >= 2 && {
-                let probe = Scanner {
-                    ctx: &mut *self.ctx,
-                    src: std::borrow::Cow::Owned(text.to_vec()),
-                    pos: 0,
-                    tok_buf: String::new(),
-                    after_member_operator: false,
-                };
+                let probe = Scanner::new(&mut *self.ctx, text);
                 probe.full_width_at(0).is_some()
             },
             None => false,
@@ -977,13 +977,7 @@ impl<'a> Scanner<'a> {
         if !starts_number {
             return OrdinalStart::NotAWholeNumber;
         }
-        let mut scanner = Scanner {
-            ctx: &mut *self.ctx,
-            src: std::borrow::Cow::Owned(text.to_vec()),
-            pos: 0,
-            tok_buf: String::new(),
-            after_member_operator: false,
-        };
+        let mut scanner = Scanner::new(&mut *self.ctx, text);
         let token = scanner.scan_token();
         match (token.kind, token.lit) {
             (TokenKind::IntLit | TokenKind::LongLit, _) => OrdinalStart::WholeNumber,
