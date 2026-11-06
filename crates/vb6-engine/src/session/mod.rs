@@ -25,6 +25,7 @@ mod export;
 mod folding;
 mod format;
 mod library;
+mod module_names;
 mod project_model;
 mod receivers;
 mod signature;
@@ -208,6 +209,8 @@ struct ModuleData {
     multi_use: Option<bool>,
     /// The module's name: `Attribute VB_Name`, else the file's base name.
     module_name: String,
+    /// What the file's extension makes the module: standard, class or designer.
+    kind: ModuleKind,
     /// A `.bas` standard module (a namespace), not a class or designer.
     standard: bool,
     /// The module's name is also a default instance (forms, and classes marked
@@ -396,6 +399,7 @@ impl Session {
         self.designer_uses = designer_type_uses(&self.modules, &model);
         self.model = Some(model);
         self.check_undeclared();
+        self.check_module_names();
     }
 
     /// Bind module `idx` again against the project model already built. Valid
@@ -421,6 +425,7 @@ impl Session {
         m.use_index = Default::default();
         self.bind_count += 1;
         Self::check_undeclared_module(&mut self.modules[idx]);
+        self.check_module_name(idx);
         self.build_references();
         self.designer_uses = designer_type_uses(&self.modules, &model);
         self.model = Some(model);
@@ -1430,6 +1435,7 @@ fn analyze_module_inline(path: String, raw: Vec<u8>, conditional: &[(String, CcV
         arena,
         spans,
         line_index,
+        kind,
         standard: kind == ModuleKind::Standard,
         predeclared: raw_bound.predeclared_id || kind == ModuleKind::Form && base_type.as_ref().map_or(false, |t| t.name == "form" || t.name == "mdiform"),
         raw_bound,

@@ -10,6 +10,7 @@ pub mod diagnostics;
 pub mod keyword_table;
 pub mod line_reader;
 pub mod line_size;
+pub mod module_name;
 pub mod parser;
 pub mod scanner;
 pub mod token;

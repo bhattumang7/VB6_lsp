@@ -77,6 +77,12 @@ pub const ERR_PARAM_ARRAY_NOT_ARRAY: u32 = 0x9cd0; // 40144
 pub const ERR_INVALID_EVENT_NAME: u32 = 0xdefb; // 57083
 pub const ERR_PARAM_ARRAY_WITH_OPTIONAL: u32 = 0xdf00; // 57088
 pub const ERR_LABEL_NOT_DEFINED: u32 = 0x9ca4; // 40100
+/// `Not a legal object name: 'x'`: the name is carried by the diagnostic's `subject`.
+pub const ERR_NOT_LEGAL_OBJECT_NAME: u32 = 0x5a5c; // 23132
+/// `Main can't be module, type, project, or form name`.
+pub const ERR_MAIN_NOT_ALLOWED_AS_NAME: u32 = 0x5ab5; // 23221
+/// `Name conflicts with existing module, project, or object library`.
+pub const ERR_NAME_CONFLICTS: u32 = 0x802d; // 32813
 
 /// A single recoverable parse diagnostic.
 #[derive(Debug, Clone, PartialEq)]
@@ -90,15 +96,22 @@ pub struct Diagnostic {
     /// For `0x9c6f` ("Expected: X") errors, the name of the expected token
     /// (e.g. `"Then"`, `")"`, `"Identifier"`). `None` for generic errors.
     pub label: Option<&'static str>,
+    /// For diagnostics that quote a name (`Not a legal object name: 'x'`), that name.
+    pub subject: Option<String>,
 }
 
 impl Diagnostic {
     pub fn new(code: u32, span: Span) -> Self {
-        Self { code, span, label: None }
+        Self { code, span, label: None, subject: None }
     }
 
     pub fn with_label(code: u32, span: Span, label: &'static str) -> Self {
-        Self { code, span, label: Some(label) }
+        Self { code, span, label: Some(label), subject: None }
+    }
+
+    /// A diagnostic whose message quotes `subject`.
+    pub fn with_subject(code: u32, span: Span, subject: String) -> Self {
+        Self { code, span, label: None, subject: Some(subject) }
     }
 
     /// Human-readable text for this diagnostic.
@@ -111,6 +124,9 @@ impl Diagnostic {
                 Some(label) => format!("Expected: {label}"),
                 None => "Expected: <token>".to_string(),
             });
+        }
+        if let (ERR_NOT_LEGAL_OBJECT_NAME, Some(subject)) = (self.code, &self.subject) {
+            return Some(format!("Not a legal object name: '{subject}'"));
         }
         message_for_code(self.code).map(|s| s.to_string())
     }
@@ -212,6 +228,9 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         ERR_EXPECTED_END_WITH => "Expected End With",
         ERR_INVALID_NEXT_VARIABLE => "Invalid Next control variable reference",
         ERR_FOR_VARIABLE_IN_USE => "For control variable already in use",
+        ERR_NOT_LEGAL_OBJECT_NAME => "Not a legal object name",
+        ERR_MAIN_NOT_ALLOWED_AS_NAME => "Main can't be module, type, project, or form name",
+        ERR_NAME_CONFLICTS => "Name conflicts with existing module, project, or object library",
         _ => return None,
     })
 }
@@ -237,6 +256,16 @@ impl Diagnostics {
     /// Record a diagnostic at `span` with the given VB6 error `code`.
     pub fn push(&mut self, code: u32, span: Span) {
         self.items.push(Diagnostic::new(code, span));
+    }
+
+    /// Record a diagnostic built elsewhere.
+    pub fn push_diagnostic(&mut self, diagnostic: Diagnostic) {
+        self.items.push(diagnostic);
+    }
+
+    /// Record a diagnostic whose message quotes `subject`.
+    pub fn push_subject(&mut self, code: u32, span: Span, subject: String) {
+        self.items.push(Diagnostic::with_subject(code, span, subject));
     }
 
     /// Record an `0x9c6f` ("Expected: X") diagnostic with a specific token label.
