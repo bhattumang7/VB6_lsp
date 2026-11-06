@@ -65,6 +65,29 @@ impl Parsed {
     }
 }
 
+/// An expression or statement as one line of text, every part of it spelled out:
+/// `(Add 1 (Pos 2))`, `(= i 1)`, `(callstmt f [a b])`.
+pub fn show(p: &Parsed, id: NodeId) -> String {
+    let list = |ids: &[NodeId]| ids.iter().map(|n| show(p, *n)).collect::<Vec<_>>().join(" ");
+    match p.node(id) {
+        ExprNode::Literal { lit } => format!("{lit:?}"),
+        ExprNode::NameRef { sym, .. } => p.name(*sym).to_string(),
+        ExprNode::Paren { inner } => format!("(paren {})", show(p, *inner)),
+        ExprNode::BinOp { op, lhs, rhs } => format!("({op:?} {} {})", show(p, *lhs), show(p, *rhs)),
+        ExprNode::UnOp { op, operand } => format!("({op:?} {})", show(p, *operand)),
+        ExprNode::Assign { target, value } => format!("(= {} {})", show(p, *target), show(p, *value)),
+        ExprNode::ArgList { args } => list(args),
+        ExprNode::Call { func, args } => format!("(call {} [{}])", show(p, *func), show(p, *args)),
+        ExprNode::CallStmt { callee, args } => format!("(callstmt {} [{}])", show(p, *callee), show(p, *args)),
+        _ => panic!("show: a node kind this helper does not spell out"),
+    }
+}
+
+/// The statements of the first procedure, spelled out with [`show`].
+pub fn body_shapes(p: &Parsed) -> Vec<String> {
+    p.proc_body(0).iter().map(|n| show(p, *n)).collect()
+}
+
 /// Byte offset of the `n`-th (0-based) occurrence of `needle` in `src`.
 pub fn offset_of(src: &str, needle: &str, n: usize) -> u32 {
     src.match_indices(needle).nth(n).expect("needle not found").0 as u32

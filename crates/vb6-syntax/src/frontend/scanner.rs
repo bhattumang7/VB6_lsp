@@ -18,6 +18,7 @@
 use std::collections::HashMap;
 
 use super::keyword_table::KEYWORD_TABLE;
+use super::line_reader::{self, LineLimits, ReadProblem};
 use super::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 
 /// `E_OUTOFMEMORY` — returned by `intern_keywords` when a symbol can't be
@@ -749,8 +750,14 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
 /// Per-statement tokenizer.
 pub struct Scanner<'a> {
     ctx: &'a mut ScannerContext,
-    /// Source bytes for one logical statement.
+    /// The text as read: the source with a NUL where a piece starts inside its physical line.
     src: std::borrow::Cow<'a, [u8]>,
+    /// Where in `src` those NULs are.
+    separators: Vec<u32>,
+    /// The first limit the text breaks.
+    read_problem: Option<ReadProblem>,
+    /// What the limits on the text are measured on.
+    limits: LineLimits,
     /// Current byte offset into `src`.
     pos: usize,
     /// Scratch buffer for identifier and literal accumulation.
@@ -776,15 +783,47 @@ impl<'a> Scanner<'a> {
         self.ctx.symbols.get(id as usize).map_or(false, |s| s.flags & 4 != 0)
     }
 
+    /// The first limit the text breaks (too many pieces in a logical line, too many
+    /// lines in the module), if any.
+    pub fn read_problem(&self) -> Option<ReadProblem> {
+        self.read_problem
+    }
+
+    /// Declares the text before `header_end` to be header lines that are not code, such as a
+    /// designer section that was blanked: they do not count toward the limit on the lines of a
+    /// module.
+    pub fn set_header_end(&mut self, header_end: u32) {
+        self.read_problem = self.limits.problem(header_end);
+    }
+
+    /// Whether the NUL at `pos` is one that stands between two pieces of a line.
+    fn is_separator(&self, pos: usize) -> bool {
+        self.separators.binary_search(&(pos as u32)).is_ok()
+    }
+
     /// Create a scanner for `src`, borrowing `ctx` for symbol interning.
     pub fn new(ctx: &'a mut ScannerContext, src: &'a [u8]) -> Self {
-        let src = &src[..without_open_continuation(src)];
-        Self { ctx, src: cut_long_lines(src), pos: 0, tok_buf: String::with_capacity(64), after_member_operator: false }
+        let read = line_reader::read(src);
+        Self {
+            ctx,
+            src: read.text,
+            separators: read.separators,
+            read_problem: read.problem,
+            limits: read.limits,
+            pos: 0,
+            tok_buf: String::with_capacity(64),
+            after_member_operator: false,
+        }
     }
 
     /// Return the next token from the source, advancing the position.
     pub fn next_token(&mut self) -> Token {
-        let tok = self.scan_token();
+        let mut tok = self.scan_token();
+        if !self.separators.is_empty() {
+            let start = line_reader::source_offset(&self.separators, tok.span.start as usize);
+            let end = line_reader::source_offset(&self.separators, (tok.span.start + tok.span.len) as usize);
+            tok.span = Span { start, len: end - start };
+        }
         self.after_member_operator = matches!(tok.kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang));
         tok
     }
@@ -801,10 +840,16 @@ impl<'a> Scanner<'a> {
                 continue;
             }
             match b {
-                // A NUL ends the line's text: what follows it on the line belongs to no token.
+                // A NUL ends the text of its piece: what follows it in the piece belongs to no
+                // token. The NUL that stands between two pieces of a line ends nothing more.
                 0x00 => {
-                    while !matches!(self.peek(), None | Some(b'\r') | Some(b'\n')) {
-                        self.pos += 1;
+                    if !self.is_separator(start) {
+                        while let Some(next) = self.peek() {
+                            if matches!(next, b'\r' | b'\n') || (next == 0 && self.is_separator(self.pos)) {
+                                break;
+                            }
+                            self.pos += 1;
+                        }
                     }
                     continue;
                 }
@@ -955,7 +1000,12 @@ impl<'a> Scanner<'a> {
     /// The column (from 0) the byte at `at` takes on its physical line once tabs are
     /// expanded to stops every 8 columns.
     fn expanded_column(&self, at: usize) -> usize {
-        let line_start = self.src[..at].iter().rposition(|b| matches!(b, b'\r' | b'\n')).map_or(0, |i| i + 1);
+        let mut line_start = self.src[..at].iter().rposition(|b| matches!(b, b'\r' | b'\n')).map_or(0, |i| i + 1);
+        // Columns count from the start of the piece.
+        let before = self.separators.partition_point(|&s| (s as usize) < at);
+        if before > 0 {
+            line_start = line_start.max(self.separators[before - 1] as usize + 1);
+        }
         let mut column = 0;
         for &b in &self.src[line_start..at] {
             column += if b == b'\t' { 8 - column % 8 } else { 1 };
@@ -987,9 +1037,12 @@ impl<'a> Scanner<'a> {
             }
             match step {
                 None => break,
-                // A string cut off by a NUL (the end of what is read of a long line) is not
-                // closed in time.
-                Some(0x00) => return Token::error(self.span(start)),
+                // A NUL ends the text of the piece, and so the string: it is not closed, and
+                // the NUL is left for the next token to skip the rest of the piece.
+                Some(0x00) => {
+                    self.pos -= 1;
+                    break;
+                }
                 // A tab inside a string is expanded to the next tab stop (every 8 columns,
                 // counted on the expanded line).
                 Some(b'\t') => {
@@ -1697,82 +1750,3 @@ const FULL_WIDTH: [(u8, u8, [u16; 4]); 32] = [
     (b'E', 1, [0x8264, 0xa3c5, 0xa2d3, 0xa3c5]),
     (b'0', 10, [0x824f, 0xa3b0, 0xa2af, 0xa3b0]),
 ];
-
-/// Longest physical line the scanner reads, in bytes; the rest of a longer line is not seen.
-const MAX_LINE_LEN: usize = 1023;
-
-/// `src` with the 1024th byte of every longer line turned into a NUL, which ends the text of
-/// the line there. Offsets are unchanged.
-fn cut_long_lines(src: &[u8]) -> std::borrow::Cow<'_, [u8]> {
-    let mut out: Option<Vec<u8>> = None;
-    let blank = |b: u8| matches!(b, b' ' | b'\t');
-    let mut line_start = 0;
-    while line_start < src.len() {
-        let mut line_end = line_start;
-        while line_end < src.len() && !matches!(src[line_end], b'\r' | b'\n') {
-            line_end += 1;
-        }
-        // The text of the line is what comes before a continuation mark and the blanks around it.
-        let mut text_end = line_end;
-        while text_end > line_start && blank(src[text_end - 1]) {
-            text_end -= 1;
-        }
-        if text_end >= line_start + 2 && src[text_end - 1] == b'_' && blank(src[text_end - 2]) {
-            text_end -= 1;
-            while text_end > line_start && blank(src[text_end - 1]) {
-                text_end -= 1;
-            }
-        }
-        if text_end - line_start > MAX_LINE_LEN {
-            out.get_or_insert_with(|| src.to_vec())[line_start + MAX_LINE_LEN] = 0;
-        }
-        // Past the line end: a CR LF pair is one break.
-        line_start = line_end + 1;
-        if line_end + 1 < src.len() && src[line_end] == b'\r' && src[line_end + 1] == b'\n' {
-            line_start += 1;
-        }
-    }
-    match out {
-        Some(v) => std::borrow::Cow::Owned(v),
-        None => std::borrow::Cow::Borrowed(src),
-    }
-}
-
-/// The length of `src` without its last logical line when that line ends in a continuation
-/// mark with nothing after it: a line continued into the end of the text is not read at all.
-fn without_open_continuation(src: &[u8]) -> usize {
-    let blank = |b: u8| matches!(b, b' ' | 9);
-    let ends_in_mark = |line: &[u8]| {
-        let mut end = line.len();
-        while end > 0 && blank(line[end - 1]) {
-            end -= 1;
-        }
-        end >= 2 && line[end - 1] == b'_' && blank(line[end - 2])
-    };
-    // The text without the line end of its last line: a further empty line would be joined to
-    // the continued one instead.
-    let mut end = src.len();
-    if end > 0 && src[end - 1] == 10 {
-        end -= 1;
-        if end > 0 && src[end - 1] == 13 {
-            end -= 1;
-        }
-    }
-    let last_line_start = src[..end].iter().rposition(|&b| b == 10).map_or(0, |i| i + 1);
-    if !ends_in_mark(&src[last_line_start..end]) {
-        return src.len();
-    }
-    // Back to the first physical line of the logical line.
-    let line_start = |before: usize| src[..before].iter().rposition(|&b| b == 10).map_or(0, |i| i + 1);
-    let mut start = line_start(end);
-    while start > 0 {
-        let previous_end = src[..start - 1].iter().rposition(|&b| b != 13).map_or(0, |i| i + 1);
-        let previous_start = line_start(previous_end);
-        if ends_in_mark(&src[previous_start..previous_end]) {
-            start = previous_start;
-        } else {
-            break;
-        }
-    }
-    start
-}

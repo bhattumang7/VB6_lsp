@@ -1,19 +1,26 @@
-//! A physical line is read up to its 1023rd byte, and a logical line joins at most 24
-//! continued lines.
+//! A physical line is read in pieces of 1023 columns, and a logical line joins at most 25 of
+//! them (24 continuations).
 
 mod common;
-use common::parse;
+use common::{body_shapes, parse};
 
 #[test]
-fn a_line_is_cut_after_1023_bytes() {
+fn a_string_that_fills_a_piece_exactly_is_read_whole() {
     // `s = "` and `"` take 6 bytes plus 4 of indent: a 1013-byte body makes 1023 in all.
-    let ok = format!("Sub S()\n    s = \"{}\"\nEnd Sub\n", "a".repeat(1013));
-    assert_eq!(parse(&ok).found, vec![]);
+    let ok = format!("Sub S()\n    x = \"{}\"\nEnd Sub\n", "a".repeat(1013));
+    let p = parse(&ok);
+    assert_eq!(p.found, vec![]);
+    assert_eq!(body_shapes(&p), vec![format!("(= x Str({:?}))", "a".repeat(1013))]);
+    // A longer one holds 1014 characters of body in its first piece; the rest is in the next
+    // piece, where a name or a quote that opens a string of its own comes first.
     for extra in [1usize, 2] {
-        let long = format!("Sub S()\n    s = \"{}\"\nEnd Sub\n", "a".repeat(1013 + extra));
-        assert!(!parse(&long).found.is_empty(), "{extra}");
+        let body = "a".repeat(1013 + extra);
+        let long = format!("Sub S()\n    x = \"{body}\"\nEnd Sub\n");
+        let p = parse(&long);
+        assert_eq!(body_shapes(&p), vec![format!("(= x Str({:?}))", &body[..1014])], "{extra}");
+        assert_eq!(p.found.first().map(|f| (f.0, f.1)), Some((0x9c6f, 8 + 1023)), "{extra}");
     }
-    // Comment text past the cut does no harm.
+    // A comment is as long as its line.
     let comment = format!("Sub S()\n    x = 1 ' {}\nEnd Sub\n", "c".repeat(1100));
     assert_eq!(parse(&comment).found, vec![]);
 }
@@ -22,8 +29,11 @@ fn a_line_is_cut_after_1023_bytes() {
 fn twenty_four_continuations_are_joined_and_a_twenty_fifth_is_an_error() {
     let joined = |n: usize| format!("Sub S()\n    x = 1{}\nEnd Sub\n", " + _\n 1".repeat(n));
     assert_eq!(parse(&joined(24)).found, vec![]);
-    let p = parse(&joined(25));
-    assert_eq!(p.found.first().map(|f| f.0), Some(0x9c00));
+    let src = joined(25);
+    let p = parse(&src);
+    // Found where the 26th line starts (the blank before its `1`).
+    let start_of_26th = src.rfind(" 1\nEnd Sub").unwrap() as u32;
+    assert_eq!(p.found.first().copied(), Some((0x9c00, start_of_26th, 0)));
 }
 
 #[test]

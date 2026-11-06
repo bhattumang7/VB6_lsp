@@ -480,7 +480,7 @@ struct CcFrame {
 impl<'src> Parser<'src> {
     /// Construct a parser over `src` using the provided scanner context.
     pub fn new(ctx: &'src mut ScannerContext, src: &'src [u8]) -> Self {
-        Self {
+        let mut parser = Self {
             scanner:     Scanner::new(ctx, src),
             src,
             peeked:      None,
@@ -552,7 +552,23 @@ impl<'src> Parser<'src> {
                 ("win32".into(), CcValue::Integer(1)),
                 ("mac".into(), CcValue::Integer(0)),
             ],
-        }
+        };
+        parser
+    }
+
+    /// The first limit the text breaks while it is read, if any; its diagnostic is the first one
+    /// that [`Parser::parse_module`] reports.
+    pub fn read_problem(&self) -> Option<crate::frontend::line_reader::ReadProblem> {
+        self.scanner.read_problem()
+    }
+
+    /// Declares the first `lines` physical lines of the text to be header lines that are not
+    /// code, such as a designer section that was blanked: they do not count toward the limit on
+    /// the lines of a module. Call it before [`Parser::parse_module`].
+    pub fn set_header_lines(&mut self, lines: usize) {
+        let starts = crate::frontend::line_reader::physical_line_starts(self.src);
+        let end = starts.get(lines).copied().unwrap_or(self.src.len() as u32);
+        self.scanner.set_header_end(end);
     }
 
     /// Construct a parser with a specific module kind.
@@ -742,11 +758,7 @@ impl<'src> Parser<'src> {
             if tok.kind == TokenKind::Kw(Kw::LineCont) {
                 let next = self.scanner.next_token();
                 if next.kind == TokenKind::Eol {
-                    // A logical line joins at most 25 physical ones.
                     self.continuations += 1;
-                    if self.continuations == 25 {
-                        self.diagnostics.push(ERR_TOO_MANY_LINE_CONTINUATIONS, tok.span);
-                    }
                     continue;
                 }
                 self.after_line_cont = Some(next);
@@ -1370,6 +1382,10 @@ impl<'src> Parser<'src> {
     ///
     /// Returns a list of top-level node ids.
     pub fn parse_module(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
+        // A limit the text breaks is found while the text is read, before any line is parsed.
+        if let Some(problem) = self.scanner.read_problem() {
+            self.diagnostics.push(problem.code, Span { start: problem.offset, len: 0 });
+        }
         let mut nodes = Vec::new();
         loop {
             self.skip_module_blank_lines();
@@ -6589,7 +6605,6 @@ impl<'src> Parser<'src> {
 const MAX_IDENTIFIER_LEN: usize = 255;
 /// Most `#If` blocks that may be open at once.
 const MAX_CC_NESTING: usize = 4079;
-const ERR_OUT_OF_MEMORY: u32 = 7;
 /// Most dimensions an array declaration may list.
 const MAX_DIMENSIONS: usize = 60;
 /// A fixed-length string holds 1 to this many characters, exclusive.
