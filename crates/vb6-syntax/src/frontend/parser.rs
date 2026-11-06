@@ -370,6 +370,16 @@ enum Block {
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Term { Else, ElseIf, EndIf, Next, Loop, Wend, Case, EndWith, EndSelect }
 
+/// How a statement parsed between `Select Case` and the first `Case` is treated.
+enum PreambleRule {
+    /// Nothing is reported for it.
+    Allowed,
+    /// Reported as a statement before the first `Case`, after any error of its own.
+    Reported,
+    /// Reported as a statement before the first `Case` in place of any error of its own.
+    ReportedInstead,
+}
+
 /// Whether `term` ends the body of the open block `top`.
 fn block_closed_by(top: Block, term: Term) -> bool {
     match top {
@@ -3400,10 +3410,29 @@ impl<'src> Parser<'src> {
                     // Statements before the first Case clause.
                     if self.peek().is_stmt_end() {
                         self.advance();
+                    } else if self.peek().kind == TokenKind::Kw(Kw::Loop)
+                        && matches!(self.peek2().kind, TokenKind::Kw(Kw::While) | TokenKind::Kw(Kw::Until))
+                    {
+                        // A `Loop` that carries a condition is a statement like any other here, not
+                        // a stray block end.
+                        let span = self.current_span();
+                        self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                        self.skip_line();
                     } else {
                         let span = self.current_span();
+                        let first = self.peek().kind.clone();
+                        let mark = self.diagnostics.len();
                         if let Some(stmt) = self.parse_stmt(arena) {
-                            self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                            match self.preamble_rule(arena, &first, stmt) {
+                                PreambleRule::Allowed => {}
+                                PreambleRule::Reported => {
+                                    self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                                }
+                                PreambleRule::ReportedInstead => {
+                                    self.diagnostics.truncate(mark);
+                                    self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                                }
+                            }
                             pre.push(stmt);
                         }
                     }
@@ -3412,6 +3441,51 @@ impl<'src> Parser<'src> {
         }
         self.blocks.pop();
         arena.alloc(ExprNode::SelectCase { subject, pre, cases })
+    }
+
+    /// What a statement parsed between `Select Case` and the first `Case` may be. Declarations
+    /// (`Dim`, `Static`, `Const`, `ReDim`), a `Close` with no channel, an `Exit For` and a
+    /// `Circle`, `Line`, `PSet` or `Scale` method of an object are allowed. An `Exit` of any other
+    /// kind is reported as a statement before the first `Case` in place of its own error; every
+    /// other statement is reported on top of whatever it reports itself.
+    fn preamble_rule(&self, arena: &ExprArena, first: &TokenKind, stmt: NodeId) -> PreambleRule {
+        if matches!(
+            first,
+            TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::Static) | TokenKind::Kw(Kw::Const) | TokenKind::Kw(Kw::ReDim)
+        ) {
+            return PreambleRule::Allowed;
+        }
+        match arena.get(stmt) {
+            ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args, .. } if args.is_empty() => {
+                PreambleRule::Allowed
+            }
+            ExprNode::ExitStmt { kind: ExitKind::For } => PreambleRule::Allowed,
+            ExprNode::ExitStmt { .. } => PreambleRule::ReportedInstead,
+            ExprNode::CallStmt { callee, .. } if *first != TokenKind::Kw(Kw::Call) => {
+                self.graphics_method_rule(arena, *callee)
+            }
+            ExprNode::Call { func, .. } => self.graphics_method_rule(arena, *func),
+            ExprNode::MemberAccess { .. } => self.graphics_method_rule(arena, stmt),
+            _ => PreambleRule::Reported,
+        }
+    }
+
+    /// `Allowed` when `callee` is the `Circle`, `Line`, `PSet` or `Scale` member of an object.
+    fn graphics_method_rule(&self, arena: &ExprArena, callee: NodeId) -> PreambleRule {
+        let callee = match arena.get(callee) {
+            ExprNode::Call { func, .. } => *func,
+            _ => callee,
+        };
+        match arena.get(callee) {
+            ExprNode::MemberAccess { member, bang: false, .. }
+                if ["Circle", "Line", "PSet", "Scale"]
+                    .iter()
+                    .any(|m| self.scanner.sym_name(*member).eq_ignore_ascii_case(m)) =>
+            {
+                PreambleRule::Allowed
+            }
+            _ => PreambleRule::Reported,
+        }
     }
 
     fn parse_case_clause(&mut self, arena: &mut ExprArena) -> NodeId {
