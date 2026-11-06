@@ -358,12 +358,15 @@ impl ScannerContext {
     }
 }
 
-/// A name as symbols are keyed: letters fold to lower case, the accented Latin-1 letters
-/// along with the ASCII ones.
+/// A name as symbols are keyed: letters fold to lower case, the ASCII ones, the accented
+/// Latin-1 ones (A-grave to Thorn, except the multiplication sign) and the four Windows-1252
+/// letters outside Latin-1 (S-caron, OE, Z-caron, Y-diaeresis) along with them.
 pub fn fold_name(name: &str) -> String {
     name.chars()
         .map(|c| match c {
             '\u{c0}'..='\u{de}' if c != '\u{d7}' => char::from_u32(c as u32 + 0x20).unwrap_or(c),
+            '\u{160}' | '\u{152}' | '\u{17d}' => char::from_u32(c as u32 + 1).unwrap_or(c),
+            '\u{178}' => '\u{ff}',
             _ => c.to_ascii_lowercase(),
         })
         .collect()
