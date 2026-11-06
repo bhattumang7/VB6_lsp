@@ -11,7 +11,6 @@ use vb6_syntax::frontend::scanner::ScannerContext;
 const ERR_EXPECTED: u32 = 0x9c6f;
 const ERR_TOO_MANY_PIECES: u32 = 0x9c00;
 const ERR_OUT_OF_MEMORY: u32 = 7;
-const ERR_ONLY_COMMENTS_AFTER_END: u32 = 0x9c91;
 
 #[test]
 fn a_nul_ends_a_string_and_the_text_of_its_piece() {
@@ -80,7 +79,7 @@ fn text_after_the_end_of_a_procedure_is_still_reported() {
     // Not a Ctrl-Z: ordinary text after `End Sub` on the same line.
     let p = parse("Sub S()\nEnd Sub x\n");
     assert_eq!(p.found.len(), 1);
-    assert_eq!(p.found[0].0, ERR_ONLY_COMMENTS_AFTER_END);
+    assert_eq!(p.found[0].0, 0x9c70);
 }
 
 #[test]

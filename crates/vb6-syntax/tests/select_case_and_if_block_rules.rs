@@ -86,10 +86,12 @@ fn dim_cannot_be_the_statement_after_then() {
 }
 
 #[test]
-fn legacy_if_go_needs_to() {
-    let src = "Sub S()\nIf x Go Sub L\nL:\nEnd Sub\n";
-    let p = parse(src);
-    assert!(p.found.iter().any(|d| d.1 == offset_of(src, "Sub L", 0)), "{:?}", p.found);
-    let ok = parse("Sub S()\nIf x Go To L\nL:\nEnd Sub\n");
-    assert_eq!(ok.found, vec![]);
+fn legacy_if_takes_goto_but_not_the_spaced_forms() {
+    // Without `Then` only the one word `GoTo` follows the condition.
+    for src in ["Sub S()\nIf x Go Sub L\nL:\nEnd Sub\n", "Sub S()\nIf x Go To L\nL:\nEnd Sub\n"] {
+        let p = parse(src);
+        assert_eq!(p.found, vec![(0x9c6f, offset_of(src, "Go", 0), 2)], "for {src:?}");
+    }
+    assert_eq!(parse("Sub S()\nIf x GoTo L\nL:\nEnd Sub\n").found, vec![]);
+    assert_eq!(parse("Sub S()\nIf x Then Go To L\nL:\nEnd Sub\n").found, vec![]);
 }

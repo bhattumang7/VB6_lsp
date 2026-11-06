@@ -318,6 +318,13 @@ impl Diagnostics {
         self.items.truncate(len);
     }
 
+    /// Drop every diagnostic from `from` on except the one at `index`.
+    pub fn keep_one_from(&mut self, from: usize, index: usize) {
+        let kept = self.items[index].clone();
+        self.items.truncate(from);
+        self.items.push(kept);
+    }
+
     pub fn has_errors(&self) -> bool {
         !self.is_empty()
     }

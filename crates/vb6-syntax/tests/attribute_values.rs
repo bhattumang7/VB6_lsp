@@ -136,7 +136,7 @@ fn a_prefixed_attribute_line_is_read_and_one_after_end_sub_is_still_text_after_t
     let p = parse("Public Sub S()\nEnd Sub\n10: Attribute S.VB_Description = \"d\"\n");
     assert_eq!(p.found, vec![]);
     let src = "Public Sub S()\nEnd Sub: Attribute S.VB_Description = \"d\"\n";
-    assert_eq!(parse(src).found, vec![(0x9c91, offset_of(src, ":", 0), 1)]);
+    assert_eq!(parse(src).found, vec![(0x9c70, offset_of(src, ":", 0), 1)]);
 }
 
 #[test]

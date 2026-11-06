@@ -147,7 +147,8 @@ fn unclosed_block_does_not_leak_into_the_next_procedure() {
 
 #[test]
 fn end_of_file_reports_the_missing_procedure_end_only() {
-    let eof = |src: &str| src.len() as u32;
+    // The missing `End` is reported on the last line of the text, at the line break that ends it.
+    let eof = |src: &str| src.len() as u32 - 1;
     let src = "Sub S()\nx = 1\n";
     assert_eq!(parse(src).found, vec![(0x9c8f, eof(src), 0)]);
     let src = "Function F()\nx = 1\n";
@@ -178,20 +179,21 @@ fn end_of_the_wrong_kind_is_reported_at_the_end_statement() {
 
 #[test]
 fn only_a_comment_may_follow_the_procedure_end() {
+    // The closing line is read as a statement: text behind the closer is a syntax error.
     let src = "Sub S()\nEnd Sub x = 1\n";
     let p = parse(src);
-    assert_eq!(p.found, vec![(0x9c91, offset_of(src, "x", 0), 1)]);
+    assert_eq!(p.found, vec![(0x9c70, offset_of(src, "x", 0), 1)]);
     assert_eq!(p.top.len(), 1);
 
     let src = "Sub S()\nEnd Sub: Dim a\n";
-    assert_eq!(parse(src).found, vec![(0x9c91, offset_of(src, ":", 0), 1)]);
+    assert_eq!(parse(src).found, vec![(0x9c70, offset_of(src, ":", 0), 1)]);
 
     for ok in ["Sub S()\nEnd Sub ' done\n", "Sub S()\nEnd Sub\n", "Sub S()\nEnd Sub"] {
         assert_eq!(parse(ok).found, vec![], "for {ok:?}");
     }
     // `Rem` is a comment only where a statement can start, not after `End Sub`.
     let src = "Sub S()\nEnd Sub Rem done\n";
-    assert_eq!(parse(src).found, vec![(0x9c91, offset_of(src, "Rem", 0), 8)]);
+    assert_eq!(parse(src).found, vec![(0x9c70, offset_of(src, "Rem", 0), 8)]);
 }
 
 #[test]

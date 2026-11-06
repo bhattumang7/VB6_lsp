@@ -253,6 +253,16 @@ pub struct Parser<'src> {
     /// The statement before an `Attribute` line on the same line is being read: its errors are
     /// kept and the statement is dropped.
     in_attribute_head: bool,
+    /// Single-line `If` statements whose statement part is being read and which will take an
+    /// `Else` that follows a statement directly: only then does `Else` end a statement.
+    inline_else_pending: u32,
+    /// A line after the end of a procedure is being read as a statement: block statements
+    /// are read as their header line alone and block terminators stand for themselves.
+    line_scan: bool,
+    /// Where the first line end read since `eol_watch` was set starts.
+    first_eol_start: u32,
+    /// The start of the next line end read is to be remembered in `first_eol_start`.
+    eol_watch: bool,
     /// A statement's target is being parsed, where built-in functions are plain names.
     in_target: bool,
     /// The name being read may be written in brackets: the target of a jump, a name that
@@ -277,6 +287,10 @@ pub struct Parser<'src> {
     /// A token other than a line end has been read on the current logical line: a
     /// `Name:` is a line label only as the first thing on its line.
     line_has_content: bool,
+    /// A token other than a line end has been consumed on the current logical line. Unlike
+    /// `line_has_content` nothing resets it but the line's end: a line number is read only
+    /// where nothing precedes it on its line.
+    line_started: bool,
     /// Kind of the token consumed last.
     last_consumed: TokenKind,
     /// Line ends read so far: a block opener inside a single-line `If` must be closed
@@ -375,6 +389,25 @@ pub struct Parser<'src> {
     cc_stack: Vec<CcFrame>,
     /// One-token pushback for directive processing.
     cc_pending: Option<Token>,
+}
+
+/// Which part of an `If` line a list of statements is: after `Then` or after `Else` of a
+/// single-line `If`, or after the `Then` of an `ElseIf` line. `colon_led` is set when the
+/// `Then` is followed directly by a colon.
+#[derive(Clone, Copy)]
+enum InlineList {
+    Then { colon_led: bool },
+    Else { colon_led: bool },
+    ElseIf { colon_led: bool },
+}
+
+impl InlineList {
+    /// A line number that is the whole first statement is a jump, except in a colon-led list.
+    fn jump_allowed(self) -> bool {
+        match self {
+            InlineList::Then { colon_led } | InlineList::Else { colon_led } | InlineList::ElseIf { colon_led } => !colon_led,
+        }
+    }
 }
 
 /// An open block-structured statement. The parser keeps these on a stack, the
@@ -521,6 +554,10 @@ impl<'src> Parser<'src> {
             address_of_ok: false,
             in_inline_if: false,
             in_attribute_head: false,
+            inline_else_pending: 0,
+            line_scan: false,
+            first_eol_start: u32::MAX,
+            eol_watch: false,
             in_target: false,
             bracketed_name_ok: false,
             later_declarator: false,
@@ -531,6 +568,7 @@ impl<'src> Parser<'src> {
             last_was_eol: false,
             after_colon: false,
             line_has_content: false,
+            line_started: false,
             last_consumed: TokenKind::Eol,
             eols_read: 0,
             colon_on_line: false,
@@ -636,6 +674,7 @@ impl<'src> Parser<'src> {
         };
         self.last_was_eol = tok.kind == TokenKind::Eol;
         self.line_has_content = tok.kind != TokenKind::Eol;
+        self.line_started = tok.kind != TokenKind::Eol;
         self.last_consumed = tok.kind.clone();
         self.last_token_end = tok.span.start + tok.span.len;
         match tok.kind {
@@ -647,6 +686,9 @@ impl<'src> Parser<'src> {
                 self.after_colon = false;
                 self.colon_on_line = false;
                 self.eols_read += 1;
+                if std::mem::replace(&mut self.eol_watch, false) {
+                    self.first_eol_start = tok.span.start;
+                }
             }
             _ => {}
         }
@@ -721,7 +763,7 @@ impl<'src> Parser<'src> {
                 }
                 continue;
             }
-            if first_on_line && tok.kind == TokenKind::Kw(Kw::Hash) && self.cc_active() {
+            if first_on_line && tok.kind == TokenKind::Kw(Kw::Hash) && self.cc_active() && !self.procedure_seen {
                 // A line that opens with a number sign names a directive.
                 self.report_expected(tok.span, "If or Else or ElseIf or End or EndIf or Const");
                 while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
@@ -1345,7 +1387,7 @@ impl<'src> Parser<'src> {
         if self.peek().is_stmt_end() || (self.rem_ends_statement() && self.peek().kind == TokenKind::Kw(Kw::Rem)) {
             self.advance();
         } else if !(self.peek().kind == TokenKind::Kw(Kw::Colon)
-            || (self.in_inline_if && self.peek().kind == TokenKind::Kw(Kw::Else)))
+            || (self.in_inline_if && self.inline_else_pending > 0 && self.peek().kind == TokenKind::Kw(Kw::Else)))
         {
             let span = self.current_span();
             self.diagnostics.push_labeled(0x9c6f, span, "end of statement");
@@ -1446,7 +1488,10 @@ impl<'src> Parser<'src> {
     }
 
     /// A block terminator with no matching open block: report it and skip the line.
-    fn stray_terminator(&mut self) -> Option<NodeId> {
+    fn stray_terminator(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        if self.line_scan {
+            return self.scan_terminator(arena);
+        }
         let code = match self.terminator() {
             Some(Term::Else) | Some(Term::ElseIf) => ERR_ELSE_WITHOUT_IF,
             Some(Term::EndIf) => ERR_END_IF_WITHOUT_BLOCK_IF,
@@ -1542,7 +1587,26 @@ impl<'src> Parser<'src> {
 
             // After a procedure only procedures (and attribute lines, conditional compilation,
             // `Implements`) may stand; any other declaration is reported alone.
+            // After a procedure no `Event` or `Implements` may stand.
+            if self.procedure_seen && trailing_attribute.is_none() && self.starts_event_or_implements() {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                continue;
+            }
+
+            // After a procedure a line that is neither a procedure, an attribute line nor
+            // a declaration is read as a statement; it is rejected whether or not it reads.
+            if self.procedure_seen && trailing_attribute.is_none() && self.is_statement_line_after_procedure() {
+                self.scan_line_after_procedure(arena);
+                continue;
+            }
+
+            // After a procedure only procedures (and attribute lines, conditional compilation)
+            // may stand; any other declaration is reported alone.
             let late_declaration = if self.procedure_seen && self.starts_module_declaration() && trailing_attribute.is_none() {
+                self.eol_watch = true;
+                self.first_eol_start = u32::MAX;
                 Some((self.diagnostics.len(), self.current_span()))
             } else {
                 None
@@ -1657,8 +1721,21 @@ impl<'src> Parser<'src> {
                 _ => self.recover_module_unexpected(),
             }
             if let Some((mark, span)) = late_declaration {
-                self.diagnostics.truncate(mark);
-                self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
+                self.eol_watch = false;
+                // A declaration line that does not read is reported as it is; one that reads
+                // is text after the procedure's end (errors inside a block it opens count
+                // for nothing).
+                let first_line_end = self.first_eol_start;
+                let failed = self.diagnostics.items()[mark..]
+                    .iter()
+                    .position(|d| d.span.start <= first_line_end && matches!(d.code, 0x9c6f | 0x9c70));
+                match failed {
+                    Some(i) => self.diagnostics.keep_one_from(mark, mark + i),
+                    None => {
+                        self.diagnostics.truncate(mark);
+                        self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
+                    }
+                }
             }
             if trailing_attribute.is_some() && !line_taken {
                 nodes.truncate(head_mark);
@@ -1680,6 +1757,146 @@ impl<'src> Parser<'src> {
         }
         matches!(first, TokenKind::Kw(Kw::Public | Kw::Private | Kw::Friend | Kw::Global | Kw::Static))
             && block_word(&self.peek2().kind.clone())
+    }
+
+    /// True when the line begins with `Event` or `Implements`, with or without an access word.
+    fn starts_event_or_implements(&mut self) -> bool {
+        let is_word = |k: &TokenKind| matches!(k, TokenKind::Kw(Kw::Event | Kw::Implements));
+        let first = self.peek().kind.clone();
+        if is_word(&first) {
+            return true;
+        }
+        matches!(
+            first,
+            TokenKind::Kw(Kw::Public | Kw::Private | Kw::Global | Kw::Friend | Kw::Static)
+        ) && is_word(&self.peek2().kind.clone())
+    }
+
+    /// True when the line after a procedure is read as a statement: it does not begin a
+    /// procedure, an attribute line or a declaration that has its own report.
+    fn is_statement_line_after_procedure(&mut self) -> bool {
+        if self.peek().kind == TokenKind::Eof
+            || self.starts_module_declaration()
+            || self.starts_procedure_like_declaration()
+        {
+            return false;
+        }
+        match self.peek().kind.clone() {
+            TokenKind::Kw(Kw::Attribute | Kw::Rem | Kw::Apos) => false,
+            // Access words are read by the module-level rules.
+            TokenKind::Kw(Kw::Public | Kw::Private | Kw::Global | Kw::Friend) => false,
+            TokenKind::Ident => {
+                let name = self.peek().sym.map(|id| self.scanner.sym_name(id as u32).to_ascii_lowercase());
+                !matches!(name.as_deref(), Some("begin" | "version"))
+            }
+            _ => true,
+        }
+    }
+
+    /// Read the line after a procedure as statements. A line that does not read as a statement
+    /// is reported by the statement reader (first error only); one that does is reported as
+    /// text after the procedure's end.
+    fn scan_line_after_procedure(&mut self, arena: &mut ExprArena) {
+        let start = self.current_span();
+        let mark = self.diagnostics.len();
+        self.labels_defined.clear();
+        self.label_refs.clear();
+        let was_in_procedure = std::mem::replace(&mut self.in_procedure, true);
+        let was_scanning = std::mem::replace(&mut self.line_scan, true);
+        loop {
+            if self.peek().kind == TokenKind::Kw(Kw::End)
+                && matches!(
+                    self.peek2().kind,
+                    TokenKind::Kw(Kw::Sub | Kw::Function | Kw::Property | Kw::Type | Kw::Enum)
+                )
+            {
+                // A closing line with nothing open to close.
+                self.advance();
+                self.advance();
+                self.end_stmt();
+            } else {
+                let _ = self.parse_stmt(arena);
+            }
+            if self.last_was_eol || self.peek().kind == TokenKind::Eof {
+                break;
+            }
+            if self.peek().is_stmt_end() {
+                self.skip_line();
+                break;
+            }
+        }
+        self.line_scan = was_scanning;
+        self.in_procedure = was_in_procedure;
+        self.labels_defined.clear();
+        self.label_refs.clear();
+        // A line that reads is reported as text after the end whatever else it says about the
+        // statement it spells (a graphics method with no object is such a statement).
+        let failed = self.diagnostics.items()[mark..]
+            .iter()
+            .position(|d| d.code != ERR_METHOD_NOT_VALID_WITHOUT_OBJECT);
+        match failed {
+            Some(i) => self.diagnostics.keep_one_from(mark, mark + i),
+            None => {
+                self.diagnostics.truncate(mark);
+                self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, start);
+            }
+        }
+    }
+
+    /// A block terminator read on its own line (see [`Self::scan_line_after_procedure`]): the
+    /// terminator and what it takes are read, nothing is matched against an open block.
+    fn scan_terminator(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        match self.terminator() {
+            Some(Term::Else) => {
+                self.advance();
+            }
+            Some(Term::ElseIf) => {
+                self.advance();
+                self.parse_expr(arena, 0);
+                self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
+            }
+            Some(Term::EndIf | Term::EndWith | Term::EndSelect) => {
+                if self.peek().kind == TokenKind::Kw(Kw::End) {
+                    self.advance();
+                }
+                self.advance();
+                self.end_stmt();
+            }
+            Some(Term::Next) => {
+                self.advance();
+                while !self.at_statement_end()
+                    && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
+                {
+                    self.parse_target_expr(arena);
+                    if !self.eat(TokenKind::Kw(Kw::Comma)) {
+                        break;
+                    }
+                }
+                self.end_stmt();
+            }
+            Some(Term::Loop) => {
+                self.advance();
+                if matches!(self.peek().kind, TokenKind::Kw(Kw::While | Kw::Until)) {
+                    self.advance();
+                    self.parse_expr(arena, 0);
+                }
+                self.end_stmt();
+            }
+            Some(Term::Wend) => {
+                self.advance();
+                self.end_stmt();
+            }
+            Some(Term::Case) => {
+                self.advance();
+                self.parse_case_clause(arena);
+            }
+            None => {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                self.skip_line();
+            }
+        }
+        None
     }
 
     /// True when the next tokens begin a declaration that belongs before the procedures of a
@@ -1797,7 +2014,8 @@ impl<'src> Parser<'src> {
     /// leaving a comment here would spin the loop forever.
     fn skip_module_blank_lines(&mut self) {
         loop {
-            if self.eat(TokenKind::Eol) || self.eat(TokenKind::Kw(Kw::Colon)) { continue; }
+            // After a procedure a line holding only a colon is a statement line, not a blank one.
+            if self.eat(TokenKind::Eol) || (!self.procedure_seen && self.eat(TokenKind::Kw(Kw::Colon))) { continue; }
             if matches!(self.peek().kind, TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem)) {
                 self.advance();
                 self.eat(TokenKind::Eol);
@@ -1830,6 +2048,10 @@ impl<'src> Parser<'src> {
     /// Returns a `BLOCK` node wrapping the collected statements.
     pub fn parse_block(&mut self, arena: &mut ExprArena) -> NodeId {
         let mut stmts: Vec<NodeId> = Vec::new();
+        if self.line_scan {
+            // Only the line of the block statement's header is read.
+            return arena.alloc(ExprNode::Block { stmts });
+        }
         loop {
             while self.eat(TokenKind::Eol) {}
             if self.at_block_end() || self.peek().kind == TokenKind::Eof { break; }
@@ -2076,7 +2298,7 @@ impl<'src> Parser<'src> {
         // "End" alone terminates the program.
         // End Sub / End Function etc. are handled in their parent.
         if self.terminator().is_some() {
-            return self.stray_terminator();
+            return self.stray_terminator(arena);
         }
         self.advance();
         if self.at_statement_end()
@@ -2236,6 +2458,16 @@ impl<'src> Parser<'src> {
             {
                 self.parse_ident_stmt(arena)
             }
+            // `Go` is a jump only as `Go To` or `Go Sub`.
+            TokenKind::Kw(Kw::Go)
+                if !matches!(self.peek2().kind, TokenKind::Kw(Kw::To) | TokenKind::Kw(Kw::Sub)) =>
+            {
+                self.advance();
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                return None;
+            }
             TokenKind::Kw(Kw::Go)     => self.parse_goto_stmt(arena, false),
             TokenKind::Kw(Kw::Resume) => self.parse_resume_stmt(arena),
             TokenKind::Kw(Kw::On)     => self.parse_on_stmt(arena),
@@ -2260,7 +2492,7 @@ impl<'src> Parser<'src> {
             | TokenKind::Kw(Kw::Next)
             | TokenKind::Kw(Kw::Loop)
             | TokenKind::Kw(Kw::Wend)
-            | TokenKind::Kw(Kw::Case) => return self.stray_terminator(),
+            | TokenKind::Kw(Kw::Case) => return self.stray_terminator(arena),
             TokenKind::Kw(Kw::Erase)  => self.parse_erase_stmt(arena),
             TokenKind::Kw(Kw::RaiseEvent) => self.parse_raise_event(arena),
             TokenKind::Kw(Kw::Debug)  => self.parse_debug_stmt(arena),
@@ -2388,7 +2620,7 @@ impl<'src> Parser<'src> {
             // as a `Label` node carrying the line number; any statement that
             // follows on the same line is parsed by the enclosing block loop.
             TokenKind::IntLit | TokenKind::LongLit => {
-                if self.after_colon {
+                if self.line_started {
                     // A line number only starts a line.
                     let span = self.current_span();
                     self.diagnostics.push(ERR_SYNTAX_ERROR, span);
@@ -2540,10 +2772,14 @@ impl<'src> Parser<'src> {
                 {
                     let span = self.current_span();
                     self.report_expected(span, "expression");
+                    self.skip_line();
+                } else {
+                    args.extend(self.parse_stmt_arg_list(arena));
+                    self.end_stmt();
                 }
-                args.extend(self.parse_stmt_arg_list(arena));
+            } else {
+                self.end_stmt();
             }
-            self.end_stmt();
             let args = arena.alloc(ExprNode::ArgList { args });
             arena.alloc(ExprNode::CallStmt { callee, args })
         } else if self.has_empty_call(arena, lhs)
@@ -3124,6 +3360,10 @@ impl<'src> Parser<'src> {
             self.check_parts_size(parts, var_span);
         }
         self.end_stmt();
+        if self.line_scan {
+            let body = self.parse_block(arena);
+            return arena.alloc(ExprNode::For { var, start, end, step, body, next_var: None });
+        }
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
         let next_var = self.finish_next(arena);
@@ -3142,6 +3382,10 @@ impl<'src> Parser<'src> {
         // The collection is a target expression: a name or a chain of members, indexes and calls.
         let collection = self.parse_target_expr(arena);
         self.end_stmt();
+        if self.line_scan {
+            let body = self.parse_block(arena);
+            return arena.alloc(ExprNode::ForEach { var, collection, body, next_var: None });
+        }
         self.blocks.push(Block::For(var_sym));
         let body = self.parse_block(arena);
         let next_var = self.finish_next(arena);
@@ -3240,6 +3484,14 @@ impl<'src> Parser<'src> {
             self.check_condition_size(arena, cond, do_span);
         }
         self.end_stmt();
+        if self.line_scan {
+            let body = self.parse_block(arena);
+            let (kind, cond) = match pre {
+                Some((k, c)) => (k, Some(c)),
+                None => (DoKind::Inf, None),
+            };
+            return arena.alloc(ExprNode::Do { kind, cond, body });
+        }
         self.blocks.push(Block::Do { pre_test: pre.is_some() });
         let body = self.parse_block(arena);
         let loop_span = self.current_span();
@@ -3279,6 +3531,10 @@ impl<'src> Parser<'src> {
         let cond = self.parse_expr(arena, 0);
         self.check_condition_size(arena, cond, while_span);
         self.end_stmt();
+        if self.line_scan {
+            let body = self.parse_block(arena);
+            return arena.alloc(ExprNode::While { cond, body });
+        }
         self.blocks.push(Block::While);
         let body = self.parse_block(arena);
         if self.close_block(ERR_WHILE_WITHOUT_WEND) {
@@ -3293,6 +3549,10 @@ impl<'src> Parser<'src> {
         self.advance(); // consume With
         let obj = self.parse_expr(arena, 0);
         self.end_stmt();
+        if self.line_scan {
+            let body = self.parse_block(arena);
+            return arena.alloc(ExprNode::With { obj, body });
+        }
         self.blocks.push(Block::With);
         let body = self.parse_block(arena);
         if self.close_block(ERR_EXPECTED_END_WITH) {
@@ -3309,11 +3569,8 @@ impl<'src> Parser<'src> {
         self.advance(); // consume If
         let cond = self.parse_expr(arena, 0);
 
-        // Legacy single-line form `If <cond> GoTo|GoSub <label>` (no `Then`).
-        let legacy_goto = matches!(
-            self.peek().kind,
-            TokenKind::Kw(Kw::GoTo) | TokenKind::Kw(Kw::Go)
-        );
+        // Legacy single-line form `If <cond> GoTo <label>` (no `Then`).
+        let legacy_goto = self.peek().kind == TokenKind::Kw(Kw::GoTo);
         let has_then = if legacy_goto {
             false
         } else {
@@ -3321,11 +3578,6 @@ impl<'src> Parser<'src> {
             true
         };
 
-        // In the legacy form `Go` is followed by `To`.
-        if legacy_goto && self.peek().kind == TokenKind::Kw(Kw::Go) && self.peek2().kind != TokenKind::Kw(Kw::To) {
-            let span = self.peek2().span;
-            self.report_expected(span, "To");
-        }
         // A `Dim` cannot be the statement after `Then`.
         if has_then && self.peek().kind == TokenKind::Kw(Kw::Dim) {
             let span = self.current_span();
@@ -3339,10 +3591,17 @@ impl<'src> Parser<'src> {
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         }
         if legacy_goto || (has_then && !self.peek().is_stmt_end()) {
-            let stmts = self.parse_inline_statements(arena);
+            // `Then` straight followed by a colon opens the statements of the line as a
+            // colon-led list: it may not follow other statements, a line number is no jump
+            // in it, and an `Else` follows a statement only after a colon.
+            let colon_led = has_then && self.peek().kind == TokenKind::Kw(Kw::Colon);
+            if colon_led && not_first_on_line {
+                self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
+            }
+            let stmts = self.parse_inline_statements(arena, InlineList::Then { colon_led });
             let then_body = arena.alloc(ExprNode::Block { stmts });
             let else_body = if !self.last_was_eol && self.eat(TokenKind::Kw(Kw::Else)) {
-                let stmts = self.parse_inline_statements(arena);
+                let stmts = self.parse_inline_statements(arena, InlineList::Else { colon_led });
                 Some(arena.alloc(ExprNode::Block { stmts }))
             } else { None };
             return arena.alloc(ExprNode::If { cond, then_body, else_body });
@@ -3358,6 +3617,10 @@ impl<'src> Parser<'src> {
         }
         self.check_condition_size(arena, cond, if_span);
         self.end_stmt();
+        if self.line_scan {
+            let then_body = self.parse_block(arena);
+            return arena.alloc(ExprNode::If { cond, then_body, else_body: None });
+        }
         self.blocks.push(Block::If);
         let then_body = self.parse_block(arena);
         let else_body = self.parse_else_clause(arena);
@@ -3370,26 +3633,48 @@ impl<'src> Parser<'src> {
 
     /// The statements of one part of a single-line `If`: every statement
     /// (separated by `:`) up to the `Else` or the end of the line.
-    fn parse_inline_statements(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
+    fn parse_inline_statements(&mut self, arena: &mut ExprArena, part: InlineList) -> Vec<NodeId> {
         let was_inline = std::mem::replace(&mut self.in_inline_if, true);
-        let stmts = self.parse_inline_statement_list(arena);
+        let was_pending = self.inline_else_pending;
+        match part {
+            InlineList::Then { colon_led: false } => self.inline_else_pending += 1,
+            InlineList::Then { colon_led: true } => self.inline_else_pending = 0,
+            InlineList::Else { .. } | InlineList::ElseIf { .. } => {}
+        }
+        let stmts = self.parse_inline_statement_list(arena, part);
         self.in_inline_if = was_inline;
+        self.inline_else_pending = was_pending;
         stmts
     }
 
-    fn parse_inline_statement_list(&mut self, arena: &mut ExprArena) -> Vec<NodeId> {
+    fn parse_inline_statement_list(&mut self, arena: &mut ExprArena, part: InlineList) -> Vec<NodeId> {
         let mut stmts = Vec::new();
-        // `If c Then 10`: a line number straight after `Then` / `Else` is a jump.
-        if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
+        // `If c Then 10`: a line number straight after `Then` / `Else` is a jump, unless the
+        // list is colon-led.
+        if part.jump_allowed() && matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
             let tok = self.advance();
             let target = LabelRef::Line(line_label_value(&tok.lit));
             self.label_refs.push((target, tok.span));
             let jump = arena.alloc(ExprNode::GoTo { target });
             self.set_span(jump, tok.span);
             stmts.push(jump);
+            // The jump is a statement like any other: a separator must follow it.
+            self.end_stmt();
         }
         loop {
             while self.eat(TokenKind::Kw(Kw::Colon)) {}
+            if self.peek().kind == TokenKind::Kw(Kw::Else)
+                && !self.last_was_eol
+                && !matches!(part, InlineList::Then { .. })
+                && self.inline_else_pending == 0
+            {
+                // Only the statements of a `Then` (or of an enclosing one) are followed by an
+                // `Else`.
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                self.skip_line();
+                break;
+            }
             if self.last_was_eol
                 || self.peek().is_stmt_end()
                 || self.peek().kind == TokenKind::Kw(Kw::Else)
@@ -3453,8 +3738,20 @@ impl<'src> Parser<'src> {
                     let span = self.current_span();
                     self.diagnostics.push(ERR_SYNTAX_ERROR, span);
                 }
-                self.eat_eol();
-                let then_body = self.parse_block(arena);
+                // Statements written after `Then` on the `ElseIf` line are read as those of a
+                // single-line `If`; the lines that follow belong to the same branch.
+                let then_body = if self.peek().is_stmt_end() {
+                    self.eat_eol();
+                    self.parse_block(arena)
+                } else {
+                    let colon_led = self.peek().kind == TokenKind::Kw(Kw::Colon);
+                    let mut stmts = self.parse_inline_statements(arena, InlineList::ElseIf { colon_led });
+                    let rest = self.parse_block(arena);
+                    if let ExprNode::Block { stmts: more } = arena.get(rest) {
+                        stmts.extend(more.iter().copied());
+                    }
+                    arena.alloc(ExprNode::Block { stmts })
+                };
                 let else_body = self.parse_else_clause(arena);
                 Some(arena.alloc(ExprNode::If { cond, then_body, else_body }))
             }
@@ -3470,6 +3767,9 @@ impl<'src> Parser<'src> {
         let subject = self.parse_expr(arena, 0);
         self.check_condition_size(arena, subject, select_span);
         self.end_stmt();
+        if self.line_scan {
+            return arena.alloc(ExprNode::SelectCase { subject, pre: Vec::new(), cases: Vec::new() });
+        }
         self.blocks.push(Block::Select);
         let mut pre = Vec::new();
         let mut cases = Vec::new();
@@ -3700,6 +4000,9 @@ impl<'src> Parser<'src> {
     /// `Exit For`/`Exit Do` need an enclosing loop of that kind anywhere on the
     /// block stack; `Exit Sub`/`Function`/`Property` must match the procedure.
     fn check_exit_context(&mut self, kind: ExitKind, span: Span) {
+        if self.line_scan {
+            return;
+        }
         let (ok, code) = match kind {
             ExitKind::For => (
                 self.blocks.iter().any(|b| matches!(b, Block::For(_))),
@@ -3730,16 +4033,13 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_goto_stmt(&mut self, arena: &mut ExprArena, is_gosub: bool) -> NodeId {
-        self.advance(); // consume GoTo / GoSub / Go
-        // Space-separated forms: a bare `Go` is followed by `To` or `Sub`,
-        // which determines the jump kind. The contiguous `GoTo`/`GoSub` tokens
-        // are already complete, so neither `eat` matches and `is_gosub` stands.
-        let is_gosub = if self.eat(TokenKind::Kw(Kw::To)) {
+        let spaced = self.advance().kind == TokenKind::Kw(Kw::Go); // consume GoTo / GoSub / Go
+        // Space-separated forms: a bare `Go` is followed by `To` or `Sub`, which
+        // determines the jump kind (the caller has checked that one of them follows).
+        let is_gosub = if !spaced {
             is_gosub
-        } else if self.eat(TokenKind::Kw(Kw::Sub)) {
-            true
         } else {
-            is_gosub
+            self.advance().kind == TokenKind::Kw(Kw::Sub)
         };
         let target_span = self.current_span();
         let target = if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
@@ -4755,13 +5055,22 @@ impl<'src> Parser<'src> {
         self.advance(); // Close
         let mut chs = Vec::new();
         let mut marks = Vec::new();
+        // An empty list ends at the end of the statement or a colon; an `Else` ends the list
+        // only behind a channel.
+        if self.peek().kind == TokenKind::Kw(Kw::Else) {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, channel_marks: marks, open_mode: 0, open_flags: 0 });
+        }
         while !self.peek().is_stmt_end()
-            && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
+            && self.peek().kind != TokenKind::Kw(Kw::Colon)
+            && !(self.peek().kind == TokenKind::Kw(Kw::Else) && !chs.is_empty())
         {
             marks.push(self.eat(TokenKind::Kw(Kw::Hash)));
             chs.push(self.parse_expr(arena, 0));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
-            if self.peek().is_stmt_end() {
+            if self.peek().is_stmt_end() || matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)) {
                 // A comma needs a channel after it.
                 let span = self.current_span();
                 self.diagnostics.push(ERR_SYNTAX_ERROR, span);
@@ -5148,7 +5457,16 @@ impl<'src> Parser<'src> {
         };
         let end_span = self.current_span();
         if self.peek().kind == TokenKind::Eof {
-            self.diagnostics.push(expected_code, end_span);
+            // The procedure ends with the last line of the text: that line is where its
+            // missing `End` is reported, the line the final line break ends included.
+            let end = self.src.len();
+            let break_len = if self.src.ends_with(b"\r\n") {
+                2
+            } else {
+                usize::from(self.src.ends_with(b"\n") || self.src.ends_with(b"\r"))
+            };
+            let at = Span { start: (end - break_len) as u32, len: 0 };
+            self.diagnostics.push(expected_code, at);
             return body;
         }
         self.advance(); // End
@@ -5163,8 +5481,10 @@ impl<'src> Parser<'src> {
         if self.peek().is_stmt_end() {
             self.eat_eol();
         } else {
+            // The closing line is a statement of its own: anything but a comment after it is
+            // a syntax error.
             let span = self.current_span();
-            self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
             self.skip_line();
         }
         body

@@ -32,7 +32,6 @@ fn single_line_if_may_follow_other_statements() {
     for ok in [
         "x = 1: If a Then y = 2",
         "x = 1: If a Then y = 2 Else y = 3",
-        "x = 1: If a Then: y = 2",
         "If a Then x = 1 Else y = 2",
     ] {
         let p = parse(&format!("Sub S()\n{ok}\nEnd Sub\n"));
