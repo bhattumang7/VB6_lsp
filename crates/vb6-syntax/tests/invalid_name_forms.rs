@@ -65,11 +65,15 @@ fn a_bracketed_name_is_fine_as_a_value_a_label_and_a_member() {
 }
 
 #[test]
-fn a_bracketed_reserved_word_called_with_arguments_is_a_syntax_error() {
-    for text in ["[if] 1", "[Dim] 1"] {
-        let p = body(text);
-        assert!(p.found.iter().any(|d| d.0 == 0x9c70), "{text}: {:?}", p.found);
-    }
+fn a_bracketed_statement_word_starts_that_statement() {
+    let p = body("[if] 1");
+    assert_eq!(p.messages, vec!["Expected: Then", "Block If without End If"]);
+    assert_eq!(p.found, vec![(0x9c6f, 29, 0), (0x9c92, 30, 3)]);
+    let p = body("[Dim] 1");
+    assert_eq!(p.messages, vec!["Expected: identifier", "Expected: end of statement"]);
+    assert_eq!(p.found, vec![(0x9c6f, 29, 1), (0x9c6f, 29, 1)]);
+    // A bracketed remark word makes the rest of the line a comment.
+    assert_eq!(body("[Rem] 1, 2").found, vec![]);
     assert_eq!(body("[a] 1").found, vec![]);
     assert_eq!(body("[if] = 1").found, vec![]);
 }
@@ -88,4 +92,31 @@ fn bracketed_names_keep_their_text_as_the_name() {
     let ExprNode::Assign { value, .. } = p.node(p.proc_body(0)[0]) else { panic!("assignment") };
     let ExprNode::NameRef { sym, .. } = p.node(*value) else { panic!("name") };
     assert_eq!(p.name(*sym), "a b");
+}
+
+#[test]
+fn a_bracketed_statement_word_in_an_enum_or_type_is_that_word() {
+    let p = parse("Enum E
+    [Dim]
+End Enum
+");
+    assert_eq!(p.messages[0], "Invalid inside Enum");
+    assert_eq!(p.found[0].1, 11);
+    assert_eq!(p.found[0].2, 5);
+    // A bracketed word as a value-assigned member is still a member name.
+    assert_eq!(parse("Enum E
+    [Dim] = 1
+End Enum
+").found, vec![]);
+    let p = parse("Type T
+    [Dim](1) As Long
+End Type
+");
+    assert_eq!(p.messages[0], "Statement invalid inside Type block");
+    // A remark word is a comment, so nothing is left in the block.
+    let p = parse("Enum E
+    [Rem]
+End Enum
+");
+    assert_eq!(p.messages, vec!["Enum without members not allowed"]);
 }

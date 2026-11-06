@@ -826,6 +826,40 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// A name in brackets at the start of a statement is read as the keyword it spells when
+    /// that keyword starts a statement of its own, unless what follows makes it a name: the
+    /// target of an assignment, the object of a member, or a label.
+    fn read_statement_word(&mut self) -> bool {
+        let word = {
+            let t = self.peek().clone();
+            if t.kind != TokenKind::Ident || !t.bracketed {
+                return false;
+            }
+            match self.word_of(&t) {
+                Some(kw) if begins_own_statement(kw) => kw,
+                _ => return false,
+            }
+        };
+        if matches!(
+            self.peek2().kind,
+            TokenKind::Kw(Kw::Eq) | TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang) | TokenKind::Kw(Kw::Colon)
+        ) {
+            return false;
+        }
+        // A remark word, bracketed or not, makes the rest of the line a comment.
+        if word == Kw::Rem {
+            while !matches!(self.peek().kind, TokenKind::Eol | TokenKind::Eof) {
+                self.advance();
+            }
+            return true;
+        }
+        if let Some(tok) = self.peeked.as_mut() {
+            tok.kind = TokenKind::Kw(word);
+            tok.bracketed = false;
+        }
+        false
+    }
+
     /// The keyword the next token spells, bare or in brackets.
     fn peek_word(&mut self) -> Option<Kw> {
         let t = self.peek().clone();
@@ -2198,6 +2232,9 @@ impl<'src> Parser<'src> {
         // Skip statement ends
         while self.eat(TokenKind::Eol) {}
         if self.peek().kind == TokenKind::Eof { return None; }
+        if self.read_statement_word() {
+            return None;
+        }
         // A statement that follows another on a line adds to the line's compiled size only when
         // the one before it was an assignment whose size is known.
         if self.peek().kind != TokenKind::Kw(Kw::Colon) {
@@ -2743,16 +2780,6 @@ impl<'src> Parser<'src> {
                 self.skip_line();
                 return lhs;
             }
-            // A bracketed reserved word is no callable name.
-            if !self.peek().is_stmt_end()
-                && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
-                && self.is_bracketed_reserved_word(arena, lhs)
-            {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return lhs;
-            }
             let call_span = self.current_span();
             let args = self.parse_stmt_arg_list(arena);
             // `Randomize seed` costs 2 over an assignment of the seed.
@@ -2804,13 +2831,6 @@ impl<'src> Parser<'src> {
             ExprNode::Call { func, .. } => self.ends_in_bang_member(arena, *func),
             _ => false,
         }
-    }
-
-    /// True when `target` is a name written in brackets whose text is a reserved word.
-    fn is_bracketed_reserved_word(&self, arena: &ExprArena, target: NodeId) -> bool {
-        let ExprNode::NameRef { sym, .. } = arena.get(target) else { return false };
-        let span = self.node_spans.get(target);
-        self.src.get(span.start as usize) == Some(&b'[') && self.scanner.is_reserved(*sym)
     }
 
     /// True when `target` is a member access (not a plain name) whose member is `wanted`.
@@ -3013,10 +3033,9 @@ impl<'src> Parser<'src> {
         let name = self.expect_decl_name();
         self.note_declared_name(&name, !self.in_procedure);
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
-        if is_const && self.peek().kind == TokenKind::Kw(Kw::LParen) {
+        if is_const && !self.in_enum_member && self.peek().kind == TokenKind::Kw(Kw::LParen) {
             let span = self.current_span();
-            // An enumeration member takes no type, so only its value can follow the name.
-            self.report_expected(span, if self.in_enum_member { "=" } else { "As or =" });
+            self.report_expected(span, "As or =");
         }
         let bounds = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let d = self.parse_array_bounds(arena);
@@ -5127,7 +5146,11 @@ impl<'src> Parser<'src> {
             }
             _ => {
                 let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                if self.at_underscore_word() {
+                    self.report_invalid_character(span);
+                } else {
+                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                }
                 self.skip_to_stmt_end();
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
@@ -5338,14 +5361,13 @@ impl<'src> Parser<'src> {
         }
         let ret_type = if kind == ProcKind::PropGet && self.eat(TokenKind::Kw(Kw::As)) {
             Some(self.parse_return_type(arena))
-        } else if name.type_suffix != TypeSuffix::None {
-            if kind == ProcKind::PropGet {
-                self.type_node_from_suffix(arena, name.type_suffix)
-            } else {
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, name.span);
-                None
-            }
-        } else { None };
+        } else if kind == ProcKind::PropGet {
+            self.type_node_from_suffix(arena, name.type_suffix)
+        } else {
+            // A procedure that sets a property has no type to give its name a character for.
+            self.reject_name_suffix_as(&name, "Identifier without type suffix");
+            None
+        };
         self.check_property_agreement(arena, kind, name_id, name.span, params, ret_type);
         let static_span = self.current_span();
         let trailing_static = self.eat(TokenKind::Kw(Kw::Static));
@@ -5925,6 +5947,9 @@ impl<'src> Parser<'src> {
                 attribute::BodyAttribute::AfterMember => true,
                 attribute::BodyAttribute::None => false,
             };
+            if self.peek2().kind != TokenKind::Kw(Kw::As) && self.read_statement_word() {
+                continue;
+            }
             match self.peek().kind.clone() {
                 // `End` followed by `As` or `(` is a member named `End`.
                 TokenKind::Kw(Kw::End)
@@ -6041,6 +6066,9 @@ impl<'src> Parser<'src> {
                 attribute::BodyAttribute::AfterMember => true,
                 attribute::BodyAttribute::None => false,
             };
+            if self.read_statement_word() {
+                continue;
+            }
             match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::End) => {
                     let end_span = self.current_span();
@@ -6138,6 +6166,20 @@ impl<'src> Parser<'src> {
     /// a colon may follow it only when it has a value.
     fn finish_enum_member(&mut self, arena: &ExprArena, member: NodeId, start: Span, before_attribute_line: bool) {
         let has_value = matches!(arena.get(member), ExprNode::DimItem { init: Some(_), .. });
+        // A name followed by brackets is a call or an array element, not a member: it can only
+        // be the start of a statement, and an empty pair of brackets on its own is one that
+        // lacks the `=` of an assignment.
+        if let ExprNode::DimItem { bounds: Some(bounds), .. } = arena.get(member) {
+            let empty = matches!(arena.get(*bounds), ExprNode::ArgList { args } if args.is_empty());
+            if empty && !has_value {
+                let span = self.current_span();
+                self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "=");
+            } else {
+                self.diagnostics.push(ERR_INVALID_IN_ENUM, start);
+            }
+            self.skip_line();
+            return;
+        }
         let end = self.peek().span.start as usize;
         let joined = self
             .src
@@ -6835,6 +6877,23 @@ fn param_type_is_variant(arena: &ExprArena, param: NodeId) -> bool {
         None => true,
         Some(t) => matches!(arena.get(*t), ExprNode::BuiltinType { kind: 12 }),
     }
+}
+
+/// The keywords that start a statement of their own, the ones a statement is chosen by when a
+/// line begins with one. Every other keyword is an ordinary name at the start of a statement.
+fn begins_own_statement(kw: Kw) -> bool {
+    use Kw::*;
+    matches!(
+        kw,
+        Public | Private | Global | Dim | Static | Const | ReDim | If | For | Do | While | Select | With
+            | Let | Set | Call | Exit | Return | GoTo | GoSub | Go | Resume | On | Error | Stop | End
+            | Else | ElseIf | EndIf | Next | Loop | Wend | Case | Erase | RaiseEvent | Debug | Attribute
+            | Open | Close | Print | Write | Input | InputS | InputBS | Line | LineInput | Friend | WithEvents | Get | Put | Seek
+            | Lock | Unlock | Width | Name | Mid | MidS | MidB | MidBS | LSet | RSet | Question | Property
+            | Scale | Implements | Sub | Function | Declare | Event | Option | Type | Enum | Rem | Apos
+            | PSet | Circle | DefBool | DefByte | DefCur | DefDate | DefDbl | DefInt | DefLng | DefObj
+            | DefSng | DefStr | DefVar
+    )
 }
 
 /// The words that name module-header attributes. They are keywords only

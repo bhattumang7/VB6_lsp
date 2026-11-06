@@ -107,3 +107,5 @@ Exit Sub not allowed in Function or Property	syntax
 Invalid event name	syntax
 An # Else clause must be preceded by an # If	syntax
 An # ElseIf must be preceded by an # If or # ElseIf and followed by an # Else or # EndIf	syntax
+Can't assign to read-only property	semantic
+Cannot handle events for the object specified.	semantic

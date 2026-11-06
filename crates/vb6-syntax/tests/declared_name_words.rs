@@ -287,6 +287,23 @@ fn a_type_member_that_begins_an_assignment_cannot_be_a_member() {
     }
 }
 
+#[test]
+fn an_enumeration_member_followed_by_brackets_is_a_statement_not_a_member() {
+    // Empty brackets alone lack the `=` of an assignment.
+    let src = "Enum E\nA()\nEnd Enum\n";
+    let p = parse(src);
+    assert_eq!(p.messages[0], "Expected: =");
+    assert_eq!((p.found[0].0, p.found[0].1), (EXPECTED, offset_of(src, "\n", 1)));
+
+    // Anything else that reads as a statement is refused as a whole, at the member.
+    for (line, member) in [("A(3)", "A"), ("A() = 1", "A"), ("A(1) = 1", "A")] {
+        let src = format!("Enum E\n{line}\nEnd Enum\n");
+        let p = parse(&src);
+        assert_eq!(p.messages[0], "Invalid inside Enum", "for {line}");
+        assert_eq!(p.found[0], (0xdeff, offset_of(&src, member, 0), 1), "for {line}");
+    }
+}
+
 // ── Static outside a procedure ────────────────────────────────────────────────
 
 #[test]
@@ -435,6 +452,7 @@ fn a_word_cannot_begin_with_an_underscore() {
         "Type T\n_a As Long\nEnd Type\n",
         "Const _a = 1\n",
         "Declare Sub _a Lib \"k\" ()\n",
+        "Public _Foo As Long\n",
     ] {
         let (code, at, message) = first_problem(template, ModuleKind::Standard);
         assert_eq!(code, INVALID_CHARACTER, "for {template:?}");
