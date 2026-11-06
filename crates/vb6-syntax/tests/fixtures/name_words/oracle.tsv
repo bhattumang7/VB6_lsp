@@ -1,0 +1,673 @@
+# template	word	class	message
+enumpub	Foo%	syntax	Expected: identifier
+enumpub	Foo&	syntax	Expected: identifier
+enumpub	Foo!	syntax	Expected: identifier
+enumpub	Foo#	syntax	Expected: identifier
+enumpub	Foo@	syntax	Expected: identifier
+enumpub	Foo$	syntax	Expected: identifier
+enumpub	Mid$	accepted	
+enumpub	Date$	syntax	Expected: identifier
+enumpub	String$	syntax	Expected: identifier
+enumpub	Error$	accepted	
+enumpub	[Foo]%	syntax	Invalid character
+enumpub	[Foo]	accepted	
+enumpub	[Date]	accepted	
+enumpub	[Foo Bar]	accepted	
+enumpub	Foo	accepted	
+enumpub	Rem	syntax	Expected: identifier
+enumpub	Static	syntax	Expected: identifier
+enumpub	Me	syntax	Expected: identifier
+enumpub	Abs	syntax	Expected: identifier
+enumpub	Date	syntax	Expected: identifier
+enumpub	Attribute	syntax	Expected: identifier
+enumpub	VB_Name	syntax	Expected: identifier
+enumpub	Integer	syntax	Expected: identifier
+enumpub	String	syntax	Expected: identifier
+enumpub	Object	accepted	
+enumpub	[Integer]	accepted	
+enumpub	[String]	accepted	
+enumpub	[Object]	accepted	
+enumpct	Foo%	syntax	Expected: identifier
+enumpct	Foo&	syntax	Expected: identifier
+enumpct	Foo!	syntax	Expected: identifier
+enumpct	Foo#	syntax	Expected: identifier
+enumpct	Foo@	syntax	Expected: identifier
+enumpct	Foo$	syntax	Expected: identifier
+enumpct	Mid$	syntax	Invalid character
+enumpct	Date$	syntax	Expected: identifier
+enumpct	String$	syntax	Expected: identifier
+enumpct	Error$	syntax	Invalid character
+enumpct	[Foo]%	syntax	Invalid character
+enumpct	[Foo]	syntax	Invalid character
+enumpct	[Date]	syntax	Invalid character
+enumpct	[Foo Bar]	syntax	Invalid character
+enumpct	Foo	syntax	Expected: identifier
+enumpct	Rem	syntax	Expected: identifier
+enumpct	Static	syntax	Expected: identifier
+enumpct	Me	syntax	Expected: identifier
+enumpct	Abs	syntax	Expected: identifier
+enumpct	Date	syntax	Expected: identifier
+enumpct	Attribute	syntax	Expected: identifier
+enumpct	VB_Name	syntax	Expected: identifier
+enumpct	Integer	syntax	Expected: identifier
+enumpct	String	syntax	Expected: identifier
+enumpct	Object	syntax	Expected: identifier
+enumpct	[Integer]	syntax	Invalid character
+enumpct	[String]	syntax	Invalid character
+enumpct	[Object]	syntax	Invalid character
+typepub	Foo%	syntax	Expected: identifier
+typepub	Foo&	syntax	Expected: identifier
+typepub	Foo!	syntax	Expected: identifier
+typepub	Foo#	syntax	Expected: identifier
+typepub	Foo@	syntax	Expected: identifier
+typepub	Foo$	syntax	Expected: identifier
+typepub	Mid$	accepted	
+typepub	Date$	syntax	Expected: identifier
+typepub	String$	syntax	Expected: identifier
+typepub	Error$	accepted	
+typepub	[Foo]%	syntax	Invalid character
+typepub	[Foo]	syntax	Invalid inside Enum
+typepub	[Date]	syntax	Invalid inside Enum
+typepub	[Foo Bar]	syntax	Invalid inside Enum
+typepub	Foo	accepted	
+typepub	Rem	syntax	Expected: identifier
+typepub	Static	syntax	Expected: identifier
+typepub	Me	syntax	Expected: identifier
+typepub	Abs	syntax	Expected: identifier
+typepub	Date	syntax	Expected: identifier
+typepub	Attribute	syntax	Expected: identifier
+typepub	VB_Name	syntax	Expected: identifier
+typepub	Integer	syntax	Expected: identifier
+typepub	String	syntax	Expected: identifier
+typepub	Object	accepted	
+typepub	[Integer]	syntax	Invalid inside Enum
+typepub	[String]	syntax	Invalid inside Enum
+typepub	[Object]	syntax	Invalid inside Enum
+typepct	Foo%	syntax	Expected: identifier
+typepct	Foo&	syntax	Expected: identifier
+typepct	Foo!	syntax	Expected: identifier
+typepct	Foo#	syntax	Expected: identifier
+typepct	Foo@	syntax	Expected: identifier
+typepct	Foo$	syntax	Expected: identifier
+typepct	Mid$	syntax	Invalid character
+typepct	Date$	syntax	Expected: identifier
+typepct	String$	syntax	Expected: identifier
+typepct	Error$	syntax	Invalid character
+typepct	[Foo]%	syntax	Invalid character
+typepct	[Foo]	syntax	Invalid character
+typepct	[Date]	syntax	Invalid character
+typepct	[Foo Bar]	syntax	Invalid character
+typepct	Foo	syntax	Expected: identifier
+typepct	Rem	syntax	Expected: identifier
+typepct	Static	syntax	Expected: identifier
+typepct	Me	syntax	Expected: identifier
+typepct	Abs	syntax	Expected: identifier
+typepct	Date	syntax	Expected: identifier
+typepct	Attribute	syntax	Expected: identifier
+typepct	VB_Name	syntax	Expected: identifier
+typepct	Integer	syntax	Expected: identifier
+typepct	String	syntax	Expected: identifier
+typepct	Object	syntax	Expected: identifier
+typepct	[Integer]	syntax	Invalid character
+typepct	[String]	syntax	Invalid character
+typepct	[Object]	syntax	Invalid character
+staticname	Foo%	syntax	Expected: end of statement
+staticname	Foo&	syntax	Expected: end of statement
+staticname	Foo!	syntax	Expected: end of statement
+staticname	Foo#	syntax	Expected: end of statement
+staticname	Foo@	syntax	Expected: end of statement
+staticname	Foo$	syntax	Expected: end of statement
+staticname	Mid$	syntax	Invalid outside procedure
+staticname	Date$	syntax	Expected: identifier
+staticname	String$	syntax	Expected: identifier
+staticname	Error$	syntax	Invalid outside procedure
+staticname	[Foo]%	syntax	Expected: identifier
+staticname	[Foo]	syntax	Expected: identifier
+staticname	[Date]	syntax	Expected: identifier
+staticname	[Foo Bar]	syntax	Expected: identifier
+staticname	Foo	syntax	Invalid outside procedure
+staticname	Rem	syntax	Expected: identifier
+staticname	Static	syntax	Expected: identifier
+staticname	Me	syntax	Expected: identifier
+staticname	Abs	syntax	Expected: identifier
+staticname	Date	syntax	Expected: identifier
+staticname	Attribute	syntax	Expected: identifier
+staticname	VB_Name	syntax	Expected: identifier
+staticname	Integer	syntax	Expected: identifier
+staticname	String	syntax	Expected: identifier
+staticname	Object	syntax	Invalid outside procedure
+staticname	[Integer]	syntax	Expected: identifier
+staticname	[String]	syntax	Expected: identifier
+staticname	[Object]	syntax	Expected: identifier
+modpublic	Foo%	syntax	Expected: end of statement
+modpublic	Foo&	syntax	Expected: end of statement
+modpublic	Foo!	syntax	Expected: end of statement
+modpublic	Foo#	syntax	Expected: end of statement
+modpublic	Foo@	syntax	Expected: end of statement
+modpublic	Foo$	syntax	Expected: end of statement
+modpublic	Mid$	accepted	
+modpublic	Date$	syntax	Expected: identifier
+modpublic	String$	syntax	Expected: identifier
+modpublic	Error$	accepted	
+modpublic	[Foo]%	syntax	Expected: identifier
+modpublic	[Foo]	syntax	Expected: identifier
+modpublic	[Date]	syntax	Expected: identifier
+modpublic	[Foo Bar]	syntax	Expected: identifier
+modpublic	Foo	accepted	
+modpublic	Rem	syntax	Expected: identifier
+modpublic	Static	syntax	Expected: Sub or Function or Property
+modpublic	Me	syntax	Expected: identifier
+modpublic	Abs	syntax	Expected: identifier
+modpublic	Date	syntax	Expected: identifier
+modpublic	Attribute	syntax	Expected: identifier
+modpublic	VB_Name	syntax	Expected: identifier
+modpublic	Integer	syntax	Expected: identifier
+modpublic	String	syntax	Expected: identifier
+modpublic	Object	accepted	
+modpublic	[Integer]	syntax	Expected: identifier
+modpublic	[String]	syntax	Expected: identifier
+modpublic	[Object]	syntax	Expected: identifier
+modpubcomma	Foo%	syntax	Expected: end of statement
+modpubcomma	Foo&	syntax	Expected: end of statement
+modpubcomma	Foo!	syntax	Expected: end of statement
+modpubcomma	Foo#	syntax	Expected: end of statement
+modpubcomma	Foo@	syntax	Expected: end of statement
+modpubcomma	Foo$	syntax	Expected: end of statement
+modpubcomma	Mid$	accepted	
+modpubcomma	Date$	syntax	Expected: variable
+modpubcomma	String$	syntax	Expected: variable
+modpubcomma	Error$	accepted	
+modpubcomma	[Foo]%	syntax	Invalid character
+modpubcomma	[Foo]	accepted	
+modpubcomma	[Date]	accepted	
+modpubcomma	[Foo Bar]	accepted	
+modpubcomma	Foo	accepted	
+modpubcomma	Rem	syntax	Expected: variable
+modpubcomma	Static	syntax	Expected: variable
+modpubcomma	Me	syntax	Expected: variable
+modpubcomma	Abs	syntax	Expected: variable
+modpubcomma	Date	syntax	Expected: variable
+modpubcomma	Attribute	syntax	Expected: variable
+modpubcomma	VB_Name	syntax	Expected: variable
+modpubcomma	Integer	syntax	Expected: variable
+modpubcomma	String	syntax	Expected: variable
+modpubcomma	Object	accepted	
+modpubcomma	[Integer]	accepted	
+modpubcomma	[String]	accepted	
+modpubcomma	[Object]	accepted	
+moddimcomma	Foo%	syntax	Expected: end of statement
+moddimcomma	Foo&	syntax	Expected: end of statement
+moddimcomma	Foo!	syntax	Expected: end of statement
+moddimcomma	Foo#	syntax	Expected: end of statement
+moddimcomma	Foo@	syntax	Expected: end of statement
+moddimcomma	Foo$	syntax	Expected: end of statement
+moddimcomma	Mid$	accepted	
+moddimcomma	Date$	syntax	Expected: variable
+moddimcomma	String$	syntax	Expected: variable
+moddimcomma	Error$	accepted	
+moddimcomma	[Foo]%	syntax	Invalid character
+moddimcomma	[Foo]	accepted	
+moddimcomma	[Date]	accepted	
+moddimcomma	[Foo Bar]	accepted	
+moddimcomma	Foo	accepted	
+moddimcomma	Rem	syntax	Expected: variable
+moddimcomma	Static	syntax	Expected: variable
+moddimcomma	Me	syntax	Expected: variable
+moddimcomma	Abs	syntax	Expected: variable
+moddimcomma	Date	syntax	Expected: variable
+moddimcomma	Attribute	syntax	Expected: variable
+moddimcomma	VB_Name	syntax	Expected: variable
+moddimcomma	Integer	syntax	Expected: variable
+moddimcomma	String	syntax	Expected: variable
+moddimcomma	Object	accepted	
+moddimcomma	[Integer]	accepted	
+moddimcomma	[String]	accepted	
+moddimcomma	[Object]	accepted	
+localdimcomma	Foo%	syntax	Syntax error
+localdimcomma	Foo&	syntax	Syntax error
+localdimcomma	Foo!	syntax	Syntax error
+localdimcomma	Foo#	syntax	Syntax error
+localdimcomma	Foo@	syntax	Syntax error
+localdimcomma	Foo$	syntax	Syntax error
+localdimcomma	Mid$	accepted	
+localdimcomma	Date$	syntax	Syntax error
+localdimcomma	String$	syntax	Syntax error
+localdimcomma	Error$	accepted	
+localdimcomma	[Foo]%	syntax	Syntax error
+localdimcomma	[Foo]	accepted	
+localdimcomma	[Date]	accepted	
+localdimcomma	[Foo Bar]	accepted	
+localdimcomma	Foo	accepted	
+localdimcomma	Rem	syntax	Syntax error
+localdimcomma	Static	syntax	Syntax error
+localdimcomma	Me	syntax	Syntax error
+localdimcomma	Abs	syntax	Syntax error
+localdimcomma	Date	syntax	Syntax error
+localdimcomma	Attribute	syntax	Syntax error
+localdimcomma	VB_Name	syntax	Syntax error
+localdimcomma	Integer	syntax	Syntax error
+localdimcomma	String	syntax	Syntax error
+localdimcomma	Object	accepted	
+localdimcomma	[Integer]	accepted	
+localdimcomma	[String]	accepted	
+localdimcomma	[Object]	accepted	
+localdimfirst	Foo%	accepted	
+localdimfirst	Foo&	accepted	
+localdimfirst	Foo!	accepted	
+localdimfirst	Foo#	accepted	
+localdimfirst	Foo@	accepted	
+localdimfirst	Foo$	accepted	
+localdimfirst	Mid$	accepted	
+localdimfirst	Date$	syntax	Syntax error
+localdimfirst	String$	syntax	Syntax error
+localdimfirst	Error$	accepted	
+localdimfirst	[Foo]%	syntax	Syntax error
+localdimfirst	[Foo]	syntax	Syntax error
+localdimfirst	[Date]	syntax	Syntax error
+localdimfirst	[Foo Bar]	syntax	Syntax error
+localdimfirst	Foo	accepted	
+localdimfirst	Rem	syntax	Syntax error
+localdimfirst	Static	syntax	Syntax error
+localdimfirst	Me	syntax	Syntax error
+localdimfirst	Abs	syntax	Syntax error
+localdimfirst	Date	syntax	Syntax error
+localdimfirst	Attribute	syntax	Syntax error
+localdimfirst	VB_Name	syntax	Syntax error
+localdimfirst	Integer	syntax	Syntax error
+localdimfirst	String	syntax	Syntax error
+localdimfirst	Object	accepted	
+localdimfirst	[Integer]	syntax	Syntax error
+localdimfirst	[String]	syntax	Syntax error
+localdimfirst	[Object]	syntax	Syntax error
+constcomma	Foo%	accepted	
+constcomma	Foo&	accepted	
+constcomma	Foo!	accepted	
+constcomma	Foo#	accepted	
+constcomma	Foo@	accepted	
+constcomma	Foo$	accepted	
+constcomma	Mid$	accepted	
+constcomma	Date$	syntax	Expected: identifier
+constcomma	String$	syntax	Expected: identifier
+constcomma	Error$	accepted	
+constcomma	[Foo]%	syntax	Expected: identifier
+constcomma	[Foo]	syntax	Expected: identifier
+constcomma	[Date]	syntax	Expected: identifier
+constcomma	[Foo Bar]	syntax	Expected: identifier
+constcomma	Foo	accepted	
+constcomma	Rem	syntax	Expected: identifier
+constcomma	Static	syntax	Expected: identifier
+constcomma	Me	syntax	Expected: identifier
+constcomma	Abs	syntax	Expected: identifier
+constcomma	Date	syntax	Expected: identifier
+constcomma	Attribute	syntax	Expected: identifier
+constcomma	VB_Name	syntax	Expected: identifier
+constcomma	Integer	syntax	Expected: identifier
+constcomma	String	syntax	Expected: identifier
+constcomma	Object	accepted	
+constcomma	[Integer]	syntax	Expected: identifier
+constcomma	[String]	syntax	Expected: identifier
+constcomma	[Object]	syntax	Expected: identifier
+sfxenumvalue	Foo%	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	Foo&	accepted	
+sfxenumvalue	Foo!	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	Foo#	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	Foo@	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	Foo$	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	Mid$	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	Date$	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	String$	syntax	Expected: identifier
+sfxenumvalue	Error$	semantic	Type-declaration character does not match declared data type
+sfxenumvalue	[Foo]%	syntax	Invalid character
+sfxenumvalue	[Foo]	accepted	
+sfxenumvalue	[Date]	accepted	
+sfxenumvalue	[Foo Bar]	accepted	
+sfxenumvalue	Foo	accepted	
+sfxenumvalue	Rem	syntax	Enum without members not allowed
+sfxenumvalue	Static	syntax	Expected: identifier
+sfxenumvalue	Me	unanswered	compiler terminated abnormally, exit -1073741819
+sfxenumvalue	Abs	syntax	Expected: identifier
+sfxenumvalue	Date	accepted	
+sfxenumvalue	Attribute	syntax	Enum without members not allowed
+sfxenumvalue	VB_Name	syntax	Expected: line number or label or statement or end of statement
+sfxenumvalue	Integer	syntax	Expected: line number or label or statement or end of statement
+sfxenumvalue	String	syntax	Expected: identifier
+sfxenumvalue	Object	accepted	
+sfxenumvalue	[Integer]	accepted	
+sfxenumvalue	[String]	accepted	
+sfxenumvalue	[Object]	accepted	
+sfxenumalone	Foo%	accepted	
+sfxenumalone	Foo&	accepted	
+sfxenumalone	Foo!	accepted	
+sfxenumalone	Foo#	accepted	
+sfxenumalone	Foo@	accepted	
+sfxenumalone	Foo$	accepted	
+sfxenumalone	Mid$	syntax	Expected: (
+sfxenumalone	Date$	accepted	
+sfxenumalone	String$	syntax	Expected: identifier
+sfxenumalone	Error$	accepted	
+sfxenumalone	[Foo]%	syntax	Invalid character
+sfxenumalone	[Foo]	accepted	
+sfxenumalone	[Date]	accepted	
+sfxenumalone	[Foo Bar]	accepted	
+sfxenumalone	Foo	accepted	
+sfxenumalone	Rem	syntax	Enum without members not allowed
+sfxenumalone	Static	syntax	Expected: identifier
+sfxenumalone	Me	syntax	Expected: =
+sfxenumalone	Abs	syntax	Expected: identifier
+sfxenumalone	Date	accepted	
+sfxenumalone	Attribute	syntax	Enum without members not allowed
+sfxenumalone	VB_Name	syntax	Expected: line number or label or statement or end of statement
+sfxenumalone	Integer	syntax	Expected: line number or label or statement or end of statement
+sfxenumalone	String	syntax	Expected: identifier
+sfxenumalone	Object	accepted	
+sfxenumalone	[Integer]	accepted	
+sfxenumalone	[String]	accepted	
+sfxenumalone	[Object]	accepted	
+sfxtmember	Foo%	syntax	Expected: end of statement
+sfxtmember	Foo&	syntax	Expected: end of statement
+sfxtmember	Foo!	syntax	Expected: end of statement
+sfxtmember	Foo#	syntax	Expected: end of statement
+sfxtmember	Foo@	syntax	Expected: end of statement
+sfxtmember	Foo$	syntax	Expected: end of statement
+sfxtmember	Mid$	accepted	
+sfxtmember	Date$	accepted	
+sfxtmember	String$	syntax	Expected: =
+sfxtmember	Error$	accepted	
+sfxtmember	[Foo]%	syntax	Invalid character
+sfxtmember	[Foo]	syntax	Expected: expression or end of statement
+sfxtmember	[Date]	syntax	Expected: expression or end of statement
+sfxtmember	[Foo Bar]	syntax	Expected: expression or end of statement
+sfxtmember	Foo	accepted	
+sfxtmember	Rem	syntax	User-defined type without members not allowed
+sfxtmember	Static	accepted	
+sfxtmember	Me	syntax	Expected: =
+sfxtmember	Abs	accepted	
+sfxtmember	Date	accepted	
+sfxtmember	Attribute	accepted	
+sfxtmember	VB_Name	accepted	
+sfxtmember	Integer	accepted	
+sfxtmember	String	accepted	
+sfxtmember	Object	accepted	
+sfxtmember	[Integer]	syntax	Expected: expression or end of statement
+sfxtmember	[String]	syntax	Expected: expression or end of statement
+sfxtmember	[Object]	syntax	Expected: expression or end of statement
+sfxsub	Foo%	syntax	Expected: Identifier without type suffix
+sfxsub	Foo&	syntax	Expected: Identifier without type suffix
+sfxsub	Foo!	syntax	Expected: Identifier without type suffix
+sfxsub	Foo#	syntax	Expected: Identifier without type suffix
+sfxsub	Foo@	syntax	Expected: Identifier without type suffix
+sfxsub	Foo$	syntax	Expected: Identifier without type suffix
+sfxsub	Mid$	syntax	Expected: Identifier without type suffix
+sfxsub	Date$	syntax	Expected: identifier
+sfxsub	String$	syntax	Expected: identifier
+sfxsub	Error$	syntax	Expected: Identifier without type suffix
+sfxsub	[Foo]%	syntax	Expected: identifier
+sfxsub	[Foo]	syntax	Expected: identifier
+sfxsub	[Date]	syntax	Expected: identifier
+sfxsub	[Foo Bar]	syntax	Expected: identifier
+sfxsub	Foo	accepted	
+sfxsub	Rem	syntax	Expected: identifier
+sfxsub	Static	syntax	Expected: identifier
+sfxsub	Me	syntax	Expected: identifier
+sfxsub	Abs	syntax	Expected: identifier
+sfxsub	Date	syntax	Expected: identifier
+sfxsub	Attribute	syntax	Expected: identifier
+sfxsub	VB_Name	syntax	Expected: identifier
+sfxsub	Integer	syntax	Expected: identifier
+sfxsub	String	syntax	Expected: identifier
+sfxsub	Object	accepted	
+sfxsub	[Integer]	syntax	Expected: identifier
+sfxsub	[String]	syntax	Expected: identifier
+sfxsub	[Object]	syntax	Expected: identifier
+sfxfunc	Foo%	syntax	Expected: end of statement
+sfxfunc	Foo&	syntax	Expected: end of statement
+sfxfunc	Foo!	syntax	Expected: end of statement
+sfxfunc	Foo#	syntax	Expected: end of statement
+sfxfunc	Foo@	syntax	Expected: end of statement
+sfxfunc	Foo$	syntax	Expected: end of statement
+sfxfunc	Mid$	syntax	Expected: end of statement
+sfxfunc	Date$	syntax	Expected: identifier
+sfxfunc	String$	syntax	Expected: identifier
+sfxfunc	Error$	syntax	Expected: end of statement
+sfxfunc	[Foo]%	syntax	Expected: identifier
+sfxfunc	[Foo]	syntax	Expected: identifier
+sfxfunc	[Date]	syntax	Expected: identifier
+sfxfunc	[Foo Bar]	syntax	Expected: identifier
+sfxfunc	Foo	accepted	
+sfxfunc	Rem	syntax	Expected: identifier
+sfxfunc	Static	syntax	Expected: identifier
+sfxfunc	Me	syntax	Expected: identifier
+sfxfunc	Abs	syntax	Expected: identifier
+sfxfunc	Date	syntax	Expected: identifier
+sfxfunc	Attribute	syntax	Expected: identifier
+sfxfunc	VB_Name	syntax	Expected: identifier
+sfxfunc	Integer	syntax	Expected: identifier
+sfxfunc	String	syntax	Expected: identifier
+sfxfunc	Object	accepted	
+sfxfunc	[Integer]	syntax	Expected: identifier
+sfxfunc	[String]	syntax	Expected: identifier
+sfxfunc	[Object]	syntax	Expected: identifier
+sfxfuncnoas	Foo%	accepted	
+sfxfuncnoas	Foo&	accepted	
+sfxfuncnoas	Foo!	accepted	
+sfxfuncnoas	Foo#	accepted	
+sfxfuncnoas	Foo@	accepted	
+sfxfuncnoas	Foo$	accepted	
+sfxfuncnoas	Mid$	accepted	
+sfxfuncnoas	Date$	syntax	Expected: identifier
+sfxfuncnoas	String$	syntax	Expected: identifier
+sfxfuncnoas	Error$	accepted	
+sfxfuncnoas	[Foo]%	syntax	Expected: identifier
+sfxfuncnoas	[Foo]	syntax	Expected: identifier
+sfxfuncnoas	[Date]	syntax	Expected: identifier
+sfxfuncnoas	[Foo Bar]	syntax	Expected: identifier
+sfxfuncnoas	Foo	accepted	
+sfxfuncnoas	Rem	syntax	Expected: identifier
+sfxfuncnoas	Static	syntax	Expected: identifier
+sfxfuncnoas	Me	syntax	Expected: identifier
+sfxfuncnoas	Abs	syntax	Expected: identifier
+sfxfuncnoas	Date	syntax	Expected: identifier
+sfxfuncnoas	Attribute	syntax	Expected: identifier
+sfxfuncnoas	VB_Name	syntax	Expected: identifier
+sfxfuncnoas	Integer	syntax	Expected: identifier
+sfxfuncnoas	String	syntax	Expected: identifier
+sfxfuncnoas	Object	accepted	
+sfxfuncnoas	[Integer]	syntax	Expected: identifier
+sfxfuncnoas	[String]	syntax	Expected: identifier
+sfxfuncnoas	[Object]	syntax	Expected: identifier
+tdotname	Foo%	semantic	User-defined type not defined
+tdotname	Foo&	semantic	User-defined type not defined
+tdotname	Foo!	semantic	User-defined type not defined
+tdotname	Foo#	semantic	User-defined type not defined
+tdotname	Foo@	semantic	User-defined type not defined
+tdotname	Foo$	semantic	User-defined type not defined
+tdotname	Mid$	semantic	User-defined type not defined
+tdotname	Date$	semantic	User-defined type not defined
+tdotname	String$	semantic	User-defined type not defined
+tdotname	Error$	semantic	User-defined type not defined
+tdotname	[Foo]%	syntax	Invalid character
+tdotname	[Foo]	semantic	User-defined type not defined
+tdotname	[Date]	semantic	User-defined type not defined
+tdotname	[Foo Bar]	semantic	User-defined type not defined
+tdotname	Foo	semantic	User-defined type not defined
+tdotname	Rem	syntax	Expected: identifier
+tdotname	Static	semantic	User-defined type not defined
+tdotname	Me	semantic	User-defined type not defined
+tdotname	Abs	semantic	User-defined type not defined
+tdotname	Date	semantic	User-defined type not defined
+tdotname	Attribute	semantic	User-defined type not defined
+tdotname	VB_Name	semantic	User-defined type not defined
+tdotname	Integer	semantic	User-defined type not defined
+tdotname	String	semantic	User-defined type not defined
+tdotname	Object	semantic	User-defined type not defined
+tdotname	[Integer]	semantic	User-defined type not defined
+tdotname	[String]	semantic	User-defined type not defined
+tdotname	[Object]	semantic	User-defined type not defined
+newname	Foo%	semantic	User-defined type not defined
+newname	Foo&	semantic	User-defined type not defined
+newname	Foo!	semantic	User-defined type not defined
+newname	Foo#	semantic	User-defined type not defined
+newname	Foo@	semantic	User-defined type not defined
+newname	Foo$	semantic	User-defined type not defined
+newname	Mid$	semantic	User-defined type not defined
+newname	Date$	syntax	Syntax error
+newname	String$	syntax	Syntax error
+newname	Error$	semantic	User-defined type not defined
+newname	[Foo]%	syntax	Syntax error
+newname	[Foo]	semantic	User-defined type not defined
+newname	[Date]	semantic	User-defined type not defined
+newname	[Foo Bar]	semantic	User-defined type not defined
+newname	Foo	semantic	User-defined type not defined
+newname	Rem	syntax	Syntax error
+newname	Static	syntax	Syntax error
+newname	Me	syntax	Syntax error
+newname	Abs	syntax	Syntax error
+newname	Date	syntax	Syntax error
+newname	Attribute	syntax	Syntax error
+newname	VB_Name	syntax	Syntax error
+newname	Integer	syntax	Syntax error
+newname	String	syntax	Syntax error
+newname	Object	syntax	Syntax error
+newname	[Integer]	semantic	User-defined type not defined
+newname	[String]	semantic	User-defined type not defined
+newname	[Object]	syntax	Syntax error
+dimasnew	Foo%	semantic	User-defined type not defined
+dimasnew	Foo&	semantic	User-defined type not defined
+dimasnew	Foo!	semantic	User-defined type not defined
+dimasnew	Foo#	semantic	User-defined type not defined
+dimasnew	Foo@	semantic	User-defined type not defined
+dimasnew	Foo$	semantic	User-defined type not defined
+dimasnew	Mid$	semantic	User-defined type not defined
+dimasnew	Date$	syntax	Expected: identifier
+dimasnew	String$	syntax	Expected: identifier
+dimasnew	Error$	semantic	User-defined type not defined
+dimasnew	[Foo]%	syntax	Invalid character
+dimasnew	[Foo]	semantic	User-defined type not defined
+dimasnew	[Date]	semantic	User-defined type not defined
+dimasnew	[Foo Bar]	semantic	User-defined type not defined
+dimasnew	Foo	semantic	User-defined type not defined
+dimasnew	Rem	syntax	Expected: identifier
+dimasnew	Static	syntax	Expected: identifier
+dimasnew	Me	syntax	Expected: identifier
+dimasnew	Abs	syntax	Expected: identifier
+dimasnew	Date	syntax	Expected: identifier
+dimasnew	Attribute	syntax	Expected: identifier
+dimasnew	VB_Name	syntax	Expected: identifier
+dimasnew	Integer	syntax	Expected: identifier
+dimasnew	String	syntax	Expected: identifier
+dimasnew	Object	syntax	Expected: identifier
+dimasnew	[Integer]	semantic	User-defined type not defined
+dimasnew	[String]	semantic	User-defined type not defined
+dimasnew	[Object]	syntax	Expected: identifier
+dimasstr	Foo%	syntax	Expected: end of statement
+dimasstr	Foo&	syntax	Expected: end of statement
+dimasstr	Foo!	syntax	Expected: end of statement
+dimasstr	Foo#	syntax	Expected: end of statement
+dimasstr	Foo@	syntax	Expected: end of statement
+dimasstr	Foo$	syntax	Expected: end of statement
+dimasstr	Mid$	syntax	Expected: end of statement
+dimasstr	Date$	syntax	Expected: New or type name
+dimasstr	String$	syntax	Expected: New or type name
+dimasstr	Error$	syntax	Expected: end of statement
+dimasstr	[Foo]%	syntax	Invalid character
+dimasstr	[Foo]	syntax	Expected: end of statement
+dimasstr	[Date]	syntax	Expected: end of statement
+dimasstr	[Foo Bar]	syntax	Expected: end of statement
+dimasstr	Foo	syntax	Expected: end of statement
+dimasstr	Rem	syntax	Expected: New or type name
+dimasstr	Static	syntax	Expected: New or type name
+dimasstr	Me	syntax	Expected: New or type name
+dimasstr	Abs	syntax	Expected: New or type name
+dimasstr	Date	syntax	Expected: end of statement
+dimasstr	Attribute	syntax	Expected: New or type name
+dimasstr	VB_Name	syntax	Expected: New or type name
+dimasstr	Integer	syntax	Expected: end of statement
+dimasstr	String	accepted	
+dimasstr	Object	syntax	Expected: end of statement
+dimasstr	[Integer]	syntax	Expected: end of statement
+dimasstr	[String]	accepted	
+dimasstr	[Object]	syntax	Expected: end of statement
+stmtstart	Foo%	accepted	
+stmtstart	Foo&	accepted	
+stmtstart	Foo!	accepted	
+stmtstart	Foo#	accepted	
+stmtstart	Foo@	accepted	
+stmtstart	Foo$	accepted	
+stmtstart	Mid$	semantic	Function call on left-hand side of assignment must return Variant or Object
+stmtstart	Date$	accepted	
+stmtstart	String$	syntax	Syntax error
+stmtstart	Error$	semantic	Function call on left-hand side of assignment must return Variant or Object
+stmtstart	[Foo]%	syntax	Syntax error
+stmtstart	[Foo]	semantic	External name not defined
+stmtstart	[Date]	semantic	External name not defined
+stmtstart	[Foo Bar]	semantic	External name not defined
+stmtstart	Foo	accepted	
+stmtstart	Rem	accepted	
+stmtstart	Static	syntax	Syntax error
+stmtstart	Me	semantic	Invalid use of Me keyword
+stmtstart	Abs	syntax	Syntax error
+stmtstart	Date	accepted	
+stmtstart	Attribute	accepted	
+stmtstart	VB_Name	syntax	Syntax error
+stmtstart	Integer	syntax	Syntax error
+stmtstart	String	syntax	Syntax error
+stmtstart	Object	accepted	
+stmtstart	[Integer]	semantic	External name not defined
+stmtstart	[String]	semantic	External name not defined
+stmtstart	[Object]	semantic	External name not defined
+staticenum	Foo%	syntax	Expected: identifier
+staticenum	Foo&	syntax	Expected: identifier
+staticenum	Foo!	syntax	Expected: identifier
+staticenum	Foo#	syntax	Expected: identifier
+staticenum	Foo@	syntax	Expected: identifier
+staticenum	Foo$	syntax	Expected: identifier
+staticenum	Mid$	syntax	Expected: identifier
+staticenum	Date$	syntax	Expected: identifier
+staticenum	String$	syntax	Expected: identifier
+staticenum	Error$	syntax	Expected: identifier
+staticenum	[Foo]%	syntax	Expected: identifier
+staticenum	[Foo]	syntax	Expected: identifier
+staticenum	[Date]	syntax	Expected: identifier
+staticenum	[Foo Bar]	syntax	Expected: identifier
+staticenum	Foo	syntax	Expected: identifier
+staticenum	Rem	syntax	Expected: identifier
+staticenum	Static	syntax	Expected: identifier
+staticenum	Me	syntax	Expected: identifier
+staticenum	Abs	syntax	Expected: identifier
+staticenum	Date	syntax	Expected: identifier
+staticenum	Attribute	syntax	Expected: identifier
+staticenum	VB_Name	syntax	Expected: identifier
+staticenum	Integer	syntax	Expected: identifier
+staticenum	String	syntax	Expected: identifier
+staticenum	Object	syntax	Expected: identifier
+staticenum	[Integer]	syntax	Expected: identifier
+staticenum	[String]	syntax	Expected: identifier
+staticenum	[Object]	syntax	Expected: identifier
+cconst	Foo%	accepted	
+cconst	Foo&	accepted	
+cconst	Foo!	accepted	
+cconst	Foo#	accepted	
+cconst	Foo@	accepted	
+cconst	Foo$	accepted	
+cconst	Mid$	accepted	
+cconst	Date$	syntax	Expected: identifier
+cconst	String$	syntax	Expected: identifier
+cconst	Error$	accepted	
+cconst	[Foo]%	syntax	Invalid character
+cconst	[Foo]	accepted	
+cconst	[Date]	accepted	
+cconst	[Foo Bar]	accepted	
+cconst	Foo	accepted	
+cconst	Rem	syntax	Expected: identifier
+cconst	Static	syntax	Expected: identifier
+cconst	Me	syntax	Expected: identifier
+cconst	Abs	syntax	Expected: identifier
+cconst	Date	syntax	Expected: identifier
+cconst	Attribute	syntax	Expected: identifier
+cconst	VB_Name	syntax	Expected: identifier
+cconst	Integer	syntax	Expected: identifier
+cconst	String	syntax	Expected: identifier
+cconst	Object	accepted	
+cconst	[Integer]	accepted	
+cconst	[String]	accepted	
+cconst	[Object]	accepted	

@@ -253,8 +253,16 @@ pub struct Parser<'src> {
     in_attribute_head: bool,
     /// A statement's target is being parsed, where built-in functions are plain names.
     in_target: bool,
-    /// The name being read is the target of a jump, which may be written in brackets.
-    label_target: bool,
+    /// The name being read may be written in brackets: the target of a jump, a name that
+    /// is used rather than declared, a member of a type.
+    bracketed_name_ok: bool,
+    /// The type being read follows `New` in a declaration.
+    type_after_new: bool,
+    /// An enumeration member is being parsed.
+    in_enum_member: bool,
+    /// The declarator being read follows a comma in a declaration list: only the first
+    /// declarator of a list refuses a name written in brackets.
+    later_declarator: bool,
     /// The target about to be parsed is at the start of a statement, where a few reserved
     /// words (`Date`, `DoEvents`, `CDec`) may name what is assigned or called.
     target_at_statement_start: bool,
@@ -504,7 +512,10 @@ impl<'src> Parser<'src> {
             in_inline_if: false,
             in_attribute_head: false,
             in_target: false,
-            label_target: false,
+            bracketed_name_ok: false,
+            later_declarator: false,
+            in_enum_member: false,
+            type_after_new: false,
             target_at_statement_start: false,
             blocks: Vec::new(),
             last_was_eol: false,
@@ -797,7 +808,42 @@ impl<'src> Parser<'src> {
                 self.diagnostics.push(code, span);
             }
             // Return a synthetic placeholder so callers can continue.
-            Token { kind: expected, sym: None, lit: None, type_suffix: TypeSuffix::None, span }
+            Token { kind: expected, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span }
+        }
+    }
+
+    /// The keyword a word token spells. A bracketed word keeps the identity of the keyword
+    /// it spells even though it is an ordinary name; a bare keyword has it by its kind.
+    /// Every place that asks which word a name is goes through here, so a word is the same
+    /// word wherever the grammar looks at it. A place that wants only the bare keyword
+    /// compares the token kind instead.
+    fn word_of(&self, t: &Token) -> Option<Kw> {
+        let sym = t.sym? as u32;
+        match t.kind {
+            TokenKind::Kw(k) => Some(k),
+            TokenKind::Ident => self.scanner.symbol_keyword(sym),
+            _ => None,
+        }
+    }
+
+    /// The keyword the next token spells, bare or in brackets.
+    fn peek_word(&mut self) -> Option<Kw> {
+        let t = self.peek().clone();
+        self.word_of(&t)
+    }
+
+    /// True when the next token spells the keyword `kw`, bare or in brackets.
+    fn at_word(&mut self, kw: Kw) -> bool {
+        self.peek_word() == Some(kw)
+    }
+
+    /// Consumes the next token when it spells the keyword `kw`, bare or in brackets.
+    fn eat_word(&mut self, kw: Kw) -> bool {
+        if self.at_word(kw) {
+            self.advance();
+            true
+        } else {
+            false
         }
     }
 
@@ -812,29 +858,61 @@ impl<'src> Parser<'src> {
         };
         if accept {
             self.advance()
+        } else if self.at_underscore_word() {
+            // A word cannot begin with an underscore: the whole word is the bad character.
+            let span = self.current_span();
+            self.report_invalid_character(span);
+            let tok = self.advance();
+            Token { kind: TokenKind::Ident, ..tok }
         } else {
             let span = self.current_span();
-            self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, span, "Identifier");
-            Token { kind: TokenKind::Ident, sym: None, lit: None, type_suffix: TypeSuffix::None, span }
+            let what = if self.later_declarator { "variable" } else { "identifier" };
+            self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, span, what);
+            Token { kind: TokenKind::Ident, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span }
         }
     }
 
-    /// A name being declared. A reserved word cannot name anything, apart from
-    /// the words that only mean something in a module header (`Attribute`,
-    /// `VB_Name`, ...), which stay free as names.
+    /// True when the next token is a word the scanner refused because it begins with an
+    /// underscore.
+    fn at_underscore_word(&mut self) -> bool {
+        let (kind, start) = { let t = self.peek(); (t.kind.clone(), t.span.start) };
+        kind == TokenKind::Error && self.src.get(start as usize) == Some(&b'_')
+    }
+
+    /// Reports an invalid character: inside a procedure body the compiler gives only the
+    /// general syntax error.
+    fn report_invalid_character(&mut self, span: Span) {
+        if self.in_procedure {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        } else {
+            self.diagnostics.push(ERR_INVALID_CHARACTER, span);
+        }
+    }
+
+    /// The name after the dot of a qualified type name. Any word names a type there, even a
+    /// reserved one, except `Rem`, which starts a comment.
+    fn expect_qualified_type_name(&mut self) -> Token {
+        if self.peek().kind == TokenKind::Kw(Kw::Rem) {
+            let span = self.current_span();
+            self.report_expected(span, "identifier");
+            return Token { kind: TokenKind::Ident, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span };
+        }
+        self.expect_ident()
+    }
+
+    /// A name being declared. A reserved word cannot name anything; the words that only
+    /// mean something in a module header (`Attribute`, `VB_Name`, ...) are reserved words too.
     fn expect_decl_name(&mut self) -> Token {
         // A bracketed name is an external name, never a declared one.
-        if !self.label_target
-            && self.peek().kind == TokenKind::Ident
-            && self.src.get(self.peek().span.start as usize) == Some(&b'[')
-        {
+        if !self.bracketed_name_ok && !self.later_declarator && self.peek().bracketed {
             let span = self.current_span();
             self.report_expected(span, "identifier");
             return self.advance();
         }
-        // A `Type` member may take any reserved word but `Me`.
+        // A `Type` member may take any reserved word but the two that begin an assignment.
         let me = self.peek().kind == TokenKind::Kw(Kw::Me) && self.peek2().kind != TokenKind::Kw(Kw::LParen);
-        if (!self.reserved_names_allowed || me) && self.at_reserved_word() {
+        let begins_assignment = me || self.peek().kind == TokenKind::Kw(Kw::StringS);
+        if (!self.reserved_names_allowed || begins_assignment) && self.at_reserved_word() {
             return self.reject_reserved_word();
         }
         self.expect_ident()
@@ -846,7 +924,7 @@ impl<'src> Parser<'src> {
         match (&t.kind, t.sym) {
             (TokenKind::Kw(_), Some(sym)) => {
                 let sym = sym as u32;
-                self.scanner.is_reserved(sym) && !is_header_word(self.scanner.sym_name(sym))
+                self.scanner.is_reserved(sym)
             }
             _ => false,
         }
@@ -862,10 +940,38 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// The type-declaration character a declared name ends with. A keyword spelled with a
+    /// trailing `$` that is not reserved (`Mid$`, `Dir$`, `Error$`, ...) is, as a name, the
+    /// word without the `$` followed by the string character.
+    fn declared_suffix(&self, name: &Token) -> TypeSuffix {
+        if name.type_suffix != TypeSuffix::None {
+            return name.type_suffix;
+        }
+        match (&name.kind, name.sym) {
+            (TokenKind::Kw(_), Some(sym)) if !self.scanner.is_reserved(sym as u32) => self.dollar_word_suffix(name),
+            _ => TypeSuffix::None,
+        }
+    }
+
+    /// The string character a keyword spelled with a trailing `$` ends with, reserved or not.
+    fn dollar_word_suffix(&self, name: &Token) -> TypeSuffix {
+        match (&name.kind, name.sym) {
+            (TokenKind::Kw(_), Some(sym)) if self.scanner.is_dollar_word(sym as u32) => TypeSuffix::String,
+            _ => TypeSuffix::None,
+        }
+    }
+
     /// The name of a `Type`, `Enum` or `Event` carries no type-declaration character.
     fn reject_name_suffix(&mut self, name: &Token) {
         if name.type_suffix != TypeSuffix::None {
             self.report_expected(name.span, "identifier");
+        }
+    }
+
+    /// As [`Self::reject_name_suffix`], naming what was expected instead.
+    fn reject_name_suffix_as(&mut self, name: &Token, what: &'static str) {
+        if self.declared_suffix(name) != TypeSuffix::None {
+            self.report_expected(name.span, what);
         }
     }
 
@@ -1008,7 +1114,7 @@ impl<'src> Parser<'src> {
 
     /// After `New`: a class name. A built-in type word is reported as a missing type name.
     fn require_class_name_after_new(&mut self, what: &'static str) {
-        if self.at_reserved_word() || self.peek().kind == TokenKind::Kw(Kw::Object) {
+        if self.at_reserved_word() || self.at_word(Kw::Object) {
             let span = self.current_span();
             self.report_expected(span, what);
         }
@@ -1075,7 +1181,16 @@ impl<'src> Parser<'src> {
         if self.in_procedure {
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         } else {
-            self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, span, "identifier");
+            // In a `Type` the word is read as the target of an assignment, which wants `=`;
+            // after a comma in a declaration list a variable is wanted.
+            let what = if self.reserved_names_allowed {
+                "="
+            } else if self.later_declarator {
+                "variable"
+            } else {
+                "identifier"
+            };
+            self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, span, what);
         }
         let tok = self.advance();
         Token { kind: TokenKind::Ident, ..tok }
@@ -2846,7 +2961,9 @@ impl<'src> Parser<'src> {
         let mut stmts = Vec::new();
         loop {
             // Variable declarations accept `As Type()`; `Const` does not.
+            self.later_declarator = !is_const && !stmts.is_empty();
             let item = self.parse_dim_item_with(arena, is_const, is_static, false, is_const);
+            self.later_declarator = false;
             stmts.push(item);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
@@ -2898,7 +3015,8 @@ impl<'src> Parser<'src> {
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         if is_const && self.peek().kind == TokenKind::Kw(Kw::LParen) {
             let span = self.current_span();
-            self.report_expected(span, "As or =");
+            // An enumeration member takes no type, so only its value can follow the name.
+            self.report_expected(span, if self.in_enum_member { "=" } else { "As or =" });
         }
         let bounds = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let d = self.parse_array_bounds(arena);
@@ -2935,8 +3053,8 @@ impl<'src> Parser<'src> {
                 if self.peek().kind == TokenKind::Kw(Kw::New) {
                     self.diagnostics.push(ERR_INVALID_NEW_KEYWORD, span);
                 } else if matches!(
-                    self.peek().kind,
-                    TokenKind::Kw(
+                    self.peek_word(),
+                    Some(
                         Kw::Integer | Kw::Long | Kw::Single | Kw::Double | Kw::Currency | Kw::Date | Kw::Byte
                             | Kw::Boolean | Kw::Variant | Kw::Object | Kw::String | Kw::Decimal
                     )
@@ -2946,12 +3064,13 @@ impl<'src> Parser<'src> {
             }
             let is_new = self.eat(TokenKind::Kw(Kw::New));
             // `Object` is not a creatable class.
-            if is_new && (self.peek().kind == TokenKind::Kw(Kw::Object) || self.at_reserved_word()) {
+            if is_new && (self.at_word(Kw::Object) || self.at_reserved_word()) {
                 // `New` takes a class name only.
                 let span = self.current_span();
                 self.report_expected(span, "identifier");
             }
             let type_span = self.current_span();
+            self.type_after_new = is_new;
             let ty = self.parse_type_spec(arena, array_suffix_ok);
             // A constant has a built-in type: a class or user type name does not fit.
             if is_const && (is_new || matches!(arena.get(ty), ExprNode::UserType { .. })) {
@@ -3036,9 +3155,9 @@ impl<'src> Parser<'src> {
                 base = Some(with_ctx);
             }
             // `ReDim` names an existing array, so a bracketed name is allowed.
-            self.label_target = true;
+            self.bracketed_name_ok = true;
             let mut name = self.expect_decl_name();
-            self.label_target = false;
+            self.bracketed_name_ok = false;
             let mut bounds: Option<NodeId> = None;
             loop {
                 let sym = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -3122,7 +3241,7 @@ impl<'src> Parser<'src> {
         let start = self.parse_expr(arena, 0);
         self.expect(TokenKind::Kw(Kw::To), ERR_EXPECTED_TO);
         let end = self.parse_expr(arena, 0);
-        let step = if self.eat(TokenKind::Kw(Kw::Step)) {
+        let step = if self.eat_word(Kw::Step) {
             Some(self.parse_expr(arena, 0))
         } else { None };
         // `For i = a To b [Step c]` costs the variable, the bounds and the step, and its own code.
@@ -3771,9 +3890,9 @@ impl<'src> Parser<'src> {
             let tok = self.advance();
             LabelRef::Line(line_label_value(&tok.lit))
         } else {
-            self.label_target = true;
+            self.bracketed_name_ok = true;
             let name = self.expect_decl_name();
-            self.label_target = false;
+            self.bracketed_name_ok = false;
             LabelRef::Name(name.sym.map(|s| s as u32).unwrap_or(0))
         };
         self.label_refs.push((target, target_span));
@@ -3803,9 +3922,9 @@ impl<'src> Parser<'src> {
         } else if !self.peek().is_stmt_end()
             && !matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
         {
-            self.label_target = true;
+            self.bracketed_name_ok = true;
             let lbl = self.expect_decl_name();
-            self.label_target = false;
+            self.bracketed_name_ok = false;
             let sym = lbl.sym.map(|s| s as u32).unwrap_or(0);
             self.label_refs.push((LabelRef::Name(sym), lbl.span));
             ResumeTarget::At(LabelRef::Name(sym))
@@ -3821,14 +3940,14 @@ impl<'src> Parser<'src> {
         // `On Local Error …` is the explicit form of `On Error …`; `Local` is the
         // default error scope and a reserved word, so eating it here is
         // unambiguous and leaves the handler form unchanged.
-        if self.eat(TokenKind::Kw(Kw::Local)) && self.peek().kind != TokenKind::Kw(Kw::Error) {
+        if self.eat(TokenKind::Kw(Kw::Local)) && !self.at_word(Kw::Error) {
             // `Local` only qualifies `Error`.
             let span = self.current_span();
             self.report_expected(span, "Error");
             self.skip_line();
             return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Disable });
         }
-        if self.eat(TokenKind::Kw(Kw::Error)) {
+        if self.eat_word(Kw::Error) {
             if self.eat(TokenKind::Kw(Kw::Resume)) {
                 self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
                 self.end_stmt();
@@ -4470,8 +4589,11 @@ impl<'src> Parser<'src> {
     fn parse_option_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let option_span = self.current_span();
         self.advance(); // consume Option
-        match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::Explicit) => {
+        // `Private` is a reserved word, so only the bare token is the keyword; the other
+        // option words are names that spell their keyword, in brackets or not.
+        let private = self.peek().kind == TokenKind::Kw(Kw::Private);
+        match if private { None } else { self.peek_word() } {
+            Some(Kw::Explicit) => {
                 if std::mem::replace(&mut self.seen_option_explicit, true) {
                     self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
                 }
@@ -4479,7 +4601,7 @@ impl<'src> Parser<'src> {
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionExplicit)
             }
-            TokenKind::Kw(Kw::Base) => {
+            Some(Kw::Base) => {
                 if std::mem::replace(&mut self.seen_option_base, true) {
                     self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
                 } else if self.module_array_seen {
@@ -4502,38 +4624,39 @@ impl<'src> Parser<'src> {
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionBase { value })
             }
-            TokenKind::Kw(Kw::Compare) => {
+            Some(Kw::Compare) => {
                 if std::mem::replace(&mut self.seen_option_compare, true) {
                     self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
                 }
                 self.advance();
-                let mode = match self.peek().kind.clone() {
-                    TokenKind::Kw(Kw::Binary) => { self.advance(); 0u8 }
-                    TokenKind::Kw(Kw::Text)   => { self.advance(); 1u8 }
-                    _ => {
-                        let span = self.current_span();
-                        self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Text or Binary");
-                        self.skip_line();
-                        return arena.alloc(ExprNode::Block { stmts: vec![] });
-                    }
+                let mode = if self.eat_word(Kw::Binary) {
+                    0u8
+                } else if self.eat_word(Kw::Text) {
+                    1u8
+                } else {
+                    let span = self.current_span();
+                    self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Text or Binary");
+                    self.skip_line();
+                    return arena.alloc(ExprNode::Block { stmts: vec![] });
                 };
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionCompare { mode })
             }
-            TokenKind::Kw(Kw::Private) => {
+            None if private => {
                 if std::mem::replace(&mut self.seen_option_private, true) {
                     self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
                 }
-                if self.module_kind != ModuleKind::Standard {
-                    self.diagnostics.push(ERR_OPTION_PRIVATE_IN_OBJECT_MODULE, option_span);
-                }
                 self.advance(); // consume Private
-                if self.peek().kind == TokenKind::Kw(Kw::Module) {
-                    self.advance();
+                if self.eat_word(Kw::Module) {
+                    // Only a standard module can be private; that is found once the whole
+                    // statement has been read.
+                    if self.module_kind != ModuleKind::Standard {
+                        self.diagnostics.push(ERR_OPTION_PRIVATE_IN_OBJECT_MODULE, option_span);
+                    }
                     self.end_stmt();
                 } else {
                     let span = self.current_span();
-                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                    self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Module");
                     self.skip_line();
                 }
                 arena.alloc(ExprNode::Block { stmts: vec![] })
@@ -4653,12 +4776,12 @@ impl<'src> Parser<'src> {
 
         let mut open_mode: u8 = 4; // default: Random
         if self.eat(TokenKind::Kw(Kw::For)) {
-            open_mode = match self.peek().kind {
-                TokenKind::Kw(Kw::Input) => { self.advance(); 1 }
-                TokenKind::Kw(Kw::Output) => { self.advance(); 2 }
-                TokenKind::Kw(Kw::Random) => { self.advance(); 4 }
-                TokenKind::Kw(Kw::Append) => { self.advance(); 8 }
-                TokenKind::Kw(Kw::Binary) => { self.advance(); 0x20 }
+            open_mode = match self.peek_word() {
+                Some(Kw::Input) => { self.advance(); 1 }
+                Some(Kw::Output) => { self.advance(); 2 }
+                Some(Kw::Random) => { self.advance(); 4 }
+                Some(Kw::Append) => { self.advance(); 8 }
+                Some(Kw::Binary) => { self.advance(); 0x20 }
                 _ => {
                     // `For` needs a mode word.
                     let span = self.current_span();
@@ -4670,9 +4793,8 @@ impl<'src> Parser<'src> {
 
         let mut access_code: u8 = 0;
         let access_span = self.current_span();
-        if self.eat(TokenKind::Kw(Kw::Access)) {
-            let has_read = self.eat(TokenKind::Kw(Kw::Read));
-            let has_write = self.eat(TokenKind::Kw(Kw::Write));
+        if self.eat_word(Kw::Access) {
+            let (has_read, has_write) = self.read_write_words();
             // The access must be possible in the open mode: Read is not
             // available to Output, Write not to Input, and Read Write to
             // neither Input nor Output.
@@ -4696,8 +4818,7 @@ impl<'src> Parser<'src> {
         if self.eat(TokenKind::Kw(Kw::Shared)) {
             lock_code = 4;
         } else if self.eat(TokenKind::Kw(Kw::Lock)) {
-            let has_read = self.eat(TokenKind::Kw(Kw::Read));
-            let has_write = self.eat(TokenKind::Kw(Kw::Write));
+            let (has_read, has_write) = self.read_write_words();
             lock_code = match (has_read, has_write) {
                 (true, true) => 1,
                 (true, false) => 3,
@@ -4741,6 +4862,18 @@ impl<'src> Parser<'src> {
             open_mode,
             open_flags,
         })
+    }
+
+    /// The words after `Access` or `Lock` in an `Open`: `Read`, `Write`, or `Read Write`.
+    /// The first is a name that spells its keyword, bare or in brackets; the `Write` that
+    /// follows `Read` must be the bare keyword.
+    fn read_write_words(&mut self) -> (bool, bool) {
+        if self.eat_word(Kw::Read) {
+            let has_write = self.eat(TokenKind::Kw(Kw::Write));
+            (true, has_write)
+        } else {
+            (false, self.eat_word(Kw::Write))
+        }
     }
 
     /// `Close [[#]filenum, ...]`
@@ -4920,15 +5053,20 @@ impl<'src> Parser<'src> {
         } else if self.eat(TokenKind::Kw(Kw::Static)) {
             static_proc = true;
         }
-        // `Static` outside a procedure only qualifies a procedure.
+        // `Static` outside a procedure only qualifies a procedure. What follows it is read as
+        // the list of variables it would declare, so a name or declarator that is wrong is
+        // reported first; a list that reads well is refused as a whole.
         if access_tok == TokenKind::Kw(Kw::Static)
             && !matches!(
                 self.peek().kind,
                 TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
             )
         {
-            self.diagnostics.push(ERR_INVALID_OUTSIDE_PROCEDURE, first.span);
-            self.skip_to_stmt_end();
+            let reported = self.diagnostics.len();
+            self.parse_dim_list_static(arena, false, true);
+            if self.diagnostics.len() == reported {
+                self.diagnostics.push(ERR_INVALID_OUTSIDE_PROCEDURE, first.span);
+            }
             return arena.alloc(ExprNode::Block { stmts: vec![] });
         }
         let vis = match access_tok {
@@ -5068,17 +5206,18 @@ impl<'src> Parser<'src> {
         } else { None };
         self.check_param_list(arena, params, ParamOwner::Procedure);
         // Return type.
+        let suffix = self.declared_suffix(&name);
         let ret_type = if kind == ProcKind::Function && self.eat(TokenKind::Kw(Kw::As)) {
             let t = self.parse_return_type(arena);
-            if name.type_suffix != TypeSuffix::None {
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, name.span);
+            if suffix != TypeSuffix::None {
+                self.report_expected(name.span, "end of statement");
             }
             Some(t)
-        } else if name.type_suffix != TypeSuffix::None {
+        } else if suffix != TypeSuffix::None {
             if kind == ProcKind::Function {
-                self.type_node_from_suffix(arena, name.type_suffix)
+                self.type_node_from_suffix(arena, suffix)
             } else {
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, name.span);
+                self.report_expected(name.span, "Identifier without type suffix");
                 None
             }
         } else { None };
@@ -5288,7 +5427,7 @@ impl<'src> Parser<'src> {
         self.reject_in_standard_module();
         self.advance(); // consume Event
         let name = self.expect_decl_name();
-        self.reject_name_suffix(&name);
+        self.reject_name_suffix_as(&name, "Identifier without type suffix");
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
         let params = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let p = self.parse_param_list(arena);
@@ -5325,8 +5464,8 @@ impl<'src> Parser<'src> {
         let name_tok = self.expect_decl_name();
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
         // A `Sub` returns nothing, so its name takes no type character.
-        if kind == ProcKind::Sub && name_tok.type_suffix != TypeSuffix::None {
-            self.report_expected(name_tok.span, "Identifier without type suffix");
+        if kind == ProcKind::Sub {
+            self.reject_name_suffix_as(&name_tok, "Identifier without type suffix");
         }
         // The calling-convention word may precede `Lib`.
         self.eat(TokenKind::Kw(Kw::CDecl));
@@ -5636,7 +5775,7 @@ impl<'src> Parser<'src> {
         // type name `B.C`.
         let mut tail: Vec<Token> = Vec::new();
         while self.eat(TokenKind::Kw(Kw::Dot)) {
-            tail.push(self.expect_ident());
+            tail.push(self.expect_qualified_type_name());
         }
         let mut child: Option<NodeId> = None;
         for (i, sub) in tail.iter().enumerate().rev() {
@@ -5711,47 +5850,54 @@ impl<'src> Parser<'src> {
     }
 
     fn parse_type_spec(&mut self, arena: &mut ExprArena, allow_array_suffix: bool) -> NodeId {
-        let node = match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::Integer)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 2  }) }
-            TokenKind::Kw(Kw::Long)     => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 3  }) }
-            TokenKind::Kw(Kw::Single)   => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 4  }) }
-            TokenKind::Kw(Kw::Double)   => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 5  }) }
-            TokenKind::Kw(Kw::Currency) => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 6  }) }
-            TokenKind::Kw(Kw::Date)     => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 7  }) }
-            TokenKind::Kw(Kw::Byte)     => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 17 }) }
-            TokenKind::Kw(Kw::Boolean)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 11 }) }
-            TokenKind::Kw(Kw::Variant)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 12 }) }
-            TokenKind::Kw(Kw::Object)   => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 9  }) }
-            TokenKind::Kw(Kw::Decimal)  => {
+        // A type word is the same word in brackets: `[String] * 3` is a fixed-length string
+        // and `[Integer]` an Integer, so the type is chosen by the keyword the name spells.
+        // After `New` only a class can follow, and a bracketed word is just its name.
+        let after_new = std::mem::take(&mut self.type_after_new);
+        let word = if after_new && self.peek().bracketed { None } else { self.peek_word() };
+        let node = match word {
+            Some(Kw::Integer)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 2  }) }
+            Some(Kw::Long)     => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 3  }) }
+            Some(Kw::Single)   => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 4  }) }
+            Some(Kw::Double)   => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 5  }) }
+            Some(Kw::Currency) => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 6  }) }
+            Some(Kw::Date)     => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 7  }) }
+            Some(Kw::Byte)     => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 17 }) }
+            Some(Kw::Boolean)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 11 }) }
+            Some(Kw::Variant)  => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 12 }) }
+            Some(Kw::Object)   => { self.advance(); arena.alloc(ExprNode::BuiltinType { kind: 9  }) }
+            Some(Kw::Decimal)  => {
                 // `Decimal` is the subtype of a Variant, never the type of a declaration.
                 let span = self.current_span();
                 self.report_expected(span, "type name");
                 self.advance();
                 arena.alloc(ExprNode::BuiltinType { kind: 0 })
             }
-            TokenKind::Kw(Kw::String) => {
+            Some(Kw::String) => {
                 self.advance();
                 let fixed_len = if self.eat(TokenKind::Kw(Kw::Star)) {
                     Some(self.parse_fixed_string_length(arena))
                 } else { None };
                 arena.alloc(ExprNode::StringType { fixed_len })
             }
-            TokenKind::Kw(Kw::New) => {
-                self.advance();
-                self.require_class_name_after_new("type name");
-                let name = self.expect_ident();
-                self.finish_user_type(arena, name)
-            }
-            // A user type name; a contextual keyword (`Error`, `Line`) can be one.
-            TokenKind::Ident | TokenKind::Kw(_) if self.at_contextual_keyword() || self.peek().kind == TokenKind::Ident => {
-                let name = self.advance();
-                self.finish_user_type(arena, name)
-            }
-            _ => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                arena.alloc(ExprNode::BuiltinType { kind: 0 })
-            }
+            _ => match self.peek().kind.clone() {
+                TokenKind::Kw(Kw::New) => {
+                    self.advance();
+                    self.require_class_name_after_new("type name");
+                    let name = self.expect_ident();
+                    self.finish_user_type(arena, name)
+                }
+                // A user type name; a contextual keyword (`Error`, `Line`) can be one.
+                TokenKind::Ident | TokenKind::Kw(_) if self.at_contextual_keyword() || self.peek().kind == TokenKind::Ident => {
+                    let name = self.advance();
+                    self.finish_user_type(arena, name)
+                }
+                _ => {
+                    let span = self.current_span();
+                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                    arena.alloc(ExprNode::BuiltinType { kind: 0 })
+                }
+            },
         };
         // The optional array marker `()` makes the type an array of it.
         if allow_array_suffix && self.peek().kind == TokenKind::Kw(Kw::LParen) {
@@ -5764,6 +5910,7 @@ impl<'src> Parser<'src> {
 
     /// Parse a Type declaration block.
     fn parse_type_decl(&mut self, arena: &mut ExprArena) -> NodeId {
+        let type_span = self.current_span();
         self.advance(); // consume Type
         self.module_decl_seen = true;
         let name = self.expect_decl_name();
@@ -5786,11 +5933,11 @@ impl<'src> Parser<'src> {
                         TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen)
                     ) =>
                 {
-                    let end_span = self.current_span();
                     self.advance();
                     self.expect(TokenKind::Kw(Kw::Type), ERR_UNEXPECTED_TOKEN);
                     if members.is_empty() {
-                        self.diagnostics.push(ERR_TYPE_WITHOUT_MEMBERS, end_span);
+                        // A type without members is reported where the type starts.
+                        self.diagnostics.push(ERR_TYPE_WITHOUT_MEMBERS, type_span);
                     }
                     self.end_stmt();
                     break;
@@ -5824,8 +5971,7 @@ impl<'src> Parser<'src> {
                         continue;
                     }
                     // A bracketed name is a member only when bounds follow it.
-                    let bracketed = self.peek().kind == TokenKind::Ident
-                        && self.src.get(self.peek().span.start as usize) == Some(&b'[');
+                    let bracketed = self.peek().bracketed;
                     if bracketed && self.peek2().kind != TokenKind::Kw(Kw::LParen) {
                         if self.peek2().kind == TokenKind::Kw(Kw::As) {
                             self.report_expected(line_span, "expression");
@@ -5836,10 +5982,10 @@ impl<'src> Parser<'src> {
                         continue;
                     }
                     self.reserved_names_allowed = true;
-                    self.label_target = bracketed;
+                    self.bracketed_name_ok = bracketed;
                     self.last_item_had_as = false;
                     let m = self.parse_dim_item(arena, false, false, false);
-                    self.label_target = false;
+                    self.bracketed_name_ok = false;
                     self.reserved_names_allowed = false;
                     // A member whose bounds give a range needs no `As`: it is an array of Variant.
                     let has_bounds = matches!(arena.get(m), ExprNode::DimItem { bounds: Some(b), .. }
@@ -5872,10 +6018,21 @@ impl<'src> Parser<'src> {
     fn parse_enum_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Enum
         self.module_decl_seen = true;
+        // An enumeration may be named with a bracketed word.
+        self.bracketed_name_ok = true;
         let name = self.expect_decl_name();
+        self.bracketed_name_ok = false;
         self.reject_name_suffix(&name);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
-        self.end_stmt();
+        // A character that is no part of the language (a type character after a bracketed
+        // name is one) cannot follow the name.
+        if self.peek().kind == TokenKind::Error {
+            let span = self.current_span();
+            self.report_invalid_character(span);
+            self.skip_line();
+        } else {
+            self.end_stmt();
+        }
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
@@ -5918,9 +6075,14 @@ impl<'src> Parser<'src> {
                 }
                 TokenKind::Ident => {
                     let start = self.current_span();
-                    self.label_target = self.src.get(start.start as usize) == Some(&b'[');
+                    let name_tok = self.peek().clone();
+                    self.bracketed_name_ok = name_tok.bracketed;
+                    self.in_enum_member = true;
                     let m = self.parse_dim_item(arena, true, false, false);
                     self.label_target = false;
+                    self.in_enum_member = false;
+                    self.bracketed_name_ok = false;
+                    self.check_enum_member_suffix(arena, m, &name_tok);
                     self.finish_enum_member(arena, m, start, after_member);
                     if !after_member {
                         members.push(m);
@@ -5931,13 +6093,22 @@ impl<'src> Parser<'src> {
                 // `Date`, `DoEvents` and `CDec` are reserved but name a member too.
                 TokenKind::Kw(_) if self.names_enum_member() => {
                     let start = self.current_span();
+                    let name_tok = self.peek().clone();
                     self.reserved_names_allowed = true;
+                    self.in_enum_member = true;
                     let m = self.parse_dim_item(arena, true, false, false);
+                    self.in_enum_member = false;
                     self.reserved_names_allowed = false;
+                    self.check_enum_member_suffix(arena, m, &name_tok);
                     self.finish_enum_member(arena, m, start, after_member);
                     if !after_member {
                         members.push(m);
                     }
+                }
+                TokenKind::Error if self.at_underscore_word() => {
+                    let span = self.current_span();
+                    self.report_invalid_character(span);
+                    self.skip_line();
                 }
                 _ => {
                     // Not a member: report it and resume on the next line.
@@ -5950,6 +6121,17 @@ impl<'src> Parser<'src> {
         let id = arena.alloc(ExprNode::EnumDecl { name: nid, members });
         self.set_span(id, name.span);
         id
+    }
+
+    /// A member of an enumeration is a `Long`: given a value, its name may carry no
+    /// type-declaration character but `&`, and a keyword spelled with a trailing `$` carries
+    /// the string character.
+    fn check_enum_member_suffix(&mut self, arena: &ExprArena, member: NodeId, name: &Token) {
+        let has_value = matches!(arena.get(member), ExprNode::DimItem { init: Some(_), .. });
+        let suffix = if name.type_suffix != TypeSuffix::None { name.type_suffix } else { self.dollar_word_suffix(name) };
+        if has_value && !matches!(suffix, TypeSuffix::None | TypeSuffix::Long) {
+            self.diagnostics.push(ERR_TYPE_CHARACTER_MISMATCH, name.span);
+        }
     }
 
     /// The end of an `Enum` member: the member takes no type, stands on one physical line, and
@@ -6130,6 +6312,16 @@ impl<'src> Parser<'src> {
                 let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
                 let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
                 self.set_span(base, tok.span);
+                // A name that spells one of these four built-in functions keeps their argument
+                // grammar, bracketed or not; every other bracketed word is an ordinary name.
+                if !self.in_target
+                    && matches!(self.word_of(&tok), Some(Kw::CByte | Kw::InStr | Kw::InStrB | Kw::StrComp))
+                {
+                    let name = self.scanner.sym_name(sym_id).to_string();
+                    if let Some(shape) = INTRINSIC_SHAPES.iter().find(|s| name.eq_ignore_ascii_case(s.name)) {
+                        return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
+                    }
+                }
                 self.parse_postfix(arena, base)
             }
             // `AddressOf proc` — function-pointer operand.
@@ -6258,9 +6450,9 @@ impl<'src> Parser<'src> {
     /// The qualified name of a procedure after `AddressOf`: names joined by dots.
     fn parse_procedure_name(&mut self, arena: &mut ExprArena) -> NodeId {
         // A bracketed name is read as written: it names a procedure declared elsewhere.
-        self.label_target = self.src.get(self.peek().span.start as usize) == Some(&b'[');
+        self.bracketed_name_ok = self.peek().bracketed;
         let first = self.expect_decl_name();
-        self.label_target = false;
+        self.bracketed_name_ok = false;
         let sym = first.sym.map(|s| s as u32).unwrap_or(0);
         let mut base = arena.alloc(ExprNode::NameRef { sym, suffix: first.type_suffix });
         self.set_span(base, first.span);
@@ -6653,7 +6845,7 @@ fn is_header_word(name: &str) -> bool {
 
 /// Keywords that are not reserved but begin a statement of their own: used as a
 /// name they need something after them that says so.
-const STATEMENT_WORDS: [&str; 8] = ["Width", "Property", "Name", "Mid", "MidB", "Line", "Go", "Error"];
+const STATEMENT_WORDS: [&str; 10] = ["Width", "Property", "Name", "Mid", "MidB", "Mid$", "MidB$", "Line", "Go", "Error"];
 
 /// The argument grammar of a built-in function: the number of arguments it
 /// takes, whether the first must be a variable, and whether the name may stand

@@ -783,6 +783,18 @@ impl<'a> Scanner<'a> {
         self.ctx.symbols.get(id as usize).map_or(false, |s| s.flags & 4 != 0)
     }
 
+    /// The keyword a symbol spells, or `None` for a name that is no keyword.
+    pub fn symbol_keyword(&self, id: u32) -> Option<Kw> {
+        let token = self.ctx.symbols.get(id as usize)?.token;
+        if token > 0 { Kw::from_token_id(token as u16) } else { None }
+    }
+
+    /// True if the symbol is a keyword spelled with a trailing `$` (`Mid$`, `Date$`): a
+    /// name of that kind is a keyword word, never a name with a type-declaration character.
+    pub fn is_dollar_word(&self, id: u32) -> bool {
+        self.ctx.symbols.get(id as usize).map_or(false, |s| s.flags & 1 != 0)
+    }
+
     /// The first limit the text breaks (too many pieces in a logical line, too many
     /// lines in the module), if any.
     pub fn read_problem(&self) -> Option<ReadProblem> {
@@ -1627,7 +1639,9 @@ impl<'a> Scanner<'a> {
         match self.ctx.intern_ident(&name) {
             Some(sym_id) => {
                 self.ctx.set_verbatim_flag(sym_id);
-                Token::ident(sym_id, span)
+                let mut tok = Token::ident(sym_id, span);
+                tok.bracketed = true;
+                tok
             }
             None => Token::error(span),
         }

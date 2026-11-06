@@ -46,8 +46,11 @@ pub fn unescape(word: &str) -> String {
 /// The diagnostics that report a block left open at the end of the source. When the
 /// source holds a semantic error as well, the compiler reports that one first and
 /// never gets to the open block, so such a row says nothing about the parse.
-const MISSING_END_CODES: [u32; 14] = [
+const MISSING_END_CODES: [u32; 15] = [
     0x9c8f, 0x9c90, 0x9c92, 0x9c93, 0x9c94, 0x9c95, 0x9cac, 0x9cbe, 0x9cc7, 0x9c76, 0xdeff, 0x9c91,
+    // A type-declaration character that does not suit the declared type is found by the
+    // compiler after the semantic checks as well.
+    0x9c86,
     // A jump to a label that is never defined is found after the semantic checks as well.
     0x9ca4,
     // The scope check on declared names is the binder's; the parser also reports a repeated

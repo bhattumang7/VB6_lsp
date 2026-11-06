@@ -651,6 +651,10 @@ pub struct Token {
     /// `TypeSuffix::None` for everything except a suffixed
     /// `Ident`/`Kw` token (e.g. `count%`, `STATE_MIXED&`).
     pub type_suffix: TypeSuffix,
+    /// The name was written in square brackets (`[Name]`): it is an ordinary name even when
+    /// its text is a keyword, but it still spells that keyword where the grammar asks which
+    /// word a name is.
+    pub bracketed: bool,
     /// Source position.
     pub span: Span,
 }
@@ -658,39 +662,39 @@ pub struct Token {
 impl Token {
     /// Convenience constructor for a keyword token without a literal.
     pub fn kw(kw: Kw, sym: SymId, span: Span) -> Self {
-        Self { kind: TokenKind::Kw(kw), sym: Some(sym), lit: None, type_suffix: TypeSuffix::None, span }
+        Self { kind: TokenKind::Kw(kw), sym: Some(sym), lit: None, type_suffix: TypeSuffix::None, bracketed: false, span }
     }
 
     /// Convenience constructor for an identifier token.
     pub fn ident(sym: SymId, span: Span) -> Self {
-        Self { kind: TokenKind::Ident, sym: Some(sym), lit: None, type_suffix: TypeSuffix::None, span }
+        Self { kind: TokenKind::Ident, sym: Some(sym), lit: None, type_suffix: TypeSuffix::None, bracketed: false, span }
     }
 
     /// Convenience constructor for a literal token.
     pub fn lit(kind: TokenKind, value: Lit, span: Span) -> Self {
-        Self { kind, sym: None, lit: Some(value), type_suffix: TypeSuffix::None, span }
+        Self { kind, sym: None, lit: Some(value), type_suffix: TypeSuffix::None, bracketed: false, span }
     }
 
     /// End-of-line token.
     pub fn eol(pos: u32) -> Self {
-        Self { kind: TokenKind::Eol, sym: None, lit: None, type_suffix: TypeSuffix::None, span: Span { start: pos, len: 0 } }
+        Self { kind: TokenKind::Eol, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span: Span { start: pos, len: 0 } }
     }
 
     /// End-of-file token.
     pub fn eof(pos: u32) -> Self {
-        Self { kind: TokenKind::Eof, sym: None, lit: None, type_suffix: TypeSuffix::None, span: Span { start: pos, len: 0 } }
+        Self { kind: TokenKind::Eof, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span: Span { start: pos, len: 0 } }
     }
 
     /// Scan-error token.
     pub fn error(span: Span) -> Self {
-        Self { kind: TokenKind::Error, sym: None, lit: None, type_suffix: TypeSuffix::None, span }
+        Self { kind: TokenKind::Error, sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span }
     }
 
     /// Operator / punctuation token — no symbol record needed.
     /// Use this for single-char and multi-char operators that carry no interned
     /// name (the parser only cares about the [`Kw`] discriminant).
     pub fn op(kw: Kw, span: Span) -> Self {
-        Self { kind: TokenKind::Kw(kw), sym: None, lit: None, type_suffix: TypeSuffix::None, span }
+        Self { kind: TokenKind::Kw(kw), sym: None, lit: None, type_suffix: TypeSuffix::None, bracketed: false, span }
     }
 
     /// Returns `true` for the statement-terminator tokens: the end of a line or

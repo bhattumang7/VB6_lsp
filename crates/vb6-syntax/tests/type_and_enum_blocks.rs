@@ -11,17 +11,43 @@ const TYPE_WITHOUT_MEMBERS: u32 = 0x9cfc;
 const ENUM_WITHOUT_MEMBERS: u32 = 0xdf43;
 
 #[test]
-fn type_without_members_is_reported_at_end_type() {
-    let src = "Type T\nEnd Type\nSub S()\nEnd Sub\n";
+fn type_without_members_is_reported_where_the_type_starts() {
+    let src = "Type T
+End Type
+Sub S()
+End Sub
+";
     let p = parse(src);
-    assert_eq!(p.found, vec![(TYPE_WITHOUT_MEMBERS, offset_of(src, "End Type", 0), 3)]);
+    assert_eq!(p.found, vec![(TYPE_WITHOUT_MEMBERS, offset_of(src, "Type T", 0), 4)]);
     assert_eq!(p.top.len(), 2);
     let ExprNode::TypeDecl { members, .. } = p.node(p.top[0]) else { panic!("expected Type") };
     assert!(members.is_empty());
 
-    // Comments and blank lines are not members.
-    let src = "Type T\n' nothing\n\nEnd Type\n";
-    assert_eq!(parse(src).found, vec![(TYPE_WITHOUT_MEMBERS, offset_of(src, "End Type", 0), 3)]);
+    // Comments, blank lines, a lone colon and a `Rem` line are not members.
+    for body in ["' nothing
+
+", "Rem nothing
+", "Rem As Long
+", "
+
+Rem x
+Rem y
+", ":
+"] {
+        let src = format!("Private Type T
+{body}End Type
+");
+        let p = parse(&src);
+        assert_eq!(p.found, vec![(TYPE_WITHOUT_MEMBERS, offset_of(&src, "Type T", 0), 4)], "for {body:?}");
+    }
+
+    // A member after the comment makes the type well formed.
+    let p = parse("Type T
+Rem x
+a As Long
+End Type
+");
+    assert_eq!(p.found, vec![]);
 }
 
 #[test]

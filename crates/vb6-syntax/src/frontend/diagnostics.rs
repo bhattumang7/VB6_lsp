@@ -59,6 +59,8 @@ pub const ERR_STATEMENT_IN_TYPE: u32 = 0x9c76; // 40054
 pub const ERR_TYPE_WITHOUT_MEMBERS: u32 = 0x9cfc; // 40188
 pub const ERR_ENUM_WITHOUT_MEMBERS: u32 = 0xdf43; // 57155
 pub const ERR_IDENTIFIER_TOO_LONG: u32 = 0x9c6d; // 40045
+pub const ERR_INVALID_CHARACTER: u32 = 0x9c6c; // 40044
+pub const ERR_TYPE_CHARACTER_MISMATCH: u32 = 0x9c86; // 40102
 pub const ERR_TOO_MANY_DIMENSIONS: u32 = 0x9c80; // 40064
 pub const ERR_TOO_MANY_ARGUMENTS: u32 = 0x9c81; // 40065
 pub const ERR_STATEMENT_TOO_COMPLEX: u32 = 0x9c6e; // 40046
@@ -181,6 +183,8 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
         ERR_INVALID_OUTSIDE_PROCEDURE => "Invalid outside procedure",
         ERR_MUST_BE_FIRST_ON_LINE => "Must be first statement on the line",
         ERR_IDENTIFIER_TOO_LONG => "Identifier too long",
+        ERR_INVALID_CHARACTER => "Invalid character",
+        ERR_TYPE_CHARACTER_MISMATCH => "Type-declaration character does not match declared data type",
         ERR_TOO_MANY_DIMENSIONS => "Too many dimensions",
         ERR_TOO_MANY_ARGUMENTS => "Too many arguments",
         ERR_STATEMENT_TOO_COMPLEX => "Statement too complex",

@@ -4,7 +4,7 @@
 pub mod answers;
 
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, NodeId};
-use vb6_syntax::frontend::parser::Parser;
+use vb6_syntax::frontend::parser::{ModuleKind, Parser};
 use vb6_syntax::frontend::scanner::ScannerContext;
 
 pub struct Parsed {
@@ -14,14 +14,21 @@ pub struct Parsed {
     pub diags: usize,
     /// Every diagnostic as `(code, start offset, length)`, in report order.
     pub found: Vec<(u32, u32, u32)>,
+    /// The text of every diagnostic, in report order (`Expected: ...` carries its list).
+    pub messages: Vec<String>,
 }
 
 pub fn parse(src: &str) -> Parsed {
+    parse_as(src, ModuleKind::Standard)
+}
+
+/// Parses `src` as a module of the given kind.
+pub fn parse_as(src: &str, kind: ModuleKind) -> Parsed {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();
-    let (top, diags, found) = {
-        let mut parser = Parser::new(&mut ctx, src.as_bytes());
+    let (top, diags, found, messages) = {
+        let mut parser = Parser::with_module_kind(&mut ctx, src.as_bytes(), kind);
         let top = parser.parse_module(&mut arena);
         let found = parser
             .diagnostics
@@ -29,9 +36,15 @@ pub fn parse(src: &str) -> Parsed {
             .iter()
             .map(|d| (d.code, d.span.start, d.span.len))
             .collect();
-        (top, parser.diagnostics.items().len(), found)
+        let messages = parser
+            .diagnostics
+            .items()
+            .iter()
+            .map(|d| d.message().unwrap_or_else(|| format!("(code {:#x})", d.code)))
+            .collect();
+        (top, parser.diagnostics.items().len(), found, messages)
     };
-    Parsed { ctx, arena, top, diags, found }
+    Parsed { ctx, arena, top, diags, found, messages }
 }
 
 impl Parsed {
