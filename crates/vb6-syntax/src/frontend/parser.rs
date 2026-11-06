@@ -18,7 +18,7 @@ use crate::frontend::ast::{
     NodeSpans, OnErrorKind, ProcKind, ResumeTarget, UnOpKind,
 };
 use crate::frontend::diagnostics::*;
-use crate::frontend::scanner::{Scanner, ScannerContext};
+use crate::frontend::scanner::{fold_name, Scanner, ScannerContext};
 use crate::frontend::token::{Kw, Lit, Span, Token, TokenKind, TypeSuffix};
 
 
@@ -317,6 +317,12 @@ pub struct Parser<'src> {
     cc_module_consts: Vec<String>,
     /// The last directive token read ended the line.
     cc_line_done: bool,
+    /// Where the logical line being read begins: an error inside a continued line is reported
+    /// on its first physical line.
+    logical_line_start: u32,
+    /// How many constant names the directive expressions have read so far; an operand that
+    /// read none is made of literals alone.
+    cc_names_read: u64,
     /// A token has been read on the current physical line.
     phys_line_has_token: bool,
     /// The token read last was the first on its physical line.
@@ -526,6 +532,8 @@ impl<'src> Parser<'src> {
             cc_pending: None,
             cc_module_consts: Vec::new(),
             cc_line_done: false,
+            logical_line_start: 0,
+            cc_names_read: 0,
             phys_line_has_token: false,
             tok_first_on_line: true,
             group_depth: 0,
@@ -540,7 +548,9 @@ impl<'src> Parser<'src> {
             stmt_byval: None,
             stmt_named: None,
             cc_defs: vec![
-                ("win32".into(), CcValue::Integer(-1)),
+                ("win16".into(), CcValue::Integer(0)),
+                ("win32".into(), CcValue::Integer(1)),
+                ("mac".into(), CcValue::Integer(0)),
             ],
         }
     }
@@ -677,11 +687,23 @@ impl<'src> Parser<'src> {
                     // A directive is only read at the start of a line; elsewhere it is an
                     // ordinary word, and no word of that kind begins a statement.
                     if self.cc_active() {
-                        self.diagnostics.push(ERR_SYNTAX_ERROR, tok.span);
+                        // On a continued line the error is on the line the statement began.
+                        let began = self.logical_line_start as usize;
+                        let continued = self.src[began..tok.span.start as usize].contains(&b'\n');
+                        let span = if continued { Span { start: self.logical_line_start, len: tok.span.len } } else { tok.span };
+                        self.diagnostics.push(ERR_SYNTAX_ERROR, span);
                         while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
                             self.cc_advance();
                         }
                     }
+                }
+                continue;
+            }
+            if first_on_line && tok.kind == TokenKind::Kw(Kw::Hash) && self.cc_active() {
+                // A line that opens with a number sign names a directive.
+                self.report_expected(tok.span, "If or Else or ElseIf or End or EndIf or Const");
+                while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
+                    self.cc_advance();
                 }
                 continue;
             }
@@ -734,6 +756,9 @@ impl<'src> Parser<'src> {
                 self.continuations = 0;
             }
             self.tok_first_on_line = !self.phys_line_has_token;
+            if self.tok_first_on_line {
+                self.logical_line_start = tok.span.start;
+            }
             self.phys_line_has_token = !matches!(tok.kind, TokenKind::Eol);
             return tok;
         }
@@ -1482,6 +1507,7 @@ impl<'src> Parser<'src> {
                 self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
             }
         }
+        self.diagnostics.merge_directive_pass();
         nodes
     }
 
@@ -3941,7 +3967,7 @@ impl<'src> Parser<'src> {
     /// overrides them).
     pub fn set_conditional_constants(&mut self, defs: Vec<(String, CcValue)>) {
         for (name, value) in defs {
-            self.cc_set(&name, value);
+            self.cc_set(&fold_name(&name), value);
         }
     }
 
@@ -3963,7 +3989,7 @@ impl<'src> Parser<'src> {
             }
             _ => {
                 let span = self.cc_peek().span;
-                self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "end of statement");
+                self.report_expected(span, "end of statement");
                 self.cc_skip_line();
             }
         }
@@ -3987,7 +4013,7 @@ impl<'src> Parser<'src> {
             self.cc_end_of_directive();
         } else {
             let span = self.cc_peek().span;
-            self.diagnostics.push(ERR_EXPECTED_THEN, span);
+            self.report_expected(span, "Then");
             self.cc_skip_line();
         }
         value
@@ -4000,17 +4026,24 @@ impl<'src> Parser<'src> {
         let diag_len = self.diagnostics.len();
         let saved = (self.cc_stack.clone(), self.cc_defs.clone(), self.cc_module_consts.clone());
         self.cc_directive_line(kind, span, one_word);
+        let mut found = self.diagnostics.split_off(diag_len);
         // A directive that does not read completely is not a directive: nothing it did
         // counts, and it is an ordinary line, whose errors count where code is compiled
         // and which is ignored where it is not.
-        let malformed = self.diagnostics.items()[diag_len..].iter().any(|d| matches!(d.code, 0x9c6f | 0x9c70));
+        let malformed = found.iter().any(|d| matches!(d.code, 0x9c6f | 0x9c70));
         if malformed {
             (self.cc_stack, self.cc_defs, self.cc_module_consts) = saved;
             if !self.cc_line_done {
                 self.cc_skip_line();
             }
             // The line stops at its first error, and is not read at all where code is not compiled.
-            self.diagnostics.truncate(if was_active { diag_len + 1 } else { diag_len });
+            found.truncate(if was_active { 1 } else { 0 });
+            self.diagnostics.extend(found);
+        } else {
+            // What a directive line reports is found before any statement is read.
+            for diagnostic in found {
+                self.diagnostics.push_directive_pass(diagnostic);
+            }
         }
     }
 
@@ -4026,20 +4059,20 @@ impl<'src> Parser<'src> {
                                 !self.scanner.is_reserved(sym) && !is_header_word(self.scanner.sym_name(sym))
                             }));
                     if !name_ok {
-                        self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, name_tok.span, "Identifier");
+                        self.report_expected(name_tok.span, "identifier");
                         self.cc_skip_line();
                         return;
                     }
                     self.cc_advance();
                     let name = name_tok
                         .sym
-                        .map(|id| self.scanner.sym_name(id as u32).to_ascii_lowercase())
+                        .map(|id| fold_name(self.scanner.sym_name(id as u32)))
                         .unwrap_or_default();
                     if self.cc_peek().kind == TokenKind::Kw(Kw::Eq) {
                         self.cc_advance();
                     } else {
                         let span = self.cc_peek().span;
-                        self.diagnostics.push(ERR_EXPECTED_EQ, span);
+                        self.report_expected(span, "=");
                     }
                     let value = match self.eval_cc_expr(0) {
                         Ok(v) => v,
@@ -4111,7 +4144,7 @@ impl<'src> Parser<'src> {
                         self.cc_advance();
                     } else if self.cc_stack.last().is_some_and(|f| f.parent_active) {
                         let span = self.cc_peek().span;
-                        self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "If");
+                        self.report_expected(span, "If");
                     }
                 }
                 if self.cc_stack.last().is_some_and(|f| f.parent_active) {
@@ -4135,19 +4168,19 @@ impl<'src> Parser<'src> {
             let end = text.iter().rposition(|b| !matches!(b, b'\r' | b'\n')).map_or(0, |i| i + 1);
             let start = text[..end].iter().rposition(|b| *b == b'\n').map_or(0, |i| i + 1);
             let span = Span { start: start as u32, len: (end - start) as u32 };
-            self.diagnostics.push(ERR_CC_IF_NOT_TERMINATED, span);
+            self.diagnostics.push_directive_pass(Diagnostic::new(ERR_CC_IF_NOT_TERMINATED, span));
             self.cc_stack.clear();
         }
     }
 
     // ── CC expression evaluator ───────────────────────────────────────────────
 
-    /// Look up a CC constant by (lowercase) name; an unknown name is Empty.
+    /// Look up a CC constant by (lowercase) name; a name with no definition is the Integer 0.
     fn cc_lookup(&self, name: &str) -> CcValue {
         self.cc_defs.iter().rev()
             .find(|(n, _)| n == name)
             .map(|(_, v)| v.clone())
-            .unwrap_or(CcValue::Empty)
+            .unwrap_or(CcValue::Integer(0))
     }
 
     /// Set (or insert) a CC constant.
@@ -4212,13 +4245,18 @@ impl<'src> Parser<'src> {
 
     /// Evaluate a CC expression.
     fn eval_cc_expr(&mut self, min_bp: u8) -> CcResult {
+        let named_start = self.cc_names_read;
         let mut lhs = self.eval_cc_prefix()?;
+        let mut lhs_named = self.cc_names_read != named_start;
         loop {
             let Some((l_bp, r_bp, op)) = self.cc_infix_op() else { break };
             if l_bp <= min_bp { break; }
             self.cc_advance();
+            let named_before = self.cc_names_read;
             let rhs = self.eval_cc_expr(r_bp)?;
-            lhs = CcValue::binary(op, &lhs, &rhs)?;
+            let by_name = lhs_named || self.cc_names_read != named_before;
+            lhs = CcValue::binary_with(op, &lhs, &rhs, by_name)?;
+            lhs_named = by_name;
         }
         Ok(lhs)
     }
@@ -4300,7 +4338,7 @@ impl<'src> Parser<'src> {
                 // A missing operand: reported without consuming the token that
                 // ends the directive.
                 let span = self.cc_peek().span;
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
+                self.report_expected(span, "expression");
                 Ok(CcValue::Empty)
             }
             _ => {
@@ -4338,7 +4376,8 @@ impl<'src> Parser<'src> {
                     self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
                     return Ok(CcValue::Empty);
                 }
-                Ok(self.cc_lookup(&name.to_ascii_lowercase()))
+                self.cc_names_read += 1;
+                Ok(self.cc_lookup(&fold_name(&name)))
             }
         }
     }

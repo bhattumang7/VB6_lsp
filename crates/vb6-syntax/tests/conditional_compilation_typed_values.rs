@@ -170,7 +170,8 @@ fn currency_is_exact() {
 #[test]
 fn predefined_names() {
     yes("Win32");
-    yes("Win32 = -1");
+    yes("Win32 = 1");
+    no("Win32 = -1");
     for name in ["VBA6", "VBA7", "Mac", "Win16", "Win64"] {
         no(name);
         yes(&format!("Not {name}"));

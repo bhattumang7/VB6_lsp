@@ -4,7 +4,7 @@
 mod common;
 use common::{offset_of, parse};
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode};
-use vb6_syntax::frontend::cond_compile::{parse_cond_comp_args, CcValue, InvalidConstantDeclarations};
+use vb6_syntax::frontend::cond_compile::{parse_cond_comp_args, CcValue, ConstantDeclarationsError};
 use vb6_syntax::frontend::parser::Parser;
 use vb6_syntax::frontend::scanner::ScannerContext;
 
@@ -110,29 +110,22 @@ fn one_word_end_if_and_blank_after_the_hash() {
 
 #[test]
 fn a_colon_after_a_directive_is_a_syntax_error() {
-    for src in [
-        "#Const A = 1 : #If A Then
-Sub Yes()
-End Sub
-#End If
-",
-        "#Const A = 1:
-",
-        "#If 1 Then:
-Sub A()
-End Sub
-#End If
-",
-        "#If 1 Then
-Sub A()
-End Sub
-#Else:
-#End If
-",
+    // (text, whether the line left a `#End If` without its `#If`, which is reported first)
+    for (src, orphan) in [
+        ("#Const A = 1 : #If A Then\nSub Yes()\nEnd Sub\n#End If\n", true),
+        ("#Const A = 1:\n", false),
+        ("#If 1 Then:\nSub A()\nEnd Sub\n#End If\n", true),
+        ("#If 1 Then\nSub A()\nEnd Sub\n#Else:\n#End If\n", false),
     ] {
         let found = parse(src).found;
-        assert_eq!(found[0].0, EXPECTED, "{src:?}");
-        assert_eq!(found[0].1, offset_of(src, ":", 0), "{src:?}");
+        let colon = (EXPECTED, offset_of(src, ":", 0));
+        let at = if orphan {
+            assert_eq!((found[0].0, found[0].1), (0xdebd, offset_of(src, "#End If", 0)), "{src:?}");
+            1
+        } else {
+            0
+        };
+        assert_eq!((found[at].0, found[at].1), colon, "{src:?}");
     }
 }
 
@@ -178,23 +171,25 @@ fn an_elseif_after_a_taken_branch_is_still_read() {
 
 #[test]
 fn if_needs_then_and_nothing_follows_a_directive() {
+    // The malformed `#If` opens nothing, so the `#End If` has nothing to close; that is found
+    // before the malformed line itself is read.
     let src = "#If 1\nSub A()\nEnd Sub\n#End If\n";
-    let found = parse(src).found;
-    assert_eq!(found[0].0, EXPECTED);
-    assert_eq!(found[0].1, offset_of(src, "\nSub", 0));
+    assert_eq!(
+        parse(src).found,
+        vec![(0xdebd, offset_of(src, "#End If", 0), 4), (EXPECTED, offset_of(src, "\nSub", 0), 0)]
+    );
 
-    // The malformed `#If` opens nothing, so the `#End If` has nothing to close.
     let src = "#If 1 Then foo\nSub A()\nEnd Sub\n#End If\n";
     assert_eq!(
         parse(src).found,
-        vec![(EXPECTED, offset_of(src, "foo", 0), 3), (0xdebd, offset_of(src, "#End If", 0), 4)]
+        vec![(0xdebd, offset_of(src, "#End If", 0), 4), (EXPECTED, offset_of(src, "foo", 0), 3)]
     );
 
     let src = "#If 1 Then\nSub A()\nEnd Sub\n#End If foo\n";
     // The malformed `#End If` closes nothing: the `#If` is still open at the end.
     assert_eq!(
         parse(src).found,
-        vec![(EXPECTED, offset_of(src, "foo", 0), 3), (0xdec0, offset_of(src, "#End If foo", 0), 11)]
+        vec![(0xdec0, offset_of(src, "#End If foo", 0), 11), (EXPECTED, offset_of(src, "foo", 0), 3)]
     );
 
     let src = "#If 1 Then\nSub A()\nEnd Sub\n#Else foo\n#End If\n";
@@ -257,6 +252,6 @@ fn argument_text_that_is_not_constant_declarations_is_invalid() {
         "A=32768", "A=-32769", "A=1.5", "A=&H10", "A=True", "A=x", "A=1+2", "A=B", "A=1:a=2", "A=1:", "A=1::B=2", "A=1;B=2", "A=--1",
         "A=\"x\"", "A", "A=", "1A=1", "A$=1", "A=1_", ":A=1", "=1",
     ] {
-        assert_eq!(parse_cond_comp_args(bad), Err(InvalidConstantDeclarations), "{bad}");
+        assert_eq!(parse_cond_comp_args(bad), Err(ConstantDeclarationsError::InvalidSyntax), "{bad}");
     }
 }

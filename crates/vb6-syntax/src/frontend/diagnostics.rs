@@ -222,6 +222,10 @@ pub fn message_for_code(code: u32) -> Option<&'static str> {
 #[derive(Debug, Default, Clone)]
 pub struct Diagnostics {
     items: Vec<Diagnostic>,
+    /// What the conditional-compilation lines reported. Those lines are all read before any
+    /// statement is, so their errors come first; [`Diagnostics::merge_directive_pass`] puts them
+    /// ahead of the others.
+    directive_pass: Vec<Diagnostic>,
 }
 
 impl Diagnostics {
@@ -239,13 +243,38 @@ impl Diagnostics {
         self.items.push(Diagnostic::with_label(code, span, label));
     }
 
+    /// Record a diagnostic found while reading the conditional-compilation lines.
+    pub fn push_directive_pass(&mut self, diagnostic: Diagnostic) {
+        self.directive_pass.push(diagnostic);
+    }
+
+    /// Record these diagnostics, in order, among the ordinary ones.
+    pub fn extend(&mut self, diagnostics: Vec<Diagnostic>) {
+        self.items.extend(diagnostics);
+    }
+
+    /// Remove and return every diagnostic recorded after the first `len`.
+    pub fn split_off(&mut self, len: usize) -> Vec<Diagnostic> {
+        self.items.split_off(len.min(self.items.len()))
+    }
+
+    /// Put what the conditional-compilation lines reported ahead of everything else.
+    pub fn merge_directive_pass(&mut self) {
+        if self.directive_pass.is_empty() {
+            return;
+        }
+        let mut merged = std::mem::take(&mut self.directive_pass);
+        merged.append(&mut self.items);
+        self.items = merged;
+    }
+
     /// Number of diagnostics recorded so far.
     pub fn len(&self) -> usize {
         self.items.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        self.items.is_empty()
+        self.items.is_empty() && self.directive_pass.is_empty()
     }
 
     /// Drop every diagnostic after the first `len`.
@@ -254,14 +283,15 @@ impl Diagnostics {
     }
 
     pub fn has_errors(&self) -> bool {
-        !self.items.is_empty()
+        !self.is_empty()
     }
 
     pub fn items(&self) -> &[Diagnostic] {
         &self.items
     }
 
-    pub fn into_items(self) -> Vec<Diagnostic> {
+    pub fn into_items(mut self) -> Vec<Diagnostic> {
+        self.merge_directive_pass();
         self.items
     }
 }

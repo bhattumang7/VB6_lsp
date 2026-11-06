@@ -206,8 +206,15 @@ impl CcValue {
         }
     }
 
-    /// Apply a binary operator.
+    /// Apply a binary operator to two operands that are written out in the directive.
     pub fn binary(op: CcOp, l: &CcValue, r: &CcValue) -> CcResult {
+        Self::binary_with(op, l, r, false)
+    }
+
+    /// Apply a binary operator. `by_name` says an operand was reached through a constant's
+    /// name: a number compared with text is then compared as text (its own text against the
+    /// other), where operands written out as literals need the text to be a number.
+    pub fn binary_with(op: CcOp, l: &CcValue, r: &CcValue, by_name: bool) -> CcResult {
         use CcOp::*;
         match op {
             Is => {
@@ -267,7 +274,12 @@ impl CcValue {
                 Ok(CcValue::Double(v))
             }
             Eq | Ne | Lt | Gt | Le | Ge => {
-                let ord = compare(l, r)?;
+                let one_text = matches!(l, CcValue::Str(_)) != matches!(r, CcValue::Str(_));
+                let ord = if by_name && one_text {
+                    l.text()?.to_lowercase().cmp(&r.text()?.to_lowercase())
+                } else {
+                    compare(l, r)?
+                };
                 Ok(CcValue::from_bool(match op {
                     Eq => ord == std::cmp::Ordering::Equal,
                     Ne => ord != std::cmp::Ordering::Equal,
@@ -367,6 +379,22 @@ impl Rank {
     }
 }
 
+fn boolean_value(b: bool) -> i8 {
+    if b { -1 } else { 0 }
+}
+
+/// The Boolean a text stands for (as a number: -1 or 0).
+fn text_as_boolean(text: &str) -> Result<i8, u32> {
+    let word = text.trim();
+    if word.eq_ignore_ascii_case("true") {
+        return Ok(-1);
+    }
+    if word.eq_ignore_ascii_case("false") {
+        return Ok(0);
+    }
+    parse_number(text).map(|v| boolean_value(v != 0.0)).ok_or(ERR_TYPE_MISMATCH)
+}
+
 /// Variant comparison: two strings compare as text (case-insensitively); a string against
 /// a number needs the string to be numeric; Empty is 0 against a number and "" against
 /// text.
@@ -376,6 +404,9 @@ fn compare(l: &CcValue, r: &CcValue) -> Result<std::cmp::Ordering, u32> {
         (CcValue::Str(a), CcValue::Str(b)) => Ok(a.to_lowercase().cmp(&b.to_lowercase())),
         (CcValue::Empty, CcValue::Str(b)) => Ok(String::new().cmp(&b.to_lowercase())),
         (CcValue::Str(a), CcValue::Empty) => Ok(a.to_lowercase().cmp(&String::new())),
+        // Text against a Boolean is read as a Boolean: `True` or `False` in any case, or a number.
+        (CcValue::Boolean(b), CcValue::Str(t)) => Ok(boolean_value(*b).cmp(&text_as_boolean(t)?)),
+        (CcValue::Str(t), CcValue::Boolean(b)) => Ok(text_as_boolean(t)?.cmp(&boolean_value(*b))),
         _ => {
             let (a, b) = (l.num()?, r.num()?);
             if let (Some(x), Some(y)) = (a.scaled, b.scaled) {
@@ -554,38 +585,151 @@ fn format_currency(c: i64) -> String {
     }
 }
 
-/// The project's conditional-compilation arguments are not written as the project format
-/// requires ("Invalid syntax for constant declarations").
+/// Why the project's conditional-compilation arguments are refused.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct InvalidConstantDeclarations;
+pub enum ConstantDeclarationsError {
+    /// The text is not written as the project format requires ("Invalid syntax for constant
+    /// declarations").
+    InvalidSyntax,
+    /// The text is 1024 characters or longer ("Fixed or static data can't be larger than 64K").
+    DataTooLarge,
+}
+
+/// The longest argument text, in 16-bit units, that is read at all.
+const MAX_ARGUMENT_UNITS: usize = 1023;
+
+/// A blank in the argument text: the tab, line end, vertical tab and form feed characters, and
+/// the space. No other character counts, the no-break space included.
+fn is_argument_blank(c: char) -> bool {
+    matches!(c, '\t'..='\r' | ' ')
+}
+
+/// A letter in a name: an ASCII letter, or any character from U+0080 to U+00FF.
+fn is_name_letter(c: char) -> bool {
+    c.is_ascii_alphabetic() || ('\u{80}'..='\u{ff}').contains(&c)
+}
+
+/// A constant's name: a letter, then letters, digits and underscores. An underscore cannot
+/// start it.
+fn is_constant_name(name: &[char]) -> bool {
+    match name.split_first() {
+        Some((first, rest)) => {
+            is_name_letter(*first) && rest.iter().all(|c| is_name_letter(*c) || c.is_ascii_digit() || *c == '_')
+        }
+        None => false,
+    }
+}
+
+/// The form of a name in which two names that compare equal ignoring case are identical: the
+/// letters fold to lower case, and the sharp s and the ligatures AE and TH compare equal to
+/// the letter pairs they stand for.
+fn name_comparison_key(name: &str) -> String {
+    let mut key = String::new();
+    for c in crate::frontend::scanner::fold_name(name).chars() {
+        match c {
+            '\u{df}' => key.push_str("ss"),
+            '\u{e6}' => key.push_str("ae"),
+            '\u{fe}' => key.push_str("th"),
+            _ => key.push(c),
+        }
+    }
+    key
+}
 
 /// Split the project's conditional-compilation arguments (`DEBUG = 1 : Level = -2`) into
-/// `(lower-cased name, value)` pairs. Each is a name (a letter or underscore, then letters,
-/// digits and underscores; a reserved word will do), an `=`, and a 16-bit signed integer
-/// with an optional sign. A name given twice (ignoring case), an empty part, or any other
-/// value makes the whole text invalid.
-pub fn parse_cond_comp_args(text: &str) -> Result<Vec<(String, CcValue)>, InvalidConstantDeclarations> {
+/// `(folded name, value)` pairs.
+///
+/// Each argument is a name (see [`is_constant_name`]; a reserved word will do), an `=`, and a
+/// 16-bit signed integer. Blanks are skipped before and after each part, and between a sign and
+/// its digits. The value is an optional `+` or `-` and then digits; a sign alone is the value 0.
+/// A run of digits is read as a 32-bit number, wrapping, and must then fit 16 bits. Without a
+/// sign, five digits are the most a value may have, unless an earlier value (or this one) had a
+/// sign, after which a run may be up to eleven digits long, signed or not. A name given twice
+/// (ignoring case), an empty part, or any other text makes the whole text invalid; a text of
+/// 1024 or more characters is refused before it is read.
+pub fn parse_cond_comp_args(text: &str) -> Result<Vec<(String, CcValue)>, ConstantDeclarationsError> {
+    use ConstantDeclarationsError::{DataTooLarge, InvalidSyntax};
+    if text.encode_utf16().count() > MAX_ARGUMENT_UNITS {
+        return Err(DataTooLarge);
+    }
+    let chars: Vec<char> = text.chars().collect();
+    let at = |i: usize| chars.get(i).copied();
+    let skip_blanks = |mut i: usize| {
+        while at(i).is_some_and(is_argument_blank) {
+            i += 1;
+        }
+        i
+    };
     let mut out: Vec<(String, CcValue)> = Vec::new();
-    if text.trim().is_empty() {
+    let mut pos = skip_blanks(0);
+    if pos == chars.len() {
         return Ok(out);
     }
-    for part in text.split(':') {
-        let (name, value) = part.split_once('=').ok_or(InvalidConstantDeclarations)?;
-        let (name, value) = (name.trim(), value.trim());
-        let mut chars = name.chars();
-        let name_ok = chars.next().is_some_and(|c| c.is_alphabetic() || c == '_')
-            && chars.all(|c| c.is_alphanumeric() || c == '_');
-        let digits = value.strip_prefix(['+', '-']).unwrap_or(value);
-        if !name_ok || digits.is_empty() || !digits.chars().all(|c| c.is_ascii_digit()) {
-            return Err(InvalidConstantDeclarations);
+    let entries = 1 + chars[pos..].iter().filter(|c| **c == ':').count();
+    let mut sign_seen = false;
+    for entry in 1..=entries {
+        // The name runs to the next `=` (which may lie beyond a `:`, and then is no name).
+        let eq = (pos..chars.len()).find(|i| chars[*i] == '=').filter(|eq| *eq > pos).ok_or(InvalidSyntax)?;
+        let mut name_end = eq;
+        while name_end > pos && is_argument_blank(chars[name_end - 1]) {
+            name_end -= 1;
         }
-        let number: i64 = value.trim_start_matches('+').parse().map_err(|_| InvalidConstantDeclarations)?;
-        let number = i16::try_from(number).map_err(|_| InvalidConstantDeclarations)?;
-        let name = name.to_ascii_lowercase();
-        if out.iter().any(|(n, _)| *n == name) {
-            return Err(InvalidConstantDeclarations);
+        let name = &chars[pos..name_end];
+        if !is_constant_name(name) {
+            return Err(InvalidSyntax);
         }
-        out.push((name, CcValue::Integer(number)));
+        let name: String = name.iter().collect();
+        pos = skip_blanks(eq + 1);
+        if pos == chars.len() {
+            return Err(InvalidSyntax);
+        }
+        let negative = at(pos) == Some('-');
+        let signed = negative || at(pos) == Some('+');
+        if signed {
+            sign_seen = true;
+            let after_sign = skip_blanks(pos + 1);
+            // A sign alone is a value; blanks after it must lead to something.
+            if after_sign > pos + 1 && after_sign == chars.len() {
+                return Err(InvalidSyntax);
+            }
+            pos = after_sign;
+        }
+        let digits_start = pos;
+        while at(pos).is_some_and(|c| c.is_ascii_digit()) {
+            pos += 1;
+        }
+        let digit_count = pos - digits_start;
+        if digit_count == 0 && !signed {
+            return Err(InvalidSyntax);
+        }
+        let longest_run = if sign_seen { 11 } else { 5 };
+        if digit_count > longest_run {
+            return Err(InvalidSyntax);
+        }
+        let magnitude = chars[digits_start..pos]
+            .iter()
+            .fold(0u32, |acc, c| acc.wrapping_mul(10).wrapping_add(c.to_digit(10).unwrap_or(0)));
+        let number = if negative { (magnitude as i32).wrapping_neg() } else { magnitude as i32 };
+        let number = i16::try_from(number).map_err(|_| InvalidSyntax)?;
+        let key = name_comparison_key(&name);
+        if out.iter().any(|(n, _)| name_comparison_key(n) == key) {
+            return Err(InvalidSyntax);
+        }
+        out.push((crate::frontend::scanner::fold_name(&name), CcValue::Integer(number)));
+        pos = skip_blanks(pos);
+        if entry == entries {
+            if pos != chars.len() {
+                return Err(InvalidSyntax);
+            }
+        } else {
+            if at(pos) != Some(':') {
+                return Err(InvalidSyntax);
+            }
+            pos = skip_blanks(pos + 1);
+            if pos == chars.len() {
+                return Err(InvalidSyntax);
+            }
+        }
     }
     Ok(out)
 }

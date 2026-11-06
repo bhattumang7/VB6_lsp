@@ -48,3 +48,21 @@ fn arguments_that_are_not_constant_declarations_define_nothing() {
     let s = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(Some("MyFlag = 1")));
     assert!(s.conditional_compilation_is_valid());
 }
+
+#[test]
+fn argument_text_follows_the_project_format() {
+    let valid = |args: &str| {
+        Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(Some(args))).conditional_compilation_is_valid()
+    };
+    // A sign alone is the value 0.
+    assert!(valid("MyFlag = -"));
+    assert!(valid("MyFlag = + : Other = 000001"));
+    assert!(!valid("_MyFlag = 1"));
+    assert!(!valid("MyFlag = 000001"));
+    assert!(!valid("MyFlag = 1 : myflag = 2"));
+    assert!(valid(&format!("{}=1", "A".repeat(1021))));
+    assert!(!valid(&format!("{}=1 ", "A".repeat(1021))));
+    // The sign alone gives 0, so the second branch is compiled.
+    let s = Session::with_config(vec![("m.bas".into(), SRC.to_vec())], config(Some("MyFlag = -")));
+    assert_eq!(codes(&s).len(), 1);
+}
