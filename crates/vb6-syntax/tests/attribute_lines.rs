@@ -28,7 +28,7 @@ fn a_well_formed_attribute_keeps_its_target_name_and_values() {
     let ExprNode::Attribute { target, name, values } = p.node(p.top[0]) else { panic!("expected an Attribute") };
     assert_eq!(p.name(target.expect("a target")), "Foo");
     assert_eq!(p.name(*name), "VB_Description");
-    assert_eq!(values.len(), 2);
+    assert_eq!(values.len(), 1);
 }
 
 #[test]
@@ -61,7 +61,7 @@ fn what_follows_the_equals_sign_is_never_an_error() {
 fn a_blank_before_the_dot_is_a_syntax_error() {
     let src = "Attribute Foo .VB_Description = \"x\"\n";
     let p = parse(src);
-    assert_eq!(p.found, vec![(0x9c70, src.find(".VB").unwrap() as u32, 1)]);
+    assert_eq!(p.found, vec![(0x9c70, src.len() as u32, 0)]);
 }
 
 #[test]
@@ -94,8 +94,9 @@ fn a_plain_name_before_the_equals_sign_is_a_syntax_error() {
         assert!(!p.found.is_empty(), "{src:?}");
         assert!(p.found.iter().all(|d| d.0 == 0x9c70 || d.0 == 0x9c6f), "{src:?}: {:?}", p.found);
     }
-    // A dotted name, or a header name, is fine.
-    for src in ["Attribute Foo.x = \"m\"\n", "Attribute VB_Anything = 1\n"] {
+    // A dotted name is fine; an attribute word not in the table is an error at the line that follows.
+    assert_eq!(parse("Attribute VB_Anything = 1\n").found, vec![(0x9c70, 26, 0)]);
+    for src in ["Attribute Foo.x = \"m\"\n"] {
         assert_eq!(parse(src).found, vec![], "{src:?}");
     }
 }

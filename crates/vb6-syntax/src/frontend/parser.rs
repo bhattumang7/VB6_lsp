@@ -7,6 +7,8 @@
 //! * Process-global scanner state → owned `Scanner` threaded via `Parser`.
 //! * List chain nodes → `Vec<NodeId>` in typed `ArgList`/`Block` variants.
 
+mod attribute;
+
 use crate::frontend::line_size::{self, cost, MAX_LINE_CODE_SIZE};
 use crate::frontend::cond_compile::{CcOp, CcResult, CcValue, ERR_VARIABLE_NOT_DEFINED as CC_ERR_VARIABLE_NOT_DEFINED};
 
@@ -246,6 +248,9 @@ pub struct Parser<'src> {
     address_of_ok: bool,
     /// The statements of a single-line `If` are being parsed: a `Rem` comment may follow one.
     in_inline_if: bool,
+    /// The statement before an `Attribute` line on the same line is being read: its errors are
+    /// kept and the statement is dropped.
+    in_attribute_head: bool,
     /// A statement's target is being parsed, where built-in functions are plain names.
     in_target: bool,
     /// The name being read is the target of a jump, which may be written in brackets.
@@ -497,6 +502,7 @@ impl<'src> Parser<'src> {
             last_item_had_as: false,
             address_of_ok: false,
             in_inline_if: false,
+            in_attribute_head: false,
             in_target: false,
             label_target: false,
             target_at_statement_start: false,
@@ -1407,9 +1413,22 @@ impl<'src> Parser<'src> {
                 self.diagnostics.push_labeled(0x9c6f, span, "statement or end of statement");
             }
 
+            // An `Attribute` line after a colon takes the whole line: what stands before it is
+            // read for its errors only. A procedure, `Type` or `Enum` header before it opens
+            // nothing.
+            let trailing_attribute = self.trailing_attribute_line_at();
+            if trailing_attribute.is_some() && self.starts_module_block() {
+                for _ in 0..trailing_attribute.unwrap_or(0) {
+                    self.advance();
+                }
+                continue;
+            }
+            let head_mark = nodes.len();
+            let mut line_taken = false;
+
             // After a procedure only procedures (and attribute lines, conditional compilation,
             // `Implements`) may stand; any other declaration is reported alone.
-            let late_declaration = if self.procedure_seen && self.starts_module_declaration() {
+            let late_declaration = if self.procedure_seen && self.starts_module_declaration() && trailing_attribute.is_none() {
                 Some((self.diagnostics.len(), self.current_span()))
             } else {
                 None
@@ -1503,13 +1522,18 @@ impl<'src> Parser<'src> {
                         // VERSION x.y CLASS / VERSION 5.00 — file-format header; skip entire line.
                         self.skip_line();
                     } else {
-                        self.skip_executable_statement(arena);
+                        line_taken = true;
+                        nodes.extend(self.skip_executable_statement(arena));
                     }
                 }
                 TokenKind::Kw(k) if starts_executable_statement(k) => {
-                    self.skip_executable_statement(arena);
+                    line_taken = true;
+                    nodes.extend(self.skip_executable_statement(arena));
                 }
-                TokenKind::IntLit | TokenKind::LongLit => self.skip_executable_statement(arena),
+                TokenKind::IntLit | TokenKind::LongLit => {
+                    line_taken = true;
+                    nodes.extend(self.skip_executable_statement(arena));
+                }
                 // `End Type` with no `Type` block open.
                 TokenKind::Kw(Kw::End) if self.peek2().kind == TokenKind::Kw(Kw::Type) => {
                     let span = self.current_span();
@@ -1522,9 +1546,26 @@ impl<'src> Parser<'src> {
                 self.diagnostics.truncate(mark);
                 self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
             }
+            if trailing_attribute.is_some() && !line_taken {
+                nodes.truncate(head_mark);
+            }
         }
         self.diagnostics.merge_directive_pass();
         nodes
+    }
+
+    /// True when the next tokens begin the header of a procedure, a `Type` or an `Enum`, with or
+    /// without an access word before it.
+    fn starts_module_block(&mut self) -> bool {
+        let block_word = |k: &TokenKind| {
+            matches!(k, TokenKind::Kw(Kw::Sub | Kw::Function | Kw::Property | Kw::Type | Kw::Enum))
+        };
+        let first = self.peek().kind.clone();
+        if block_word(&first) {
+            return true;
+        }
+        matches!(first, TokenKind::Kw(Kw::Public | Kw::Private | Kw::Friend | Kw::Global | Kw::Static))
+            && block_word(&self.peek2().kind.clone())
     }
 
     /// True when the next tokens begin a declaration that belongs before the procedures of a
@@ -1573,11 +1614,13 @@ impl<'src> Parser<'src> {
 
     /// An executable statement outside any procedure: report it once, at its
     /// start, and consume the whole statement (a block statement included).
-    fn skip_executable_statement(&mut self, arena: &mut ExprArena) {
-        if self.line_has_trailing_attribute_line() {
-            // The whole line is an attribute line.
-            self.skip_line();
-            return;
+    fn skip_executable_statement(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        if let Some(at) = self.trailing_attribute_line_at() {
+            // The whole line is an attribute line: what comes before it is not read.
+            for _ in 0..at {
+                self.advance();
+            }
+            return Some(self.parse_attribute_stmt(arena));
         }
         let span = self.current_span();
         let mark = self.diagnostics.len();
@@ -1593,6 +1636,7 @@ impl<'src> Parser<'src> {
         if self.current_span().start == before && self.peek().kind != TokenKind::Eof {
             self.advance();
         }
+        None
     }
 
     /// Skip a `BEGIN ... END` designer-metadata block found in `.cls` files.
@@ -2056,6 +2100,25 @@ impl<'src> Parser<'src> {
             self.advance();
             self.eat(TokenKind::Kw(Kw::Colon));
             return Some(self.parse_attribute_stmt(arena));
+        }
+        // An `Attribute` line after a colon takes the whole line: what stands before it is read
+        // for its errors only, and a block it opens is not opened.
+        if !self.in_attribute_head {
+            if let Some(at) = self.trailing_attribute_line_at() {
+                if matches!(
+                    self.peek().kind,
+                    TokenKind::Kw(Kw::Do | Kw::For | Kw::While | Kw::With | Kw::Select)
+                ) {
+                    for _ in 0..at {
+                        self.advance();
+                    }
+                    return Some(self.parse_attribute_stmt(arena));
+                }
+                self.in_attribute_head = true;
+                let _ = self.parse_stmt(arena);
+                self.in_attribute_head = false;
+                return None;
+            }
         }
 
         let kind = self.peek().kind.clone();
@@ -3462,20 +3525,24 @@ impl<'src> Parser<'src> {
                         self.skip_line();
                     } else {
                         let span = self.current_span();
+                        // An attribute line is read like anywhere else and is no statement.
+                        let attribute_line = self.at_attribute_line();
                         let first = self.peek().kind.clone();
                         let mark = self.diagnostics.len();
                         if let Some(stmt) = self.parse_stmt(arena) {
-                            match self.preamble_rule(arena, &first, stmt) {
-                                PreambleRule::Allowed => {}
-                                PreambleRule::Reported => {
-                                    self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                            if !attribute_line {
+                                match self.preamble_rule(arena, &first, stmt) {
+                                    PreambleRule::Allowed => {}
+                                    PreambleRule::Reported => {
+                                        self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                                    }
+                                    PreambleRule::ReportedInstead => {
+                                        self.diagnostics.truncate(mark);
+                                        self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+                                    }
                                 }
-                                PreambleRule::ReportedInstead => {
-                                    self.diagnostics.truncate(mark);
-                                    self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
-                                }
+                                pre.push(stmt);
                             }
-                            pre.push(stmt);
                         }
                     }
                 }
@@ -4568,133 +4635,6 @@ impl<'src> Parser<'src> {
             (Some(a), Some(b)) if a <= b => ((1u32 << (b + 1)) - 1) & !((1u32 << a) - 1),
             _ => 0,
         }
-    }
-
-    /// `Attribute name = value[, value…]` metadata line.
-    fn parse_attribute_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.advance(); // consume Attribute
-        // `Attribute VB_Name = …` or `Attribute Member.VB_UserMemId = …`: the
-        // attribute is the last name; a preceding name is the member it applies to.
-        // A line that does not begin with a name is not read at all.
-        if self.peek().kind == TokenKind::Kw(Kw::As) {
-            // `As` here is read as the start of a type clause.
-            let span = self.current_span();
-            self.diagnostics.push_labeled(0x9c6f, span, "New or type name");
-            return self.ignore_attribute_line(arena);
-        }
-        if !self.at_attribute_word() || self.peek().kind == TokenKind::Kw(Kw::Attribute) {
-            return self.ignore_attribute_line(arena);
-        }
-        let mut key = self.advance();
-        let mut target: Option<u32> = None;
-        // The dot joins names only when it follows the name directly.
-        while self.peek().kind == TokenKind::Kw(Kw::Dot) && !self.blank_before_next() {
-            self.advance();
-            if !self.at_attribute_word() {
-                return self.ignore_attribute_line(arena);
-            }
-            target = Some(key.sym.map(|s| s as u32).unwrap_or(0));
-            key = self.advance();
-        }
-        let name = key.sym.map(|s| s as u32).unwrap_or(0);
-        if !self.eat(TokenKind::Kw(Kw::Eq)) {
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
-            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
-        }
-        // Without a member before it, the name must be one of the header words.
-        if target.is_none() && !is_header_word(self.scanner.sym_name(name)) {
-            self.diagnostics.push(ERR_SYNTAX_ERROR, key.span);
-            self.skip_line();
-            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
-        }
-        // The node spans its first value: for `VB_Name` that is where the
-        // module name is written. Whatever follows the `=` is only read for
-        // its values: a value that does not parse is not an error.
-        let value_span = self.current_span();
-        let mark = self.diagnostics.items().len();
-        let mut values = Vec::new();
-        if !self.peek().is_stmt_end() && self.peek().kind != TokenKind::Kw(Kw::Colon) {
-            loop {
-                values.push(self.parse_expr(arena, 0));
-                if !self.eat(TokenKind::Kw(Kw::Comma)) {
-                    break;
-                }
-            }
-        }
-        self.diagnostics.truncate(mark);
-        while !self.peek().is_stmt_end() {
-            self.advance();
-        }
-        self.end_stmt();
-        if target.is_none()
-            && self.scanner.sym_name(name).eq_ignore_ascii_case("VB_Exposed")
-            && values.first().is_some_and(|v| matches!(arena.get(*v), ExprNode::Literal { lit: AstLit::Bool(true) }))
-        {
-            self.class_exposed = true;
-        }
-        let id = arena.alloc(ExprNode::Attribute { target, name, values });
-        self.set_span(id, value_span);
-        id
-    }
-
-    /// True when the next token can be a name in an `Attribute` line: a plain
-    /// name, a keyword that is not reserved, or one of the header words.
-    fn at_attribute_word(&mut self) -> bool {
-        let t = self.peek();
-        match (&t.kind, t.sym) {
-            (TokenKind::Ident, _) => true,
-            (TokenKind::Kw(_), Some(sym)) => {
-                let sym = sym as u32;
-                !self.scanner.is_reserved(sym) || is_header_word(self.scanner.sym_name(sym))
-            }
-            _ => false,
-        }
-    }
-
-    /// True at `Else` or a line number that is followed, directly or after a colon, by an
-    /// attribute line proper (`Attribute`, a name, any `.name` parts and an `=`). Such a line
-    /// is an attribute line whatever precedes it; a bare `Attribute` after the prefix is not.
-    fn at_prefixed_attribute_line(&mut self) -> bool {
-        let prefix = matches!(
-            self.peek().kind,
-            TokenKind::Kw(Kw::Else) | TokenKind::IntLit | TokenKind::LongLit
-        );
-        if !prefix {
-            return false;
-        }
-        let end = (self.peek().span.start + self.peek().span.len) as usize;
-        let rest = line_rest(self.src, end);
-        let mut i = skip_blanks(rest, 0);
-        if rest.get(i) == Some(&b':') {
-            i = skip_blanks(rest, i + 1);
-        }
-        attribute_line(&rest[i..])
-    }
-
-    /// True when the rest of the line holds a colon followed by an attribute line proper.
-    fn line_has_trailing_attribute_line(&mut self) -> bool {
-        let start = self.peek().span.start as usize;
-        let rest = line_rest(self.src, start);
-        let mut from = 0;
-        while let Some(colon) = rest[from..].iter().position(|b| *b == b':') {
-            let at = skip_blanks(rest, from + colon + 1);
-            if attribute_line(&rest[at..]) {
-                return true;
-            }
-            from += colon + 1;
-        }
-        false
-    }
-
-    /// The rest of an `Attribute` line that the compiler does not read.
-    fn ignore_attribute_line(&mut self, arena: &mut ExprArena) -> NodeId {
-        while !self.peek().is_stmt_end() {
-            self.advance();
-        }
-        self.end_stmt();
-        arena.alloc(ExprNode::Block { stmts: Vec::new() })
     }
 
     // ── File I/O statement parsers ──────────────────────────────────────────
@@ -5833,6 +5773,11 @@ impl<'src> Parser<'src> {
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
+            let after_member = match self.take_body_attribute_line(arena) {
+                attribute::BodyAttribute::Taken => continue,
+                attribute::BodyAttribute::AfterMember => true,
+                attribute::BodyAttribute::None => false,
+            };
             match self.peek().kind.clone() {
                 // `End` followed by `As` or `(` is a member named `End`.
                 TokenKind::Kw(Kw::End)
@@ -5912,7 +5857,9 @@ impl<'src> Parser<'src> {
                     } else {
                         self.end_stmt();
                     }
-                    members.push(m);
+                    if !after_member {
+                        members.push(m);
+                    }
                 }
             }
         }
@@ -5932,6 +5879,11 @@ impl<'src> Parser<'src> {
         let mut members = Vec::new();
         loop {
             while self.eat(TokenKind::Eol) {}
+            let after_member = match self.take_body_attribute_line(arena) {
+                attribute::BodyAttribute::Taken => continue,
+                attribute::BodyAttribute::AfterMember => true,
+                attribute::BodyAttribute::None => false,
+            };
             match self.peek().kind.clone() {
                 TokenKind::Kw(Kw::End) => {
                     let end_span = self.current_span();
@@ -5969,8 +5921,10 @@ impl<'src> Parser<'src> {
                     self.label_target = self.src.get(start.start as usize) == Some(&b'[');
                     let m = self.parse_dim_item(arena, true, false, false);
                     self.label_target = false;
-                    self.finish_enum_member(arena, m, start);
-                    members.push(m);
+                    self.finish_enum_member(arena, m, start, after_member);
+                    if !after_member {
+                        members.push(m);
+                    }
                 }
                 // A non-reserved keyword (`Text`, `Key`) can name a member, unless it
                 // starts a statement that needs operands (`Name`, `Width`, ...).
@@ -5980,8 +5934,10 @@ impl<'src> Parser<'src> {
                     self.reserved_names_allowed = true;
                     let m = self.parse_dim_item(arena, true, false, false);
                     self.reserved_names_allowed = false;
-                    self.finish_enum_member(arena, m, start);
-                    members.push(m);
+                    self.finish_enum_member(arena, m, start, after_member);
+                    if !after_member {
+                        members.push(m);
+                    }
                 }
                 _ => {
                     // Not a member: report it and resume on the next line.
@@ -5998,14 +5954,15 @@ impl<'src> Parser<'src> {
 
     /// The end of an `Enum` member: the member takes no type, stands on one physical line, and
     /// a colon may follow it only when it has a value.
-    fn finish_enum_member(&mut self, arena: &ExprArena, member: NodeId, start: Span) {
+    fn finish_enum_member(&mut self, arena: &ExprArena, member: NodeId, start: Span, before_attribute_line: bool) {
         let has_value = matches!(arena.get(member), ExprNode::DimItem { init: Some(_), .. });
         let end = self.peek().span.start as usize;
         let joined = self
             .src
             .get(start.start as usize..end)
             .is_some_and(|text| text.iter().any(|&b| b == 10 || b == 13));
-        if self.last_item_had_as || joined || (!has_value && self.peek().kind == TokenKind::Kw(Kw::Colon)) {
+        let colon_without_value = !has_value && !before_attribute_line && self.peek().kind == TokenKind::Kw(Kw::Colon);
+        if self.last_item_had_as || joined || colon_without_value {
             self.diagnostics.push(ERR_INVALID_IN_ENUM, start);
             self.skip_line();
         } else {
@@ -6739,47 +6696,6 @@ const INTRINSIC_SHAPES: &[IntrinsicShape] = &[
     IntrinsicShape { name: "LBound", min: 1, max: 2, name_first: true, bare_ok: false },
     IntrinsicShape { name: "Date", min: 0, max: 0, name_first: false, bare_ok: true },
 ];
-
-/// The bytes of the line that starts at `from`, up to its end.
-fn line_rest(src: &[u8], from: usize) -> &[u8] {
-    let rest = src.get(from..).unwrap_or(&[]);
-    let end = rest.iter().position(|b| *b == b'\n' || *b == b'\r').unwrap_or(rest.len());
-    &rest[..end]
-}
-
-fn skip_blanks(line: &[u8], mut i: usize) -> usize {
-    while i < line.len() && (line[i] == b' ' || line[i] == b'\t') {
-        i += 1;
-    }
-    i
-}
-
-/// True when `line` begins with `Attribute`, a name, any `.name` parts and an `=`.
-fn attribute_line(line: &[u8]) -> bool {
-    let word_len = |from: usize| {
-        line[from..].iter().take_while(|b| b.is_ascii_alphanumeric() || **b == b'_').count()
-    };
-    let i = skip_blanks(line, 0);
-    let n = word_len(i);
-    if n != 9 || !line[i..i + n].eq_ignore_ascii_case(b"Attribute") {
-        return false;
-    }
-    let mut i = skip_blanks(line, i + n);
-    let n = word_len(i);
-    if n == 0 {
-        return false;
-    }
-    i += n;
-    while i < line.len() && line[i] == b'.' {
-        let n = word_len(i + 1);
-        if n == 0 {
-            return false;
-        }
-        i += 1 + n;
-    }
-    let i = skip_blanks(line, i);
-    i < line.len() && line[i] == b'='
-}
 
 /// True when `tokens` (the rest of the statement, its terminator last) form the operands a
 /// bare `Scale`, `Line`, `Circle` or `PSet` statement takes.
