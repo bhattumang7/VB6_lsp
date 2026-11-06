@@ -1,0 +1,3 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each word of words.txt.
+=== ordinal bas
+Declare Sub Foo Lib "k" Alias "{k}" ()

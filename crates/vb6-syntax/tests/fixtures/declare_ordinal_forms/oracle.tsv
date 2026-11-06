@@ -1,0 +1,687 @@
+# template	word	class	message
+ordinal	#1	accepted	
+ordinal	#5	accepted	
+ordinal	#,	syntax	Invalid ordinal
+ordinal	#.	syntax	Invalid ordinal
+ordinal	#+	syntax	Invalid ordinal
+ordinal	#-	syntax	Invalid ordinal
+ordinal	#\s	syntax	Invalid ordinal
+ordinal	#&	syntax	Invalid ordinal
+ordinal	#11	accepted	
+ordinal	#15	accepted	
+ordinal	#1,	accepted	
+ordinal	#1.	syntax	Invalid ordinal
+ordinal	#1+	accepted	
+ordinal	#1-	accepted	
+ordinal	#1\s	accepted	
+ordinal	#1&	syntax	Invalid ordinal
+ordinal	#51	accepted	
+ordinal	#55	accepted	
+ordinal	#5,	accepted	
+ordinal	#5.	syntax	Invalid ordinal
+ordinal	#5+	accepted	
+ordinal	#5-	accepted	
+ordinal	#5\s	accepted	
+ordinal	#5&	syntax	Invalid ordinal
+ordinal	#,1	syntax	Invalid ordinal
+ordinal	#,5	syntax	Invalid ordinal
+ordinal	#,,	syntax	Invalid ordinal
+ordinal	#,.	syntax	Invalid ordinal
+ordinal	#,+	syntax	Invalid ordinal
+ordinal	#,-	syntax	Invalid ordinal
+ordinal	#,\s	syntax	Invalid ordinal
+ordinal	#,&	syntax	Invalid ordinal
+ordinal	#.1	syntax	Invalid ordinal
+ordinal	#.5	syntax	Invalid ordinal
+ordinal	#.,	syntax	Invalid ordinal
+ordinal	#..	syntax	Invalid ordinal
+ordinal	#.+	syntax	Invalid ordinal
+ordinal	#.-	syntax	Invalid ordinal
+ordinal	#.\s	syntax	Invalid ordinal
+ordinal	#.&	syntax	Invalid ordinal
+ordinal	#+1	syntax	Invalid ordinal
+ordinal	#+5	syntax	Invalid ordinal
+ordinal	#+,	syntax	Invalid ordinal
+ordinal	#+.	syntax	Invalid ordinal
+ordinal	#++	syntax	Invalid ordinal
+ordinal	#+-	syntax	Invalid ordinal
+ordinal	#+\s	syntax	Invalid ordinal
+ordinal	#+&	syntax	Invalid ordinal
+ordinal	#-1	syntax	Invalid ordinal
+ordinal	#-5	syntax	Invalid ordinal
+ordinal	#-,	syntax	Invalid ordinal
+ordinal	#-.	syntax	Invalid ordinal
+ordinal	#-+	syntax	Invalid ordinal
+ordinal	#--	syntax	Invalid ordinal
+ordinal	#-\s	syntax	Invalid ordinal
+ordinal	#-&	syntax	Invalid ordinal
+ordinal	#\s1	syntax	Invalid ordinal
+ordinal	#\s5	syntax	Invalid ordinal
+ordinal	#\s,	syntax	Invalid ordinal
+ordinal	#\s.	syntax	Invalid ordinal
+ordinal	#\s+	syntax	Invalid ordinal
+ordinal	#\s-	syntax	Invalid ordinal
+ordinal	#\s\s	syntax	Invalid ordinal
+ordinal	#\s&	syntax	Invalid ordinal
+ordinal	#&1	accepted	
+ordinal	#&5	accepted	
+ordinal	#&,	syntax	Invalid ordinal
+ordinal	#&.	syntax	Invalid ordinal
+ordinal	#&+	syntax	Invalid ordinal
+ordinal	#&-	syntax	Invalid ordinal
+ordinal	#&\s	syntax	Invalid ordinal
+ordinal	#&&	syntax	Invalid ordinal
+ordinal	#111	accepted	
+ordinal	#115	accepted	
+ordinal	#11,	accepted	
+ordinal	#11.	syntax	Invalid ordinal
+ordinal	#11+	accepted	
+ordinal	#11-	accepted	
+ordinal	#11\s	accepted	
+ordinal	#11&	syntax	Invalid ordinal
+ordinal	#151	accepted	
+ordinal	#155	accepted	
+ordinal	#15,	accepted	
+ordinal	#15.	syntax	Invalid ordinal
+ordinal	#15+	accepted	
+ordinal	#15-	accepted	
+ordinal	#15\s	accepted	
+ordinal	#15&	syntax	Invalid ordinal
+ordinal	#1,1	accepted	
+ordinal	#1,5	accepted	
+ordinal	#1,,	accepted	
+ordinal	#1,.	accepted	
+ordinal	#1,+	accepted	
+ordinal	#1,-	accepted	
+ordinal	#1,\s	accepted	
+ordinal	#1,&	syntax	Invalid ordinal
+ordinal	#1.1	syntax	Invalid ordinal
+ordinal	#1.5	syntax	Invalid ordinal
+ordinal	#1.,	syntax	Invalid ordinal
+ordinal	#1..	syntax	Invalid ordinal
+ordinal	#1.+	syntax	Invalid ordinal
+ordinal	#1.-	syntax	Invalid ordinal
+ordinal	#1.\s	syntax	Invalid ordinal
+ordinal	#1.&	syntax	Invalid ordinal
+ordinal	#1+1	syntax	Invalid ordinal
+ordinal	#1+5	syntax	Invalid ordinal
+ordinal	#1+,	syntax	Invalid ordinal
+ordinal	#1+.	syntax	Invalid ordinal
+ordinal	#1++	syntax	Invalid ordinal
+ordinal	#1+-	syntax	Invalid ordinal
+ordinal	#1+\s	accepted	
+ordinal	#1+&	syntax	Invalid ordinal
+ordinal	#1-1	syntax	Invalid ordinal
+ordinal	#1-5	syntax	Invalid ordinal
+ordinal	#1-,	syntax	Invalid ordinal
+ordinal	#1-.	syntax	Invalid ordinal
+ordinal	#1-+	syntax	Invalid ordinal
+ordinal	#1--	syntax	Invalid ordinal
+ordinal	#1-\s	accepted	
+ordinal	#1-&	syntax	Invalid ordinal
+ordinal	#1\s1	syntax	Invalid ordinal
+ordinal	#1\s5	syntax	Invalid ordinal
+ordinal	#1\s,	syntax	Invalid ordinal
+ordinal	#1\s.	syntax	Invalid ordinal
+ordinal	#1\s+	accepted	
+ordinal	#1\s-	accepted	
+ordinal	#1\s\s	accepted	
+ordinal	#1\s&	syntax	Invalid ordinal
+ordinal	#1&1	syntax	Invalid ordinal
+ordinal	#1&5	syntax	Invalid ordinal
+ordinal	#1&,	syntax	Invalid ordinal
+ordinal	#1&.	syntax	Invalid ordinal
+ordinal	#1&+	syntax	Invalid ordinal
+ordinal	#1&-	syntax	Invalid ordinal
+ordinal	#1&\s	syntax	Invalid ordinal
+ordinal	#1&&	syntax	Invalid ordinal
+ordinal	#511	accepted	
+ordinal	#515	accepted	
+ordinal	#51,	accepted	
+ordinal	#51.	syntax	Invalid ordinal
+ordinal	#51+	accepted	
+ordinal	#51-	accepted	
+ordinal	#51\s	accepted	
+ordinal	#51&	syntax	Invalid ordinal
+ordinal	#551	accepted	
+ordinal	#555	accepted	
+ordinal	#55,	accepted	
+ordinal	#55.	syntax	Invalid ordinal
+ordinal	#55+	accepted	
+ordinal	#55-	accepted	
+ordinal	#55\s	accepted	
+ordinal	#55&	syntax	Invalid ordinal
+ordinal	#5,1	accepted	
+ordinal	#5,5	accepted	
+ordinal	#5,,	accepted	
+ordinal	#5,.	accepted	
+ordinal	#5,+	accepted	
+ordinal	#5,-	accepted	
+ordinal	#5,\s	accepted	
+ordinal	#5,&	syntax	Invalid ordinal
+ordinal	#5.1	syntax	Invalid ordinal
+ordinal	#5.5	syntax	Invalid ordinal
+ordinal	#5.,	syntax	Invalid ordinal
+ordinal	#5..	syntax	Invalid ordinal
+ordinal	#5.+	syntax	Invalid ordinal
+ordinal	#5.-	syntax	Invalid ordinal
+ordinal	#5.\s	syntax	Invalid ordinal
+ordinal	#5.&	syntax	Invalid ordinal
+ordinal	#5+1	syntax	Invalid ordinal
+ordinal	#5+5	syntax	Invalid ordinal
+ordinal	#5+,	syntax	Invalid ordinal
+ordinal	#5+.	syntax	Invalid ordinal
+ordinal	#5++	syntax	Invalid ordinal
+ordinal	#5+-	syntax	Invalid ordinal
+ordinal	#5+\s	accepted	
+ordinal	#5+&	syntax	Invalid ordinal
+ordinal	#5-1	syntax	Invalid ordinal
+ordinal	#5-5	syntax	Invalid ordinal
+ordinal	#5-,	syntax	Invalid ordinal
+ordinal	#5-.	syntax	Invalid ordinal
+ordinal	#5-+	syntax	Invalid ordinal
+ordinal	#5--	syntax	Invalid ordinal
+ordinal	#5-\s	accepted	
+ordinal	#5-&	syntax	Invalid ordinal
+ordinal	#5\s1	syntax	Invalid ordinal
+ordinal	#5\s5	syntax	Invalid ordinal
+ordinal	#5\s,	syntax	Invalid ordinal
+ordinal	#5\s.	syntax	Invalid ordinal
+ordinal	#5\s+	accepted	
+ordinal	#5\s-	accepted	
+ordinal	#5\s\s	accepted	
+ordinal	#5\s&	syntax	Invalid ordinal
+ordinal	#5&1	syntax	Invalid ordinal
+ordinal	#5&5	syntax	Invalid ordinal
+ordinal	#5&,	syntax	Invalid ordinal
+ordinal	#5&.	syntax	Invalid ordinal
+ordinal	#5&+	syntax	Invalid ordinal
+ordinal	#5&-	syntax	Invalid ordinal
+ordinal	#5&\s	syntax	Invalid ordinal
+ordinal	#5&&	syntax	Invalid ordinal
+ordinal	#,11	syntax	Invalid ordinal
+ordinal	#,15	syntax	Invalid ordinal
+ordinal	#,1,	syntax	Invalid ordinal
+ordinal	#,1.	syntax	Invalid ordinal
+ordinal	#,1+	syntax	Invalid ordinal
+ordinal	#,1-	syntax	Invalid ordinal
+ordinal	#,1\s	syntax	Invalid ordinal
+ordinal	#,1&	syntax	Invalid ordinal
+ordinal	#,51	syntax	Invalid ordinal
+ordinal	#,55	syntax	Invalid ordinal
+ordinal	#,5,	syntax	Invalid ordinal
+ordinal	#,5.	syntax	Invalid ordinal
+ordinal	#,5+	syntax	Invalid ordinal
+ordinal	#,5-	syntax	Invalid ordinal
+ordinal	#,5\s	syntax	Invalid ordinal
+ordinal	#,5&	syntax	Invalid ordinal
+ordinal	#,,1	syntax	Invalid ordinal
+ordinal	#,,5	syntax	Invalid ordinal
+ordinal	#,,,	syntax	Invalid ordinal
+ordinal	#,,.	syntax	Invalid ordinal
+ordinal	#,,+	syntax	Invalid ordinal
+ordinal	#,,-	syntax	Invalid ordinal
+ordinal	#,,\s	syntax	Invalid ordinal
+ordinal	#,,&	syntax	Invalid ordinal
+ordinal	#,.1	syntax	Invalid ordinal
+ordinal	#,.5	syntax	Invalid ordinal
+ordinal	#,.,	syntax	Invalid ordinal
+ordinal	#,..	syntax	Invalid ordinal
+ordinal	#,.+	syntax	Invalid ordinal
+ordinal	#,.-	syntax	Invalid ordinal
+ordinal	#,.\s	syntax	Invalid ordinal
+ordinal	#,.&	syntax	Invalid ordinal
+ordinal	#,+1	syntax	Invalid ordinal
+ordinal	#,+5	syntax	Invalid ordinal
+ordinal	#,+,	syntax	Invalid ordinal
+ordinal	#,+.	syntax	Invalid ordinal
+ordinal	#,++	syntax	Invalid ordinal
+ordinal	#,+-	syntax	Invalid ordinal
+ordinal	#,+\s	syntax	Invalid ordinal
+ordinal	#,+&	syntax	Invalid ordinal
+ordinal	#,-1	syntax	Invalid ordinal
+ordinal	#,-5	syntax	Invalid ordinal
+ordinal	#,-,	syntax	Invalid ordinal
+ordinal	#,-.	syntax	Invalid ordinal
+ordinal	#,-+	syntax	Invalid ordinal
+ordinal	#,--	syntax	Invalid ordinal
+ordinal	#,-\s	syntax	Invalid ordinal
+ordinal	#,-&	syntax	Invalid ordinal
+ordinal	#,\s1	syntax	Invalid ordinal
+ordinal	#,\s5	syntax	Invalid ordinal
+ordinal	#,\s,	syntax	Invalid ordinal
+ordinal	#,\s.	syntax	Invalid ordinal
+ordinal	#,\s+	syntax	Invalid ordinal
+ordinal	#,\s-	syntax	Invalid ordinal
+ordinal	#,\s\s	syntax	Invalid ordinal
+ordinal	#,\s&	syntax	Invalid ordinal
+ordinal	#,&1	syntax	Invalid ordinal
+ordinal	#,&5	syntax	Invalid ordinal
+ordinal	#,&,	syntax	Invalid ordinal
+ordinal	#,&.	syntax	Invalid ordinal
+ordinal	#,&+	syntax	Invalid ordinal
+ordinal	#,&-	syntax	Invalid ordinal
+ordinal	#,&\s	syntax	Invalid ordinal
+ordinal	#,&&	syntax	Invalid ordinal
+ordinal	#.11	syntax	Invalid ordinal
+ordinal	#.15	syntax	Invalid ordinal
+ordinal	#.1,	syntax	Invalid ordinal
+ordinal	#.1.	syntax	Invalid ordinal
+ordinal	#.1+	syntax	Invalid ordinal
+ordinal	#.1-	syntax	Invalid ordinal
+ordinal	#.1\s	syntax	Invalid ordinal
+ordinal	#.1&	syntax	Invalid ordinal
+ordinal	#.51	syntax	Invalid ordinal
+ordinal	#.55	syntax	Invalid ordinal
+ordinal	#.5,	syntax	Invalid ordinal
+ordinal	#.5.	syntax	Invalid ordinal
+ordinal	#.5+	syntax	Invalid ordinal
+ordinal	#.5-	syntax	Invalid ordinal
+ordinal	#.5\s	syntax	Invalid ordinal
+ordinal	#.5&	syntax	Invalid ordinal
+ordinal	#.,1	syntax	Invalid ordinal
+ordinal	#.,5	syntax	Invalid ordinal
+ordinal	#.,,	syntax	Invalid ordinal
+ordinal	#.,.	syntax	Invalid ordinal
+ordinal	#.,+	syntax	Invalid ordinal
+ordinal	#.,-	syntax	Invalid ordinal
+ordinal	#.,\s	syntax	Invalid ordinal
+ordinal	#.,&	syntax	Invalid ordinal
+ordinal	#..1	syntax	Invalid ordinal
+ordinal	#..5	syntax	Invalid ordinal
+ordinal	#..,	syntax	Invalid ordinal
+ordinal	#...	syntax	Invalid ordinal
+ordinal	#..+	syntax	Invalid ordinal
+ordinal	#..-	syntax	Invalid ordinal
+ordinal	#..\s	syntax	Invalid ordinal
+ordinal	#..&	syntax	Invalid ordinal
+ordinal	#.+1	syntax	Invalid ordinal
+ordinal	#.+5	syntax	Invalid ordinal
+ordinal	#.+,	syntax	Invalid ordinal
+ordinal	#.+.	syntax	Invalid ordinal
+ordinal	#.++	syntax	Invalid ordinal
+ordinal	#.+-	syntax	Invalid ordinal
+ordinal	#.+\s	syntax	Invalid ordinal
+ordinal	#.+&	syntax	Invalid ordinal
+ordinal	#.-1	syntax	Invalid ordinal
+ordinal	#.-5	syntax	Invalid ordinal
+ordinal	#.-,	syntax	Invalid ordinal
+ordinal	#.-.	syntax	Invalid ordinal
+ordinal	#.-+	syntax	Invalid ordinal
+ordinal	#.--	syntax	Invalid ordinal
+ordinal	#.-\s	syntax	Invalid ordinal
+ordinal	#.-&	syntax	Invalid ordinal
+ordinal	#.\s1	syntax	Invalid ordinal
+ordinal	#.\s5	syntax	Invalid ordinal
+ordinal	#.\s,	syntax	Invalid ordinal
+ordinal	#.\s.	syntax	Invalid ordinal
+ordinal	#.\s+	syntax	Invalid ordinal
+ordinal	#.\s-	syntax	Invalid ordinal
+ordinal	#.\s\s	syntax	Invalid ordinal
+ordinal	#.\s&	syntax	Invalid ordinal
+ordinal	#.&1	syntax	Invalid ordinal
+ordinal	#.&5	syntax	Invalid ordinal
+ordinal	#.&,	syntax	Invalid ordinal
+ordinal	#.&.	syntax	Invalid ordinal
+ordinal	#.&+	syntax	Invalid ordinal
+ordinal	#.&-	syntax	Invalid ordinal
+ordinal	#.&\s	syntax	Invalid ordinal
+ordinal	#.&&	syntax	Invalid ordinal
+ordinal	#+11	syntax	Invalid ordinal
+ordinal	#+15	syntax	Invalid ordinal
+ordinal	#+1,	syntax	Invalid ordinal
+ordinal	#+1.	syntax	Invalid ordinal
+ordinal	#+1+	syntax	Invalid ordinal
+ordinal	#+1-	syntax	Invalid ordinal
+ordinal	#+1\s	syntax	Invalid ordinal
+ordinal	#+1&	syntax	Invalid ordinal
+ordinal	#+51	syntax	Invalid ordinal
+ordinal	#+55	syntax	Invalid ordinal
+ordinal	#+5,	syntax	Invalid ordinal
+ordinal	#+5.	syntax	Invalid ordinal
+ordinal	#+5+	syntax	Invalid ordinal
+ordinal	#+5-	syntax	Invalid ordinal
+ordinal	#+5\s	syntax	Invalid ordinal
+ordinal	#+5&	syntax	Invalid ordinal
+ordinal	#+,1	syntax	Invalid ordinal
+ordinal	#+,5	syntax	Invalid ordinal
+ordinal	#+,,	syntax	Invalid ordinal
+ordinal	#+,.	syntax	Invalid ordinal
+ordinal	#+,+	syntax	Invalid ordinal
+ordinal	#+,-	syntax	Invalid ordinal
+ordinal	#+,\s	syntax	Invalid ordinal
+ordinal	#+,&	syntax	Invalid ordinal
+ordinal	#+.1	syntax	Invalid ordinal
+ordinal	#+.5	syntax	Invalid ordinal
+ordinal	#+.,	syntax	Invalid ordinal
+ordinal	#+..	syntax	Invalid ordinal
+ordinal	#+.+	syntax	Invalid ordinal
+ordinal	#+.-	syntax	Invalid ordinal
+ordinal	#+.\s	syntax	Invalid ordinal
+ordinal	#+.&	syntax	Invalid ordinal
+ordinal	#++1	syntax	Invalid ordinal
+ordinal	#++5	syntax	Invalid ordinal
+ordinal	#++,	syntax	Invalid ordinal
+ordinal	#++.	syntax	Invalid ordinal
+ordinal	#+++	syntax	Invalid ordinal
+ordinal	#++-	syntax	Invalid ordinal
+ordinal	#++\s	syntax	Invalid ordinal
+ordinal	#++&	syntax	Invalid ordinal
+ordinal	#+-1	syntax	Invalid ordinal
+ordinal	#+-5	syntax	Invalid ordinal
+ordinal	#+-,	syntax	Invalid ordinal
+ordinal	#+-.	syntax	Invalid ordinal
+ordinal	#+-+	syntax	Invalid ordinal
+ordinal	#+--	syntax	Invalid ordinal
+ordinal	#+-\s	syntax	Invalid ordinal
+ordinal	#+-&	syntax	Invalid ordinal
+ordinal	#+\s1	syntax	Invalid ordinal
+ordinal	#+\s5	syntax	Invalid ordinal
+ordinal	#+\s,	syntax	Invalid ordinal
+ordinal	#+\s.	syntax	Invalid ordinal
+ordinal	#+\s+	syntax	Invalid ordinal
+ordinal	#+\s-	syntax	Invalid ordinal
+ordinal	#+\s\s	syntax	Invalid ordinal
+ordinal	#+\s&	syntax	Invalid ordinal
+ordinal	#+&1	syntax	Invalid ordinal
+ordinal	#+&5	syntax	Invalid ordinal
+ordinal	#+&,	syntax	Invalid ordinal
+ordinal	#+&.	syntax	Invalid ordinal
+ordinal	#+&+	syntax	Invalid ordinal
+ordinal	#+&-	syntax	Invalid ordinal
+ordinal	#+&\s	syntax	Invalid ordinal
+ordinal	#+&&	syntax	Invalid ordinal
+ordinal	#-11	syntax	Invalid ordinal
+ordinal	#-15	syntax	Invalid ordinal
+ordinal	#-1,	syntax	Invalid ordinal
+ordinal	#-1.	syntax	Invalid ordinal
+ordinal	#-1+	syntax	Invalid ordinal
+ordinal	#-1-	syntax	Invalid ordinal
+ordinal	#-1\s	syntax	Invalid ordinal
+ordinal	#-1&	syntax	Invalid ordinal
+ordinal	#-51	syntax	Invalid ordinal
+ordinal	#-55	syntax	Invalid ordinal
+ordinal	#-5,	syntax	Invalid ordinal
+ordinal	#-5.	syntax	Invalid ordinal
+ordinal	#-5+	syntax	Invalid ordinal
+ordinal	#-5-	syntax	Invalid ordinal
+ordinal	#-5\s	syntax	Invalid ordinal
+ordinal	#-5&	syntax	Invalid ordinal
+ordinal	#-,1	syntax	Invalid ordinal
+ordinal	#-,5	syntax	Invalid ordinal
+ordinal	#-,,	syntax	Invalid ordinal
+ordinal	#-,.	syntax	Invalid ordinal
+ordinal	#-,+	syntax	Invalid ordinal
+ordinal	#-,-	syntax	Invalid ordinal
+ordinal	#-,\s	syntax	Invalid ordinal
+ordinal	#-,&	syntax	Invalid ordinal
+ordinal	#-.1	syntax	Invalid ordinal
+ordinal	#-.5	syntax	Invalid ordinal
+ordinal	#-.,	syntax	Invalid ordinal
+ordinal	#-..	syntax	Invalid ordinal
+ordinal	#-.+	syntax	Invalid ordinal
+ordinal	#-.-	syntax	Invalid ordinal
+ordinal	#-.\s	syntax	Invalid ordinal
+ordinal	#-.&	syntax	Invalid ordinal
+ordinal	#-+1	syntax	Invalid ordinal
+ordinal	#-+5	syntax	Invalid ordinal
+ordinal	#-+,	syntax	Invalid ordinal
+ordinal	#-+.	syntax	Invalid ordinal
+ordinal	#-++	syntax	Invalid ordinal
+ordinal	#-+-	syntax	Invalid ordinal
+ordinal	#-+\s	syntax	Invalid ordinal
+ordinal	#-+&	syntax	Invalid ordinal
+ordinal	#--1	syntax	Invalid ordinal
+ordinal	#--5	syntax	Invalid ordinal
+ordinal	#--,	syntax	Invalid ordinal
+ordinal	#--.	syntax	Invalid ordinal
+ordinal	#--+	syntax	Invalid ordinal
+ordinal	#---	syntax	Invalid ordinal
+ordinal	#--\s	syntax	Invalid ordinal
+ordinal	#--&	syntax	Invalid ordinal
+ordinal	#-\s1	syntax	Invalid ordinal
+ordinal	#-\s5	syntax	Invalid ordinal
+ordinal	#-\s,	syntax	Invalid ordinal
+ordinal	#-\s.	syntax	Invalid ordinal
+ordinal	#-\s+	syntax	Invalid ordinal
+ordinal	#-\s-	syntax	Invalid ordinal
+ordinal	#-\s\s	syntax	Invalid ordinal
+ordinal	#-\s&	syntax	Invalid ordinal
+ordinal	#-&1	syntax	Invalid ordinal
+ordinal	#-&5	syntax	Invalid ordinal
+ordinal	#-&,	syntax	Invalid ordinal
+ordinal	#-&.	syntax	Invalid ordinal
+ordinal	#-&+	syntax	Invalid ordinal
+ordinal	#-&-	syntax	Invalid ordinal
+ordinal	#-&\s	syntax	Invalid ordinal
+ordinal	#-&&	syntax	Invalid ordinal
+ordinal	#\s11	syntax	Invalid ordinal
+ordinal	#\s15	syntax	Invalid ordinal
+ordinal	#\s1,	syntax	Invalid ordinal
+ordinal	#\s1.	syntax	Invalid ordinal
+ordinal	#\s1+	syntax	Invalid ordinal
+ordinal	#\s1-	syntax	Invalid ordinal
+ordinal	#\s1\s	syntax	Invalid ordinal
+ordinal	#\s1&	syntax	Invalid ordinal
+ordinal	#\s51	syntax	Invalid ordinal
+ordinal	#\s55	syntax	Invalid ordinal
+ordinal	#\s5,	syntax	Invalid ordinal
+ordinal	#\s5.	syntax	Invalid ordinal
+ordinal	#\s5+	syntax	Invalid ordinal
+ordinal	#\s5-	syntax	Invalid ordinal
+ordinal	#\s5\s	syntax	Invalid ordinal
+ordinal	#\s5&	syntax	Invalid ordinal
+ordinal	#\s,1	syntax	Invalid ordinal
+ordinal	#\s,5	syntax	Invalid ordinal
+ordinal	#\s,,	syntax	Invalid ordinal
+ordinal	#\s,.	syntax	Invalid ordinal
+ordinal	#\s,+	syntax	Invalid ordinal
+ordinal	#\s,-	syntax	Invalid ordinal
+ordinal	#\s,\s	syntax	Invalid ordinal
+ordinal	#\s,&	syntax	Invalid ordinal
+ordinal	#\s.1	syntax	Invalid ordinal
+ordinal	#\s.5	syntax	Invalid ordinal
+ordinal	#\s.,	syntax	Invalid ordinal
+ordinal	#\s..	syntax	Invalid ordinal
+ordinal	#\s.+	syntax	Invalid ordinal
+ordinal	#\s.-	syntax	Invalid ordinal
+ordinal	#\s.\s	syntax	Invalid ordinal
+ordinal	#\s.&	syntax	Invalid ordinal
+ordinal	#\s+1	syntax	Invalid ordinal
+ordinal	#\s+5	syntax	Invalid ordinal
+ordinal	#\s+,	syntax	Invalid ordinal
+ordinal	#\s+.	syntax	Invalid ordinal
+ordinal	#\s++	syntax	Invalid ordinal
+ordinal	#\s+-	syntax	Invalid ordinal
+ordinal	#\s+\s	syntax	Invalid ordinal
+ordinal	#\s+&	syntax	Invalid ordinal
+ordinal	#\s-1	syntax	Invalid ordinal
+ordinal	#\s-5	syntax	Invalid ordinal
+ordinal	#\s-,	syntax	Invalid ordinal
+ordinal	#\s-.	syntax	Invalid ordinal
+ordinal	#\s-+	syntax	Invalid ordinal
+ordinal	#\s--	syntax	Invalid ordinal
+ordinal	#\s-\s	syntax	Invalid ordinal
+ordinal	#\s-&	syntax	Invalid ordinal
+ordinal	#\s\s1	syntax	Invalid ordinal
+ordinal	#\s\s5	syntax	Invalid ordinal
+ordinal	#\s\s,	syntax	Invalid ordinal
+ordinal	#\s\s.	syntax	Invalid ordinal
+ordinal	#\s\s+	syntax	Invalid ordinal
+ordinal	#\s\s-	syntax	Invalid ordinal
+ordinal	#\s\s\s	syntax	Invalid ordinal
+ordinal	#\s\s&	syntax	Invalid ordinal
+ordinal	#\s&1	syntax	Invalid ordinal
+ordinal	#\s&5	syntax	Invalid ordinal
+ordinal	#\s&,	syntax	Invalid ordinal
+ordinal	#\s&.	syntax	Invalid ordinal
+ordinal	#\s&+	syntax	Invalid ordinal
+ordinal	#\s&-	syntax	Invalid ordinal
+ordinal	#\s&\s	syntax	Invalid ordinal
+ordinal	#\s&&	syntax	Invalid ordinal
+ordinal	#&11	accepted	
+ordinal	#&15	accepted	
+ordinal	#&1,	syntax	Invalid ordinal
+ordinal	#&1.	syntax	Invalid ordinal
+ordinal	#&1+	syntax	Invalid ordinal
+ordinal	#&1-	syntax	Invalid ordinal
+ordinal	#&1\s	accepted	
+ordinal	#&1&	syntax	Invalid ordinal
+ordinal	#&51	accepted	
+ordinal	#&55	accepted	
+ordinal	#&5,	syntax	Invalid ordinal
+ordinal	#&5.	syntax	Invalid ordinal
+ordinal	#&5+	syntax	Invalid ordinal
+ordinal	#&5-	syntax	Invalid ordinal
+ordinal	#&5\s	accepted	
+ordinal	#&5&	syntax	Invalid ordinal
+ordinal	#&,1	syntax	Invalid ordinal
+ordinal	#&,5	syntax	Invalid ordinal
+ordinal	#&,,	syntax	Invalid ordinal
+ordinal	#&,.	syntax	Invalid ordinal
+ordinal	#&,+	syntax	Invalid ordinal
+ordinal	#&,-	syntax	Invalid ordinal
+ordinal	#&,\s	syntax	Invalid ordinal
+ordinal	#&,&	syntax	Invalid ordinal
+ordinal	#&.1	syntax	Invalid ordinal
+ordinal	#&.5	syntax	Invalid ordinal
+ordinal	#&.,	syntax	Invalid ordinal
+ordinal	#&..	syntax	Invalid ordinal
+ordinal	#&.+	syntax	Invalid ordinal
+ordinal	#&.-	syntax	Invalid ordinal
+ordinal	#&.\s	syntax	Invalid ordinal
+ordinal	#&.&	syntax	Invalid ordinal
+ordinal	#&+1	syntax	Invalid ordinal
+ordinal	#&+5	syntax	Invalid ordinal
+ordinal	#&+,	syntax	Invalid ordinal
+ordinal	#&+.	syntax	Invalid ordinal
+ordinal	#&++	syntax	Invalid ordinal
+ordinal	#&+-	syntax	Invalid ordinal
+ordinal	#&+\s	syntax	Invalid ordinal
+ordinal	#&+&	syntax	Invalid ordinal
+ordinal	#&-1	syntax	Invalid ordinal
+ordinal	#&-5	syntax	Invalid ordinal
+ordinal	#&-,	syntax	Invalid ordinal
+ordinal	#&-.	syntax	Invalid ordinal
+ordinal	#&-+	syntax	Invalid ordinal
+ordinal	#&--	syntax	Invalid ordinal
+ordinal	#&-\s	syntax	Invalid ordinal
+ordinal	#&-&	syntax	Invalid ordinal
+ordinal	#&\s1	syntax	Invalid ordinal
+ordinal	#&\s5	syntax	Invalid ordinal
+ordinal	#&\s,	syntax	Invalid ordinal
+ordinal	#&\s.	syntax	Invalid ordinal
+ordinal	#&\s+	syntax	Invalid ordinal
+ordinal	#&\s-	syntax	Invalid ordinal
+ordinal	#&\s\s	syntax	Invalid ordinal
+ordinal	#&\s&	syntax	Invalid ordinal
+ordinal	#&&1	syntax	Invalid ordinal
+ordinal	#&&5	syntax	Invalid ordinal
+ordinal	#&&,	syntax	Invalid ordinal
+ordinal	#&&.	syntax	Invalid ordinal
+ordinal	#&&+	syntax	Invalid ordinal
+ordinal	#&&-	syntax	Invalid ordinal
+ordinal	#&&\s	syntax	Invalid ordinal
+ordinal	#&&&	syntax	Invalid ordinal
+ordinal	#1H	syntax	Invalid ordinal
+ordinal	#1E	syntax	Syntax error
+ordinal	#1EE	syntax	Syntax error
+ordinal	#1E5	syntax	Invalid ordinal
+ordinal	#1E-	syntax	Overflow
+ordinal	#1E1	syntax	Invalid ordinal
+ordinal	#E	syntax	Invalid ordinal
+ordinal	#EE	syntax	Invalid ordinal
+ordinal	#H	syntax	Invalid ordinal
+ordinal	#1x	syntax	Invalid ordinal
+ordinal	#1,x	syntax	Invalid ordinal
+ordinal	#x1	syntax	Invalid ordinal
+ordinal	#&H1	accepted	
+ordinal	#&H1x	syntax	Invalid ordinal
+ordinal	#&h1	accepted	
+ordinal	#&O1	accepted	
+ordinal	#&o7	accepted	
+ordinal	#&H1H	syntax	Invalid ordinal
+ordinal	#&1H	syntax	Invalid ordinal
+ordinal	#&10H	syntax	Invalid ordinal
+ordinal	#1,1H	syntax	Invalid ordinal
+ordinal	#1E,	syntax	Syntax error
+ordinal	#1E 	syntax	Syntax error
+ordinal	#1.E	syntax	Syntax error
+ordinal	#1.E1	syntax	Invalid ordinal
+ordinal	#1.5E	syntax	Syntax error
+ordinal	#1.5E+	syntax	Overflow
+ordinal	#1.5E+1	syntax	Invalid ordinal
+ordinal	#5.7	syntax	Invalid ordinal
+ordinal	#5.0	syntax	Invalid ordinal
+ordinal	#5.0.	syntax	Invalid ordinal
+ordinal	#32767	accepted	
+ordinal	#32768	syntax	Invalid ordinal
+ordinal	#32,767	accepted	
+ordinal	#32,768	syntax	Invalid ordinal
+ordinal	#99,999	syntax	Invalid ordinal
+ordinal	#65535	syntax	Invalid ordinal
+ordinal	#65536	syntax	Invalid ordinal
+ordinal	#&HFFFF	accepted	
+ordinal	#&H10000	syntax	Invalid ordinal
+ordinal	#&H7FFF	accepted	
+ordinal	#&H8000	accepted	
+ordinal	#&hff	accepted	
+ordinal	#&O177777	accepted	
+ordinal	#&O200000	syntax	Invalid ordinal
+ordinal	#&17	accepted	
+ordinal	#&177777	accepted	
+ordinal	#&200000	syntax	Invalid ordinal
+ordinal	#&8	syntax	Invalid ordinal
+ordinal	#&H	syntax	Invalid ordinal
+ordinal	#&H1G	syntax	Invalid ordinal
+ordinal	#1E3	syntax	Invalid ordinal
+ordinal	#1E+	syntax	Overflow
+ordinal	#1e5	syntax	Invalid ordinal
+ordinal	#12e	syntax	Syntax error
+ordinal	#1.5E1	syntax	Invalid ordinal
+ordinal	#1,000	accepted	
+ordinal	#1,,000	accepted	
+ordinal	#1,5.	accepted	
+ordinal	#1,5.0	accepted	
+ordinal	#1.5,	syntax	Invalid ordinal
+ordinal	#1,5,	accepted	
+ordinal	#(5)	syntax	Invalid ordinal
+ordinal	#5)	syntax	Invalid ordinal
+ordinal	#(5	syntax	Invalid ordinal
+ordinal	#$5	syntax	Invalid ordinal
+ordinal	#5$	syntax	Invalid ordinal
+ordinal	#5%	syntax	Invalid ordinal
+ordinal	#5!	syntax	Invalid ordinal
+ordinal	#5#	syntax	Invalid ordinal
+ordinal	#5@	syntax	Invalid ordinal
+ordinal	#1 2	syntax	Invalid ordinal
+ordinal	#1  2	syntax	Invalid ordinal
+ordinal	#1\t	accepted	
+ordinal	#\t1	syntax	Invalid ordinal
+ordinal	#0005	accepted	
+ordinal	#00000000005	accepted	
+ordinal	#-0	syntax	Invalid ordinal
+ordinal	#+0	syntax	Invalid ordinal
+ordinal	#32768-	accepted	
+ordinal	#32767-	accepted	
+ordinal	#32768+	syntax	Invalid ordinal
+ordinal	#99999-	syntax	Invalid ordinal
+ordinal	#100000	syntax	Invalid ordinal
+ordinal	#0,0	accepted	
+ordinal	#&H0	accepted	
+ordinal	#&O0	accepted	
+ordinal	#& 17	syntax	Invalid ordinal
+ordinal	#&1 7	syntax	Invalid ordinal
+ordinal	#&H1 0	syntax	Invalid ordinal
+ordinal	#17&	syntax	Invalid ordinal
+ordinal	#17&H	syntax	Invalid ordinal
+ordinal	#1&2	syntax	Invalid ordinal
+ordinal	#5 +	accepted	
+ordinal	#5 -	accepted	
+ordinal	#5 + 	accepted	
+ordinal	#+ 5	syntax	Invalid ordinal
+ordinal	#- 5	syntax	Invalid ordinal
+ordinal	#5 6	syntax	Invalid ordinal
+ordinal	#5 ,	syntax	Invalid ordinal
+ordinal	#5, 	accepted	
+ordinal	#5 , 6	syntax	Invalid ordinal

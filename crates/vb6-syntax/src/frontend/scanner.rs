@@ -750,6 +750,18 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
 
 // ── Scanner ───────────────────────────────────────────────────────────────────
 
+/// The outcome of [`Scanner::ordinal_start`].
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum OrdinalStart {
+    /// The text starts with an Integer or Long number.
+    WholeNumber,
+    /// The text starts with something else: no number, or a fraction, an exponent or a
+    /// floating or currency suffix.
+    NotAWholeNumber,
+    /// The text starts like a number that cannot be read.
+    Failed(NumberFailure),
+}
+
 /// Per-statement tokenizer.
 pub struct Scanner<'a> {
     ctx: &'a mut ScannerContext,
@@ -844,6 +856,42 @@ impl<'a> Scanner<'a> {
             pos: 0,
             tok_buf: String::with_capacity(64),
             after_member_operator: false,
+        }
+    }
+
+    /// What the number scanner makes of the text that follows the `#` of a `Declare` alias
+    /// ordinal: it must start with a whole number (blanks before it are not skipped), and
+    /// what comes after that number is not looked at.
+    pub fn ordinal_start(&mut self, text: &[u8]) -> OrdinalStart {
+        let starts_number = match text.first() {
+            Some(b'0'..=b'9' | b'.' | b'&') => true,
+            Some(_) => text.len() >= 2 && {
+                let probe = Scanner {
+                    ctx: &mut *self.ctx,
+                    src: std::borrow::Cow::Owned(text.to_vec()),
+                    pos: 0,
+                    tok_buf: String::new(),
+                    after_member_operator: false,
+                };
+                probe.full_width_at(0).is_some()
+            },
+            None => false,
+        };
+        if !starts_number {
+            return OrdinalStart::NotAWholeNumber;
+        }
+        let mut scanner = Scanner {
+            ctx: &mut *self.ctx,
+            src: std::borrow::Cow::Owned(text.to_vec()),
+            pos: 0,
+            tok_buf: String::new(),
+            after_member_operator: false,
+        };
+        let token = scanner.scan_token();
+        match (token.kind, token.lit) {
+            (TokenKind::IntLit | TokenKind::LongLit, _) => OrdinalStart::WholeNumber,
+            (TokenKind::Error, Some(Lit::Failed(failure))) => OrdinalStart::Failed(failure),
+            _ => OrdinalStart::NotAWholeNumber,
         }
     }
 

@@ -20,7 +20,8 @@ use crate::frontend::ast::{
     NodeSpans, OnErrorKind, ProcKind, Radix, ResumeTarget, UnOpKind,
 };
 use crate::frontend::diagnostics::*;
-use crate::frontend::scanner::{fold_name, Scanner, ScannerContext};
+use crate::frontend::ordinal::converts_to_integer;
+use crate::frontend::scanner::{fold_name, OrdinalStart, Scanner, ScannerContext};
 use crate::frontend::token::{Kw, Lit, NumberFailure, Span, Token, TokenKind, TypeSuffix};
 
 mod graphics;
@@ -131,26 +132,6 @@ fn def_type_kw(k: Kw) -> Option<u16> {
 /// Build the [`AstLit`] carried by a literal token. The token's `kind` selects
 /// the variant; a missing/mismatched `lit` payload falls back to a zero value
 /// (preserving the parser's lenient literal handling).
-/// Whether the text after the `#` of a `Declare` alias is an ordinal: a decimal number up
-/// to 32767, or a hexadecimal (`&H`) or octal (`&O`) one that fits sixteen bits, with
-/// nothing but blanks after it.
-fn is_valid_ordinal(text: &str) -> bool {
-    let text = text.trim_end_matches([' ', '\t']);
-    let (digits, radix) = match text.get(..2) {
-        Some(p) if p.eq_ignore_ascii_case("&h") => (&text[2..], 16),
-        Some(p) if p.eq_ignore_ascii_case("&o") => (&text[2..], 8),
-        _ => (text, 10),
-    };
-    if digits.is_empty() || !digits.chars().all(|c| c.is_digit(radix)) {
-        return false;
-    }
-    let limit = if radix == 10 { 32767 } else { 0xFFFF };
-    digits.chars().try_fold(0u64, |acc, c| {
-        let v = acc * radix as u64 + c.to_digit(radix).unwrap() as u64;
-        (v <= limit).then_some(v)
-    }).is_some()
-}
-
 fn ast_lit_from_token(tok: &Token) -> AstLit {
     // Each arm reads the matching payload (defaulting a missing/mismatched one to
     // zero) via a tiny extractor, so the dispatch itself stays a flat table.
@@ -716,6 +697,19 @@ impl<'src> Parser<'src> {
 
     /// Record the source span of a symbol-naming node — the identifier span of
     /// a `NameRef` use site, or the declared-name identifier of a declaration.
+    /// The text after the `#` of a `Declare` alias must be an ordinal: a whole number at its
+    /// start, and then a text that converts to an Integer. A number that cannot be read is
+    /// reported for what is wrong with it.
+    fn check_alias_ordinal(&mut self, ordinal: &str, span: Span) {
+        let bytes: Vec<u8> = ordinal.chars().map(|c| u8::try_from(u32::from(c)).unwrap_or(b'?')).collect();
+        match self.scanner.ordinal_start(&bytes) {
+            OrdinalStart::WholeNumber if converts_to_integer(ordinal) => {}
+            OrdinalStart::Failed(NumberFailure::Overflow) => self.diagnostics.push(ERR_OVERFLOW, span),
+            OrdinalStart::Failed(NumberFailure::Malformed) => self.diagnostics.push(ERR_SYNTAX_ERROR, span),
+            _ => self.diagnostics.push(ERR_INVALID_ORDINAL, span),
+        }
+    }
+
     /// A literal node for the number, string or date token `tok`, remembering how a
     /// whole number was written when that was in octal or hexadecimal.
     fn literal_node(&mut self, arena: &mut ExprArena, tok: &Token) -> NodeId {
@@ -5725,8 +5719,8 @@ impl<'src> Parser<'src> {
             match self.declare_string_operand(arena) {
                 Some(s) => {
                     if let ExprNode::Literal { lit: AstLit::Str(text) } = arena.get(s) {
-                        if text.starts_with('#') && !is_valid_ordinal(&text[1..]) {
-                            self.diagnostics.push(ERR_INVALID_ORDINAL, alias_span);
+                        if let Some(ordinal) = text.strip_prefix('#') {
+                            self.check_alias_ordinal(ordinal, alias_span);
                         }
                     }
                     Some(s)
