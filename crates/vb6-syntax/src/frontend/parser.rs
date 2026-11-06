@@ -6107,7 +6107,6 @@ impl<'src> Parser<'src> {
                     self.bracketed_name_ok = name_tok.bracketed;
                     self.in_enum_member = true;
                     let m = self.parse_dim_item(arena, true, false, false);
-                    self.label_target = false;
                     self.in_enum_member = false;
                     self.bracketed_name_ok = false;
                     self.check_enum_member_suffix(arena, m, &name_tok);
