@@ -1,0 +1,5 @@
+# One template per block: `=== <name> <bas|cls>`, then the module text. `{k}` is replaced by each word of words.txt.
+=== assign bas
+Sub Probe()
+    x = {k}
+End Sub

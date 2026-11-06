@@ -1,0 +1,1201 @@
+# template	word	class	message
+assign	#1/1#	accepted	
+assign	#1/12#	accepted	
+assign	#1/13#	accepted	
+assign	#1/31#	accepted	
+assign	#1/32#	accepted	
+assign	#1/99#	accepted	
+assign	#1/100#	accepted	
+assign	#1/2000#	accepted	
+assign	#1/0#	accepted	
+assign	#12/1#	accepted	
+assign	#12/12#	accepted	
+assign	#12/13#	accepted	
+assign	#12/31#	accepted	
+assign	#12/32#	accepted	
+assign	#12/99#	accepted	
+assign	#12/100#	accepted	
+assign	#12/2000#	accepted	
+assign	#12/0#	accepted	
+assign	#13/1#	accepted	
+assign	#13/12#	accepted	
+assign	#13/13#	syntax	Syntax error
+assign	#13/31#	syntax	Syntax error
+assign	#13/32#	syntax	Syntax error
+assign	#13/99#	syntax	Syntax error
+assign	#13/100#	syntax	Syntax error
+assign	#13/2000#	syntax	Syntax error
+assign	#13/0#	syntax	Syntax error
+assign	#31/1#	accepted	
+assign	#31/12#	accepted	
+assign	#31/13#	syntax	Syntax error
+assign	#31/31#	syntax	Syntax error
+assign	#31/32#	syntax	Syntax error
+assign	#31/99#	syntax	Syntax error
+assign	#31/100#	syntax	Syntax error
+assign	#31/2000#	syntax	Syntax error
+assign	#31/0#	syntax	Syntax error
+assign	#32/1#	accepted	
+assign	#32/12#	accepted	
+assign	#32/13#	syntax	Syntax error
+assign	#32/31#	syntax	Syntax error
+assign	#32/32#	syntax	Syntax error
+assign	#32/99#	syntax	Syntax error
+assign	#32/100#	syntax	Syntax error
+assign	#32/2000#	syntax	Syntax error
+assign	#32/0#	syntax	Syntax error
+assign	#99/1#	accepted	
+assign	#99/12#	accepted	
+assign	#99/13#	syntax	Syntax error
+assign	#99/31#	syntax	Syntax error
+assign	#99/32#	syntax	Syntax error
+assign	#99/99#	syntax	Syntax error
+assign	#99/100#	syntax	Syntax error
+assign	#99/2000#	syntax	Syntax error
+assign	#99/0#	syntax	Syntax error
+assign	#100/1#	accepted	
+assign	#100/12#	accepted	
+assign	#100/13#	syntax	Syntax error
+assign	#100/31#	syntax	Syntax error
+assign	#100/32#	syntax	Syntax error
+assign	#100/99#	syntax	Syntax error
+assign	#100/100#	syntax	Syntax error
+assign	#100/2000#	syntax	Syntax error
+assign	#100/0#	syntax	Syntax error
+assign	#2000/1#	accepted	
+assign	#2000/12#	accepted	
+assign	#2000/13#	syntax	Syntax error
+assign	#2000/31#	syntax	Syntax error
+assign	#2000/32#	syntax	Syntax error
+assign	#2000/99#	syntax	Syntax error
+assign	#2000/100#	syntax	Syntax error
+assign	#2000/2000#	syntax	Syntax error
+assign	#2000/0#	syntax	Syntax error
+assign	#0/1#	accepted	
+assign	#0/12#	accepted	
+assign	#0/13#	syntax	Syntax error
+assign	#0/31#	syntax	Syntax error
+assign	#0/32#	syntax	Syntax error
+assign	#0/99#	syntax	Syntax error
+assign	#0/100#	syntax	Syntax error
+assign	#0/2000#	syntax	Syntax error
+assign	#0/0#	syntax	Syntax error
+assign	#1-1#	accepted	
+assign	#1-12#	accepted	
+assign	#1-13#	accepted	
+assign	#1-31#	accepted	
+assign	#1-32#	accepted	
+assign	#1-99#	accepted	
+assign	#1-100#	accepted	
+assign	#1-2000#	accepted	
+assign	#1-0#	accepted	
+assign	#12-1#	accepted	
+assign	#12-12#	accepted	
+assign	#12-13#	accepted	
+assign	#12-31#	accepted	
+assign	#12-32#	accepted	
+assign	#12-99#	accepted	
+assign	#12-100#	accepted	
+assign	#12-2000#	accepted	
+assign	#12-0#	accepted	
+assign	#13-1#	accepted	
+assign	#13-12#	accepted	
+assign	#13-13#	syntax	Syntax error
+assign	#13-31#	syntax	Syntax error
+assign	#13-32#	syntax	Syntax error
+assign	#13-99#	syntax	Syntax error
+assign	#13-100#	syntax	Syntax error
+assign	#13-2000#	syntax	Syntax error
+assign	#13-0#	syntax	Syntax error
+assign	#31-1#	accepted	
+assign	#31-12#	accepted	
+assign	#31-13#	syntax	Syntax error
+assign	#31-31#	syntax	Syntax error
+assign	#31-32#	syntax	Syntax error
+assign	#31-99#	syntax	Syntax error
+assign	#31-100#	syntax	Syntax error
+assign	#31-2000#	syntax	Syntax error
+assign	#31-0#	syntax	Syntax error
+assign	#32-1#	accepted	
+assign	#32-12#	accepted	
+assign	#32-13#	syntax	Syntax error
+assign	#32-31#	syntax	Syntax error
+assign	#32-32#	syntax	Syntax error
+assign	#32-99#	syntax	Syntax error
+assign	#32-100#	syntax	Syntax error
+assign	#32-2000#	syntax	Syntax error
+assign	#32-0#	syntax	Syntax error
+assign	#99-1#	accepted	
+assign	#99-12#	accepted	
+assign	#99-13#	syntax	Syntax error
+assign	#99-31#	syntax	Syntax error
+assign	#99-32#	syntax	Syntax error
+assign	#99-99#	syntax	Syntax error
+assign	#99-100#	syntax	Syntax error
+assign	#99-2000#	syntax	Syntax error
+assign	#99-0#	syntax	Syntax error
+assign	#100-1#	accepted	
+assign	#100-12#	accepted	
+assign	#100-13#	syntax	Syntax error
+assign	#100-31#	syntax	Syntax error
+assign	#100-32#	syntax	Syntax error
+assign	#100-99#	syntax	Syntax error
+assign	#100-100#	syntax	Syntax error
+assign	#100-2000#	syntax	Syntax error
+assign	#100-0#	syntax	Syntax error
+assign	#2000-1#	accepted	
+assign	#2000-12#	accepted	
+assign	#2000-13#	syntax	Syntax error
+assign	#2000-31#	syntax	Syntax error
+assign	#2000-32#	syntax	Syntax error
+assign	#2000-99#	syntax	Syntax error
+assign	#2000-100#	syntax	Syntax error
+assign	#2000-2000#	syntax	Syntax error
+assign	#2000-0#	syntax	Syntax error
+assign	#0-1#	accepted	
+assign	#0-12#	accepted	
+assign	#0-13#	syntax	Syntax error
+assign	#0-31#	syntax	Syntax error
+assign	#0-32#	syntax	Syntax error
+assign	#0-99#	syntax	Syntax error
+assign	#0-100#	syntax	Syntax error
+assign	#0-2000#	syntax	Syntax error
+assign	#0-0#	syntax	Syntax error
+assign	#1,1#	accepted	
+assign	#1,12#	accepted	
+assign	#1,13#	accepted	
+assign	#1,31#	accepted	
+assign	#1,32#	accepted	
+assign	#1,99#	accepted	
+assign	#1,100#	accepted	
+assign	#1,2000#	accepted	
+assign	#1,0#	accepted	
+assign	#12,1#	accepted	
+assign	#12,12#	accepted	
+assign	#12,13#	accepted	
+assign	#12,31#	accepted	
+assign	#12,32#	accepted	
+assign	#12,99#	accepted	
+assign	#12,100#	accepted	
+assign	#12,2000#	accepted	
+assign	#12,0#	accepted	
+assign	#13,1#	accepted	
+assign	#13,12#	accepted	
+assign	#13,13#	syntax	Syntax error
+assign	#13,31#	syntax	Syntax error
+assign	#13,32#	syntax	Syntax error
+assign	#13,99#	syntax	Syntax error
+assign	#13,100#	syntax	Syntax error
+assign	#13,2000#	syntax	Syntax error
+assign	#13,0#	syntax	Syntax error
+assign	#31,1#	accepted	
+assign	#31,12#	accepted	
+assign	#31,13#	syntax	Syntax error
+assign	#31,31#	syntax	Syntax error
+assign	#31,32#	syntax	Syntax error
+assign	#31,99#	syntax	Syntax error
+assign	#31,100#	syntax	Syntax error
+assign	#31,2000#	syntax	Syntax error
+assign	#31,0#	syntax	Syntax error
+assign	#32,1#	accepted	
+assign	#32,12#	accepted	
+assign	#32,13#	syntax	Syntax error
+assign	#32,31#	syntax	Syntax error
+assign	#32,32#	syntax	Syntax error
+assign	#32,99#	syntax	Syntax error
+assign	#32,100#	syntax	Syntax error
+assign	#32,2000#	syntax	Syntax error
+assign	#32,0#	syntax	Syntax error
+assign	#99,1#	accepted	
+assign	#99,12#	accepted	
+assign	#99,13#	syntax	Syntax error
+assign	#99,31#	syntax	Syntax error
+assign	#99,32#	syntax	Syntax error
+assign	#99,99#	syntax	Syntax error
+assign	#99,100#	syntax	Syntax error
+assign	#99,2000#	syntax	Syntax error
+assign	#99,0#	syntax	Syntax error
+assign	#100,1#	accepted	
+assign	#100,12#	accepted	
+assign	#100,13#	syntax	Syntax error
+assign	#100,31#	syntax	Syntax error
+assign	#100,32#	syntax	Syntax error
+assign	#100,99#	syntax	Syntax error
+assign	#100,100#	syntax	Syntax error
+assign	#100,2000#	syntax	Syntax error
+assign	#100,0#	syntax	Syntax error
+assign	#2000,1#	accepted	
+assign	#2000,12#	accepted	
+assign	#2000,13#	syntax	Syntax error
+assign	#2000,31#	syntax	Syntax error
+assign	#2000,32#	syntax	Syntax error
+assign	#2000,99#	syntax	Syntax error
+assign	#2000,100#	syntax	Syntax error
+assign	#2000,2000#	syntax	Syntax error
+assign	#2000,0#	syntax	Syntax error
+assign	#0,1#	accepted	
+assign	#0,12#	accepted	
+assign	#0,13#	syntax	Syntax error
+assign	#0,31#	syntax	Syntax error
+assign	#0,32#	syntax	Syntax error
+assign	#0,99#	syntax	Syntax error
+assign	#0,100#	syntax	Syntax error
+assign	#0,2000#	syntax	Syntax error
+assign	#0,0#	syntax	Syntax error
+assign	#1.1#	accepted	
+assign	#1.12#	accepted	
+assign	#1.13#	accepted	
+assign	#1.31#	accepted	
+assign	#1.32#	accepted	
+assign	#1.99#	syntax	Syntax error
+assign	#1.100#	syntax	Syntax error
+assign	#1.2000#	syntax	Syntax error
+assign	#1.0#	accepted	
+assign	#12.1#	accepted	
+assign	#12.12#	accepted	
+assign	#12.13#	accepted	
+assign	#12.31#	accepted	
+assign	#12.32#	accepted	
+assign	#12.99#	syntax	Syntax error
+assign	#12.100#	syntax	Syntax error
+assign	#12.2000#	syntax	Syntax error
+assign	#12.0#	accepted	
+assign	#13.1#	accepted	
+assign	#13.12#	accepted	
+assign	#13.13#	accepted	
+assign	#13.31#	accepted	
+assign	#13.32#	accepted	
+assign	#13.99#	syntax	Syntax error
+assign	#13.100#	syntax	Syntax error
+assign	#13.2000#	syntax	Syntax error
+assign	#13.0#	accepted	
+assign	#31.1#	syntax	Syntax error
+assign	#31.12#	syntax	Syntax error
+assign	#31.13#	syntax	Syntax error
+assign	#31.31#	syntax	Syntax error
+assign	#31.32#	syntax	Syntax error
+assign	#31.99#	syntax	Syntax error
+assign	#31.100#	syntax	Syntax error
+assign	#31.2000#	syntax	Syntax error
+assign	#31.0#	syntax	Syntax error
+assign	#32.1#	syntax	Syntax error
+assign	#32.12#	syntax	Syntax error
+assign	#32.13#	syntax	Syntax error
+assign	#32.31#	syntax	Syntax error
+assign	#32.32#	syntax	Syntax error
+assign	#32.99#	syntax	Syntax error
+assign	#32.100#	syntax	Syntax error
+assign	#32.2000#	syntax	Syntax error
+assign	#32.0#	syntax	Syntax error
+assign	#99.1#	syntax	Syntax error
+assign	#99.12#	syntax	Syntax error
+assign	#99.13#	syntax	Syntax error
+assign	#99.31#	syntax	Syntax error
+assign	#99.32#	syntax	Syntax error
+assign	#99.99#	syntax	Syntax error
+assign	#99.100#	syntax	Syntax error
+assign	#99.2000#	syntax	Syntax error
+assign	#99.0#	syntax	Syntax error
+assign	#100.1#	syntax	Syntax error
+assign	#100.12#	syntax	Syntax error
+assign	#100.13#	syntax	Syntax error
+assign	#100.31#	syntax	Syntax error
+assign	#100.32#	syntax	Syntax error
+assign	#100.99#	syntax	Syntax error
+assign	#100.100#	syntax	Syntax error
+assign	#100.2000#	syntax	Syntax error
+assign	#100.0#	syntax	Syntax error
+assign	#2000.1#	syntax	Syntax error
+assign	#2000.12#	syntax	Syntax error
+assign	#2000.13#	syntax	Syntax error
+assign	#2000.31#	syntax	Syntax error
+assign	#2000.32#	syntax	Syntax error
+assign	#2000.99#	syntax	Syntax error
+assign	#2000.100#	syntax	Syntax error
+assign	#2000.2000#	syntax	Syntax error
+assign	#2000.0#	syntax	Syntax error
+assign	#0.1#	accepted	
+assign	#0.12#	accepted	
+assign	#0.13#	accepted	
+assign	#0.31#	accepted	
+assign	#0.32#	accepted	
+assign	#0.99#	syntax	Syntax error
+assign	#0.100#	syntax	Syntax error
+assign	#0.2000#	syntax	Syntax error
+assign	#0.0#	accepted	
+assign	#1\s1#	accepted	
+assign	#1\s12#	accepted	
+assign	#1\s13#	accepted	
+assign	#1\s31#	accepted	
+assign	#1\s32#	accepted	
+assign	#1\s99#	accepted	
+assign	#1\s100#	accepted	
+assign	#1\s2000#	accepted	
+assign	#1\s0#	accepted	
+assign	#12\s1#	accepted	
+assign	#12\s12#	accepted	
+assign	#12\s13#	accepted	
+assign	#12\s31#	accepted	
+assign	#12\s32#	accepted	
+assign	#12\s99#	accepted	
+assign	#12\s100#	accepted	
+assign	#12\s2000#	accepted	
+assign	#12\s0#	accepted	
+assign	#13\s1#	accepted	
+assign	#13\s12#	accepted	
+assign	#13\s13#	syntax	Syntax error
+assign	#13\s31#	syntax	Syntax error
+assign	#13\s32#	syntax	Syntax error
+assign	#13\s99#	syntax	Syntax error
+assign	#13\s100#	syntax	Syntax error
+assign	#13\s2000#	syntax	Syntax error
+assign	#13\s0#	syntax	Syntax error
+assign	#31\s1#	accepted	
+assign	#31\s12#	accepted	
+assign	#31\s13#	syntax	Syntax error
+assign	#31\s31#	syntax	Syntax error
+assign	#31\s32#	syntax	Syntax error
+assign	#31\s99#	syntax	Syntax error
+assign	#31\s100#	syntax	Syntax error
+assign	#31\s2000#	syntax	Syntax error
+assign	#31\s0#	syntax	Syntax error
+assign	#32\s1#	accepted	
+assign	#32\s12#	accepted	
+assign	#32\s13#	syntax	Syntax error
+assign	#32\s31#	syntax	Syntax error
+assign	#32\s32#	syntax	Syntax error
+assign	#32\s99#	syntax	Syntax error
+assign	#32\s100#	syntax	Syntax error
+assign	#32\s2000#	syntax	Syntax error
+assign	#32\s0#	syntax	Syntax error
+assign	#99\s1#	accepted	
+assign	#99\s12#	accepted	
+assign	#99\s13#	syntax	Syntax error
+assign	#99\s31#	syntax	Syntax error
+assign	#99\s32#	syntax	Syntax error
+assign	#99\s99#	syntax	Syntax error
+assign	#99\s100#	syntax	Syntax error
+assign	#99\s2000#	syntax	Syntax error
+assign	#99\s0#	syntax	Syntax error
+assign	#100\s1#	accepted	
+assign	#100\s12#	accepted	
+assign	#100\s13#	syntax	Syntax error
+assign	#100\s31#	syntax	Syntax error
+assign	#100\s32#	syntax	Syntax error
+assign	#100\s99#	syntax	Syntax error
+assign	#100\s100#	syntax	Syntax error
+assign	#100\s2000#	syntax	Syntax error
+assign	#100\s0#	syntax	Syntax error
+assign	#2000\s1#	accepted	
+assign	#2000\s12#	accepted	
+assign	#2000\s13#	syntax	Syntax error
+assign	#2000\s31#	syntax	Syntax error
+assign	#2000\s32#	syntax	Syntax error
+assign	#2000\s99#	syntax	Syntax error
+assign	#2000\s100#	syntax	Syntax error
+assign	#2000\s2000#	syntax	Syntax error
+assign	#2000\s0#	syntax	Syntax error
+assign	#0\s1#	accepted	
+assign	#0\s12#	accepted	
+assign	#0\s13#	syntax	Syntax error
+assign	#0\s31#	syntax	Syntax error
+assign	#0\s32#	syntax	Syntax error
+assign	#0\s99#	syntax	Syntax error
+assign	#0\s100#	syntax	Syntax error
+assign	#0\s2000#	syntax	Syntax error
+assign	#0\s0#	syntax	Syntax error
+assign	#1/2/3#	accepted	
+assign	#12/31/2000#	accepted	
+assign	#13/1/2000#	accepted	
+assign	#2000/1/2#	accepted	
+assign	#2000/13/1#	syntax	Syntax error
+assign	#32/1/1#	accepted	
+assign	#1/32/1#	syntax	Syntax error
+assign	#1/1/32#	accepted	
+assign	#1/2/100#	accepted	
+assign	#99/1/1#	accepted	
+assign	#100/1/1#	accepted	
+assign	#31/12/99#	accepted	
+assign	#0/0/0#	syntax	Syntax error
+assign	#1-2-3#	accepted	
+assign	#12-31-2000#	accepted	
+assign	#13-1-2000#	accepted	
+assign	#2000-1-2#	accepted	
+assign	#2000-13-1#	syntax	Syntax error
+assign	#32-1-1#	accepted	
+assign	#1-32-1#	syntax	Syntax error
+assign	#1-1-32#	accepted	
+assign	#1-2-100#	accepted	
+assign	#99-1-1#	accepted	
+assign	#100-1-1#	accepted	
+assign	#31-12-99#	accepted	
+assign	#0-0-0#	syntax	Syntax error
+assign	#1,2,3#	accepted	
+assign	#12,31,2000#	accepted	
+assign	#13,1,2000#	accepted	
+assign	#2000,1,2#	accepted	
+assign	#2000,13,1#	syntax	Syntax error
+assign	#32,1,1#	accepted	
+assign	#1,32,1#	syntax	Syntax error
+assign	#1,1,32#	accepted	
+assign	#1,2,100#	accepted	
+assign	#99,1,1#	accepted	
+assign	#100,1,1#	accepted	
+assign	#31,12,99#	accepted	
+assign	#0,0,0#	syntax	Syntax error
+assign	#1\s2\s3#	accepted	
+assign	#12\s31\s2000#	accepted	
+assign	#13\s1\s2000#	accepted	
+assign	#2000\s1\s2#	accepted	
+assign	#2000\s13\s1#	syntax	Syntax error
+assign	#32\s1\s1#	accepted	
+assign	#1\s32\s1#	syntax	Syntax error
+assign	#1\s1\s32#	accepted	
+assign	#1\s2\s100#	accepted	
+assign	#99\s1\s1#	accepted	
+assign	#100\s1\s1#	accepted	
+assign	#31\s12\s99#	accepted	
+assign	#0\s0\s0#	syntax	Syntax error
+assign	#1/2/2000#	accepted	
+assign	#1/2-2000#	accepted	
+assign	#1/2,2000#	accepted	
+assign	#1/2\s2000#	accepted	
+assign	#1-2/2000#	accepted	
+assign	#1-2-2000#	accepted	
+assign	#1-2,2000#	accepted	
+assign	#1-2\s2000#	accepted	
+assign	#1,2/2000#	accepted	
+assign	#1,2-2000#	accepted	
+assign	#1,2,2000#	accepted	
+assign	#1,2\s2000#	accepted	
+assign	#1\s2/2000#	accepted	
+assign	#1\s2-2000#	accepted	
+assign	#1\s2,2000#	accepted	
+assign	#1\s2\s2000#	accepted	
+assign	#/1/2/2000#	syntax	Syntax error
+assign	#1/2/2000/#	syntax	Syntax error
+assign	#1/2/#	syntax	Syntax error
+assign	#1/#	syntax	Syntax error
+assign	#/1#	syntax	Syntax error
+assign	#-1#	syntax	Syntax error
+assign	#1-#	syntax	Syntax error
+assign	#1,#	syntax	Syntax error
+assign	#,1/2/2000#	syntax	Syntax error
+assign	#1/2/2000,#	syntax	Syntax error
+assign	#1/,2/2000#	syntax	Syntax error
+assign	#1,/2/2000#	syntax	Syntax error
+assign	#1/2/2000 /#	syntax	Syntax error
+assign	#1 / 2 / 2000#	accepted	
+assign	#1 - 2 - 2000#	accepted	
+assign	#1 , 2 , 2000#	accepted	
+assign	#1/ 2/ 2000#	accepted	
+assign	#1 /2 /2000#	accepted	
+assign	#1/2/2000 - 1:00#	syntax	Syntax error
+assign	#1/2/2000 -#	syntax	Syntax error
+assign	#1/2/2000 - 3:04#	syntax	Syntax error
+assign	#1/2/2000 - 3#	syntax	Syntax error
+assign	#1/2/2000-3:04#	syntax	Syntax error
+assign	#1/2/2000/3:04#	syntax	Syntax error
+assign	#1/2/2000,3:04#	syntax	Syntax error
+assign	#1/2/2000, 3:04#	syntax	Syntax error
+assign	#1/2/2000 , 3:04#	syntax	Syntax error
+assign	#1/2, 3:04#	syntax	Syntax error
+assign	#1/2,3:04#	syntax	Syntax error
+assign	#2000-01-02,3:04#	syntax	Syntax error
+assign	#Jan 5, 2000, 3:04#	syntax	Syntax error
+assign	#Jan 5, 2000 3:04#	accepted	
+assign	#Jan 5 2000, 3:04#	syntax	Syntax error
+assign	#Jan 5,2000#	accepted	
+assign	#Jan,5,2000#	accepted	
+assign	#Jan-5-2000#	accepted	
+assign	#Jan/5/2000#	accepted	
+assign	#Jan/5#	accepted	
+assign	#Jan-5#	accepted	
+assign	#Jan,5#	accepted	
+assign	#5-Jan#	accepted	
+assign	#5/Jan#	accepted	
+assign	#5,Jan#	accepted	
+assign	#5 Jan#	accepted	
+assign	#5-Jan-00#	accepted	
+assign	#5-Jan-2000#	accepted	
+assign	#Jan 5-2000#	accepted	
+assign	#Jan 5/2000#	accepted	
+assign	#2000 Jan 5#	accepted	
+assign	#2000-Jan-5#	accepted	
+assign	#2000/Jan/5#	accepted	
+assign	#Jan 2000 5#	accepted	
+assign	#5 2000 Jan#	accepted	
+assign	#Jan-2000#	accepted	
+assign	#Jan/2000#	accepted	
+assign	#Jan,2000#	accepted	
+assign	#2000,Jan#	accepted	
+assign	#2000 Jan#	accepted	
+assign	#Jan 32#	accepted	
+assign	#Jan 31#	accepted	
+assign	#Feb 30#	accepted	
+assign	#Feb 29#	accepted	
+assign	#Jan 5 2000 6#	syntax	Syntax error
+assign	#Jan Feb 2000#	syntax	Syntax error
+assign	#Jan 5 Feb#	syntax	Syntax error
+assign	#January#	syntax	Syntax error
+assign	#Janu#	syntax	Syntax error
+assign	#Ja#	syntax	Syntax error
+assign	#J#	syntax	Syntax error
+assign	#Mar#	syntax	Syntax error
+assign	#Marc#	syntax	Syntax error
+assign	#May#	syntax	Syntax error
+assign	#Sept#	syntax	Syntax error
+assign	#Sep#	syntax	Syntax error
+assign	#Septe#	syntax	Syntax error
+assign	#Septem#	syntax	Syntax error
+assign	#Decembe#	syntax	Syntax error
+assign	#December 31, 9999#	accepted	
+assign	#December 31, 10000#	syntax	Syntax error
+assign	#Dec 32#	accepted	
+assign	#3#	syntax	Syntax error
+assign	#1/2/2000 3#	syntax	Syntax error
+assign	#3 1/2/2000#	syntax	Syntax error
+assign	#3:04#	accepted	
+assign	#1/2/2000 3:04#	accepted	
+assign	#3:04 1/2/2000#	accepted	
+assign	#3:04:05#	accepted	
+assign	#1/2/2000 3:04:05#	accepted	
+assign	#3:04:05 1/2/2000#	accepted	
+assign	#3:04:05:06#	syntax	Syntax error
+assign	#1/2/2000 3:04:05:06#	syntax	Syntax error
+assign	#3:04:05:06 1/2/2000#	syntax	Syntax error
+assign	#3:#	syntax	Syntax error
+assign	#1/2/2000 3:#	syntax	Syntax error
+assign	#3: 1/2/2000#	syntax	Syntax error
+assign	#3::4#	syntax	Syntax error
+assign	#1/2/2000 3::4#	syntax	Syntax error
+assign	#3::4 1/2/2000#	syntax	Syntax error
+assign	#:3#	syntax	Syntax error
+assign	#1/2/2000 :3#	syntax	Syntax error
+assign	#:3 1/2/2000#	syntax	Syntax error
+assign	#:3:4#	syntax	Syntax error
+assign	#1/2/2000 :3:4#	syntax	Syntax error
+assign	#:3:4 1/2/2000#	syntax	Syntax error
+assign	#3.04#	accepted	
+assign	#1/2/2000 3.04#	accepted	
+assign	#3.04 1/2/2000#	accepted	
+assign	#3.04.05#	accepted	
+assign	#1/2/2000 3.04.05#	accepted	
+assign	#3.04.05 1/2/2000#	accepted	
+assign	#3.04.05.06#	syntax	Syntax error
+assign	#1/2/2000 3.04.05.06#	syntax	Syntax error
+assign	#3.04.05.06 1/2/2000#	syntax	Syntax error
+assign	#3.5#	accepted	
+assign	#1/2/2000 3.5#	accepted	
+assign	#3.5 1/2/2000#	accepted	
+assign	#3.#	syntax	Syntax error
+assign	#1/2/2000 3.#	syntax	Syntax error
+assign	#3. 1/2/2000#	syntax	Syntax error
+assign	#3:04.5#	accepted	
+assign	#1/2/2000 3:04.5#	accepted	
+assign	#3:04.5 1/2/2000#	accepted	
+assign	#3:04:05.5#	syntax	Syntax error
+assign	#1/2/2000 3:04:05.5#	syntax	Syntax error
+assign	#3:04:05.5 1/2/2000#	syntax	Syntax error
+assign	#3:04:05.#	syntax	Syntax error
+assign	#1/2/2000 3:04:05.#	syntax	Syntax error
+assign	#3:04:05. 1/2/2000#	syntax	Syntax error
+assign	#3:04:05.123456789#	syntax	Syntax error
+assign	#1/2/2000 3:04:05.123456789#	syntax	Syntax error
+assign	#3:04:05.123456789 1/2/2000#	syntax	Syntax error
+assign	#24:00#	syntax	Syntax error
+assign	#1/2/2000 24:00#	syntax	Syntax error
+assign	#24:00 1/2/2000#	syntax	Syntax error
+assign	#24:01#	syntax	Syntax error
+assign	#1/2/2000 24:01#	syntax	Syntax error
+assign	#24:01 1/2/2000#	syntax	Syntax error
+assign	#25:00#	syntax	Syntax error
+assign	#1/2/2000 25:00#	syntax	Syntax error
+assign	#25:00 1/2/2000#	syntax	Syntax error
+assign	#23:59:59#	accepted	
+assign	#1/2/2000 23:59:59#	accepted	
+assign	#23:59:59 1/2/2000#	accepted	
+assign	#0:0#	accepted	
+assign	#1/2/2000 0:0#	accepted	
+assign	#0:0 1/2/2000#	accepted	
+assign	#00:00:00#	accepted	
+assign	#1/2/2000 00:00:00#	accepted	
+assign	#00:00:00 1/2/2000#	accepted	
+assign	#3:60#	syntax	Syntax error
+assign	#1/2/2000 3:60#	syntax	Syntax error
+assign	#3:60 1/2/2000#	syntax	Syntax error
+assign	#3:04:60#	syntax	Syntax error
+assign	#1/2/2000 3:04:60#	syntax	Syntax error
+assign	#3:04:60 1/2/2000#	syntax	Syntax error
+assign	#3:4#	accepted	
+assign	#1/2/2000 3:4#	accepted	
+assign	#3:4 1/2/2000#	accepted	
+assign	#3:004#	accepted	
+assign	#1/2/2000 3:004#	accepted	
+assign	#3:004 1/2/2000#	accepted	
+assign	#03:04#	accepted	
+assign	#1/2/2000 03:04#	accepted	
+assign	#03:04 1/2/2000#	accepted	
+assign	#003:04#	accepted	
+assign	#1/2/2000 003:04#	accepted	
+assign	#003:04 1/2/2000#	accepted	
+assign	#3 AM#	accepted	
+assign	#1/2/2000 3 AM#	accepted	
+assign	#3 AM 1/2/2000#	accepted	
+assign	#3 PM#	accepted	
+assign	#1/2/2000 3 PM#	accepted	
+assign	#3 PM 1/2/2000#	accepted	
+assign	#3AM#	accepted	
+assign	#1/2/2000 3AM#	accepted	
+assign	#3AM 1/2/2000#	accepted	
+assign	#3PM#	accepted	
+assign	#1/2/2000 3PM#	accepted	
+assign	#3PM 1/2/2000#	accepted	
+assign	#3 A#	accepted	
+assign	#1/2/2000 3 A#	accepted	
+assign	#3 A 1/2/2000#	accepted	
+assign	#3 P#	accepted	
+assign	#1/2/2000 3 P#	accepted	
+assign	#3 P 1/2/2000#	accepted	
+assign	#3 a.m.#	syntax	Syntax error
+assign	#1/2/2000 3 a.m.#	syntax	Syntax error
+assign	#3 a.m. 1/2/2000#	syntax	Syntax error
+assign	#3 p.m.#	syntax	Syntax error
+assign	#1/2/2000 3 p.m.#	syntax	Syntax error
+assign	#3 p.m. 1/2/2000#	syntax	Syntax error
+assign	#3 am#	accepted	
+assign	#1/2/2000 3 am#	accepted	
+assign	#3 am 1/2/2000#	accepted	
+assign	#3 pm#	accepted	
+assign	#1/2/2000 3 pm#	accepted	
+assign	#3 pm 1/2/2000#	accepted	
+assign	#3:04 AM#	accepted	
+assign	#1/2/2000 3:04 AM#	accepted	
+assign	#3:04 AM 1/2/2000#	accepted	
+assign	#3:04AM#	accepted	
+assign	#1/2/2000 3:04AM#	accepted	
+assign	#3:04AM 1/2/2000#	accepted	
+assign	#3:04 PM#	accepted	
+assign	#1/2/2000 3:04 PM#	accepted	
+assign	#3:04 PM 1/2/2000#	accepted	
+assign	#3:04PM#	accepted	
+assign	#1/2/2000 3:04PM#	accepted	
+assign	#3:04PM 1/2/2000#	accepted	
+assign	#3:04 A#	accepted	
+assign	#1/2/2000 3:04 A#	accepted	
+assign	#3:04 A 1/2/2000#	accepted	
+assign	#3:04 P#	accepted	
+assign	#1/2/2000 3:04 P#	accepted	
+assign	#3:04 P 1/2/2000#	accepted	
+assign	#3:04 a#	accepted	
+assign	#1/2/2000 3:04 a#	accepted	
+assign	#3:04 a 1/2/2000#	accepted	
+assign	#13 AM#	accepted	
+assign	#1/2/2000 13 AM#	accepted	
+assign	#13 AM 1/2/2000#	accepted	
+assign	#13 PM#	accepted	
+assign	#1/2/2000 13 PM#	accepted	
+assign	#13 PM 1/2/2000#	accepted	
+assign	#13:00 AM#	accepted	
+assign	#1/2/2000 13:00 AM#	accepted	
+assign	#13:00 AM 1/2/2000#	accepted	
+assign	#13:00 PM#	accepted	
+assign	#1/2/2000 13:00 PM#	accepted	
+assign	#13:00 PM 1/2/2000#	accepted	
+assign	#12 AM#	accepted	
+assign	#1/2/2000 12 AM#	accepted	
+assign	#12 AM 1/2/2000#	accepted	
+assign	#12 PM#	accepted	
+assign	#1/2/2000 12 PM#	accepted	
+assign	#12 PM 1/2/2000#	accepted	
+assign	#0 AM#	accepted	
+assign	#1/2/2000 0 AM#	accepted	
+assign	#0 AM 1/2/2000#	accepted	
+assign	#0 PM#	accepted	
+assign	#1/2/2000 0 PM#	accepted	
+assign	#0 PM 1/2/2000#	accepted	
+assign	#0:00 AM#	accepted	
+assign	#1/2/2000 0:00 AM#	accepted	
+assign	#0:00 AM 1/2/2000#	accepted	
+assign	#0:00 PM#	accepted	
+assign	#1/2/2000 0:00 PM#	accepted	
+assign	#0:00 PM 1/2/2000#	accepted	
+assign	#12:30 AM#	accepted	
+assign	#1/2/2000 12:30 AM#	accepted	
+assign	#12:30 AM 1/2/2000#	accepted	
+assign	#AM#	syntax	Syntax error
+assign	#1/2/2000 AM#	syntax	Syntax error
+assign	#AM 1/2/2000#	accepted	
+assign	#PM#	syntax	Syntax error
+assign	#1/2/2000 PM#	syntax	Syntax error
+assign	#PM 1/2/2000#	accepted	
+assign	#AM 3#	syntax	Syntax error
+assign	#1/2/2000 AM 3#	syntax	Syntax error
+assign	#AM 3 1/2/2000#	syntax	Syntax error
+assign	#PM 3#	syntax	Syntax error
+assign	#1/2/2000 PM 3#	syntax	Syntax error
+assign	#PM 3 1/2/2000#	syntax	Syntax error
+assign	#AM 3:04#	accepted	
+assign	#1/2/2000 AM 3:04#	syntax	Syntax error
+assign	#AM 3:04 1/2/2000#	accepted	
+assign	#PM 3:04#	accepted	
+assign	#1/2/2000 PM 3:04#	syntax	Syntax error
+assign	#PM 3:04 1/2/2000#	accepted	
+assign	#3 AM PM#	syntax	Syntax error
+assign	#1/2/2000 3 AM PM#	syntax	Syntax error
+assign	#3 AM PM 1/2/2000#	accepted	
+assign	#3:04 AM AM#	syntax	Syntax error
+assign	#1/2/2000 3:04 AM AM#	syntax	Syntax error
+assign	#3:04 AM AM 1/2/2000#	accepted	
+assign	#3:04 AMM#	syntax	Syntax error
+assign	#1/2/2000 3:04 AMM#	syntax	Syntax error
+assign	#3:04 AMM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AMPM#	syntax	Syntax error
+assign	#1/2/2000 3:04 AMPM#	syntax	Syntax error
+assign	#3:04 AMPM 1/2/2000#	accepted	
+assign	#3:04 XM#	syntax	Syntax error
+assign	#1/2/2000 3:04 XM#	syntax	Syntax error
+assign	#3:04 XM 1/2/2000#	syntax	Syntax error
+assign	#3 4#	accepted	
+assign	#1/2/2000 3 4#	syntax	Syntax error
+assign	#3 4 1/2/2000#	syntax	Syntax error
+assign	#3 4 5#	accepted	
+assign	#1/2/2000 3 4 5#	syntax	Syntax error
+assign	#3 4 5 1/2/2000#	syntax	Syntax error
+assign	#3:04 5#	syntax	Syntax error
+assign	#1/2/2000 3:04 5#	syntax	Syntax error
+assign	#3:04 5 1/2/2000#	syntax	Syntax error
+assign	#3:04 5:06#	syntax	Syntax error
+assign	#1/2/2000 3:04 5:06#	syntax	Syntax error
+assign	#3:04 5:06 1/2/2000#	syntax	Syntax error
+assign	#3 :04#	accepted	
+assign	#1/2/2000 3 :04#	accepted	
+assign	#3 :04 1/2/2000#	accepted	
+assign	#3: 04#	accepted	
+assign	#1/2/2000 3: 04#	accepted	
+assign	#3: 04 1/2/2000#	accepted	
+assign	#3 : 04#	accepted	
+assign	#1/2/2000 3 : 04#	accepted	
+assign	#3 : 04 1/2/2000#	accepted	
+assign	#3:04 :05#	accepted	
+assign	#1/2/2000 3:04 :05#	accepted	
+assign	#3:04 :05 1/2/2000#	accepted	
+assign	#3:04: 05#	accepted	
+assign	#1/2/2000 3:04: 05#	accepted	
+assign	#3:04: 05 1/2/2000#	accepted	
+assign	#1/2/2000- 3:04#	syntax	Syntax error
+assign	#1/2/2000 / 3:04#	syntax	Syntax error
+assign	#1/2/2000/ 3:04#	syntax	Syntax error
+assign	#1/2/2000.3:04#	syntax	Syntax error
+assign	#1/2/2000 . 3:04#	syntax	Syntax error
+assign	#1/2/2000. 3:04#	syntax	Syntax error
+assign	#1/2/2000;3:04#	syntax	Syntax error
+assign	#1/2/2000 ; 3:04#	syntax	Syntax error
+assign	#1/2/2000; 3:04#	syntax	Syntax error
+assign	#1/2/2000T3:04#	syntax	Syntax error
+assign	#1/2/2000 T 3:04#	syntax	Syntax error
+assign	#1/2/2000T 3:04#	syntax	Syntax error
+assign	#1/2/2000t3:04#	syntax	Syntax error
+assign	#1/2/2000 t 3:04#	syntax	Syntax error
+assign	#1/2/2000t 3:04#	syntax	Syntax error
+assign	#1/2/2000Z3:04#	syntax	Syntax error
+assign	#1/2/2000 Z 3:04#	syntax	Syntax error
+assign	#1/2/2000Z 3:04#	syntax	Syntax error
+assign	#1/2/2000,3 PM#	syntax	Syntax error
+assign	#1/2/2000 , 3 PM#	syntax	Syntax error
+assign	#1/2/2000, 3 PM#	syntax	Syntax error
+assign	#1/2/2000-3 PM#	syntax	Syntax error
+assign	#1/2/2000 - 3 PM#	syntax	Syntax error
+assign	#1/2/2000- 3 PM#	syntax	Syntax error
+assign	#1/2/2000/3 PM#	syntax	Syntax error
+assign	#1/2/2000 / 3 PM#	syntax	Syntax error
+assign	#1/2/2000/ 3 PM#	syntax	Syntax error
+assign	#1/2/2000.3 PM#	syntax	Syntax error
+assign	#1/2/2000 . 3 PM#	syntax	Syntax error
+assign	#1/2/2000. 3 PM#	syntax	Syntax error
+assign	#1/2/2000;3 PM#	syntax	Syntax error
+assign	#1/2/2000 ; 3 PM#	syntax	Syntax error
+assign	#1/2/2000; 3 PM#	syntax	Syntax error
+assign	#1/2/2000T3 PM#	syntax	Syntax error
+assign	#1/2/2000 T 3 PM#	syntax	Syntax error
+assign	#1/2/2000T 3 PM#	syntax	Syntax error
+assign	#1/2/2000t3 PM#	syntax	Syntax error
+assign	#1/2/2000 t 3 PM#	syntax	Syntax error
+assign	#1/2/2000t 3 PM#	syntax	Syntax error
+assign	#1/2/2000Z3 PM#	syntax	Syntax error
+assign	#1/2/2000 Z 3 PM#	syntax	Syntax error
+assign	#1/2/2000Z 3 PM#	syntax	Syntax error
+assign	#1/2/2000,3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 , 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000, 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000-3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 - 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000- 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000/3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 / 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000/ 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000.3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 . 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000. 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000;3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 ; 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000; 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000T3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 T 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000T 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000t3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 t 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000t 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000Z3:04 PM#	syntax	Syntax error
+assign	#1/2/2000 Z 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000Z 3:04 PM#	syntax	Syntax error
+assign	#1/2/2000$#	syntax	Syntax error
+assign	#$1/2/2000#	syntax	Syntax error
+assign	#1$2/2000#	syntax	Syntax error
+assign	#1/2/2000 3$04#	syntax	Syntax error
+assign	#1/2/2000%#	syntax	Syntax error
+assign	#%1/2/2000#	syntax	Syntax error
+assign	#1%2/2000#	syntax	Syntax error
+assign	#1/2/2000 3%04#	syntax	Syntax error
+assign	#1/2/2000&#	syntax	Syntax error
+assign	#&1/2/2000#	syntax	Syntax error
+assign	#1&2/2000#	syntax	Syntax error
+assign	#1/2/2000 3&04#	syntax	Syntax error
+assign	#1/2/2000'#	syntax	Syntax error
+assign	#'1/2/2000#	syntax	Syntax error
+assign	#1'2/2000#	syntax	Syntax error
+assign	#1/2/2000 3'04#	syntax	Syntax error
+assign	#1/2/2000(#	syntax	Syntax error
+assign	#(1/2/2000#	syntax	Syntax error
+assign	#1(2/2000#	syntax	Syntax error
+assign	#1/2/2000 3(04#	syntax	Syntax error
+assign	#1/2/2000)#	syntax	Syntax error
+assign	#)1/2/2000#	syntax	Syntax error
+assign	#1)2/2000#	syntax	Syntax error
+assign	#1/2/2000 3)04#	syntax	Syntax error
+assign	#1/2/2000*#	syntax	Syntax error
+assign	#*1/2/2000#	syntax	Syntax error
+assign	#1*2/2000#	syntax	Syntax error
+assign	#1/2/2000 3*04#	syntax	Syntax error
+assign	#1/2/2000+#	syntax	Syntax error
+assign	#+1/2/2000#	syntax	Syntax error
+assign	#1+2/2000#	syntax	Syntax error
+assign	#1/2/2000 3+04#	syntax	Syntax error
+assign	#1/2/2000=#	syntax	Syntax error
+assign	#=1/2/2000#	syntax	Syntax error
+assign	#1=2/2000#	syntax	Syntax error
+assign	#1/2/2000 3=04#	syntax	Syntax error
+assign	#1/2/2000<#	syntax	Syntax error
+assign	#<1/2/2000#	syntax	Syntax error
+assign	#1<2/2000#	syntax	Syntax error
+assign	#1/2/2000 3<04#	syntax	Syntax error
+assign	#1/2/2000>#	syntax	Syntax error
+assign	#>1/2/2000#	syntax	Syntax error
+assign	#1>2/2000#	syntax	Syntax error
+assign	#1/2/2000 3>04#	syntax	Syntax error
+assign	#1/2/2000?#	syntax	Syntax error
+assign	#?1/2/2000#	syntax	Syntax error
+assign	#1?2/2000#	syntax	Syntax error
+assign	#1/2/2000 3?04#	syntax	Syntax error
+assign	#1/2/2000@#	syntax	Syntax error
+assign	#@1/2/2000#	syntax	Syntax error
+assign	#1@2/2000#	syntax	Syntax error
+assign	#1/2/2000 3@04#	syntax	Syntax error
+assign	#1/2/2000[#	syntax	Syntax error
+assign	#[1/2/2000#	syntax	Syntax error
+assign	#1[2/2000#	syntax	Syntax error
+assign	#1/2/2000 3[04#	syntax	Syntax error
+assign	#1/2/2000]#	syntax	Syntax error
+assign	#]1/2/2000#	syntax	Syntax error
+assign	#1]2/2000#	syntax	Syntax error
+assign	#1/2/2000 3]04#	syntax	Syntax error
+assign	#1/2/2000\\#	syntax	Syntax error
+assign	#\\1/2/2000#	syntax	Syntax error
+assign	#1\\2/2000#	syntax	Syntax error
+assign	#1/2/2000 3\\04#	syntax	Syntax error
+assign	#1/2/2000^#	syntax	Syntax error
+assign	#^1/2/2000#	syntax	Syntax error
+assign	#1^2/2000#	syntax	Syntax error
+assign	#1/2/2000 3^04#	syntax	Syntax error
+assign	#1/2/2000_#	syntax	Syntax error
+assign	#_1/2/2000#	syntax	Syntax error
+assign	#1_2/2000#	syntax	Syntax error
+assign	#1/2/2000 3_04#	syntax	Syntax error
+assign	#1/2/2000{#	syntax	Syntax error
+assign	#{1/2/2000#	syntax	Syntax error
+assign	#1{2/2000#	syntax	Syntax error
+assign	#1/2/2000 3{04#	syntax	Syntax error
+assign	#1/2/2000}#	syntax	Syntax error
+assign	#}1/2/2000#	syntax	Syntax error
+assign	#1}2/2000#	syntax	Syntax error
+assign	#1/2/2000 3}04#	syntax	Syntax error
+assign	#1/2/2000~#	syntax	Syntax error
+assign	#~1/2/2000#	syntax	Syntax error
+assign	#1~2/2000#	syntax	Syntax error
+assign	#1/2/2000 3~04#	syntax	Syntax error
+assign	#1/2/2000!#	syntax	Syntax error
+assign	#!1/2/2000#	syntax	Syntax error
+assign	#1!2/2000#	syntax	Syntax error
+assign	#1/2/2000 3!04#	syntax	Syntax error
+assign	#1/2/2000;#	syntax	Syntax error
+assign	#;1/2/2000#	syntax	Syntax error
+assign	#1;2/2000#	syntax	Syntax error
+assign	#1/2/2000 3;04#	syntax	Syntax error
+assign	#1/2/2000"#	syntax	Syntax error
+assign	#"1/2/2000#	syntax	Syntax error
+assign	#1"2/2000#	syntax	Syntax error
+assign	#1/2/2000 3"04#	syntax	Syntax error
+assign	#1/2/2000T#	syntax	Syntax error
+assign	#T1/2/2000#	syntax	Syntax error
+assign	#1T2/2000#	syntax	Syntax error
+assign	#1/2/2000 3T04#	syntax	Syntax error
+assign	#1/2/2000Z#	syntax	Syntax error
+assign	#Z1/2/2000#	syntax	Syntax error
+assign	#1Z2/2000#	syntax	Syntax error
+assign	#1/2/2000 3Z04#	syntax	Syntax error
+assign	#1/2/2000e#	syntax	Syntax error
+assign	#e1/2/2000#	syntax	Syntax error
+assign	#1e2/2000#	syntax	Syntax error
+assign	#1/2/2000 3e04#	syntax	Syntax error
+assign	#1/2/2000E#	syntax	Syntax error
+assign	#E1/2/2000#	syntax	Syntax error
+assign	#1E2/2000#	syntax	Syntax error
+assign	#1/2/2000 3E04#	syntax	Syntax error
+assign	#Mon 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Mon#	syntax	Syntax error
+assign	#Mon#	syntax	Syntax error
+assign	#Mon, Jan 5, 2000#	syntax	Syntax error
+assign	#Monday 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Monday#	syntax	Syntax error
+assign	#Monday#	syntax	Syntax error
+assign	#Monday, Jan 5, 2000#	syntax	Syntax error
+assign	#Tue 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Tue#	syntax	Syntax error
+assign	#Tue#	syntax	Syntax error
+assign	#Tue, Jan 5, 2000#	syntax	Syntax error
+assign	#Wed 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Wed#	syntax	Syntax error
+assign	#Wed#	syntax	Syntax error
+assign	#Wed, Jan 5, 2000#	syntax	Syntax error
+assign	#Thu 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Thu#	syntax	Syntax error
+assign	#Thu#	syntax	Syntax error
+assign	#Thu, Jan 5, 2000#	syntax	Syntax error
+assign	#Fri 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Fri#	syntax	Syntax error
+assign	#Fri#	syntax	Syntax error
+assign	#Fri, Jan 5, 2000#	syntax	Syntax error
+assign	#Sat 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Sat#	syntax	Syntax error
+assign	#Sat#	syntax	Syntax error
+assign	#Sat, Jan 5, 2000#	syntax	Syntax error
+assign	#Sun 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Sun#	syntax	Syntax error
+assign	#Sun#	syntax	Syntax error
+assign	#Sun, Jan 5, 2000#	syntax	Syntax error
+assign	#Mo 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Mo#	syntax	Syntax error
+assign	#Mo#	syntax	Syntax error
+assign	#Mo, Jan 5, 2000#	syntax	Syntax error
+assign	#Monda 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Monda#	syntax	Syntax error
+assign	#Monda#	syntax	Syntax error
+assign	#Monda, Jan 5, 2000#	syntax	Syntax error
+assign	#Mondays 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Mondays#	syntax	Syntax error
+assign	#Mondays#	syntax	Syntax error
+assign	#Mondays, Jan 5, 2000#	syntax	Syntax error
+assign	#Tues 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Tues#	syntax	Syntax error
+assign	#Tues#	syntax	Syntax error
+assign	#Tues, Jan 5, 2000#	syntax	Syntax error
+assign	#Thur 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Thur#	syntax	Syntax error
+assign	#Thur#	syntax	Syntax error
+assign	#Thur, Jan 5, 2000#	syntax	Syntax error
+assign	#Thurs 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 Thurs#	syntax	Syntax error
+assign	#Thurs#	syntax	Syntax error
+assign	#Thurs, Jan 5, 2000#	syntax	Syntax error
+assign	#1 2#	accepted	
+assign	#1  2#	accepted	
+assign	#1\t2#	accepted	
+assign	#1/2/2000\t3:04#	accepted	
+assign	#\t1/2/2000#	accepted	
+assign	#1/2/2000\t#	accepted	
+assign	#1/\t2/2000#	accepted	
+assign	#3 AM A 1/2/2000#	accepted	
+assign	#3 AM P 1/2/2000#	accepted	
+assign	#3 A AM 1/2/2000#	accepted	
+assign	#3 AM PM PM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PM 1/2/2000#	accepted	
+assign	#3 AM AM AM 1/2/2000#	syntax	Syntax error
+assign	#AM AM 3:04 1/2/2000#	syntax	Syntax error
+assign	#3:04 AMAM 1/2/2000#	accepted	
+assign	#3:04 PMAM 1/2/2000#	accepted	
+assign	#AM 3:04 AM 1/2/2000#	accepted	
+assign	#3:04 AM 1/2/2000 AM#	syntax	Syntax error
+assign	#3:04 AM Jan 5 2000 PM#	syntax	Syntax error
+assign	#3:04 AM AM Jan 5 2000#	syntax	Syntax error
+assign	#3:04 PM PM 1/2#	accepted	
+assign	#3:04 AM PM Jan#	syntax	Syntax error
+assign	#3 PM PM 1/2/2000#	accepted	
+assign	#3 PM AM 1/2/2000#	accepted	
+assign	#3 AM 1/2/2000 PM#	syntax	Syntax error
+assign	#1/2/2000 AM 3 PM#	syntax	Syntax error
+assign	#3:04 AM AMPM 1/2/2000#	accepted	
+assign	#3:04 AMPMAM 1/2/2000#	accepted	
+assign	#3:04 AM AMP 1/2/2000#	accepted	
+assign	#3:04 AM Am 1/2/2000#	accepted	
+assign	#3:04 AM aM 1/2/2000#	accepted	
+assign	#3:04 AM PMX 1/2/2000#	accepted	
+assign	#3:04 AM XPM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM , AM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AM, 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AM/1/2/2000#	syntax	Syntax error
+assign	#3:04 AM A.M. 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM 1/2/2000 AM AM#	syntax	Syntax error
+assign	#AM AM 1/2/2000#	syntax	Syntax error
+assign	#AM PM 1/2/2000#	syntax	Syntax error
+assign	#AM 3:04 AM#	accepted	
+assign	#3:04 AM AM 3:04#	syntax	Syntax error
+assign	#3:04 AM AM 12#	syntax	Syntax error
+assign	#3 AM AM 12#	syntax	Syntax error
+assign	#3 AM AM Jan 12#	syntax	Syntax error
+assign	#3 AM AM 12/2000#	accepted	
+assign	#3 AM AM 1/32#	accepted	
+assign	#3:04 AM AM 1/2#	accepted	
+assign	#Jan 0#	accepted	
+assign	#Jan 00#	accepted	
+assign	#Jan 1#	accepted	
+assign	#Jan 99#	accepted	
+assign	#Jan 100#	accepted	
+assign	#Jan 10000#	syntax	Syntax error
+assign	#Jan 9999#	accepted	
+assign	#32 Jan#	accepted	
+assign	#99 Jan#	accepted	
+assign	#10000 Jan#	syntax	Syntax error
+assign	#Jan 5 6#	accepted	
+assign	#Jan 5 2000#	accepted	
+assign	#Jan 32 2000#	syntax	Syntax error
+assign	#Jan 5 10000#	syntax	Syntax error
+assign	#5 5 Jan#	accepted	
+assign	#Feb 30 2000#	syntax	Syntax error
+assign	#1/10000#	syntax	Syntax error
+assign	#10000/1#	syntax	Syntax error
+assign	#1/9999#	accepted	
+assign	#9999/1#	accepted	
+assign	#1/99999#	syntax	Syntax error
+assign	#12/10000#	syntax	Syntax error
+assign	#00/1#	accepted	
+assign	#1/00#	accepted	
+assign	#01/01#	accepted	
+assign	#001/1#	accepted	
+assign	#3:04 AM AMX 1/2/2000#	accepted	
+assign	#3:04 AM PMM 1/2/2000#	accepted	
+assign	#3:04 AM PMXY 1/2/2000#	accepted	
+assign	#3:04 AM AX 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PX 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AB 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PB 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AMMM 1/2/2000#	accepted	
+assign	#3:04 AM PMPM 1/2/2000#	accepted	
+assign	#3:04 AM AMAMX 1/2/2000#	accepted	
+assign	#3:04 AM AMXAM 1/2/2000#	accepted	
+assign	#3:04 AM PMXAM 1/2/2000#	accepted	
+assign	#3:04 AM AXM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PXM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AA 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PP 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AP 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PA 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AMA 1/2/2000#	accepted	
+assign	#3:04 AM PMA 1/2/2000#	accepted	
+assign	#3:04 AM APM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PAM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AAM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM PPM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AMAMAM 1/2/2000#	accepted	
+assign	#3:04 AM A1 1/2/2000#	accepted	
+assign	#3:04 AM P1 1/2/2000#	accepted	
+assign	#3:04 AM AM1 1/2/2000#	accepted	
+assign	#3:04 AM PM1 1/2/2000#	accepted	
+assign	#3:04 AM XAM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM XA 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM MM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM M 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM X 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AMPMX 1/2/2000#	accepted	
+assign	#3:04 AM AMPMXX 1/2/2000#	accepted	
+assign	#3:04 AM PMXX 1/2/2000#	accepted	
+assign	#3:04 AM PMXP 1/2/2000#	accepted	
+assign	#3:04 AM PMXPM 1/2/2000#	accepted	
+assign	#3:04 AM AM 1 2 2000#	accepted	
+assign	#3:04 AM AM 1-2-2000#	accepted	
+assign	#3:04 AM AM 1,2,2000#	accepted	
+assign	#3:04 AM AM 1/2 2000#	accepted	
+assign	#3:04 AM AM 1 2#	accepted	
+assign	#3:04 AM AM 12 2000#	accepted	
+assign	#3:04 AM AM 1-2#	accepted	
+assign	#3:04 AM AM 1,2#	accepted	
+assign	#3:04 AM AM 2000-1-2#	accepted	
+assign	#3:04 AM AM 13/1#	accepted	
+assign	#3 AM AM 1/2/2000#	accepted	
+assign	#3:04:05 AM AM 1/2/2000#	accepted	
+assign	#3:04 AM AM 1/2/2000 4#	syntax	Syntax error
+assign	#3:04 AM AM 1/2/2000 4:05#	syntax	Syntax error
+assign	#3:04 AM AM 5:06 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM 1 1/2/2000#	syntax	Syntax error
+assign	#3:04 1 1/2/2000#	syntax	Syntax error
+assign	#1 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM AM 1 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM 5 AM 1/2/2000#	syntax	Syntax error
+assign	#3:04 A 1 1/2/2000#	syntax	Syntax error
+assign	#1/2/2000 1#	syntax	Syntax error
+assign	#1 2 3 4#	syntax	Syntax error
+assign	#1 1 2 2000#	syntax	Syntax error
+assign	#3:04 AM 1/2/2000 1#	syntax	Syntax error
+assign	#3:04 AM AM 1 2 3 4#	syntax	Syntax error
+assign	#3:04 AM A 1/2/2000#	accepted	
+assign	#3:04 AM Ax 1/2/2000#	syntax	Syntax error
+assign	#3 AM Jan 5 2000#	accepted	
+assign	#3 AM AM Jan 5 2000#	syntax	Syntax error
+assign	#3:04 AM 1 2#	accepted	
+assign	#3:04 AM 1 2 2000#	accepted	
+assign	#3:04 AM 1/2#	accepted	
+assign	#3:04 AM 12#	syntax	Syntax error
+assign	#3:04 AM Jan 12#	accepted	
+assign	#3:04 AM AMXY 1 2 2000#	accepted	
+assign	#3:04 AM 1 AM 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM 1/2 AM 2000#	syntax	Syntax error
+assign	#3:04 AM 1/2/2000 PM#	syntax	Syntax error
+assign	#3:04 PMX#	syntax	Syntax error
+assign	#3:04 AMX#	syntax	Syntax error
+assign	#3:04 AM AMX#	syntax	Syntax error
+assign	#AMX 3:04#	accepted	
+assign	#AMX 1/2/2000#	accepted	
+assign	#3 AM AMX 1/2/2000#	accepted	
+assign	#3:04 AM A12 1/2/2000#	accepted	
+assign	#3:04 AM A1X 1/2/2000#	accepted	
+assign	#3:04 AM 1A 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM A.1 1/2/2000#	syntax	Syntax error
+assign	#3:04 AM X1 1/2/2000#	syntax	Syntax error
+assign	#3:04 A1 1/2/2000#	syntax	Syntax error
+assign	#A1 3:04#	accepted	
+assign	#A1 1/2/2000#	accepted	
+assign	#X1 1/2/2000#	syntax	Syntax error
+assign	#A1X 1/2/2000#	accepted	
+assign	#AB1 1/2/2000#	syntax	Syntax error
+assign	#3:04 AMX 1/2/2000#	syntax	Syntax error
+assign	#3:04 PMX 1/2/2000#	syntax	Syntax error
+assign	#3:04 AX 1/2/2000#	syntax	Syntax error
+assign	#A 3:04#	accepted	
+assign	#P 3:04#	accepted	
+assign	#AX 3:04#	syntax	Syntax error
+assign	#AX 1/2/2000#	syntax	Syntax error
+assign	#P 1/2/2000#	accepted	
+assign	#A 1/2/2000#	accepted	
+assign	#AM 3:04 AM AM 1/2/2000#	accepted	
+assign	#AMX 3:04 PM 1/2/2000#	accepted	
+assign	#3:04 AM AM 1/2/2000 AM#	syntax	Syntax error
+assign	#1/2/2000 AMX 3:04#	syntax	Syntax error

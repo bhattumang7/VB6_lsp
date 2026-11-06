@@ -497,6 +497,7 @@ enum DateTok<'a> {
     Colon,
     Slash,
     Dash,
+    Comma,
 }
 
 /// Split the body of a date literal; `None` when it holds any other character.
@@ -504,20 +505,11 @@ fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
     let bytes = s.as_bytes();
     let mut out = Vec::new();
     let mut i = 0;
-    // Two separators in a row (`//`, `--`, `,,`) are not a date.
-    let mut last_sep: Option<u8> = None;
     while i < bytes.len() {
         let b = bytes[i];
-        if matches!(b, b'/' | b'-' | b',') {
-            if last_sep == Some(b) {
-                return None;
-            }
-            last_sep = Some(b);
-        } else if !matches!(b, b' ' | b'\t') {
-            last_sep = None;
-        }
         match b {
-            b' ' | b'\t' | b',' => i += 1,
+            b' ' | b'\t' => i += 1,
+            b',' => { out.push(DateTok::Comma); i += 1; }
             // A period between numbers separates the parts of a time; after a word it is dropped.
             b'.' => {
                 match out.last() {
@@ -541,12 +533,54 @@ fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
             b'A'..=b'Z' | b'a'..=b'z' => {
                 let start = i;
                 while i < bytes.len() && bytes[i].is_ascii_alphabetic() { i += 1; }
+                // A word that reads as an AM/PM designator takes the digits and letters
+                // written straight after it (`A1`, `PM2x`).
+                if bytes.get(i).is_some_and(u8::is_ascii_digit) && designator(&s[start..i]).is_some() {
+                    while i < bytes.len() && bytes[i].is_ascii_alphanumeric() { i += 1; }
+                }
                 out.push(DateTok::Word(&s[start..i]));
             }
             _ => return None,
         }
     }
     Some(out)
+}
+
+/// Whether `word` reads as an AM/PM designator, and which one (`true` for PM): `A` or `P`
+/// alone or followed by a digit, or a word that starts with `AM` or `PM`.
+fn designator(word: &str) -> Option<bool> {
+    let b = word.as_bytes();
+    let first = b.first()?.to_ascii_lowercase();
+    if first != b'a' && first != b'p' {
+        return None;
+    }
+    let reads_as_designator = match b.get(1).map(u8::to_ascii_lowercase) {
+        None | Some(b'm') => true,
+        Some(c) => c.is_ascii_digit(),
+    };
+    reads_as_designator.then_some(first == b'p')
+}
+
+/// `AM` or `PM` followed by letters that read as a designator again is the two of them
+/// written together (`AMPM`): the first two letters.
+fn doubled_designator(word: &str) -> Option<&str> {
+    let head = word.get(..2)?;
+    (matches!(head.to_ascii_lowercase().as_str(), "am" | "pm") && designator(word.get(2..)?).is_some()).then_some(head)
+}
+
+/// Whether `word` is exactly an AM/PM designator: `A`, `AM`, `P` or `PM`.
+fn exact_meridiem(word: &str) -> bool {
+    matches!(word.to_ascii_lowercase().as_str(), "a" | "am" | "p" | "pm")
+}
+
+/// Whether the date separators (`/`, `-`, `,`) of the text that is left once the time is taken
+/// out each stand between two parts of the date: none first, none last, none beside another.
+fn separators_between_parts(rest: &[DateTok]) -> bool {
+    let is_sep = |t: &DateTok| matches!(t, DateTok::Slash | DateTok::Dash | DateTok::Comma);
+    if rest.first().is_some_and(is_sep) || rest.last().is_some_and(is_sep) {
+        return false;
+    }
+    !rest.windows(2).any(|w| is_sep(&w[0]) && is_sep(&w[1]))
 }
 
 fn month_from_word(w: &str) -> Option<i32> {
@@ -600,14 +634,23 @@ pub fn current_year() -> i32 {
 }
 
 /// Date part made of numbers only: `m/d/y`, or `y/m/d` for a leading year; with two numbers,
-/// `m/d` of the current year or `y/m` for a leading year.
+/// `m/d` of the current year, `y/m` for a leading year or `m/y` for a trailing one.
 fn numeric_date(nums: &[(i32, usize)]) -> Option<f64> {
-    if let [(a, ad), (b, _)] = *nums {
-        return if ad >= 3 || a > 31 {
-            valid_serial(full_year(a, ad)?, b, 1)
-        } else {
-            valid_serial(current_year(), a, b)
-        };
+    if let [(a, ad), (b, bd)] = *nums {
+        let year_like = |v: i32, d: usize| d >= 3 || v > 31;
+        if year_like(a, ad) {
+            return valid_serial(full_year(a, ad)?, b, 1);
+        }
+        if year_like(b, bd) {
+            return valid_serial(full_year(b, bd)?, a, 1);
+        }
+        // Two small numbers: month and day, day and month (a first field that cannot be a
+        // month), or a month with a two-digit year on either side.
+        let this_year = current_year();
+        return valid_serial(this_year, a, b)
+            .or_else(|| valid_serial(this_year, b, a))
+            .or_else(|| valid_serial(full_year(b, bd)?, a, 1))
+            .or_else(|| valid_serial(full_year(a, ad)?, b, 1));
     }
     let [(a, ad), (b, _), (c, cd)] = *nums else { return None };
     if ad >= 3 || a > 31 {
@@ -627,7 +670,7 @@ fn named_date(month: i32, nums: &[(i32, usize)]) -> Option<f64> {
     match *nums {
         [(v, d)] if year_like(v, d) => valid_serial(full_year(v, d)?, month, 1),
         // A day alone is a day of the current year.
-        [(v, _)] => valid_serial(current_year(), month, v),
+        [(v, d)] => valid_serial(current_year(), month, v).or_else(|| valid_serial(full_year(v, d)?, month, 1)),
         [(a, ad), (b, bd)] => {
             if year_like(a, ad) {
                 valid_serial(full_year(a, ad)?, month, b)
@@ -664,16 +707,53 @@ fn time_fraction(hour: i32, minute: i32, second: i32, meridiem: Option<bool>) ->
 /// a real date or time. `Close #1, #2` puts two `#` on one line, and without
 /// this check the scanner would greedily fuse `#1, #` into a bogus date literal.
 fn parse_vba_date_literal(s: &str) -> Option<f64> {
-    let toks = lex_date_text(s)?;
+    let mut toks = lex_date_text(s)?;
+    // A designator opens the text: any word that reads as one.
+    let lead = toks.first().and_then(|t| match t {
+        DateTok::Word(w) => designator(w),
+        _ => None,
+    });
+    if lead.is_some() {
+        toks.remove(0);
+    }
     if toks.is_empty() {
         return None;
+    }
+    // After a time and its designator, a numeric date may open with one more designator.
+    let mut extra_designator = false;
+    let after_time = toks.iter().enumerate().position(|(k, t)| {
+        k > 0
+            && matches!(toks[k - 1], DateTok::Num { .. })
+            && matches!(t, DateTok::Word(w) if exact_meridiem(w) || doubled_designator(w).is_some())
+    }).filter(|&k| {
+        // The time is all that comes before the designator: `Num (: Num)*`.
+        let mut start = k - 1;
+        while start >= 2 && toks[start - 1] == DateTok::Colon && matches!(toks[start - 2], DateTok::Num { .. }) {
+            start -= 2;
+        }
+        start == 0
+    });
+    if let Some(k) = after_time {
+        let numeric_date = toks.iter().all(|t| matches!(t, DateTok::Word(w) if designator(w).is_some()) || !matches!(t, DateTok::Word(_)));
+        let doubled = match toks[k] {
+            DateTok::Word(w) => doubled_designator(w),
+            _ => None,
+        };
+        if let (true, Some(head)) = (numeric_date, doubled) {
+            // The word is the time's designator and the extra one together.
+            toks[k] = DateTok::Word(head);
+            extra_designator = true;
+        } else if numeric_date && matches!(toks.get(k + 1), Some(DateTok::Word(w)) if designator(w).is_some()) {
+            toks.remove(k + 1);
+            extra_designator = true;
+        }
     }
     let mut meridiem = None;
     let mut meridiem_at = 0;
     let mut rest: Vec<DateTok> = Vec::new();
     for t in toks {
         match t {
-            DateTok::Word(w) if matches!(w.to_ascii_lowercase().as_str(), "a" | "am" | "p" | "pm") => {
+            DateTok::Word(w) if exact_meridiem(w) => {
                 // One meridiem at most.
                 if meridiem.is_some() {
                     return None;
@@ -685,6 +765,14 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
             DateTok::Word(w) if is_weekday_word(w) => return None,
             other => rest.push(other),
         }
+    }
+    // The designator that opens the text stands for the time when no other follows it.
+    if meridiem.is_none() {
+        meridiem = lead;
+        meridiem_at = 0;
+    } else if lead.is_some() && meridiem_at == 0 {
+        // A second designator in front of the time.
+        return None;
     }
     // A meridiem opens the text or follows the number that ends the time.
     let leading_meridiem = meridiem.is_some() && meridiem_at == 0;
@@ -721,6 +809,9 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
             rest.remove(meridiem_at - 1);
         }
     }
+    if !separators_between_parts(&rest) {
+        return None;
+    }
     let mut nums: Vec<(i32, usize)> = Vec::new();
     let mut month: Option<i32> = None;
     let mut has_sep = false;
@@ -731,13 +822,13 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
                 if month.is_some() { return None; }
                 month = Some(month_from_word(w)?);
             }
-            DateTok::Slash | DateTok::Dash => has_sep = true,
+            DateTok::Slash | DateTok::Dash | DateTok::Comma => has_sep = true,
             DateTok::Colon => return None,
         }
     }
     let date = match (month, nums.is_empty()) {
         (None, true) => {
-            if has_sep { return None; }
+            if has_sep || extra_designator { return None; }
             return time;
         }
         (None, false) => numeric_date(&nums)?,
