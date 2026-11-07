@@ -60,7 +60,7 @@ async function initialProject(context) {
         folderPath: folder.uri.fsPath,
         configured: config.get('project'),
         candidates: await findProjectFiles(),
-        autoLoad: config.get('project.autoLoad', true),
+        autoLoad: config.get('autoLoadProject', true),
         exists: (p) => fs.existsSync(p),
     });
     if (choice.action === 'open') {
@@ -386,6 +386,18 @@ async function activate(context) {
         throw e;
     });
     context.subscriptions.push({ dispose: () => client && client.stop() });
+
+    return {
+        /** Resolves when the language server has started. */
+        ready: () => clientReady,
+        /** What the extension shows for the open project: for tests and for other extensions. */
+        state: () => ({
+            status: currentStatus,
+            info: currentInfo,
+            statusBar: { text: statusItem.text, tooltip: String(statusItem.tooltip || ''), command: statusItem.command },
+            tree: logic.buildTree(currentInfo),
+        }),
+    };
 }
 
 function deactivate() {
