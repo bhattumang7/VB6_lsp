@@ -241,6 +241,19 @@ fn rd_u16(b: &[u8], at: usize) -> Result<u16, FrxError> {
         .map(|s| u16::from_le_bytes([s[0], s[1]]))
         .ok_or(FrxError::Truncated { needed: at + 2, have: b.len() })
 }
+
+/// Read a `[u16 len][len bytes]` item at `at`; returns the bytes and the
+/// position just past them.
+fn rd_len_prefixed(b: &[u8], at: usize) -> Result<(&[u8], usize), FrxError> {
+    let len = rd_u16(b, at)? as usize;
+    let start = at + 2;
+    let end = start + len;
+    let bytes = b
+        .get(start..end)
+        .ok_or(FrxError::Truncated { needed: end, have: b.len() })?;
+    Ok((bytes, end))
+}
+
 fn rd_u32(b: &[u8], at: usize) -> Result<u32, FrxError> {
     b.get(at..at + 4)
         .map(|s| u32::from_le_bytes([s[0], s[1], s[2], s[3]]))
@@ -406,12 +419,7 @@ fn count_sig_items<'a>(
     let mut pos = offset + 4;
     let mut items = Vec::with_capacity(count);
     for _ in 0..count {
-        let len = rd_u16(buf, pos)? as usize;
-        pos += 2;
-        let end = pos + len;
-        let bytes = buf
-            .get(pos..end)
-            .ok_or(FrxError::Truncated { needed: end, have: buf.len() })?;
+        let (bytes, end) = rd_len_prefixed(buf, pos)?;
         items.push(bytes);
         pos = end;
     }
@@ -450,12 +458,7 @@ fn property_pages_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), F
     let mut pos = offset + 4;
     let mut pages = Vec::with_capacity(count);
     for _ in 0..count {
-        let len = rd_u16(buf, pos)? as usize;
-        pos += 2;
-        let end = pos + len;
-        let bytes = buf
-            .get(pos..end)
-            .ok_or(FrxError::Truncated { needed: end, have: buf.len() })?;
+        let (bytes, end) = rd_len_prefixed(buf, pos)?;
         // length includes the trailing NUL
         let trimmed = bytes.split(|&c| c == 0).next().unwrap_or(bytes);
         pages.push(decode_ansi(trimmed));
@@ -574,28 +577,26 @@ fn encode_text(out: &mut Vec<u8>, s: &str, kind: PropKind) {
 
 #[allow(dead_code)]
 fn encode_list(out: &mut Vec<u8>, items: &[String], sig: u16) {
-    out.extend_from_slice(&(items.len() as u16).to_le_bytes());
-    if items.is_empty() {
-        return;
-    }
-    out.extend_from_slice(&sig.to_le_bytes());
-    for it in items {
-        let b = encode_ansi(it);
-        out.extend_from_slice(&(b.len() as u16).to_le_bytes());
-        out.extend_from_slice(&b);
-    }
+    let encoded: Vec<Vec<u8>> = items.iter().map(|it| encode_ansi(it)).collect();
+    encode_counted_items(out, &encoded, sig);
 }
 
 #[allow(dead_code)]
 fn encode_item_data(out: &mut Vec<u8>, items: &[Vec<u8>], sig: u16) {
+    encode_counted_items(out, items, sig);
+}
+
+/// `[u16 count]`, then (when non-empty) `[u16 sig]` and each item as `[u16 len][bytes]`.
+fn encode_counted_items<T: AsRef<[u8]>>(out: &mut Vec<u8>, items: &[T], sig: u16) {
     out.extend_from_slice(&(items.len() as u16).to_le_bytes());
     if items.is_empty() {
         return;
     }
     out.extend_from_slice(&sig.to_le_bytes());
     for it in items {
-        out.extend_from_slice(&(it.len() as u16).to_le_bytes());
-        out.extend_from_slice(it);
+        let b = it.as_ref();
+        out.extend_from_slice(&(b.len() as u16).to_le_bytes());
+        out.extend_from_slice(b);
     }
 }
 

@@ -10,14 +10,16 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[cfg(windows)]
 mod com_decoder;
-mod controls;
-mod engine_glue;
-mod lsp;
-mod utils;
-mod workspace;
 
-use lsp::Vb6LanguageServer;
-use workspace::{read_res_file, write_res_file, parse_string_table, ResourceEntry, ResourceId, ResourceType};
+use vb6_lsp::controls;
+use vb6_lsp::lsp::Vb6LanguageServer;
+use vb6_lsp::workspace::res_json::{
+    find_string_table_block, parse_resource_type_name, resource_entry_to_json,
+    string_entries_to_json, ResourceTypeNameError,
+};
+use vb6_lsp::workspace::{
+    parse_string_table, read_res_file, write_res_file, ResourceEntry, ResourceId, ResourceType,
+};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -133,24 +135,8 @@ fn cmd_read_res(args: &[String]) -> anyhow::Result<()> {
     let resources = read_res_file(file_path)?;
 
     // Convert to JSON-friendly format
-    let json_resources: Vec<serde_json::Value> = resources.iter().map(|r| {
-        serde_json::json!({
-            "resource_type": format!("{:?}", r.resource_type),
-            "name": match &r.name {
-                ResourceId::Id(id) => serde_json::json!({
-                    "type": "Id",
-                    "value": id
-                }),
-                ResourceId::Name(name) => serde_json::json!({
-                    "type": "Name",
-                    "value": name
-                })
-            },
-            "language_id": r.language_id,
-            "data_size": r.data.len(),
-            "data_base64": base64::engine::general_purpose::STANDARD.encode(&r.data)
-        })
-    }).collect();
+    let json_resources: Vec<serde_json::Value> =
+        resources.iter().map(resource_entry_to_json).collect();
 
     println!("{}", serde_json::json!({
         "resources": json_resources
@@ -363,22 +349,13 @@ fn cmd_parse_string_table(args: &[String]) -> anyhow::Result<()> {
     let resources = read_res_file(file_path)?;
 
     // Find the string table resource
-    let string_resource = resources.iter()
-        .find(|r| {
-            r.resource_type == ResourceType::String &&
-            matches!(r.name, ResourceId::Id(id) if id == block_id)
-        })
+    let string_resource = find_string_table_block(&resources, block_id)
         .ok_or_else(|| anyhow::anyhow!("String table block {} not found", block_id))?;
 
     // Parse the string table
     let strings = parse_string_table(&string_resource.data, block_id)?;
 
-    let json_strings: Vec<serde_json::Value> = strings.iter().map(|s| {
-        serde_json::json!({
-            "id": s.id,
-            "value": s.value
-        })
-    }).collect();
+    let json_strings = string_entries_to_json(&strings);
 
     println!("{}", serde_json::json!({
         "strings": json_strings
@@ -389,39 +366,8 @@ fn cmd_parse_string_table(args: &[String]) -> anyhow::Result<()> {
 
 /// Parse a resource type string (e.g., "Bitmap", "Icon", "Named(\"CUSTOM\")")
 fn parse_resource_type(s: &str) -> anyhow::Result<ResourceType> {
-    Ok(match s {
-        "Cursor" => ResourceType::Cursor,
-        "Bitmap" => ResourceType::Bitmap,
-        "Icon" => ResourceType::Icon,
-        "Menu" => ResourceType::Menu,
-        "Dialog" => ResourceType::Dialog,
-        "String" => ResourceType::String,
-        "FontDir" => ResourceType::FontDir,
-        "Font" => ResourceType::Font,
-        "Accelerator" => ResourceType::Accelerator,
-        "RcData" => ResourceType::RcData,
-        "MessageTable" => ResourceType::MessageTable,
-        "GroupCursor" => ResourceType::GroupCursor,
-        "GroupIcon" => ResourceType::GroupIcon,
-        "Version" => ResourceType::Version,
-        "DlgInclude" => ResourceType::DlgInclude,
-        "PlugPlay" => ResourceType::PlugPlay,
-        "Vxd" => ResourceType::Vxd,
-        "AniCursor" => ResourceType::AniCursor,
-        "AniIcon" => ResourceType::AniIcon,
-        "Html" => ResourceType::Html,
-        "Manifest" => ResourceType::Manifest,
-        "Toolbar" => ResourceType::Toolbar,
-        "DlgInit" => ResourceType::DlgInit,
-        s if s.starts_with("Custom(") => {
-            let id_str = s.trim_start_matches("Custom(").trim_end_matches(")");
-            let id: u16 = id_str.parse()?;
-            ResourceType::Custom(id)
-        }
-        s if s.starts_with("Named(") => {
-            let name = s.trim_start_matches("Named(\"").trim_end_matches("\")");
-            ResourceType::Named(name.to_string())
-        }
-        _ => anyhow::bail!("Unknown resource type: {}", s)
+    parse_resource_type_name(s).map_err(|e| match e {
+        ResourceTypeNameError::InvalidCustomId(parse_err) => anyhow::Error::from(parse_err),
+        ResourceTypeNameError::Unknown => anyhow::anyhow!("Unknown resource type: {}", s),
     })
 }

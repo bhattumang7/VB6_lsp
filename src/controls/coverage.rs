@@ -123,7 +123,8 @@ pub fn coverage_for_form(frm_path: &Path) -> std::io::Result<Vec<CoverageReport>
     Ok(reports)
 }
 
-fn build_report(file: String, bytes: &[u8], refs: &[ResourceRef]) -> CoverageReport {
+/// Decode every reference into a byte span; undecodable references become errors.
+fn decode_spans(bytes: &[u8], refs: &[ResourceRef]) -> (Vec<ByteSpan>, Vec<(String, String)>) {
     let total_len = bytes.len();
     let mut spans: Vec<ByteSpan> = Vec::new();
     let mut errors: Vec<(String, String)> = Vec::new();
@@ -143,37 +144,42 @@ fn build_report(file: String, bytes: &[u8], refs: &[ResourceRef]) -> CoverageRep
             Err(e) => errors.push((format!("{}@0x{:X}", r.property, offset), e.to_string())),
         }
     }
+    (spans, errors)
+}
 
-    spans.sort_by_key(|s| s.start);
-
-    // Opaque bags have an unprovable length. Blobs are packed sequentially,
-    // so clamp an opaque span to the next blob's start (or EOF) — it then neither
-    // over-claims bytes nor produces a false overlap with the following reference.
+/// Opaque bags have an unprovable length. Blobs are packed sequentially,
+/// so clamp an opaque span to the next blob's start (or EOF) — it then neither
+/// over-claims bytes nor produces a false overlap with the following reference.
+fn clamp_opaque_spans(spans: &mut [ByteSpan], total_len: usize) {
     for i in 0..spans.len() {
-        if spans[i].opaque {
-            let next_start = spans.get(i + 1).map(|s| s.start).unwrap_or(total_len);
-            if next_start > spans[i].start && next_start < spans[i].end {
-                spans[i].end = next_start;
-            }
-            if spans[i].end > total_len {
-                spans[i].end = total_len;
-            }
+        if !spans[i].opaque {
+            continue;
+        }
+        let next_start = spans.get(i + 1).map(|s| s.start).unwrap_or(total_len);
+        if next_start > spans[i].start && next_start < spans[i].end {
+            spans[i].end = next_start;
+        }
+        if spans[i].end > total_len {
+            spans[i].end = total_len;
         }
     }
+}
 
-    // Overlaps: adjacent spans where the later starts before the earlier ends.
-    let mut overlaps = Vec::new();
-    for i in 1..spans.len() {
-        if spans[i].start < spans[i - 1].end {
-            overlaps.push((i - 1, i));
-        }
-    }
+/// Overlaps: adjacent spans where the later starts before the earlier ends.
+fn find_overlaps(spans: &[ByteSpan]) -> Vec<(usize, usize)> {
+    (1..spans.len())
+        .filter(|&i| spans[i].start < spans[i - 1].end)
+        .map(|i| (i - 1, i))
+        .collect()
+}
 
-    // Sweep for covered union length + unattributed gaps.
+/// Sweep for covered union length + unattributed gaps.
+fn sweep_coverage(bytes: &[u8], spans: &[ByteSpan]) -> (usize, Vec<Gap>) {
+    let total_len = bytes.len();
     let mut covered = 0usize;
     let mut gaps = Vec::new();
     let mut cursor = 0usize;
-    for s in &spans {
+    for s in spans {
         if s.start > cursor {
             classify_gap(bytes, cursor, s.start, &mut gaps);
             cursor = s.start;
@@ -186,6 +192,17 @@ fn build_report(file: String, bytes: &[u8], refs: &[ResourceRef]) -> CoverageRep
     if cursor < total_len {
         classify_gap(bytes, cursor, total_len, &mut gaps);
     }
+    (covered, gaps)
+}
+
+fn build_report(file: String, bytes: &[u8], refs: &[ResourceRef]) -> CoverageReport {
+    let total_len = bytes.len();
+    let (mut spans, errors) = decode_spans(bytes, refs);
+
+    spans.sort_by_key(|s| s.start);
+    clamp_opaque_spans(&mut spans, total_len);
+    let overlaps = find_overlaps(&spans);
+    let (covered, gaps) = sweep_coverage(bytes, &spans);
 
     let opaque_spans = spans.iter().filter(|s| s.opaque).count();
 

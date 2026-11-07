@@ -4,6 +4,7 @@
 
 mod project;
 mod res_parser;
+pub mod res_json;
 mod vbp_parser;
 
 use vbp_parser::TypeLibReference;

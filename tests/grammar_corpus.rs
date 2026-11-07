@@ -21,11 +21,48 @@ struct CorpusEntry {
     source: String,
 }
 
+/// A separator is a line consisting entirely of `=` signs (at least 10 of them).
+fn is_separator(line: &str) -> bool {
+    let t = line.trim();
+    t.len() >= 10 && t.chars().all(|c| c == '=')
+}
+
+/// Index of the first separator line at or after `from`, if any.
+fn find_separator(lines: &[&str], from: usize) -> Option<usize> {
+    (from..lines.len()).find(|&i| is_separator(lines[i]))
+}
+
+/// Join the non-empty trimmed lines of a name block into one name.
+fn entry_name(name_lines: &[&str]) -> String {
+    name_lines
+        .iter()
+        .map(|l| l.trim())
+        .filter(|l| !l.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// A body ends at `---` (alone on a line) or the next opening separator.
+fn find_body_end(lines: &[&str], body_start: usize) -> usize {
+    (body_start..lines.len())
+        .find(|&i| lines[i].trim() == "---" || is_separator(lines[i]))
+        .unwrap_or(lines.len())
+}
+
+/// Skip past the `---` separator and the expected-tree body so we land on the
+/// next preamble / separator.
+fn skip_expected_tree(lines: &[&str], body_end: usize) -> usize {
+    if body_end < lines.len() && lines[body_end].trim() == "---" {
+        find_separator(lines, body_end + 1).unwrap_or(lines.len())
+    } else {
+        body_end
+    }
+}
+
 /// Parse one corpus `.txt` file into a list of (name, VB6 source) pairs.
 fn parse_corpus(text: &str) -> Vec<CorpusEntry> {
     let mut entries = Vec::new();
 
-    // Split on lines that consist entirely of `=` signs (≥ 10 of them).
     // The format is:  ...preamble...
     //   ==================
     //   Test Name
@@ -34,68 +71,28 @@ fn parse_corpus(text: &str) -> Vec<CorpusEntry> {
     //   ---
     //   (expected tree)
     //   [next preamble / separator / entry]
-    let sep_re = |line: &str| -> bool {
-        let t = line.trim();
-        t.len() >= 10 && t.chars().all(|c| c == '=')
-    };
-
     let lines: Vec<&str> = text.lines().collect();
     let mut i = 0;
     while i < lines.len() {
-        if sep_re(lines[i]) {
-            // Next non-empty line(s) are the test name, until the closing separator.
-            let name_start = i + 1;
-            let mut close = name_start;
-            while close < lines.len() && !sep_re(lines[close]) {
-                close += 1;
-            }
-            if close >= lines.len() {
-                break;
-            }
-            let name = lines[name_start..close]
-                .iter()
-                .map(|l| l.trim())
-                .filter(|l| !l.is_empty())
-                .collect::<Vec<_>>()
-                .join(" ");
+        let Some(open) = find_separator(&lines, i) else {
+            break;
+        };
+        // Name lines run until the closing separator.
+        let name_start = open + 1;
+        let Some(close) = find_separator(&lines, name_start) else {
+            break;
+        };
+        let name = entry_name(&lines[name_start..close]);
 
-            // Body starts after the closing separator, ends at `---` (alone on a line)
-            // or the next opening separator.
-            let body_start = close + 1;
-            let mut body_end = body_start;
-            while body_end < lines.len() {
-                let t = lines[body_end].trim();
-                if t == "---" || sep_re(lines[body_end]) {
-                    break;
-                }
-                body_end += 1;
-            }
+        let body_start = close + 1;
+        let body_end = find_body_end(&lines, body_start);
+        let source = lines[body_start..body_end].join("
+").trim().to_string();
 
-            let source = lines[body_start..body_end]
-                .iter()
-                .map(|l| *l)
-                .collect::<Vec<_>>()
-                .join("\n")
-                .trim()
-                .to_string();
-
-            if !name.is_empty() && !source.is_empty() {
-                entries.push(CorpusEntry { name, source });
-            }
-
-            // Skip past the `---` separator and the expected-tree body so we
-            // land on the next preamble / separator.
-            i = body_end;
-            if i < lines.len() && lines[i].trim() == "---" {
-                i += 1;
-                // Skip the expected-tree block until a separator or EOF
-                while i < lines.len() && !sep_re(lines[i]) {
-                    i += 1;
-                }
-            }
-        } else {
-            i += 1;
+        if !name.is_empty() && !source.is_empty() {
+            entries.push(CorpusEntry { name, source });
         }
+        i = skip_expected_tree(&lines, body_end);
     }
 
     entries

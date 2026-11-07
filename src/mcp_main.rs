@@ -10,6 +10,10 @@ use rmcp::transport::stdio;
 use serde::Deserialize;
 use serde_json::json;
 use vb6_engine::session::{Session, Position as EngPos};
+use vb6_lsp::workspace::res_json::{
+    find_string_table_block, parse_resource_type_name, resource_entry_to_json,
+    string_entries_to_json, ResourceTypeNameError,
+};
 use vb6_lsp::workspace::{
     parse_string_table, read_res_file, write_res_file, ResourceEntry, ResourceId, ResourceType,
 };
@@ -83,43 +87,9 @@ fn pos_to_offset(session: &Session, m: usize, line: u32, column: u32) -> Option<
 }
 
 fn parse_res_type(s: &str) -> Result<ResourceType, String> {
-    Ok(match s {
-        "Cursor" => ResourceType::Cursor,
-        "Bitmap" => ResourceType::Bitmap,
-        "Icon" => ResourceType::Icon,
-        "Menu" => ResourceType::Menu,
-        "Dialog" => ResourceType::Dialog,
-        "String" => ResourceType::String,
-        "FontDir" => ResourceType::FontDir,
-        "Font" => ResourceType::Font,
-        "Accelerator" => ResourceType::Accelerator,
-        "RcData" => ResourceType::RcData,
-        "MessageTable" => ResourceType::MessageTable,
-        "GroupCursor" => ResourceType::GroupCursor,
-        "GroupIcon" => ResourceType::GroupIcon,
-        "Version" => ResourceType::Version,
-        "DlgInclude" => ResourceType::DlgInclude,
-        "PlugPlay" => ResourceType::PlugPlay,
-        "Vxd" => ResourceType::Vxd,
-        "AniCursor" => ResourceType::AniCursor,
-        "AniIcon" => ResourceType::AniIcon,
-        "Html" => ResourceType::Html,
-        "Manifest" => ResourceType::Manifest,
-        "Toolbar" => ResourceType::Toolbar,
-        "DlgInit" => ResourceType::DlgInit,
-        s if s.starts_with("Custom(") => {
-            let id: u16 = s
-                .trim_start_matches("Custom(")
-                .trim_end_matches(')')
-                .parse()
-                .map_err(|_| format!("Invalid Custom id: {}", s))?;
-            ResourceType::Custom(id)
-        }
-        s if s.starts_with("Named(") => {
-            let name = s.trim_start_matches("Named(\"").trim_end_matches("\")");
-            ResourceType::Named(name.to_string())
-        }
-        _ => return Err(format!("Unknown resource type: {}", s)),
+    parse_resource_type_name(s).map_err(|e| match e {
+        ResourceTypeNameError::InvalidCustomId(_) => format!("Invalid Custom id: {}", s),
+        ResourceTypeNameError::Unknown => format!("Unknown resource type: {}", s),
     })
 }
 
@@ -258,22 +228,7 @@ impl Vb6McpServer {
         match read_res_file(&p.file_path) {
             Err(e) => json!({"error": e.to_string()}).to_string(),
             Ok(resources) => {
-                let result: Vec<_> = resources
-                    .iter()
-                    .map(|r| {
-                        let name = match &r.name {
-                            ResourceId::Id(id) => json!({"type": "Id", "value": id}),
-                            ResourceId::Name(n) => json!({"type": "Name", "value": n}),
-                        };
-                        json!({
-                            "resource_type": format!("{:?}", r.resource_type),
-                            "name": name,
-                            "language_id": r.language_id,
-                            "data_size": r.data.len(),
-                            "data_base64": base64::engine::general_purpose::STANDARD.encode(&r.data),
-                        })
-                    })
-                    .collect();
+                let result: Vec<_> = resources.iter().map(resource_entry_to_json).collect();
                 serde_json::to_string_pretty(&json!({"resources": result})).unwrap_or_default()
             }
         }
@@ -328,20 +283,14 @@ impl Vb6McpServer {
             Ok(r) => r,
         };
         let block_id = p.block_id;
-        let res = resources.iter().find(|r| {
-            r.resource_type == ResourceType::String
-                && matches!(r.name, ResourceId::Id(id) if id == block_id)
-        });
+        let res = find_string_table_block(&resources, block_id);
         let Some(string_resource) = res else {
             return json!({"error": format!("string table block {} not found", block_id)}).to_string();
         };
         match parse_string_table(&string_resource.data, block_id) {
             Err(e) => json!({"error": e.to_string()}).to_string(),
             Ok(strings) => {
-                let result: Vec<_> = strings
-                    .iter()
-                    .map(|s| json!({"id": s.id, "value": s.value}))
-                    .collect();
+                let result = string_entries_to_json(&strings);
                 serde_json::to_string_pretty(&json!({"strings": result})).unwrap_or_default()
             }
         }
