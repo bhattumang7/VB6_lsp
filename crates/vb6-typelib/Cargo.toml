@@ -1,0 +1,16 @@
+[package]
+name = "vb6-typelib"
+version = "0.1.0"
+edition = "2021"
+description = "Reading the type libraries a VB6 project references, described as vb6-engine libraries"
+license = "MIT"
+authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
+
+[dependencies]
+vb6-engine = { path = "../vb6-engine" }
+encoding_rs = "0.8"
+msft-typelib = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Variant", "Win32_System_Registry"] }
+windows-registry = "0.6"

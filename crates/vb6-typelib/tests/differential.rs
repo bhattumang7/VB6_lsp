@@ -4,10 +4,10 @@
 
 use std::path::{Path, PathBuf};
 use vb6_engine::session::Library;
-use vb6_lsp::typelib::files::read_from_files_searching;
-use vb6_lsp::typelib::msft::exported_types;
-use vb6_lsp::typelib::pe::type_library_bytes;
-use vb6_lsp::typelib::{load_library, TypeLibraryRequest};
+use vb6_typelib::files::read_from_files_searching;
+use vb6_typelib::msft::exported_types;
+use vb6_typelib::pe::type_library_bytes;
+use vb6_typelib::{load_library, TypeLibraryRequest};
 
 const SYSTEM_DIRECTORIES: [&str; 3] =
     [r"C:\Windows\System32", r"C:\Windows\SysWOW64", r"C:\Program Files (x86)\Common Files\System\ado"];
@@ -128,10 +128,10 @@ fn the_built_in_description_of_the_automation_library_matches_the_installed_one(
             .map(|(index, guid, t)| (*index, guid.clone(), t.library.clone(), t.name.clone(), t.object))
             .collect();
         for (index, guid, library, name, object) in built_in {
-            let by_index = vb6_lsp::typelib::stdole_type(None, Some(index)).unwrap();
+            let by_index = vb6_typelib::stdole_type(None, Some(index)).unwrap();
             assert_eq!((by_index.library.as_str(), by_index.name.as_str(), by_index.object), (library.as_str(), name.as_str(), object), "index {index}");
             if let Some(guid) = guid {
-                let by_guid = vb6_lsp::typelib::stdole_type(Some(&guid), None).unwrap();
+                let by_guid = vb6_typelib::stdole_type(Some(&guid), None).unwrap();
                 assert_eq!(by_guid, by_index, "guid {guid}");
             }
         }

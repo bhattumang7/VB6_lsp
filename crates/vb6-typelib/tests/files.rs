@@ -2,8 +2,8 @@
 
 use std::path::PathBuf;
 use vb6_engine::session::{LibraryMember, LibraryMemberKind, LibraryParam, LibraryType, LibraryTypeKind};
-use vb6_lsp::typelib::files::{find_existing, read_from_files, with_native_separators};
-use vb6_lsp::typelib::{TypeLibraryError, TypeLibraryRequest};
+use vb6_typelib::files::{find_existing, read_from_files, with_native_separators};
+use vb6_typelib::{TypeLibraryError, TypeLibraryRequest};
 
 fn temp_dir(name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!("vb6lsp-files-{name}-{}", std::process::id()));
@@ -236,8 +236,8 @@ mod windows_only {
     fn a_resource_index_after_the_file_name_selects_the_library_of_a_dll() {
         let ado = PathBuf::from(r"C:\Program Files (x86)\Common Files\System\ado\msado15.dll");
         let bytes = std::fs::read(&ado).unwrap();
-        let image = vb6_lsp::typelib::pe::type_library_bytes(&bytes, None).unwrap();
-        let guid = format!("{{{}}}", vb6_lsp::typelib::msft::library_guid(image).unwrap());
+        let image = vb6_typelib::pe::type_library_bytes(&bytes, None).unwrap();
+        let guid = format!("{{{}}}", vb6_typelib::msft::library_guid(image).unwrap());
         let guid = guid.as_str();
 
         let plain = read_from_files(&request(guid, ado.clone())).unwrap().0;

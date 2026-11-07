@@ -1,7 +1,7 @@
 //! Choosing a registered type library and reading the path the registry gives for it.
 
 use std::path::PathBuf;
-use vb6_lsp::typelib::locate::*;
+use vb6_typelib::locate::*;
 
 fn v(major: u16, minor: u16) -> RegisteredVersion {
     RegisteredVersion { major, minor }

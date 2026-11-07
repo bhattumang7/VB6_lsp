@@ -1,6 +1,6 @@
 //! Finding the type library inside a file, on synthetic executable images.
 
-use vb6_lsp::typelib::pe::{type_library_bytes, LocateError};
+use vb6_typelib::pe::{type_library_bytes, LocateError};
 
 const SECTION_RVA: u32 = 0x1000;
 const SECTION_RAW: u32 = 0x400;

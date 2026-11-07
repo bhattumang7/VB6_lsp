@@ -1,6 +1,6 @@
 //! How automation types are spelled for the engine.
 
-use vb6_lsp::typelib::names::*;
+use vb6_typelib::names::*;
 
 #[test]
 fn plain_types_have_their_vb6_spelling() {

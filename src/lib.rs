@@ -9,6 +9,5 @@ pub mod controls;
 pub mod engine_glue;
 pub mod lsp;
 pub mod project;
-pub mod typelib;
 pub mod utils;
 pub mod workspace;

@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use serde::Serialize;
-use crate::typelib::{load_library_noted, TypeLibraryRequest};
+use vb6_typelib::{load_library_noted, TypeLibraryRequest};
 use vb6_engine::session::{Library, ProjectKind, Session, SessionConfig};
 
 use super::paths::{engine_key_for_path, lookup_key, normalize};

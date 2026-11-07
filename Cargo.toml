@@ -5,6 +5,7 @@ members = [
     "crates/vb6-engine",
     "crates/vb6-core",
     "crates/vb6-codegen",
+    "crates/vb6-typelib",
     "tools/oracle-diff",
 ]
 # Default set = the LSP plus its analysis-engine dependency chain, all of which
@@ -19,6 +20,7 @@ default-members = [
     "crates/vb6-sema",
     "crates/vb6-engine",
     "crates/vb6-codegen",
+    "crates/vb6-typelib",
 ]
 resolver = "2"
 
@@ -55,6 +57,7 @@ anyhow = "1"
 
 # VB6 analysis engine (lexer/parser/binder + Session API)
 vb6-engine = { path = "crates/vb6-engine" }
+vb6-typelib = { path = "crates/vb6-typelib" }
 
 # MCP server
 rmcp = { version = "1", features = ["server", "transport-io"] }
@@ -62,16 +65,9 @@ rmcp = { version = "1", features = ["server", "transport-io"] }
 # Utilities
 ropey = "1"  # Efficient text rope for document handling
 walkdir = "2"  # Directory traversal for VBP discovery
-uuid = "1"  # UUID parsing and validation for type library references
 encoding_rs = "0.8"  # Character encoding detection and conversion (Windows-1252 support)
 byteorder = "1"  # Binary reading/writing for resource files
 base64 = "0.22"  # Base64 encoding for JSON resource data
-msft-typelib = "0.2"  # Reading the MSFT type-library format (.tlb, and the TYPELIB resource of DLL/OCX files)
-
-[target.'cfg(windows)'.dependencies]
-# COM type-library access (ITypeLib/ITypeInfo) for the libraries a project references
-windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Variant", "Win32_System_Registry"] }
-windows-registry = "0.6"  # locating a registered type library by its GUID
 
 [dev-dependencies]
 tokio-test = "0.4"

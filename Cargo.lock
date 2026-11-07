@@ -1247,16 +1247,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6c140620e7ffbb22c2dee59cafe6084a59b5ffc27a8859a5f0d494b5d52b6be"
 
 [[package]]
-name = "uuid"
-version = "1.23.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d258b83ceec21034727ecee8c382cfa6c3e133699b0742c64571814fb420c9f7"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "valuable"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1307,7 +1297,6 @@ dependencies = [
  "byteorder",
  "dashmap 6.2.1",
  "encoding_rs",
- "msft-typelib",
  "pretty_assertions",
  "rmcp",
  "ropey",
@@ -1318,11 +1307,9 @@ dependencies = [
  "tower-lsp",
  "tracing",
  "tracing-subscriber",
- "uuid",
  "vb6-engine",
+ "vb6-typelib",
  "walkdir",
- "windows",
- "windows-registry",
 ]
 
 [[package]]
@@ -1337,6 +1324,17 @@ name = "vb6-syntax"
 version = "0.1.0"
 dependencies = [
  "vb6-ast-derive",
+]
+
+[[package]]
+name = "vb6-typelib"
+version = "0.1.0"
+dependencies = [
+ "encoding_rs",
+ "msft-typelib",
+ "vb6-engine",
+ "windows",
+ "windows-registry",
 ]
 
 [[package]]

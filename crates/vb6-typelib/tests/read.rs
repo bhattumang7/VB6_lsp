@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 use vb6_engine::session::{LibraryMember, LibraryMemberKind, LibraryParam, LibraryType, LibraryTypeKind};
-use vb6_lsp::typelib::{load_library, TypeLibraryError, TypeLibraryRequest};
+use vb6_typelib::{load_library, TypeLibraryError, TypeLibraryRequest};
 
 const OLE_AUTOMATION: &str = "{00020430-0000-0000-C000-000000000046}";
 const ADODB_27: &str = "{EF53050B-882E-4776-B643-EDA472E8E3F2}";
