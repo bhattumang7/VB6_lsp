@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vb6_lsp::workspace::{GroupProject, VbgFile, VbgParseError};
+use vb6_formats::vbg::{GroupProject, VbgFile, VbgParseError};
 
 fn group_path() -> PathBuf {
     std::env::temp_dir().join("groups").join("All.vbg")

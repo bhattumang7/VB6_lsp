@@ -119,6 +119,14 @@ fn fixture(filename: &str) -> String {
     p.to_string_lossy().into_owned()
 }
 
+/// A fixture owned by the formats crate (the compiled resource files).
+fn formats_fixture(filename: &str) -> String {
+    let mut p = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    p.push("crates/vb6-formats/tests/fixtures");
+    p.push(filename);
+    p.to_string_lossy().into_owned()
+}
+
 // Source shared across several tests.
 const DEMO: &str = "Option Explicit\n\
                     \n\
@@ -227,7 +235,7 @@ async fn get_diagnostics_flags_undeclared_variable() {
 
 #[tokio::test]
 async fn read_res_file_parses_game2048_fixture() {
-    let path = fixture("Game2048.RES");
+    let path = formats_fixture("Game2048.RES");
     let mut h = McpHarness::start().await;
     let result = h.call_tool("vb6_read_res_file", json!({"file_path": path})).await;
     let resources = result["resources"].as_array().expect("expected resources array");
@@ -331,7 +339,7 @@ async fn get_string_table_returns_strings_from_written_res() {
 
 #[tokio::test]
 async fn get_string_table_returns_error_for_missing_block() {
-    let path = fixture("Game2048.RES");
+    let path = formats_fixture("Game2048.RES");
     let mut h = McpHarness::start().await;
     let result = h
         .call_tool("vb6_get_string_table", json!({"file_path": path, "block_id": 9999}))

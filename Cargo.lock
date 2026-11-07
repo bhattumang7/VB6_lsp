@@ -806,15 +806,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
-name = "same-file"
-version = "1.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
-dependencies = [
- "winapi-util",
-]
-
-[[package]]
 name = "schemars"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1284,7 +1275,21 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "vb6-formats",
  "vb6-sema",
+ "vb6-syntax",
+]
+
+[[package]]
+name = "vb6-formats"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "byteorder",
+ "encoding_rs",
+ "serde",
+ "serde_json",
+ "tracing",
  "vb6-syntax",
 ]
 
@@ -1308,8 +1313,8 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "vb6-engine",
+ "vb6-formats",
  "vb6-typelib",
- "walkdir",
 ]
 
 [[package]]
@@ -1335,16 +1340,6 @@ dependencies = [
  "vb6-engine",
  "windows",
  "windows-registry",
-]
-
-[[package]]
-name = "walkdir"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b"
-dependencies = [
- "same-file",
- "winapi-util",
 ]
 
 [[package]]
@@ -1396,15 +1391,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a929b2c61f11ba3e9bc35b50c1f25cb38e0e892c0c231ae2b8cf78d5dad4437"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "winapi-util"
-version = "0.1.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
-dependencies = [
- "windows-sys",
 ]
 
 [[package]]

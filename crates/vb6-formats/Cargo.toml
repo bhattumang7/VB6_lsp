@@ -1,0 +1,16 @@
+[package]
+name = "vb6-formats"
+version = "0.1.0"
+edition = "2021"
+description = "Readers and writers for the VB6 file formats: .vbp/.vbg projects, .frm/.ctl designer files, .frx/.ctx companions, .res resources"
+license = "MIT"
+authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
+
+[dependencies]
+vb6-syntax = { path = "../vb6-syntax" }
+base64 = "0.22"
+byteorder = "1"
+encoding_rs = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"

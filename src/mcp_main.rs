@@ -10,11 +10,11 @@ use rmcp::transport::stdio;
 use serde::Deserialize;
 use serde_json::json;
 use vb6_engine::session::{Session, Position as EngPos};
-use vb6_lsp::workspace::res_json::{
+use vb6_formats::res_json::{
     find_string_table_block, parse_resource_type_name, resource_entry_to_json,
     string_entries_to_json, ResourceTypeNameError,
 };
-use vb6_lsp::workspace::{
+use vb6_formats::res::{
     parse_string_table, read_res_file, write_res_file, ResourceEntry, ResourceId, ResourceType,
 };
 
@@ -236,7 +236,7 @@ impl Vb6McpServer {
 
     #[tool(description = "Read a VB6 form file (.frm, .ctl, .pag, .dob) and return its complete design as JSON including the control tree, all properties, and companion resources")]
     fn vb6_read_form(&self, Parameters(p): Parameters<FileParams>) -> String {
-        use vb6_lsp::controls::export::build_form_export;
+        use vb6_formats::controls::export::build_form_export;
         let path = std::path::Path::new(&p.file_path);
         match build_form_export(path) {
             Err(e) => json!({"error": e.to_string()}).to_string(),

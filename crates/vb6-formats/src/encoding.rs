@@ -61,7 +61,7 @@ impl VB6FileReader {
     ///
     /// ```no_run
     /// use std::path::Path;
-    /// use vb6_lsp::utils::VB6FileReader;
+    /// use vb6_formats::encoding::VB6FileReader;
     ///
     /// let content = VB6FileReader::read_file(Path::new("Module1.bas")).unwrap();
     /// println!("Read {} with encoding: {}", content.text.len(), content.encoding.name());

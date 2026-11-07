@@ -1,6 +1,6 @@
 //! Live COM decoder (Windows only).
 //!
-//! Implements [`vb6_lsp::controls::resources::ComDecoder`] by hosting the control
+//! Implements [`vb6_formats::controls::resources::ComDecoder`] by hosting the control
 //! out-of-process in 32-bit PowerShell + COM (`scripts/com_bag_decode.ps1` +
 //! `scripts/ComBag.cs`). The control is created license-aware; when it exists but
 //! its license is absent the bridge reports `NOTLICENSED` and we return a HARD
@@ -14,8 +14,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 
-use vb6_lsp::controls::frx::FrxValue;
-use vb6_lsp::controls::resources::{BagControl, ComDecoder, ResolveError};
+use vb6_formats::controls::frx::FrxValue;
+use vb6_formats::controls::resources::{BagControl, ComDecoder, ResolveError};
 
 /// Decodes OCX bags by driving the control via 32-bit PowerShell + COM.
 pub struct ScriptedComDecoder {

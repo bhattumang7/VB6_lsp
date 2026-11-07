@@ -11,13 +11,13 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 #[cfg(windows)]
 mod com_decoder;
 
-use vb6_lsp::controls;
+use vb6_formats::controls;
 use vb6_lsp::lsp::Vb6LanguageServer;
-use vb6_lsp::workspace::res_json::{
+use vb6_formats::res_json::{
     find_string_table_block, parse_resource_type_name, resource_entry_to_json,
     string_entries_to_json, ResourceTypeNameError,
 };
-use vb6_lsp::workspace::{
+use vb6_formats::res::{
     parse_string_table, read_res_file, write_res_file, ResourceEntry, ResourceId, ResourceType,
 };
 

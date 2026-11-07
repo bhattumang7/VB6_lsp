@@ -139,7 +139,7 @@ struct Parser<'src> {
 impl<'src> Parser<'src> {
     fn new(src: &'src str) -> Self {
         // A line ends at a line feed, a carriage return, or both together.
-        let lines: Vec<(usize, &'src str)> = crate::frontend::line_reader::physical_lines(src.as_bytes())
+        let lines: Vec<(usize, &'src str)> = vb6_syntax::frontend::line_reader::physical_lines(src.as_bytes())
             .enumerate()
             .map(|(i, l)| (i + 1, &src[l.start..l.end]))
             .collect();

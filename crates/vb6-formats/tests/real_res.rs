@@ -1,4 +1,4 @@
-use vb6_lsp::workspace::*;
+use vb6_formats::res::*;
 use std::path::PathBuf;
 
 /// Get the path to a test fixture file

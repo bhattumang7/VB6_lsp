@@ -6,6 +6,7 @@ members = [
     "crates/vb6-core",
     "crates/vb6-codegen",
     "crates/vb6-typelib",
+    "crates/vb6-formats",
     "tools/oracle-diff",
 ]
 # Default set = the LSP plus its analysis-engine dependency chain, all of which
@@ -21,6 +22,7 @@ default-members = [
     "crates/vb6-engine",
     "crates/vb6-codegen",
     "crates/vb6-typelib",
+    "crates/vb6-formats",
 ]
 resolver = "2"
 
@@ -58,13 +60,13 @@ anyhow = "1"
 # VB6 analysis engine (lexer/parser/binder + Session API)
 vb6-engine = { path = "crates/vb6-engine" }
 vb6-typelib = { path = "crates/vb6-typelib" }
+vb6-formats = { path = "crates/vb6-formats" }
 
 # MCP server
 rmcp = { version = "1", features = ["server", "transport-io"] }
 
 # Utilities
 ropey = "1"  # Efficient text rope for document handling
-walkdir = "2"  # Directory traversal for VBP discovery
 encoding_rs = "0.8"  # Character encoding detection and conversion (Windows-1252 support)
 byteorder = "1"  # Binary reading/writing for resource files
 base64 = "0.22"  # Base64 encoding for JSON resource data

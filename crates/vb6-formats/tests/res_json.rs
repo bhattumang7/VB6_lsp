@@ -1,11 +1,11 @@
 //! Shared resource JSON / name helpers used by both front ends.
 
 use serde_json::json;
-use vb6_lsp::workspace::res_json::{
+use vb6_formats::res_json::{
     find_string_table_block, parse_resource_type_name, resource_entry_to_json,
     string_entries_to_json, ResourceTypeNameError,
 };
-use vb6_lsp::workspace::{parse_string_table, ResourceEntry, ResourceId, ResourceType};
+use vb6_formats::res::{parse_string_table, ResourceEntry, ResourceId, ResourceType};
 
 #[test]
 fn builtin_names_map_to_types() {

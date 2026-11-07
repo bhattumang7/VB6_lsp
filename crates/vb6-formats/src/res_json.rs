@@ -3,8 +3,8 @@
 
 use base64::Engine as _;
 
-use super::res_parser::StringTableEntry;
-use super::{ResourceEntry, ResourceId, ResourceType};
+use crate::res::StringTableEntry;
+use crate::res::{ResourceEntry, ResourceId, ResourceType};
 
 /// Why a resource type name could not be turned into a [`ResourceType`].
 #[derive(Debug)]

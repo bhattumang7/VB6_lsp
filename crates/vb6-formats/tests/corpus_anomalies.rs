@@ -5,25 +5,12 @@
 //! un-harvested references. The pure-Rust core runs anywhere.
 //! Skips when the corpus is absent.
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use vb6_lsp::controls::coverage::{self, Gap};
+use vb6_formats::controls::coverage::{self, Gap};
 
-fn collect_forms(dir: &Path, out: &mut Vec<PathBuf>) {
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for e in entries.flatten() {
-            let p = e.path();
-            if p.is_dir() {
-                collect_forms(&p, out);
-            } else if let Some(ext) = p.extension() {
-                let ext = ext.to_string_lossy().to_ascii_lowercase();
-                if ext == "frm" || ext == "ctl" {
-                    out.push(p);
-                }
-            }
-        }
-    }
-}
+mod common;
+use common::{collect_forms, corpus_dir};
 
 /// Accumulated anomaly messages across the corpus.
 #[derive(Default)]
@@ -84,9 +71,7 @@ fn triage_form(form: &Path, acc: &mut Anomalies) {
 
 #[test]
 fn corpus_anomaly_triage() {
-    let corpus = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("re_lab")
-        .join("corpus");
+    let corpus = corpus_dir();
     if !corpus.exists() {
         eprintln!("SKIP: corpus not present at {}", corpus.display());
         return;

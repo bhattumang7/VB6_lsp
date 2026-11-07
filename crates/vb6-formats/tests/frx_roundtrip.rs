@@ -7,26 +7,13 @@
 //! Skips automatically when the corpus is absent.
 
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use vb6_lsp::controls::form_designer;
-use vb6_lsp::controls::frx::{self, PropKind};
+use vb6_formats::controls::form_designer;
+use vb6_formats::controls::frx::{self, PropKind};
 
-fn collect_forms(dir: &Path, out: &mut Vec<PathBuf>) {
-    if let Ok(entries) = std::fs::read_dir(dir) {
-        for e in entries.flatten() {
-            let p = e.path();
-            if p.is_dir() {
-                collect_forms(&p, out);
-            } else if let Some(ext) = p.extension() {
-                let ext = ext.to_string_lossy().to_ascii_lowercase();
-                if ext == "frm" || ext == "ctl" {
-                    out.push(p);
-                }
-            }
-        }
-    }
-}
+mod common;
+use common::{collect_forms, corpus_dir};
 
 fn strict(kind: PropKind) -> bool {
     matches!(
@@ -119,9 +106,7 @@ fn print_report(outcome: &Outcome) {
 
 #[test]
 fn corpus_roundtrip_byte_exact() {
-    let corpus = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("re_lab")
-        .join("corpus");
+    let corpus = corpus_dir();
     if !corpus.exists() {
         eprintln!("SKIP: corpus not present at {}", corpus.display());
         return;

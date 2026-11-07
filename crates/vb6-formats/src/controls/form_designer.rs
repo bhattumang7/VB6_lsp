@@ -130,7 +130,7 @@ pub fn parse_designer(source: &str) -> FormDesigner {
     let mut prop_group_stack: Vec<String> = Vec::new();
     let mut started = false;
 
-    for physical in vb6_engine::frontend::line_reader::physical_lines(source.as_bytes()) {
+    for physical in vb6_syntax::frontend::line_reader::physical_lines(source.as_bytes()) {
         let line = source[physical.start..physical.end].trim();
         if line.is_empty() {
             continue;

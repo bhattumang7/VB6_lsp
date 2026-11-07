@@ -7,7 +7,7 @@
 
 use std::path::{Path, PathBuf};
 
-use crate::utils::VB6FileReader;
+use crate::encoding::VB6FileReader;
 
 /// A project listed in a group.
 #[derive(Debug, Clone, PartialEq, Eq)]

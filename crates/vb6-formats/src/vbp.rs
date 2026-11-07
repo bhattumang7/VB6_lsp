@@ -10,7 +10,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use crate::utils::VB6FileReader;
+use crate::encoding::VB6FileReader;
 
 /// A parsed VBP project file
 #[derive(Debug, Clone)]
@@ -509,9 +509,9 @@ impl VbpFile {
             }
             "OptimizationType" => {
                 c.optimization_type = match value.parse::<i32>().unwrap_or(0) {
-                    0 => OptimizationType::None,
-                    1 => OptimizationType::FavorFastCode,
-                    2 => OptimizationType::FavorSmallCode,
+                    0 => OptimizationType::FavorFastCode,
+                    1 => OptimizationType::FavorSmallCode,
+                    2 => OptimizationType::None,
                     _ => OptimizationType::FavorFastCode,
                 };
             }
@@ -753,5 +753,5 @@ fn parse_bool(s: &str) -> bool {
 }
 
 #[cfg(test)]
-#[path = "tests/vbp_parser.rs"]
+#[path = "tests/vbp.rs"]
 mod tests;

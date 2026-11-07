@@ -17,7 +17,6 @@ use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer};
 
-use crate::workspace::WorkspaceManager;
 
 /// Document information stored in memory
 pub struct Document {
@@ -52,7 +51,6 @@ pub struct Vb6LanguageServer {
     /// Open documents
     documents: DashMap<Url, Document>,
     /// Workspace manager for multi-project support (VBP discovery)
-    workspace: Arc<RwLock<WorkspaceManager>>,
     /// Analysis of the open documents that no opened project lists.
     loose: Arc<RwLock<vb6_engine::session::Session>>,
     /// The opened project or group, one analysis per project.
@@ -70,7 +68,6 @@ impl Vb6LanguageServer {
         Self {
             client,
             documents: DashMap::new(),
-            workspace: Arc::new(RwLock::new(WorkspaceManager::new())),
             loose: Arc::new(RwLock::new(vb6_engine::session::Session::from_sources(Vec::new()))),
             selection: Arc::new(RwLock::new(None)),
             published: DashMap::new(),
@@ -92,7 +89,7 @@ fn line_text(content: &str, line: u32) -> Option<&str> {
 /// When the cursor is on a line like `Icon = "Form1.frx":0000`, this reads the
 /// referenced companion blob and summarises what it decodes to.
 fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<Hover> {
-    use crate::controls::frx;
+    use vb6_formats::controls::frx;
 
     let path = uri.to_file_path().ok()?;
     let ext = path.extension()?.to_string_lossy().to_ascii_lowercase();
@@ -131,8 +128,8 @@ fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<H
 }
 
 /// One-line summary of a decoded FRX value for hover display.
-fn format_frx_value(value: &crate::controls::frx::FrxValue) -> String {
-    use crate::controls::frx::FrxValue;
+fn format_frx_value(value: &vb6_formats::controls::frx::FrxValue) -> String {
+    use vb6_formats::controls::frx::FrxValue;
     match value {
         FrxValue::Picture { format, data, .. } => {
             format!("🖼 {:?} image · {} bytes", format, data.len())
@@ -202,36 +199,6 @@ impl LanguageServer for Vb6LanguageServer {
             .and_then(projects::path_argument)
         {
             *self.initial_project.lock().unwrap() = Some(path);
-        }
-
-        if let Some(workspace_folders) = params.workspace_folders {
-            let mut workspace = self.workspace.write().unwrap();
-            for folder in workspace_folders {
-                if let Ok(path) = folder.uri.to_file_path() {
-                    let discovered = workspace.add_root(path);
-                    tracing::info!("Discovered {} VBP projects in {}", discovered.len(), folder.uri);
-                }
-            }
-        } else if let Some(root_uri) = params.root_uri {
-            if let Ok(path) = root_uri.to_file_path() {
-                let mut workspace = self.workspace.write().unwrap();
-                let discovered = workspace.add_root(path);
-                let stats = workspace.stats();
-                tracing::info!(
-                    "Workspace: {} roots, {} projects, {} source files ({} VBP files discovered)",
-                    stats.root_count,
-                    stats.project_count,
-                    stats.total_source_files,
-                    discovered.len()
-                );
-                for project in workspace.projects() {
-                    tracing::debug!(
-                        "  Project '{}' at {}",
-                        project.name(),
-                        project.vbp_path().display()
-                    );
-                }
-            }
         }
 
         Ok(InitializeResult {

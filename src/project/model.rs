@@ -10,7 +10,8 @@ use vb6_typelib::{load_library_noted, TypeLibraryRequest};
 use vb6_engine::session::{Library, ProjectKind, Session, SessionConfig};
 
 use super::paths::{engine_key_for_path, lookup_key, normalize};
-use crate::workspace::{ProjectMember, ProjectType, VbgFile, VbpFile, VbpReference};
+use vb6_formats::vbg::VbgFile;
+use vb6_formats::vbp::{ProjectMember, ProjectType, TypeLibReference as VbpReference, VbpFile};
 
 /// How serious a problem found while loading is.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]

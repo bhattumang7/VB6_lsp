@@ -86,7 +86,7 @@ CondComp="DEBUG=1"
     assert_eq!(vbp.compilation.compilation_type, CompilationType::NativeCode);
     assert_eq!(
         vbp.compilation.optimization_type,
-        OptimizationType::FavorFastCode
+        OptimizationType::FavorSmallCode
     );
     assert!(vbp.compilation.favor_pentium_pro);
     assert!(vbp.compilation.code_view_debug_info);
@@ -187,4 +187,19 @@ Reference=*\AUtils.vbp
 
     let compiled = vbp.get_compiled_references();
     assert_eq!(compiled.len(), 1);
+}
+
+#[test]
+fn optimization_type_values_are_fast_small_none() {
+    let optimization = |value: &str| {
+        let content = format!("Type=Exe\nOptimizationType={value}\n");
+        VbpFile::parse_content(Path::new("C:/Projects/Test.vbp"), &content)
+            .unwrap()
+            .compilation
+            .optimization_type
+    };
+
+    assert_eq!(optimization("0"), OptimizationType::FavorFastCode);
+    assert_eq!(optimization("1"), OptimizationType::FavorSmallCode);
+    assert_eq!(optimization("2"), OptimizationType::None);
 }

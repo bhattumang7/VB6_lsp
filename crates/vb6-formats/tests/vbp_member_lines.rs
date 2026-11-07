@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vb6_lsp::workspace::{VbpFile, VbpReference};
+use vb6_formats::vbp::{TypeLibReference as VbpReference, VbpFile};
 
 const VBP: &str = "Type=Exe\n\
 Reference=*\\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\\stdole2.tlb#OLE Automation\n\

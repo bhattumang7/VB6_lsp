@@ -23,7 +23,7 @@
 //! ## Usage
 //!
 //! ```ignore
-//! use vb6_lsp::workspace::res_parser::*;
+//! use vb6_formats::res::*;
 //!
 //! // Read a .res file
 //! let resources = read_res_file("myproject.res")?;

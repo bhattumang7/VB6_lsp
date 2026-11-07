@@ -5,10 +5,11 @@
 //! parser, and binder but **not** the runtime/compiler replica.
 
 pub mod session;
-pub mod frm;
-pub mod frx;
+
+
 
 // Re-export dependency modules under their original crate-root paths so the
 // moved code's `crate::frontend::…` / `crate::sema::…` references resolve.
 pub use vb6_syntax::{frontend, support};
 pub use vb6_sema::sema;
+pub use vb6_formats::{frm, frx};
