@@ -131,7 +131,7 @@ if ($SkipCoverage) {
     # would then count them as 0% covered and understate project coverage.
     Write-Host "`n==> Running tests with coverage (cargo llvm-cov)..."
     cargo llvm-cov --lcov --output-path $coverageLcov `
-        -p vb6-lsp -p vb6-ast-derive -p vb6-syntax -p vb6-sema -p vb6-engine
+        -p vb6-lsp -p vb6-ast-derive -p vb6-syntax -p vb6-sema -p vb6-engine -p vb6-codegen
     if ($LASTEXITCODE -ne 0) {
         Write-Error "cargo llvm-cov failed — fix test failures before scanning."
         exit 1
