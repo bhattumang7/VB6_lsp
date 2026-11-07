@@ -143,83 +143,82 @@ impl ModuleNames {
         let deftypes = DefTypes::collect(source);
         for &node in source.top {
             match source.arena.get(node) {
-                ExprNode::ProcDecl { kind, name, ret_type, .. } => {
-                    let kind = match kind {
-                        ProcKind::Sub => NameKind::Sub,
-                        ProcKind::Function => NameKind::Function,
-                        ProcKind::PropGet => NameKind::PropertyGet,
-                        ProcKind::PropLet => NameKind::PropertyLet,
-                        ProcKind::PropSet => NameKind::PropertySet,
-                    };
-                    let declared = ret_type.and_then(|t| declared_type_of(source.arena, Some(t)));
-                    names.add(*name, kind, node, source.spans.get(node), declared, None);
-                }
-                ExprNode::DeclareDecl { kind, name, ret_type, .. } => {
-                    let k = if *kind == ProcKind::Sub { NameKind::DeclareSub } else { NameKind::DeclareFunction };
-                    let declared = ret_type.and_then(|t| declared_type_of(source.arena, Some(t)));
-                    names.add(*name, k, node, source.spans.get(node), declared, None);
-                }
-                ExprNode::Block { stmts } => {
-                    for &item in stmts {
-                        if let ExprNode::DimItem { name, is_const, with_events, type_node, .. } = source.arena.get(item) {
-                            let kind = if *is_const {
-                                NameKind::Constant
-                            } else if *with_events {
-                                NameKind::WithEvents
-                            } else {
-                                NameKind::Variable
-                            };
-                            // A variable declared without a type takes the type its first letter
-                            // has under the `Def<Type>` statements in force; a constant takes
-                            // the type of its value.
-                            let declared = match declared_type_of(source.arena, *type_node) {
-                                Some(t) => Some(t),
-                                None if kind == NameKind::Constant => None,
-                                None => Some(deftypes.type_for(&(source.spelling)(*name))),
-                            };
-                            names.add(*name, kind, item, source.spans.get(item), declared, None);
-                        }
-                    }
-                }
-                ExprNode::EnumDecl { name, members } => {
-                    let index = names.types.iter().filter(|t| t.is_enum).count();
-                    names.types.push(TypeEntry {
-                        sym: *name,
-                        node,
-                        span: source.spans.get(node),
-                        is_enum: true,
-                        members: members.clone(),
-                    });
-                    for &m in members {
-                        if let ExprNode::DimItem { name, .. } = source.arena.get(m) {
-                            names.add(*name, NameKind::EnumMember, m, source.spans.get(m), Some(DeclaredType::Long), Some(index));
-                        }
-                    }
-                }
-                ExprNode::TypeDecl { name, members } => {
-                    names.types.push(TypeEntry {
-                        sym: *name,
-                        node,
-                        span: source.spans.get(node),
-                        is_enum: false,
-                        members: members.clone(),
-                    });
-                }
+                ExprNode::ProcDecl { kind, name, ret_type, .. } => names.add_procedure(source, node, *kind, *name, *ret_type),
+                ExprNode::DeclareDecl { kind, name, ret_type, .. } => names.add_declare(source, node, *kind, *name, *ret_type),
+                ExprNode::Block { stmts } => names.add_variables(source, &deftypes, stmts),
+                ExprNode::EnumDecl { name, members } => names.add_enum(source, node, *name, members),
+                ExprNode::TypeDecl { name, members } => names.add_type(source, node, *name, members),
                 ExprNode::EventDecl { name, .. } => {
                     names.events.push(EventEntry { sym: *name, span: source.spans.get(node) });
                 }
-                ExprNode::Attribute { target: None, name, values } => {
-                    let is_name = (source.spelling)(*name).eq_ignore_ascii_case("VB_Name");
-                    if let (true, Some(&v)) = (is_name, values.first()) {
-                        if let ExprNode::Literal { lit: crate::frontend::ast::AstLit::Str(s) } = source.arena.get(v) {
-                            names.module_name = Some(s.to_lowercase());
-                        }
-                    }
-                }
+                ExprNode::Attribute { target: None, name, values } => names.read_module_name(source, *name, values),
                 _ => {}
             }
         }
         names
+    }
+
+    fn add_procedure(&mut self, source: &NameSource<'_>, node: NodeId, kind: ProcKind, name: u32, ret_type: Option<NodeId>) {
+        let kind = match kind {
+            ProcKind::Sub => NameKind::Sub,
+            ProcKind::Function => NameKind::Function,
+            ProcKind::PropGet => NameKind::PropertyGet,
+            ProcKind::PropLet => NameKind::PropertyLet,
+            ProcKind::PropSet => NameKind::PropertySet,
+        };
+        let declared = ret_type.and_then(|t| declared_type_of(source.arena, Some(t)));
+        self.add(name, kind, node, source.spans.get(node), declared, None);
+    }
+
+    fn add_declare(&mut self, source: &NameSource<'_>, node: NodeId, kind: ProcKind, name: u32, ret_type: Option<NodeId>) {
+        let k = if kind == ProcKind::Sub { NameKind::DeclareSub } else { NameKind::DeclareFunction };
+        let declared = ret_type.and_then(|t| declared_type_of(source.arena, Some(t)));
+        self.add(name, k, node, source.spans.get(node), declared, None);
+    }
+
+    fn add_variables(&mut self, source: &NameSource<'_>, deftypes: &DefTypes, stmts: &[NodeId]) {
+        for &item in stmts {
+            let ExprNode::DimItem { name, is_const, with_events, type_node, .. } = source.arena.get(item) else { continue };
+            let kind = if *is_const {
+                NameKind::Constant
+            } else if *with_events {
+                NameKind::WithEvents
+            } else {
+                NameKind::Variable
+            };
+            // A variable declared without a type takes the type its first letter
+            // has under the `Def<Type>` statements in force; a constant takes
+            // the type of its value.
+            let declared = match declared_type_of(source.arena, *type_node) {
+                Some(t) => Some(t),
+                None if kind == NameKind::Constant => None,
+                None => Some(deftypes.type_for(&(source.spelling)(*name))),
+            };
+            self.add(*name, kind, item, source.spans.get(item), declared, None);
+        }
+    }
+
+    fn add_enum(&mut self, source: &NameSource<'_>, node: NodeId, name: u32, members: &[NodeId]) {
+        let index = self.types.iter().filter(|t| t.is_enum).count();
+        self.types.push(TypeEntry { sym: name, node, span: source.spans.get(node), is_enum: true, members: members.to_vec() });
+        for &m in members {
+            if let ExprNode::DimItem { name, .. } = source.arena.get(m) {
+                self.add(*name, NameKind::EnumMember, m, source.spans.get(m), Some(DeclaredType::Long), Some(index));
+            }
+        }
+    }
+
+    fn add_type(&mut self, source: &NameSource<'_>, node: NodeId, name: u32, members: &[NodeId]) {
+        self.types.push(TypeEntry { sym: name, node, span: source.spans.get(node), is_enum: false, members: members.to_vec() });
+    }
+
+    /// Reads the module's own name from `Attribute VB_Name = "..."`.
+    fn read_module_name(&mut self, source: &NameSource<'_>, name: u32, values: &[NodeId]) {
+        let is_name = (source.spelling)(name).eq_ignore_ascii_case("VB_Name");
+        let Some(&v) = values.first().filter(|_| is_name) else { return };
+        if let ExprNode::Literal { lit: crate::frontend::ast::AstLit::Str(s) } = source.arena.get(v) {
+            self.module_name = Some(s.to_lowercase());
+        }
     }
 
     fn add(
@@ -248,82 +247,105 @@ impl ModuleNames {
 
     /// The first clash of two declarations, if the module has one.
     pub fn first_clash(&self, source: &NameSource<'_>) -> Option<Diagnostic> {
-        let spell = Spellings::collect(source);
-        let diag = |sym: u32, span: Span| Diagnostic::with_name(ERR_AMBIGUOUS_NAME, span, &spell.of(sym, source));
-
+        let report = ClashReport { spell: Spellings::collect(source), source };
         // The table the first three passes fill, and the later ones probe.
         let mut seen: HashMap<u32, Vec<NameKind>> = HashMap::new();
-        let clashes = |seen: &HashMap<u32, Vec<NameKind>>, sym: u32, kind: NameKind| {
-            seen.get(&sym).is_some_and(|kinds| kinds.iter().any(|k| !k.allows(kind)))
-        };
-        let pass = |wanted: &dyn Fn(NameKind) -> bool, seen: &mut HashMap<u32, Vec<NameKind>>| {
-            for e in self.entries.iter().filter(|e| wanted(e.kind)) {
-                if clashes(seen, e.sym, e.kind) {
-                    return Some(diag(e.sym, e.span));
-                }
-                seen.entry(e.sym).or_default().push(e.kind);
-            }
-            None
-        };
-
         // 1. Procedures.
-        let procs = |k: NameKind| {
-            matches!(
-                k,
-                NameKind::Sub
-                    | NameKind::Function
-                    | NameKind::DeclareSub
-                    | NameKind::DeclareFunction
-                    | NameKind::PropertyGet
-                    | NameKind::PropertyLet
-                    | NameKind::PropertySet
-            )
-        };
-        if let Some(d) = pass(&procs, &mut seen) {
-            return Some(d);
+        self.entry_pass(&report, is_procedure_kind, &mut seen)
+            // 2. Enumeration members.
+            .or_else(|| self.entry_pass(&report, |k| k == NameKind::EnumMember, &mut seen))
+            // 3. Type and enumeration names, each followed by a check of its own members.
+            .or_else(|| self.type_clash(&report))
+            // 4. WithEvents variables, then 5. variables and constants.
+            .or_else(|| self.entry_pass(&report, |k| k == NameKind::WithEvents, &mut seen))
+            .or_else(|| self.entry_pass(&report, |k| matches!(k, NameKind::Variable | NameKind::Constant), &mut seen))
+            // 6. Events.
+            .or_else(|| self.event_clash(&report))
+    }
+
+    /// Checks the entries of the wanted kinds, in order, against those already seen.
+    fn entry_pass(
+        &self,
+        report: &ClashReport<'_, '_>,
+        wanted: impl Fn(NameKind) -> bool,
+        seen: &mut HashMap<u32, Vec<NameKind>>,
+    ) -> Option<Diagnostic> {
+        for e in self.entries.iter().filter(|e| wanted(e.kind)) {
+            let clashes = seen.get(&e.sym).is_some_and(|kinds| kinds.iter().any(|k| !k.allows(e.kind)));
+            if clashes {
+                return Some(report.diag(e.sym, e.span));
+            }
+            seen.entry(e.sym).or_default().push(e.kind);
         }
-        // 2. Enumeration members.
-        if let Some(d) = pass(&|k| k == NameKind::EnumMember, &mut seen) {
-            return Some(d);
-        }
-        // 3. Type and enumeration names, each followed by a check of its own members.
+        None
+    }
+
+    fn type_clash(&self, report: &ClashReport<'_, '_>) -> Option<Diagnostic> {
         let mut type_names: Vec<u32> = Vec::new();
         for t in &self.types {
             if type_names.contains(&t.sym) {
-                return Some(diag(t.sym, t.span));
+                return Some(report.diag(t.sym, t.span));
             }
             type_names.push(t.sym);
-            let member_syms: Vec<(u32, Span)> = t
-                .members
-                .iter()
-                .filter_map(|&m| match source.arena.get(m) {
-                    ExprNode::DimItem { name, .. } => Some((*name, source.spans.get(m))),
-                    _ => None,
-                })
-                .collect();
-            for (i, (sym, span)) in member_syms.iter().enumerate() {
-                if member_syms[i + 1..].iter().any(|(s, _)| s == sym) {
-                    return Some(diag(*sym, *span));
-                }
+            if let Some(d) = repeated_member(report, &t.members) {
+                return Some(d);
             }
         }
-        // 4. WithEvents variables, then 5. variables and constants.
-        if let Some(d) = pass(&|k| k == NameKind::WithEvents, &mut seen) {
-            return Some(d);
-        }
-        if let Some(d) = pass(&|k| matches!(k, NameKind::Variable | NameKind::Constant), &mut seen) {
-            return Some(d);
-        }
-        // 6. Events.
+        None
+    }
+
+    fn event_clash(&self, report: &ClashReport<'_, '_>) -> Option<Diagnostic> {
         let mut events: Vec<u32> = Vec::new();
         for e in &self.events {
             if events.contains(&e.sym) {
-                return Some(diag(e.sym, e.span));
+                return Some(report.diag(e.sym, e.span));
             }
             events.push(e.sym);
         }
         None
     }
+}
+
+/// Builds the diagnostic for a clash, spelling the name as the module's last declaration does.
+struct ClashReport<'a, 'b> {
+    spell: Spellings,
+    source: &'a NameSource<'b>,
+}
+
+impl ClashReport<'_, '_> {
+    fn diag(&self, sym: u32, span: Span) -> Diagnostic {
+        Diagnostic::with_name(ERR_AMBIGUOUS_NAME, span, &self.spell.of(sym, self.source))
+    }
+}
+
+/// Whether a name kind declares a procedure, a property or a `Declare`d procedure.
+fn is_procedure_kind(k: NameKind) -> bool {
+    matches!(
+        k,
+        NameKind::Sub
+            | NameKind::Function
+            | NameKind::DeclareSub
+            | NameKind::DeclareFunction
+            | NameKind::PropertyGet
+            | NameKind::PropertyLet
+            | NameKind::PropertySet
+    )
+}
+
+/// The first member of a type that a later member of the same type repeats, reported on the first.
+fn repeated_member(report: &ClashReport<'_, '_>, members: &[NodeId]) -> Option<Diagnostic> {
+    let member_syms: Vec<(u32, Span)> = members
+        .iter()
+        .filter_map(|&m| match report.source.arena.get(m) {
+            ExprNode::DimItem { name, .. } => Some((*name, report.source.spans.get(m))),
+            _ => None,
+        })
+        .collect();
+    member_syms
+        .iter()
+        .enumerate()
+        .find(|(i, (sym, _))| member_syms[i + 1..].iter().any(|(s, _)| s == sym))
+        .map(|(_, (sym, span))| report.diag(*sym, *span))
 }
 
 /// The declared type of a type specifier node.

@@ -88,6 +88,33 @@ impl Scope<'_> {
             None => Binding::Unknown,
         }
     }
+
+    /// The binding of `first.member` when `first` is something this module declares.
+    fn single_qualifier(&self, first: u32, member: u32) -> Option<Binding> {
+        let own = (self.spelling)(first).to_lowercase();
+        if self.names.module_name.as_deref() == Some(own.as_str()) {
+            return Some(self.module_binding(member).or_else(|| self.type_binding(member)).unwrap_or(Binding::NoSuchMember));
+        }
+        if let Some(index) = self.names.types.iter().filter(|t| t.is_enum).position(|t| t.sym == first) {
+            return Some(self.enum_member_binding(index, member));
+        }
+        if self.locals.is_some_and(|l| l.contains_key(&first)) || self.names.declarations_of(first).next().is_some() {
+            // A member of a variable, a procedure's result, a constant.
+            return Some(Binding::NotConstant);
+        }
+        None
+    }
+
+    fn enum_member_binding(&self, index: usize, member: u32) -> Binding {
+        match self.names.entries.iter().find(|e| e.enum_index == Some(index) && e.sym == member) {
+            Some(e) => match self.values.get(&e.node) {
+                Some(Known::Value(v)) => Binding::Constant(v.clone()),
+                Some(Known::Open) => Binding::Unknown,
+                None => Binding::NotConstant,
+            },
+            None => Binding::NoSuchMember,
+        }
+    }
 }
 
 impl ConstEnv for Scope<'_> {
@@ -106,23 +133,8 @@ impl ConstEnv for Scope<'_> {
 
     fn lookup_qualified(&self, path: &[u32], member: u32) -> Binding {
         if let [first] = path {
-            let own = (self.spelling)(*first).to_lowercase();
-            if self.names.module_name.as_deref() == Some(own.as_str()) {
-                return self.module_binding(member).or_else(|| self.type_binding(member)).unwrap_or(Binding::NoSuchMember);
-            }
-            if let Some(index) = self.names.types.iter().filter(|t| t.is_enum).position(|t| t.sym == *first) {
-                return match self.names.entries.iter().find(|e| e.enum_index == Some(index) && e.sym == member) {
-                    Some(e) => match self.values.get(&e.node) {
-                        Some(Known::Value(v)) => Binding::Constant(v.clone()),
-                        Some(Known::Open) => Binding::Unknown,
-                        None => Binding::NotConstant,
-                    },
-                    None => Binding::NoSuchMember,
-                };
-            }
-            if self.locals.is_some_and(|l| l.contains_key(first)) || self.names.declarations_of(*first).next().is_some() {
-                // A member of a variable, a procedure's result, a constant.
-                return Binding::NotConstant;
+            if let Some(binding) = self.single_qualifier(*first, member) {
+                return binding;
             }
         }
         let mut names: Vec<String> = path.iter().map(|s| (self.spelling)(*s)).collect();
@@ -166,12 +178,8 @@ fn is_late(arena: &ExprArena, top: &[NodeId], index: usize) -> bool {
         )
 }
 
-/// Runs every check on the module whose top-level nodes are `input.top`.
-pub fn check_declarations(input: &CheckInput<'_>) -> Checked {
-    let top: Vec<NodeId> =
-        input.top.iter().enumerate().filter(|&(i, _)| !is_late(input.arena, input.top, i)).map(|(_, &n)| n).collect();
-    let source = NameSource { arena: input.arena, spans: input.spans, src: input.src, top: &top, spelling: input.spelling };
-    let names = ModuleNames::collect(&source);
+/// The text-compare mode and array base that the module's option statements select.
+fn module_options(input: &CheckInput<'_>) -> (CompareMode, i32) {
     let mut mode = CompareMode::Binary;
     let mut option_base = 0;
     for &node in input.top {
@@ -181,22 +189,24 @@ pub fn check_declarations(input: &CheckInput<'_>) -> Checked {
             _ => {}
         }
     }
+    (mode, option_base)
+}
+
+/// Runs every check on the module whose top-level nodes are `input.top`.
+pub fn check_declarations(input: &CheckInput<'_>) -> Checked {
+    let top: Vec<NodeId> =
+        input.top.iter().enumerate().filter(|&(i, _)| !is_late(input.arena, input.top, i)).map(|(_, &n)| n).collect();
+    let source = NameSource { arena: input.arena, spans: input.spans, src: input.src, top: &top, spelling: input.spelling };
+    let names = ModuleNames::collect(&source);
+    let (mode, option_base) = module_options(input);
     let mut checker = Checker { input, names, values: HashMap::new(), locals: None, mode, option_base, diagnostics: Vec::new(), parameters: Vec::new() };
     let mut headers = Vec::new();
     // Declarations first, in the order written; procedures after, as they come.
     for &node in &top {
         match input.arena.get(node) {
-            ExprNode::Block { stmts } => {
-                for &item in stmts {
-                    checker.check_item(item);
-                }
-            }
+            ExprNode::Block { stmts } => checker.check_items(stmts),
             ExprNode::EnumDecl { members, .. } => checker.check_enum(members),
-            ExprNode::TypeDecl { members, .. } => {
-                for &m in members {
-                    checker.check_item(m);
-                }
-            }
+            ExprNode::TypeDecl { members, .. } => checker.check_items(members),
             ExprNode::ProcDecl { .. } | ExprNode::DeclareDecl { .. } | ExprNode::EventDecl { .. } => headers.push(node),
             _ => {}
         }
@@ -236,6 +246,12 @@ impl Checker<'_> {
 
     fn eval(&self, node: NodeId, ctx: Context) -> Result<Evaluated, EvalError> {
         evaluate(self.input.arena, node, &self.scope(), ctx)
+    }
+
+    fn check_items(&mut self, items: &[NodeId]) {
+        for &item in items {
+            self.check_item(item);
+        }
     }
 
     fn report(&mut self, code: u32, span: Span) {

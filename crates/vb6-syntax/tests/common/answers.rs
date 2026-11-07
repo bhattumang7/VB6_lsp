@@ -102,7 +102,26 @@ pub fn disagreements(
         if skip(template, word, class, message) {
             continue;
         }
-        let t = &templates[template];
+        checked += 1;
+        let row = Row { template, word, class, message, expect_parses };
+        wrong.extend(row.disagreement(&templates[template]));
+    }
+    (checked, wrong)
+}
+
+/// One row of the answers file.
+struct Row<'a> {
+    template: &'a str,
+    word: &'a str,
+    class: &'a str,
+    message: &'a str,
+    expect_parses: bool,
+}
+
+impl Row<'_> {
+    /// The line that says how the parser disagrees with the compiler on this row, if it does.
+    fn disagreement(&self, t: &Template) -> Option<String> {
+        let (template, word, class, message) = (self.template, self.word, self.class, self.message);
         let source = t.text.replace("{k}", &unescape(word));
         let reported = diagnostic_messages(&source, t.kind);
         let codes: Vec<u32> = reported.iter().map(|(c, _)| *c).collect();
@@ -110,24 +129,22 @@ pub fn disagreements(
         // A statement that needs an object to draw on or print to, written in a standard module,
         // is reported by the parser first, once.
         if class == "semantic" && message == "Method not valid without suitable object" {
-            checked += 1;
-            if codes.first() != Some(&METHOD_NOT_VALID_WITHOUT_OBJECT) || codes.iter().filter(|c| **c == METHOD_NOT_VALID_WITHOUT_OBJECT).count() != 1 {
-                wrong.push(format!("{template} {word}: the compiler reports `{message}`, parser reported {codes:?}"));
-            }
-            continue;
+            let reported_once = codes.first() == Some(&METHOD_NOT_VALID_WITHOUT_OBJECT)
+                && codes.iter().filter(|c| **c == METHOD_NOT_VALID_WITHOUT_OBJECT).count() == 1;
+            return (!reported_once)
+                .then(|| format!("{template} {word}: the compiler reports `{message}`, parser reported {codes:?}"));
         }
         // A semantic answer hides a block that is left open.
         let mut masked = class == "semantic" && !codes.is_empty() && codes.iter().all(|c| MISSING_END_CODES.contains(c));
         // A semantic answer is also met by the parser reporting that same message: the checks
         // of constants, bounds and names run once the module is read.
         masked |= class == "semantic" && reported.iter().any(|(_, m)| m == message);
-        checked += 1;
-        if !masked && (found == 0) != expect_parses {
-            let verdict = if expect_parses { "accepts" } else { "rejects" };
-            wrong.push(format!("{template} {word}: the compiler {verdict} ({class} {message}), parser reported {found}"));
+        if masked || (found == 0) == self.expect_parses {
+            return None;
         }
+        let verdict = if self.expect_parses { "accepts" } else { "rejects" };
+        Some(format!("{template} {word}: the compiler {verdict} ({class} {message}), parser reported {found}"))
     }
-    (checked, wrong)
 }
 
 /// Fails with a summary by template and a few examples of each.

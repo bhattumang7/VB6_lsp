@@ -216,91 +216,23 @@ impl CcValue {
     /// other), where operands written out as literals need the text to be a number.
     pub fn binary_with(op: CcOp, l: &CcValue, r: &CcValue, by_name: bool) -> CcResult {
         use CcOp::*;
-        match op {
-            Is => {
-                return if *l == CcValue::Nothing && *r == CcValue::Nothing { Ok(CcValue::TRUE) } else { Err(ERR_TYPE_MISMATCH) };
-            }
-            Cat => {
-                return Ok(CcValue::Str(format!("{}{}", l.text()?, r.text()?)));
-            }
-            And | Or => {
-                if let Some(v) = null_logic(op, l, r)? {
-                    return Ok(v);
-                }
-            }
-            _ => {}
+        if let Some(done) = binary_shortcut(op, l, r) {
+            return done;
         }
         if *l == CcValue::Null || *r == CcValue::Null {
             // A comparison or operation on Null is Null (the operand rules above aside).
             return Ok(CcValue::Null);
         }
         match op {
-            Add => {
-                if let (CcValue::Str(a), CcValue::Str(b)) = (l, r) {
-                    return Ok(CcValue::Str(format!("{a}{b}")));
-                }
-                arithmetic(l, r, |a, b| a + b, |a, b| a.checked_add(b))
-            }
+            Add => add_values(l, r),
             Sub => arithmetic(l, r, |a, b| a - b, |a, b| a.checked_sub(b)),
-            Mul => {
-                let (a, b) = (l.num()?, r.num()?);
-                if a.rank == Rank::Currency && b.rank == Rank::Currency {
-                    return CcValue::make(Rank::Currency, a.value * b.value);
-                }
-                arithmetic(l, r, |a, b| a * b, |_, _| None)
-            }
-            Div => {
-                let (a, b) = (l.num()?, r.num()?);
-                if b.value == 0.0 {
-                    return Err(ERR_DIVISION_BY_ZERO);
-                }
-                CcValue::make(Rank::Double, a.value / b.value)
-            }
-            IDiv | Mod => {
-                let (a, b) = (l.long()?, r.long()?);
-                if b == 0 {
-                    return Err(ERR_DIVISION_BY_ZERO);
-                }
-                let v = if op == IDiv { a.checked_div(b) } else { a.checked_rem(b) }.ok_or(ERR_OVERFLOW)?;
-                let small = l.num()?.rank == Rank::Integer && r.num()?.rank == Rank::Integer;
-                Ok(if small { CcValue::Integer(v as i16) } else { CcValue::Long(v) })
-            }
-            Pow => {
-                let (a, b) = (l.num()?.value, r.num()?.value);
-                let v = a.powf(b);
-                if (a == 0.0 && b < 0.0) || v.is_nan() {
-                    return Err(ERR_INVALID_PROCEDURE_CALL);
-                }
-                Ok(CcValue::Double(v))
-            }
-            Eq | Ne | Lt | Gt | Le | Ge => {
-                let one_text = matches!(l, CcValue::Str(_)) != matches!(r, CcValue::Str(_));
-                let ord = if by_name && one_text {
-                    l.text()?.to_lowercase().cmp(&r.text()?.to_lowercase())
-                } else {
-                    compare(l, r)?
-                };
-                Ok(CcValue::from_bool(match op {
-                    Eq => ord == std::cmp::Ordering::Equal,
-                    Ne => ord != std::cmp::Ordering::Equal,
-                    Lt => ord == std::cmp::Ordering::Less,
-                    Gt => ord == std::cmp::Ordering::Greater,
-                    Le => ord != std::cmp::Ordering::Greater,
-                    _ => ord != std::cmp::Ordering::Less,
-                }))
-            }
+            Mul => multiply_values(l, r),
+            Div => divide_values(l, r),
+            IDiv | Mod => integer_divide_values(op, l, r),
+            Pow => power_values(l, r),
+            Eq | Ne | Lt | Gt | Le | Ge => compare_values(op, l, r, by_name),
             Like => Ok(CcValue::from_bool(like(&l.text()?, &r.text()?))),
-            And | Or | Xor | Eqv | Imp => {
-                let (a, b) = (l.long()?, r.long()?);
-                let v = match op {
-                    And => a & b,
-                    Or => a | b,
-                    Xor => a ^ b,
-                    Eqv => !(a ^ b),
-                    _ => !a | b,
-                };
-                Ok(logic_result(l, r, v))
-            }
+            And | Or | Xor | Eqv | Imp => bitwise_values(op, l, r),
             Cat | Is => unreachable!(),
         }
     }
@@ -322,6 +254,91 @@ impl CcValue {
         }
         Some(call_one(&lower, &args[0]))
     }
+}
+
+/// The operators whose result does not wait for the Null check: `Is`, `&`, and `And` / `Or`
+/// when one operand decides.
+fn binary_shortcut(op: CcOp, l: &CcValue, r: &CcValue) -> Option<CcResult> {
+    match op {
+        CcOp::Is => {
+            Some(if *l == CcValue::Nothing && *r == CcValue::Nothing { Ok(CcValue::TRUE) } else { Err(ERR_TYPE_MISMATCH) })
+        }
+        CcOp::Cat => Some(concatenate(l, r)),
+        CcOp::And | CcOp::Or => null_logic(op, l, r).transpose(),
+        _ => None,
+    }
+}
+
+fn concatenate(l: &CcValue, r: &CcValue) -> CcResult {
+    Ok(CcValue::Str(format!("{}{}", l.text()?, r.text()?)))
+}
+
+fn add_values(l: &CcValue, r: &CcValue) -> CcResult {
+    if let (CcValue::Str(a), CcValue::Str(b)) = (l, r) {
+        return Ok(CcValue::Str(format!("{a}{b}")));
+    }
+    arithmetic(l, r, |a, b| a + b, |a, b| a.checked_add(b))
+}
+
+fn multiply_values(l: &CcValue, r: &CcValue) -> CcResult {
+    let (a, b) = (l.num()?, r.num()?);
+    if a.rank == Rank::Currency && b.rank == Rank::Currency {
+        return CcValue::make(Rank::Currency, a.value * b.value);
+    }
+    arithmetic(l, r, |a, b| a * b, |_, _| None)
+}
+
+fn divide_values(l: &CcValue, r: &CcValue) -> CcResult {
+    let (a, b) = (l.num()?, r.num()?);
+    if b.value == 0.0 {
+        return Err(ERR_DIVISION_BY_ZERO);
+    }
+    CcValue::make(Rank::Double, a.value / b.value)
+}
+
+fn integer_divide_values(op: CcOp, l: &CcValue, r: &CcValue) -> CcResult {
+    let (a, b) = (l.long()?, r.long()?);
+    if b == 0 {
+        return Err(ERR_DIVISION_BY_ZERO);
+    }
+    let v = if op == CcOp::IDiv { a.checked_div(b) } else { a.checked_rem(b) }.ok_or(ERR_OVERFLOW)?;
+    let small = l.num()?.rank == Rank::Integer && r.num()?.rank == Rank::Integer;
+    Ok(if small { CcValue::Integer(v as i16) } else { CcValue::Long(v) })
+}
+
+fn power_values(l: &CcValue, r: &CcValue) -> CcResult {
+    let (a, b) = (l.num()?.value, r.num()?.value);
+    let v = a.powf(b);
+    if (a == 0.0 && b < 0.0) || v.is_nan() {
+        return Err(ERR_INVALID_PROCEDURE_CALL);
+    }
+    Ok(CcValue::Double(v))
+}
+
+fn compare_values(op: CcOp, l: &CcValue, r: &CcValue, by_name: bool) -> CcResult {
+    use std::cmp::Ordering;
+    let one_text = matches!(l, CcValue::Str(_)) != matches!(r, CcValue::Str(_));
+    let ord = if by_name && one_text { l.text()?.to_lowercase().cmp(&r.text()?.to_lowercase()) } else { compare(l, r)? };
+    Ok(CcValue::from_bool(match op {
+        CcOp::Eq => ord == Ordering::Equal,
+        CcOp::Ne => ord != Ordering::Equal,
+        CcOp::Lt => ord == Ordering::Less,
+        CcOp::Gt => ord == Ordering::Greater,
+        CcOp::Le => ord != Ordering::Greater,
+        _ => ord != Ordering::Less,
+    }))
+}
+
+fn bitwise_values(op: CcOp, l: &CcValue, r: &CcValue) -> CcResult {
+    let (a, b) = (l.long()?, r.long()?);
+    let v = match op {
+        CcOp::And => a & b,
+        CcOp::Or => a | b,
+        CcOp::Xor => a ^ b,
+        CcOp::Eqv => !(a ^ b),
+        _ => !a | b,
+    };
+    Ok(logic_result(l, r, v))
 }
 
 /// `And` / `Or` with a Null operand: the other operand decides when it can.
@@ -420,34 +437,11 @@ fn compare(l: &CcValue, r: &CcValue) -> Result<std::cmp::Ordering, u32> {
 /// The result of one of the built-in functions on one argument.
 fn call_one(name: &str, v: &CcValue) -> CcResult {
     match name {
-        "len" | "lenb" => {
-            if *v == CcValue::Null {
-                return Ok(CcValue::Null);
-            }
-            let n = v.text()?.chars().count() as i32;
-            Ok(CcValue::Long(if name == "lenb" { n * 2 } else { n }))
-        }
+        "len" | "lenb" => length_of(name, v),
         "cvar" => Ok(v.clone()),
         "cstr" => Ok(CcValue::Str(v.text()?)),
         "cbool" => Ok(CcValue::Boolean(v.is_true()?)),
-        "abs" | "int" | "fix" | "sgn" => {
-            let n = v.num()?;
-            let value = match name {
-                "abs" => n.value.abs(),
-                "int" => n.value.floor(),
-                "fix" => n.value.trunc(),
-                _ => return Ok(CcValue::Integer(if n.value > 0.0 { 1 } else if n.value < 0.0 { -1 } else { 0 })),
-            };
-            let rank = match (n.rank, matches!(v, CcValue::Str(_))) {
-                (_, true) => Rank::Double,
-                (Rank::Integer, _) if value > i16::MAX as f64 => Rank::Long,
-                (rank, _) => rank,
-            };
-            if rank == Rank::Currency {
-                return CcValue::make(Rank::Currency, value);
-            }
-            CcValue::make(rank, value)
-        }
+        "abs" | "int" | "fix" | "sgn" => rounding_function(name, v),
         "cbyte" => {
             let n = round_half_even(v.num()?.value);
             if (0.0..=255.0).contains(&n) { Ok(CcValue::Integer(n as i16)) } else { Err(ERR_OVERFLOW) }
@@ -466,6 +460,31 @@ fn call_one(name: &str, v: &CcValue) -> CcResult {
     }
 }
 
+fn length_of(name: &str, v: &CcValue) -> CcResult {
+    if *v == CcValue::Null {
+        return Ok(CcValue::Null);
+    }
+    let n = v.text()?.chars().count() as i32;
+    Ok(CcValue::Long(if name == "lenb" { n * 2 } else { n }))
+}
+
+/// `Abs`, `Int`, `Fix` and `Sgn`.
+fn rounding_function(name: &str, v: &CcValue) -> CcResult {
+    let n = v.num()?;
+    let value = match name {
+        "abs" => n.value.abs(),
+        "int" => n.value.floor(),
+        "fix" => n.value.trunc(),
+        _ => return Ok(CcValue::Integer(if n.value > 0.0 { 1 } else if n.value < 0.0 { -1 } else { 0 })),
+    };
+    let rank = match (n.rank, matches!(v, CcValue::Str(_))) {
+        (_, true) => Rank::Double,
+        (Rank::Integer, _) if value > i16::MAX as f64 => Rank::Long,
+        (rank, _) => rank,
+    };
+    CcValue::make(rank, value)
+}
+
 /// `Like` pattern matching (`?`, `*`, `#`, `[list]`, `[!list]`), ignoring case.
 fn like(text: &str, pattern: &str) -> bool {
     let t: Vec<char> = text.to_lowercase().chars().collect();
@@ -479,31 +498,39 @@ fn like_from(t: &[char], p: &[char]) -> bool {
         '*' => (0..=t.len()).any(|i| like_from(&t[i..], &p[1..])),
         '?' => !t.is_empty() && like_from(&t[1..], &p[1..]),
         '#' => t.first().is_some_and(|c| c.is_ascii_digit()) && like_from(&t[1..], &p[1..]),
-        '[' => {
-            let Some(close) = p.iter().position(|&c| c == ']') else {
-                return t.first() == Some(&'[') && like_from(&t[1..], &p[1..]);
-            };
-            let set = &p[1..close];
-            let (negate, set) = match set.first() {
-                Some('!') => (true, &set[1..]),
-                _ => (false, set),
-            };
-            let Some(&c) = t.first() else { return false };
-            let mut hit = false;
-            let mut i = 0;
-            while i < set.len() {
-                if i + 2 < set.len() && set[i + 1] == '-' {
-                    hit |= set[i] <= c && c <= set[i + 2];
-                    i += 3;
-                } else {
-                    hit |= set[i] == c;
-                    i += 1;
-                }
-            }
-            hit != negate && like_from(&t[1..], &p[close + 1..])
-        }
+        '[' => like_class(t, p),
         c => t.first() == Some(&c) && like_from(&t[1..], &p[1..]),
     }
+}
+
+/// A `[list]` or `[!list]` at the start of the pattern `p`, then the rest of the pattern.
+fn like_class(t: &[char], p: &[char]) -> bool {
+    let Some(close) = p.iter().position(|&c| c == ']') else {
+        return t.first() == Some(&'[') && like_from(&t[1..], &p[1..]);
+    };
+    let set = &p[1..close];
+    let (negate, set) = match set.first() {
+        Some('!') => (true, &set[1..]),
+        _ => (false, set),
+    };
+    let Some(&c) = t.first() else { return false };
+    class_contains(set, c) != negate && like_from(&t[1..], &p[close + 1..])
+}
+
+/// Whether the character is one of the listed characters or inside one of the listed ranges.
+fn class_contains(set: &[char], c: char) -> bool {
+    let mut hit = false;
+    let mut i = 0;
+    while i < set.len() {
+        if i + 2 < set.len() && set[i + 1] == '-' {
+            hit |= set[i] <= c && c <= set[i + 2];
+            i += 3;
+        } else {
+            hit |= set[i] == c;
+            i += 1;
+        }
+    }
+    hit
 }
 
 /// A number written as text: decimal (with exponent) or `&H` / `&O`, with blanks around.
@@ -548,29 +575,42 @@ pub(crate) fn format_float(d: f64, sig: usize) -> String {
         return "0".into();
     }
     if !d.is_finite() {
-        return if d.is_nan() { "NaN".into() } else if d > 0.0 { "1.#INF".into() } else { "-1.#INF".into() };
+        return non_finite_text(d);
     }
     let sci = format!("{:.*e}", sig - 1, d);
     let (mant, exp) = sci.split_once('e').unwrap();
     let exp: i32 = exp.parse().unwrap();
-    let neg = mant.starts_with('-');
+    let sign = if mant.starts_with('-') { "-" } else { "" };
     let digits: String = mant.chars().filter(|c| c.is_ascii_digit()).collect();
     let digits = digits.trim_end_matches('0');
     let digits = if digits.is_empty() { "0" } else { digits };
-    let sign = if neg { "-" } else { "" };
     if exp < -4 || exp >= sig as i32 {
         let m = if digits.len() > 1 { format!("{}.{}", &digits[..1], &digits[1..]) } else { digits.to_string() };
         return format!("{sign}{m}E{}{:02}", if exp < 0 { '-' } else { '+' }, exp.abs());
     }
-    if exp >= 0 {
-        let int_len = exp as usize + 1;
-        if digits.len() <= int_len {
-            format!("{sign}{digits}{}", "0".repeat(int_len - digits.len()))
-        } else {
-            format!("{sign}{}.{}", &digits[..int_len], &digits[int_len..])
-        }
+    positional_digits(sign, digits, exp)
+}
+
+fn non_finite_text(d: f64) -> String {
+    if d.is_nan() {
+        "NaN".into()
+    } else if d > 0.0 {
+        "1.#INF".into()
     } else {
-        format!("{sign}0.{}{digits}", "0".repeat((-exp - 1) as usize))
+        "-1.#INF".into()
+    }
+}
+
+/// The significant `digits` laid out without an exponent, the first at the power `exp` of ten.
+fn positional_digits(sign: &str, digits: &str, exp: i32) -> String {
+    if exp < 0 {
+        return format!("{sign}0.{}{digits}", "0".repeat((-exp - 1) as usize));
+    }
+    let int_len = exp as usize + 1;
+    if digits.len() <= int_len {
+        format!("{sign}{digits}{}", "0".repeat(int_len - digits.len()))
+    } else {
+        format!("{sign}{}.{}", &digits[..int_len], &digits[int_len..])
     }
 }
 
@@ -648,88 +688,128 @@ fn name_comparison_key(name: &str) -> String {
 /// (ignoring case), an empty part, or any other text makes the whole text invalid; a text of
 /// 1024 or more characters is refused before it is read.
 pub fn parse_cond_comp_args(text: &str) -> Result<Vec<(String, CcValue)>, ConstantDeclarationsError> {
-    use ConstantDeclarationsError::{DataTooLarge, InvalidSyntax};
     if text.encode_utf16().count() > MAX_ARGUMENT_UNITS {
-        return Err(DataTooLarge);
+        return Err(ConstantDeclarationsError::DataTooLarge);
     }
-    let chars: Vec<char> = text.chars().collect();
-    let at = |i: usize| chars.get(i).copied();
-    let skip_blanks = |mut i: usize| {
-        while at(i).is_some_and(is_argument_blank) {
+    let mut scan = ArgumentScan { chars: text.chars().collect(), pos: 0, sign_seen: false };
+    let mut out: Vec<(String, CcValue)> = Vec::new();
+    scan.pos = scan.skip_blanks(0);
+    if scan.at_end() {
+        return Ok(out);
+    }
+    let entries = 1 + scan.chars[scan.pos..].iter().filter(|c| **c == ':').count();
+    for entry in 1..=entries {
+        let name = scan.read_name()?;
+        let number = scan.read_value()?;
+        let key = name_comparison_key(&name);
+        if out.iter().any(|(n, _)| name_comparison_key(n) == key) {
+            return Err(ConstantDeclarationsError::InvalidSyntax);
+        }
+        out.push((crate::frontend::scanner::fold_name(&name), CcValue::Integer(number)));
+        scan.end_entry(entry == entries)?;
+    }
+    Ok(out)
+}
+
+/// A reading position in the project's conditional-compilation argument text.
+struct ArgumentScan {
+    chars: Vec<char>,
+    pos: usize,
+    /// Whether this or an earlier value had a sign, which lengthens the digit runs allowed.
+    sign_seen: bool,
+}
+
+impl ArgumentScan {
+    fn at(&self, i: usize) -> Option<char> {
+        self.chars.get(i).copied()
+    }
+
+    fn at_end(&self) -> bool {
+        self.pos == self.chars.len()
+    }
+
+    fn skip_blanks(&self, mut i: usize) -> usize {
+        while self.at(i).is_some_and(is_argument_blank) {
             i += 1;
         }
         i
-    };
-    let mut out: Vec<(String, CcValue)> = Vec::new();
-    let mut pos = skip_blanks(0);
-    if pos == chars.len() {
-        return Ok(out);
     }
-    let entries = 1 + chars[pos..].iter().filter(|c| **c == ':').count();
-    let mut sign_seen = false;
-    for entry in 1..=entries {
+
+    /// Reads a name and the `=` after it, and moves to the start of the value.
+    fn read_name(&mut self) -> Result<String, ConstantDeclarationsError> {
+        use ConstantDeclarationsError::InvalidSyntax;
+        let pos = self.pos;
         // The name runs to the next `=` (which may lie beyond a `:`, and then is no name).
-        let eq = (pos..chars.len()).find(|i| chars[*i] == '=').filter(|eq| *eq > pos).ok_or(InvalidSyntax)?;
+        let eq = (pos..self.chars.len()).find(|i| self.chars[*i] == '=').filter(|eq| *eq > pos).ok_or(InvalidSyntax)?;
         let mut name_end = eq;
-        while name_end > pos && is_argument_blank(chars[name_end - 1]) {
+        while name_end > pos && is_argument_blank(self.chars[name_end - 1]) {
             name_end -= 1;
         }
-        let name = &chars[pos..name_end];
+        let name = &self.chars[pos..name_end];
         if !is_constant_name(name) {
             return Err(InvalidSyntax);
         }
         let name: String = name.iter().collect();
-        pos = skip_blanks(eq + 1);
-        if pos == chars.len() {
+        self.pos = self.skip_blanks(eq + 1);
+        if self.at_end() {
             return Err(InvalidSyntax);
         }
-        let negative = at(pos) == Some('-');
-        let signed = negative || at(pos) == Some('+');
+        Ok(name)
+    }
+
+    /// Reads a signed or unsigned 16-bit value.
+    fn read_value(&mut self) -> Result<i16, ConstantDeclarationsError> {
+        use ConstantDeclarationsError::InvalidSyntax;
+        let negative = self.at(self.pos) == Some('-');
+        let signed = negative || self.at(self.pos) == Some('+');
         if signed {
-            sign_seen = true;
-            let after_sign = skip_blanks(pos + 1);
-            // A sign alone is a value; blanks after it must lead to something.
-            if after_sign > pos + 1 && after_sign == chars.len() {
-                return Err(InvalidSyntax);
-            }
-            pos = after_sign;
+            self.read_sign()?;
         }
-        let digits_start = pos;
-        while at(pos).is_some_and(|c| c.is_ascii_digit()) {
-            pos += 1;
+        let digits_start = self.pos;
+        while self.at(self.pos).is_some_and(|c| c.is_ascii_digit()) {
+            self.pos += 1;
         }
-        let digit_count = pos - digits_start;
+        let digit_count = self.pos - digits_start;
         if digit_count == 0 && !signed {
             return Err(InvalidSyntax);
         }
-        let longest_run = if sign_seen { 11 } else { 5 };
+        let longest_run = if self.sign_seen { 11 } else { 5 };
         if digit_count > longest_run {
             return Err(InvalidSyntax);
         }
-        let magnitude = chars[digits_start..pos]
+        let magnitude = self.chars[digits_start..self.pos]
             .iter()
             .fold(0u32, |acc, c| acc.wrapping_mul(10).wrapping_add(c.to_digit(10).unwrap_or(0)));
         let number = if negative { (magnitude as i32).wrapping_neg() } else { magnitude as i32 };
-        let number = i16::try_from(number).map_err(|_| InvalidSyntax)?;
-        let key = name_comparison_key(&name);
-        if out.iter().any(|(n, _)| name_comparison_key(n) == key) {
-            return Err(InvalidSyntax);
-        }
-        out.push((crate::frontend::scanner::fold_name(&name), CcValue::Integer(number)));
-        pos = skip_blanks(pos);
-        if entry == entries {
-            if pos != chars.len() {
-                return Err(InvalidSyntax);
-            }
-        } else {
-            if at(pos) != Some(':') {
-                return Err(InvalidSyntax);
-            }
-            pos = skip_blanks(pos + 1);
-            if pos == chars.len() {
-                return Err(InvalidSyntax);
-            }
-        }
+        i16::try_from(number).map_err(|_| InvalidSyntax)
     }
-    Ok(out)
+
+    /// Passes the sign at the position and the blanks after it.
+    fn read_sign(&mut self) -> Result<(), ConstantDeclarationsError> {
+        self.sign_seen = true;
+        let after_sign = self.skip_blanks(self.pos + 1);
+        // A sign alone is a value; blanks after it must lead to something.
+        if after_sign > self.pos + 1 && after_sign == self.chars.len() {
+            return Err(ConstantDeclarationsError::InvalidSyntax);
+        }
+        self.pos = after_sign;
+        Ok(())
+    }
+
+    /// Passes what follows a value: the end of the text after the last one, otherwise a `:` and
+    /// the blanks after it, which must lead to another entry.
+    fn end_entry(&mut self, last: bool) -> Result<(), ConstantDeclarationsError> {
+        self.pos = self.skip_blanks(self.pos);
+        if last {
+            return if self.at_end() { Ok(()) } else { Err(ConstantDeclarationsError::InvalidSyntax) };
+        }
+        if self.at(self.pos) != Some(':') {
+            return Err(ConstantDeclarationsError::InvalidSyntax);
+        }
+        self.pos = self.skip_blanks(self.pos + 1);
+        if self.at_end() {
+            return Err(ConstantDeclarationsError::InvalidSyntax);
+        }
+        Ok(())
+    }
 }

@@ -518,44 +518,66 @@ fn lex_date_text(s: &str) -> Option<Vec<DateTok<'_>>> {
     let mut out = Vec::new();
     let mut i = 0;
     while i < bytes.len() {
-        let b = bytes[i];
-        match b {
+        match bytes[i] {
             b' ' | b'\t' => i += 1,
             b',' => { out.push(DateTok::Comma); i += 1; }
             // A period between numbers separates the parts of a time; after a word it is dropped.
             b'.' => {
-                match out.last() {
-                    Some(DateTok::Num { .. }) if bytes.get(i + 1).is_some_and(|d| d.is_ascii_digit()) => {
-                        out.push(DateTok::Colon)
-                    }
-                    Some(DateTok::Word(_)) => {}
-                    _ => return None,
-                }
+                push_period(&mut out, bytes, i)?;
                 i += 1;
             }
             b':' => { out.push(DateTok::Colon); i += 1; }
             b'/' => { out.push(DateTok::Slash); i += 1; }
             b'-' => { out.push(DateTok::Dash); i += 1; }
             b'0'..=b'9' => {
-                let start = i;
-                while i < bytes.len() && bytes[i].is_ascii_digit() { i += 1; }
-                let value = s[start..i].parse::<i32>().ok()?;
-                out.push(DateTok::Num { value, digits: i - start });
+                let (tok, next) = lex_number(s, i)?;
+                out.push(tok);
+                i = next;
             }
             b'A'..=b'Z' | b'a'..=b'z' => {
-                let start = i;
-                while i < bytes.len() && bytes[i].is_ascii_alphabetic() { i += 1; }
-                // A word that reads as an AM/PM designator takes the digits and letters
-                // written straight after it (`A1`, `PM2x`).
-                if bytes.get(i).is_some_and(u8::is_ascii_digit) && designator(&s[start..i]).is_some() {
-                    while i < bytes.len() && bytes[i].is_ascii_alphanumeric() { i += 1; }
-                }
-                out.push(DateTok::Word(&s[start..i]));
+                let (tok, next) = lex_word(s, i);
+                out.push(tok);
+                i = next;
             }
             _ => return None,
         }
     }
     Some(out)
+}
+
+/// Reads the period at `bytes[i]`: a time separator after a number that a digit follows, nothing
+/// after a word; `None` anywhere else.
+fn push_period<'a>(out: &mut Vec<DateTok<'a>>, bytes: &[u8], i: usize) -> Option<()> {
+    match out.last() {
+        Some(DateTok::Num { .. }) if bytes.get(i + 1).is_some_and(|d| d.is_ascii_digit()) => {
+            out.push(DateTok::Colon)
+        }
+        Some(DateTok::Word(_)) => {}
+        _ => return None,
+    }
+    Some(())
+}
+
+/// The number that starts at byte `start` of `s`, and where it ends.
+fn lex_number(s: &str, start: usize) -> Option<(DateTok<'_>, usize)> {
+    let bytes = s.as_bytes();
+    let mut i = start;
+    while i < bytes.len() && bytes[i].is_ascii_digit() { i += 1; }
+    let value = s[start..i].parse::<i32>().ok()?;
+    Some((DateTok::Num { value, digits: i - start }, i))
+}
+
+/// The word that starts at byte `start` of `s`, and where it ends.
+fn lex_word(s: &str, start: usize) -> (DateTok<'_>, usize) {
+    let bytes = s.as_bytes();
+    let mut i = start;
+    while i < bytes.len() && bytes[i].is_ascii_alphabetic() { i += 1; }
+    // A word that reads as an AM/PM designator takes the digits and letters
+    // written straight after it (`A1`, `PM2x`).
+    if bytes.get(i).is_some_and(u8::is_ascii_digit) && designator(&s[start..i]).is_some() {
+        while i < bytes.len() && bytes[i].is_ascii_alphanumeric() { i += 1; }
+    }
+    (DateTok::Word(&s[start..i]), i)
 }
 
 /// Whether `word` reads as an AM/PM designator, and which one (`true` for PM): `A` or `P`
@@ -731,35 +753,79 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
     if toks.is_empty() {
         return None;
     }
-    // After a time and its designator, a numeric date may open with one more designator.
-    let mut extra_designator = false;
-    let after_time = toks.iter().enumerate().position(|(k, t)| {
-        k > 0
-            && matches!(toks[k - 1], DateTok::Num { .. })
-            && matches!(t, DateTok::Word(w) if exact_meridiem(w) || doubled_designator(w).is_some())
-    }).filter(|&k| {
-        // The time is all that comes before the designator: `Num (: Num)*`.
-        let mut start = k - 1;
-        while start >= 2 && toks[start - 1] == DateTok::Colon && matches!(toks[start - 2], DateTok::Num { .. }) {
-            start -= 2;
-        }
-        start == 0
-    });
-    if let Some(k) = after_time {
-        let numeric_date = toks.iter().all(|t| matches!(t, DateTok::Word(w) if designator(w).is_some()) || !matches!(t, DateTok::Word(_)));
-        let doubled = match toks[k] {
-            DateTok::Word(w) => doubled_designator(w),
-            _ => None,
-        };
-        if let (true, Some(head)) = (numeric_date, doubled) {
-            // The word is the time's designator and the extra one together.
-            toks[k] = DateTok::Word(head);
-            extra_designator = true;
-        } else if numeric_date && matches!(toks.get(k + 1), Some(DateTok::Word(w)) if designator(w).is_some()) {
-            toks.remove(k + 1);
-            extra_designator = true;
-        }
+    let extra_designator = fold_extra_designator(&mut toks);
+    let (meridiem, meridiem_at, mut rest) = split_meridiem(toks)?;
+    // The designator that opens the text stands for the time when no other follows it.
+    let (meridiem, meridiem_at) = place_leading_designator(lead, meridiem, meridiem_at)?;
+    // A meridiem opens the text or follows the number that ends the time.
+    let leading_meridiem = meridiem.is_some() && meridiem_at == 0;
+    if meridiem.is_some() && !leading_meridiem && !matches!(rest.get(meridiem_at - 1), Some(DateTok::Num { .. })) {
+        return None;
     }
+    let time = read_time(&mut rest, meridiem, meridiem_at, leading_meridiem)?;
+    if !separators_between_parts(&rest) {
+        return None;
+    }
+    let (nums, month, has_sep) = split_date_parts(&rest)?;
+    let date = match (month, nums.is_empty()) {
+        (None, true) => {
+            if has_sep || extra_designator { return None; }
+            return time;
+        }
+        (None, false) => numeric_date(&nums)?,
+        (Some(m), _) => named_date(m, &nums)?,
+    };
+    // Before the epoch the fraction of a date is the time of day counted as a magnitude.
+    let time = time.unwrap_or(0.0);
+    Some(if date < 0.0 { date - time } else { date + time })
+}
+
+/// After a time and its designator, a numeric date may open with one more designator: takes it
+/// out of the tokens, or splits it off a word that holds both, and says whether there was one.
+fn fold_extra_designator(toks: &mut Vec<DateTok<'_>>) -> bool {
+    let Some(k) = designator_after_time(toks) else { return false };
+    let numeric_date = toks.iter().all(|t| matches!(t, DateTok::Word(w) if designator(w).is_some()) || !matches!(t, DateTok::Word(_)));
+    let doubled = match toks[k] {
+        DateTok::Word(w) => doubled_designator(w),
+        _ => None,
+    };
+    if let (true, Some(head)) = (numeric_date, doubled) {
+        // The word is the time's designator and the extra one together.
+        toks[k] = DateTok::Word(head);
+        return true;
+    }
+    if numeric_date && matches!(toks.get(k + 1), Some(DateTok::Word(w)) if designator(w).is_some()) {
+        toks.remove(k + 1);
+        return true;
+    }
+    false
+}
+
+/// The place of the first AM/PM word that follows a number, when all that comes before it is
+/// the time.
+fn designator_after_time(toks: &[DateTok<'_>]) -> Option<usize> {
+    toks.iter()
+        .enumerate()
+        .position(|(k, t)| {
+            k > 0
+                && matches!(toks[k - 1], DateTok::Num { .. })
+                && matches!(t, DateTok::Word(w) if exact_meridiem(w) || doubled_designator(w).is_some())
+        })
+        .filter(|&k| only_time_before(toks, k))
+}
+
+/// Whether all that comes before the designator at `k` is the time: `Num (: Num)*`.
+fn only_time_before(toks: &[DateTok<'_>], k: usize) -> bool {
+    let mut start = k - 1;
+    while start >= 2 && toks[start - 1] == DateTok::Colon && matches!(toks[start - 2], DateTok::Num { .. }) {
+        start -= 2;
+    }
+    start == 0
+}
+
+/// Takes the AM/PM word out of the tokens: whether it is PM, where it stood among the rest, and
+/// the rest. `None` for a second one, or a weekday name.
+fn split_meridiem(toks: Vec<DateTok<'_>>) -> Option<(Option<bool>, usize, Vec<DateTok<'_>>)> {
     let mut meridiem = None;
     let mut meridiem_at = 0;
     let mut rest: Vec<DateTok> = Vec::new();
@@ -778,21 +844,24 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
             other => rest.push(other),
         }
     }
-    // The designator that opens the text stands for the time when no other follows it.
+    Some((meridiem, meridiem_at, rest))
+}
+
+/// The designator that opens the text stands for the time when no other follows it; a second
+/// one in front of the time makes the text invalid.
+fn place_leading_designator(lead: Option<bool>, meridiem: Option<bool>, meridiem_at: usize) -> Option<(Option<bool>, usize)> {
     if meridiem.is_none() {
-        meridiem = lead;
-        meridiem_at = 0;
-    } else if lead.is_some() && meridiem_at == 0 {
-        // A second designator in front of the time.
+        return Some((lead, 0));
+    }
+    if lead.is_some() && meridiem_at == 0 {
         return None;
     }
-    // A meridiem opens the text or follows the number that ends the time.
-    let leading_meridiem = meridiem.is_some() && meridiem_at == 0;
-    if meridiem.is_some() && !leading_meridiem && !matches!(rest.get(meridiem_at - 1), Some(DateTok::Num { .. })) {
-        return None;
-    }
-    // The time is `Num (: Num)+`, or the last number before AM/PM.
-    let mut time: Option<f64> = None;
+    Some((meridiem, meridiem_at))
+}
+
+/// Takes the time out of `rest` and returns it. The time is `Num (: Num)+`, or the last
+/// number before AM/PM.
+fn read_time(rest: &mut Vec<DateTok<'_>>, meridiem: Option<bool>, meridiem_at: usize, leading_meridiem: bool) -> Option<Option<f64>> {
     if let Some(c) = rest.iter().position(|t| *t == DateTok::Colon) {
         let num_at = |i: usize| match rest.get(i) {
             Some(DateTok::Num { value, .. }) => Some(*value),
@@ -809,25 +878,32 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
         if meridiem.is_some() && !leading_meridiem && end + 1 != meridiem_at {
             return None;
         }
-        time = Some(time_fraction(hour, minute, second, meridiem)?);
+        let time = time_fraction(hour, minute, second, meridiem)?;
         rest.drain(start..=end);
-    } else if let Some(pm) = meridiem {
-        if leading_meridiem {
-            // `AM 1/1/2000`: nothing for it to qualify.
-        } else {
-            // An hour alone before the meridiem.
+        return Some(Some(time));
+    }
+    match meridiem {
+        // An hour alone before the meridiem. (`AM 1/1/2000` has nothing for it to qualify.)
+        Some(pm) if !leading_meridiem => {
             let DateTok::Num { value, .. } = rest[meridiem_at - 1] else { return None };
-            time = Some(time_fraction(value, 0, 0, Some(pm))?);
+            let time = time_fraction(value, 0, 0, Some(pm))?;
             rest.remove(meridiem_at - 1);
+            Some(Some(time))
         }
+        _ => Some(None),
     }
-    if !separators_between_parts(&rest) {
-        return None;
-    }
+}
+
+/// The numbers (with their digit counts), the month named, and whether a separator was seen.
+type DateParts = (Vec<(i32, usize)>, Option<i32>, bool);
+
+/// The numbers, the month name and whether a separator stands among the date's tokens.
+/// `None` for a second month name or a colon left over.
+fn split_date_parts(rest: &[DateTok<'_>]) -> Option<DateParts> {
     let mut nums: Vec<(i32, usize)> = Vec::new();
     let mut month: Option<i32> = None;
     let mut has_sep = false;
-    for t in &rest {
+    for t in rest {
         match *t {
             DateTok::Num { value, digits } => nums.push((value, digits)),
             DateTok::Word(w) => {
@@ -838,17 +914,7 @@ fn parse_vba_date_literal(s: &str) -> Option<f64> {
             DateTok::Colon => return None,
         }
     }
-    let date = match (month, nums.is_empty()) {
-        (None, true) => {
-            if has_sep || extra_designator { return None; }
-            return time;
-        }
-        (None, false) => numeric_date(&nums)?,
-        (Some(m), _) => named_date(m, &nums)?,
-    };
-    // Before the epoch the fraction of a date is the time of day counted as a magnitude.
-    let time = time.unwrap_or(0.0);
-    Some(if date < 0.0 { date - time } else { date + time })
+    Some((nums, month, has_sep))
 }
 
 // ── Scanner ───────────────────────────────────────────────────────────────────
@@ -863,6 +929,16 @@ pub enum OrdinalStart {
     NotAWholeNumber,
     /// The text starts like a number that cannot be read.
     Failed(NumberFailure),
+}
+
+/// What a byte at the start of a token is, when it is a control character.
+enum ControlByte {
+    /// Blank, or the end of a piece's text: nothing to read.
+    Skip,
+    /// A control character that no token can hold.
+    Invalid,
+    /// Not a control character.
+    Text,
 }
 
 /// Per-statement tokenizer.
@@ -1009,27 +1085,10 @@ impl<'a> Scanner<'a> {
             if b == b'\t' {
                 continue;
             }
-            match b {
-                // A NUL ends the text of its piece: what follows it in the piece belongs to no
-                // token. The NUL that stands between two pieces of a line ends nothing more.
-                0x00 => {
-                    if !self.is_separator(start) {
-                        while let Some(next) = self.peek() {
-                            if matches!(next, b'\r' | b'\n') || (next == 0 && self.is_separator(self.pos)) {
-                                break;
-                            }
-                            self.pos += 1;
-                        }
-                    }
-                    continue;
-                }
-                // 0x19 is a blank.
-                0x19 => continue,
-                // Every other control character is invalid.
-                0x01..=0x08 | 0x0b | 0x0c | 0x0e..=0x18 | 0x1a..=0x1f | 0x7f => {
-                    return Token::error(self.span(start));
-                }
-                _ => {}
+            match self.classify_control(b, start) {
+                ControlByte::Skip => continue,
+                ControlByte::Invalid => return Token::error(self.span(start)),
+                ControlByte::Text => {}
             }
             // A full-width form of an ASCII character is read as that character.
             let b = match self.full_width_at(start) {
@@ -1043,85 +1102,93 @@ impl<'a> Scanner<'a> {
             if b == self.src[start] && self.double_byte_at(start) {
                 return self.scan_ident(b, start);
             }
-            let cls = CHAR_CLASSES[b as usize];
-            match cls {
-                0x00 => {
-                    // CR LF is one line break, so it is one end-of-line token.
-                    if b == b'\r' && self.peek() == Some(b'\n') {
-                        self.pos += 1;
-                    }
-                    return Token::eol(start as u32);
-                }
-
-                0x01..=0x04 => { /* skip */ }
-
-                0x05 => { /* skip */ }
-
-                0x06 => return Token::op(Kw::Bang, self.span(start)),
-
-                0x07 => return self.scan_string(start),
-
-                0x08 => return self.scan_hash(start),
-
-                0x09 | 0x0a | 0x25 => return Token::error(self.span(start)),
-
-                0x0b => return self.scan_amp(start),
-
-                0x0c => return self.consume_comment(start, Kw::Apos),
-
-                0x0d => return Token::op(Kw::LParen, self.span(start)),
-
-                0x0e => return Token::op(Kw::RParen, self.span(start)),
-
-                0x0f => return Token::op(Kw::Star, self.span(start)),
-
-                0x10 => return Token::op(Kw::Plus, self.span(start)),
-
-                0x11 => return Token::op(Kw::Comma, self.span(start)),
-
-                0x12 => return Token::op(Kw::Minus, self.span(start)),
-
-                0x13 => return self.scan_dot(start),
-
-                0x14 => return Token::op(Kw::Slash, self.span(start)),
-
-                0x15..=0x1e => return self.scan_number(b, start),
-
-                0x1f => return self.scan_colon(start),
-
-                0x20 => return Token::op(Kw::Semi, self.span(start)),
-
-                0x21 => return self.scan_lt(start),
-
-                0x22 => return self.scan_eq(start),
-
-                0x23 => return self.scan_gt(start),
-
-                0x24 => return Token::op(Kw::Question, self.span(start)),
-
-                0x3d => return self.scan_bracketed_ident(start),
-
-                0x3e => return Token::op(Kw::Backslash, self.span(start)),
-
-                0x3f => return Token::error(self.span(start)),
-
-                0x40 => return Token::op(Kw::Caret, self.span(start)),
-
-                0x41 => return self.scan_underscore(b, start),
-
-                _ if matches!(b, b'~' | b'`' | b'|' | b'{' | b'}') => {
-                    return Token::error(self.span(start));
-                }
-                _ => {
-                    let tok = self.scan_ident(b, start);
-                    // After `.` or `!` the word names a member, even `Rem`.
-                    if matches!(tok.kind, TokenKind::Kw(Kw::Rem)) && !self.after_member_operator {
-                        return self.consume_comment(start, Kw::Rem);
-                    }
-                    return tok;
-                }
+            if let Some(tok) = self.scan_by_class(b, start) {
+                return tok;
             }
         }
+    }
+
+    /// What a byte that starts a token is when it is not text: blank, invalid or the end of what
+    /// a piece holds.
+    fn classify_control(&mut self, b: u8, start: usize) -> ControlByte {
+        match b {
+            // A NUL ends the text of its piece: what follows it in the piece belongs to no
+            // token. The NUL that stands between two pieces of a line ends nothing more.
+            0x00 => {
+                if !self.is_separator(start) {
+                    self.skip_piece_text();
+                }
+                ControlByte::Skip
+            }
+            // 0x19 is a blank.
+            0x19 => ControlByte::Skip,
+            // Every other control character is invalid.
+            0x01..=0x08 | 0x0b | 0x0c | 0x0e..=0x18 | 0x1a..=0x1f | 0x7f => ControlByte::Invalid,
+            _ => ControlByte::Text,
+        }
+    }
+
+    /// Passes the rest of a piece's text, up to the end of its line or the NUL that ends it.
+    fn skip_piece_text(&mut self) {
+        while let Some(next) = self.peek() {
+            if matches!(next, b'\r' | b'\n') || (next == 0 && self.is_separator(self.pos)) {
+                break;
+            }
+            self.pos += 1;
+        }
+    }
+
+    /// The token a byte of the given class starts, or `None` for a byte that is skipped.
+    fn scan_by_class(&mut self, b: u8, start: usize) -> Option<Token> {
+        let cls = CHAR_CLASSES[b as usize];
+        Some(match cls {
+            0x00 => {
+                // CR LF is one line break, so it is one end-of-line token.
+                if b == b'\r' && self.peek() == Some(b'\n') {
+                    self.pos += 1;
+                }
+                Token::eol(start as u32)
+            }
+            0x01..=0x05 => return None,
+            0x06 => Token::op(Kw::Bang, self.span(start)),
+            0x07 => self.scan_string(start),
+            0x08 => self.scan_hash(start),
+            0x09 | 0x0a | 0x25 => Token::error(self.span(start)),
+            0x0b => self.scan_amp(start),
+            0x0c => self.consume_comment(start, Kw::Apos),
+            0x0d => Token::op(Kw::LParen, self.span(start)),
+            0x0e => Token::op(Kw::RParen, self.span(start)),
+            0x0f => Token::op(Kw::Star, self.span(start)),
+            0x10 => Token::op(Kw::Plus, self.span(start)),
+            0x11 => Token::op(Kw::Comma, self.span(start)),
+            0x12 => Token::op(Kw::Minus, self.span(start)),
+            0x13 => self.scan_dot(start),
+            0x14 => Token::op(Kw::Slash, self.span(start)),
+            0x15..=0x1e => self.scan_number(b, start),
+            0x1f => self.scan_colon(start),
+            0x20 => Token::op(Kw::Semi, self.span(start)),
+            0x21 => self.scan_lt(start),
+            0x22 => self.scan_eq(start),
+            0x23 => self.scan_gt(start),
+            0x24 => Token::op(Kw::Question, self.span(start)),
+            0x3d => self.scan_bracketed_ident(start),
+            0x3e => Token::op(Kw::Backslash, self.span(start)),
+            0x3f => Token::error(self.span(start)),
+            0x40 => Token::op(Kw::Caret, self.span(start)),
+            0x41 => self.scan_underscore(b, start),
+            _ if matches!(b, b'~' | b'`' | b'|' | b'{' | b'}') => Token::error(self.span(start)),
+            _ => self.scan_word(b, start),
+        })
+    }
+
+    /// A name or keyword starting with `b`; `Rem` starts a comment unless it follows `.` or `!`.
+    fn scan_word(&mut self, b: u8, start: usize) -> Token {
+        let tok = self.scan_ident(b, start);
+        // After `.` or `!` the word names a member, even `Rem`.
+        if matches!(tok.kind, TokenKind::Kw(Kw::Rem)) && !self.after_member_operator {
+            return self.consume_comment(start, Kw::Rem);
+        }
+        tok
     }
 
     /// Consume the rest of the line as comment text. Tabs are part of the
@@ -1186,70 +1253,76 @@ impl<'a> Scanner<'a> {
     /// Scan a string literal.
     fn scan_string(&mut self, start: usize) -> Token {
         self.tok_buf.clear();
-        loop {
-            // A full-width double quote closes (or doubles) a string like a plain one.
-            let step = match self.full_width_at(self.pos) {
-                Some((b'"', width)) => {
-                    self.pos += width;
-                    Some(b'"')
-                }
-                _ => self.advance(),
-            };
-            if step == Some(b'"') {
-                let wide_next = matches!(self.full_width_at(self.pos), Some((b'"', _)));
-                if self.peek() == Some(b'"') || wide_next {
-                    self.pos += if wide_next { 2 } else { 1 };
-                    self.tok_buf.push('"');
-                } else {
-                    break;
-                }
-                continue;
-            }
-            match step {
-                None => break,
-                // A NUL ends the text of the piece, and so the string: it is not closed, and
-                // the NUL is left for the next token to skip the rest of the piece.
-                Some(0x00) => {
-                    self.pos -= 1;
-                    break;
-                }
-                // A tab inside a string is expanded to the next tab stop (every 8 columns,
-                // counted on the expanded line).
-                Some(b'\t') => {
-                    let column = self.expanded_column(self.pos - 1);
-                    for _ in 0..(8 - column % 8) {
-                        self.tok_buf.push(' ');
-                    }
-                }
-                Some(b'\r') | Some(b'\n') => {
-                    // A string stops at the end of its line. When the line ends in a
-                    // continuation mark, the string stops before the blanks that lead to
-                    // the mark and the mark joins the next line.
-                    self.pos -= 1;
-                    if let Some(mark) = self.continuation_mark_at_end(start) {
-                        for _ in mark..self.pos {
-                            self.tok_buf.pop();
-                        }
-                        while self.tok_buf.ends_with([' ', '\t']) {
-                            self.tok_buf.pop();
-                        }
-                        self.pos = mark;
-                    }
-                    break;
-                }
-                Some(b'"') => {
-                    if self.peek() == Some(b'"') {
-                        self.pos += 1;
-                        self.tok_buf.push('"');
-                    } else {
-                        break;
-                    }
-                }
-                Some(b) => self.tok_buf.push(ansi_char(b)),
-            }
-        }
+        while self.scan_string_step(start) {}
         let s = std::mem::take(&mut self.tok_buf).into_boxed_str();
         Token::lit(TokenKind::StrLit, Lit::Str(s), self.span(start))
+    }
+
+    /// Reads one character of a string literal; says whether the string goes on.
+    fn scan_string_step(&mut self, start: usize) -> bool {
+        // A full-width double quote closes (or doubles) a string like a plain one.
+        let step = match self.full_width_at(self.pos) {
+            Some((b'"', width)) => {
+                self.pos += width;
+                Some(b'"')
+            }
+            _ => self.advance(),
+        };
+        match step {
+            None => false,
+            Some(b'"') => self.string_quote(),
+            // A NUL ends the text of the piece, and so the string: it is not closed, and
+            // the NUL is left for the next token to skip the rest of the piece.
+            Some(0x00) => {
+                self.pos -= 1;
+                false
+            }
+            // A tab inside a string is expanded to the next tab stop (every 8 columns,
+            // counted on the expanded line).
+            Some(b'\t') => {
+                let column = self.expanded_column(self.pos - 1);
+                for _ in 0..(8 - column % 8) {
+                    self.tok_buf.push(' ');
+                }
+                true
+            }
+            Some(b'\r') | Some(b'\n') => {
+                self.end_string_at_line_break(start);
+                false
+            }
+            Some(b) => {
+                self.tok_buf.push(ansi_char(b));
+                true
+            }
+        }
+    }
+
+    /// A double quote inside a string literal: a doubled one is a quote character of the string,
+    /// a single one closes it. Says whether the string goes on.
+    fn string_quote(&mut self) -> bool {
+        let wide_next = matches!(self.full_width_at(self.pos), Some((b'"', _)));
+        if self.peek() == Some(b'"') || wide_next {
+            self.pos += if wide_next { 2 } else { 1 };
+            self.tok_buf.push('"');
+            true
+        } else {
+            false
+        }
+    }
+
+    /// A string stops at the end of its line. When the line ends in a continuation mark, the
+    /// string stops before the blanks that lead to the mark and the mark joins the next line.
+    fn end_string_at_line_break(&mut self, start: usize) {
+        self.pos -= 1;
+        if let Some(mark) = self.continuation_mark_at_end(start) {
+            for _ in mark..self.pos {
+                self.tok_buf.pop();
+            }
+            while self.tok_buf.ends_with([' ', '\t']) {
+                self.tok_buf.pop();
+            }
+            self.pos = mark;
+        }
     }
 
     /// Scan a numeric literal (integer, float, or type-suffixed).
@@ -1283,22 +1356,10 @@ impl<'a> Scanner<'a> {
                     self.pos += 1;
                 }
                 b'e' | b'E' | b'd' | b'D' if !has_exp => {
-                    if self.try_consume_exponent() {
-                        has_exp = true;
-                    } else {
-                        // An exponent mark must be followed by digits (after an optional sign).
-                        // A sign with no digits after it reads as an exponent too large to
-                        // hold; a mark with no sign is malformed.
-                        let signed = matches!(self.src.get(self.pos + 1), Some(b'+' | b'-'));
-                        if signed {
-                            self.pos += 2;
-                        }
-                        while matches!(self.src.get(self.pos), Some(b) if is_ident_continue(*b)) {
-                            self.pos += 1;
-                        }
-                        let failure = if signed { NumberFailure::Overflow } else { NumberFailure::Malformed };
-                        return Token::number_failure(self.span(start), failure);
+                    if !self.try_consume_exponent() {
+                        return self.bad_exponent(start);
                     }
+                    has_exp = true;
                 }
                 _ => break,
             }
@@ -1307,6 +1368,21 @@ impl<'a> Scanner<'a> {
         let is_float = has_decimal || has_exp;
         let span = self.span(start);
         self.finish_number_literal(is_float, span)
+    }
+
+    /// A number whose exponent mark is not followed by digits (after an optional sign). A sign
+    /// with no digits after it reads as an exponent too large to hold; a mark with no sign is
+    /// malformed.
+    fn bad_exponent(&mut self, start: usize) -> Token {
+        let signed = matches!(self.src.get(self.pos + 1), Some(b'+' | b'-'));
+        if signed {
+            self.pos += 2;
+        }
+        while matches!(self.src.get(self.pos), Some(b) if is_ident_continue(*b)) {
+            self.pos += 1;
+        }
+        let failure = if signed { NumberFailure::Overflow } else { NumberFailure::Malformed };
+        Token::number_failure(self.span(start), failure)
     }
 
     /// Try to consume an exponent marker plus optional sign at the current
@@ -1424,23 +1500,7 @@ impl<'a> Scanner<'a> {
         }
         // Blanks may separate the `#` from the directive word (`# If`).
         if self.tok_buf.len() == 1 {
-            let mut p = self.pos;
-            while matches!(self.src.get(p), Some(b' ') | Some(b'\t')) {
-                p += 1;
-            }
-            let word_start = p;
-            while let Some(&b) = self.src.get(p) {
-                if !is_ident_continue(b) { break; }
-                p += 1;
-            }
-            if p > word_start && word_start > self.pos {
-                let word: String = self.src[word_start..p].iter().map(|&b| b as char).collect();
-                let key = format!("#{}", word.to_ascii_lowercase());
-                if key == "#endif" || self.ctx.by_key.contains_key(&key) {
-                    self.tok_buf.push_str(&word);
-                    self.pos = p;
-                }
-            }
+            self.join_spaced_directive();
         }
         if let Some(tok) = self.hash_directive_token(start) {
             return tok;
@@ -1451,6 +1511,29 @@ impl<'a> Scanner<'a> {
         }
         self.pos = save;
         Token::op(Kw::Hash, self.span(start))
+    }
+
+    /// Takes in the directive word that follows blanks after a lone `#`, when it names a
+    /// directive.
+    fn join_spaced_directive(&mut self) {
+        let mut p = self.pos;
+        while matches!(self.src.get(p), Some(b' ') | Some(b'\t')) {
+            p += 1;
+        }
+        let word_start = p;
+        while let Some(&b) = self.src.get(p) {
+            if !is_ident_continue(b) { break; }
+            p += 1;
+        }
+        if p <= word_start || word_start <= self.pos {
+            return;
+        }
+        let word: String = self.src[word_start..p].iter().map(|&b| b as char).collect();
+        let key = format!("#{}", word.to_ascii_lowercase());
+        if key == "#endif" || self.ctx.by_key.contains_key(&key) {
+            self.tok_buf.push_str(&word);
+            self.pos = p;
+        }
     }
 
     /// If `tok_buf` (a `#`-prefixed word) names a conditional-compile keyword,

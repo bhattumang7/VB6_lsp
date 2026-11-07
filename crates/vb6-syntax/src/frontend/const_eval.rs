@@ -80,52 +80,58 @@ fn structure_error(arena: &ExprArena, node: NodeId, env: &dyn ConstEnv, ctx: Con
     match arena.get(node) {
         ExprNode::Paren { inner } => structure_error(arena, *inner, env, ctx),
         ExprNode::UnOp { operand, .. } => structure_error(arena, *operand, env, ctx),
-        ExprNode::BinOp { .. } => {
-            // A long chain of operators leans to the left; walk it without recursing down it.
-            let (leaf, spine) = left_spine(arena, node);
-            structure_error(arena, leaf, env, ctx).or_else(|| {
-                spine.iter().rev().find_map(|op| match arena.get(*op) {
-                    ExprNode::BinOp { rhs, .. } => structure_error(arena, *rhs, env, ctx),
-                    _ => None,
-                })
-            })
-        }
+        ExprNode::BinOp { .. } => binop_error(arena, node, env, ctx),
         ExprNode::NameRef { sym, .. } => binding_error(env.lookup(*sym)),
-        ExprNode::MemberAccess { base, member, bang, .. } => {
-            let path = qualified_path(arena, *base)?;
-            // A member of a constant has nothing to name it by.
-            if let [first] = path.as_slice() {
-                if matches!(env.lookup(*first), Binding::Constant(_)) {
-                    return Some(if *bang { EvalError::QualifierMustBeCollection } else { EvalError::InvalidQualifier });
-                }
-            }
-            if *bang {
-                return None;
-            }
-            binding_error(env.lookup_qualified(&path, *member))
-        }
-        ExprNode::Call { func, args } => {
-            let ExprNode::ArgList { args } = arena.get(*args) else { return None };
-            let argument_error = || args.iter().find_map(|a| structure_error(arena, *a, env, ctx));
-            let ExprNode::NameRef { sym, .. } = arena.get(*func) else {
-                return structure_error(arena, *func, env, ctx).or_else(argument_error);
-            };
-            match env.lookup(*sym) {
-                Binding::Unknown => {}
-                // A constant takes no arguments.
-                Binding::Constant(_) => return Some(EvalError::ExpectedArray),
-                // A function or an array of the module: calling it is not constant.
-                _ => return Some(EvalError::NotConstant),
-            }
-            let spelling = env.spelling(*sym);
-            if is_language_function(&spelling) {
-                let callable = ctx == Context::Other && is_constant_function(&spelling);
-                return if callable { argument_error() } else { Some(EvalError::NotConstant) };
-            }
-            argument_error()
-        }
+        ExprNode::MemberAccess { base, member, bang, .. } => member_access_error(arena, *base, *member, *bang, env),
+        ExprNode::Call { func, args } => call_error(arena, *func, *args, env, ctx),
         _ => None,
     }
+}
+
+fn binop_error(arena: &ExprArena, node: NodeId, env: &dyn ConstEnv, ctx: Context) -> Option<EvalError> {
+    // A long chain of operators leans to the left; walk it without recursing down it.
+    let (leaf, spine) = left_spine(arena, node);
+    structure_error(arena, leaf, env, ctx).or_else(|| {
+        spine.iter().rev().find_map(|op| match arena.get(*op) {
+            ExprNode::BinOp { rhs, .. } => structure_error(arena, *rhs, env, ctx),
+            _ => None,
+        })
+    })
+}
+
+fn member_access_error(arena: &ExprArena, base: NodeId, member: u32, bang: bool, env: &dyn ConstEnv) -> Option<EvalError> {
+    let path = qualified_path(arena, base)?;
+    // A member of a constant has nothing to name it by.
+    if let [first] = path.as_slice() {
+        if matches!(env.lookup(*first), Binding::Constant(_)) {
+            return Some(if bang { EvalError::QualifierMustBeCollection } else { EvalError::InvalidQualifier });
+        }
+    }
+    if bang {
+        return None;
+    }
+    binding_error(env.lookup_qualified(&path, member))
+}
+
+fn call_error(arena: &ExprArena, func: NodeId, args: NodeId, env: &dyn ConstEnv, ctx: Context) -> Option<EvalError> {
+    let ExprNode::ArgList { args } = arena.get(args) else { return None };
+    let argument_error = || args.iter().find_map(|a| structure_error(arena, *a, env, ctx));
+    let ExprNode::NameRef { sym, .. } = arena.get(func) else {
+        return structure_error(arena, func, env, ctx).or_else(argument_error);
+    };
+    match env.lookup(*sym) {
+        Binding::Unknown => {}
+        // A constant takes no arguments.
+        Binding::Constant(_) => return Some(EvalError::ExpectedArray),
+        // A function or an array of the module: calling it is not constant.
+        _ => return Some(EvalError::NotConstant),
+    }
+    let spelling = env.spelling(*sym);
+    if is_language_function(&spelling) {
+        let callable = ctx == Context::Other && is_constant_function(&spelling);
+        return if callable { argument_error() } else { Some(EvalError::NotConstant) };
+    }
+    argument_error()
 }
 
 fn binding_error(binding: Binding) -> Option<EvalError> {
@@ -168,27 +174,8 @@ fn value_of(arena: &ExprArena, node: NodeId, env: &dyn ConstEnv) -> Result<Evalu
         ExprNode::Literal { lit } => Ok(Value(Operand::plain(literal_value(lit)))),
         ExprNode::Nothing => Ok(Value(Operand::plain(ConstValue::Nothing))),
         ExprNode::Paren { inner } => value_of(arena, *inner, env),
-        ExprNode::UnOp { op, operand } => match value_of(arena, *operand, env)? {
-            Value(v) => Ok(Value(match op {
-                UnOpKind::Neg => v.negate()?,
-                UnOpKind::Pos => v.plus()?,
-                UnOpKind::Not => v.not()?,
-            })),
-            Unresolved => Ok(Unresolved),
-        },
-        ExprNode::BinOp { .. } => {
-            let (leaf, spine) = left_spine(arena, node);
-            let mut acc = value_of(arena, leaf, env)?;
-            for op_node in spine.iter().rev() {
-                let ExprNode::BinOp { op, rhs, .. } = arena.get(*op_node) else { continue };
-                let r = value_of(arena, *rhs, env)?;
-                acc = match (acc, r, binary_op(*op)) {
-                    (Value(l), Value(r), Some(op)) => Value(Operand::binary(op, &l, &r, env.compare_mode())?),
-                    _ => Unresolved,
-                };
-            }
-            Ok(acc)
-        }
+        ExprNode::UnOp { op, operand } => unop_value(arena, *op, *operand, env),
+        ExprNode::BinOp { .. } => binop_value(arena, node, env),
         ExprNode::NameRef { sym, .. } => match env.lookup(*sym) {
             Binding::Constant(v) => Ok(Value(v)),
             _ => Ok(Unresolved),
@@ -200,22 +187,52 @@ fn value_of(arena: &ExprArena, node: NodeId, env: &dyn ConstEnv) -> Result<Evalu
                 _ => Ok(Unresolved),
             }
         }
-        ExprNode::Call { func, args } => {
-            let ExprNode::NameRef { sym, .. } = arena.get(*func) else { return Ok(Unresolved) };
-            let ExprNode::ArgList { args } = arena.get(*args) else { return Ok(Unresolved) };
-            if !is_constant_function(&env.spelling(*sym)) {
-                return Ok(Unresolved);
-            }
-            // One argument is evaluated; a call with another count is the call checker's.
-            if args.len() != 1 {
-                return Ok(Unresolved);
-            }
-            match value_of(arena, args[0], env)? {
-                Value(v) => Ok(Value(call_function(&env.spelling(*sym), &v)?)),
-                Unresolved => Ok(Unresolved),
-            }
-        }
+        ExprNode::Call { func, args } => call_value(arena, *func, *args, env),
         _ => Ok(Unresolved),
+    }
+}
+
+fn unop_value(arena: &ExprArena, op: UnOpKind, operand: NodeId, env: &dyn ConstEnv) -> Result<Evaluated, EvalError> {
+    use Evaluated::{Unresolved, Value};
+    match value_of(arena, operand, env)? {
+        Value(v) => Ok(Value(match op {
+            UnOpKind::Neg => v.negate()?,
+            UnOpKind::Pos => v.plus()?,
+            UnOpKind::Not => v.not()?,
+        })),
+        Unresolved => Ok(Unresolved),
+    }
+}
+
+fn binop_value(arena: &ExprArena, node: NodeId, env: &dyn ConstEnv) -> Result<Evaluated, EvalError> {
+    use Evaluated::{Unresolved, Value};
+    let (leaf, spine) = left_spine(arena, node);
+    let mut acc = value_of(arena, leaf, env)?;
+    for op_node in spine.iter().rev() {
+        let ExprNode::BinOp { op, rhs, .. } = arena.get(*op_node) else { continue };
+        let r = value_of(arena, *rhs, env)?;
+        acc = match (acc, r, binary_op(*op)) {
+            (Value(l), Value(r), Some(op)) => Value(Operand::binary(op, &l, &r, env.compare_mode())?),
+            _ => Unresolved,
+        };
+    }
+    Ok(acc)
+}
+
+fn call_value(arena: &ExprArena, func: NodeId, args: NodeId, env: &dyn ConstEnv) -> Result<Evaluated, EvalError> {
+    use Evaluated::{Unresolved, Value};
+    let ExprNode::NameRef { sym, .. } = arena.get(func) else { return Ok(Unresolved) };
+    let ExprNode::ArgList { args } = arena.get(args) else { return Ok(Unresolved) };
+    if !is_constant_function(&env.spelling(*sym)) {
+        return Ok(Unresolved);
+    }
+    // One argument is evaluated; a call with another count is the call checker's.
+    if args.len() != 1 {
+        return Ok(Unresolved);
+    }
+    match value_of(arena, args[0], env)? {
+        Value(v) => Ok(Value(call_function(&env.spelling(*sym), &v)?)),
+        Unresolved => Ok(Unresolved),
     }
 }
 
