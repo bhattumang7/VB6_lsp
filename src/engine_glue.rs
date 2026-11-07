@@ -12,8 +12,8 @@ use vb6_engine::session::Session;
 /// spellings of one file (`file:///c%3A/p/a.bas`, `file:///C:/p/../p/a.bas`) agree. A URI that
 /// names no path is keyed by its text.
 pub fn doc_key(uri: &lsp::Url) -> String {
-    match crate::project::paths::path_for_uri(uri) {
-        Some(path) => crate::project::paths::engine_key_for_path(&path),
+    match vb6_project::paths::path_for_uri(uri) {
+        Some(path) => vb6_project::paths::engine_key_for_path(&path),
         None => uri.to_string(),
     }
 }

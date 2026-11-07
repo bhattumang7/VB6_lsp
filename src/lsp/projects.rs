@@ -14,9 +14,9 @@ use vb6_engine::session::Session;
 
 use super::Vb6LanguageServer;
 use crate::engine_glue;
-use crate::project::info::ProjectInfo;
-use crate::project::paths::{self, lookup_key};
-use crate::project::{LoadError, Problem, Selection, Severity};
+use vb6_project::info::ProjectInfo;
+use vb6_project::paths::{self, lookup_key};
+use vb6_project::{LoadError, Problem, Selection, Severity};
 
 /// The session that analyses a document and the key the session knows it by.
 pub(super) struct Route {

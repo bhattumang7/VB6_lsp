@@ -3,7 +3,7 @@
 mod common;
 
 use common::TempDir;
-use vb6_lsp::project::{ReferenceKind, ReferenceStatus, Selection};
+use vb6_project::{ReferenceKind, ReferenceStatus, Selection};
 
 fn no_overlay(_: &str) -> Option<Vec<u8>> {
     None

@@ -7,4 +7,3 @@
 
 pub mod engine_glue;
 pub mod lsp;
-pub mod project;

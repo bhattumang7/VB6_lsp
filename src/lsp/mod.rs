@@ -54,7 +54,7 @@ pub struct Vb6LanguageServer {
     /// Analysis of the open documents that no opened project lists.
     loose: Arc<RwLock<vb6_engine::session::Session>>,
     /// The opened project or group, one analysis per project.
-    selection: Arc<RwLock<Option<crate::project::Selection>>>,
+    selection: Arc<RwLock<Option<vb6_project::Selection>>>,
     /// The diagnostics the editor currently has, per file.
     published: DashMap<Url, Vec<Diagnostic>>,
     /// A project to open as soon as the handshake is complete.
@@ -400,7 +400,7 @@ impl LanguageServer for Vb6LanguageServer {
                         "vb6.projectPreview takes the path of a .vbp or .vbg file",
                     ));
                 };
-                match crate::project::Selection::preview(&path) {
+                match vb6_project::Selection::preview(&path) {
                     Ok(info) => Ok(serde_json::to_value(info).ok()),
                     Err(error) => {
                         let mut e = tower_lsp::jsonrpc::Error::invalid_params(error.to_string());

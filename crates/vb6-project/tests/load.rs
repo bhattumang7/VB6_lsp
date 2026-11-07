@@ -5,7 +5,7 @@ mod common;
 
 use common::TempDir;
 use vb6_engine::session::ProjectKind;
-use vb6_lsp::project::{
+use vb6_project::{
     LoadError, MemberFile, Problem, ReferenceInfo, ReferenceKind, ReferenceStatus, Selection, Severity,
 };
 
@@ -21,8 +21,8 @@ Attribute VB_Name = \"clsThing\"\nAttribute VB_GlobalNameSpace = False\nAttribut
 Attribute VB_PredeclaredId = False\nAttribute VB_Exposed = True\nPublic Sub Hello()\nEnd Sub\n";
 
 fn member(name: &str, ext: &str, path: std::path::PathBuf, line: usize, exists: bool) -> MemberFile {
-    let lookup = vb6_lsp::project::paths::lookup_key(&path);
-    let key = vb6_lsp::project::paths::engine_key_for_path(&path);
+    let lookup = vb6_project::paths::lookup_key(&path);
+    let key = vb6_project::paths::engine_key_for_path(&path);
     MemberFile { name: name.into(), extension: ext.into(), path, key, lookup, line, exists }
 }
 
@@ -114,7 +114,7 @@ fn unsaved_editor_text_replaces_the_file_on_disk() {
     let vbp = dir.write("App.vbp", "Type=Exe\nName=\"App\"\nModule=modMain; modMain.bas\n");
     let main = dir.write("modMain.bas", "Option Explicit\n");
     let edited = "Option Explicit\nSub Run()\n    ghost\nEnd Sub\n";
-    let lookup = vb6_lsp::project::paths::lookup_key(&main);
+    let lookup = vb6_project::paths::lookup_key(&main);
 
     let s = Selection::load(&vbp, &|key: &str| (key == lookup).then(|| edited.as_bytes().to_vec())).unwrap();
 
@@ -162,7 +162,7 @@ fn a_group_lists_its_projects_startup_first_and_wires_project_references() {
             kind: ReferenceKind::Project,
             status: ReferenceStatus::ProjectLoaded,
             line: 2,
-            detail: vb6_lsp::project::paths::normalize(&dir.path("Lib/Lib.vbp")).display().to_string(),
+            detail: vb6_project::paths::normalize(&dir.path("Lib/Lib.vbp")).display().to_string(),
         }]
     );
     assert_eq!(lib.exported.name, "Lib");
@@ -210,7 +210,7 @@ fn a_project_reached_only_by_reference_is_analysed_but_not_listed() {
             severity: Severity::Warning,
             message: format!(
                 "Can't find project or library: {} is not part of the opened project group",
-                vb6_lsp::project::paths::normalize(&dir.path("App/../Lib/Lib.vbp")).display()
+                vb6_project::paths::normalize(&dir.path("App/../Lib/Lib.vbp")).display()
             ),
         }]
     );
@@ -227,7 +227,7 @@ fn a_reference_to_a_project_that_is_not_there_is_reported_on_its_line() {
 
     let s = Selection::load(&vbp, &no_overlay).unwrap();
 
-    let missing = vb6_lsp::project::paths::normalize(&dir.path("..\\Nowhere\\Nowhere.vbp"));
+    let missing = vb6_project::paths::normalize(&dir.path("..\\Nowhere\\Nowhere.vbp"));
     assert_eq!(
         s.problems,
         vec![Problem {

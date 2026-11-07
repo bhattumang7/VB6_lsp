@@ -1,0 +1,14 @@
+[package]
+name = "vb6-project"
+version = "0.1.0"
+edition = "2021"
+description = "Opening a VB6 project or project group: its members, its references, and one analysis session per project"
+license = "MIT"
+authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
+
+[dependencies]
+vb6-engine = { path = "../vb6-engine" }
+vb6-formats = { path = "../vb6-formats" }
+vb6-typelib = { path = "../vb6-typelib" }
+serde = { version = "1", features = ["derive"] }
+url = "2"

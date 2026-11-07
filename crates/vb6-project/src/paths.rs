@@ -3,7 +3,7 @@
 
 use std::path::{Component, Path, PathBuf};
 
-use tower_lsp::lsp_types::Url;
+use url::Url;
 
 /// Resolve `.` and `..` components without touching the file system.
 pub fn normalize(path: &Path) -> PathBuf {
