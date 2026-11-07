@@ -524,3 +524,33 @@ fn editing_a_class_interface_refreshes_the_projects_that_reference_it() {
         .update_file(&lib_key, EXPOSED_CLASS.replace("Public Sub Hello", "Private Sub Hello\n    Dim x\n    x = 1\n    Rem").into_bytes());
     assert_eq!(s.propagate_exports(1), Vec::<usize>::new());
 }
+
+#[test]
+fn a_compiled_library_reference_is_not_mapped_to_a_project_of_the_group_that_builds_it() {
+    let dir = TempDir::new("compiledinGroup");
+    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nProject=Lib.vbp\nStartupProject=App.vbp\n");
+    dir.write("Lib.vbp", "Type=OleDll\nName=\"Lib\"\n");
+    let app = dir.write(
+        "App.vbp",
+        "Type=Exe\nName=\"App\"\nReference=*\\G{DEADBEEF-0000-4000-8000-000000000003}#1.0#0#Lib.dll#Lib\n",
+    );
+
+    let s = Selection::load(&vbg, &no_overlay).unwrap();
+
+    assert_eq!(
+        s.problems,
+        vec![Problem {
+            file: app,
+            line: 3,
+            severity: Severity::Warning,
+            message: common::missing_library_message(
+                "Lib {DEADBEEF-0000-4000-8000-000000000003} 1.0",
+                &dir.path("Lib.dll").display().to_string(),
+            ),
+        }]
+    );
+    let app_unit = s.units.iter().find(|u| u.name == "App").unwrap();
+    let statuses: Vec<(ReferenceKind, ReferenceStatus)> = app_unit.references.iter().map(|r| (r.kind, r.status)).collect();
+    assert_eq!(statuses, vec![(ReferenceKind::TypeLibrary, ReferenceStatus::NotLoaded)]);
+    assert_eq!(app_unit.dependencies, Vec::<usize>::new());
+}
