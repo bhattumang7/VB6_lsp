@@ -294,6 +294,12 @@ impl<'a> Emitter<'a> {
 
     /// The plain store index selected by one of the flag bits, if any is set.
     fn ref_store_flagged_index(v: i32, f_flags: u32, n_type: i32) -> Option<i32> {
+        Self::ref_store_low_flag_index(v, f_flags)
+            .or_else(|| Self::ref_store_high_flag_index(v, f_flags, n_type))
+    }
+
+    /// The plain store index selected by flag bits `0x20`, `0x80`, `0x200` or `0x400`.
+    fn ref_store_low_flag_index(v: i32, f_flags: u32) -> Option<i32> {
         if f_flags & 0x20 != 0 {
             return Some((if f_flags & 0x1000 != 0 { 1 } else { 0 }) + 0x1b5);
         }
@@ -306,6 +312,11 @@ impl<'a> Emitter<'a> {
         if f_flags & 0x400 != 0 {
             return Some(0x3f7);
         }
+        None
+    }
+
+    /// The plain store index selected by flag bits `0x1000` or `0x800`.
+    fn ref_store_high_flag_index(v: i32, f_flags: u32, n_type: i32) -> Option<i32> {
         if f_flags & 0x1000 != 0 {
             return Some(if n_type == 0x10 || n_type == 0xf { v + 10 } else { v });
         }
