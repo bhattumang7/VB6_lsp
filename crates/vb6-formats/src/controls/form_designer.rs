@@ -20,10 +20,11 @@
 //! Attribute VB_Name = "frmMain"
 //! ```
 //!
-//! This parser recovers the control tree, the `Object=` type-library declarations
+//! This module recovers the control tree, the `Object=` type-library declarations
 //! (CLSID + companion OCX), and every property value — flagging the ones that are
 //! references into the `.frx`/`.ctx` companion (see [`crate::frx`]).
 
+use crate::frm::{parse_frm, BeginBlock, ObjectRef, PropValue, Property};
 use crate::frx::{self, FrxRef};
 
 /// A type-library declaration from an `Object =` header line.
@@ -119,191 +120,68 @@ fn collect_refs(ctl: &DesignerControl, path: &mut Vec<String>, out: &mut Vec<Res
 
 /// Parse the designer block at the top of a `.frm`/`.ctl` source.
 ///
-/// Parsing stops once the outermost control block closes (the remainder is the
-/// `Attribute`/code section).
+/// This is a view of what the [`.frm` parser](crate::frm) reads: the control tree, the `Object =`
+/// declarations, and the properties that point into a companion file. A property value is
+/// its text without a trailing comment. A source the `.frm` parser cannot read (no `VERSION`
+/// header, an unterminated block, a malformed `Object =` line) gives an empty designer.
 pub fn parse_designer(source: &str) -> FormDesigner {
-    let mut designer = FormDesigner::default();
-    let mut stack: Vec<DesignerControl> = Vec::new();
-    // Stack of BeginProperty group names currently open within the top control,
-    // so references inside e.g. an ImageList's Images/ListImageN blocks get a
-    // qualified path and are still harvested.
-    let mut prop_group_stack: Vec<String> = Vec::new();
-    let mut started = false;
-
-    for physical in vb6_syntax::frontend::line_reader::physical_lines(source.as_bytes()) {
-        let line = source[physical.start..physical.end].trim();
-        if line.is_empty() {
-            continue;
-        }
-        // The outermost control's `End` stops parsing (the rest is VB code).
-        if handle_designer_line(line, &mut designer, &mut stack, &mut prop_group_stack, &mut started)
-            == LineFlow::Stop
-        {
-            break;
-        }
-    }
-
-    designer
-}
-
-/// Whether the designer scan should keep going or stop (outermost `End` reached).
-#[derive(PartialEq, Eq)]
-enum LineFlow {
-    Next,
-    Stop,
-}
-
-/// Process one non-empty designer line, mutating the parse state. Each line kind
-/// is a flat guard so the dispatch carries no nesting penalty.
-fn handle_designer_line(
-    line: &str,
-    designer: &mut FormDesigner,
-    stack: &mut Vec<DesignerControl>,
-    prop_group_stack: &mut Vec<String>,
-    started: &mut bool,
-) -> LineFlow {
-    // Header: Object = "{CLSID}#ver#lcid"; "file.ocx"
-    if !*started && starts_with_ci(line, "object") {
-        if let Some(obj) = parse_object_line(line) {
-            designer.objects.push(obj);
-        }
-        return LineFlow::Next;
-    }
-
-    // BeginProperty <Name> [GUID] ... EndProperty — a property group (e.g. Font,
-    // or an ImageList's Images / ListImageN image collection).
-    if starts_with_ci(line, "beginproperty") {
-        let group = line[13..].split_whitespace().next().unwrap_or("").to_string();
-        prop_group_stack.push(group);
-        return LineFlow::Next;
-    }
-    if line.eq_ignore_ascii_case("endproperty") {
-        prop_group_stack.pop();
-        return LineFlow::Next;
-    }
-
-    // Begin <Type> <Name>
-    if starts_with_ci(line, "begin ") {
-        *started = true;
-        let (type_name, name) = parse_begin_line(&line[6..]);
-        stack.push(DesignerControl {
-            type_name,
-            name,
-            properties: Vec::new(),
-            children: Vec::new(),
-        });
-        return LineFlow::Next;
-    }
-
-    // End (closes the current control)
-    if line.eq_ignore_ascii_case("end") {
-        return if close_control(stack, designer) { LineFlow::Stop } else { LineFlow::Next };
-    }
-
-    // Property line: Name = Value (meaningful inside a control).
-    if let Some((name, value)) = split_property(line) {
-        if let Some(ctl) = stack.last_mut() {
-            push_property(ctl, prop_group_stack, name, value);
-        }
-    }
-    LineFlow::Next
-}
-
-/// Case-insensitive prefix test that is safe on non-ASCII byte boundaries.
-fn starts_with_ci(line: &str, prefix: &str) -> bool {
-    line.get(..prefix.len())
-        .is_some_and(|s| s.eq_ignore_ascii_case(prefix))
-}
-
-/// Close the current control on `End`. Pushes it onto its parent, or sets it as
-/// the designer root. Returns `true` when the outermost control was closed (so
-/// the caller should stop parsing — the rest is the code section).
-fn close_control(stack: &mut Vec<DesignerControl>, designer: &mut FormDesigner) -> bool {
-    let Some(done) = stack.pop() else {
-        return false;
+    let Ok(frm) = parse_frm(source) else {
+        return FormDesigner::default();
     };
-    if let Some(parent) = stack.last_mut() {
-        parent.children.push(done);
-        false
-    } else {
-        designer.root = Some(done);
-        true
+    FormDesigner {
+        objects: frm.objects.iter().filter_map(object_entry).collect(),
+        root: frm.root.as_ref().map(control),
     }
 }
 
-/// Record a `Name = Value` property line for the control at the top of the stack,
-/// applying BeginProperty-group qualification rules.
-fn push_property(
-    ctl: &mut DesignerControl,
-    prop_group_stack: &[String],
-    name: &str,
-    value: &str,
-) {
-    let fref = frx::parse_frx_reference(value);
-    if prop_group_stack.is_empty() {
-        // Top-level control property: keep all (frx or not).
-        ctl.properties.push(DesignerProp {
-            name: name.to_string(),
-            value: value.to_string(),
-            frx: fref,
-        });
-    } else if let Some(r) = fref {
-        // Inside a BeginProperty group: harvest only references, with a qualified
-        // path (e.g. Images.ListImage1.Picture).
-        let qualified = format!("{}.{}", prop_group_stack.join("."), name);
-        ctl.properties.push(DesignerProp {
-            name: qualified,
-            value: value.to_string(),
-            frx: Some(r),
-        });
-    }
-}
-
-fn parse_object_line(line: &str) -> Option<ObjectEntry> {
-    // Object = "{GUID}#major.minor#lcid"; "file.ocx"
-    let eq = line.find('=')?;
-    let rhs = line[eq + 1..].trim();
-    let first = rhs.strip_prefix('"')?;
-    let (decl, after) = first.split_once('"')?;
-    let clsid_end = decl.find('#').unwrap_or(decl.len());
-    let clsid = decl[..clsid_end].trim().to_string();
-    let mut version = String::new();
-    if clsid_end < decl.len() {
-        let rest = &decl[clsid_end + 1..];
-        version = rest.split('#').next().unwrap_or("").trim().to_string();
-    }
-    // file: the quoted token after ';'
-    let file = after
-        .split(';')
-        .nth(1)
-        .and_then(|s| {
-            let s = s.trim();
-            let s = s.strip_prefix('"')?;
-            Some(s.split('"').next().unwrap_or(s).to_string())
-        })
-        .unwrap_or_default();
+/// `{CLSID}#version#lcid` and the companion file of an `Object =` line; `None` when the
+/// declaration has no CLSID.
+fn object_entry(object: &ObjectRef) -> Option<ObjectEntry> {
+    let mut fields = object.progid.split('#');
+    let clsid = fields.next().unwrap_or("").trim().to_string();
     if clsid.is_empty() {
         return None;
     }
+    let version = fields.next().unwrap_or("").trim().to_string();
+    let file = object.filename.clone().unwrap_or_default();
     Some(ObjectEntry { clsid, version, file })
 }
 
-fn parse_begin_line(rest: &str) -> (String, String) {
-    let mut it = rest.split_whitespace();
-    let type_name = it.next().unwrap_or("").to_string();
-    let name = it.next().unwrap_or("").to_string();
-    (type_name, name)
+fn control(block: &BeginBlock) -> DesignerControl {
+    let mut properties = Vec::new();
+    for property in &block.properties {
+        collect_property(property, &mut Vec::new(), &mut properties);
+    }
+    DesignerControl {
+        type_name: block.control_type.clone(),
+        name: block.name.clone(),
+        properties,
+        children: block.children.iter().map(control).collect(),
+    }
 }
 
-/// Split `Name = Value` on the first `=`, returning trimmed halves.
-fn split_property(line: &str) -> Option<(&str, &str)> {
-    let eq = line.find('=')?;
-    let name = line[..eq].trim();
-    let value = line[eq + 1..].trim();
-    if name.is_empty() || name.contains(' ') && !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
-        // names are single identifiers; guard against stray '=' in odd lines
+/// Record a property of a control. Every plain property of the control is kept; inside a
+/// `BeginProperty` group only the references into a companion file are, under their dotted
+/// path (`Images.ListImage1.Picture`).
+fn collect_property(property: &Property, groups: &mut Vec<String>, out: &mut Vec<DesignerProp>) {
+    match &property.value {
+        PropValue::Scalar(value) => {
+            let frx = frx::parse_frx_reference(value);
+            if groups.is_empty() {
+                out.push(DesignerProp { name: property.name.clone(), value: value.clone(), frx });
+            } else if frx.is_some() {
+                let name = format!("{}.{}", groups.join("."), property.name);
+                out.push(DesignerProp { name, value: value.clone(), frx });
+            }
+        }
+        PropValue::Bag(members) => {
+            groups.push(property.name.clone());
+            for member in members {
+                collect_property(member, groups, out);
+            }
+            groups.pop();
+        }
     }
-    Some((name, value))
 }
 
 #[cfg(test)]

@@ -18,7 +18,7 @@ fn full_coverage_of_a_single_picture() {
     frx.extend_from_slice(&[0x42, 0x4D, 0x00, 0x00]);
     let frx_path = write_temp("cov.frx", &frx);
     let name = frx_path.file_name().unwrap().to_string_lossy().to_string();
-    let frm = format!("Begin VB.Form f\n   Icon = \"{}\":0000\nEnd\n", name);
+    let frm = format!("VERSION 5.00\nBegin VB.Form f\n   Icon = \"{}\":0000\nEnd\n", name);
     let frm_path = write_temp("cov.frm", frm.as_bytes());
 
     let reports = coverage_for_form(&frm_path).unwrap();
@@ -43,7 +43,7 @@ fn unexplained_gap_is_flagged() {
     frx.extend_from_slice(&[1, 2, 3, 4, 5, 6, 7, 8]); // unreferenced
     let frx_path = write_temp("gap.frx", &frx);
     let name = frx_path.file_name().unwrap().to_string_lossy().to_string();
-    let frm = format!("Begin VB.Form f\n   Icon = \"{}\":0000\nEnd\n", name);
+    let frm = format!("VERSION 5.00\nBegin VB.Form f\n   Icon = \"{}\":0000\nEnd\n", name);
     let frm_path = write_temp("gap.frm", frm.as_bytes());
 
     let reports = coverage_for_form(&frm_path).unwrap();

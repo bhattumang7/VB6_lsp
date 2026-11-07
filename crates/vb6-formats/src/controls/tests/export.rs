@@ -18,7 +18,7 @@ fn builds_and_serializes_full_export() {
     frx.extend_from_slice(&[0x42, 0x4D, 0x00, 0x00]);
     let frx_path = write_temp("exp.frx", &frx);
     let frx_name = frx_path.file_name().unwrap().to_string_lossy().to_string();
-    let frm = format!("Begin VB.Form frmX\n   Icon = \"{}\":0000\nEnd\n", frx_name);
+    let frm = format!("VERSION 5.00\nBegin VB.Form frmX\n   Icon = \"{}\":0000\nEnd\n", frx_name);
     let frm_path = write_temp("exp.frm", frm.as_bytes());
 
     let exp = build_form_export(&frm_path).unwrap();

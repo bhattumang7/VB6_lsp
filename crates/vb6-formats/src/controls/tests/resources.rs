@@ -29,7 +29,7 @@ fn write_temp(name: &str, bytes: &[u8]) -> PathBuf {
 
 #[test]
 fn missing_companion_is_explicit() {
-    let frm = "Begin VB.Form f\n   Icon = \"nope.frx\":0000\nEnd\n";
+    let frm = "VERSION 5.00\nBegin VB.Form f\n   Icon = \"nope.frx\":0000\nEnd\n";
     let frm_path = write_temp("missing.frm", frm.as_bytes());
     let res = resolve_form_resources(&frm_path, OcxBagPolicy::Opaque, None).unwrap();
     assert_eq!(res.len(), 1);
@@ -50,7 +50,7 @@ fn decodes_real_companion_picture() {
     frx.extend_from_slice(&[0x42, 0x4D, 0x00, 0x00]);
     let frx_path = write_temp("pic.frx", &frx);
     let frx_name = frx_path.file_name().unwrap().to_string_lossy().to_string();
-    let frm = format!("Begin VB.Form f\n   Icon = \"{}\":0000\nEnd\n", frx_name);
+    let frm = format!("VERSION 5.00\nBegin VB.Form f\n   Icon = \"{}\":0000\nEnd\n", frx_name);
     let frm_path = write_temp("pic.frm", frm.as_bytes());
 
     let res = resolve_form_resources(&frm_path, OcxBagPolicy::Opaque, None).unwrap();
@@ -73,7 +73,7 @@ fn com_decode_hard_errors_without_license() {
     frx.extend_from_slice(&[0u8; 8]);
     let frx_path = write_temp("bag.frx", &frx);
     let frx_name = frx_path.file_name().unwrap().to_string_lossy().to_string();
-    let frm = format!("Begin VB.Form f\n   _GridInfo = \"{}\":0000\nEnd\n", frx_name);
+    let frm = format!("VERSION 5.00\nBegin VB.Form f\n   _GridInfo = \"{}\":0000\nEnd\n", frx_name);
     let frm_path = write_temp("bag.frm", frm.as_bytes());
 
     let dec = UnlicensedDecoder;
@@ -96,7 +96,7 @@ fn opaque_policy_passes_bag_through() {
     frx.extend_from_slice(&[0xDE, 0xAD, 0xBE, 0xEF]);
     let frx_path = write_temp("op.frx", &frx);
     let frx_name = frx_path.file_name().unwrap().to_string_lossy().to_string();
-    let frm = format!("Begin VB.Form f\n   Bands = \"{}\":0000\nEnd\n", frx_name);
+    let frm = format!("VERSION 5.00\nBegin VB.Form f\n   Bands = \"{}\":0000\nEnd\n", frx_name);
     let frm_path = write_temp("op.frm", frm.as_bytes());
     let res = resolve_form_resources(&frm_path, OcxBagPolicy::Opaque, None).unwrap();
     assert!(matches!(res[0].value, Ok(FrxValue::OcxBag { .. })));
