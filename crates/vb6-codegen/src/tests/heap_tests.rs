@@ -147,6 +147,70 @@ fn coalesce_merges_following_block_onto_new_region() {
 }
 
 #[test]
+fn coalesce_mid_list_merges_onto_adjacent_predecessor() {
+    let mut h = heap(0x200);
+    put_block(&mut h, 0x10, 0x100, 0x18);
+    put_block(&mut h, 0x100, NIL, 0x10);
+    h.free_head = 0x10;
+
+    h.coalesce_memory(0x30, 0x20);
+
+    assert_eq!(h.free_head, 0x10);
+    assert_eq!(h.block_size(0x10), 0x38);
+    assert_eq!(h.block_next(0x10), 0x100);
+    assert_eq!(h.block_size(0x100), 0x10);
+    assert_eq!(h.block_next(0x100), NIL);
+}
+
+#[test]
+fn coalesce_mid_list_links_between_non_adjacent_neighbours() {
+    let mut h = heap(0x200);
+    put_block(&mut h, 0x10, 0x100, 0x10);
+    put_block(&mut h, 0x100, NIL, 0x10);
+    h.free_head = 0x10;
+
+    h.coalesce_memory(0x60, 0x20);
+
+    assert_eq!(h.free_head, 0x10);
+    assert_eq!(h.block_next(0x10), 0x60);
+    assert_eq!(h.block_size(0x10), 0x10);
+    assert_eq!(h.block_next(0x60), 0x100);
+    assert_eq!(h.block_size(0x60), 0x18);
+    assert_eq!(h.block_next(0x100), NIL);
+}
+
+#[test]
+fn coalesce_bridges_predecessor_and_successor() {
+    let mut h = heap(0x200);
+    put_block(&mut h, 0x10, 0x50, 0x18);
+    put_block(&mut h, 0x50, NIL, 0x18);
+    h.free_head = 0x10;
+
+    h.coalesce_memory(0x30, 0x20);
+
+    // 0x18 (pred) + 0x20 (region) grows to 0x38, then absorbs the successor:
+    // 0x18 + 8 + 0x38.
+    assert_eq!(h.free_head, 0x10);
+    assert_eq!(h.block_size(0x10), 0x58);
+    assert_eq!(h.block_next(0x10), NIL);
+}
+
+#[test]
+fn coalesce_appends_after_non_adjacent_tail() {
+    let mut h = heap(0x200);
+    put_block(&mut h, 0x10, NIL, 0x10);
+    h.free_head = 0x10;
+
+    h.coalesce_memory(0x100, 0x20);
+
+    assert_eq!(h.free_head, 0x10);
+    assert_eq!(h.block_next(0x10), 0x100);
+    assert_eq!(h.block_size(0x10), 0x10);
+    assert_eq!(h.block_next(0x100), NIL);
+    assert_eq!(h.block_size(0x100), 0x18);
+}
+
+#[test]
 fn find_free_block_splits_large_block() {
     let mut h = heap(0x200);
     // One free block at 0x10, usable size 0x40 (total 0x48).

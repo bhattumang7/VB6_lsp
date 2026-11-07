@@ -268,7 +268,7 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    /// Emit the compound-op store (`EbEmitAssignmentStmt`'s flag `0x400` + a
+    /// Emit the compound-op store (assignment flag `0x400` with a
     /// `0x69`-typed LHS): the LHS wraps a reference-descriptor node whose
     /// `word[4]` child carries the store's type-size descriptor at its
     /// `word[5]`, and whose own `word[5]` carries the frame-slot node to
@@ -295,87 +295,99 @@ impl<'a> Emitter<'a> {
         let dest_tag = (n.w[0] as i32) >> 16;
         let src_tag = (source.w[0] as i32) >> 16;
 
-        // Object destination: a sized store. Sources whose type tag is in
-        // [3, 0x17] go through a per-source-type sub-dispatch that emits size
-        // operand words (needs the type-descriptor model); any other source
-        // uses the store table with a trailing size operand.
+        // Object destination: a sized store.
         if dest_hi == 0xf0000 {
-            let size = self.emit_get_type_size3(n.w[6]);
-            if ((src_tag - 3) as u32) < 0x15 {
-                self.emit_object_store_subdispatch(dest_tag, src_tag, size);
-                return;
-            }
-            let opcode = Self::assign_source_adjust(src_tag) + Self::assign_store_base(dest_tag);
-            self.emit_opcode2(opcode as usize, size as u16);
+            self.emit_assign_object_dest(n, dest_tag, src_tag);
             return;
         }
 
         // Currency destination: direct opcodes for specific source kinds.
         if dest_hi == 0xc0000 {
-            match src_tag {
-                0xb => { self.emit_value2(0x147); return; }
-                0xf => { self.emit_value2(0x14f); return; }
-                0x10 => { self.emit_value2(0x3c9); return; }
-                _ => {}
+            if let Some(opcode) = Self::currency_dest_opcode(src_tag) {
+                self.emit_value2(opcode);
+                return;
             }
         }
 
         // Both sides Variant / ByRef-Variant / Currency: guarded table store.
-        if matches!(dest_tag, 10 | 0xb | 0xc) && matches!(src_tag, 10 | 0xb | 0xc) {
-            // Flag-byte bit 0x80 clear → handled elsewhere (no-op here).
-            if (n.w[1] >> 8) & 0x80 == 0 {
-                return;
+        if matches!(dest_tag, 10..=0xc) && matches!(src_tag, 10..=0xc) {
+            // Flag-byte bit 0x80 clear -> handled elsewhere (no-op here).
+            if (n.w[1] >> 8) & 0x80 != 0 {
+                self.emit_generic_assign_store(dest_tag, src_tag);
             }
-            let base = Self::assign_store_base(dest_tag);
-            if RT_TYPE_OFFSET[src_tag as usize] == 10 {
-                self.emit_value2((base + 4) as usize);
-                return;
-            }
-            self.emit_value2((Self::assign_source_adjust(src_tag) + base) as usize);
             return;
         }
 
         // Otherwise inspect the source's type region for special stores.
-        let src_hi = source.w[0] & 0xffff_0000;
-        if src_hi == 0xc0000 {
+        match Self::special_source_store(source.w[0] & 0xffff_0000, dest_hi, dest_tag) {
+            Some(Some(opcode)) => self.emit_value2(opcode),
+            Some(None) => {}
+            None => self.emit_generic_assign_store(dest_tag, src_tag),
+        }
+    }
+
+    /// Object destination. Sources whose type tag is in [3, 0x17] go through a
+    /// per-source-type sub-dispatch that emits size operand words (needs the
+    /// type-descriptor model); any other source uses the store table with a
+    /// trailing size operand.
+    fn emit_assign_object_dest(&mut self, n: &RawNode, dest_tag: i32, src_tag: i32) {
+        let size = self.emit_get_type_size3(n.w[6]);
+        if ((src_tag - 3) as u32) < 0x15 {
+            self.emit_object_store_subdispatch(dest_tag, src_tag, size);
+            return;
+        }
+        let opcode = Self::assign_source_adjust(src_tag) + Self::assign_store_base(dest_tag);
+        self.emit_opcode2(opcode as usize, size as u16);
+    }
+
+    /// Direct opcode for a Currency destination fed by a specific source kind.
+    fn currency_dest_opcode(src_tag: i32) -> Option<usize> {
+        match src_tag {
+            0xb => Some(0x147),
+            0xf => Some(0x14f),
+            0x10 => Some(0x3c9),
+            _ => None,
+        }
+    }
+
+    /// Special stores selected by the source's type region. `None` means no
+    /// special store applies; `Some(None)` is a store that emits nothing.
+    fn special_source_store(src_hi: u32, dest_hi: u32, dest_tag: i32) -> Option<Option<usize>> {
+        match src_hi {
             // Currency source into a non-Currency destination.
-            match dest_tag {
-                0xf => { self.emit_value2(0x2fb); return; }
-                0x10 => { self.emit_value2(0x3c8); return; }
-                _ => {}
-            }
-        }
-        if src_hi == 0x30000 {
-            match dest_tag {
-                5 => { self.emit_value2(0x138); return; }
-                6 => { return; }
-                0x10 => { self.emit_value2(0x3c7); return; }
-                _ => {}
-            }
-        }
-        if src_hi == 0x110000 {
+            0xc0000 => match dest_tag {
+                0xf => Some(Some(0x2fb)),
+                0x10 => Some(Some(0x3c8)),
+                _ => None,
+            },
+            0x30000 => match dest_tag {
+                5 => Some(Some(0x138)),
+                6 => Some(None),
+                0x10 => Some(Some(0x3c7)),
+                _ => None,
+            },
             // Fixed-length string source: needs the type-length lookup.
-            unimplemented!(
+            0x110000 => unimplemented!(
                 "fixed-length string source store: needs the type-length lookup; Phase 4"
-            );
-        }
-        if src_hi == 0xf0000 {
+            ),
             // Object source into a Variant / TypeOf destination.
-            if dest_hi == 0x140000 {
-                unimplemented!(
+            0xf0000 => match dest_hi {
+                0x140000 => unimplemented!(
                     "object source into a Variant target: needs the object-reference \
                      resolution path; Phase 4"
-                );
-            }
-            if dest_hi == 0x120000 {
-                unimplemented!(
+                ),
+                0x120000 => unimplemented!(
                     "object source into a TypeOf target: needs the object-reference \
                      resolution path; Phase 4"
-                );
-            }
+                ),
+                _ => None,
+            },
+            _ => None,
         }
+    }
 
-        // Generic store: base from destination, adjustment from source.
+    /// Generic store: base from destination, adjustment from source.
+    fn emit_generic_assign_store(&mut self, dest_tag: i32, src_tag: i32) {
         let base = Self::assign_store_base(dest_tag);
         if RT_TYPE_OFFSET[src_tag as usize] == 10 {
             self.emit_value2((base + 4) as usize);

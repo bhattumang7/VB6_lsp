@@ -96,7 +96,52 @@ pub fn build_declaration_scalar(
         return Err(EB_BAD_DECL);
     }
 
-    let rec = if ctx.kind_disc < 2 {
+    let rec = allocate_declaration_record(heap, ctx)?;
+    write_common_fields(heap, rec, ctx);
+    write_flag_bits(heap, rec, ctx.flags_c, ctx.field5);
+
+    // ── Slot-count / optional-marker gates ───────────────────────────────────
+    let sc = ctx.slot_count;
+    if !(0..0x3d).contains(&sc) {
+        return Err(EB_BAD_DECL);
+    }
+    let f1a = ctx.field_1a;
+    if !(-1..0x3d).contains(&f1a) {
+        return Err(EB_BAD_DECL);
+    }
+    write_optional_marker(heap, rec, f1a);
+
+    if ctx.flag9 == 0x19 {
+        unimplemented!("EbBuildDeclaration has-parameters form (ctx[9] == 0x19); Phase 6");
+    }
+
+    let is_record = ctx.type_flags == 8;
+    if !is_record {
+        write_scalar_type_node(heap, rec, ctx);
+    }
+
+    // ── Slot loop prologue ───────────────────────────────────────────────────
+    // +0x3b low 6 bits = slot count
+    {
+        let o = (rec + 0x3b) as usize;
+        heap.mem[o] = ((sc as u8 ^ heap.mem[o]) & 0x3f) ^ heap.mem[o];
+    }
+    if sc > 0 {
+        build_record_slots(heap, rec, is_record, sc, field_type_words)?;
+    }
+    // Post-loop: +0x3a bit 4 = local_3c (0 on the scalar/record-scalar-fields path).
+    {
+        let o = (rec + 0x3a) as usize;
+        heap.mem[o] &= 0xef;
+    }
+
+    Ok(rec)
+}
+
+/// Allocate the member record for the kind discriminator and write its
+/// kind-specific header bits.
+fn allocate_declaration_record(heap: &mut HeapContext, ctx: &DeclContext) -> Result<u32, i32> {
+    if ctx.kind_disc < 2 {
         let rec = heap.allocate_method_bag()?;
         // record +1 low 3 bits = 1; +0 bit 0x40 for kind 1; +0x30 = member id.
         let o1 = (rec + 1) as usize;
@@ -105,7 +150,7 @@ pub fn build_declaration_scalar(
             heap.mem[rec as usize] |= 0x40;
         }
         put_u16(heap, rec + 0x30, ctx.member_id as u16);
-        rec
+        Ok(rec)
     } else if ctx.kind_disc < 5 {
         let rec = heap.allocate_interface_bag()?;
         let o1 = (rec + 1) as usize;
@@ -115,15 +160,18 @@ pub fn build_declaration_scalar(
             3 => base ^ 2,
             _ => base ^ 3,
         };
-        rec
+        Ok(rec)
     } else {
         unimplemented!(
             "EbBuildDeclaration kind discriminator >= 5: the source allocates no \
              bag on this path; Phase 6"
         );
-    };
+    }
+}
 
-    // ── Common field writes ──────────────────────────────────────────────────
+/// Fields written for every declaration kind: signature, flag word and type
+/// mode.
+fn write_common_fields(heap: &mut HeapContext, rec: u32, ctx: &DeclContext) {
     let sig = ctx.sig;
     // +0x18 &= 0xbfff
     put_u16(heap, rec + 0x18, get_u16(heap, rec + 0x18) & 0xbfff);
@@ -133,12 +181,14 @@ pub fn build_declaration_scalar(
     // +0x18 = (+0x18 & 0xdfff) | ((sig < 1) << 13)
     let bit13 = if sig < 1 { 1u16 << 13 } else { 0 };
     put_u16(heap, rec + 0x18, (get_u16(heap, rec + 0x18) & 0xdfff) | bit13);
-    // EbSetTypeMode2(type_flags) → +1 high nibble
+    // type mode -> +1 high nibble
     set_type_mode2(heap, rec, ctx.type_flags);
     // +2 |= 0xfffe
     put_u16(heap, rec + 2, get_u16(heap, rec + 2) | 0xfffe);
+}
 
-    let flags_c = ctx.flags_c;
+/// Flag-derived bits: `flags_c` bits and the low-3-bit `field5` value.
+fn write_flag_bits(heap: &mut HeapContext, rec: u32, flags_c: u16, field5: i32) {
     if flags_c & 1 != 0 {
         let o1 = (rec + 1) as usize;
         heap.mem[o1] |= 8;
@@ -155,88 +205,65 @@ pub fn build_declaration_scalar(
     // +0x3a low 3 bits = field5
     {
         let o = (rec + 0x3a) as usize;
-        heap.mem[o] = ((ctx.field5 as u8 ^ heap.mem[o]) & 7) ^ heap.mem[o];
+        heap.mem[o] = ((field5 as u8 ^ heap.mem[o]) & 7) ^ heap.mem[o];
     }
+}
 
-    // ── Slot-count / optional-marker gates ───────────────────────────────────
-    let sc = ctx.slot_count;
-    if !(0..0x3d).contains(&sc) {
-        return Err(EB_BAD_DECL);
-    }
-    let f1a = ctx.field_1a;
-    if !(-1..0x3d).contains(&f1a) {
-        return Err(EB_BAD_DECL);
-    }
-    // +0x3c low 6 bits = f1a (or 0x3f when f1a == -1)
-    {
-        let o = (rec + 0x3c) as usize;
-        let b = heap.mem[o];
-        heap.mem[o] = if f1a == -1 {
-            (b & 0xc0) ^ 0x3f
-        } else {
-            ((f1a as u8 ^ b) & 0x3f) ^ b
-        };
-    }
-    // +0x3d &= 0xf9
-    {
-        let o = (rec + 0x3d) as usize;
-        heap.mem[o] &= 0xf9;
-    }
+/// +0x3c low 6 bits = `f1a` (or 0x3f when `f1a == -1`); +0x3d &= 0xf9.
+fn write_optional_marker(heap: &mut HeapContext, rec: u32, f1a: i16) {
+    let o = (rec + 0x3c) as usize;
+    let b = heap.mem[o];
+    heap.mem[o] = if f1a == -1 {
+        (b & 0xc0) ^ 0x3f
+    } else {
+        ((f1a as u8 ^ b) & 0x3f) ^ b
+    };
+    let o = (rec + 0x3d) as usize;
+    heap.mem[o] &= 0xf9;
+}
 
-    if ctx.flag9 == 0x19 {
-        unimplemented!("EbBuildDeclaration has-parameters form (ctx[9] == 0x19); Phase 6");
-    }
-
-    let is_record = ctx.type_flags == 8;
-
-    if !is_record {
-        // ── Return/element type node (EbBuildTypeNode2 base-type path) ──────
-        let node = build_inline_type_node(ctx.return_type_word);
-        let o2c = (rec + 0x2c) as usize;
-        heap.mem[o2c..o2c + 4].copy_from_slice(&node.to_le_bytes());
-        // +0x3a bit 3 = inline flag (the type node reports inline ⇒ 1)
-        {
-            let o = (rec + 0x3a) as usize;
-            heap.mem[o] = (1 << 3) | (heap.mem[o] & 0xf7);
-        }
-        // +0 |= 0x20 (clearing 0x10) unless ctx[9] == 0x18
-        if ctx.flag9 != 0x18 {
-            let o = rec as usize;
-            heap.mem[o] = (heap.mem[o] & 0xef) | 0x20;
-        }
-    }
-
-    // ── Slot loop prologue (LAB_0fac43d7) ────────────────────────────────────
-    // +0x3b low 6 bits = slot count
-    {
-        let o = (rec + 0x3b) as usize;
-        heap.mem[o] = ((sc as u8 ^ heap.mem[o]) & 0x3f) ^ heap.mem[o];
-    }
-    if sc > 0 {
-        if is_record {
-            assert_eq!(
-                field_type_words.len(),
-                sc as usize,
-                "build_declaration_scalar: field_type_words must have one entry \
-                 per ctx.slot_count for a record declaration"
-            );
-            let mut tail = crate::heap::NIL;
-            for &w in field_type_words {
-                build_property_slot_scalar(heap, w, 0, rec, &mut tail)?;
-            }
-        } else {
-            unimplemented!(
-                "EbBuildDeclaration parameter slot loop (slot_count > 0); Phase 6"
-            );
-        }
-    }
-    // Post-loop: +0x3a bit 4 = local_3c (0 on the scalar/record-scalar-fields path).
+/// Return/element type node for a plain scalar declaration.
+fn write_scalar_type_node(heap: &mut HeapContext, rec: u32, ctx: &DeclContext) {
+    let node = build_inline_type_node(ctx.return_type_word);
+    let o2c = (rec + 0x2c) as usize;
+    heap.mem[o2c..o2c + 4].copy_from_slice(&node.to_le_bytes());
+    // +0x3a bit 3 = inline flag (the type node reports inline => 1)
     {
         let o = (rec + 0x3a) as usize;
-        heap.mem[o] &= 0xef;
+        heap.mem[o] = (1 << 3) | (heap.mem[o] & 0xf7);
     }
+    // +0 |= 0x20 (clearing 0x10) unless ctx[9] == 0x18
+    if ctx.flag9 != 0x18 {
+        let o = rec as usize;
+        heap.mem[o] = (heap.mem[o] & 0xef) | 0x20;
+    }
+}
 
-    Ok(rec)
+/// Build one field record per entry for a record declaration. The parameter
+/// slot form is not modelled yet.
+fn build_record_slots(
+    heap: &mut HeapContext,
+    rec: u32,
+    is_record: bool,
+    slot_count: i16,
+    field_type_words: &[u16],
+) -> Result<(), i32> {
+    if !is_record {
+        unimplemented!(
+            "EbBuildDeclaration parameter slot loop (slot_count > 0); Phase 6"
+        );
+    }
+    assert_eq!(
+        field_type_words.len(),
+        slot_count as usize,
+        "build_declaration_scalar: field_type_words must have one entry \
+         per ctx.slot_count for a record declaration"
+    );
+    let mut tail = crate::heap::NIL;
+    for &w in field_type_words {
+        build_property_slot_scalar(heap, w, 0, rec, &mut tail)?;
+    }
+    Ok(())
 }
 
 /// Port of `EbBuildDeclaration`'s slot-loop body for a simple scalar field/param

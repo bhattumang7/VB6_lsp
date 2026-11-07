@@ -180,83 +180,88 @@ impl HeapContext {
         }
 
         let s16 = size as i16;
-        let size_u = size as u32;
-        let mut cur_off = address; // the region being inserted/merged
-        let mut block = address; // the header currently treated as "new"
-        let mut prev = NIL; // predecessor offset in the free list
-        let mut merged = false;
-
         self.set_block_pad(address, 0);
-        self.set_block_size(block, (s16.wrapping_sub(8)) as u16);
+        self.set_block_size(address, (s16.wrapping_sub(8)) as u16);
 
+        // Walk the ascending free list for the insertion point.
+        let mut prev = NIL; // predecessor offset in the free list
+        let mut tail = None; // final block when the walk runs off the end
         let mut node = self.free_head;
-        let mut last;
-        'outer: while node != NIL {
-            loop {
-                last = node;
-                if cur_off < last {
-                    if prev == NIL {
-                        self.free_head = cur_off;
-                        self.set_block_next(block, last);
-                    } else {
-                        let prev_size = self.block_size(prev) as u32;
-                        if (cur_off >> 16 == prev >> 16)
-                            && prev.wrapping_add(8).wrapping_add(prev_size) == cur_off
-                            && size_u.wrapping_add(8).wrapping_add(prev_size) < 0x1_0001
-                        {
-                            // Merge the new region onto its predecessor.
-                            let merged_size = s16.wrapping_add(self.block_size(prev) as i16);
-                            self.set_block_size(prev, merged_size as u16);
-                            block = prev;
-                            cur_off = prev;
-                        } else {
-                            self.set_block_next(prev, cur_off);
-                            self.set_block_next(block, last);
-                        }
-                    }
-                    // Merge the successor block onto the (possibly grown) new one.
-                    let new_size = self.block_size(block) as u32;
-                    let last_size = self.block_size(last) as u32;
-                    if (cur_off >> 16 == last >> 16)
-                        && cur_off.wrapping_add(8).wrapping_add(new_size) == last
-                        && new_size.wrapping_add(0x10).wrapping_add(last_size) < 0x1_0001
-                    {
-                        let combined =
-                            (last_size as i16).wrapping_add(8).wrapping_add(self.block_size(block) as i16);
-                        self.set_block_size(block, combined as u16);
-                        self.set_block_next(block, self.block_next(last));
-                    }
-                    merged = true;
-                    break 'outer;
-                }
-                node = self.block_next(last);
-                prev = last;
-                if node == NIL {
-                    break;
-                }
+        while node != NIL {
+            if address < node {
+                self.coalesce_insert_before(address, size, prev, node);
+                return;
             }
-            // Walked off the end without finding an insertion point: try to merge
-            // the region onto the final block.
-            let last_size = self.block_size(last) as u32;
-            if (last >> 16 == cur_off >> 16)
-                && last.wrapping_add(8).wrapping_add(last_size) == cur_off
-                && size_u.wrapping_add(8).wrapping_add(last_size) < 0x1_0001
-            {
-                merged = true;
-                let merged_size = s16.wrapping_add(self.block_size(last) as i16);
-                self.set_block_size(last, merged_size as u16);
-            }
+            prev = node;
+            tail = Some(node);
+            node = self.block_next(node);
         }
 
+        // No insertion point: try to merge the region onto the final block.
+        let merged = tail.is_some_and(|last| self.coalesce_onto_tail(last, address, size));
         if !merged {
-            self.set_block_next(block, NIL);
-            self.set_block_size(block, (s16.wrapping_sub(8)) as u16);
+            self.set_block_next(address, NIL);
+            self.set_block_size(address, (s16.wrapping_sub(8)) as u16);
             if prev == NIL {
-                self.free_head = cur_off;
+                self.free_head = address;
             } else {
-                self.set_block_next(prev, cur_off);
+                self.set_block_next(prev, address);
             }
         }
+    }
+
+    /// Insert the region before `last` (whose predecessor is `prev`), merging
+    /// it with the predecessor and the successor where they are contiguous.
+    fn coalesce_insert_before(&mut self, address: u32, size: i32, prev: u32, last: u32) {
+        let block = self.link_before(address, size, prev, last);
+        // Merge the successor block onto the (possibly grown) new one.
+        let new_size = self.block_size(block) as u32;
+        let last_size = self.block_size(last) as u32;
+        if (block >> 16 == last >> 16)
+            && block.wrapping_add(8).wrapping_add(new_size) == last
+            && new_size.wrapping_add(0x10).wrapping_add(last_size) < 0x1_0001
+        {
+            let combined = (last_size as i16).wrapping_add(8).wrapping_add(self.block_size(block) as i16);
+            self.set_block_size(block, combined as u16);
+            self.set_block_next(block, self.block_next(last));
+        }
+    }
+
+    /// Link the new region between `prev` and `last`, or grow `prev` over it
+    /// when contiguous. Returns the block that now holds the region.
+    fn link_before(&mut self, address: u32, size: i32, prev: u32, last: u32) -> u32 {
+        if prev == NIL {
+            self.free_head = address;
+            self.set_block_next(address, last);
+            return address;
+        }
+        let prev_size = self.block_size(prev) as u32;
+        if (address >> 16 == prev >> 16)
+            && prev.wrapping_add(8).wrapping_add(prev_size) == address
+            && (size as u32).wrapping_add(8).wrapping_add(prev_size) < 0x1_0001
+        {
+            // Merge the new region onto its predecessor.
+            let merged_size = (size as i16).wrapping_add(self.block_size(prev) as i16);
+            self.set_block_size(prev, merged_size as u16);
+            return prev;
+        }
+        self.set_block_next(prev, address);
+        self.set_block_next(address, last);
+        address
+    }
+
+    /// Merge the region onto the final free block when contiguous.
+    fn coalesce_onto_tail(&mut self, last: u32, address: u32, size: i32) -> bool {
+        let last_size = self.block_size(last) as u32;
+        if (last >> 16 == address >> 16)
+            && last.wrapping_add(8).wrapping_add(last_size) == address
+            && (size as u32).wrapping_add(8).wrapping_add(last_size) < 0x1_0001
+        {
+            let merged_size = (size as i16).wrapping_add(self.block_size(last) as i16);
+            self.set_block_size(last, merged_size as u16);
+            return true;
+        }
+        false
     }
 
     /// Read a little-endian dword at an arbitrary heap offset.

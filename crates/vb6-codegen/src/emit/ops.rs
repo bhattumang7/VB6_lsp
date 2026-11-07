@@ -22,45 +22,10 @@ impl<'a> Emitter<'a> {
 
         if RT_DISPATCH_FLAG[op] & 0x10 == 0 {
             // Arithmetic: use the node's own type tag.
-            let mut offset = RT_TYPE_OFFSET[type_tag as usize];
-            if offset == 10 {
-                offset = 4;
-            } else if offset == 9 {
-                offset = 1;
-            }
-            opcode_index += offset;
+            opcode_index += Self::type_class_offset(type_tag);
         } else {
             // Comparison / string: use the left operand's type tag.
-            let lhs = *self.arena.get(n.lhs());
-            let lhs_word0 = lhs.w[0];
-            if (n.w[0] & 0xffff) == 0x72
-                || (n.w[0] & 0xffff_0000) != 0x0003_0000
-                || (lhs_word0 & 0xffff_0000) != 0x000f_0000
-            {
-                let rhs = *self.arena.get(n.rhs());
-                let rhs_tag = (rhs.w[0] as i32) >> 16;
-                if (lhs_word0 & 0xffff_0000) == 0x000d_0000
-                    && (rhs_tag == 10 || rhs_tag == 0xb || rhs_tag == 0xc)
-                {
-                    opcode_index += 0xc;
-                } else {
-                    let lhs_tag = (lhs_word0 as i32) >> 16;
-                    let mut offset = RT_TYPE_OFFSET[lhs_tag as usize];
-                    if offset == 10 {
-                        offset = 4;
-                    } else if offset == 9 {
-                        offset = 1;
-                    }
-                    opcode_index += offset;
-                    if (n.w[1] >> 8) & 0x80 != 0 {
-                        opcode_index += 2;
-                    }
-                }
-            } else if (n.w[1] >> 8) & 0x80 == 0 {
-                opcode_index += 10;
-            } else {
-                opcode_index += 0xb;
-            }
+            opcode_index += self.comparison_offset(n);
         }
 
         if (n.w[0] & 0xffff_0000) == 0x000f_0000 {
@@ -74,6 +39,34 @@ impl<'a> Emitter<'a> {
 
     // ── Per-type validation ──────────────────────────────────────────────────
 
+    /// Type-tag offset with the two collapsed classes folded.
+    fn type_class_offset(type_tag: i32) -> i32 {
+        match RT_TYPE_OFFSET[type_tag as usize] {
+            10 => 4,
+            9 => 1,
+            offset => offset,
+        }
+    }
+
+    /// Opcode offset for the comparison / string dispatch mode, selected from
+    /// the left operand's type tag.
+    fn comparison_offset(&self, n: &RawNode) -> i32 {
+        let lhs_word0 = self.arena.get(n.lhs()).w[0];
+        let flag_set = (n.w[1] >> 8) & 0x80 != 0;
+        let general_form = (n.w[0] & 0xffff) == 0x72
+            || (n.w[0] & 0xffff_0000) != 0x0003_0000
+            || (lhs_word0 & 0xffff_0000) != 0x000f_0000;
+        if !general_form {
+            return if flag_set { 0xb } else { 10 };
+        }
+        let rhs_tag = (self.arena.get(n.rhs()).w[0] as i32) >> 16;
+        if (lhs_word0 & 0xffff_0000) == 0x000d_0000 && matches!(rhs_tag, 10..=0xc) {
+            return 0xc;
+        }
+        let lhs_tag = (lhs_word0 as i32) >> 16;
+        Self::type_class_offset(lhs_tag) + if flag_set { 2 } else { 0 }
+    }
+
     /// Emit the per-type validation / conversion opcode after an operation.
     pub(super) fn emit_validate_type_operation(&mut self, op_type: i32, variant: i32, type_flags: u32) -> u32 {
         match op_type {
@@ -82,7 +75,7 @@ impl<'a> Emitter<'a> {
                     self.emit_value2(0x18b);
                 }
             }
-            10 | 0xb | 0xc => {
+            10..=0xc => {
                 if type_flags != 3 && type_flags != 1 {
                     return 1;
                 }
@@ -97,11 +90,9 @@ impl<'a> Emitter<'a> {
                 self.emit_value2(type_flags as usize);
                 return 0;
             }
-            0xf => {
-                if type_flags == 3 {
-                    self.emit_value2(0x18c);
-                    return 0;
-                }
+            0xf if type_flags == 3 => {
+                self.emit_value2(0x18c);
+                return 0;
             }
             _ => {}
         }
@@ -413,6 +404,32 @@ impl<'a> Emitter<'a> {
         }
     }
 
+    /// Walk a `0x37` list chain to its last element.
+    fn last_list_element(&self, start: NodeRef) -> NodeRef {
+        let mut cur = start;
+        loop {
+            let c = *self.arena.get(cur);
+            if c.w[0] & 0xffff != 0x37 {
+                return cur;
+            }
+            cur = NodeRef(if c.w[5] != 0 { c.w[5] } else { c.w[4] });
+        }
+    }
+
+    /// Emit the argument-count word when the node carries one.
+    fn emit_instruction_arg_count(&mut self, n: &RawNode, is_call: bool) {
+        if n.w[1] & 0x4000 == 0 {
+            return;
+        }
+        // word[8] high half (`node + 0x22`) is an argument count.
+        let cnt = (n.w[8] >> 16) as i16 as i32;
+        let mut v = if n.w[1] & 0x8000 == 0 { (cnt + 2) << 1 } else { (cnt << 2) + 6 };
+        if is_call {
+            v += 2;
+        }
+        self.emit_word2(v as u16);
+    }
+
     pub(super) fn emit_instruction2(&mut self, node: NodeRef, opcode: usize, has_arg: bool, is_call: bool) {
         let n = *self.arena.get(node);
         let op = n.w[0] & 0xffff;
@@ -424,29 +441,14 @@ impl<'a> Emitter<'a> {
             NodeRef(0)
         };
         if op == 0x6c || op == 0x6d {
-            let mut cur = NodeRef(n.w[5]);
-            loop {
-                let c = *self.arena.get(cur);
-                if c.w[0] & 0xffff != 0x37 {
-                    break;
-                }
-                cur = NodeRef(if c.w[5] != 0 { c.w[5] } else { c.w[4] });
-            }
+            let cur = self.last_list_element(NodeRef(n.w[5]));
             self.emit_expr(cur, 3);
         }
         let child_region = self.arena.get(NodeRef(n.w[4])).w[0] & 0xffff_0000;
         let ctx = if child_region == 0xf_0000 { 5 } else { 6 };
         self.emit_expr(NodeRef(n.w[4]), ctx);
         self.emit_value2(opcode);
-        if n.w[1] & 0x4000 != 0 {
-            // word[8] high half (`node + 0x22`) is an argument count.
-            let cnt = (n.w[8] >> 16) as i16 as i32;
-            let mut v = if n.w[1] & 0x8000 == 0 { (cnt + 2) << 1 } else { (cnt << 2) + 6 };
-            if is_call {
-                v += 2;
-            }
-            self.emit_word2(v as u16);
-        }
+        self.emit_instruction_arg_count(&n, is_call);
         if is_call {
             let sz = self.emit_get_type_size3(n.w[6]);
             self.emit_word2(sz as u16);

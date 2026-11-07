@@ -373,57 +373,20 @@ pub fn resolve_ident_ref(
 ) -> RefDescriptor {
     let n = *arena.get(node);
     let type_offset = RT_TYPE_OFFSET[n.type_tag() as usize];
-    let rec0 = heap[member_off];
-    let rec1 = heap[member_off + 1];
 
-    // Method / object member binding. The record's OWN "has a resolved slot"
-    // check (`+1&0x50==0 && +0&8==0 && +0x10&4==0` gates a `(short@+10 + 1) &
-    // 0xfff` value) determines the sub-path: zero -> the genuinely-COM path
-    // (reads compiler-context-relative structures with no visible setup —
-    // stays gated); nonzero -> the category remaps to 0xd/0xe/0xf below and
-    // falls through to the (leaf-ported, not-yet-wired) binding-emit tail.
-    let category = if rec0 & 0x80 != 0 && rec1 & 7 == 4 {
-        let flags_allow = rec1 & 0x50 == 0 && rec0 & 8 == 0 && heap[member_off + 0x10] & 4 == 0;
-        let has_slot = flags_allow && {
-            let slot_id = i16::from_le_bytes([heap[member_off + 10], heap[member_off + 11]]);
-            (slot_id.wrapping_add(1) as u16 & 0xfff) != 0
-        };
-        if !has_slot {
-            unimplemented!(
-                "EbResolveIdentRef method/object binding, zero-slot sub-path: needs \
-                 the method-binding / object-reference emit subsystem; Phase 6"
-            );
-        }
-        match expression_type2(heap, member_off).category {
-            1 => 0xd,
-            2 => 0xe,
-            3 => 0xf,
-            other => other,
-        }
-    } else {
-        expression_type2(heap, member_off).category
-    };
+    let category = ident_category(heap, member_off);
     // The operand pointer the value cases inspect (un-skipped, unlike the
     // classifier's own copy). Null only on a malformed record.
     let operand_off = resolve_attribute_pointer(heap, member_off);
 
     let mut desc = match category {
-        1 | 2 | 3 => {
+        1..=3 => {
             let op = heap_dword(heap, operand_off.expect("null operand pointer"));
-            let optional = if category == 3 || (op & 0x3f == 0x1b && op & 0x800 != 0) {
-                false
-            } else if n.w[0] & 0xffff_0000 == 0x0017_0000 {
-                unimplemented!(
-                    "EbResolveIdentRef type-library reference (region 0x170000, \
-                     LoadTypeLibraryItem); Phase 6"
-                );
-            } else {
-                true
-            };
+            let optional = value_case_optional(&n, category, op);
             let mut d = init_expr_descriptor(arena, node, true, optional);
             // Attribute flag: set bit 0x02 when the record is flagged and the
             // compiler context does not suppress it.
-            if rec1 & 0x20 != 0 && ctx_flag_c & 2 == 0 {
+            if heap[member_off + 1] & 0x20 != 0 && ctx_flag_c & 2 == 0 {
                 d.flags1 |= 2;
             }
             d
@@ -444,7 +407,7 @@ pub fn resolve_ident_ref(
                  byref) — call resolve_ident_ref with the EbResolveExprNode result"
             ),
         },
-        0xd | 0xe | 0xf => unimplemented!(
+        0xd..=0xf => unimplemented!(
             "EbResolveIdentRef categories 0xd/0xe/0xf (binding-emit tail, \
              type_desc.w[0]={}): the leaf routines are ported (see \
              crate::emit::Emitter::convert_expression_type / \
@@ -464,6 +427,52 @@ pub fn resolve_ident_ref(
         desc.flags1 |= 8;
     }
     desc
+}
+
+/// Type category of a member record. For a method / object member binding the
+/// record's own "has a resolved slot" check (`+1&0x50==0 && +0&8==0 &&
+/// +0x10&4==0` gating a `(short@+10 + 1) & 0xfff` value) determines the
+/// sub-path: zero -> the genuinely-COM path (reads compiler-context-relative
+/// structures with no visible setup, stays gated); nonzero -> the category
+/// remaps to 0xd/0xe/0xf and falls through to the (leaf-ported, not-yet-wired)
+/// binding-emit tail.
+fn ident_category(heap: &[u8], member_off: usize) -> i32 {
+    let rec0 = heap[member_off];
+    let rec1 = heap[member_off + 1];
+    if rec0 & 0x80 == 0 || rec1 & 7 != 4 {
+        return expression_type2(heap, member_off).category;
+    }
+    let flags_allow = rec1 & 0x50 == 0 && rec0 & 8 == 0 && heap[member_off + 0x10] & 4 == 0;
+    let has_slot = flags_allow && {
+        let slot_id = i16::from_le_bytes([heap[member_off + 10], heap[member_off + 11]]);
+        (slot_id.wrapping_add(1) as u16 & 0xfff) != 0
+    };
+    if !has_slot {
+        unimplemented!(
+            "EbResolveIdentRef method/object binding, zero-slot sub-path: needs \
+             the method-binding / object-reference emit subsystem; Phase 6"
+        );
+    }
+    match expression_type2(heap, member_off).category {
+        1 => 0xd,
+        2 => 0xe,
+        3 => 0xf,
+        other => other,
+    }
+}
+
+/// Whether the reference built for the value categories 1..=3 is optional.
+fn value_case_optional(n: &RawNode, category: i32, op: u32) -> bool {
+    if category == 3 || (op & 0x3f == 0x1b && op & 0x800 != 0) {
+        return false;
+    }
+    if n.w[0] & 0xffff_0000 == 0x0017_0000 {
+        unimplemented!(
+            "EbResolveIdentRef type-library reference (region 0x170000, \
+             LoadTypeLibraryItem); Phase 6"
+        );
+    }
+    true
 }
 
 /// Port of `EbResolveIdentRef`'s category-4 descriptor selection (the
