@@ -24,6 +24,15 @@ fn put_block(h: &mut HeapContext, off: u32, next: u32, size: u16) {
     h.mem[o + 4..o + 6].copy_from_slice(&size.to_le_bytes());
 }
 
+/// The free list is exactly `first` then `second`, each given as (offset, usable size).
+fn assert_free_pair(h: &HeapContext, first: (u32, u16), second: (u32, u16)) {
+    assert_eq!(h.free_head, first.0);
+    assert_eq!(h.block_next(first.0), second.0);
+    assert_eq!(h.block_size(first.0), first.1);
+    assert_eq!(h.block_next(second.0), NIL);
+    assert_eq!(h.block_size(second.0), second.1);
+}
+
 #[test]
 fn new_seeds_byte_exact_initial_state() {
     let h = HeapContext::new(true, false);
@@ -107,11 +116,7 @@ fn coalesce_inserts_before_non_adjacent_block() {
     h.coalesce_memory(0x10, 0x20);
 
     // New block links ahead of the existing one; neither is adjacent so no merge.
-    assert_eq!(h.free_head, 0x10);
-    assert_eq!(h.block_next(0x10), 0x100);
-    assert_eq!(h.block_size(0x10), 0x18);
-    assert_eq!(h.block_next(0x100), NIL);
-    assert_eq!(h.block_size(0x100), 0x10);
+    assert_free_pair(&h, (0x10, 0x18), (0x100, 0x10));
 }
 
 #[test]
@@ -203,11 +208,7 @@ fn coalesce_appends_after_non_adjacent_tail() {
 
     h.coalesce_memory(0x100, 0x20);
 
-    assert_eq!(h.free_head, 0x10);
-    assert_eq!(h.block_next(0x10), 0x100);
-    assert_eq!(h.block_size(0x10), 0x10);
-    assert_eq!(h.block_next(0x100), NIL);
-    assert_eq!(h.block_size(0x100), 0x18);
+    assert_free_pair(&h, (0x10, 0x10), (0x100, 0x18));
 }
 
 #[test]

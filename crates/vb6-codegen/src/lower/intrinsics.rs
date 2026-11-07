@@ -416,17 +416,7 @@ fn resolve_class_call(
     is_value: bool,
     expr_arena: &ExprArena,
 ) -> Result<ClassCallPlan, LowerError> {
-    let local_idx = match ctx.module.resolutions.get(&base.0) {
-        Some(NameResolution::Local { local_idx, .. }) => *local_idx,
-        Some(_) => return Err(LowerError::UnsupportedNode),
-        None => return Err(LowerError::Unresolved),
-    };
-    ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
-    let obj_offset = ctx.local_slots[local_idx].frame_offset;
-    let class_sym = match ctx.local_type(local_idx) {
-        VbaType::UserDefined(sym) => *sym,
-        _ => return Err(LowerError::UnsupportedNode),
-    };
+    let (obj_offset, class_sym) = class_instance_local(ctx, base)?;
     let resolved = ctx
         .module
         .class_member_slots

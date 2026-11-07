@@ -279,23 +279,8 @@ impl<'a> Emitter<'a> {
 
     /// Store index when the `0x8000` flag is clear.
     fn ref_store_plain_index(v: i32, f_flags: u32, n_type: i32, off3: i32) -> i32 {
-        if f_flags & 0x20 != 0 {
-            return (if f_flags & 0x1000 != 0 { 1 } else { 0 }) + 0x1b5;
-        }
-        if f_flags & 0x80 != 0 {
-            return v + 6;
-        }
-        if f_flags & 0x200 != 0 {
-            return (if v != 0x1f6 { 0x11 } else { 0 }) + 0x3f8;
-        }
-        if f_flags & 0x400 != 0 {
-            return 0x3f7;
-        }
-        if f_flags & 0x1000 != 0 {
-            return if n_type == 0x10 || n_type == 0xf { v + 10 } else { v };
-        }
-        if f_flags & 0x800 != 0 {
-            return 0x439;
+        if let Some(index) = Self::ref_store_flagged_index(v, f_flags, n_type) {
+            return index;
         }
         // A field whose raw type-offset class is directly 3 or 4 needs +6 on
         // the plain scalar-store index. This is gated on the raw class, not the
@@ -305,6 +290,29 @@ impl<'a> Emitter<'a> {
         } else {
             v
         }
+    }
+
+    /// The plain store index selected by one of the flag bits, if any is set.
+    fn ref_store_flagged_index(v: i32, f_flags: u32, n_type: i32) -> Option<i32> {
+        if f_flags & 0x20 != 0 {
+            return Some((if f_flags & 0x1000 != 0 { 1 } else { 0 }) + 0x1b5);
+        }
+        if f_flags & 0x80 != 0 {
+            return Some(v + 6);
+        }
+        if f_flags & 0x200 != 0 {
+            return Some((if v != 0x1f6 { 0x11 } else { 0 }) + 0x3f8);
+        }
+        if f_flags & 0x400 != 0 {
+            return Some(0x3f7);
+        }
+        if f_flags & 0x1000 != 0 {
+            return Some(if n_type == 0x10 || n_type == 0xf { v + 10 } else { v });
+        }
+        if f_flags & 0x800 != 0 {
+            return Some(0x439);
+        }
+        None
     }
 
     /// Store index when the `0x8000` flag is set.

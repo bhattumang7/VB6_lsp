@@ -656,6 +656,27 @@ pub(super) struct ClassFieldRef {
     pub is_property: bool,
 }
 
+/// The frame offset and class symbol of the class-instance local that `base` names. The class
+/// table is only consulted to confirm `base` is a known class instance; the member slots
+/// themselves come from `class_member_slots`.
+pub(super) fn class_instance_local(
+    ctx: &LowerCtx,
+    base: NodeId,
+) -> Result<(i16, u32), LowerError> {
+    let local_idx = match ctx.module.resolutions.get(&base.0) {
+        Some(NameResolution::Local { local_idx, .. }) => *local_idx,
+        Some(_) => return Err(LowerError::UnsupportedNode),
+        None => return Err(LowerError::Unresolved),
+    };
+    ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
+    let obj_offset = ctx.local_slots[local_idx].frame_offset;
+    let class_sym = match ctx.local_type(local_idx) {
+        VbaType::UserDefined(sym) => *sym,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    Ok((obj_offset, class_sym))
+}
+
 /// Resolve `base.<member>` for a plain local class-instance base (`Dim o As
 /// New ClassName`), given `access_id` — the `MemberAccess` expression node's
 /// OWN id (not `member`'s sym_id, which repeats across every occurrence of
@@ -676,19 +697,7 @@ pub(super) fn resolve_class_field(
     base: NodeId,
     access_id: NodeId,
 ) -> Result<ClassFieldRef, LowerError> {
-    let local_idx = match ctx.module.resolutions.get(&base.0) {
-        Some(NameResolution::Local { local_idx, .. }) => *local_idx,
-        Some(_) => return Err(LowerError::UnsupportedNode),
-        None => return Err(LowerError::Unresolved),
-    };
-    // Only used to confirm `base` really is a known class-instance local;
-    // the resolved slots themselves come from `class_member_slots` below.
-    ctx.local_class(local_idx).ok_or(LowerError::UnsupportedNode)?;
-    let obj_offset = ctx.local_slots[local_idx].frame_offset;
-    let class_sym = match ctx.local_type(local_idx) {
-        VbaType::UserDefined(sym) => *sym,
-        _ => return Err(LowerError::UnsupportedNode),
-    };
+    let (obj_offset, class_sym) = class_instance_local(ctx, base)?;
     let resolved = ctx
         .module
         .class_member_slots
