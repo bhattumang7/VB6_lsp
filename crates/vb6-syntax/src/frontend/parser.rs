@@ -5929,20 +5929,7 @@ impl<'src> Parser<'src> {
             None
         };
         self.check_property_agreement(arena, kind, name_id, name.span, params, ret_type);
-        let static_span = self.current_span();
-        let trailing_static = self.eat(TokenKind::Kw(Kw::Static));
-        if trailing_static && self.static_prefix {
-            // `Static` is given once.
-            self.diagnostics.push(ERR_SYNTAX_ERROR, static_span);
-        }
-        self.end_stmt();
-        let body = self.parse_procedure_body(arena, kind);
-        let id = arena.alloc(ExprNode::ProcDecl { kind, name: name_id, params, ret_type, body });
-        self.set_span(id, name.span);
-        if trailing_static {
-            self.decl_static.insert(id.0);
-        }
-        id
+        self.finish_proc_decl(arena, kind, &name, params, ret_type)
     }
 
     /// The procedures of one property must agree on its index parameters and value type.

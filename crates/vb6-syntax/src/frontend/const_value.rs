@@ -1359,21 +1359,31 @@ fn radix_in_text(rest: &str) -> Option<NumberInText> {
     for c in digits.chars() {
         v = (v * radix as u128 + c.to_digit(radix).unwrap() as u128).min(u128::MAX >> 8);
     }
-    let short_limit: u128 = if radix == 16 { 0xFFFF } else { 0o177777 };
-    let digits_short = if radix == 16 { 4 } else { 6 };
     let significant = digits.trim_start_matches('0').len();
-    let value = if significant <= digits_short && v <= short_limit {
-        if v >= 0x8000 { v as f64 - 65_536.0 } else { v as f64 }
-    } else if v <= 0xFFFF_FFFF {
-        if v >= 0x8000_0000 { v as f64 - 4_294_967_296.0 } else { v as f64 }
-    } else {
-        v as f64
-    };
     let wrapped = (v > 0xFFFF_FFFF).then(|| {
         let low = (v & 0xFFFF_FFFF) as u32;
         low as i32 as i64
     });
-    Some(NumberInText { value, wrapped })
+    Some(NumberInText { value: radix_value(v, radix, significant), wrapped })
+}
+
+/// The signed value of `&H`/`&O` digits: 16 bits when they fit in the short form, else 32 bits,
+/// else the unwrapped magnitude.
+fn radix_value(v: u128, radix: u32, significant: usize) -> f64 {
+    let (short_limit, digits_short): (u128, usize) =
+        if radix == 16 { (0xFFFF, 4) } else { (0o177777, 6) };
+    if significant <= digits_short && v <= short_limit {
+        sign_wrapped(v, 0x8000, 65_536.0)
+    } else if v <= 0xFFFF_FFFF {
+        sign_wrapped(v, 0x8000_0000, 4_294_967_296.0)
+    } else {
+        v as f64
+    }
+}
+
+/// `v`, or `v - modulus` when `v` is at or above the sign `threshold`.
+fn sign_wrapped(v: u128, threshold: u128, modulus: f64) -> f64 {
+    if v >= threshold { v as f64 - modulus } else { v as f64 }
 }
 
 /// Digits with separators, a point and an exponent; no sign, no blanks.
