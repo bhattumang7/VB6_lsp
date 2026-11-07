@@ -169,78 +169,56 @@ Then create a Pull Request on GitHub.
 
 ### Directory Structure
 
+See [`docs/architecture.md`](docs/architecture.md) for the crate graph and what each crate owns.
+
 ```
-src/
-├── main.rs              # Application entry point
-├── lsp/                 # LSP server implementation
-│   ├── mod.rs           # Main handlers (textDocument/*, initialize, etc.)
-│   ├── capabilities.rs  # LSP capability definitions
-│   ├── document.rs      # Document management utilities
-│   └── handlers.rs      # Specific request handlers
-├── parser/              # VB6 parsing logic
-│   ├── mod.rs           # Main parser
-│   ├── ast.rs           # AST node definitions
-│   └── lexer.rs         # Tokenization
-├── analysis/            # Semantic analysis
-│   └── mod.rs           # Diagnostics, completions, hover, etc.
-└── claude/              # Claude AI integration
-    └── mod.rs           # API client and helper functions
+src/                 # the language server and MCP server (glue only)
+crates/
+├── vb6-syntax/      # scanner, parser, AST, diagnostics
+├── vb6-sema/        # name binder, type system
+├── vb6-formats/     # .vbp .vbg .frm .frx .res readers and writers
+├── vb6-engine/      # Session: every IDE query
+├── vb6-typelib/     # referenced type libraries
+├── vb6-project/     # opening a project or group
+├── vb6-codegen/     # p-code generation
+└── vb6-core/        # compiler context, COM value layouts
 ```
 
 ### Module Guidelines
 
-#### Parser (`src/parser/`)
+#### Libraries (`crates/`)
+- Never depend on the language server or on a crate above them in the graph
 - Keep parsing logic separate from LSP logic
 - Maintain an immutable AST
 - Return detailed error information
 
-#### LSP (`src/lsp/`)
+#### Language server (`src/`)
 - Implement LSP spec faithfully
 - Use async/await for I/O operations
 - Log important events
-
-#### Analysis (`src/analysis/`)
-- Work with AST, not raw text
-- Cache analysis results when possible
-- Provide actionable diagnostics
-
-#### Claude (`src/claude/`)
-- Handle API errors gracefully
-- Respect rate limits
-- Cache responses when appropriate
+- Translate engine results to wire types; do not put language logic here
 
 ## Testing Guidelines
 
-### Unit Tests
+### Where tests go
 
-Place tests in the same file as the code:
+Tests are never written inline in the file they cover.
 
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
+- A test of a crate's public behaviour goes in that crate's `tests/` folder.
+- A test that needs a module's private items goes in a `tests/` folder beside the source file and
+  is attached with `#[cfg(test)] #[path = "tests/<name>.rs"] mod tests;`.
+- A test that drives the language server end to end goes in the root `tests/` folder.
 
-    #[test]
-    fn test_feature() {
-        // Test code
-    }
-}
-```
-
-### Integration Tests
-
-Place in `tests/` directory:
+Assert the exact result (the parsed tree, the message, the position), not only that something
+was reported.
 
 ```rust
-// tests/integration_test.rs
-use vb6_lsp::parser::Vb6Parser;
+// crates/vb6-syntax/tests/my_feature.rs
+use vb6_syntax::frontend::parser::Parser;
 
 #[test]
-fn test_parse_complete_file() {
-    let source = include_str!("fixtures/sample.bas");
-    let parser = Vb6Parser::new();
-    let ast = parser.parse(source).unwrap();
-    assert_eq!(ast.procedures.len(), 5);
+fn parses_the_declaration() {
+    // build the input, parse it, compare every part of the result
 }
 ```
 

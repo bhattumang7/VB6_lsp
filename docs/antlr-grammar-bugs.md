@@ -6,7 +6,7 @@ VB6 keyword table (271 entries) in
 `crates/vb6-syntax/src/frontend/keyword_table.rs`, the Rust
 recursive-descent parser (used as a reference for correct VB6 behaviour), and
 the ANTLR acceptance-test corpus in
-`crates/vb6-core/tests/antlr_coverage.rs`.
+`crates/vb6-syntax/tests/antlr_coverage.rs`.
 
 ---
 

@@ -9,18 +9,18 @@
 //!   build_impls_proc_node
 
 use vb6_core::context::CompilerContext;
-use vb6_core::frontend::ast::{alloc_decl_node, DeclSymKind, ScopeNodeKind};
+use vb6_syntax::frontend::ast::{alloc_decl_node, DeclSymKind, ScopeNodeKind};
 use vb6_core::builder::{AccessSpec, BuilderCtx, build_field_access_node,
     build_impls_proc_node, build_let_accessor_node, build_member_ref_node, build_proc_call_expr,
     create_binding_node};
 
-fn make_ctx_with_parent() -> (CompilerContext, vb6_core::frontend::ast::NodeId) {
+fn make_ctx_with_parent() -> (CompilerContext, vb6_syntax::frontend::ast::NodeId) {
     let mut ctx = CompilerContext::new();
     let parent = alloc_decl_node(&mut ctx.decls, &mut ctx.scopes, DeclSymKind::K09, None, 0, None);
     (ctx, parent)
 }
 
-fn default_bctx(parent_decl: vb6_core::frontend::ast::NodeId) -> BuilderCtx {
+fn default_bctx(parent_decl: vb6_syntax::frontend::ast::NodeId) -> BuilderCtx {
     BuilderCtx {
         result_decl: None,
         result_scope: None,

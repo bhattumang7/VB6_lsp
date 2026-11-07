@@ -2,8 +2,10 @@
 name = "vb6-core"
 version = "0.1.0"
 edition = "2021"
+description = "Compiler-side state (context, binder-phase node builder) and the 32-bit COM value layouts"
+license = "MIT"
+authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
 
 [dependencies]
 vb6-syntax = { path = "../vb6-syntax" }
 vb6-sema = { path = "../vb6-sema" }
-vb6-engine = { path = "../vb6-engine" }

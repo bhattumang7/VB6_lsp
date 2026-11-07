@@ -1,8 +1,8 @@
 //! Structural tests for VB6 semantic analysis.
 
-use vb6_core::frontend::ast::ExprArena;
-use vb6_core::frontend::parser::Parser;
-use vb6_core::frontend::scanner::ScannerContext;
+use vb6_syntax::frontend::ast::ExprArena;
+use vb6_syntax::frontend::parser::Parser;
+use vb6_syntax::frontend::scanner::ScannerContext;
 use vb6_core::context::CompilerContext;
 
 fn analyze(src: &[u8]) -> CompilerContext {

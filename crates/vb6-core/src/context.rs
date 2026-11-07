@@ -6,11 +6,11 @@
 
 use std::collections::HashMap;
 
-use crate::frontend::ast::{
+use vb6_syntax::frontend::ast::{
     alloc_scope_block, ast_node_create, ast_node_link, DeclArena, NodeId, ScopeArena,
     ScopeBlockArena, ScopeNodeKind,
 };
-use crate::frontend::keyword_table::keyword_string;
+use vb6_syntax::frontend::keyword_table::keyword_string;
 
 /// Token id of the keyword whose string names the second predefined scope.
 /// VB6's `build_predefined_nodes` interns `keyword_string(0xba)` (= "Unknown")

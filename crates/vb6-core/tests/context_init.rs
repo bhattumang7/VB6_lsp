@@ -4,9 +4,9 @@
 //!   build_predefined_nodes
 
 use vb6_core::context::CompilerContext;
-use vb6_core::frontend::ast::{alloc_decl_node, DeclSymKind, ScopeNodeKind};
+use vb6_syntax::frontend::ast::{alloc_decl_node, DeclSymKind, ScopeNodeKind};
 
-fn make_parent_decl(ctx: &mut CompilerContext) -> vb6_core::frontend::ast::NodeId {
+fn make_parent_decl(ctx: &mut CompilerContext) -> vb6_syntax::frontend::ast::NodeId {
     // A K09 (standard module) DeclNode — the typical parent_decl.
     alloc_decl_node(&mut ctx.decls, &mut ctx.scopes, DeclSymKind::K09, None, 0, None)
 }
@@ -50,7 +50,7 @@ fn build_predefined_nodes_second_scope_flags_b6_has_bit_8() {
     // child first (even index) and the parent second.
     // scope1: child=NodeId(0), parent=NodeId(1). scope2: child=NodeId(2), parent=NodeId(3).
     // first_predefined_scope = NodeId(1), so scope2 = NodeId(3).
-    use vb6_core::frontend::ast::NodeId;
+    use vb6_syntax::frontend::ast::NodeId;
     let scope2_id = NodeId(3);
     let scope2 = ctx.scope_nodes.get(scope2_id);
     assert_eq!(scope2.flags_b6 & 8, 8);
@@ -62,7 +62,7 @@ fn build_predefined_nodes_decl1_has_sec_flags_8_and_type_info_5() {
     let parent = make_parent_decl(&mut ctx);
     ctx.build_predefined_nodes(None, parent);
     // decl1 = first DeclNode created (index 1 — K09 parent is index 0).
-    use vb6_core::frontend::ast::NodeId;
+    use vb6_syntax::frontend::ast::NodeId;
     let decl1 = NodeId(1);
     let d = ctx.decls.get(decl1);
     assert_eq!(d.sec_flags & 8, 8);
@@ -93,7 +93,7 @@ fn build_predefined_nodes_interns_second_scope_name() {
     // VB6 names the second predefined scope by interning keyword_string(0xba)
     // = "Unknown". After building, that symbol must exist and head the chain
     // containing the second scope's decl (decl2 = NodeId(2) in the DeclArena).
-    use vb6_core::frontend::ast::NodeId;
+    use vb6_syntax::frontend::ast::NodeId;
     let mut ctx = CompilerContext::new();
     let parent = make_parent_decl(&mut ctx);
     ctx.build_predefined_nodes(None, parent);
@@ -125,7 +125,7 @@ fn build_predefined_nodes_parent_ext_flag_propagates_to_decls() {
     let parent = make_parent_decl(&mut ctx);
     ctx.decls.get_mut(parent).ext_flags = 1;
     ctx.build_predefined_nodes(None, parent);
-    use vb6_core::frontend::ast::NodeId;
+    use vb6_syntax::frontend::ast::NodeId;
     let decl1 = ctx.decls.get(NodeId(1));
     let decl2 = ctx.decls.get(NodeId(2));
     assert_eq!(decl1.flags_10 & 8, 8);

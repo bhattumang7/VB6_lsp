@@ -2,7 +2,7 @@
 //!
 //! ## Grounding
 //!
-//! The 271 entries of `KEYWORD_TABLE` (`crates/vb6-core/src/frontend/keyword_table.rs`)
+//! The 271 entries of `KEYWORD_TABLE` (`crates/vb6-syntax/src/frontend/keyword_table.rs`)
 //! are the behavioral ground truth for what the scanner emits:
 //!
 //! * Table indices 1–225 are named VBA keywords/built-ins.

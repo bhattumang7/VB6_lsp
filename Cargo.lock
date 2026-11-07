@@ -1226,7 +1226,6 @@ dependencies = [
 name = "vb6-core"
 version = "0.1.0"
 dependencies = [
- "vb6-engine",
  "vb6-sema",
  "vb6-syntax",
 ]

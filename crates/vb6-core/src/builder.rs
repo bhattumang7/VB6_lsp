@@ -7,7 +7,7 @@
 //! semantic analysis to construct the resolved AST.
 
 use crate::context::CompilerContext;
-use crate::frontend::ast::{
+use vb6_syntax::frontend::ast::{
     alloc_decl_node, ast_node_create, ast_node_link, DeclSymKind, NodeId, ScopeNodeKind,
 };
 

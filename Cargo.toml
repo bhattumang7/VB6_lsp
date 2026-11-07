@@ -10,17 +10,14 @@ members = [
     "crates/vb6-project",
     "tools/oracle-diff",
 ]
-# Default set = the LSP plus its analysis-engine dependency chain, all of which
-# build and test cleanly on a 64-bit host. vb6-core (the VB6 runtime emulation)
-# is a member but excluded here because its runtime tests rely on 32-bit
-# pointer/VARIANT layout — run them with `cargo test-i686` (or `-p vb6-core`
-# under `--target i686-pc-windows-msvc`); the pure frontend/sema tests also run
-# on the host via `cargo test-ast`.
+# `cargo test` covers the language server and every library; the oracle comparison tool needs
+# a VB6 installation and is run on its own.
 default-members = [
     ".",
     "crates/vb6-syntax",
     "crates/vb6-sema",
     "crates/vb6-engine",
+    "crates/vb6-core",
     "crates/vb6-codegen",
     "crates/vb6-typelib",
     "crates/vb6-formats",

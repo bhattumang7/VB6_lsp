@@ -46,19 +46,24 @@ src/
 ├── mcp_main.rs      →  vb6-mcp  (MCP server binary, stdio JSON-RPC)
 ├── engine_glue.rs   →  maps vb6-engine results to LSP/MCP wire types
 ├── lsp/             →  tower-lsp handlers
-├── controls/        →  .frx / .frm form-control parsing
-├── workspace/       →  .vbp project discovery, .res resource files
-└── utils/           →  ANSI/Unicode encoding helpers
+└── com_decoder.rs   →  decodes OCX property bags through COM (Windows)
 
 crates/
 ├── vb6-syntax/      →  scanner, parser, AST, diagnostics
 ├── vb6-sema/        →  name binder, type system
+├── vb6-formats/     →  .vbp .vbg .frm .frx .res readers and writers
 ├── vb6-engine/      →  Session API (hover, nav, rename, tokens, …)
-├── vb6-core/        →  integration test harness
+├── vb6-typelib/     →  reads the type libraries a project references
+├── vb6-project/     →  opens a project or group, one Session per project
+├── vb6-codegen/     →  p-code generation (the compiler workstream)
+├── vb6-core/        →  compiler context and COM value layouts
 └── vb6-ast-derive/  →  proc-macro (Children derive)
 
 vscode-vb6/          →  VS Code extension (bundles via esbuild, .vsix)
 ```
+
+See [`docs/architecture.md`](docs/architecture.md) for how the crates depend on each other and
+what each one owns.
 
 ## Building
 
@@ -113,15 +118,9 @@ cargo test -p vb6-syntax
 cargo test -p vb6-sema
 cargo test -p vb6-engine
 
-# Structural suite (AST / parser / scanner / binder)
-cargo test-ast          # alias in .cargo/config.toml
-
-# 32-bit suite (vb6-core runtime — requires i686 target)
-rustup target add i686-pc-windows-msvc
-cargo test-i686
-
-# Run all three suites in sequence
-pwsh scripts/test.ps1
+# Some tests run over a corpus of third-party VB6 projects that is not part of the
+# repository; point VB6_CORPUS_DIR at it (they report a skip when it is absent)
+$env:VB6_CORPUS_DIR = "D:/vb6-corpus"
 ```
 
 ## VS Code Setup
@@ -277,15 +276,17 @@ vb6-lsp/
 │   ├── mcp_main.rs             # vb6-mcp entry point
 │   ├── engine_glue.rs          # vb6-engine → LSP/MCP type mapping
 │   ├── lsp/                    # tower-lsp request handlers
-│   ├── controls/               # Form control + .frx parsing
-│   ├── workspace/              # .vbp discovery, .res read/write
-│   └── utils/                  # ANSI/Unicode helpers
+│   └── com_decoder.rs          # OCX property bags through COM (Windows)
 │
 ├── crates/
 │   ├── vb6-syntax/             # Scanner, parser, AST, diagnostics
 │   ├── vb6-sema/               # Name binder, type resolution
+│   ├── vb6-formats/            # .vbp .vbg .frm .frx .res readers and writers
 │   ├── vb6-engine/             # Session API (all IDE queries)
-│   ├── vb6-core/               # Integration tests
+│   ├── vb6-typelib/            # Referenced type libraries
+│   ├── vb6-project/            # Project and group loading
+│   ├── vb6-codegen/            # P-code generation
+│   ├── vb6-core/               # Compiler context, COM value layouts
 │   └── vb6-ast-derive/         # Children proc-macro
 │
 ├── vscode-vb6/                 # VS Code extension
@@ -294,16 +295,15 @@ vb6-lsp/
 │
 ├── tests/                      # Integration tests
 │   ├── engine_analysis.rs
-│   ├── integration_vbp_parsing.rs
 │   ├── lsp_server.rs
 │   ├── mcp_server.rs
 │   └── fixtures/
 │
 ├── docs/
+│   ├── architecture.md
 │   └── RESOURCE_FILES.md
 ├── scripts/
 │   └── test.ps1
-├── .cargo/config.toml          # test-ast / test-i686 aliases
 └── Cargo.toml                  # Workspace manifest
 ```
 

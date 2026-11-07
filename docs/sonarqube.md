@@ -32,7 +32,7 @@ From this project root:
 The script:
 
 1. runs `cargo llvm-cov` over the default workspace members → `target/coverage/lcov.info`
-   (the stale `vb6-core` crate is excluded; it is not in `default-members`);
+   (every library crate and the language server);
 2. runs `cargo clippy --message-format=json` → `target/clippy-report.json`
    (read by the Sonar Rust/Clippy sensor — cargo is not present in the scanner container);
 3. runs `sonarsource/sonar-scanner-cli` via Docker against `host.docker.internal:9000`;
