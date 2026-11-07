@@ -25,6 +25,7 @@ mod export;
 mod folding;
 mod format;
 mod library;
+mod external;
 mod module_names;
 mod project_model;
 mod receivers;
@@ -38,6 +39,7 @@ pub mod tokens;
 
 pub use call_hierarchy::{CallHierarchyDecl, IncomingCall, OutgoingCall};
 pub use completion::{CompletionEntry, CompletionKind};
+pub use external::ExternalTarget;
 pub use folding::FoldRange;
 pub use forms::{describe_frx_reference, form_controls, form_controls_from_bytes, FormControl};
 pub use library::{
@@ -337,6 +339,44 @@ impl Session {
         }
         self.rebuild_path_index();
         self.relink();
+    }
+
+    /// Add or replace several files and re-analyze the project once.
+    ///
+    /// Equivalent to calling [`update_file`](Self::update_file) for each file in
+    /// order, except that the project is linked a single time at the end, so the
+    /// cost does not grow with the number of files changed together (a project
+    /// loaded file by file would relink once per file). A path named more than
+    /// once takes the last source.
+    pub fn update_files(&mut self, files: Vec<(String, Vec<u8>)>) {
+        if files.is_empty() {
+            return;
+        }
+        let conditional = conditional_constants(&self.config);
+        for (path, source) in files {
+            let md = analyze_module(path.clone(), source, &conditional);
+            match self.path_to_module.get(&path).copied() {
+                Some(i) => self.modules[i] = md,
+                None => {
+                    self.modules.push(md);
+                    self.path_to_module.insert(path, self.modules.len() - 1);
+                }
+            }
+        }
+        self.relink();
+    }
+
+    /// Remove several files from the project and re-analyze it once. Returns how
+    /// many of them were in the project.
+    pub fn remove_files(&mut self, paths: &[String]) -> usize {
+        let before = self.modules.len();
+        self.modules.retain(|m| !paths.contains(&m.path));
+        let removed = before - self.modules.len();
+        if removed > 0 {
+            self.rebuild_path_index();
+            self.relink();
+        }
+        removed
     }
 
     /// Number of module binds the session has performed against the project
