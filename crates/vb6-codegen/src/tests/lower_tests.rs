@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use vb6_sema::sema::{
-    BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar, ClassMemberSlot,
-    ExternalClass, NameResolution, ParamFlags, ResolvedClassMember, VbaType,
+    AccessorKind, BoundModule, BoundParam, BoundProc, BoundTypeDecl, BoundTypeMember, BoundVar,
+    ClassMemberSlot, ExternalClass, NameResolution, ParamFlags, ResolvedClassMember, VbaType,
 };
 use vb6_syntax::frontend::ast::{AstLit, BinOpKind, ExprArena, ExprNode, ProcKind};
 use vb6_syntax::frontend::token::{Span, TypeSuffix};
@@ -12,10 +12,10 @@ use super::{lower_proc, lower_proc_with_classes, LowerError};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-fn long_var(sym_id: u32) -> BoundVar {
+fn var_of(sym_id: u32, vba_type: VbaType) -> BoundVar {
     BoundVar {
         sym_id,
-        vba_type: VbaType::Long,
+        vba_type,
         is_const: false,
         const_value: None,
         const_lit: None,
@@ -28,20 +28,12 @@ fn long_var(sym_id: u32) -> BoundVar {
     }
 }
 
+fn long_var(sym_id: u32) -> BoundVar {
+    var_of(sym_id, VbaType::Long)
+}
+
 fn udt_var(sym_id: u32, type_sym: u32) -> BoundVar {
-    BoundVar {
-        sym_id,
-        vba_type: VbaType::UserDefined(type_sym),
-        is_const: false,
-        const_value: None,
-        const_lit: None,
-        fixed_string_len: None,
-        array_dims: None,
-        is_static: false,
-        is_public: false,
-        is_new: false,
-        name_span: Span::default(),
-    }
+    var_of(sym_id, VbaType::UserDefined(type_sym))
 }
 
 /// `Type Point : X As Long : Y As Long : End Type`, as a `BoundTypeDecl`.
@@ -57,68 +49,44 @@ fn point_type_decl(type_sym: u32, x_sym: u32, y_sym: u32) -> BoundTypeDecl {
     }
 }
 
-/// `Dim <sym_id> As New <type_sym>` — an auto-instantiate object local.
-fn new_object_var(sym_id: u32, type_sym: u32) -> BoundVar {
-    BoundVar { is_new: true, ..udt_var(sym_id, type_sym) }
-}
-
 fn double_var(sym_id: u32) -> BoundVar {
-    BoundVar { vba_type: VbaType::Double, ..long_var(sym_id) }
+    var_of(sym_id, VbaType::Double)
 }
 
 fn string_var(sym_id: u32) -> BoundVar {
-    BoundVar { vba_type: VbaType::String, ..long_var(sym_id) }
+    var_of(sym_id, VbaType::String)
 }
 
 /// `Dim <sym_id> As Object` — a plain object-typed local (no specific class).
 fn object_var(sym_id: u32) -> BoundVar {
-    BoundVar { vba_type: VbaType::Object, ..long_var(sym_id) }
+    var_of(sym_id, VbaType::Object)
 }
 
 fn integer_var(sym_id: u32) -> BoundVar {
-    BoundVar {
+    var_of(sym_id, VbaType::Integer)
+}
+
+fn long_param(sym_id: u32, by_val: bool) -> BoundParam {
+    BoundParam {
         sym_id,
-        vba_type: VbaType::Integer,
-        is_const: false,
-        const_value: None,
-        const_lit: None,
-        fixed_string_len: None,
-        array_dims: None,
-        is_static: false,
-        is_public: false,
-        is_new: false,
+        vba_type: VbaType::Long,
+        flags: ParamFlags {
+            by_val,
+            by_ref: !by_val,
+            optional: false,
+            is_array: false,
+            param_array: false,
+        },
         name_span: Span::default(),
     }
 }
 
 fn byval_long_param(sym_id: u32) -> BoundParam {
-    BoundParam {
-        sym_id,
-        vba_type: VbaType::Long,
-        flags: ParamFlags {
-            by_val: true,
-            by_ref: false,
-            optional: false,
-            is_array: false,
-            param_array: false,
-        },
-        name_span: Span::default(),
-    }
+    long_param(sym_id, true)
 }
 
 fn byref_long_param(sym_id: u32) -> BoundParam {
-    BoundParam {
-        sym_id,
-        vba_type: VbaType::Long,
-        flags: ParamFlags {
-            by_val: false,
-            by_ref: true,
-            optional: false,
-            is_array: false,
-            param_array: false,
-        },
-        name_span: Span::default(),
-    }
+    long_param(sym_id, false)
 }
 
 fn make_proc(
@@ -175,6 +143,233 @@ fn nothing_node(ea: &mut ExprArena) -> NodeId {
     ea.alloc(ExprNode::Nothing)
 }
 
+/// A local of the procedure under test, by its index in the locals list.
+fn local(local_idx: usize) -> NameResolution {
+    NameResolution::Local { proc_idx: 0, local_idx }
+}
+
+/// A parameter of the procedure under test, by its index in the parameter list.
+fn param(param_idx: usize) -> NameResolution {
+    NameResolution::Param { proc_idx: 0, param_idx }
+}
+
+fn resolutions_of(entries: &[(NodeId, NameResolution)]) -> HashMap<u32, NameResolution> {
+    entries.iter().map(|(node, res)| (node.0, res.clone())).collect()
+}
+
+fn types_of(entries: &[(NodeId, VbaType)]) -> HashMap<u32, VbaType> {
+    entries.iter().map(|(node, ty)| (node.0, ty.clone())).collect()
+}
+
+/// Lowers procedure 0 of `module` with no external classes.
+fn lower_ok(module: &BoundModule, ea: &ExprArena) -> Vec<u8> {
+    lower_proc(module, 0, ea, 0x0008).unwrap()
+}
+
+fn lower_with_known_classes(
+    module: &BoundModule,
+    ea: &ExprArena,
+) -> Result<Vec<u8>, LowerError> {
+    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
+    lower_proc_with_classes(module, 0, ea, 0x0008, &known_classes)
+}
+
+fn lower_classes_ok(module: &BoundModule, ea: &ExprArena) -> Vec<u8> {
+    lower_with_known_classes(module, ea).unwrap()
+}
+
+/// Class symbol 100 with the given members.
+fn class_100(members: Vec<ClassMemberSlot>) -> HashMap<u32, ExternalClass> {
+    HashMap::from([(100u32, ExternalClass { members })])
+}
+
+fn field_slot(name: &str) -> ClassMemberSlot {
+    ClassMemberSlot::Field { name: name.to_string(), vba_type: VbaType::Long, is_object: false }
+}
+
+fn property_slot(name: &str, vba_type: VbaType, kind: AccessorKind) -> ClassMemberSlot {
+    ClassMemberSlot::PropertyAccessor { name: name.to_string(), vba_type, kind }
+}
+
+fn resolved_member(
+    get_slot: Option<u16>,
+    let_slot: Option<u16>,
+    is_property: bool,
+) -> ResolvedClassMember {
+    ResolvedClassMember {
+        get_slot,
+        let_slot,
+        set_slot: None,
+        method_slot: None,
+        method_ret_type: None,
+        method_params: Vec::new(),
+        is_property,
+    }
+}
+
+/// `<target> = <local 0>.P` (or `Set` when `use_set`), where `P` is a Property
+/// Get returning `prop_ty` and the target is `target_var` (local 1).
+fn lower_property_get(prop_ty: VbaType, target_var: BoundVar, use_set: bool) -> Vec<u8> {
+    let mut ea = ExprArena::new();
+    let o = name_ref(&mut ea, 0);
+    let get_access = member_access_node(&mut ea, o, 10 /* sym for P */);
+    let x = name_ref(&mut ea, 1);
+    let stmt = if use_set {
+        set_assign_node(&mut ea, x, get_access)
+    } else {
+        assign_node(&mut ea, x, get_access)
+    };
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![udt_var(0, 100), target_var], vec![], body)],
+        class_field_info: class_100(vec![property_slot("P", prop_ty.clone(), AccessorKind::Get)]),
+        class_member_slots: HashMap::from([(get_access.0, resolved_member(Some(0x1c), None, true))]),
+        resolutions: resolutions_of(&[(o, local(0)), (x, local(1))]),
+        types: types_of(&[(get_access, prop_ty)]),
+        ..BoundModule::default()
+    };
+    lower_classes_ok(&module, &ea)
+}
+
+/// `<local 0>.P = <literal>` where `P` is a Property Let of type `prop_ty` and
+/// the literal has its own natural type `lit_ty`.
+fn lower_property_let(prop_ty: VbaType, lit: AstLit, lit_ty: VbaType) -> Vec<u8> {
+    let mut ea = ExprArena::new();
+    let o = name_ref(&mut ea, 0);
+    let let_access = member_access_node(&mut ea, o, 10 /* sym for P */);
+    let value = ea.alloc(ExprNode::Literal { lit });
+    let stmt = assign_node(&mut ea, let_access, value);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
+        class_field_info: class_100(vec![property_slot("P", prop_ty.clone(), AccessorKind::Let)]),
+        class_member_slots: HashMap::from([(let_access.0, resolved_member(None, Some(0x1c), true))]),
+        resolutions: resolutions_of(&[(o, local(0))]),
+        // The literal's own natural type: the real binder always populates it,
+        // so this hand-built module must too.
+        types: types_of(&[(let_access, prop_ty), (value, lit_ty)]),
+        ..BoundModule::default()
+    };
+    lower_classes_ok(&module, &ea)
+}
+
+/// What a `Set o = ...` statement assigns in [`lower_set_into_object`].
+enum SetSource {
+    New(u32),
+    Local(usize),
+    Nothing,
+}
+
+/// `Set <local 0> = <source>` where every local is an object of class 100 and
+/// `classes` are the class symbols the module knows about.
+fn lower_set_into_object(
+    locals: Vec<BoundVar>,
+    classes: &[u32],
+    source: SetSource,
+) -> Result<Vec<u8>, LowerError> {
+    let mut ea = ExprArena::new();
+    let o = name_ref(&mut ea, 0);
+    let mut resolutions = vec![(o, local(0))];
+    let value = match source {
+        SetSource::New(class_sym) => new_node(&mut ea, class_sym),
+        SetSource::Local(idx) => {
+            let other = name_ref(&mut ea, idx as u32);
+            resolutions.push((other, local(idx)));
+            other
+        }
+        SetSource::Nothing => nothing_node(&mut ea),
+    };
+    let stmt = set_assign_node(&mut ea, o, value);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let module = BoundModule {
+        procs: vec![make_proc(locals, vec![], body)],
+        class_field_info: classes.iter().map(|c| (*c, ExternalClass::default())).collect(),
+        resolutions: resolutions_of(&resolutions),
+        ..BoundModule::default()
+    };
+    lower_with_known_classes(&module, &ea)
+}
+
+/// `r = a <op> b` over three locals; `result_type` is the type recorded for
+/// the operator node (comparisons carry none).
+fn lower_binop_assign(
+    op: BinOpKind,
+    locals: Vec<BoundVar>,
+    result_type: Option<VbaType>,
+) -> Vec<u8> {
+    let mut ea = ExprArena::new();
+    let a = name_ref(&mut ea, 0);
+    let b = name_ref(&mut ea, 1);
+    let operation = binop_node(&mut ea, op, a, b);
+    let r = name_ref(&mut ea, 2);
+    let stmt = assign_node(&mut ea, r, operation);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let types = match result_type {
+        Some(ty) => types_of(&[(operation, ty)]),
+        None => HashMap::new(),
+    };
+    let module = BoundModule {
+        procs: vec![make_proc(locals, vec![], body)],
+        resolutions: resolutions_of(&[(a, local(0)), (b, local(1)), (r, local(2))]),
+        types,
+        ..BoundModule::default()
+    };
+    lower_ok(&module, &ea)
+}
+
+/// `r = <source>` where `r` is a Long local (local 0, sym 1) and the source is
+/// a name resolving to `source_res`.
+fn lower_read_into_long_local(
+    source_res: NameResolution,
+    params: Vec<BoundParam>,
+    module_vars: Vec<BoundVar>,
+) -> Vec<u8> {
+    let mut ea = ExprArena::new();
+    let p = name_ref(&mut ea, 0);
+    let r = name_ref(&mut ea, 1);
+    let stmt = assign_node(&mut ea, r, p);
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let module = BoundModule {
+        procs: vec![make_proc(vec![long_var(1)], params, body)],
+        module_vars,
+        resolutions: resolutions_of(&[(p, source_res), (r, local(0))]),
+        ..BoundModule::default()
+    };
+    lower_ok(&module, &ea)
+}
+
+/// `t.X` / `t.X = 1` over a `Point` UDT local `t`. With `store` false the
+/// statement is `y = t.X` (y a Long local); with `store` true it is `t.X = 1`.
+fn lower_udt_field(store: bool) -> Vec<u8> {
+    let mut ea = ExprArena::new();
+    let t = name_ref(&mut ea, 0);
+    let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
+    let mut resolutions = vec![(t, local(0))];
+    let (stmt, locals) = if store {
+        let one = int_lit_node(&mut ea, 1);
+        (assign_node(&mut ea, field_x, one), vec![udt_var(0, 100)])
+    } else {
+        let y = name_ref(&mut ea, 1);
+        resolutions.push((y, local(1)));
+        (assign_node(&mut ea, y, field_x), vec![udt_var(0, 100), long_var(1)])
+    };
+    let body = block_node(&mut ea, vec![stmt]);
+
+    let module = BoundModule {
+        procs: vec![make_proc(locals, vec![], body)],
+        type_decls: vec![point_type_decl(100, 10, 11)],
+        resolutions: resolutions_of(&resolutions),
+        types: types_of(&[(field_x, VbaType::Long)]),
+        ..BoundModule::default()
+    };
+    lower_ok(&module, &ea)
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 // Oracle byte sequence for `r = a + b` with three Long locals.
@@ -182,142 +377,47 @@ fn nothing_node(ea: &mut ExprArena) -> NodeId {
 // Bytes: load a, load b, Long-Add, store r.
 #[test]
 fn lower_local_long_add_matches_oracle() {
-    let mut ea = ExprArena::new();
-    let a = name_ref(&mut ea, 0);   // NodeId(0)
-    let b = name_ref(&mut ea, 1);   // NodeId(1)
-    let add = binop_node(&mut ea, BinOpKind::Add, a, b);   // NodeId(2)
-    let r = name_ref(&mut ea, 2);   // NodeId(3)
-    let stmt = assign_node(&mut ea, r, add);  // NodeId(4)
-    let body = block_node(&mut ea, vec![stmt]);  // NodeId(5)
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(a.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(b.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-    resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 2 });
-
-    let mut types = HashMap::new();
-    types.insert(add.0, VbaType::Long);
-
-    let module = BoundModule {
-        procs: vec![make_proc(
-            vec![long_var(0), long_var(1), long_var(2)],
-            vec![],
-            body,
-        )],
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff, 0x14]
+    let bytes = lower_binop_assign(
+        BinOpKind::Add,
+        vec![long_var(0), long_var(1), long_var(2)],
+        Some(VbaType::Long),
     );
+    assert_eq!(bytes, &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff, 0x14]);
 }
 
 // Oracle byte sequence for `r = a - b` with three Long locals.
 // Frame: a=-136, b=-140, r=-144. Bytes: load a, load b, Long-Sub, store r.
 #[test]
 fn lower_local_long_sub_matches_oracle() {
-    let mut ea = ExprArena::new();
-    let a = name_ref(&mut ea, 0);
-    let b = name_ref(&mut ea, 1);
-    let sub = binop_node(&mut ea, BinOpKind::Sub, a, b);
-    let r = name_ref(&mut ea, 2);
-    let stmt = assign_node(&mut ea, r, sub);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(a.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(b.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-    resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 2 });
-
-    let mut types = HashMap::new();
-    types.insert(sub.0, VbaType::Long);
-
-    let module = BoundModule {
-        procs: vec![make_proc(
-            vec![long_var(0), long_var(1), long_var(2)],
-            vec![],
-            body,
-        )],
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xae, 0x71, 0x70, 0xff, 0x14]
+    let bytes = lower_binop_assign(
+        BinOpKind::Sub,
+        vec![long_var(0), long_var(1), long_var(2)],
+        Some(VbaType::Long),
     );
+    assert_eq!(bytes, &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xae, 0x71, 0x70, 0xff, 0x14]);
 }
 
 // Oracle byte sequence for `r = (a = b)` — Long comparison stored into Integer.
 // Frame: a=-136 (0xff78), b=-140 (0xff74), r=-142 (0xff72).
 // Bytes: load a, load b, Long-Eq, Integer-store r.
 // (Integer frame size = 2, so r follows b at -140 - 2 = -142.)
+// Comparison nodes do not carry a type in BoundModule.types (type_tag = 0).
 #[test]
 fn lower_local_long_eq_into_integer_matches_oracle() {
-    let mut ea = ExprArena::new();
-    let a = name_ref(&mut ea, 0);
-    let b = name_ref(&mut ea, 1);
-    let eq = binop_node(&mut ea, BinOpKind::Eq, a, b);
-    let r = name_ref(&mut ea, 2);
-    let stmt = assign_node(&mut ea, r, eq);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(a.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(b.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-    resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 2 });
-
-    // Comparison nodes do not carry a type in BoundModule.types (type_tag = 0).
-    let module = BoundModule {
-        procs: vec![make_proc(
-            vec![long_var(0), long_var(1), integer_var(2)],
-            vec![],
-            body,
-        )],
-        resolutions,
-        types: HashMap::new(),
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc7, 0x70, 0x72, 0xff, 0x14]
+    let bytes = lower_binop_assign(
+        BinOpKind::Eq,
+        vec![long_var(0), long_var(1), integer_var(2)],
+        None,
     );
+    assert_eq!(bytes, &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc7, 0x70, 0x72, 0xff, 0x14]);
 }
 
 // Oracle: ByVal Long param `p` at frame +12, local `r` Long at -136.
 // `r = p` → load ByVal param [0x6c, 0x0c, 0x00], store Long local [0x71, 0x78, 0xff].
 #[test]
 fn lower_byval_long_param_load_matches_oracle() {
-    let mut ea = ExprArena::new();
-    let p = name_ref(&mut ea, 0);   // ByVal param p
-    let r = name_ref(&mut ea, 1);   // local r
-    let stmt = assign_node(&mut ea, r, p);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(p.0, NameResolution::Param { proc_idx: 0, param_idx: 0 });
-    resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let module = BoundModule {
-        procs: vec![make_proc(
-            vec![long_var(1)],
-            vec![byval_long_param(0)],
-            body,
-        )],
-        resolutions,
-        types: HashMap::new(),
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x6c, 0x0c, 0x00, 0x71, 0x78, 0xff, 0x14]
-    );
+    let bytes = lower_read_into_long_local(param(0), vec![byval_long_param(0)], vec![]);
+    assert_eq!(bytes, &[0x6c, 0x0c, 0x00, 0x71, 0x78, 0xff, 0x14]);
 }
 
 // Oracle: ByRef Long param `p` at frame +12, local `r` Long at -136.
@@ -325,31 +425,8 @@ fn lower_byval_long_param_load_matches_oracle() {
 // store Long local [0x71, 0x78, 0xff].
 #[test]
 fn lower_byref_long_param_load_matches_oracle() {
-    let mut ea = ExprArena::new();
-    let p = name_ref(&mut ea, 0);
-    let r = name_ref(&mut ea, 1);
-    let stmt = assign_node(&mut ea, r, p);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(p.0, NameResolution::Param { proc_idx: 0, param_idx: 0 });
-    resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let module = BoundModule {
-        procs: vec![make_proc(
-            vec![long_var(1)],
-            vec![byref_long_param(0)],
-            body,
-        )],
-        resolutions,
-        types: HashMap::new(),
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x80, 0x0c, 0x00, 0x71, 0x78, 0xff, 0x14]
-    );
+    let bytes = lower_read_into_long_local(param(0), vec![byref_long_param(0)], vec![]);
+    assert_eq!(bytes, &[0x80, 0x0c, 0x00, 0x71, 0x78, 0xff, 0x14]);
 }
 
 // Oracle: module-level Long global `g` at field_offset=0, module_desc=0x0008.
@@ -359,28 +436,9 @@ fn lower_byref_long_param_load_matches_oracle() {
 //           store Long local [0x71, 0x78, 0xff].
 #[test]
 fn lower_global_long_load_matches_oracle() {
-    let mut ea = ExprArena::new();
-    let g = name_ref(&mut ea, 0);
-    let r = name_ref(&mut ea, 1);
-    let stmt = assign_node(&mut ea, r, g);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(g.0, NameResolution::ModuleVar(0));
-    resolutions.insert(r.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![long_var(1)], vec![], body)],
-        module_vars: vec![long_var(0)],
-        resolutions,
-        types: HashMap::new(),
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x94, 0x08, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x14]
-    );
+    let bytes =
+        lower_read_into_long_local(NameResolution::ModuleVar(0), vec![], vec![long_var(0)]);
+    assert_eq!(bytes, &[0x94, 0x08, 0x00, 0x00, 0x00, 0x71, 0x78, 0xff, 0x14]);
 }
 
 // Two sequential assignment statements in a Block.
@@ -398,25 +456,17 @@ fn lower_two_sequential_assigns() {
     let stmt2 = assign_node(&mut ea, a1, b1);  // a = b
     let body = block_node(&mut ea, vec![stmt1, stmt2]);
 
-    let mut resolutions = HashMap::new();
-    // b = a: load a (local 0), store b (local 1)
-    resolutions.insert(a0.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(b0.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-    // a = b: load b (local 1), store a (local 0)
-    resolutions.insert(b1.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-    resolutions.insert(a1.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
     let module = BoundModule {
         procs: vec![make_proc(vec![long_var(0), long_var(1)], vec![], body)],
-        resolutions,
-        types: HashMap::new(),
+        // b = a: load a (local 0), store b (local 1); a = b: load b (local 1), store a (local 0)
+        resolutions: resolutions_of(&[(a0, local(0)), (b0, local(1)), (b1, local(1)), (a1, local(0))]),
         ..BoundModule::default()
     };
 
     // b = a: load a [0x6c, 0x78, 0xff], store b [0x71, 0x74, 0xff]
     // a = b: load b [0x6c, 0x74, 0xff], store a [0x71, 0x78, 0xff]
     assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
+        lower_ok(&module, &ea),
         &[
             0x6c, 0x78, 0xff, 0x71, 0x74, 0xff,
             0x6c, 0x74, 0xff, 0x71, 0x78, 0xff,
@@ -437,36 +487,7 @@ fn lower_udt_field_load_matches_isolated_probe() {
     // `y = t.X` in isolation (no preceding store) — oracle-confirmed
     // (e2e_udt_field_scalar_access): `6c 74 ff` (load t.X at -140) then
     // `71 70 ff` (store y at -144).
-    let mut ea = ExprArena::new();
-    let t = name_ref(&mut ea, 0);
-    let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
-    let y = name_ref(&mut ea, 1);
-    let stmt = assign_node(&mut ea, y, field_x);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(t.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(y.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut types = HashMap::new();
-    types.insert(field_x.0, VbaType::Long);
-
-    let module = BoundModule {
-        procs: vec![make_proc(
-            vec![udt_var(0, /* type_sym */ 100), long_var(1)],
-            vec![],
-            body,
-        )],
-        type_decls: vec![point_type_decl(100, 10, 11)],
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
-        &[0x6c, 0x74, 0xff, 0x71, 0x70, 0xff, 0x14]
-    );
+    assert_eq!(lower_udt_field(false), &[0x6c, 0x74, 0xff, 0x71, 0x70, 0xff, 0x14]);
 }
 
 #[test]
@@ -480,23 +501,8 @@ fn lower_udt_field_store_matches_current_pipeline_output() {
     // a spurious extra `6c 74 ff`; the real compiler's output — captured here
     // for the first time by real source reaching this path — proved that
     // wrong, and the remap arm was removed.
-    let mut ea = ExprArena::new();
-    let t = name_ref(&mut ea, 0);
-    let field_x = member_access_node(&mut ea, t, 10 /* sym for X */);
-    let one = int_lit_node(&mut ea, 1);
-    let stmt = assign_node(&mut ea, field_x, one);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
-        type_decls: vec![point_type_decl(100, 10, 11)],
-        resolutions: HashMap::from([(t.0, NameResolution::Local { proc_idx: 0, local_idx: 0 })]),
-        types: HashMap::from([(field_x.0, VbaType::Long)]),
-        ..BoundModule::default()
-    };
-
     assert_eq!(
-        lower_proc(&module, 0, &ea, 0x0008).unwrap(),
+        lower_udt_field(true),
         &[0xf5, 0x01, 0x00, 0x00, 0x00, 0x71, 0x74, 0xff, 0x14]
     );
 }
@@ -513,34 +519,18 @@ fn class_instance_local_gets_a_plain_4byte_object_slot() {
     let mut ea = ExprArena::new();
     let body = block_node(&mut ea, vec![]);
 
-    let o_var = udt_var(0, 100); // reuse: sym_id 0, type_sym 100 (VbaType::UserDefined(100))
-    let x_var = long_var(1);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::Field {
-                name: "F".to_string(),
-                vba_type: VbaType::Long,
-                is_object: false,
-            }],
-        },
-    );
-
     let module = BoundModule {
-        procs: vec![make_proc(vec![o_var, x_var], vec![], body)],
-        class_field_info,
+        // sym_id 0, type_sym 100 (VbaType::UserDefined(100))
+        procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
+        class_field_info: class_100(vec![field_slot("F")]),
         ..BoundModule::default()
     };
 
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     // Empty body: no statement bytes, but lowering must succeed (frame builds
     // without hitting the UDT `type_decls` lookup / UnsupportedType error a
     // class-typed local would otherwise trigger) — and the proc still gets
     // its unconditional trailing implicit-return `0x14`.
-    assert_eq!(bytes, vec![0x14]);
+    assert_eq!(lower_classes_ok(&module, &ea), vec![0x14]);
 }
 
 // ── Class-member vtable dispatch (0x24 resolve-object + 0x0d vtable-call) ────
@@ -567,52 +557,21 @@ fn class_field_store_then_load_matches_oracle_recon() {
 
     let body = block_node(&mut ea, vec![stmt1, stmt2]);
 
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(o2.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut types = HashMap::new();
-    types.insert(field_f_store.0, VbaType::Long);
-    types.insert(field_f_load.0, VbaType::Long);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::Field {
-                name: "F".to_string(),
-                vba_type: VbaType::Long,
-                is_object: false,
-            }],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    let resolved_f = ResolvedClassMember {
-        get_slot: Some(0x1c),
-        let_slot: Some(0x20),
-        set_slot: None,
-        method_slot: None,
-        method_ret_type: None,
-        method_params: Vec::new(),
-        is_property: false,
-    };
-    class_member_slots.insert(field_f_store.0, resolved_f.clone());
-    class_member_slots.insert(field_f_load.0, resolved_f);
-
+    let resolved_f = resolved_member(Some(0x1c), Some(0x20), false);
     let module = BoundModule {
         procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
+        class_field_info: class_100(vec![field_slot("F")]),
+        class_member_slots: HashMap::from([
+            (field_f_store.0, resolved_f.clone()),
+            (field_f_load.0, resolved_f),
+        ]),
+        resolutions: resolutions_of(&[(o, local(0)), (o2, local(0)), (x, local(1))]),
+        types: types_of(&[(field_f_store, VbaType::Long), (field_f_load, VbaType::Long)]),
         ..BoundModule::default()
     };
 
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_classes_ok(&module, &ea),
         &[
             0xf5, 0x01, 0x00, 0x00, 0x00, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x20, 0x00,
             0x01, 0x00, 0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00,
@@ -631,58 +590,8 @@ fn class_field_store_then_load_matches_oracle_recon() {
 
 #[test]
 fn class_property_get_double_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let get_access = member_access_node(&mut ea, o, 10 /* sym for P */);
-    let x = name_ref(&mut ea, 1);
-    let stmt = assign_node(&mut ea, x, get_access);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut types = HashMap::new();
-    types.insert(get_access.0, VbaType::Double);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::PropertyAccessor {
-                name: "P".to_string(),
-                vba_type: VbaType::Double,
-                kind: vb6_sema::sema::AccessorKind::Get,
-            }],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        get_access.0,
-        ResolvedClassMember {
-            get_slot: Some(0x1c),
-            let_slot: None,
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100), double_var(1)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_property_get(VbaType::Double, double_var(1), false),
         &[
             0x04, 0x68, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
             0x6f, 0x68, 0xff, 0x74, 0x70, 0xff, 0x14,
@@ -713,72 +622,23 @@ fn class_property_get_mixed_types_in_one_proc_uses_separate_regions() {
     let stmt2 = assign_node(&mut ea, y, get_double);
     let body = block_node(&mut ea, vec![stmt1, stmt2]);
 
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-    resolutions.insert(y.0, NameResolution::Local { proc_idx: 0, local_idx: 2 });
-
-    let mut types = HashMap::new();
-    types.insert(get_long.0, VbaType::Long);
-    types.insert(get_double.0, VbaType::Double);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![
-                ClassMemberSlot::PropertyAccessor {
-                    name: "PL".to_string(),
-                    vba_type: VbaType::Long,
-                    kind: vb6_sema::sema::AccessorKind::Get,
-                },
-                ClassMemberSlot::PropertyAccessor {
-                    name: "PD".to_string(),
-                    vba_type: VbaType::Double,
-                    kind: vb6_sema::sema::AccessorKind::Get,
-                },
-            ],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        get_long.0,
-        ResolvedClassMember {
-            get_slot: Some(0x1c),
-            let_slot: None,
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-    class_member_slots.insert(
-        get_double.0,
-        ResolvedClassMember {
-            get_slot: Some(0x20),
-            let_slot: None,
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-
     let module = BoundModule {
         procs: vec![make_proc(vec![udt_var(0, 100), long_var(1), double_var(2)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
+        class_field_info: class_100(vec![
+            property_slot("PL", VbaType::Long, AccessorKind::Get),
+            property_slot("PD", VbaType::Double, AccessorKind::Get),
+        ]),
+        class_member_slots: HashMap::from([
+            (get_long.0, resolved_member(Some(0x1c), None, true)),
+            (get_double.0, resolved_member(Some(0x20), None, true)),
+        ]),
+        resolutions: resolutions_of(&[(o, local(0)), (x, local(1)), (y, local(2))]),
+        types: types_of(&[(get_long, VbaType::Long), (get_double, VbaType::Double)]),
         ..BoundModule::default()
     };
 
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_classes_ok(&module, &ea),
         &[
             // Get(Long): its own region's temp, read back with 0x6c.
             0x04, 0x68, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
@@ -794,9 +654,7 @@ fn class_property_get_mixed_types_in_one_proc_uses_separate_regions() {
 
 /// Two-field class: `Public F As Long` then `Public G As Long`. `G`'s Get
 /// must land at `F`'s Get(0x1c)+8 = 0x24 (F consumes Get=0x1c,Let=0x20; the
-/// second field starts right after) — the general multi-member slot rule,
-/// no longer gated. See the `vb6-class-vtable-slot-rule` memory note for the
-/// TTD-traced + decompiled-reference-code derivation.
+/// second field starts right after) — the general multi-member slot rule.
 #[test]
 fn class_field_access_with_two_fields_computes_second_fields_offset_slot() {
     let mut ea = ExprArena::new();
@@ -806,52 +664,22 @@ fn class_field_access_with_two_fields_computes_second_fields_offset_slot() {
     let stmt = assign_node(&mut ea, x, field_access);
     let body = block_node(&mut ea, vec![stmt]);
 
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut types = HashMap::new();
-    types.insert(field_access.0, VbaType::Long);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![
-                ClassMemberSlot::Field { name: "F".to_string(), vba_type: VbaType::Long, is_object: false },
-                ClassMemberSlot::Field { name: "G".to_string(), vba_type: VbaType::Long, is_object: false },
-            ],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        field_access.0,
-        ResolvedClassMember {
-            get_slot: Some(0x24),
-            let_slot: Some(0x28),
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: false,
-        },
-    );
-
     let module = BoundModule {
         procs: vec![make_proc(vec![udt_var(0, 100), long_var(1)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
+        class_field_info: class_100(vec![field_slot("F"), field_slot("G")]),
+        class_member_slots: HashMap::from([(
+            field_access.0,
+            resolved_member(Some(0x24), Some(0x28), false),
+        )]),
+        resolutions: resolutions_of(&[(o, local(0)), (x, local(1))]),
+        types: types_of(&[(field_access, VbaType::Long)]),
         ..BoundModule::default()
     };
 
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     // Get-only read of G: LdAddr(temp), LdAddr(o), resolve-object, vtable-call
     // at slot 0x24, load temp into x.
     assert_eq!(
-        bytes,
+        lower_classes_ok(&module, &ea),
         &[
             0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x24, 0x00, 0x01, 0x00,
             0x6c, 0x70, 0xff, 0x71, 0x74, 0xff, 0x14,
@@ -869,110 +697,35 @@ fn class_field_access_with_two_fields_computes_second_fields_offset_slot() {
 
 #[test]
 fn set_new_class_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let new_expr = new_node(&mut ea, 100);
-    let stmt = set_assign_node(&mut ea, o, new_expr);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(100u32, ExternalClass::default());
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
-        class_field_info,
-        resolutions,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    let bytes =
+        lower_set_into_object(vec![udt_var(0, 100)], &[100], SetSource::New(100)).unwrap();
     // `o` is the proc's only local: frame offset -136 (0xff78).
     assert_eq!(bytes, &[0xfd, 0xf4, 0x00, 0x00, 0x19, 0x78, 0xff, 0x14]);
 }
 
 #[test]
 fn set_new_of_mismatched_class_is_gated() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let new_expr = new_node(&mut ea, 200); // `o` is declared As class 100, not 200.
-    let stmt = set_assign_node(&mut ea, o, new_expr);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(100u32, ExternalClass::default());
-    class_field_info.insert(200u32, ExternalClass::default());
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
-        class_field_info,
-        resolutions,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let err = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap_err();
-    assert!(matches!(err, LowerError::UnsupportedType));
+    // `o` is declared As class 100, not 200.
+    let err = lower_set_into_object(vec![udt_var(0, 100)], &[100, 200], SetSource::New(200));
+    assert!(matches!(err, Err(LowerError::UnsupportedType)));
 }
 
 #[test]
 fn set_from_non_as_new_object_local_is_gated() {
     // `Dim other As Class1` (no `New`) read as a `Set` source has no oracle
     // capture — only the `As New` lazy-fetch shape (opcode 0x56) is grounded.
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let other = name_ref(&mut ea, 1);
-    let stmt = set_assign_node(&mut ea, o, other);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(other.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(100u32, ExternalClass::default());
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100), udt_var(1, 100)], vec![], body)],
-        class_field_info,
-        resolutions,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let err = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap_err();
-    assert!(matches!(err, LowerError::UnsupportedType));
+    let err = lower_set_into_object(
+        vec![udt_var(0, 100), udt_var(1, 100)],
+        &[100],
+        SetSource::Local(1),
+    );
+    assert!(matches!(err, Err(LowerError::UnsupportedType)));
 }
 
 #[test]
 fn set_nothing_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let nothing = nothing_node(&mut ea);
-    let stmt = set_assign_node(&mut ea, o, nothing);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(100u32, ExternalClass::default());
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
-        class_field_info,
-        resolutions,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
+    let bytes =
+        lower_set_into_object(vec![udt_var(0, 100)], &[100], SetSource::Nothing).unwrap();
     // `fc 63` (push 0), `3d 00 00` (coerce to class 100's type-desc, its own
     // first class-const-table entry -> index 0), `19 78 ff` (AddRef-store).
     assert_eq!(bytes, &[0xfc, 0x63, 0x3d, 0x00, 0x00, 0x19, 0x78, 0xff, 0x14]);
@@ -989,58 +742,8 @@ fn set_nothing_matches_oracle_bytes() {
 
 #[test]
 fn class_property_get_string_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let get_access = member_access_node(&mut ea, o, 10 /* sym for P */);
-    let x = name_ref(&mut ea, 1);
-    let stmt = assign_node(&mut ea, x, get_access);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut types = HashMap::new();
-    types.insert(get_access.0, VbaType::String);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::PropertyAccessor {
-                name: "P".to_string(),
-                vba_type: VbaType::String,
-                kind: vb6_sema::sema::AccessorKind::Get,
-            }],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        get_access.0,
-        ResolvedClassMember {
-            get_slot: Some(0x1c),
-            let_slot: None,
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100), string_var(1)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_property_get(VbaType::String, string_var(1), false),
         &[
             0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
             0x3e, 0x70, 0xff, 0x31, 0x74, 0xff, 0x14,
@@ -1060,58 +763,8 @@ fn class_property_get_string_matches_oracle_bytes() {
 
 #[test]
 fn class_property_get_object_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let get_access = member_access_node(&mut ea, o, 10 /* sym for P */);
-    let x = name_ref(&mut ea, 1);
-    let stmt = set_assign_node(&mut ea, x, get_access);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-    resolutions.insert(x.0, NameResolution::Local { proc_idx: 0, local_idx: 1 });
-
-    let mut types = HashMap::new();
-    types.insert(get_access.0, VbaType::Object);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::PropertyAccessor {
-                name: "P".to_string(),
-                vba_type: VbaType::Object,
-                kind: vb6_sema::sema::AccessorKind::Get,
-            }],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        get_access.0,
-        ResolvedClassMember {
-            get_slot: Some(0x1c),
-            let_slot: None,
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100), object_var(1)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_property_get(VbaType::Object, object_var(1), true),
         &[
             0x04, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d, 0x1c, 0x00, 0x01, 0x00,
             0x51, 0x70, 0xff, 0x19, 0x74, 0xff, 0x14,
@@ -1133,61 +786,8 @@ fn class_property_get_object_matches_oracle_bytes() {
 
 #[test]
 fn class_property_let_double_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let let_access = member_access_node(&mut ea, o, 10 /* sym for P */);
-    let one = int_lit_node(&mut ea, 1);
-    let stmt = assign_node(&mut ea, let_access, one);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let mut types = HashMap::new();
-    types.insert(let_access.0, VbaType::Double);
-    // The literal's own natural type — `coerce_assign_value` needs this to
-    // pick the Int(word)->Double conversion opcode; the real binder always
-    // populates it, but this hand-built module must too.
-    types.insert(one.0, VbaType::Integer);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::PropertyAccessor {
-                name: "P".to_string(),
-                vba_type: VbaType::Double,
-                kind: vb6_sema::sema::AccessorKind::Let,
-            }],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        let_access.0,
-        ResolvedClassMember {
-            get_slot: None,
-            let_slot: Some(0x1c),
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_property_let(VbaType::Double, AstLit::Int(1), VbaType::Integer),
         &[
             0xf4, 0x01, 0xeb, 0xfd, 0xc9, 0x70, 0xff, 0x04, 0x78, 0xff, 0x24, 0x00, 0x00, 0x0d,
             0x1c, 0x00, 0x01, 0x00, 0x14,
@@ -1211,58 +811,8 @@ fn class_property_let_double_matches_oracle_bytes() {
 
 #[test]
 fn class_property_let_string_matches_oracle_bytes() {
-    let mut ea = ExprArena::new();
-    let o = name_ref(&mut ea, 0);
-    let let_access = member_access_node(&mut ea, o, 10 /* sym for P */);
-    let lit_x = ea.alloc(ExprNode::Literal { lit: AstLit::Str("x".into()) });
-    let stmt = assign_node(&mut ea, let_access, lit_x);
-    let body = block_node(&mut ea, vec![stmt]);
-
-    let mut resolutions = HashMap::new();
-    resolutions.insert(o.0, NameResolution::Local { proc_idx: 0, local_idx: 0 });
-
-    let mut types = HashMap::new();
-    types.insert(let_access.0, VbaType::String);
-    types.insert(lit_x.0, VbaType::String);
-
-    let mut class_field_info = HashMap::new();
-    class_field_info.insert(
-        100u32,
-        ExternalClass {
-            members: vec![ClassMemberSlot::PropertyAccessor {
-                name: "P".to_string(),
-                vba_type: VbaType::String,
-                kind: vb6_sema::sema::AccessorKind::Let,
-            }],
-        },
-    );
-    let mut class_member_slots = HashMap::new();
-    class_member_slots.insert(
-        let_access.0,
-        ResolvedClassMember {
-            get_slot: None,
-            let_slot: Some(0x1c),
-            set_slot: None,
-            method_slot: None,
-            method_ret_type: None,
-            method_params: Vec::new(),
-            is_property: true,
-        },
-    );
-
-    let module = BoundModule {
-        procs: vec![make_proc(vec![udt_var(0, 100)], vec![], body)],
-        class_field_info,
-        class_member_slots,
-        resolutions,
-        types,
-        ..BoundModule::default()
-    };
-
-    let known_classes: HashMap<String, ExternalClass> = HashMap::new();
-    let bytes = lower_proc_with_classes(&module, 0, &ea, 0x0008, &known_classes).unwrap();
     assert_eq!(
-        bytes,
+        lower_property_let(VbaType::String, AstLit::Str("x".into()), VbaType::String),
         &[
             0x1b, 0x00, 0x00, 0x43, 0x74, 0xff, 0x04, 0x74, 0xff, 0x04, 0x78, 0xff, 0x24, 0x01,
             0x00, 0x0d, 0x1c, 0x00, 0x02, 0x00, 0x2f, 0x74, 0xff, 0x14,

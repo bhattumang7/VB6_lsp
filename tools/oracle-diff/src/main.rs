@@ -206,13 +206,9 @@ fn run(args: &[String]) -> Result<ExitCode, String> {
     Ok(if attention { ExitCode::from(2) } else { ExitCode::SUCCESS })
 }
 
-fn mutate(args: &[String]) -> Result<ExitCode, String> {
-    let o = parse_options(args)?;
-    let taxonomy = load_taxonomy(&o)?;
-    let oracle = trusted_oracle()?;
-
-    // Parents are the modules the compiler accepts and the parser passes, so a
-    // mutant's first error comes from its one change.
+/// Parents are the modules the compiler accepts and the parser passes, so a
+/// mutant's first error comes from its one change.
+fn accepted_parents(oracle: &Oracle, o: &Options) -> Vec<Case> {
     let parents: Vec<Case> = o
         .inputs
         .iter()
@@ -221,17 +217,15 @@ fn mutate(args: &[String]) -> Result<ExitCode, String> {
         })
         .collect();
     let parent_verdicts = oracle.run(&parents);
-    let parents: Vec<Case> = parents
+    parents
         .into_iter()
         .zip(parent_verdicts)
         .filter(|(c, v)| *v == Verdict::Accepted && our_diagnostics(&c.source, c.kind).is_empty())
         .map(|(c, _)| c)
-        .collect();
-    if parents.is_empty() {
-        return Err("no parent module is accepted by both sides".into());
-    }
-    println!("{} parent modules", parents.len());
+        .collect()
+}
 
+fn mutant_cases(parents: &[Case], o: &Options) -> Vec<Case> {
     let per_parent = o.count.div_ceil(parents.len());
     let mut cases = Vec::new();
     for (n, parent) in parents.iter().enumerate() {
@@ -243,17 +237,38 @@ fn mutate(args: &[String]) -> Result<ExitCode, String> {
             });
         }
     }
+    cases
+}
+
+/// Writes every case whose outcome needs a look into `dir`.
+fn write_interesting(dir: &Path, cases: &[Case], outcomes: &[Outcome]) -> Result<(), String> {
+    std::fs::create_dir_all(dir).map_err(|e| format!("out dir: {e}"))?;
+    for (n, (case, outcome)) in cases.iter().zip(outcomes).enumerate() {
+        if matches!(outcome, Outcome::AgreeAccept | Outcome::AgreeRejectSameMessage | Outcome::AgreeRejectDifferentMessage | Outcome::SemanticOnly) {
+            continue;
+        }
+        let ext = if case.kind == ModuleKind::Cls { "cls" } else { "bas" };
+        std::fs::write(dir.join(format!("{n:05}-{outcome:?}.{ext}")), &case.source)
+            .map_err(|e| format!("out file: {e}"))?;
+    }
+    Ok(())
+}
+
+fn mutate(args: &[String]) -> Result<ExitCode, String> {
+    let o = parse_options(args)?;
+    let taxonomy = load_taxonomy(&o)?;
+    let oracle = trusted_oracle()?;
+
+    let parents = accepted_parents(&oracle, &o);
+    if parents.is_empty() {
+        return Err("no parent module is accepted by both sides".into());
+    }
+    println!("{} parent modules", parents.len());
+
+    let cases = mutant_cases(&parents, &o);
     let (outcomes, attention) = compare_all(&oracle, &taxonomy, &cases, o.report.as_deref())?;
     if let Some(dir) = &o.out {
-        std::fs::create_dir_all(dir).map_err(|e| format!("out dir: {e}"))?;
-        for (n, (case, outcome)) in cases.iter().zip(&outcomes).enumerate() {
-            if matches!(outcome, Outcome::AgreeAccept | Outcome::AgreeRejectSameMessage | Outcome::AgreeRejectDifferentMessage | Outcome::SemanticOnly) {
-                continue;
-            }
-            let ext = if case.kind == ModuleKind::Cls { "cls" } else { "bas" };
-            std::fs::write(dir.join(format!("{n:05}-{outcome:?}.{ext}")), &case.source)
-                .map_err(|e| format!("out file: {e}"))?;
-        }
+        write_interesting(dir, &cases, &outcomes)?;
     }
     Ok(if attention { ExitCode::from(2) } else { ExitCode::SUCCESS })
 }

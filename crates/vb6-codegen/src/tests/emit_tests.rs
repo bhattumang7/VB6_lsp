@@ -30,6 +30,237 @@ fn emit(arena: &NodeArena, root: NodeRef) -> Vec<u8> {
     e.into_bytes()
 }
 
+/// Concatenates byte fragments.
+fn cat(parts: &[&[u8]]) -> Vec<u8> {
+    parts.concat()
+}
+
+/// A fresh arena whose index 0 holds the null sentinel; returns the sentinel.
+fn arena_with_null() -> (NodeArena, NodeRef) {
+    let mut a = NodeArena::new();
+    let null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    (a, null)
+}
+
+/// An arena with a null sentinel at index 0 followed by a `GL0` child.
+fn null_arena_gl0() -> (NodeArena, NodeRef) {
+    let (mut a, _null) = arena_with_null();
+    let child = global_long_load(&mut a, 0);
+    (a, child)
+}
+
+/// Bytes of `op` applied to two Long frame loads (`-8`, `-12`), Long result.
+fn long_binop_bytes(op: u16) -> Vec<u8> {
+    let mut a = NodeArena::new();
+    let lhs = long_load(&mut a, -8);
+    let rhs = long_load(&mut a, -12);
+    let n = binop(&mut a, op, 8, lhs, rhs);
+    emit(&a, n)
+}
+
+/// Bytes of comparison `op` over the two Long operands at `0xff78` / `0xff74`.
+fn long_cmp_bytes(op: u16) -> Vec<u8> {
+    let mut a = NodeArena::new();
+    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
+    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
+    let n = cmp(&mut a, op, lhs, rhs);
+    emit(&a, n)
+}
+
+/// Bytes of `op` (type tag `type_tag`) over two small Integer literals,
+/// emitted at outer context `call_ctx`.
+fn literal_pair_bytes(op: u16, type_tag: u16, lhs: i32, rhs: i32, call_ctx: u32) -> Vec<u8> {
+    let mut a = NodeArena::new();
+    let l = int_lit(&mut a, 6, lhs);
+    let r = int_lit(&mut a, 6, rhs);
+    let n = a.alloc(NodeArena::node(op, type_tag, l.0, r.0, 0, 0));
+    let mut e = Emitter::new(&a);
+    e.emit_expr(n, call_ctx);
+    e.into_bytes()
+}
+
+/// Opcode-table index an `emit_reference` load of the Integer type context
+/// selects for the descriptor-kind base `base`.
+fn ref_idx(base: i32) -> usize {
+    let off = crate::tables::RT_TYPE_OFFSET[2];
+    (if off == 10 {
+        base | 4
+    } else if off == 9 {
+        base | 1
+    } else {
+        base | off
+    }) as usize
+}
+
+/// Expected bytes of an Integer-context reference emission with base `base`
+/// and a single little-endian word `operand`.
+fn ref_expected(base: i32, operand: u16) -> Vec<u8> {
+    opc2(ref_idx(base), operand)
+}
+
+/// Bytes of `traverse_node_tree` over `root`.
+fn traverse_bytes(a: &NodeArena, root: NodeRef) -> Vec<u8> {
+    let mut e = Emitter::new(a);
+    e.traverse_node_tree(root, 0);
+    e.into_bytes()
+}
+
+/// A one-element list (`list_op`) holding a `GL0` child, traversed.
+fn single_list_bytes(list_op: u16) -> Vec<u8> {
+    let (mut a, _null) = arena_with_null();
+    let child = global_long_load(&mut a, 0);
+    let list = a.alloc(NodeArena::node(list_op, 0, child.0, 0, 0, 0)); // word[5]=0: no sibling
+    traverse_bytes(&a, list)
+}
+
+/// Bytes of `op` over a `GL0` child in word[5], with word[1] = `w1`; the
+/// arena optionally starts with a null sentinel.
+fn gl0_w5_bytes(op: u16, w1: u32, with_null: bool) -> Vec<u8> {
+    let mut a = if with_null { arena_with_null().0 } else { NodeArena::new() };
+    let child = global_long_load(&mut a, 0);
+    let n = w5_node_flags(&mut a, op, w1, child);
+    emit(&a, n)
+}
+
+/// Bytes of the typed operator form of `op` for op-class `class`: word[5] is
+/// an inner node whose word[4] carries the pooled type value and whose
+/// word[5] is a `GL0` child.
+fn typed_operator_bytes(op: u16, class: u32) -> Vec<u8> {
+    let (mut a, child) = null_arena_gl0();
+    let p = a.alloc(NodeArena::node(0, 0, 0x99, 0, 0, 0)); // word[4]=type value 0x99
+    let inner = a.alloc(NodeArena::node(0, 0, p.0, child.0, 0, 0)); // w4=p, w5=child
+    let mut node = NodeArena::node(op, 0, 0, inner.0, 0, 0); // word[5]=inner
+    node.w[1] = class << 8;
+    let n = a.alloc(node);
+    emit(&a, n)
+}
+
+/// Bytes of a coercion node `op` whose descriptor word[4] is 0x55.
+fn coercion_bytes(op: u16) -> Vec<u8> {
+    let (mut a, _null) = arena_with_null();
+    let desc = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0)); // descriptor word[4]=0x55
+    let n = a.alloc(NodeArena::node(op, 0, desc.0, 0, 0, 0)); // word[4]=desc, word[5]=0
+    emit(&a, n)
+}
+
+/// Bytes of `op` (type tag `tag`) whose word[5] is an inner node whose word[4]
+/// is a literal node (opcode 1) carrying `value`.
+fn literal_inner_bytes(op: u16, tag: u16, value: u32) -> Vec<u8> {
+    let (mut a, _null) = arena_with_null();
+    let p = a.alloc(NodeArena::node(1, 0, value, 0, 0, 0)); // opcode 1, word[4]=value
+    let inner = a.alloc(NodeArena::node(0, 0, p.0, 0, 0, 0)); // word[4]=p, word[5]=0
+    let n = a.alloc(NodeArena::node(op, tag, 0, inner.0, 0, 0)); // word[5]=inner
+    emit(&a, n)
+}
+
+/// Bytes of the common non-dispatch path of `op` (0x42 / 0x43), type tag 8.
+fn nondispatch_common_bytes(op: u16) -> Vec<u8> {
+    let (mut a, _null) = arena_with_null();
+    let typed_child = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0)); // no-op
+    let second = a.alloc(NodeArena::node(0, 0, typed_child.0, 0, 0, 0)); // word[4]=child
+    let avalue = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0)); // word[4]=type value 0x55
+    let w5 = a.alloc(NodeArena::node(0, 0, avalue.0, second.0, 0, 0)); // w4=a, w5=second
+    let n = a.alloc(NodeArena::node(op, 8, 0, w5.0, 0, 0)); // type tag 8, word[5]=w5
+    emit(&a, n)
+}
+
+/// Bytes of the dispatch-binding node `op` with context kind `ctx_kind` and
+/// the resolved member record's byte+1 value `member_byte1`.
+fn dispatch_binding_bytes(op: u16, ctx_kind: u32, member_byte1: u8) -> Vec<u8> {
+    let (mut a, _null) = arena_with_null();
+    let n = dispatch_binding_node(&mut a, op, ctx_kind, 0x20);
+    let mut e = Emitter::new(&a).with_symbol_context(dispatch_binding_sym(member_byte1));
+    e.emit_expr(n, 1);
+    e.into_bytes()
+}
+
+/// Bytes of `op` with a `GL0` child in word[4] and the type value 0x99 in word[5].
+fn gl0_child_pooled_bytes(op: u16) -> Vec<u8> {
+    let (mut a, child) = null_arena_gl0();
+    let n = a.alloc(NodeArena::node(op, 0, child.0, 0x99, 0, 0));
+    emit(&a, n)
+}
+
+/// Bytes of `op` over two Integer literals (5, 3) and a size descriptor.
+fn sized_literal_pair_bytes(op: u16, type_tag: u16, size: u16) -> Vec<u8> {
+    let mut a = NodeArena::new();
+    let lhs = int_lit(&mut a, 6, 5);
+    let rhs = int_lit(&mut a, 6, 3);
+    let desc = type_desc(&mut a, size);
+    let n = a.alloc(NodeArena::node(op, type_tag, lhs.0, rhs.0, desc.0, 0));
+    emit(&a, n)
+}
+
+/// Bytes of the sized `op` over a `GL0` child in word[5], word[1] = `w1`, and
+/// a size descriptor in word[6]; type tag 8 makes the validation a no-op.
+fn sized_w5_bytes(op: u16, w1: u32, size: u16) -> Vec<u8> {
+    let mut a = NodeArena::new();
+    let child = global_long_load(&mut a, 0);
+    let desc = type_desc(&mut a, size);
+    let mut node = NodeArena::node(op, 8, 0, child.0, desc.0, 0);
+    node.w[1] = w1;
+    let n = a.alloc(node);
+    emit(&a, n)
+}
+
+/// A by-reference call descriptor (convention kind 4) with no size.
+fn byref_call_desc(
+    callee: NodeRef,
+    arg_list: NodeRef,
+    flags: u32,
+    node_word0: u32,
+    member_id: u16,
+    node9: u32,
+) -> CallDescriptor {
+    CallDescriptor { kind: 4, byref: 1, flags, node_word0, callee, arg_list, member_id, size: 0, node9 }
+}
+
+/// Symbol context whose member record classifies to resolver category 4
+/// (inline Long operand at +0xc, record byte+1 low3 = 3), binder-resolved.
+fn member_record_symbol() -> crate::emit::SymbolContext {
+    let mut heap = vec![0u8; 0x40];
+    heap[0x10] = 0x40; // +0 bit 6 → inline operand at +0xc
+    heap[0x11] = 0x03; // +1 low3 = 3
+    heap[0x10 + 0xc] = 8; // inline Long operand opcode
+    crate::emit::SymbolContext {
+        heap,
+        member_off: 0x10,
+        ctx_flag_c: 0,
+        binding: Some((4, 0)), // binder-resolved (kind 4, byref 0)
+    }
+}
+
+/// Bytes of `emit_binary_op_code_temp_descriptor(flags, ctx_flag_c, type_value)`.
+fn temp_descriptor_bytes(flags: u16, ctx_flag_c: u8, type_value: u32) -> Vec<u8> {
+    let arena = NodeArena::new();
+    let mut e = Emitter::new(&arena);
+    e.emit_binary_op_code_temp_descriptor(flags, ctx_flag_c, type_value);
+    e.into_bytes()
+}
+
+/// Bytes of `emit_object_store_subdispatch(dest, src, size)`.
+fn subdispatch_bytes(dest_tag: i32, src_tag: i32, size: u32) -> Vec<u8> {
+    let a = NodeArena::new();
+    let mut e = Emitter::new(&a);
+    e.emit_object_store_subdispatch(dest_tag, src_tag, size);
+    e.into_bytes()
+}
+/// Bytes of `emit_compound_op_store` over a compound-store LHS.
+fn compound_store_bytes(size: u16, slot_operand: u32, wrap: bool) -> Vec<u8> {
+    let (mut a, _null) = arena_with_null();
+    let lhs = compound_store_lhs(&mut a, size, slot_operand, wrap);
+    let mut e = Emitter::new(&a);
+    e.emit_compound_op_store(lhs);
+    e.into_bytes()
+}
+
+/// Expected bytes of a compound-op store: opcode 0x18f, size, slot operand.
+fn compound_want(size: u16, slot_operand: u16) -> Vec<u8> {
+    let mut want = opc2(0x18f, size);
+    want.extend_from_slice(&slot_operand.to_le_bytes());
+    want
+}
+
 // ── Table sanity ──────────────────────────────────────────────────────────
 
 #[test]
@@ -190,51 +421,23 @@ fn binop(a: &mut NodeArena, op: u16, type_tag: u16, lhs: NodeRef, rhs: NodeRef) 
 
 #[test]
 fn and_long_emits_c4() {
-    let mut a = NodeArena::new();
-    let lhs = long_load(&mut a, -8);
-    let rhs = long_load(&mut a, -12);
-    let n = binop(&mut a, 0x23, 8, lhs, rhs); // AND, Long result
-    assert_eq!(
-        emit(&a, n),
-        &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc4]
-    );
+    assert_eq!(long_binop_bytes(0x23), &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc4]); // AND
 }
 
 #[test]
 fn or_long_emits_c5() {
-    let mut a = NodeArena::new();
-    let lhs = long_load(&mut a, -8);
-    let rhs = long_load(&mut a, -12);
-    let n = binop(&mut a, 0x21, 8, lhs, rhs); // OR, Long result
-    assert_eq!(
-        emit(&a, n),
-        &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc5]
-    );
+    assert_eq!(long_binop_bytes(0x21), &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xc5]); // OR
 }
 
 #[test]
 fn xor_long_emits_fb_13() {
-    let mut a = NodeArena::new();
-    let lhs = long_load(&mut a, -8);
-    let rhs = long_load(&mut a, -12);
-    let n = binop(&mut a, 0x22, 8, lhs, rhs); // XOR, Long result
     // n_opc=19=0x13 → rt_byte=0xfb → extended form [0xfb, 0x13]
-    assert_eq!(
-        emit(&a, n),
-        &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xfb, 0x13]
-    );
+    assert_eq!(long_binop_bytes(0x22), &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xfb, 0x13]); // XOR
 }
 
 #[test]
 fn add_long_emits_aa() {
-    let mut a = NodeArena::new();
-    let lhs = long_load(&mut a, -8);
-    let rhs = long_load(&mut a, -12);
-    let n = binop(&mut a, 0x16, 8, lhs, rhs); // ADD, Long result
-    assert_eq!(
-        emit(&a, n),
-        &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xaa]
-    );
+    assert_eq!(long_binop_bytes(0x16), &[0x6c, 0xf8, 0xff, 0x6c, 0xf4, 0xff, 0xaa]); // ADD
 }
 
 #[test]
@@ -272,56 +475,32 @@ fn cmp(a: &mut NodeArena, op: u16, lhs: NodeRef, rhs: NodeRef) -> NodeRef {
 
 #[test]
 fn eq_long_emits_c7() {
-    let mut a = NodeArena::new();
-    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
-    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
-    let n = cmp(&mut a, 0x26, lhs, rhs);
-    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc7]);
+    assert_eq!(long_cmp_bytes(0x26), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xc7]);
 }
 
 #[test]
 fn ne_long_emits_cc() {
-    let mut a = NodeArena::new();
-    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
-    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
-    let n = cmp(&mut a, 0x27, lhs, rhs);
-    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xcc]);
+    assert_eq!(long_cmp_bytes(0x27), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xcc]);
 }
 
 #[test]
 fn le_long_emits_d6() {
-    let mut a = NodeArena::new();
-    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
-    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
-    let n = cmp(&mut a, 0x28, lhs, rhs);
-    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd6]);
+    assert_eq!(long_cmp_bytes(0x28), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd6]);
 }
 
 #[test]
 fn ge_long_emits_e0() {
-    let mut a = NodeArena::new();
-    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
-    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
-    let n = cmp(&mut a, 0x29, lhs, rhs);
-    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xe0]);
+    assert_eq!(long_cmp_bytes(0x29), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xe0]);
 }
 
 #[test]
 fn lt_long_emits_d1() {
-    let mut a = NodeArena::new();
-    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
-    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
-    let n = cmp(&mut a, 0x2a, lhs, rhs);
-    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd1]);
+    assert_eq!(long_cmp_bytes(0x2a), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xd1]);
 }
 
 #[test]
 fn gt_long_emits_db() {
-    let mut a = NodeArena::new();
-    let lhs = long_cmp_operand(&mut a, 0xff78u16 as i16);
-    let rhs = long_cmp_operand(&mut a, 0xff74u16 as i16);
-    let n = cmp(&mut a, 0x2b, lhs, rhs);
-    assert_eq!(emit(&a, n), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xdb]);
+    assert_eq!(long_cmp_bytes(0x2b), &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xdb]);
 }
 
 #[test]
@@ -443,7 +622,7 @@ fn single_lit_assign_ctx_emits_f9_and_f32() {
 #[test]
 fn double_lit_non_assign_emits_f6_and_f64() {
     let mut a = NodeArena::new();
-    let val = 3.14_f64;
+    let val = std::f64::consts::PI;
     let n = float_lit(&mut a, 11, val);
     let mut expected = vec![0xf6];
     expected.extend_from_slice(&val.to_bits().to_le_bytes());
@@ -489,13 +668,10 @@ fn date_lit_assign_ctx_emits_fa_and_f64() {
 
 #[test]
 fn op_0x36_like_emits_operands_then_fb_d2() {
-    // Like lhs rhs → [lhs:2] [rhs:2] [0xfb, 0xd2]
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 5); // Integer small: [0xf4, 0x05]
-    let rhs = int_lit(&mut a, 6, 3); // Integer small: [0xf4, 0x03]
-    let n = a.alloc(NodeArena::node(0x36, 0, lhs.0, rhs.0, 0, 0));
+    // Like lhs rhs → [lhs:2] [rhs:2] [0xfb, 0xd2]; Integer small literals
+    // [0xf4, 0x05] and [0xf4, 0x03].
     assert_eq!(
-        emit(&a, n),
+        literal_pair_bytes(0x36, 0, 5, 3, 0),
         &[0xf4, 0x05, 0xf4, 0x03, 0xfb, 0xd2]
     );
 }
@@ -518,25 +694,14 @@ fn op_0x36_like_emits_operands_then_fb_d2() {
 #[test]
 fn is_op_type_tag_0x10_emits_operands_then_2a() {
     // Is with type_tag=0x10 → RT_OPCODE_BYTE[0xf0]=0x2a
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 5); // [0xf4, 0x05]
-    let rhs = int_lit(&mut a, 6, 3); // [0xf4, 0x03]
-    let n = a.alloc(NodeArena::node(0x24, 0x10, lhs.0, rhs.0, 0, 0));
-    assert_eq!(
-        emit(&a, n),
-        &[0xf4, 0x05, 0xf4, 0x03, 0x2a]
-    );
+    assert_eq!(literal_pair_bytes(0x24, 0x10, 5, 3, 0), &[0xf4, 0x05, 0xf4, 0x03, 0x2a]);
 }
 
 #[test]
 fn is_op_type_tag_2_emits_operands_then_fc_8b() {
     // Is with type_tag=2 (String) → emit_value2(0x18b) → [0xfc, 0x8b]
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 1); // [0xf4, 0x01]
-    let rhs = int_lit(&mut a, 6, 2); // [0xf4, 0x02]
-    let n = a.alloc(NodeArena::node(0x24, 2, lhs.0, rhs.0, 0, 0));
     assert_eq!(
-        emit(&a, n),
+        literal_pair_bytes(0x24, 2, 1, 2, 0),
         &[0xf4, 0x01, 0xf4, 0x02, 0xfc, 0x8b]
     );
 }
@@ -545,48 +710,28 @@ fn is_op_type_tag_2_emits_operands_then_fc_8b() {
 fn is_op_type_tag_single_outer_call_ctx_1_emits_operands_then_37() {
     // Is with type_tag=10 (Single) and outer call_ctx=1 → emit_value2(0x189)
     // RT_OPCODE_BYTE[0x189]=0x37 < 0xfb → single byte [0x37]
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 4); // [0xf4, 0x04]
-    let rhs = int_lit(&mut a, 6, 7); // [0xf4, 0x07]
-    let n = a.alloc(NodeArena::node(0x24, 10, lhs.0, rhs.0, 0, 0));
-    let mut e = Emitter::new(&a);
-    e.emit_expr(n, 1); // outer call_ctx=1
-    assert_eq!(e.into_bytes(), &[0xf4, 0x04, 0xf4, 0x07, 0x37]);
+    assert_eq!(literal_pair_bytes(0x24, 10, 4, 7, 1), &[0xf4, 0x04, 0xf4, 0x07, 0x37]);
 }
 
 #[test]
 fn is_op_type_tag_single_outer_call_ctx_0_emits_operands_only() {
     // Is with type_tag=10 (Single) and outer call_ctx=0 → no extra opcode
     // (per-type validation requires type-flags 1 or 3)
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 4); // [0xf4, 0x04]
-    let rhs = int_lit(&mut a, 6, 7); // [0xf4, 0x07]
-    let n = a.alloc(NodeArena::node(0x24, 10, lhs.0, rhs.0, 0, 0));
-    assert_eq!(emit(&a, n), &[0xf4, 0x04, 0xf4, 0x07]);
+    assert_eq!(literal_pair_bytes(0x24, 10, 4, 7, 0), &[0xf4, 0x04, 0xf4, 0x07]);
 }
 
 #[test]
 fn is_op_type_tag_double_outer_call_ctx_1_emits_operands_then_39() {
     // Is with type_tag=0xb (Double) and outer call_ctx=1 → emit_value2(0x18a)
     // RT_OPCODE_BYTE[0x18a]=0x39 < 0xfb → single byte [0x39]
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 1); // [0xf4, 0x01]
-    let rhs = int_lit(&mut a, 6, 2); // [0xf4, 0x02]
-    let n = a.alloc(NodeArena::node(0x24, 0xb, lhs.0, rhs.0, 0, 0));
-    let mut e = Emitter::new(&a);
-    e.emit_expr(n, 1); // outer call_ctx=1
-    assert_eq!(e.into_bytes(), &[0xf4, 0x01, 0xf4, 0x02, 0x39]);
+    assert_eq!(literal_pair_bytes(0x24, 0xb, 1, 2, 1), &[0xf4, 0x01, 0xf4, 0x02, 0x39]);
 }
 
 #[test]
 fn is_op_unrecognised_type_tag_emits_operands_only() {
     // type_tag=7 (not in the switch) → per-type validation emits nothing,
     // no comparison opcode is emitted after the operands.
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 9); // [0xf4, 0x09]
-    let rhs = int_lit(&mut a, 6, 8); // [0xf4, 0x08]
-    let n = a.alloc(NodeArena::node(0x24, 7, lhs.0, rhs.0, 0, 0));
-    assert_eq!(emit(&a, n), &[0xf4, 0x09, 0xf4, 0x08]);
+    assert_eq!(literal_pair_bytes(0x24, 7, 9, 8, 0), &[0xf4, 0x09, 0xf4, 0x08]);
 }
 
 // ── RT_OPCODE_BYTE spot checks for Is/Like opcodes ────────────────────────
@@ -654,33 +799,11 @@ fn emit_reference_4000_nop2_object_also_emits_0x3e() {
 
 #[test]
 fn emit_reference_kind1_nop1_long_normal_load() {
-    // Baseline (no 0x4000): kind==1, nOp==1, nType==8 (Long vb-type).
-    // nType 8 → RT_TYPE_OFFSET[8] = ? Long is the standard Integer load path.
-    // Actually nType in emit_reference is the *internal* VB6 type, not vb-type.
-    // For a simple local-load (no 0x4000 flag), kind==1 → u_var7=0x1e0.
-    // nType=8 → RT_TYPE_OFFSET[8]; load result: u_var7 | off.
-    // We test the real oracle path: Long local at -136 → [0x6c, 0x78, 0xff].
-    // That goes through emit_var_load (0x74 node), not emit_reference.
-    // Here we test emit_reference kind==1, nOp==1, nType==2 (integer vb-type → offset 1).
-    use crate::tables::RT_TYPE_OFFSET;
-    let off = RT_TYPE_OFFSET[2] as i32;   // Integer offset
-    use crate::tables::RT_OPCODE_BYTE;
-    let u_var7 = 0x1e0i32;
-    let expected_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
+    // Baseline (no 0x4000): kind==1, nOp==1, nType==2 (integer vb-type →
+    // RT_TYPE_OFFSET[2]); the opcode index is `0x1e0 | off`, then the operand
+    // word 0xff7a.
     let desc = crate::emit::RefDescriptor { kind: 1, operand: 0xff7au16, word6: 0, word8: 0, flags1: 0 };
-    let bytes = ref_bytes(&desc, 1, 0, 2);
-    // emit_opcode2(expected_idx, 0xff7a):
-    // emit_value2(expected_idx) → [expected_opcode] (if < 0xfb)
-    // emit_word(0xff7a) → [0x7a, 0xff]
-    if expected_opcode < 0xfb {
-        assert_eq!(bytes, &[expected_opcode, 0x7a, 0xff]);
-    } else {
-        assert_eq!(
-            bytes,
-            &[expected_opcode, (expected_idx & 0xff) as u8, 0x7a, 0xff]
-        );
-    }
+    assert_eq!(ref_bytes(&desc, 1, 0, 2), ref_expected(0x1e0, 0xff7a));
 }
 
 #[test]
@@ -692,7 +815,7 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
     use crate::tables::RT_TYPE_OFFSET;
     use crate::tables::RT_OPCODE_BYTE;
     let u_var7 = 0x210i32;
-    let off = RT_TYPE_OFFSET[2] as i32;
+    let off = RT_TYPE_OFFSET[2];
     let nop1_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
     // nOp2 path: off stays, then +6 if off==3||off==4; otherwise same|u_var7.
     let mut nop2_idx = if off == 10 { 4 } else if off == 9 { 1 } else { off };
@@ -714,22 +837,8 @@ fn emit_reference_kind2_byref_promotes_to_nop2() {
 fn emit_reference_kind6_emits_0x3d0_base_unconditionally() {
     // kind==6 (indirect module-level variable, ByRef form): opcode_base = 0x3d0,
     // no ByRef-promotion branch — nOp stays whatever the caller passed.
-    use crate::tables::RT_OPCODE_BYTE;
-    use crate::tables::RT_TYPE_OFFSET;
-    let u_var7 = 0x3d0i32;
-    let off = RT_TYPE_OFFSET[2] as i32;
-    let expected_idx = if off == 10 { u_var7 | 4 } else if off == 9 { u_var7 | 1 } else { u_var7 | off };
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
     let desc = crate::emit::RefDescriptor { kind: 6, operand: 0x0021, word6: 0, word8: 0, flags1: 0 };
-    let bytes = ref_bytes(&desc, 1, 0, 2);
-    if expected_opcode < 0xfb {
-        assert_eq!(bytes, &[expected_opcode, 0x21, 0x00]);
-    } else {
-        assert_eq!(
-            bytes,
-            &[expected_opcode, (expected_idx & 0xff) as u8, 0x21, 0x00]
-        );
-    }
+    assert_eq!(ref_bytes(&desc, 1, 0, 2), ref_expected(0x3d0, 0x0021));
 }
 
 // ── value-emitter operator-reference kinds (8/9/0xb) ─────────────────────────
@@ -828,36 +937,18 @@ fn emit_reference_store_conversion_uses_conv_table() {
 fn emit_reference_kind3_uses_0x270_base_and_word6_operand() {
     // kind 3: opcode base 0x270; operand is the descriptor's `word6` field
     // (not `operand`), unconditional — no ByRef-style branch.
-    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
-    let off = RT_TYPE_OFFSET[2] as i32;
-    let expected_idx = if off == 10 { 0x270 | 4 } else if off == 9 { 0x270 | 1 } else { 0x270 | off };
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
-    let desc = crate::emit::RefDescriptor { kind: 3, operand: 0x9999, word6: 0x0044, word8: 0, flags1: 0 };
-    let bytes = ref_bytes(&desc, 1, 0, 2);
     // The `operand` field is deliberately set to a decoy (0x9999) to prove
     // the emitted operand comes from `word6` (0x0044), not `operand`.
-    if expected_opcode < 0xfb {
-        assert_eq!(bytes, &[expected_opcode, 0x44, 0x00]);
-    } else {
-        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x44, 0x00]);
-    }
+    let desc = crate::emit::RefDescriptor { kind: 3, operand: 0x9999, word6: 0x0044, word8: 0, flags1: 0 };
+    assert_eq!(ref_bytes(&desc, 1, 0, 2), ref_expected(0x270, 0x0044));
 }
 
 #[test]
 fn emit_reference_kind5_uses_0x2a0_base_and_word6_operand() {
     // kind 5: same shape as kind 3 (operand from `word6`, unconditional),
     // different template constant (0x2a0).
-    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
-    let off = RT_TYPE_OFFSET[2] as i32;
-    let expected_idx = if off == 10 { 0x2a0 | 4 } else if off == 9 { 0x2a0 | 1 } else { 0x2a0 | off };
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
     let desc = crate::emit::RefDescriptor { kind: 5, operand: 0x9999, word6: 0x0055, word8: 0, flags1: 0 };
-    let bytes = ref_bytes(&desc, 1, 0, 2);
-    if expected_opcode < 0xfb {
-        assert_eq!(bytes, &[expected_opcode, 0x55, 0x00]);
-    } else {
-        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x55, 0x00]);
-    }
+    assert_eq!(ref_bytes(&desc, 1, 0, 2), ref_expected(0x2a0, 0x0055));
 }
 
 #[test]
@@ -865,17 +956,8 @@ fn emit_reference_kind_0xa_word6_bit0_set_uses_word8_operand() {
     // kind 0xa, `word6` bit 0 set: opcode base 0x190; operand is `word8`
     // (matches emit_setup_binary_operation's kind-0xa construction, which
     // always sets word6 bit 0).
-    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
-    let off = RT_TYPE_OFFSET[2] as i32;
-    let expected_idx = if off == 10 { 0x190 | 4 } else if off == 9 { 0x190 | 1 } else { 0x190 | off };
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
     let desc = crate::emit::RefDescriptor { kind: 0xa, operand: 0x9999, word6: 1, word8: 0x0066, flags1: 0 };
-    let bytes = ref_bytes(&desc, 1, 0, 2);
-    if expected_opcode < 0xfb {
-        assert_eq!(bytes, &[expected_opcode, 0x66, 0x00]);
-    } else {
-        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x66, 0x00]);
-    }
+    assert_eq!(ref_bytes(&desc, 1, 0, 2), ref_expected(0x190, 0x0066));
 }
 
 #[test]
@@ -915,21 +997,10 @@ fn expr2_finalize_tail_recurses_with_zeroed_kind3_descriptor() {
     // re-entry: a fresh kind-3, all-other-fields-zero descriptor, same
     // nOp/fFlags/nType forwarded — emitting kind 9's own bytes followed by
     // kind 3's (with a zero operand, since the fresh descriptor's word6 is 0).
-    use crate::tables::{RT_OPCODE_BYTE, RT_TYPE_OFFSET};
     let desc = crate::emit::RefDescriptor { kind: 9, operand: 0, word6: 0x0044, word8: 0, flags1: 0 };
     let bytes = ref_bytes(&desc, 1, 0, 2);
-
-    let mut want = opc2(0x18d, 0x0044); // kind 9, nOp != 5 → 0x18d, operand = word6.
-
-    let off = RT_TYPE_OFFSET[2] as i32;
-    let expected_idx = if off == 10 { 0x270 | 4 } else if off == 9 { 0x270 | 1 } else { 0x270 | off };
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx as usize];
-    if expected_opcode < 0xfb {
-        want.extend_from_slice(&[expected_opcode, 0x00, 0x00]);
-    } else {
-        want.extend_from_slice(&[expected_opcode, (expected_idx & 0xff) as u8, 0x00, 0x00]);
-    }
-    assert_eq!(bytes, want);
+    // kind 9, nOp != 5 → 0x18d, operand = word6; then kind 3's own bytes.
+    assert_eq!(bytes, cat(&[&opc2(0x18d, 0x0044), &ref_expected(0x270, 0)]));
 }
 
 #[test]
@@ -954,23 +1025,13 @@ fn expr2_finalize_tail_returns_cleanly_at_nop6_without_flag() {
 fn expr2_finalize_tail_recurses_at_nop6_with_flag_set() {
     // nOp 6 WITH the descriptor's flags1 bit 0x04 set recurses (the other
     // half of the nOp-6 branch — an edge case, not just the common arm).
-    use crate::tables::RT_OPCODE_BYTE;
     let desc = crate::emit::RefDescriptor { kind: 9, operand: 0, word6: 0x0099, word8: 0, flags1: 4 };
     let bytes = ref_bytes(&desc, 6, 0, 2);
 
     // kind 9, nOp == 6 (!= 5) → opcode 0x18d, operand = word6. The recursion
     // forwards the SAME (mapped) nOp == 6, so the recursed kind-3 emit uses
     // the nOp-6 arm (`opcode_base + 0xb`), not the nOp-1 RT_TYPE_OFFSET arm.
-    let mut want = opc2(0x18d, 0x0099);
-
-    let expected_idx = (0x270 + 0xb) as usize;
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx];
-    if expected_opcode < 0xfb {
-        want.extend_from_slice(&[expected_opcode, 0x00, 0x00]);
-    } else {
-        want.extend_from_slice(&[expected_opcode, (expected_idx & 0xff) as u8, 0x00, 0x00]);
-    }
-    assert_eq!(bytes, want);
+    assert_eq!(bytes, cat(&[&opc2(0x18d, 0x0099), &opc2(0x270 + 0xb, 0)]));
 }
 
 // ── convert_expression_type (2026-07-14 port) ────────────────────────────────
@@ -1038,17 +1099,9 @@ fn convert_expression_type_settype4_else_branch_emits_via_kind1() {
     type_desc.w[2] = 0x0021_0000; // operand (hi2) = 0x21
     let mut expr_desc = raw4(0, 0x00, 0, 0, 0); // kind 0, flags1 bit8 clear
     let bytes = cvt_bytes(&mut type_desc, &mut expr_desc, 0);
-    // The re-emit always uses n_op 6 (`EbEmitExpression2(pTypeDesc,6,0,0,0)`),
-    // whose emit_reference arm is the constant `opcode_base + 0xb` -- no
-    // RT_TYPE_OFFSET involvement.
-    use crate::tables::RT_OPCODE_BYTE;
-    let expected_idx = 0x210 + 0xb;
-    let expected_opcode = RT_OPCODE_BYTE[expected_idx];
-    if expected_opcode < 0xfb {
-        assert_eq!(bytes, &[expected_opcode, 0x21, 0x00]);
-    } else {
-        assert_eq!(bytes, &[expected_opcode, (expected_idx & 0xff) as u8, 0x21, 0x00]);
-    }
+    // The re-emit always uses n_op 6, whose emit_reference arm is the constant
+    // `opcode_base + 0xb` -- no RT_TYPE_OFFSET involvement.
+    assert_eq!(bytes, opc2(0x210 + 0xb, 0x21));
 }
 
 #[test]
@@ -1129,55 +1182,23 @@ fn convert_expression_type_default_kind_emits_nothing() {
 #[test]
 fn emit_binary_op_code_temp_descriptor_kind1_when_flags_incomplete() {
     // Either bit 0x100 or 0x200 clear on the type-desc's word4 -> kind-1
-    // scratch descriptor with the constant operand 8.
-    let arena = NodeArena::new();
-    let mut e = Emitter::new(&arena);
-    e.emit_binary_op_code_temp_descriptor(0x100, 0, 0); // 0x200 clear
-    let bytes = e.into_bytes();
-    // n_op is always 6 here -> emit_reference's constant `opcode_base + 0xb` arm.
-    use crate::tables::RT_OPCODE_BYTE;
-    let idx = 0x1e0 + 0xb;
-    let op = RT_OPCODE_BYTE[idx];
-    if op < 0xfb {
-        assert_eq!(bytes, &[op, 0x08, 0x00]);
-    } else {
-        assert_eq!(bytes, &[op, (idx & 0xff) as u8, 0x08, 0x00]);
-    }
+    // scratch descriptor with the constant operand 8. n_op is always 6 here
+    // -> emit_reference's constant `opcode_base + 0xb` arm.
+    assert_eq!(temp_descriptor_bytes(0x100, 0, 0), opc2(0x1e0 + 0xb, 0x08)); // 0x200 clear
 }
 
 #[test]
 fn emit_binary_op_code_temp_descriptor_kind5_interns_type_value() {
     // Both flag bits set, ctx_flag_c bit0 clear -> kind-5 descriptor whose
     // word6 is the interned index of `type_value` (0 for the first intern).
-    let arena = NodeArena::new();
-    let mut e = Emitter::new(&arena);
-    e.emit_binary_op_code_temp_descriptor(0x300, 0, 0x1234);
-    let bytes = e.into_bytes();
-    use crate::tables::RT_OPCODE_BYTE;
-    let idx = 0x2a0usize; // kind 5 -> base 0x2a0, n_op=6 arm: base+0xb
-    let op = RT_OPCODE_BYTE[idx + 0xb];
-    if op < 0xfb {
-        assert_eq!(bytes, &[op, 0x00, 0x00]); // interned index 0
-    } else {
-        assert_eq!(bytes, &[op, ((idx + 0xb) & 0xff) as u8, 0x00, 0x00]);
-    }
+    // kind 5 -> base 0x2a0, n_op=6 arm: base+0xb.
+    assert_eq!(temp_descriptor_bytes(0x300, 0, 0x1234), opc2(0x2a0 + 0xb, 0)); // interned index 0
 }
 
 #[test]
 fn emit_binary_op_code_temp_descriptor_kind5_bypass_uses_sentinel() {
     // ctx_flag_c bit0 set -> word6 = the constant sentinel 0xffff, no intern.
-    let arena = NodeArena::new();
-    let mut e = Emitter::new(&arena);
-    e.emit_binary_op_code_temp_descriptor(0x300, 1, 0x1234);
-    let bytes = e.into_bytes();
-    use crate::tables::RT_OPCODE_BYTE;
-    let idx = 0x2a0usize + 0xb;
-    let op = RT_OPCODE_BYTE[idx];
-    if op < 0xfb {
-        assert_eq!(bytes, &[op, 0xff, 0xff]);
-    } else {
-        assert_eq!(bytes, &[op, (idx & 0xff) as u8, 0xff, 0xff]);
-    }
+    assert_eq!(temp_descriptor_bytes(0x300, 1, 0x1234), opc2(0x2a0 + 0xb, 0xffff));
 }
 
 // ── emit_assign_op (case 0xe, op-kind 0) ─────────────────────────────────────
@@ -1296,20 +1317,14 @@ fn assign_single_src_into_kind6_emits_nothing() {
 fn object_store_subdispatch_class0_emits_fixed_0x2f8() {
     // source type tag 3 → class (src_tag - 3) = 0 → RT_ASSIGN_SUBDISPATCH_SEL[0] = 0
     // (case0): fixed opcode 0x2f8, operand = size.
-    let a = NodeArena::new();
-    let mut e = Emitter::new(&a);
-    e.emit_object_store_subdispatch(0xf, 3, 0x0028);
-    assert_eq!(e.into_bytes(), opc2(0x2f8, 0x0028));
+    assert_eq!(subdispatch_bytes(0xf, 3, 0x0028), opc2(0x2f8, 0x0028));
 }
 
 #[test]
 fn object_store_subdispatch_class9_emits_fixed_0x2fb() {
     // source type tag 0xc → class 9 → RT_ASSIGN_SUBDISPATCH_SEL[9] = 1 (case1):
     // fixed opcode 0x2fb, operand = size.
-    let a = NodeArena::new();
-    let mut e = Emitter::new(&a);
-    e.emit_object_store_subdispatch(0xf, 0xc, 0xffff);
-    assert_eq!(e.into_bytes(), opc2(0x2fb, 0xffff));
+    assert_eq!(subdispatch_bytes(0xf, 0xc, 0xffff), opc2(0x2fb, 0xffff));
 }
 
 #[test]
@@ -1318,10 +1333,7 @@ fn object_store_subdispatch_default_class_uses_generic_formula() {
     // opcode = assign_store_base(dest) + assign_source_adjust(src).
     // dest_tag 5: RT_TYPE_OFFSET[5] = 0 → base = RT_ASSIGN_STORE_OPCODE[0] = 0x10c.
     // src_tag 4: RT_TYPE_OFFSET[4] = 19 (unused/no-adjust passthrough) → adjust = 19.
-    let a = NodeArena::new();
-    let mut e = Emitter::new(&a);
-    e.emit_object_store_subdispatch(5, 4, 0x10);
-    assert_eq!(e.into_bytes(), opc2(0x10c + 19, 0x10));
+    assert_eq!(subdispatch_bytes(5, 4, 0x10), opc2(0x10c + 19, 0x10));
 }
 
 #[test]
@@ -1353,26 +1365,12 @@ fn compound_store_lhs(a: &mut NodeArena, size: u16, slot_operand: u32, wrap: boo
 
 #[test]
 fn compound_op_store_emits_size_and_slot_operand() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let lhs = compound_store_lhs(&mut a, 40, 0x1234, false);
-    let mut e = Emitter::new(&a);
-    e.emit_compound_op_store(lhs);
-    let mut want = opc2(0x18f, 40);
-    want.extend_from_slice(&0x1234u16.to_le_bytes());
-    assert_eq!(e.into_bytes(), want);
+    assert_eq!(compound_store_bytes(40, 0x1234, false), compound_want(40, 0x1234));
 }
 
 #[test]
 fn compound_op_store_unwraps_0x37_sequence_wrapper() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let lhs = compound_store_lhs(&mut a, 8, 0x5678, true);
-    let mut e = Emitter::new(&a);
-    e.emit_compound_op_store(lhs);
-    let mut want = opc2(0x18f, 8);
-    want.extend_from_slice(&0x5678u16.to_le_bytes());
-    assert_eq!(e.into_bytes(), want);
+    assert_eq!(compound_store_bytes(8, 0x5678, true), compound_want(8, 0x5678));
 }
 
 #[test]
@@ -1417,13 +1415,7 @@ fn global_long_load(a: &mut NodeArena, field_offset: u16) -> NodeRef {
 fn traverse_single_list_node_emits_child() {
     // List node (0x37) with one child (global Long at field=0), no sibling.
     // Expected: child bytes [0x94, 0x08, 0x00, 0x00, 0x00].
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // null sentinel at idx 0
-    let child = global_long_load(&mut a, 0);
-    let list = a.alloc(NodeArena::node(0x37, 0, child.0, 0, 0, 0)); // word[5]=0 = no sibling
-    let mut e = Emitter::new(&a);
-    e.traverse_node_tree(list, 0);
-    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+    assert_eq!(single_list_bytes(0x37), &[0x94, 0x08, 0x00, 0x00, 0x00]);
 }
 
 #[test]
@@ -1450,25 +1442,16 @@ fn traverse_two_element_list_emits_last_to_first() {
 #[test]
 fn traverse_opcode_0x33_list_also_works() {
     // Opcode 0x33 is the other list opcode; behavior is identical to 0x37.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let list = a.alloc(NodeArena::node(0x33, 0, child.0, 0, 0, 0));
-    let mut e = Emitter::new(&a);
-    e.traverse_node_tree(list, 0);
-    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+    assert_eq!(single_list_bytes(0x33), &[0x94, 0x08, 0x00, 0x00, 0x00]);
 }
 
 #[test]
 fn traverse_non_list_node_emits_it_directly() {
     // A non-list node passed to traverse_node_tree is emitted directly
     // (it is NOT a list node — the opcode check doesn't match 0x37/0x33).
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, _null) = arena_with_null();
     let g = global_long_load(&mut a, 0);
-    let mut e = Emitter::new(&a);
-    e.traverse_node_tree(g, 0);
-    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+    assert_eq!(traverse_bytes(&a, g), &[0x94, 0x08, 0x00, 0x00, 0x00]);
 }
 
 // ── Newly-covered node-emitter cases ───────────────────────────────────────
@@ -1499,7 +1482,14 @@ const GL4: [u8; 5] = [0x94, 0x08, 0x00, 0x04, 0x00];
 /// A node whose `word[5]` points at `child` (the list/traversal operand used by
 /// the `0x3a/0x3b/0x4d/0x4f/0x50/0x53/0x56..0x59` cases).
 fn w5_node(a: &mut NodeArena, op: u16, child: NodeRef) -> NodeRef {
-    a.alloc(NodeArena::node(op, 0, 0, child.0, 0, 0))
+    w5_node_flags(a, op, 0, child)
+}
+
+/// [`w5_node`] with word[1] set to `w1`.
+fn w5_node_flags(a: &mut NodeArena, op: u16, w1: u32, child: NodeRef) -> NodeRef {
+    let mut node = NodeArena::node(op, 0, 0, child.0, 0, 0);
+    node.w[1] = w1;
+    a.alloc(node)
 }
 
 /// Build expected bytes: `GL0` followed by the tail opcode `n`.
@@ -1536,26 +1526,17 @@ fn case_0x37_process_linked_list_forward_order() {
 
 #[test]
 fn case_0x3a_traverse_then_0x1ca() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x3a, child);
-    assert_eq!(emit(&a, n), gl0_then(0x1ca).as_slice());
+    assert_eq!(gl0_w5_bytes(0x3a, 0, false), gl0_then(0x1ca));
 }
 
 #[test]
 fn case_0x3b_traverse_then_0x1cb() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x3b, child);
-    assert_eq!(emit(&a, n), gl0_then(0x1cb).as_slice());
+    assert_eq!(gl0_w5_bytes(0x3b, 0, false), gl0_then(0x1cb));
 }
 
 #[test]
 fn case_0x4d_emit_child_then_0x23d() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x4d, child);
-    assert_eq!(emit(&a, n), gl0_then(0x23d).as_slice());
+    assert_eq!(gl0_w5_bytes(0x4d, 0, false), gl0_then(0x23d));
 }
 
 #[test]
@@ -1568,42 +1549,24 @@ fn case_0x4e_emits_only_0x23e() {
 
 #[test]
 fn case_0x4f_traverse_then_0xfb() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x4f, child);
-    assert_eq!(emit(&a, n), gl0_then(0xfb).as_slice());
+    assert_eq!(gl0_w5_bytes(0x4f, 0, false), gl0_then(0xfb));
 }
 
 #[test]
 fn case_0x50_traverse_then_0xfa() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x50, child);
-    assert_eq!(emit(&a, n), gl0_then(0xfa).as_slice());
+    assert_eq!(gl0_w5_bytes(0x50, 0, false), gl0_then(0xfa));
 }
 
 #[test]
 fn case_0x53_byte5_selects_0x1c0_or_0x1bf() {
     // byte5 bit 0x40 clear → 0x1c0; set → 0x1bf. byte5 = (word[1] >> 8) & 0xff.
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let clear = w5_node(&mut a, 0x53, child);
-    assert_eq!(emit(&a, clear), gl0_then(0x1c0).as_slice());
-
-    let mut b = NodeArena::new();
-    let child_b = global_long_load(&mut b, 0);
-    let mut node = NodeArena::node(0x53, 0, 0, child_b.0, 0, 0);
-    node.w[1] = 0x4000; // byte5 = 0x40 set
-    let set = b.alloc(node);
-    assert_eq!(emit(&b, set), gl0_then(0x1bf).as_slice());
+    assert_eq!(gl0_w5_bytes(0x53, 0, false), gl0_then(0x1c0));
+    assert_eq!(gl0_w5_bytes(0x53, 0x4000, false), gl0_then(0x1bf)); // byte5 = 0x40 set
 }
 
 #[test]
 fn case_0x59_traverse_then_0x1c1() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x59, child);
-    assert_eq!(emit(&a, n), gl0_then(0x1c1).as_slice());
+    assert_eq!(gl0_w5_bytes(0x59, 0, false), gl0_then(0x1c1));
 }
 
 #[test]
@@ -1615,18 +1578,12 @@ fn case_0x5c_emits_only_0x162() {
 
 #[test]
 fn case_0x5e_emit_child_then_0x40a() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x5e, child);
-    assert_eq!(emit(&a, n), gl0_then(0x40a).as_slice());
+    assert_eq!(gl0_w5_bytes(0x5e, 0, false), gl0_then(0x40a));
 }
 
 #[test]
 fn case_0x5f_emit_child_then_0x40b() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x5f, child);
-    assert_eq!(emit(&a, n), gl0_then(0x40b).as_slice());
+    assert_eq!(gl0_w5_bytes(0x5f, 0, false), gl0_then(0x40b));
 }
 
 #[test]
@@ -1761,19 +1718,8 @@ fn cases_0x48_to_0x4b_traverse_then_fixed_opcode() {
 #[test]
 fn case_0x56_set_selects_0x1bb_or_0x1bd() {
     // flag 0x4000 set: value = (flag 0x8000 ? 2 : 0) + 0x1bb, then traverse.
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let mut node = NodeArena::node(0x56, 0, 0, child.0, 0, 0);
-    node.w[1] = 0x4000;
-    let n = a.alloc(node);
-    assert_eq!(emit(&a, n), gl0_then(0x1bb).as_slice());
-
-    let mut b = NodeArena::new();
-    let child_b = global_long_load(&mut b, 0);
-    let mut node_b = NodeArena::node(0x56, 0, 0, child_b.0, 0, 0);
-    node_b.w[1] = 0xc000; // 0x4000 | 0x8000
-    let set = b.alloc(node_b);
-    assert_eq!(emit(&b, set), gl0_then(0x1bd).as_slice());
+    assert_eq!(gl0_w5_bytes(0x56, 0x4000, false), gl0_then(0x1bb));
+    assert_eq!(gl0_w5_bytes(0x56, 0xc000, false), gl0_then(0x1bd)); // 0x4000 | 0x8000
 }
 
 // ── case 0x57 (non-0x4000: traverse + opcode + validate) ─────────────────────
@@ -1782,17 +1728,8 @@ fn case_0x56_set_selects_0x1bb_or_0x1bd() {
 fn case_0x57_clear_selects_0x3fd_or_0x3fb() {
     // flag 0x4000 clear: value = (flag 0x8000 ? 0x3fb : 0x3fd). type_tag 0 makes
     // the trailing per-type validation a no-op.
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x57, child); // word[1]=0
-    assert_eq!(emit(&a, n), gl0_then(0x3fd).as_slice());
-
-    let mut b = NodeArena::new();
-    let child_b = global_long_load(&mut b, 0);
-    let mut node_b = NodeArena::node(0x57, 0, 0, child_b.0, 0, 0);
-    node_b.w[1] = 0x8000;
-    let set = b.alloc(node_b);
-    assert_eq!(emit(&b, set), gl0_then(0x3fb).as_slice());
+    assert_eq!(gl0_w5_bytes(0x57, 0, false), gl0_then(0x3fd));
+    assert_eq!(gl0_w5_bytes(0x57, 0x8000, false), gl0_then(0x3fb));
 }
 
 // ── Unary negate (case 0xb) ──────────────────────────────────────────────────
@@ -1935,27 +1872,15 @@ fn map_call_type_code_covers_every_entry() {
 
 #[test]
 fn emit_call_byref_common_path_emits_callee_opcode_then_member_word() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // null sentinel at idx 0
+    let (mut a, null) = arena_with_null();
     let callee = global_long_load(&mut a, 0); // emits GL0 (context-independent)
-    let desc = CallDescriptor {
-        kind: 4,
-        byref: 1,
-        flags: 0,
-        node_word0: 0x0002_0000, // region 0x20000, type tag 2
-        callee,
-        arg_list: _null, // index 0 → no argument list
-        member_id: 0x0007,
-        size: 0,
-        node9: 0,
-    };
+    // region 0x20000, type tag 2; index 0 → no argument list
+    let desc = byref_call_desc(callee, null, 0, 0x0002_0000, 0x0007, 0);
     let mut e = Emitter::new(&a);
     e.emit_call(&desc, 0);
 
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x32c)); // call opcode 0x320 + 0xc
-    expected.extend_from_slice(&[0x07, 0x00]); // finalize trailing member-id word
-    assert_eq!(e.into_bytes(), expected);
+    // call opcode 0x320 + 0xc, then the finalize trailing member-id word
+    assert_eq!(e.into_bytes(), cat(&[&GL0, &v2(0x32c), &[0x07, 0x00]]));
 }
 
 // The finalize step's type-node path (call node type region 0x140000) builds a
@@ -1964,20 +1889,10 @@ fn emit_call_byref_common_path_emits_callee_opcode_then_member_word() {
 #[test]
 #[should_panic(expected = "region 0x140000")]
 fn emit_call_finalize_type_node_region_is_gated() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, null) = arena_with_null();
     let callee = global_long_load(&mut a, 0);
-    let desc = CallDescriptor {
-        kind: 4,
-        byref: 1,
-        flags: 0,
-        node_word0: 0x0014_0000, // region 0x140000 → gated type-node path
-        callee,
-        arg_list: _null,
-        member_id: 1,
-        size: 0,
-        node9: 0,
-    };
+    // region 0x140000 → gated type-node path
+    let desc = byref_call_desc(callee, null, 0, 0x0014_0000, 1, 0);
     Emitter::new(&a).emit_call(&desc, 0);
 }
 
@@ -1992,28 +1907,16 @@ fn emit_call_finalize_type_node_region_is_gated() {
 
 #[test]
 fn emit_call_dispatch_finalize_word_is_type_pool_index_of_node9() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, null) = arena_with_null();
     let callee = global_long_load(&mut a, 0);
-    let desc = CallDescriptor {
-        kind: 4,
-        byref: 1,
-        flags: 0x8000, // dispatch path → emit_mode 1
-        node_word0: 0x0002_0000, // region 0x20000, type tag 2
-        callee,
-        arg_list: _null,
-        member_id: 0x0005,
-        size: 0,
-        node9: 0x1234,
-    };
+    // flags 0x8000: dispatch path → emit_mode 1; region 0x20000, type tag 2
+    let desc = byref_call_desc(callee, null, 0x8000, 0x0002_0000, 0x0005, 0x1234);
     let mut e = Emitter::new(&a);
     e.emit_call(&desc, 0);
 
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x34f)); // map_call_type_code(RT_CALL_TYPECODE[5] = 0x320)
-    expected.extend_from_slice(&[0x05, 0x00]); // member-id word
-    expected.extend_from_slice(&[0x00, 0x00]); // trailing: type-pool index 0 (first intern)
-    assert_eq!(e.into_bytes(), expected);
+    // map_call_type_code(RT_CALL_TYPECODE[5] = 0x320); member-id word; trailing:
+    // type-pool index 0 (first intern)
+    assert_eq!(e.into_bytes(), cat(&[&GL0, &v2(0x34f), &[0x05, 0x00], &[0x00, 0x00]]));
 }
 
 // A repeat call with the same `node9` type value reuses the first-seen
@@ -2022,32 +1925,12 @@ fn emit_call_dispatch_finalize_word_is_type_pool_index_of_node9() {
 // first-seen/dedup behaviour), so this must hold across two `emit_call`s.
 #[test]
 fn emit_call_dispatch_finalize_word_dedups_across_call_sites() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, null) = arena_with_null();
     let callee_a = global_long_load(&mut a, 0);
     let callee_b = global_long_load(&mut a, 4);
-    let desc_a = CallDescriptor {
-        kind: 4,
-        byref: 1,
-        flags: 0x8000,
-        node_word0: 0x0002_0000,
-        callee: callee_a,
-        arg_list: _null,
-        member_id: 1,
-        size: 0,
-        node9: 0x1234,
-    };
-    let desc_b = CallDescriptor {
-        kind: 4,
-        byref: 1,
-        flags: 0x8000,
-        node_word0: 0x0002_0000,
-        callee: callee_b,
-        arg_list: _null,
-        member_id: 2,
-        size: 0,
-        node9: 0x5678, // distinct type value → next index
-    };
+    let desc_a = byref_call_desc(callee_a, null, 0x8000, 0x0002_0000, 1, 0x1234);
+    // distinct type value → next index
+    let desc_b = byref_call_desc(callee_b, null, 0x8000, 0x0002_0000, 2, 0x5678);
     let desc_c = CallDescriptor {
         node9: 0x1234, // repeat of desc_a's value → dedups to index 0
         member_id: 3,
@@ -2059,18 +1942,15 @@ fn emit_call_dispatch_finalize_word_dedups_across_call_sites() {
     e.emit_call(&desc_b, 0);
     e.emit_call(&desc_c, 0);
 
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x34f));
-    expected.extend_from_slice(&[0x01, 0x00]); // desc_a member id
-    expected.extend_from_slice(&[0x00, 0x00]); // desc_a trailing: index 0 (first seen)
-    expected.extend(GL4);
-    expected.extend(v2(0x34f));
-    expected.extend_from_slice(&[0x02, 0x00]); // desc_b member id
-    expected.extend_from_slice(&[0x01, 0x00]); // desc_b trailing: index 1 (new value)
-    expected.extend(GL4);
-    expected.extend(v2(0x34f));
-    expected.extend_from_slice(&[0x03, 0x00]); // desc_c member id
-    expected.extend_from_slice(&[0x00, 0x00]); // desc_c trailing: index 0 (dedup of 0x1234)
+    let call_op = v2(0x34f);
+    let expected = cat(&[
+        &GL0, &call_op, &[0x01, 0x00], // desc_a member id
+        &[0x00, 0x00], // desc_a trailing: index 0 (first seen)
+        &GL4, &call_op, &[0x02, 0x00], // desc_b member id
+        &[0x01, 0x00], // desc_b trailing: index 1 (new value)
+        &GL4, &call_op, &[0x03, 0x00], // desc_c member id
+        &[0x00, 0x00], // desc_c trailing: index 0 (dedup of 0x1234)
+    ]);
     assert_eq!(e.type_pool().len(), 2);
     assert_eq!(e.into_bytes(), expected);
 }
@@ -2081,8 +1961,7 @@ fn emit_call_dispatch_finalize_word_dedups_across_call_sites() {
 // emit_call (kind 4, ByRef, region 0x20000, member 7).
 #[test]
 fn case_0x61_call_node_assembles_descriptor_and_dispatches() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, _null) = arena_with_null();
     let callee = global_long_load(&mut a, 0); // emits GL0
     // node(opcode, type_tag, w4, w5=arglist, w6=callee, w7=member)
     let mut raw = NodeArena::node(0x61, 2, 0, 0, callee.0, 7); // type tag 2 → region 0x20000
@@ -2090,10 +1969,8 @@ fn case_0x61_call_node_assembles_descriptor_and_dispatches() {
     raw.w[3] = 1; // by-reference
     let n = a.alloc(raw);
 
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x32c)); // call opcode 0x320 + 0xc
-    expected.extend_from_slice(&[0x07, 0x00]); // finalize trailing member-id word
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // call opcode 0x320 + 0xc; finalize trailing member-id word
+    assert_eq!(emit(&a, n), cat(&[&GL0, &v2(0x32c), &[0x07, 0x00]]));
 }
 
 // ── Type coercion / conversion cases ─────────────────────────────────────────
@@ -2102,136 +1979,59 @@ fn case_0x61_call_node_assembles_descriptor_and_dispatches() {
 fn case_0x32_coercion_emits_opcode_pool_index_and_size() {
     // No child list (size 0 + 4 = 4); flag byte clear → target 0x40d; descriptor
     // word[4] interns to pool index 0; emit 0x40d + 0x0000 + size 0x0004.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let desc = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0)); // descriptor word[4]=0x55
-    let n = a.alloc(NodeArena::node(0x32, 0, desc.0, 0, 0, 0)); // word[4]=desc, word[5]=0
-    let mut expected = v2(0x40d);
-    expected.extend_from_slice(&[0x00, 0x00, 0x04, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(coercion_bytes(0x32), cat(&[&v2(0x40d), &[0x00, 0x00, 0x04, 0x00]]));
 }
 
 #[test]
 fn case_0x34_coercion_target_0x40f() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let desc = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0));
-    let n = a.alloc(NodeArena::node(0x34, 0, desc.0, 0, 0, 0));
-    let mut expected = v2(0x40f);
-    expected.extend_from_slice(&[0x00, 0x00, 0x04, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(coercion_bytes(0x34), cat(&[&v2(0x40f), &[0x00, 0x00, 0x04, 0x00]]));
 }
 
 #[test]
 fn case_0x4c_conversion_literal_type_node() {
     // inner.word[5]=0 (no list); inner.word[4]=p; p opcode 1 → emit 0x35d + p.word[4].
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let p = a.alloc(NodeArena::node(1, 0, 0x42, 0, 0, 0)); // opcode 1, word[4]=0x42
-    let inner = a.alloc(NodeArena::node(0, 0, p.0, 0, 0, 0)); // word[4]=p, word[5]=0
-    let n = a.alloc(NodeArena::node(0x4c, 0, 0, inner.0, 0, 0)); // word[5]=inner
-    let mut expected = v2(0x35d);
-    expected.extend_from_slice(&[0x42, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(literal_inner_bytes(0x4c, 0, 0x42), cat(&[&v2(0x35d), &[0x42, 0x00]]));
 }
 
 #[test]
 fn case_0x51_operator_class0_traverse_then_0x175() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let n = a.alloc(NodeArena::node(0x51, 0, 0, child.0, 0, 0)); // op-class 0 (word[1]=0)
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x175));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(gl0_w5_bytes(0x51, 0, true), gl0_then(0x175)); // op-class 0 (word[1]=0)
 }
 
 #[test]
 fn case_0x52_operator_class0_traverse_then_0x177() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let n = a.alloc(NodeArena::node(0x52, 0, 0, child.0, 0, 0));
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x177));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(gl0_w5_bytes(0x52, 0, true), gl0_then(0x177));
 }
 
 #[test]
 fn case_0x51_operator_class1_value_emits_0x176() {
     // op-class 1 (word[1] bits 8..10 = 1): value emit, 0x51 → 0x176.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let mut node = NodeArena::node(0x51, 0, 0, child.0, 0, 0);
-    node.w[1] = 1 << 8;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x176));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(gl0_w5_bytes(0x51, 1 << 8, true), gl0_then(0x176));
 }
 
 #[test]
 fn case_0x52_operator_class4_value_emits_0x414() {
     // op-class 4: value emit, 0x52 → 0x414.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let mut node = NodeArena::node(0x52, 0, 0, child.0, 0, 0);
-    node.w[1] = 4 << 8;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x414));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(gl0_w5_bytes(0x52, 4 << 8, true), gl0_then(0x414));
 }
 
 #[test]
 fn case_0x51_operator_class5_value_emits_0x413() {
     // op-class 5: value emit, 0x51 → 0x413.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let mut node = NodeArena::node(0x51, 0, 0, child.0, 0, 0);
-    node.w[1] = 5 << 8;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x413));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(gl0_w5_bytes(0x51, 5 << 8, true), gl0_then(0x413));
 }
 
 #[test]
 fn case_0x52_operator_class2_typed_emits_0x418_with_pooled_type() {
     // op-class 2: typed emit. word[5]=inner; traverse inner.word[5]; type
-    // value pooled from inner.word[4].word[4]. 0x52 → 0x418.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let p = a.alloc(NodeArena::node(0, 0, 0x99, 0, 0, 0)); // word[4]=type value 0x99
-    let inner = a.alloc(NodeArena::node(0, 0, p.0, child.0, 0, 0)); // w4=p, w5=child
-    let mut node = NodeArena::node(0x52, 0, 0, inner.0, 0, 0); // word[5]=inner
-    node.w[1] = 2 << 8;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x418));
-    expected.extend_from_slice(&[0x00, 0x00]); // pool index 0
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // value pooled from inner.word[4].word[4]. 0x52 → 0x418; pool index 0.
+    assert_eq!(typed_operator_bytes(0x52, 2), cat(&[&GL0, &v2(0x418), &[0x00, 0x00]]));
 }
 
 #[test]
 fn case_0x51_operator_class3_typed_emits_0x417() {
     // op-class 3: typed emit. 0x51 → 0x417.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let p = a.alloc(NodeArena::node(0, 0, 0x99, 0, 0, 0));
-    let inner = a.alloc(NodeArena::node(0, 0, p.0, child.0, 0, 0));
-    let mut node = NodeArena::node(0x51, 0, 0, inner.0, 0, 0);
-    node.w[1] = 3 << 8;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x417));
-    expected.extend_from_slice(&[0x00, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(typed_operator_bytes(0x51, 3), cat(&[&GL0, &v2(0x417), &[0x00, 0x00]]));
 }
 
 #[test]
@@ -2241,32 +2041,14 @@ fn case_0x42_nondispatch_emits_0x42a_with_pooled_type() {
     // second.word[4]=typed child (a no-op). Emits emit_typed_node(child) [none]
     // then opcode 0x42a + pooled type value (index 0), then validate (type 8 →
     // no extra byte).
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let typed_child = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0)); // no-op
-    let second = a.alloc(NodeArena::node(0, 0, typed_child.0, 0, 0, 0)); // word[4]=child
-    let avalue = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0)); // word[4]=type value 0x55
-    let w5 = a.alloc(NodeArena::node(0, 0, avalue.0, second.0, 0, 0)); // w4=a, w5=second
-    let n = a.alloc(NodeArena::node(0x42, 8, 0, w5.0, 0, 0)); // type tag 8, word[5]=w5
-    let mut expected = v2(0x42a);
-    expected.extend_from_slice(&[0x00, 0x00]); // pool index 0
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(nondispatch_common_bytes(0x42), cat(&[&v2(0x42a), &[0x00, 0x00]]));
 }
 
 #[test]
 fn case_0x43_nondispatch_same_as_0x42_common_path() {
     // 0x43 shares the common non-dispatch path with 0x42 (the form bit only
     // matters on the gated dispatch-binding path).
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let typed_child = a.alloc(NodeArena::node(0x1b, 0, 0, 0, 0, 0));
-    let second = a.alloc(NodeArena::node(0, 0, typed_child.0, 0, 0, 0));
-    let avalue = a.alloc(NodeArena::node(0, 0, 0x55, 0, 0, 0));
-    let w5 = a.alloc(NodeArena::node(0, 0, avalue.0, second.0, 0, 0));
-    let n = a.alloc(NodeArena::node(0x43, 8, 0, w5.0, 0, 0));
-    let mut expected = v2(0x42a);
-    expected.extend_from_slice(&[0x00, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(nondispatch_common_bytes(0x43), cat(&[&v2(0x42a), &[0x00, 0x00]]));
 }
 
 // ── 0x42/0x43 dispatch-binding path (2026-07-14 port) ────────────────────────
@@ -2297,69 +2079,44 @@ fn dispatch_binding_sym(member_byte1: u8) -> crate::emit::SymbolContext {
 fn case_0x42_dispatch_binding_emits_0x2ff() {
     // fEmitOp == 0 (op 0x42) -> opcode base 0x2ff; operand = the context's
     // size word[4] (here 0x20); trailing word = the pooled type value (index 0).
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let n = dispatch_binding_node(&mut a, 0x42, 4, 0x20);
-    let sym = dispatch_binding_sym(4); // rec1 & 7 == 4
-    let mut e = Emitter::new(&a).with_symbol_context(sym);
-    e.emit_expr(n, 1);
-    let bytes = e.into_bytes();
-    let mut expected = opc2(0x2ff, 0x20);
-    expected.extend_from_slice(&[0x00, 0x00]); // pooled type value index 0
-    assert_eq!(bytes, expected);
+    // rec1 & 7 == 4
+    assert_eq!(
+        dispatch_binding_bytes(0x42, 4, 4),
+        cat(&[&opc2(0x2ff, 0x20), &[0x00, 0x00]])
+    );
 }
 
 #[test]
 fn case_0x43_dispatch_binding_emits_0x3f6() {
     // fEmitOp == 1 (op 0x43) -> opcode base 0x3f6 -- the only difference from
     // the 0x42 case above.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let n = dispatch_binding_node(&mut a, 0x43, 4, 0x20);
-    let sym = dispatch_binding_sym(4);
-    let mut e = Emitter::new(&a).with_symbol_context(sym);
-    e.emit_expr(n, 1);
-    let bytes = e.into_bytes();
-    let mut expected = opc2(0x3f6, 0x20);
-    expected.extend_from_slice(&[0x00, 0x00]);
-    assert_eq!(bytes, expected);
+    assert_eq!(
+        dispatch_binding_bytes(0x43, 4, 4),
+        cat(&[&opc2(0x3f6, 0x20), &[0x00, 0x00]])
+    );
 }
 
 #[test]
 fn case_0x42_context_kind_not_4_falls_through_to_common_path() {
     // The context's own kind must be 4; a different kind falls through to the
     // ordinary (non-dispatch-binding) common path instead.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let n = dispatch_binding_node(&mut a, 0x42, 5, 0x20);
-    let sym = dispatch_binding_sym(4);
-    let mut e = Emitter::new(&a).with_symbol_context(sym);
-    e.emit_expr(n, 1);
-    let bytes = e.into_bytes();
     // Common path: emit_typed_node(typed_child) [opcode 0x1b, no-op] then
     // 0x42a + pooled type value, then emit_validate_type_operation(2, 0x17, 1)
     // -- type_tag 2 + variant 0x17 emits an extra 0x18b byte.
-    let mut expected = v2(0x42a);
-    expected.extend_from_slice(&[0x00, 0x00]);
-    expected.extend(v2(0x18b));
-    assert_eq!(bytes, expected);
+    assert_eq!(
+        dispatch_binding_bytes(0x42, 5, 4),
+        cat(&[&v2(0x42a), &[0x00, 0x00], &v2(0x18b)])
+    );
 }
 
 #[test]
 fn case_0x42_member_byte_not_dispatch_kind_falls_through_to_common_path() {
     // Context kind is 4, but the resolved member record's byte+1 low 3 bits
-    // are not 4 -- also falls through to the common path.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let n = dispatch_binding_node(&mut a, 0x42, 4, 0x20);
-    let sym = dispatch_binding_sym(3); // rec1 & 7 == 3, not 4
-    let mut e = Emitter::new(&a).with_symbol_context(sym);
-    e.emit_expr(n, 1);
-    let bytes = e.into_bytes();
-    let mut expected = v2(0x42a);
-    expected.extend_from_slice(&[0x00, 0x00]);
-    expected.extend(v2(0x18b));
-    assert_eq!(bytes, expected);
+    // are not 4 -- also falls through to the common path. (rec1 & 7 == 3)
+    assert_eq!(
+        dispatch_binding_bytes(0x42, 4, 3),
+        cat(&[&v2(0x42a), &[0x00, 0x00], &v2(0x18b)])
+    );
 }
 
 // ── Operand-dispatch + pooled member-reference cases ─────────────────────────
@@ -2376,14 +2133,8 @@ fn case_0x66_emits_pooled_member_opcode_0x2f4() {
 
 #[test]
 fn case_0x67_emits_child_then_pooled_0x2f5() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
-    let n = a.alloc(NodeArena::node(0x67, 0, child.0, 0x99, 0, 0)); // word[4]=child, word[5]=type
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x2f5));
-    expected.extend_from_slice(&[0x00, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // word[4]=child, word[5]=type value
+    assert_eq!(gl0_child_pooled_bytes(0x67), cat(&[&GL0, &v2(0x2f5), &[0x00, 0x00]]));
 }
 
 #[test]
@@ -2401,14 +2152,8 @@ fn case_0x68_member_ref_160000_child_emits_0x2f2_then_pooled_word() {
 
 #[test]
 fn case_0x63_emits_child_then_0x38d_for_non_object() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0); // region 0 (not 0xf0000) → 0x38d
-    let n = a.alloc(NodeArena::node(0x63, 0, child.0, 0x99, 0, 0));
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x38d));
-    expected.extend_from_slice(&[0x00, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // child region 0 (not 0xf0000) → 0x38d
+    assert_eq!(gl0_child_pooled_bytes(0x63), cat(&[&GL0, &v2(0x38d), &[0x00, 0x00]]));
 }
 
 #[test]
@@ -2434,25 +2179,15 @@ fn case_0x3e_no_member_emits_0x1c3() {
 
 #[test]
 fn case_0x44_conversion_0x3f5_no_dispatch_in_0x20000_region() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let p = a.alloc(NodeArena::node(1, 0, 0x07, 0, 0, 0)); // opcode 1, word[4]=7
-    let inner = a.alloc(NodeArena::node(0, 0, p.0, 0, 0, 0)); // word[4]=p, word[5]=0
-    let n = a.alloc(NodeArena::node(0x44, 2, 0, inner.0, 0, 0)); // type tag 2 → region 0x20000
-    let mut expected = v2(0x3f5);
-    expected.extend_from_slice(&[0x07, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // type tag 2 → region 0x20000
+    assert_eq!(literal_inner_bytes(0x44, 2, 0x07), cat(&[&v2(0x3f5), &[0x07, 0x00]]));
 }
 
 #[test]
 fn case_0x48_traverse_then_0x158_no_dispatch_in_0x20000_region() {
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
+    let (mut a, child) = null_arena_gl0();
     let n = a.alloc(NodeArena::node(0x48, 2, 0, child.0, 0, 0)); // region 0x20000
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x158));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(emit(&a, n), gl0_then(0x158));
 }
 
 // ── Instruction-emitter cases (EbEmitInstruction2) ───────────────────────────
@@ -2462,15 +2197,10 @@ fn case_0x6e_emits_target_opcode_and_pooled_word() {
     // flags 0 → opcode 0x398; target child (region 0) → context 6 (GL0); byte5
     // bit 0x80 clear → pooled type word (index 0). 0x6e always forces the member
     // word (fHasArg = 1), so word[8] (0) is emitted even though it is zero.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
+    let (mut a, child) = null_arena_gl0();
     let n = a.alloc(NodeArena::node(0x6e, 0, child.0, 0, 0, 0x99)); // w4=child, w7=type value
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x398));
-    expected.extend_from_slice(&[0x00, 0x00]); // pooled type word
-    expected.extend_from_slice(&[0x00, 0x00]); // member word (forced by fHasArg)
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // pooled type word, then the member word (forced by fHasArg)
+    assert_eq!(emit(&a, n), cat(&[&GL0, &v2(0x398), &[0x00, 0x00], &[0x00, 0x00]]));
 }
 
 #[test]
@@ -2479,33 +2209,23 @@ fn case_0x6c_walks_arg_then_emits_target_opcode_member_word() {
     // (GL0), opcode 0x39b (0x443-0xa8 for a non-object target), and the pooled
     // word. With flags 0 the member word is NOT forced (fHasArg = (0x2000 set) =
     // false) and word[8] is zero, so no member word is emitted.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, child) = null_arena_gl0();
     let arg = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0)); // opcode 0 → emits nothing
-    let child = global_long_load(&mut a, 0);
     let n = a.alloc(NodeArena::node(0x6c, 0, child.0, arg.0, 0, 0x99)); // w4=child, w5=arg, w7=type
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x39b));
-    expected.extend_from_slice(&[0x00, 0x00]); // pooled word only
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(emit(&a, n), cat(&[&GL0, &v2(0x39b), &[0x00, 0x00]])); // pooled word only
 }
 
 #[test]
 fn case_0x6c_member_word_forced_when_0x2000_set() {
     // With flags bit 0x2000 set, fHasArg is true, so the (zero) member word is
     // emitted. Opcode: 0x8000 clear, 0x2000 set, non-object child → 0x39c.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
+    let (mut a, child) = null_arena_gl0();
     let arg = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
     let mut node = NodeArena::node(0x6c, 0, child.0, arg.0, 0, 0x99);
     node.w[1] = 0x2000;
     let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x39c));
-    expected.extend_from_slice(&[0x00, 0x00]); // pooled word
-    expected.extend_from_slice(&[0x00, 0x00]); // member word (forced by 0x2000)
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // pooled word, then the member word (forced by 0x2000)
+    assert_eq!(emit(&a, n), cat(&[&GL0, &v2(0x39c), &[0x00, 0x00], &[0x00, 0x00]]));
 }
 
 #[test]
@@ -2513,41 +2233,29 @@ fn case_0x6a_class0_emits_callee_then_0x3ae() {
     // No argument list; emit the callee (GL0, context 1); op-class 0 → opcode
     // 0x3ae with the word[6] type size (0 here, word[6]=0), then the word[8]
     // trailing word (0). Validation for node type 0 emits nothing.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
+    let (mut a, child) = null_arena_gl0();
     let n = a.alloc(NodeArena::node(0x6a, 0, child.0, 0, 0, 0)); // w4=child, w5=0, w6=0
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x3ae));
-    expected.extend_from_slice(&[0x00, 0x00]); // size 0 (word[6]==0)
-    expected.extend_from_slice(&[0x00, 0x00]); // word[8] trailing word
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // size 0 (word[6]==0), then the word[8] trailing word
+    assert_eq!(emit(&a, n), cat(&[&GL0, &v2(0x3ae), &[0x00, 0x00], &[0x00, 0x00]]));
 }
 
 #[test]
 fn case_0x6a_class1_emits_0x3b0_with_word8() {
     // op-class 1 → emit callee then sized opcode 0x3b0 with the word[8] operand
     // and finish (no trailing validation).
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
+    let (mut a, child) = null_arena_gl0();
     let mut node = NodeArena::node(0x6a, 0, child.0, 0, 0, 0);
     node.w[1] = 1 << 8; // op-class 1
     node.w[8] = 0x0044; // word[8] operand
     let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x3b0));
-    expected.extend_from_slice(&[0x44, 0x00]);
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(emit(&a, n), cat(&[&GL0, &v2(0x3b0), &[0x44, 0x00]]));
 }
 
 #[test]
 fn case_0x6a_class0_flag80_emits_0x3f2_and_two_sizes() {
     // op-class 0 with flag byte bit 0x80 set → opcode 0x3f2 with the word[6]
     // size, then the word[7] size, then the word[8] trailing word.
-    let mut a = NodeArena::new();
-    let _null = a.alloc(NodeArena::node(0, 0, 0, 0, 0, 0));
-    let child = global_long_load(&mut a, 0);
+    let (mut a, child) = null_arena_gl0();
     let d6 = a.alloc(NodeArena::node(4, 0, 0x12, 0, 0, 0)); // size 0x12
     let d7 = a.alloc(NodeArena::node(4, 0, 0x34, 0, 0, 0)); // size 0x34
     let mut node = NodeArena::node(0x6a, 0, child.0, 0, d6.0, 0); // word[6]=d6
@@ -2555,12 +2263,11 @@ fn case_0x6a_class0_flag80_emits_0x3f2_and_two_sizes() {
     node.w[7] = d7.0;
     node.w[8] = 0x0055;
     let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(v2(0x3f2));
-    expected.extend_from_slice(&[0x12, 0x00]); // word[6] size
-    expected.extend_from_slice(&[0x34, 0x00]); // word[7] size
-    expected.extend_from_slice(&[0x55, 0x00]); // word[8] trailing word
-    assert_eq!(emit(&a, n), expected.as_slice());
+    // word[6] size, word[7] size, word[8] trailing word
+    assert_eq!(
+        emit(&a, n),
+        cat(&[&GL0, &v2(0x3f2), &[0x12, 0x00], &[0x34, 0x00], &[0x55, 0x00]])
+    );
 }
 
 // ── Type-descriptor cases (0x05, 0x11, 0x38) ─────────────────────────────────
@@ -2731,10 +2438,7 @@ fn case_0x41_arglist_single_arg_emits_size_word() {
 
 #[test]
 fn case_0x58_byte5_clear_traverse_then_0x3ff() {
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let n = w5_node(&mut a, 0x58, child); // byte5 = 0
-    assert_eq!(emit(&a, n), gl0_then(0x3ff).as_slice());
+    assert_eq!(gl0_w5_bytes(0x58, 0, false), gl0_then(0x3ff)); // byte5 = 0
 }
 
 // ── Type-descriptor size model (sized UDT / object cases) ────────────────────
@@ -2790,27 +2494,19 @@ fn case_0x39_non_fixed_descriptor_emits_sentinel() {
 fn case_0x24_udt_emits_0xef_with_size() {
     // type_tag 0xf (UDT): emit both operands (ctx 1) then opcode 0xef + size.
     // word[6] = descriptor (size 8). validate(0xf, 0x17, ctx=0) emits nothing.
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 5); // [0xf4, 0x05]
-    let rhs = int_lit(&mut a, 6, 3); // [0xf4, 0x03]
-    let desc = type_desc(&mut a, 8);
-    let n = a.alloc(NodeArena::node(0x24, 0xf, lhs.0, rhs.0, desc.0, 0));
-    let mut expected = vec![0xf4, 0x05, 0xf4, 0x03];
-    expected.extend(opc2(0xef, 8));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(
+        sized_literal_pair_bytes(0x24, 0xf, 8),
+        cat(&[&[0xf4, 0x05, 0xf4, 0x03], &opc2(0xef, 8)])
+    );
 }
 
 #[test]
 fn case_0x1a_object_pow_emits_0xce_with_size() {
     // type_tag 0xf → node hi 0xf0000: emit operands (ctx 2) then opcode 0xce + size.
-    let mut a = NodeArena::new();
-    let lhs = int_lit(&mut a, 6, 5);
-    let rhs = int_lit(&mut a, 6, 3);
-    let desc = type_desc(&mut a, 0x20);
-    let n = a.alloc(NodeArena::node(0x1a, 0xf, lhs.0, rhs.0, desc.0, 0));
-    let mut expected = vec![0xf4, 0x05, 0xf4, 0x03];
-    expected.extend(opc2(0xce, 0x20));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(
+        sized_literal_pair_bytes(0x1a, 0xf, 0x20),
+        cat(&[&[0xf4, 0x05, 0xf4, 0x03], &opc2(0xce, 0x20)])
+    );
 }
 
 // ── case 0xe op-kinds 1..7 (object/UDT assignment forms) ─────────────────────
@@ -2876,51 +2572,25 @@ fn case_0xe_opclass7_me_assign_emits_0x41b() {
 #[test]
 fn case_0x57_set_emits_flag_selected_sized_opcode() {
     // flag 0x4000 set, 0x8000 clear: opcode = ((!flags & 0x8000)|0xff0000)>>0xe = 0x3fe.
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let desc = type_desc(&mut a, 0x10);
-    let mut node = NodeArena::node(0x57, 8, 0, child.0, desc.0, 0); // type_tag 8 → validate no-op
-    node.w[1] = 0x4000;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(opc2(0x3fe, 0x10));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(sized_w5_bytes(0x57, 0x4000, 0x10), cat(&[&GL0, &opc2(0x3fe, 0x10)]));
 }
 
 #[test]
 fn case_0x57_set_8000_emits_0x3fc_sized() {
     // flag 0x4000 and 0x8000 set: opcode = ((0) | 0xff0000) >> 0xe = 0x3fc.
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let desc = type_desc(&mut a, 0x10);
-    let mut node = NodeArena::node(0x57, 8, 0, child.0, desc.0, 0);
-    node.w[1] = 0xc000;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(opc2(0x3fc, 0x10));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(sized_w5_bytes(0x57, 0xc000, 0x10), cat(&[&GL0, &opc2(0x3fc, 0x10)]));
 }
 
 #[test]
 fn case_0x58_set_emits_0x400_sized() {
     // byte5 bit 0x40 set (word[1] = 0x4000): opcode 0x400 + size.
-    let mut a = NodeArena::new();
-    let child = global_long_load(&mut a, 0);
-    let desc = type_desc(&mut a, 0x10);
-    let mut node = NodeArena::node(0x58, 8, 0, child.0, desc.0, 0);
-    node.w[1] = 0x4000;
-    let n = a.alloc(node);
-    let mut expected = GL0.to_vec();
-    expected.extend(opc2(0x400, 0x10));
-    assert_eq!(emit(&a, n), expected.as_slice());
+    assert_eq!(sized_w5_bytes(0x58, 0x4000, 0x10), cat(&[&GL0, &opc2(0x400, 0x10)]));
 }
 
 // ── Member reference (0x60) end-to-end through the resolver + value emitter ──
 
 #[test]
 fn member_reference_0x60_resolves_and_emits() {
-    use crate::emit::SymbolContext;
-
     let mut a = NodeArena::new();
     // Size descriptor (word[0]==4, size in word[4]) — feeds kind selection only.
     let d = a.alloc(NodeArena::node(4, 0, 4, 0, 0, 0));
@@ -2930,28 +2600,15 @@ fn member_reference_0x60_resolves_and_emits() {
     n.w[5] = d.0;
     let node = a.alloc(n);
 
-    // Records heap: a member record at 0x10 classifying to resolver category 4
-    // (inline Long operand at +0xc, record byte+1 low3 = 3).
-    let mut heap = vec![0u8; 0x40];
-    heap[0x10] = 0x40; // +0 bit 6 → inline operand at +0xc
-    heap[0x11] = 0x03; // +1 low3 = 3
-    heap[0x10 + 0xc] = 8; // inline Long operand opcode
-
-    let sym = SymbolContext {
-        heap,
-        member_off: 0x10,
-        ctx_flag_c: 0,
-        binding: Some((4, 0)), // binder-resolved (kind 4, byref 0)
-    };
-
-    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    // Records heap: a member record at 0x10 classifying to resolver category 4.
+    let mut e = Emitter::new(&a).with_symbol_context(member_record_symbol());
     e.emit_expr(node, 1);
     let bytes = e.into_bytes();
 
     // The resolver yields a kind-1 (local, by-ref) descriptor whose operand is
     // the node's front-end-resolved frame offset (word[7] = 0x78), not the
     // word[5] type size (4) — the value emitter emits its load opcode +
-    // that offset. Locked from the ported EbEmitExpression2 path.
+    // that offset.
     assert_eq!(bytes, MEMBER_REF_0X60_BYTES);
 }
 
@@ -2975,8 +2632,6 @@ fn member_reference_0x60_without_context_is_gated() {
 
 #[test]
 fn assignment_0x2c_emits_rhs_then_resolved_store() {
-    use crate::emit::SymbolContext;
-
     let mut a = NodeArena::new();
     // RHS: a Long local load at frame offset -8.
     let s = a.alloc(NodeArena::node(0, 0, (0xfff8u32) << 16, 0, 0, 0));
@@ -2993,18 +2648,7 @@ fn assignment_0x2c_emits_rhs_then_resolved_store() {
     asn.w[5] = rhs.0;
     let node = a.alloc(asn);
 
-    let mut heap = vec![0u8; 0x40];
-    heap[0x10] = 0x40;
-    heap[0x11] = 0x03;
-    heap[0x10 + 0xc] = 8;
-    let sym = SymbolContext {
-        heap,
-        member_off: 0x10,
-        ctx_flag_c: 0,
-        binding: Some((4, 0)),
-    };
-
-    let mut e = Emitter::new(&a).with_symbol_context(sym);
+    let mut e = Emitter::new(&a).with_symbol_context(member_record_symbol());
     e.emit_expr(node, 0);
     let bytes = e.into_bytes();
     assert_eq!(bytes, ASSIGN_0X2C_BYTES);

@@ -30,7 +30,7 @@ impl Rng {
         Rng(seed.wrapping_mul(0x9E3779B97F4A7C15) | 1)
     }
 
-    pub fn next(&mut self) -> u64 {
+    pub fn next_u64(&mut self) -> u64 {
         let mut x = self.0;
         x ^= x >> 12;
         x ^= x << 25;
@@ -40,7 +40,7 @@ impl Rng {
     }
 
     pub fn below(&mut self, n: usize) -> usize {
-        (self.next() % n as u64) as usize
+        (self.next_u64() % n as u64) as usize
     }
 }
 

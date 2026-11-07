@@ -1,5 +1,62 @@
 use super::*;
 
+/// Bytes the emitter produces for each of `nodes`, in order.
+fn emit_nodes(arena: &NodeArena, nodes: &[crate::node::NodeRef]) -> Vec<u8> {
+    let mut emitter = crate::emit::Emitter::new(arena);
+    for node in nodes {
+        emitter.emit_expr(*node, 0);
+    }
+    emitter.into_bytes()
+}
+
+/// Bytes of loading each of `names` from `f`, in order.
+fn proc_loads(f: &ProcFrame, names: &[&str]) -> Vec<u8> {
+    let mut arena = NodeArena::new();
+    let loads: Vec<_> = names
+        .iter()
+        .map(|name| f.make_load_node(&mut arena, name).expect("declared"))
+        .collect();
+    emit_nodes(&arena, &loads)
+}
+
+/// Bytes of the binary operation `op` (result type tag `type_tag`) over the
+/// loads of locals `lhs` and `rhs`, followed by a store into local `target`
+/// when one is given.
+fn proc_binop_bytes(
+    f: &ProcFrame,
+    op: u16,
+    type_tag: u16,
+    lhs: &str,
+    rhs: &str,
+    target: Option<&str>,
+) -> Vec<u8> {
+    let mut arena = NodeArena::new();
+    let la = f.make_load_node(&mut arena, lhs).unwrap();
+    let lb = f.make_load_node(&mut arena, rhs).unwrap();
+    let node = arena.alloc(NodeArena::node(op, type_tag, la.0, lb.0, 0, 0));
+    let mut emitter = crate::emit::Emitter::new(&arena);
+    emitter.emit_expr(node, 0);
+    if let Some(name) = target {
+        let rv = f.resolve(name).unwrap();
+        emitter.emit_var_store(rv.type_ctx, rv.frame_offset);
+    }
+    emitter.into_bytes()
+}
+
+/// Bytes of loading global `name` from `f`.
+fn global_load_bytes(f: &GlobalFrame, name: &str) -> Vec<u8> {
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, name).expect("declared");
+    emit_nodes(&arena, &[load])
+}
+
+/// Bytes of loading parameter `name` from `f`.
+fn param_load_bytes(f: &ParamFrame, name: &str) -> Vec<u8> {
+    let mut arena = NodeArena::new();
+    let load = f.make_load_node(&mut arena, name).expect("declared");
+    emit_nodes(&arena, &[load])
+}
+
 #[test]
 fn slots_allocate_in_sequence_of_four() {
     let mut t = SlotTable::new();
@@ -39,7 +96,7 @@ fn assign_var_slot_masks_preserve_only_kept_bits() {
     let s = t.allocate_slot();
     t.descs[0].set_type_flags(0xffff);
     t.assign_var_slot(s, 0, 0);
-    let expected = (((0xffffu16 & 0x3d8f) | 0x40) & 0xc3ff) | 0;
+    let expected = (0x3d8f | 0x40) & 0xc3ff;
     assert_eq!(t.desc(s).type_flags(), expected);
 }
 
@@ -197,14 +254,9 @@ fn make_load_node_produces_double_load_at_correct_offset() {
     // Probe: `Dim a As Double` → a at frame offset -140 (0xff74).
     // make_load_node should produce a node that the emitter turns into
     // [0x6f, 0x74, 0xff].
-    use crate::emit::Emitter;
     let mut f = ProcFrame::new();
     f.declare_local("a", 4).unwrap(); // Double at -140
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "a").expect("a declared");
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(load, 0);
-    assert_eq!(emitter.into_bytes(), &[0x6f, 0x74, 0xff]);
+    assert_eq!(proc_loads(&f, &["a"]), &[0x6f, 0x74, 0xff]);
 }
 
 #[test]
@@ -217,31 +269,19 @@ fn make_load_node_unknown_name_returns_none() {
 #[test]
 fn make_load_node_long_at_correct_offset() {
     // `Dim n As Long` → Long at -136 (0xff78). Emitter: [0x6c, 0x78, 0xff].
-    use crate::emit::Emitter;
     let mut f = ProcFrame::new();
     f.declare_local("n", 2).unwrap(); // Long at -136
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "n").expect("n declared");
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(load, 0);
-    assert_eq!(emitter.into_bytes(), &[0x6c, 0x78, 0xff]);
+    assert_eq!(proc_loads(&f, &["n"]), &[0x6c, 0x78, 0xff]);
 }
 
 #[test]
 fn make_load_node_integer_at_correct_offset() {
     // `Dim a As Integer, b As Integer` → a at -134, b at -136.
-    use crate::emit::Emitter;
     let mut f = ProcFrame::new();
     f.declare_local("a", 1).unwrap(); // Integer at -134
     f.declare_local("b", 1).unwrap(); // Integer at -136
-    let mut arena = NodeArena::new();
-    let la = f.make_load_node(&mut arena, "a").unwrap();
-    let lb = f.make_load_node(&mut arena, "b").unwrap();
     // a: [0x6b, 0x7a, 0xff]; b: [0x6b, 0x78, 0xff]
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(la, 0);
-    emitter.emit_expr(lb, 0);
-    assert_eq!(emitter.into_bytes(), &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff]);
+    assert_eq!(proc_loads(&f, &["a", "b"]), &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff]);
 }
 
 #[test]
@@ -254,19 +294,11 @@ fn full_pipeline_add_two_longs() {
     //   load b:  [0x6c, 0x74, 0xff]
     //   ADD Long: [0xaa]
     // Total: [0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa]
-    use crate::emit::Emitter;
     let mut f = ProcFrame::new();
     f.declare_local("a", 2).unwrap(); // Long at -136
     f.declare_local("b", 2).unwrap(); // Long at -140
-    let mut arena = NodeArena::new();
-    let la = f.make_load_node(&mut arena, "a").unwrap();
-    let lb = f.make_load_node(&mut arena, "b").unwrap();
-    // Binary ADD node: op=0x16 (22), type_tag=8 (Long result)
-    let add_node = arena.alloc(NodeArena::node(0x16, 8, la.0, lb.0, 0, 0));
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(add_node, 0);
     assert_eq!(
-        emitter.into_bytes(),
+        proc_binop_bytes(&f, 0x16, 8, "a", "b", None),
         &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa]
     );
 }
@@ -281,21 +313,12 @@ fn full_pipeline_assign_sum_of_two_longs() {
     // ADD Long n_opc=144, RT_OPCODE_BYTE[144]=0xaa → [0xaa]
     // Long load opcode: 0x6c; Long store opcode: 0x71 (RT_STORE_BY_CTX[2])
     // Expected: [0x6c,0x78,0xff, 0x6c,0x74,0xff, 0xaa, 0x71,0x70,0xff]
-    use crate::emit::Emitter;
     let mut f = ProcFrame::new();
     f.declare_local("a", 2).unwrap(); // Long at -136
     f.declare_local("b", 2).unwrap(); // Long at -140
     f.declare_local("r", 2).unwrap(); // Long at -144
-    let rv = f.resolve("r").unwrap();
-    let mut arena = NodeArena::new();
-    let la = f.make_load_node(&mut arena, "a").unwrap();
-    let lb = f.make_load_node(&mut arena, "b").unwrap();
-    let add_node = arena.alloc(NodeArena::node(0x16, 8, la.0, lb.0, 0, 0));
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(add_node, 0);
-    emitter.emit_var_store(rv.type_ctx, rv.frame_offset);
     assert_eq!(
-        emitter.into_bytes(),
+        proc_binop_bytes(&f, 0x16, 8, "a", "b", Some("r")),
         &[0x6c, 0x78, 0xff, 0x6c, 0x74, 0xff, 0xaa, 0x71, 0x70, 0xff]
     );
 }
@@ -307,18 +330,11 @@ fn full_pipeline_and_two_integers() {
     // AND Integer (op 0x23=35, type_tag=6): base=0x0021=33, offset=1, n_opc=34,
     // RT_OPCODE_BYTE[34]=0xc4.
     // load a: [0x6b, 0x7a, 0xff]; load b: [0x6b, 0x78, 0xff]; AND: [0xc4]
-    use crate::emit::Emitter;
     let mut f = ProcFrame::new();
     f.declare_local("a", 1).unwrap(); // Integer at -134
     f.declare_local("b", 1).unwrap(); // Integer at -136
-    let mut arena = NodeArena::new();
-    let la = f.make_load_node(&mut arena, "a").unwrap();
-    let lb = f.make_load_node(&mut arena, "b").unwrap();
-    let and_node = arena.alloc(NodeArena::node(0x23, 6, la.0, lb.0, 0, 0)); // AND, Integer
-    let mut emitter = Emitter::new(&arena);
-    emitter.emit_expr(and_node, 0);
     assert_eq!(
-        emitter.into_bytes(),
+        proc_binop_bytes(&f, 0x23, 6, "a", "b", None), // AND, Integer
         &[0x6b, 0x7a, 0xff, 0x6b, 0x78, 0xff, 0xc4]
     );
 }
@@ -398,28 +414,18 @@ fn param_frame_resolve() {
 fn param_make_load_node_byval_long_emits_load_opcode() {
     // ByVal Long at +12 → opcode 0x74 node → emit_typed_load → [0x6c, 0x0c, 0x00].
     // Oracle: `Sub Foo(ByVal p As Long) ... r = p`. ✓
-    use crate::emit::Emitter;
     let mut f = ParamFrame::new();
     f.declare_param("p", 2, false).unwrap(); // ByVal Long at +12
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "p").expect("p declared");
-    let mut e = Emitter::new(&arena);
-    e.emit_expr(load, 0);
-    assert_eq!(e.into_bytes(), &[0x6c, 0x0c, 0x00]);
+    assert_eq!(param_load_bytes(&f, "p"), &[0x6c, 0x0c, 0x00]);
 }
 
 #[test]
 fn param_make_load_node_byref_long_emits_byref_opcode() {
     // ByRef Long at +12 → opcode 0x75 node → emit_byref_load → [0x80, 0x0c, 0x00].
     // 0x80 = RT_LOAD_BY_CTX[2] (0x6c) + 0x14. Oracle: `Sub Foo(ByRef p As Long)`. ✓
-    use crate::emit::Emitter;
     let mut f = ParamFrame::new();
     f.declare_param("p", 2, true).unwrap(); // ByRef Long at +12
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "p").expect("p declared");
-    let mut e = Emitter::new(&arena);
-    e.emit_expr(load, 0);
-    assert_eq!(e.into_bytes(), &[0x80, 0x0c, 0x00]);
+    assert_eq!(param_load_bytes(&f, "p"), &[0x80, 0x0c, 0x00]);
 }
 
 #[test]
@@ -483,29 +489,19 @@ fn global_frame_resolve() {
 fn global_make_load_node_long_emits_global_opcode() {
     // `Public g As Long` → make_load_node → emit_global_load → [0x94, 0x08, 0x00, 0x00, 0x00].
     // 0x94 = RT_LOAD_BY_CTX[Long=2] (0x6c) + 0x28. Oracle-confirmed. ✓
-    use crate::emit::Emitter;
     let mut f = GlobalFrame::new(0x0008);
     f.declare_global("g", 2).unwrap(); // Long at field_offset 0
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "g").expect("g declared");
-    let mut e = Emitter::new(&arena);
-    e.emit_expr(load, 0);
-    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x00, 0x00]);
+    assert_eq!(global_load_bytes(&f, "g"), &[0x94, 0x08, 0x00, 0x00, 0x00]);
 }
 
 #[test]
 fn global_make_load_node_second_long_at_field_4() {
     // `Public a As Long : Public b As Long` → b at field_offset 4.
     // Load b → [0x94, 0x08, 0x00, 0x04, 0x00]. Oracle-confirmed. ✓
-    use crate::emit::Emitter;
     let mut f = GlobalFrame::new(0x0008);
     f.declare_global("a", 2).unwrap();
     f.declare_global("b", 2).unwrap();
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "b").expect("b declared");
-    let mut e = Emitter::new(&arena);
-    e.emit_expr(load, 0);
-    assert_eq!(e.into_bytes(), &[0x94, 0x08, 0x00, 0x04, 0x00]);
+    assert_eq!(global_load_bytes(&f, "b"), &[0x94, 0x08, 0x00, 0x04, 0x00]);
 }
 
 #[test]
@@ -519,14 +515,9 @@ fn global_make_load_node_returns_none_for_undeclared() {
 fn global_make_load_node_double_emits_global_opcode() {
     // `Public g As Double` → [0x97, 0x08, 0x00, 0x00, 0x00].
     // 0x97 = RT_LOAD_BY_CTX[Double=4] (0x6f) + 0x28. Oracle-confirmed. ✓
-    use crate::emit::Emitter;
     let mut f = GlobalFrame::new(0x0008);
     f.declare_global("g", 4).unwrap();
-    let mut arena = NodeArena::new();
-    let load = f.make_load_node(&mut arena, "g").expect("g declared");
-    let mut e = Emitter::new(&arena);
-    e.emit_expr(load, 0);
-    assert_eq!(e.into_bytes(), &[0x97, 0x08, 0x00, 0x00, 0x00]);
+    assert_eq!(global_load_bytes(&f, "g"), &[0x97, 0x08, 0x00, 0x00, 0x00]);
 }
 
 // ── UDT (Type...End Type) local frame layout ────────────────────────────────

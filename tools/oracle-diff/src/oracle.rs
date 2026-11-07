@@ -136,41 +136,57 @@ impl Verdict {
     }
 }
 
-/// Interprets the build log written by `/make ... /out`.
-pub fn parse_log(log: &str, exit_code: Option<i32>) -> Verdict {
-    let mut rejected = None;
-    let mut succeeded = false;
-    let mut failed = false;
-    let mut other = Vec::new();
-    for line in log.lines() {
-        let line = line.trim();
-        if line.is_empty() {
-            continue;
+/// Splits the text after `Compile Error in File '` into the file, the optional
+/// line number and the message. Returns `None` when the file part is unterminated.
+fn parse_compile_error(rest: &str) -> Option<Verdict> {
+    // `<file>', Line <n> : <message>`  (the line part can be absent)
+    let (file, tail) = rest.split_once("', ")?;
+    let (line, message) = match tail.strip_prefix("Line ") {
+        Some(t) => match t.split_once(" : ") {
+            Some((n, m)) => (n.trim().parse().ok(), m.to_string()),
+            None => (None, t.to_string()),
+        },
+        None => (None, tail.trim_start_matches(": ").to_string()),
+    };
+    Some(Verdict::Rejected { file: file.to_string(), line, message })
+}
+
+/// What the lines of a build log said, before they are combined into a verdict.
+#[derive(Default)]
+struct LogFacts {
+    rejected: Option<Verdict>,
+    succeeded: bool,
+    failed: bool,
+    other: Vec<String>,
+}
+
+impl LogFacts {
+    fn scan(log: &str) -> LogFacts {
+        let mut facts = LogFacts::default();
+        for line in log.lines().map(str::trim).filter(|l| !l.is_empty()) {
+            facts.record(line);
         }
+        facts
+    }
+
+    fn record(&mut self, line: &str) {
         if let Some(rest) = line.strip_prefix("Compile Error in File '") {
-            // `<file>', Line <n> : <message>`  (the line part can be absent)
-            if let Some((file, tail)) = rest.split_once("', ") {
-                let (line_no, message) = match tail.strip_prefix("Line ") {
-                    Some(t) => match t.split_once(" : ") {
-                        Some((n, m)) => (n.trim().parse().ok(), m.to_string()),
-                        None => (None, t.to_string()),
-                    },
-                    None => (None, tail.trim_start_matches(": ").to_string()),
-                };
-                rejected.get_or_insert(Verdict::Rejected {
-                    file: file.to_string(),
-                    line: line_no,
-                    message,
-                });
+            if let Some(verdict) = parse_compile_error(rest) {
+                self.rejected.get_or_insert(verdict);
             }
         } else if line.starts_with("Build of '") && line.ends_with("succeeded.") {
-            succeeded = true;
+            self.succeeded = true;
         } else if line.starts_with("Build of '") && line.ends_with("failed.") {
-            failed = true;
+            self.failed = true;
         } else {
-            other.push(line.to_string());
+            self.other.push(line.to_string());
         }
     }
+}
+
+/// Interprets the build log written by `/make ... /out`.
+pub fn parse_log(log: &str, exit_code: Option<i32>) -> Verdict {
+    let LogFacts { rejected, succeeded, failed, other } = LogFacts::scan(log);
     match (rejected, succeeded, exit_code) {
         (Some(v), _, Some(1)) => v,
         (None, true, Some(0)) => Verdict::Accepted,
