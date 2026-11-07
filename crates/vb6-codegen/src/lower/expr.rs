@@ -55,12 +55,8 @@ pub(super) fn lower_expr_coerced(
         ExprNode::Literal { lit } => {
             // A string literal interns into the module string pool and emits
             // `0x1b <pool index>` (synthetic node 0x79); other literals fold in place.
-            // Each string-literal reference also consumes one per-procedure
-            // reference slot (the same counter a call's 2-byte operand reports).
             if let AstLit::Str(s) = lit {
-                let idx = ctx.intern_string(s);
-                ctx.call_next.set(ctx.call_next.get() + 1);
-                return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
+                return Ok(alloc_string_literal(ctx, s, arena));
             }
             lower_lit_coerced(lit, coerce_tag, arena)
         }
@@ -93,155 +89,211 @@ pub(super) fn lower_expr_coerced(
             let inner_id = *inner;
             lower_expr_coerced(ctx, inner_id, expr_arena, arena, coerce_tag)
         }
-        // A type-conversion intrinsic (CInt/CLng/CSng/CDbl/CCur/CStr): convert its
-        // single argument to the target type via the explicit-conversion node
-        // (0x7c), so it composes inside any expression. Sources and destinations
-        // outside the supported scalar set (Byte, Boolean/Date/Variant) are gated.
         ExprNode::Call { func, args } => {
-            let (func, args_id) = (*func, *args);
-            // A user Function call used as an expression operand: emit the call
-            // (0x5e, result left on the stack) into a byte blob wrapped in a 0x7e
-            // node, so it composes with the enclosing operator.
-            if ctx.module.builtins.get(&node_id.0).is_none()
-                && matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_)))
-            {
-                let mut bytes = Vec::new();
-                lower_call(ctx, func, args_id, true, expr_arena, &mut bytes)?;
-                let off = arena.alloc_blob(&bytes);
-                let ret = ctx
-                    .module
-                    .types
-                    .get(&node_id.0)
-                    .and_then(vba_type_to_node_tag)
-                    .unwrap_or(8);
-                return Ok(arena.alloc(NodeArena::node(0x7e, ret, off, bytes.len() as u32, 0, 0)));
-            }
-            // `InStr` (2- or 3-argument): a dedicated opcode (`fe fd`) with four
-            // operands pushed in order — start (Long), string1, string2, compare-mode
-            // (Long) — leaving a Long result on the stack (blob node 0x7e). An omitted
-            // leading start defaults to literal 1; the compare-mode is literal 0
-            // (Option Compare Binary).
-            if let Some(BuiltinCall::Instr { three_arg }) = ctx.module.builtins.get(&node_id.0) {
-                let three_arg = *three_arg;
-                let arg_ids: Vec<NodeId> = match expr_arena.get(args_id) {
-                    ExprNode::ArgList { args } => args.clone(),
-                    _ => return Err(LowerError::UnsupportedNode),
-                };
-                if arg_ids.len() != if three_arg { 3 } else { 2 } {
-                    return Err(LowerError::UnsupportedNode);
-                }
-                let (start, s1, s2) = if three_arg {
-                    (Some(arg_ids[0]), arg_ids[1], arg_ids[2])
-                } else {
-                    (None, arg_ids[0], arg_ids[1])
-                };
-                // The two searched operands must be Strings.
-                for s in [s1, s2] {
-                    if !matches!(ctx.module.types.get(&s.0), Some(VbaType::String)) {
-                        return Err(LowerError::UnsupportedNode);
-                    }
-                }
-                let mut bytes = Vec::new();
-                match start {
-                    Some(st) => bytes.extend(lower_expr_to_bytes_coerced(ctx, st, expr_arena, Some(8))?),
-                    None => bytes.extend_from_slice(&[0xf5, 0x01, 0x00, 0x00, 0x00]),
-                }
-                bytes.extend(lower_expr_to_bytes(ctx, s1, expr_arena)?);
-                bytes.extend(lower_expr_to_bytes(ctx, s2, expr_arena)?);
-                bytes.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
-                bytes.extend_from_slice(&[0xfe, 0xfd]);
-                let off = arena.alloc_blob(&bytes);
-                return Ok(arena.alloc(NodeArena::node(0x7e, 8, off, bytes.len() as u32, 0, 0)));
-            }
-            let arg = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
-            match ctx.module.builtins.get(&node_id.0) {
-                // Type-conversion intrinsic → explicit-conversion node (0x7c).
-                Some(BuiltinCall::Convert(t)) => {
-                    let dest = vba_type_to_node_tag(t).ok_or(LowerError::UnsupportedType)?;
-                    let src = ctx
-                        .module
-                        .types
-                        .get(&arg.0)
-                        .and_then(vba_type_to_node_tag)
-                        .ok_or(LowerError::UnsupportedType)?;
-                    const OK: &[u16] = &[6, 8, 0xa, 0xb, 0xd, 0x10];
-                    if !OK.contains(&dest) || !matches!(src, 6 | 8 | 0xa | 0xb | 0xd) {
-                        return Err(LowerError::UnsupportedNode);
-                    }
-                    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
-                    Ok(arena.alloc(NodeArena::node(0x7c, dest, arg_root.0, 0, 0, 0)))
-                }
-                // Dedicated-opcode unary intrinsic → node 0x7d (kind in w[5]); the
-                // opcode is selected by the argument type at emit time. The node's
-                // type tag is the intrinsic's result type.
-                Some(BuiltinCall::Unary(k)) => {
-                    let result = ctx
-                        .module
-                        .types
-                        .get(&node_id.0)
-                        .and_then(vba_type_to_node_tag)
-                        .ok_or(LowerError::UnsupportedType)?;
-                    let arg_tag = ctx
-                        .module
-                        .types
-                        .get(&arg.0)
-                        .and_then(vba_type_to_node_tag)
-                        .ok_or(LowerError::UnsupportedType)?;
-                    // Supported argument types: Len takes a String; the numeric
-                    // intrinsics take Integer/Long/Single/Double/Currency.
-                    let supported = match k {
-                        UnaryIntrinsic::Len => arg_tag == 0x10,
-                        _ => matches!(arg_tag, 6 | 8 | 0xa | 0xb | 0xd),
-                    };
-                    if !supported {
-                        return Err(LowerError::UnsupportedNode);
-                    }
-                    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
-                    let kind = *k as u32;
-                    Ok(arena.alloc(NodeArena::node(0x7d, result, arg_root.0, kind, 0, 0)))
-                }
-                // Single-argument numeric-result runtime call (Asc/Sqr/Val): the
-                // argument is size-loaded, then a runtime call whose opcode follows
-                // the result type (Integer 0x0b, Double 0x0a) with the per-proc
-                // reference index and argument bytes. Result left on the stack
-                // (blob node 0x7e). The argument must be a local variable.
-                Some(BuiltinCall::RtcNumeric { ret, .. }) => {
-                    let ret_tag = vba_type_to_node_tag(ret).ok_or(LowerError::UnsupportedType)?;
-                    let opcode: u8 = match ret_tag {
-                        6 => 0x0b,
-                        0xb => 0x0a,
-                        _ => return Err(LowerError::UnsupportedNode),
-                    };
-                    let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
-                    let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedType)?;
-                    // TODO(not implemented): `static_var_size` silently returns `4`
-                    // for UDT/Array (its fallback arm), which is wrong for both —
-                    // gate explicitly rather than let a malformed/edge-case argument
-                    // (e.g. `Asc(someUdt)`) silently emit a wrong-sized load.
-                    if matches!(arg_ty, VbaType::UserDefined(_) | VbaType::Array(_)) {
-                        return Err(LowerError::UnsupportedNode);
-                    }
-                    let mut bytes = Vec::new();
-                    emit_sized_value_load(static_var_size(arg_ty), off, &mut bytes);
-                    let r = ctx.call_next.get();
-                    ctx.call_next.set(r + 1);
-                    bytes.push(opcode);
-                    bytes.extend_from_slice(&(r as u16).to_le_bytes());
-                    bytes.extend_from_slice(&call_arg_bytes(arg_ty).to_le_bytes());
-                    let blob = arena.alloc_blob(&bytes);
-                    Ok(arena.alloc(NodeArena::node(0x7e, ret_tag, blob, bytes.len() as u32, 0, 0)))
-                }
-                // A String-returning runtime intrinsic is handled as an assignment
-                // (it writes a result temp); using one as an expression operand is
-                // not yet supported.
-                Some(BuiltinCall::RtcString { .. }) => Err(LowerError::UnsupportedNode),
-                // `InStr` is handled by the dedicated-opcode path above (early return).
-                Some(BuiltinCall::Instr { .. }) => Err(LowerError::UnsupportedNode),
-                None => Err(LowerError::UnsupportedNode),
-            }
+            lower_call_expr(ctx, node_id, *func, *args, expr_arena, arena)
         }
         _ => Err(LowerError::UnsupportedNode),
     }
+}
+
+/// Intern a string literal into the module string pool and allocate its push
+/// node. Each string-literal reference also consumes one per-procedure
+/// reference slot (the same counter a call's 2-byte operand reports).
+fn alloc_string_literal(ctx: &LowerCtx, s: &str, arena: &mut NodeArena) -> NodeRef {
+    let idx = ctx.intern_string(s);
+    ctx.call_next.set(ctx.call_next.get() + 1);
+    arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0))
+}
+
+/// A call expression used as an operand: a user Function call, `InStr`, or a
+/// single-argument runtime intrinsic (type conversion, dedicated-opcode unary,
+/// numeric-result runtime call).
+fn lower_call_expr(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    func: NodeId,
+    args_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    // A user Function call used as an expression operand: emit the call
+    // (0x5e, result left on the stack) into a byte blob wrapped in a 0x7e
+    // node, so it composes with the enclosing operator.
+    if ctx.module.builtins.get(&node_id.0).is_none()
+        && matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_)))
+    {
+        return lower_user_function_operand(ctx, node_id, func, args_id, expr_arena, arena);
+    }
+    if let Some(BuiltinCall::Instr { three_arg }) = ctx.module.builtins.get(&node_id.0) {
+        return lower_instr_operand(ctx, *three_arg, args_id, expr_arena, arena);
+    }
+    let arg = single_index(args_id, expr_arena).ok_or(LowerError::UnsupportedNode)?;
+    match ctx.module.builtins.get(&node_id.0) {
+        Some(BuiltinCall::Convert(t)) => lower_convert_operand(ctx, t, arg, expr_arena, arena),
+        Some(BuiltinCall::Unary(k)) => lower_unary_operand(ctx, node_id, *k, arg, expr_arena, arena),
+        Some(BuiltinCall::RtcNumeric { ret, .. }) => lower_rtc_numeric_operand(ctx, ret, arg, arena),
+        // A String-returning runtime intrinsic is handled as an assignment
+        // (it writes a result temp); using one as an expression operand is
+        // not yet supported. `InStr` is handled by the dedicated-opcode path
+        // above (early return).
+        Some(BuiltinCall::RtcString { .. }) | Some(BuiltinCall::Instr { .. }) | None => {
+            Err(LowerError::UnsupportedNode)
+        }
+    }
+}
+
+/// A user Function call as an operand: the call bytes wrapped in a 0x7e blob
+/// node typed with the function's return type.
+fn lower_user_function_operand(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    func: NodeId,
+    args_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let mut bytes = Vec::new();
+    lower_call(ctx, func, args_id, true, expr_arena, &mut bytes)?;
+    let off = arena.alloc_blob(&bytes);
+    let ret = ctx
+        .module
+        .types
+        .get(&node_id.0)
+        .and_then(vba_type_to_node_tag)
+        .unwrap_or(8);
+    Ok(arena.alloc(NodeArena::node(0x7e, ret, off, bytes.len() as u32, 0, 0)))
+}
+
+/// `InStr` (2- or 3-argument): a dedicated opcode (`fe fd`) with four
+/// operands pushed in order — start (Long), string1, string2, compare-mode
+/// (Long) — leaving a Long result on the stack (blob node 0x7e). An omitted
+/// leading start defaults to literal 1; the compare-mode is literal 0
+/// (Option Compare Binary).
+fn lower_instr_operand(
+    ctx: &LowerCtx,
+    three_arg: bool,
+    args_id: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let arg_ids: Vec<NodeId> = match expr_arena.get(args_id) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    if arg_ids.len() != if three_arg { 3 } else { 2 } {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let (start, s1, s2) = if three_arg {
+        (Some(arg_ids[0]), arg_ids[1], arg_ids[2])
+    } else {
+        (None, arg_ids[0], arg_ids[1])
+    };
+    // The two searched operands must be Strings.
+    for s in [s1, s2] {
+        if !matches!(ctx.module.types.get(&s.0), Some(VbaType::String)) {
+            return Err(LowerError::UnsupportedNode);
+        }
+    }
+    let mut bytes = Vec::new();
+    match start {
+        Some(st) => bytes.extend(lower_expr_to_bytes_coerced(ctx, st, expr_arena, Some(8))?),
+        None => bytes.extend_from_slice(&[0xf5, 0x01, 0x00, 0x00, 0x00]),
+    }
+    bytes.extend(lower_expr_to_bytes(ctx, s1, expr_arena)?);
+    bytes.extend(lower_expr_to_bytes(ctx, s2, expr_arena)?);
+    bytes.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+    bytes.extend_from_slice(&[0xfe, 0xfd]);
+    let off = arena.alloc_blob(&bytes);
+    Ok(arena.alloc(NodeArena::node(0x7e, 8, off, bytes.len() as u32, 0, 0)))
+}
+
+/// The node tag of the type recorded for `node` in the module's type table.
+fn recorded_type_tag(ctx: &LowerCtx, node: NodeId) -> Option<u16> {
+    ctx.module.types.get(&node.0).and_then(vba_type_to_node_tag)
+}
+
+/// Type-conversion intrinsic → explicit-conversion node (0x7c): convert the
+/// single argument to the target type, so it composes inside any expression.
+/// Sources and destinations outside the supported scalar set (Byte,
+/// Boolean/Date/Variant) are gated.
+fn lower_convert_operand(
+    ctx: &LowerCtx,
+    target: &VbaType,
+    arg: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let dest = vba_type_to_node_tag(target).ok_or(LowerError::UnsupportedType)?;
+    let src = recorded_type_tag(ctx, arg).ok_or(LowerError::UnsupportedType)?;
+    const OK: &[u16] = &[6, 8, 0xa, 0xb, 0xd, 0x10];
+    if !OK.contains(&dest) || !matches!(src, 6 | 8 | 0xa | 0xb | 0xd) {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+    Ok(arena.alloc(NodeArena::node(0x7c, dest, arg_root.0, 0, 0, 0)))
+}
+
+/// Dedicated-opcode unary intrinsic → node 0x7d (kind in w[5]); the opcode is
+/// selected by the argument type at emit time. The node's type tag is the
+/// intrinsic's result type.
+fn lower_unary_operand(
+    ctx: &LowerCtx,
+    node_id: NodeId,
+    k: UnaryIntrinsic,
+    arg: NodeId,
+    expr_arena: &ExprArena,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let result = recorded_type_tag(ctx, node_id).ok_or(LowerError::UnsupportedType)?;
+    let arg_tag = recorded_type_tag(ctx, arg).ok_or(LowerError::UnsupportedType)?;
+    // Supported argument types: Len takes a String; the numeric
+    // intrinsics take Integer/Long/Single/Double/Currency.
+    let supported = match k {
+        UnaryIntrinsic::Len => arg_tag == 0x10,
+        _ => matches!(arg_tag, 6 | 8 | 0xa | 0xb | 0xd),
+    };
+    if !supported {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let arg_root = lower_expr_coerced(ctx, arg, expr_arena, arena, None)?;
+    Ok(arena.alloc(NodeArena::node(0x7d, result, arg_root.0, k as u32, 0, 0)))
+}
+
+/// Single-argument numeric-result runtime call (Asc/Sqr/Val): the argument is
+/// size-loaded, then a runtime call whose opcode follows the result type
+/// (Integer 0x0b, Double 0x0a) with the per-proc reference index and argument
+/// bytes. Result left on the stack (blob node 0x7e). The argument must be a
+/// local variable.
+fn lower_rtc_numeric_operand(
+    ctx: &LowerCtx,
+    ret: &VbaType,
+    arg: NodeId,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let ret_tag = vba_type_to_node_tag(ret).ok_or(LowerError::UnsupportedType)?;
+    let opcode: u8 = match ret_tag {
+        6 => 0x0b,
+        0xb => 0x0a,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let off = arg_var_offset(ctx, arg).ok_or(LowerError::UnsupportedNode)?;
+    let arg_ty = ctx.module.types.get(&arg.0).ok_or(LowerError::UnsupportedType)?;
+    // TODO(not implemented): `static_var_size` silently returns `4`
+    // for UDT/Array (its fallback arm), which is wrong for both —
+    // gate explicitly rather than let a malformed/edge-case argument
+    // (e.g. `Asc(someUdt)`) silently emit a wrong-sized load.
+    if matches!(arg_ty, VbaType::UserDefined(_) | VbaType::Array(_)) {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let mut bytes = Vec::new();
+    emit_sized_value_load(static_var_size(arg_ty), off, &mut bytes);
+    let r = ctx.call_next.get();
+    ctx.call_next.set(r + 1);
+    bytes.push(opcode);
+    bytes.extend_from_slice(&(r as u16).to_le_bytes());
+    bytes.extend_from_slice(&call_arg_bytes(arg_ty).to_le_bytes());
+    let blob = arena.alloc_blob(&bytes);
+    Ok(arena.alloc(NodeArena::node(0x7e, ret_tag, blob, bytes.len() as u32, 0, 0)))
 }
 
 pub(super) fn lower_lit(lit: &AstLit, arena: &mut NodeArena) -> Result<NodeRef, LowerError> {
@@ -304,95 +356,107 @@ pub(super) fn lower_name_ref(
         .ok_or(LowerError::Unresolved)?;
 
     match resolution {
-        NameResolution::Local { local_idx, .. } => {
-            let local = &ctx.proc.locals[*local_idx];
-            // A `Const` is folded to its literal value at the use site (it has no
-            // frame slot). Integer-valued consts emit an integer literal node.
-            if local.is_const {
-                // Integer-valued consts emit an integer literal node in the
-                // declared type. Non-integer consts (String/Double/etc.) fold the
-                // carried literal directly: a String interns into the pool, every
-                // other literal lowers in its own type.
-                if let Some(v) = local.const_value {
-                    let tag = vba_type_to_node_tag(&local.vba_type)
-                        .ok_or(LowerError::UnsupportedType)?;
-                    return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
-                }
-                let lit = local.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
-                if let AstLit::Str(s) = lit {
-                    let idx = ctx.intern_string(s);
-                    ctx.call_next.set(ctx.call_next.get() + 1);
-                    return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
-                }
-                return lower_lit(lit, arena);
-            }
-            // A Static local is read from the procedure's static block: synthetic
-            // node 0x7b carries the module descriptor (low 16 of w[4]) and the
-            // static offset (high 16); the load opcode follows from the type tag.
-            if local.is_static {
-                if static_load_op(&local.vba_type).is_none() {
-                    return Err(LowerError::UnsupportedType);
-                }
-                let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
-                let off = ctx.static_offsets[*local_idx] as u32;
-                let packed = (ctx.module_desc as u32) | (off << 16);
-                return Ok(arena.alloc(NodeArena::node(0x7b, tag, packed, 0, 0, 0)));
-            }
-            // Fixed-length strings (`As String * n`) copy via a length-aware
-            // sequence (LdAddr + 0x33<len> + store 0x31), not the plain BSTR load;
-            // gated until that path is ported.
-            if local.fixed_string_len.is_some() {
-                return Err(LowerError::UnsupportedType);
-            }
-            let ty = &local.vba_type;
-            let slot = &ctx.local_slots[*local_idx];
-            let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
-            let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
-            Ok(build_frame_load_node(arena, 0x74, tag, lctx, slot.frame_offset))
-        }
-        NameResolution::Param { param_idx, .. } => {
-            let ty = ctx.param_type(*param_idx);
-            let slot = &ctx.param_slots[*param_idx];
-            let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
-            let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
-            let opcode = if slot.byref { 0x75u16 } else { 0x74u16 };
-            Ok(build_frame_load_node(arena, opcode, tag, lctx, slot.frame_offset))
-        }
-        NameResolution::ModuleVar(idx) => {
-            // A module-level `Const` is folded to its literal value at the use
-            // site, exactly like a procedure-level `Const` (`NameResolution::
-            // Local`'s own `is_const` branch above) — it has no real storage,
-            // just a wasted (but harmless) global-frame slot from the generic
-            // module-var allocation, which does not distinguish const from
-            // non-const declarations. Without this check, a module-level
-            // `Const` was silently treated as an ordinary global variable and
-            // read back through a bogus load — a real bug, not a hypothetical
-            // (oracle-confirmed wrong: `oracle_bank/c21_module_const`).
-            let mv = &ctx.module.module_vars[*idx];
-            if mv.is_const {
-                if let Some(v) = mv.const_value {
-                    let tag = vba_type_to_node_tag(&mv.vba_type).ok_or(LowerError::UnsupportedType)?;
-                    return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
-                }
-                let lit = mv.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
-                if let AstLit::Str(s) = lit {
-                    let idx = ctx.intern_string(s);
-                    ctx.call_next.set(ctx.call_next.get() + 1);
-                    return Ok(arena.alloc(NodeArena::node(0x79, 0x10, idx as u32, 0, 0, 0)));
-                }
-                return lower_lit(lit, arena);
-            }
-            let ty = ctx.global_type(*idx);
-            let slot = &ctx.global_slots[*idx];
-            let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
-            Ok(build_global_load_node(arena, lctx, slot.module_desc, slot.field_offset))
-        }
+        NameResolution::Local { local_idx, .. } => lower_local_ref(ctx, *local_idx, arena),
+        NameResolution::Param { param_idx, .. } => lower_param_ref(ctx, *param_idx, arena),
+        NameResolution::ModuleVar(idx) => lower_module_var_ref(ctx, *idx, arena),
         // A name that resolves to a project-level entity (a module, the
         // project, a library or a library member, a control or a type field)
         // has no lowering here.
         res if is_project_level(res) => Err(LowerError::UnsupportedNode),
         _ => Err(LowerError::Unresolved),
     }
+}
+
+/// Fold a `Const` to its literal value at the use site (it has no storage).
+/// Integer-valued consts emit an integer literal node in the declared type.
+/// Non-integer consts (String/Double/etc.) fold the carried literal directly:
+/// a String interns into the pool, every other literal lowers in its own type.
+fn fold_const_ref(
+    ctx: &LowerCtx,
+    var: &BoundVar,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    if let Some(v) = var.const_value {
+        let tag = vba_type_to_node_tag(&var.vba_type).ok_or(LowerError::UnsupportedType)?;
+        return Ok(arena.alloc(NodeArena::node(1, tag, v as u32, 0, 0, 0)));
+    }
+    let lit = var.const_lit.as_ref().ok_or(LowerError::UnsupportedType)?;
+    if let AstLit::Str(s) = lit {
+        return Ok(alloc_string_literal(ctx, s, arena));
+    }
+    lower_lit(lit, arena)
+}
+
+fn lower_local_ref(
+    ctx: &LowerCtx,
+    local_idx: usize,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let local = &ctx.proc.locals[local_idx];
+    // A `Const` is folded to its literal value at the use site (it has no
+    // frame slot).
+    if local.is_const {
+        return fold_const_ref(ctx, local, arena);
+    }
+    // A Static local is read from the procedure's static block: synthetic
+    // node 0x7b carries the module descriptor (low 16 of w[4]) and the
+    // static offset (high 16); the load opcode follows from the type tag.
+    if local.is_static {
+        if static_load_op(&local.vba_type).is_none() {
+            return Err(LowerError::UnsupportedType);
+        }
+        let tag = vba_type_to_node_tag(&local.vba_type).ok_or(LowerError::UnsupportedType)?;
+        let off = ctx.static_offsets[local_idx] as u32;
+        let packed = (ctx.module_desc as u32) | (off << 16);
+        return Ok(arena.alloc(NodeArena::node(0x7b, tag, packed, 0, 0, 0)));
+    }
+    // Fixed-length strings (`As String * n`) copy via a length-aware
+    // sequence (LdAddr + 0x33<len> + store 0x31), not the plain BSTR load;
+    // gated until that path is ported.
+    if local.fixed_string_len.is_some() {
+        return Err(LowerError::UnsupportedType);
+    }
+    let ty = &local.vba_type;
+    let slot = &ctx.local_slots[local_idx];
+    let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
+    let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+    Ok(build_frame_load_node(arena, 0x74, tag, lctx, slot.frame_offset))
+}
+
+fn lower_param_ref(
+    ctx: &LowerCtx,
+    param_idx: usize,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    let ty = ctx.param_type(param_idx);
+    let slot = &ctx.param_slots[param_idx];
+    let tag = vba_type_to_node_tag(ty).ok_or(LowerError::UnsupportedType)?;
+    let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+    let opcode = if slot.byref { 0x75u16 } else { 0x74u16 };
+    Ok(build_frame_load_node(arena, opcode, tag, lctx, slot.frame_offset))
+}
+
+fn lower_module_var_ref(
+    ctx: &LowerCtx,
+    idx: usize,
+    arena: &mut NodeArena,
+) -> Result<NodeRef, LowerError> {
+    // A module-level `Const` is folded to its literal value at the use
+    // site, exactly like a procedure-level `Const` — it has no real storage,
+    // just a wasted (but harmless) global-frame slot from the generic
+    // module-var allocation, which does not distinguish const from
+    // non-const declarations. Without this check, a module-level
+    // `Const` was silently treated as an ordinary global variable and
+    // read back through a bogus load — a real bug, not a hypothetical
+    // (oracle-confirmed wrong: `oracle_bank/c21_module_const`).
+    let mv = &ctx.module.module_vars[idx];
+    if mv.is_const {
+        return fold_const_ref(ctx, mv, arena);
+    }
+    let ty = ctx.global_type(idx);
+    let slot = &ctx.global_slots[idx];
+    let lctx = load_store_ctx(ty).ok_or(LowerError::UnsupportedType)?;
+    Ok(build_global_load_node(arena, lctx, slot.module_desc, slot.field_offset))
 }
 
 /// True for the resolution kinds that name something outside the module's own

@@ -15,7 +15,7 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 
 use vb6_sema::sema::{
-    BoundModule, BoundProc, BuiltinCall, ExternalClass, RtcArg, UnaryIntrinsic, VbaType,
+    BoundModule, BoundProc, BoundVar, BuiltinCall, ExternalClass, RtcArg, UnaryIntrinsic, VbaType,
     NameResolution,
 };
 use vb6_syntax::frontend::ast::{ExprArena, ExprNode, AstLit, BinOpKind, UnOpKind, DoKind, ExitKind, FileIoKind, LabelRef, OnErrorKind, ResumeTarget};
@@ -152,54 +152,25 @@ pub fn global_frame_from_types(
 /// Count the number of For loops directly or indirectly in an AST subtree.
 /// Each For loop needs 2 hidden Long slots in the frame.
 fn count_for_loops(node_id: NodeId, expr_arena: &ExprArena) -> usize {
-    match expr_arena.get(node_id) {
-        ExprNode::For { body, .. } => 1 + count_for_loops(*body, expr_arena),
-        ExprNode::Block { stmts } => {
-            stmts.iter().map(|&id| count_for_loops(id, expr_arena)).sum()
-        }
-        ExprNode::If { then_body, else_body, .. } => {
-            count_for_loops(*then_body, expr_arena)
-                + else_body.map(|id| count_for_loops(id, expr_arena)).unwrap_or(0)
-        }
-        ExprNode::While { body, .. } => count_for_loops(*body, expr_arena),
-        ExprNode::Do { body, .. } => count_for_loops(*body, expr_arena),
-        ExprNode::SelectCase { cases, .. } => {
-            cases.iter().map(|&id| count_for_loops(id, expr_arena)).sum()
-        }
-        ExprNode::CaseBlock { body, .. } => count_for_loops(*body, expr_arena),
-        ExprNode::CaseElse { body } => count_for_loops(*body, expr_arena),
-        _ => 0,
-    }
+    let node = expr_arena.get(node_id);
+    let own = usize::from(matches!(node, ExprNode::For { .. }));
+    own + nested_stmts(node)
+        .unwrap_or_default()
+        .into_iter()
+        .map(|id| count_for_loops(id, expr_arena))
+        .sum::<usize>()
 }
 
 /// Collect, in statement order, the subject expression of every `Select Case` in
 /// a subtree. Each needs one hidden frame slot (typed as the subject) to hold the
 /// evaluated subject across the per-case comparisons.
 fn collect_select_subjects(node_id: NodeId, expr_arena: &ExprArena, out: &mut Vec<NodeId>) {
-    match expr_arena.get(node_id) {
-        ExprNode::SelectCase { subject, cases, .. } => {
-            out.push(*subject);
-            for &id in cases {
-                collect_select_subjects(id, expr_arena, out);
-            }
-        }
-        ExprNode::CaseBlock { body, .. } => collect_select_subjects(*body, expr_arena, out),
-        ExprNode::CaseElse { body } => collect_select_subjects(*body, expr_arena, out),
-        ExprNode::Block { stmts } => {
-            for &id in stmts {
-                collect_select_subjects(id, expr_arena, out);
-            }
-        }
-        ExprNode::If { then_body, else_body, .. } => {
-            collect_select_subjects(*then_body, expr_arena, out);
-            if let Some(id) = else_body {
-                collect_select_subjects(*id, expr_arena, out);
-            }
-        }
-        ExprNode::While { body, .. } => collect_select_subjects(*body, expr_arena, out),
-        ExprNode::Do { body, .. } => collect_select_subjects(*body, expr_arena, out),
-        ExprNode::For { body, .. } => collect_select_subjects(*body, expr_arena, out),
-        _ => {}
+    let node = expr_arena.get(node_id);
+    if let ExprNode::SelectCase { subject, .. } = node {
+        out.push(*subject);
+    }
+    for id in nested_stmts(node).unwrap_or_default() {
+        collect_select_subjects(id, expr_arena, out);
     }
 }
 
@@ -316,106 +287,12 @@ fn lower_proc_pooled(
     // `local_idx` still maps directly. For-loop hidden slots and Select-subject
     // temps are declared on the same frame, after the user locals.
     let mut frame = ProcFrame::new();
-    let mut local_slots: Vec<LocalVar> = Vec::with_capacity(proc.locals.len());
-    // A `Type...End Type`-typed local's UDT binding, parallel to `local_slots`
-    // (which carries an index-aligned placeholder for these, like Const/Static).
-    let mut local_udts: Vec<Option<UdtLocal>> = Vec::with_capacity(proc.locals.len());
-    // A class-instance local's (`Dim o As New ClassName`) field list, parallel
-    // to `local_slots` (which carries the real 4-byte object-reference
-    // binding for these, not a placeholder — see the loop below).
-    let mut local_classes: Vec<Option<ExternalClass>> = Vec::with_capacity(proc.locals.len());
-    // Static locals live in a per-procedure static block (not the frame): each is
-    // assigned a byte offset within that block, packed by type size in declaration
-    // order. `static_offsets[i]` is meaningful only when `locals[i].is_static`.
-    let mut static_offsets: Vec<u16> = Vec::with_capacity(proc.locals.len());
-    let mut static_cursor: u16 = static_base;
-    for v in &proc.locals {
-        if v.is_static {
-            static_offsets.push(static_cursor);
-            static_cursor += static_var_size(&v.vba_type);
-            // No frame slot: a placeholder keeps local_idx aligned.
-            local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
-            local_udts.push(None);
-            local_classes.push(None);
-            continue;
-        }
-        static_offsets.push(0);
-        if v.is_const {
-            local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
-            local_udts.push(None);
-            local_classes.push(None);
-        } else if let Some(n) = v.fixed_string_len {
-            // A fixed-length string (`As String * n`) holds an inline Unicode
-            // buffer of `n` chars = 2*n bytes (oracle-confirmed for n=1,4,8,10,16,20).
-            let size = 2 * (n as i16);
-            local_slots.push(frame.declare_anon_bytes(size));
-            local_udts.push(None);
-            local_classes.push(None);
-        } else if matches!(v.vba_type, VbaType::Array(_)) {
-            match v.array_dims {
-                // A fixed array is a SAFEARRAY descriptor (size-independent of the
-                // element count — data is heap-allocated): 20 bytes + 8 per
-                // dimension (28 for 1-D, 36 for 2-D); the LdAddr target sits 4
-                // bytes above the slot bottom.
-                Some(dims) => {
-                    let mut slot = frame.declare_anon_bytes(20 + 8 * dims as i16);
-                    slot.frame_offset += 4;
-                    local_slots.push(slot);
-                }
-                // A dynamic array (`Dim a()`) is a 4-byte pointer slot; the array
-                // is allocated by `ReDim`.
-                None => local_slots.push(frame.declare_anon_bytes(4)),
-            }
-            local_udts.push(None);
-            local_classes.push(None);
-        } else if let Some(class) = match &v.vba_type {
-            VbaType::UserDefined(sym) => module.class_field_info.get(sym),
-            _ => None,
-        } {
-            // A class-instance local (`Dim o As New ClassName`): a plain
-            // 4-byte object reference (ctx 0 — the same "Object/untyped
-            // pointer" frame class already mapped in bridge.rs::type_ctx),
-            // NOT an embedded struct like a UDT — the field's storage lives
-            // in the (separately allocated) object instance, reached via the
-            // vtable-dispatch mechanism (emit/reference.rs's class-member
-            // path), not a frame offset. `local_slots` keeps an
-            // index-aligned placeholder; the real binding lives in
-            // `local_classes`.
-            local_slots.push(frame.declare_anon(0));
-            local_udts.push(None);
-            local_classes.push(Some(class.clone()));
-        } else if let VbaType::UserDefined(type_sym) = &v.vba_type {
-            // A `Type...End Type`-typed local: lay out one frame slot sized for
-            // every declared field (uniform-size fields only — see
-            // `ProcFrame::declare_udt_local`). `local_slots` keeps an
-            // index-aligned placeholder; the real binding lives in `local_udts`.
-            let decl = module
-                .type_decls
-                .iter()
-                .find(|d| d.sym_id == *type_sym)
-                .ok_or(LowerError::Unresolved)?;
-            let field_ctxs: Vec<usize> = decl
-                .members
-                .iter()
-                .map(|m| type_ctx(&m.vba_type).ok_or(LowerError::UnsupportedType))
-                .collect::<Result<_, _>>()?;
-            let udt = frame.declare_anon_udt(&field_ctxs);
-            local_slots.push(LocalVar { type_ctx: 0, frame_offset: 0 });
-            local_udts.push(Some(udt));
-            local_classes.push(None);
-        } else {
-            let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
-            local_slots.push(frame.declare_anon(tctx));
-            local_udts.push(None);
-            local_classes.push(None);
-        }
-    }
+    let LocalLayout { slots: mut local_slots, udts, classes, static_offsets, static_cursor } =
+        layout_user_locals(module, proc, &mut frame, static_base)?;
 
     // 2 Long hidden slots per For loop.
     let for_count = count_for_loops(NodeId(proc.body), expr_arena);
-    for _ in 0..(for_count * 2) {
-        local_slots.push(frame.declare_anon(2));
-    }
+    push_hidden_slots(&mut local_slots, &mut frame, 2, for_count * 2);
 
     // One hidden slot per Select Case, typed as its subject.
     let select_base = local_slots.len();
@@ -430,32 +307,24 @@ fn lower_proc_pooled(
     // One hidden 16-byte Variant temp per Variant-target assignment.
     let variant_base = local_slots.len();
     let variant_temps = count_variant_assigns(module, NodeId(proc.body), expr_arena);
-    for _ in 0..variant_temps {
-        local_slots.push(frame.declare_anon(10));
-    }
+    push_hidden_slots(&mut local_slots, &mut frame, 10, variant_temps);
 
     // One hidden 4-byte string temp per intermediate result in a concat chain.
     let concat_base = local_slots.len();
     let concat_temps = count_concat_temps(module, proc, NodeId(proc.body), expr_arena);
-    for _ in 0..concat_temps {
-        local_slots.push(frame.declare_anon(5));
-    }
+    push_hidden_slots(&mut local_slots, &mut frame, 5, concat_temps);
 
     // One hidden 16-byte string-result temp per String-returning runtime intrinsic
     // call (Chr/Space), used to receive the runtime function's result.
     let string_rtc_base = local_slots.len();
     let string_rtc_temps = count_string_rtc_temps(module, NodeId(proc.body), expr_arena);
-    for _ in 0..string_rtc_temps {
-        local_slots.push(frame.declare_anon(10));
-    }
+    push_hidden_slots(&mut local_slots, &mut frame, 10, string_rtc_temps);
 
     // One hidden 4-byte BSTR temp per runtime-string call argument (the owned result
     // copied for a ByVal String parameter), placed after the 16-byte string temps.
     let owned_copy_base = local_slots.len();
     let owned_copy_temps = count_owned_copy_temps(module, NodeId(proc.body), expr_arena);
-    for _ in 0..owned_copy_temps {
-        local_slots.push(frame.declare_anon(5));
-    }
+    push_hidden_slots(&mut local_slots, &mut frame, 5, owned_copy_temps);
 
     // Hidden scratch temps for the proc's class-member vtable dispatch use:
     // a Get access (`x = o.F`/`x = o.P`) writes its out-parameter through
@@ -476,9 +345,7 @@ fn lower_proc_pooled(
     let mut class_member_bases: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
     for region in class_member_regions(module, NodeId(proc.body), expr_arena)? {
         class_member_bases.insert(region.type_ctx, local_slots.len());
-        for _ in 0..region.slots {
-            local_slots.push(frame.declare_anon(region.type_ctx));
-        }
+        push_hidden_slots(&mut local_slots, &mut frame, region.type_ctx, region.slots);
     }
 
     // `ParamArray` is the variadic inter-procedure-call argument mechanism (the
@@ -500,8 +367,8 @@ fn lower_proc_pooled(
         module,
         proc,
         local_slots,
-        local_udts,
-        local_classes,
+        local_udts: udts,
+        local_classes: classes,
         known_classes,
         param_slots,
         global_slots,
@@ -540,34 +407,14 @@ fn lower_proc_pooled(
     }
     lower_block(&ctx, NodeId(proc.body), expr_arena, &mut out)?;
     // …and closes with a trailer marker (delta 0), then the whole marker set is
-    // backpatched into a forward-delta chain: each marker's 2-byte operand is the
-    // byte distance to the next marker.
+    // backpatched into a forward-delta chain.
     if ctx.line_tracking {
         ctx.line_markers.borrow_mut().push(out.len());
         out.extend_from_slice(&[0x00, 0x00]);
-        let markers = ctx.line_markers.borrow();
-        for w in markers.windows(2) {
-            // Marker = 0x00 opcode + 1-byte delta to the next marker.
-            let delta = w[1] - w[0];
-            if delta > 0xff {
-                return Err(LowerError::UnsupportedNode);
-            }
-            out[w[0] + 1] = delta as u8;
-        }
+        patch_line_markers(&ctx, &mut out)?;
     }
 
-    // Resolve forward/backward `GoTo` jumps now that every label's byte offset
-    // is known.
-    let labels = ctx.labels.borrow();
-    for (target, patch) in ctx.goto_patches.borrow().iter() {
-        let off = labels
-            .iter()
-            .find(|(l, _)| l == target)
-            .map(|(_, o)| *o)
-            .ok_or(LowerError::Unresolved)?;
-        out[*patch..*patch + 2].copy_from_slice(&off.to_le_bytes());
-    }
-    drop(labels);
+    patch_goto_jumps(&ctx, &mut out)?;
     // Every procedure's p-code ends with exactly one implicit-return opcode
     // `0x14`, unconditionally — oracle-confirmed (six independent real VB6
     // recaptures spanning a scalar assign, a class field access, a
@@ -582,6 +429,174 @@ fn lower_proc_pooled(
     out.push(0x14);
     let pool_out = ctx.const_pool.into_inner();
     Ok((out, pool_out, static_cursor))
+}
+
+/// Backpatch the line-table markers into a forward-delta chain: each marker's
+/// 1-byte operand is the byte distance to the next marker.
+fn patch_line_markers(ctx: &LowerCtx, out: &mut [u8]) -> Result<(), LowerError> {
+    let markers = ctx.line_markers.borrow();
+    for w in markers.windows(2) {
+        // Marker = 0x00 opcode + 1-byte delta to the next marker.
+        let delta = w[1] - w[0];
+        if delta > 0xff {
+            return Err(LowerError::UnsupportedNode);
+        }
+        out[w[0] + 1] = delta as u8;
+    }
+    Ok(())
+}
+
+/// Resolve forward/backward `GoTo` jumps now that every label's byte offset
+/// is known.
+fn patch_goto_jumps(ctx: &LowerCtx, out: &mut [u8]) -> Result<(), LowerError> {
+    let labels = ctx.labels.borrow();
+    for (target, patch) in ctx.goto_patches.borrow().iter() {
+        let off = labels
+            .iter()
+            .find(|(l, _)| l == target)
+            .map(|(_, o)| *o)
+            .ok_or(LowerError::Unresolved)?;
+        out[*patch..*patch + 2].copy_from_slice(&off.to_le_bytes());
+    }
+    Ok(())
+}
+
+/// Declare `count` anonymous frame slots of the given type context.
+fn push_hidden_slots(slots: &mut Vec<LocalVar>, frame: &mut ProcFrame, type_ctx: usize, count: usize) {
+    for _ in 0..count {
+        slots.push(frame.declare_anon(type_ctx));
+    }
+}
+
+/// The user-declared locals' frame bindings, all parallel to the procedure's
+/// declared locals.
+struct LocalLayout {
+    slots: Vec<LocalVar>,
+    udts: Vec<Option<UdtLocal>>,
+    classes: Vec<Option<ExternalClass>>,
+    /// Byte offset of each local within the static block (meaningful only for
+    /// static locals).
+    static_offsets: Vec<u16>,
+    /// The static-block cursor after the last static local.
+    static_cursor: u16,
+}
+
+/// One local's binding: its frame slot plus the optional UDT / class binding.
+type LocalBinding = (LocalVar, Option<UdtLocal>, Option<ExternalClass>);
+
+/// An index-aligned slot for a local that owns no frame storage of its own.
+const PLACEHOLDER_SLOT: LocalVar = LocalVar { type_ctx: 0, frame_offset: 0 };
+
+/// Lay out every user-declared local. Static locals live in a per-procedure
+/// static block (not the frame): each is assigned a byte offset within that
+/// block, packed by type size in declaration order.
+fn layout_user_locals(
+    module: &BoundModule,
+    proc: &BoundProc,
+    frame: &mut ProcFrame,
+    static_base: u16,
+) -> Result<LocalLayout, LowerError> {
+    let n = proc.locals.len();
+    let mut layout = LocalLayout {
+        slots: Vec::with_capacity(n),
+        udts: Vec::with_capacity(n),
+        classes: Vec::with_capacity(n),
+        static_offsets: Vec::with_capacity(n),
+        static_cursor: static_base,
+    };
+    for v in &proc.locals {
+        let (slot, udt, class) = if v.is_static {
+            layout.static_offsets.push(layout.static_cursor);
+            layout.static_cursor += static_var_size(&v.vba_type);
+            // No frame slot: a placeholder keeps local_idx aligned.
+            (PLACEHOLDER_SLOT, None, None)
+        } else {
+            layout.static_offsets.push(0);
+            layout_frame_local(module, v, frame)?
+        };
+        layout.slots.push(slot);
+        layout.udts.push(udt);
+        layout.classes.push(class);
+    }
+    Ok(layout)
+}
+
+/// Bind one non-static local to its frame storage.
+fn layout_frame_local(
+    module: &BoundModule,
+    v: &BoundVar,
+    frame: &mut ProcFrame,
+) -> Result<LocalBinding, LowerError> {
+    if v.is_const {
+        return Ok((PLACEHOLDER_SLOT, None, None));
+    }
+    if let Some(n) = v.fixed_string_len {
+        // A fixed-length string (`As String * n`) holds an inline Unicode
+        // buffer of `n` chars = 2*n bytes (oracle-confirmed for n=1,4,8,10,16,20).
+        let size = 2 * (n as i16);
+        return Ok((frame.declare_anon_bytes(size), None, None));
+    }
+    if matches!(v.vba_type, VbaType::Array(_)) {
+        return Ok((layout_array_local(v, frame), None, None));
+    }
+    if let VbaType::UserDefined(type_sym) = &v.vba_type {
+        return layout_user_defined_local(module, *type_sym, frame);
+    }
+    let tctx = type_ctx(&v.vba_type).ok_or(LowerError::UnsupportedType)?;
+    Ok((frame.declare_anon(tctx), None, None))
+}
+
+fn layout_array_local(v: &BoundVar, frame: &mut ProcFrame) -> LocalVar {
+    match v.array_dims {
+        // A fixed array is a SAFEARRAY descriptor (size-independent of the
+        // element count — data is heap-allocated): 20 bytes + 8 per
+        // dimension (28 for 1-D, 36 for 2-D); the LdAddr target sits 4
+        // bytes above the slot bottom.
+        Some(dims) => {
+            let mut slot = frame.declare_anon_bytes(20 + 8 * dims as i16);
+            slot.frame_offset += 4;
+            slot
+        }
+        // A dynamic array (`Dim a()`) is a 4-byte pointer slot; the array
+        // is allocated by `ReDim`.
+        None => frame.declare_anon_bytes(4),
+    }
+}
+
+/// Bind a local of a user-defined type: either a class instance or a
+/// `Type...End Type` record.
+fn layout_user_defined_local(
+    module: &BoundModule,
+    type_sym: u32,
+    frame: &mut ProcFrame,
+) -> Result<LocalBinding, LowerError> {
+    if let Some(class) = module.class_field_info.get(&type_sym) {
+        // A class-instance local (`Dim o As New ClassName`): a plain
+        // 4-byte object reference (ctx 0 — the same "Object/untyped
+        // pointer" frame class already mapped in bridge.rs::type_ctx),
+        // NOT an embedded struct like a UDT — the field's storage lives
+        // in the (separately allocated) object instance, reached via the
+        // vtable-dispatch mechanism (emit/reference.rs's class-member
+        // path), not a frame offset. The slot list keeps an
+        // index-aligned slot; the real binding lives in the class list.
+        return Ok((frame.declare_anon(0), None, Some(class.clone())));
+    }
+    // A `Type...End Type`-typed local: lay out one frame slot sized for
+    // every declared field (uniform-size fields only — see
+    // `ProcFrame::declare_udt_local`). The slot list keeps an
+    // index-aligned placeholder; the real binding lives in the UDT list.
+    let decl = module
+        .type_decls
+        .iter()
+        .find(|d| d.sym_id == type_sym)
+        .ok_or(LowerError::Unresolved)?;
+    let field_ctxs: Vec<usize> = decl
+        .members
+        .iter()
+        .map(|m| type_ctx(&m.vba_type).ok_or(LowerError::UnsupportedType))
+        .collect::<Result<_, _>>()?;
+    let udt = frame.declare_anon_udt(&field_ctxs);
+    Ok((PLACEHOLDER_SLOT, Some(udt), None))
 }
 
 // ── Internal lowering context ─────────────────────────────────────────────────

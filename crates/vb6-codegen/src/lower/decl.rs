@@ -3,6 +3,31 @@ use super::expr::*;
 use super::stmt::*;
 
 
+/// The statements nested directly under a container node (a block, an `If`,
+/// a loop, a `Select Case` or one of its case blocks), in source order; `None`
+/// for any other node.
+pub(super) fn nested_stmts(node: &ExprNode) -> Option<Vec<NodeId>> {
+    match node {
+        ExprNode::Block { stmts } => Some(stmts.to_vec()),
+        ExprNode::If { then_body, else_body, .. } => {
+            let mut v = vec![*then_body];
+            v.extend(*else_body);
+            Some(v)
+        }
+        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
+            Some(vec![*body])
+        }
+        ExprNode::SelectCase { cases, .. } => Some(cases.to_vec()),
+        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => Some(vec![*body]),
+        _ => None,
+    }
+}
+
+/// Sum `count` over the statements nested under `node` (zero for a leaf).
+fn sum_nested(node: &ExprNode, count: impl Fn(NodeId) -> usize) -> usize {
+    nested_stmts(node).map_or(0, |children| children.into_iter().map(count).sum())
+}
+
 /// Flatten a left-associative `&` concatenation chain into its operands in order
 /// (`a & b & c` → `[a, b, c]`).
 pub(super) fn flatten_concat(node_id: NodeId, expr_arena: &ExprArena, out: &mut Vec<NodeId>) {
@@ -113,15 +138,60 @@ pub(super) fn count_concat_temps(module: &BoundModule, proc: &BoundProc, node_id
                 0
             }
         }
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
-        ExprNode::If { then_body, else_body, .. } => {
-            c(*then_body) + else_body.map(c).unwrap_or(0)
+        other => sum_nested(other, c),
+    }
+}
+
+/// The argument list of a statement-level call: the callee's own when it is a
+/// parenthesized `Call`, otherwise the statement's.
+fn stmt_call_args(expr_arena: &ExprArena, callee: NodeId, args: NodeId) -> NodeId {
+    match expr_arena.get(callee) {
+        ExprNode::Call { args: inner, .. } => *inner,
+        _ => args,
+    }
+}
+
+/// Hidden 16-byte temps needed by an assignment's value expression.
+fn assign_rtc_temps(module: &BoundModule, value: NodeId, expr_arena: &ExprArena) -> usize {
+    // 16-byte temps: one per boxed argument; two per omitted-Optional
+    // (a Missing-variant literal needs a separate value buffer alongside its
+    // temp); plus one result temp.
+    if let Some(BuiltinCall::RtcString { args }) = module.builtins.get(&value.0) {
+        return rtc_call_temp_count(args);
+    }
+    // An owned-temp concat uses the 16-byte pool for every operand
+    // materialization and intermediate concat result.
+    if is_owned_concat(module, value, expr_arena) {
+        let mut ops = Vec::new();
+        flatten_concat(value, expr_arena, &mut ops);
+        return count_owned_concat_temps(module, &ops);
+    }
+    // `Len` of a runtime-string result: the rtc call's temps plus a Len
+    // scratch temp.
+    if is_owned_len(module, value, expr_arena) {
+        return owned_len_rtc_temps(module, value, expr_arena);
+    }
+    // A String comparison with a runtime-string operand: both operands'
+    // materialization temps plus one compare temp.
+    let cmp = unwrap_parens(value, expr_arena);
+    if is_owned_compare(module, cmp, expr_arena) {
+        if let ExprNode::BinOp { lhs, rhs, .. } = expr_arena.get(cmp) {
+            return count_owned_compare_temps(module, *lhs, *rhs);
         }
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-            c(*body)
-        }
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
+    }
+    0
+}
+
+/// The rtc call's temps plus the Len scratch temp for `Len(<runtime string>)`.
+fn owned_len_rtc_temps(module: &BoundModule, value: NodeId, expr_arena: &ExprArena) -> usize {
+    let ExprNode::Call { args, .. } = expr_arena.get(value) else {
+        return 0;
+    };
+    let Some(arg) = single_index(*args, expr_arena) else {
+        return 0;
+    };
+    match module.builtins.get(&arg.0) {
+        Some(BuiltinCall::RtcString { args: sig }) => rtc_call_temp_count(sig) + 1,
         _ => 0,
     }
 }
@@ -133,61 +203,14 @@ pub(super) fn count_concat_temps(module: &BoundModule, proc: &BoundProc, node_id
 pub(super) fn count_string_rtc_temps(module: &BoundModule, node_id: NodeId, expr_arena: &ExprArena) -> usize {
     let c = |id: NodeId| count_string_rtc_temps(module, id, expr_arena);
     match expr_arena.get(node_id) {
-        ExprNode::Assign { value, .. } => match module.builtins.get(&value.0) {
-            // 16-byte temps: one per boxed argument; two per omitted-Optional
-            // (a Missing-variant literal needs a separate value buffer alongside its
-            // temp); plus one result temp.
-            Some(BuiltinCall::RtcString { args }) => rtc_call_temp_count(args),
-            // An owned-temp concat uses the 16-byte pool for every operand
-            // materialization and intermediate concat result.
-            _ if is_owned_concat(module, *value, expr_arena) => {
-                let mut ops = Vec::new();
-                flatten_concat(*value, expr_arena, &mut ops);
-                count_owned_concat_temps(module, &ops)
-            }
-            // `Len` of a runtime-string result: the rtc call's temps plus a Len
-            // scratch temp.
-            _ if is_owned_len(module, *value, expr_arena) => {
-                if let ExprNode::Call { args, .. } = expr_arena.get(*value) {
-                    if let Some(arg) = single_index(*args, expr_arena) {
-                        if let Some(BuiltinCall::RtcString { args: sig }) =
-                            module.builtins.get(&arg.0)
-                        {
-                            return rtc_call_temp_count(sig) + 1;
-                        }
-                    }
-                }
-                0
-            }
-            // A String comparison with a runtime-string operand: both operands'
-            // materialization temps plus one compare temp.
-            _ if is_owned_compare(module, unwrap_parens(*value, expr_arena), expr_arena) => {
-                if let ExprNode::BinOp { lhs, rhs, .. } =
-                    expr_arena.get(unwrap_parens(*value, expr_arena))
-                {
-                    count_owned_compare_temps(module, *lhs, *rhs)
-                } else {
-                    0
-                }
-            }
-            _ => 0,
-        },
+        ExprNode::Assign { value, .. } => assign_rtc_temps(module, *value, expr_arena),
         // A statement-level call whose argument is a runtime-string result needs the
         // rtc call's temps plus a copy temp for the owned BSTR.
         ExprNode::CallStmt { callee, args } => {
-            let args_node = match expr_arena.get(*callee) {
-                ExprNode::Call { args: inner, .. } => *inner,
-                _ => *args,
-            };
-            count_call_owned_temps(module, args_node, expr_arena)
+            count_call_owned_temps(module, stmt_call_args(expr_arena, *callee, *args), expr_arena)
         }
         ExprNode::Call { args, .. } => count_call_owned_temps(module, *args, expr_arena),
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
-        ExprNode::If { then_body, else_body, .. } => c(*then_body) + else_body.map(c).unwrap_or(0),
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => c(*body),
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
-        _ => 0,
+        other => sum_nested(other, c),
     }
 }
 
@@ -219,20 +242,9 @@ pub(super) fn count_owned_copy_temps(module: &BoundModule, node_id: NodeId, expr
         }
     };
     match expr_arena.get(node_id) {
-        ExprNode::CallStmt { callee, args } => {
-            let args_node = match expr_arena.get(*callee) {
-                ExprNode::Call { args: inner, .. } => *inner,
-                _ => *args,
-            };
-            count_args(args_node)
-        }
+        ExprNode::CallStmt { callee, args } => count_args(stmt_call_args(expr_arena, *callee, *args)),
         ExprNode::Call { args, .. } => count_args(*args),
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
-        ExprNode::If { then_body, else_body, .. } => c(*then_body) + else_body.map(c).unwrap_or(0),
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => c(*body),
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
-        _ => 0,
+        other => sum_nested(other, c),
     }
 }
 
@@ -377,51 +389,56 @@ pub(super) fn class_member_regions(
     node_id: NodeId,
     expr_arena: &ExprArena,
 ) -> Result<Vec<ClassMemberRegion>, LowerError> {
-    fn merge(order: &mut Vec<usize>, counts: &mut Vec<usize>, ctx: usize, need: usize) {
-        match order.iter().position(|&c| c == ctx) {
+    let mut acc = RegionAcc::default();
+    acc.walk(module, node_id, expr_arena)?;
+    Ok(acc
+        .order
+        .into_iter()
+        .zip(acc.counts)
+        .map(|(type_ctx, slots)| ClassMemberRegion { type_ctx, slots })
+        .collect())
+}
+
+/// Running per-context maximum slot counts, kept in first-encountered order.
+#[derive(Default)]
+struct RegionAcc {
+    order: Vec<usize>,
+    counts: Vec<usize>,
+}
+
+impl RegionAcc {
+    fn merge(&mut self, ctx: usize, need: usize) {
+        match self.order.iter().position(|&c| c == ctx) {
             Some(i) => {
-                if need > counts[i] {
-                    counts[i] = need;
+                if need > self.counts[i] {
+                    self.counts[i] = need;
                 }
             }
             None => {
-                order.push(ctx);
-                counts.push(need);
+                self.order.push(ctx);
+                self.counts.push(need);
             }
         }
     }
-    fn note_single_slot(
-        module: &BoundModule,
-        ty_node: NodeId,
-        order: &mut Vec<usize>,
-        counts: &mut Vec<usize>,
-    ) -> Result<(), LowerError> {
+
+    fn note_single_slot(&mut self, module: &BoundModule, ty_node: NodeId) -> Result<(), LowerError> {
         let ty = module.types.get(&ty_node.0).ok_or(LowerError::Unresolved)?;
         let ctx = crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?;
-        merge(order, counts, ctx, 1);
+        self.merge(ctx, 1);
         Ok(())
     }
+
     fn note_call(
+        &mut self,
         module: &BoundModule,
         func_id: NodeId,
         args_id: NodeId,
         expr_arena: &ExprArena,
         is_value: bool,
-        order: &mut Vec<usize>,
-        counts: &mut Vec<usize>,
     ) -> Result<(), LowerError> {
-        let ExprNode::MemberAccess { base, .. } = expr_arena.get(func_id) else {
+        let Some(resolved) = class_method_target(module, func_id, expr_arena) else {
             return Ok(());
         };
-        if !member_access_base_is_class(module, *base) {
-            return Ok(());
-        }
-        let Some(resolved) = module.class_member_slots.get(&func_id.0) else {
-            return Ok(());
-        };
-        if resolved.method_slot.is_none() {
-            return Ok(());
-        }
         let args: Vec<NodeId> = match expr_arena.get(args_id) {
             ExprNode::ArgList { args } => args.clone(),
             _ => Vec::new(),
@@ -434,46 +451,46 @@ pub(super) fn class_member_regions(
             .zip(&resolved.method_params)
             .map(|(&a, (ty, by_val))| class_method_arg_needs_staging(module, a, ty, *by_val, expr_arena))
             .collect();
-        let result_ctx = if is_value {
-            match &resolved.method_ret_type {
-                Some(ty) => Some(crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?),
-                None => None,
-            }
-        } else {
-            None
-        };
+        let result_ctx = if is_value { method_result_ctx(resolved)? } else { None };
         let (_, buckets, _) =
             bucket_method_call_slots(&resolved.method_params, &needs_staging, result_ctx)?;
         for (ctx, count) in buckets {
-            merge(order, counts, ctx, count);
+            self.merge(ctx, count);
         }
         Ok(())
     }
+
+    /// The Get-temp and call-result slots an assignment's value side needs
+    /// (shared by `Assign` and `SetAssign`): a class-member read stages one
+    /// slot, a class-method call its own argument/result buckets.
+    fn note_value(
+        &mut self,
+        module: &BoundModule,
+        value: NodeId,
+        expr_arena: &ExprArena,
+    ) -> Result<(), LowerError> {
+        if let ExprNode::MemberAccess { base, .. } = expr_arena.get(value) {
+            if member_access_base_is_class(module, *base) {
+                self.note_single_slot(module, value)?;
+            }
+        }
+        if let ExprNode::Call { func, args } = expr_arena.get(value) {
+            self.note_call(module, *func, *args, expr_arena, true)?;
+        }
+        Ok(())
+    }
+
     fn walk(
+        &mut self,
         module: &BoundModule,
         node_id: NodeId,
         expr_arena: &ExprArena,
-        order: &mut Vec<usize>,
-        counts: &mut Vec<usize>,
     ) -> Result<(), LowerError> {
-        let mut recurse =
-            |id: NodeId, order: &mut Vec<usize>, counts: &mut Vec<usize>| walk(module, id, expr_arena, order, counts);
         match expr_arena.get(node_id) {
             ExprNode::Assign { target, value } => {
-                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*value) {
-                    if member_access_base_is_class(module, *base) {
-                        note_single_slot(module, *value, order, counts)?;
-                    }
-                }
-                if let ExprNode::Call { func, args } = expr_arena.get(*value) {
-                    note_call(module, *func, *args, expr_arena, true, order, counts)?;
-                }
-                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*target) {
-                    if member_access_base_is_class(module, *base)
-                        && module.class_member_slots.get(&target.0).map(|r| r.is_property).unwrap_or(false)
-                    {
-                        note_single_slot(module, *target, order, counts)?;
-                    }
+                self.note_value(module, *value, expr_arena)?;
+                if class_target_is(module, *target, expr_arena, |r| r.is_property) {
+                    self.note_single_slot(module, *target)?;
                 }
                 Ok(())
             }
@@ -483,20 +500,9 @@ pub(super) fn class_member_regions(
             // `Object` (`fd 9c`), regardless of the target's own declared
             // type — its context is unconditionally `0`.
             ExprNode::SetAssign { target, value } => {
-                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*value) {
-                    if member_access_base_is_class(module, *base) {
-                        note_single_slot(module, *value, order, counts)?;
-                    }
-                }
-                if let ExprNode::Call { func, args } = expr_arena.get(*value) {
-                    note_call(module, *func, *args, expr_arena, true, order, counts)?;
-                }
-                if let ExprNode::MemberAccess { base, .. } = expr_arena.get(*target) {
-                    if member_access_base_is_class(module, *base)
-                        && module.class_member_slots.get(&target.0).map(|r| r.set_slot.is_some()).unwrap_or(false)
-                    {
-                        merge(order, counts, 0, 1);
-                    }
+                self.note_value(module, *value, expr_arena)?;
+                if class_target_is(module, *target, expr_arena, |r| r.set_slot.is_some()) {
+                    self.merge(0, 1);
                 }
                 Ok(())
             }
@@ -505,44 +511,59 @@ pub(super) fn class_member_regions(
                     ExprNode::Call { func, args: inner } => (*func, *inner),
                     _ => (*callee, *args),
                 };
-                note_call(module, func_id, args_id, expr_arena, false, order, counts)
+                self.note_call(module, func_id, args_id, expr_arena, false)
             }
-            ExprNode::Block { stmts } => {
-                for &id in stmts {
-                    recurse(id, order, counts)?;
+            other => {
+                for id in nested_stmts(other).unwrap_or_default() {
+                    self.walk(module, id, expr_arena)?;
                 }
                 Ok(())
             }
-            ExprNode::If { then_body, else_body, .. } => {
-                recurse(*then_body, order, counts)?;
-                if let Some(id) = else_body {
-                    recurse(*id, order, counts)?;
-                }
-                Ok(())
-            }
-            ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-                recurse(*body, order, counts)
-            }
-            ExprNode::SelectCase { cases, .. } => {
-                for &id in cases {
-                    recurse(id, order, counts)?;
-                }
-                Ok(())
-            }
-            ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => recurse(*body, order, counts),
-            _ => Ok(()),
         }
     }
-    let mut order = Vec::new();
-    let mut counts = Vec::new();
-    walk(module, node_id, expr_arena, &mut order, &mut counts)?;
-    Ok(order
-        .into_iter()
-        .zip(counts)
-        .map(|(type_ctx, slots)| ClassMemberRegion { type_ctx, slots })
-        .collect())
 }
 
+/// Whether `target` is a member access on a class-typed base whose resolved
+/// member satisfies `pred`.
+fn class_target_is(
+    module: &BoundModule,
+    target: NodeId,
+    expr_arena: &ExprArena,
+    pred: impl Fn(&vb6_sema::sema::ResolvedClassMember) -> bool,
+) -> bool {
+    let ExprNode::MemberAccess { base, .. } = expr_arena.get(target) else {
+        return false;
+    };
+    member_access_base_is_class(module, *base)
+        && module.class_member_slots.get(&target.0).is_some_and(pred)
+}
+
+/// The resolved class-member slot for a call's callee when it is a method
+/// reached through a class-typed base; `None` for every other callee.
+fn class_method_target<'m>(
+    module: &'m BoundModule,
+    func_id: NodeId,
+    expr_arena: &ExprArena,
+) -> Option<&'m vb6_sema::sema::ResolvedClassMember> {
+    let ExprNode::MemberAccess { base, .. } = expr_arena.get(func_id) else {
+        return None;
+    };
+    if !member_access_base_is_class(module, *base) {
+        return None;
+    }
+    module
+        .class_member_slots
+        .get(&func_id.0)
+        .filter(|resolved| resolved.method_slot.is_some())
+}
+
+/// The frame type-context of a method's return value, if it has one.
+fn method_result_ctx(resolved: &vb6_sema::sema::ResolvedClassMember) -> Result<Option<usize>, LowerError> {
+    match &resolved.method_ret_type {
+        Some(ty) => Ok(Some(crate::bridge::type_ctx(ty).ok_or(LowerError::UnsupportedType)?)),
+        None => Ok(None),
+    }
+}
 /// Whether a class-method argument at `arg_id` needs materializing into a
 /// pool temp before the call, given its parameter's declared type/mode.
 /// Oracle-confirmed via three probes this pass (`argtype_probe`,
@@ -703,16 +724,7 @@ pub(super) fn count_variant_assigns(module: &BoundModule, node_id: NodeId, expr_
         ExprNode::Assign { target, .. } => {
             matches!(module.types.get(&target.0), Some(VbaType::Variant)) as usize
         }
-        ExprNode::Block { stmts } => stmts.iter().map(|&id| c(id)).sum(),
-        ExprNode::If { then_body, else_body, .. } => {
-            c(*then_body) + else_body.map(c).unwrap_or(0)
-        }
-        ExprNode::While { body, .. } | ExprNode::Do { body, .. } | ExprNode::For { body, .. } => {
-            c(*body)
-        }
-        ExprNode::SelectCase { cases, .. } => cases.iter().map(|&id| c(id)).sum(),
-        ExprNode::CaseBlock { body, .. } | ExprNode::CaseElse { body } => c(*body),
-        _ => 0,
+        other => sum_nested(other, c),
     }
 }
 
