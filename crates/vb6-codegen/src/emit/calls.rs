@@ -48,66 +48,13 @@ impl<'a> Emitter<'a> {
             );
         }
 
-        let mut call_op = call_type_code(kind, byref == 1, flags & 0x2000 != 0) as i32;
-        let mut emit_mode = 0i32;
-
-        if flags & 0x8000 == 0 {
-            if flags & 0x800 != 0 {
-                unimplemented!(
-                    "call type-expression argument (flag 0x800): needs the type-pool \
-                     expression path; Phase 5"
-                );
-            }
-            let region = desc.node_word0 & 0xffff_0000;
-            if region == 0x20000 {
-                if flags & 0x200 != 0 && byref == 1 {
-                    unimplemented!(
-                        "call coercion sequence (0x20000 + flag 0x200, ByRef): needs \
-                         the coercion path; Phase 5"
-                    );
-                }
-                call_op += 0xc;
-            } else if region == 0x120000 {
-                call_op |= Self::map_type_code3(2);
-            } else {
-                let type_tag = (desc.node_word0 as i32) >> 16;
-                if matches!(type_tag, 10 | 0xb | 0xc) && rec_1d & 8 != 0 {
-                    let mut v = RT_TYPE_OFFSET[type_tag as usize];
-                    if v == 10 {
-                        v = 4;
-                    } else if v == 9 {
-                        v = 1;
-                    }
-                    let m = Self::map_type_code3(v);
-                    call_op |= m;
-                    if m == 3 || m == 4 {
-                        call_op += 6;
-                    }
-                } else {
-                    let m = Self::map_type_code3(RT_TYPE_OFFSET[type_tag as usize]);
-                    call_op |= m;
-                }
-            }
-        } else if flags & 0x1000 == 0 || call_op != 800 {
-            call_op = map_call_type_code(call_op as u16) as i32;
-            emit_mode = 1;
-        } else {
-            call_op = 0x41e;
-            emit_mode = 1;
-        }
+        let (call_op, emit_mode) = Self::call_opcode_and_mode(desc, rec_1d);
 
         // Sized prefix (dispatch record requests a size operand).
         if rec_1d & 0x10 != 0 {
             self.emit_opcode2(0x265, desc.size);
         }
-        // Argument list.
-        if desc.arg_list.0 != 0 {
-            if byte5 & 0x40 == 0 {
-                self.process_linked_list(desc.arg_list, 3);
-            } else {
-                self.traverse_node_tree(desc.arg_list, 3);
-            }
-        }
+        self.emit_call_arguments(desc, byte5);
         // Value-returning (ByVal) calls take the result-type table path.
         if byref != 1 {
             unimplemented!(
@@ -123,6 +70,75 @@ impl<'a> Emitter<'a> {
         if rec_1d & 0x10 != 0 {
             self.emit_word2(desc.size);
         }
+        self.finish_call_by_mode(desc, rec_1d, emit_mode, context);
+        0
+    }
+
+    /// Emit the argument list of a call site, if any.
+    fn emit_call_arguments(&mut self, desc: &CallDescriptor, byte5: u32) {
+        if desc.arg_list.0 == 0 {
+            return;
+        }
+        if byte5 & 0x40 == 0 {
+            self.process_linked_list(desc.arg_list, 3);
+        } else {
+            self.traverse_node_tree(desc.arg_list, 3);
+        }
+    }
+
+    /// The call opcode and finalize emit mode for a call descriptor.
+    fn call_opcode_and_mode(desc: &CallDescriptor, rec_1d: u8) -> (i32, i32) {
+        let flags = desc.flags;
+        let call_op = call_type_code(desc.kind, desc.byref == 1, flags & 0x2000 != 0) as i32;
+        if flags & 0x8000 == 0 {
+            return (Self::call_op_by_region(desc, call_op, rec_1d), 0);
+        }
+        if flags & 0x1000 == 0 || call_op != 800 {
+            (map_call_type_code(call_op as u16) as i32, 1)
+        } else {
+            (0x41e, 1)
+        }
+    }
+
+    /// Refine the call opcode by the call node's type region (non-dispatch path).
+    fn call_op_by_region(desc: &CallDescriptor, call_op: i32, rec_1d: u8) -> i32 {
+        let flags = desc.flags;
+        if flags & 0x800 != 0 {
+            unimplemented!(
+                "call type-expression argument (flag 0x800): needs the type-pool \
+                 expression path; Phase 5"
+            );
+        }
+        match desc.node_word0 & 0xffff_0000 {
+            0x20000 => {
+                if flags & 0x200 != 0 && desc.byref == 1 {
+                    unimplemented!(
+                        "call coercion sequence (0x20000 + flag 0x200, ByRef): needs \
+                         the coercion path; Phase 5"
+                    );
+                }
+                call_op + 0xc
+            }
+            0x120000 => call_op | Self::map_type_code3(2),
+            _ => Self::call_op_by_type_tag(desc, call_op, rec_1d),
+        }
+    }
+
+    /// Merge the result-type class of the call node's type tag into the opcode.
+    fn call_op_by_type_tag(desc: &CallDescriptor, call_op: i32, rec_1d: u8) -> i32 {
+        let type_tag = (desc.node_word0 as i32) >> 16;
+        let m = Self::map_type_code3(RT_TYPE_OFFSET[type_tag as usize]);
+        let merged = call_op | m;
+        let wide_scalar = matches!(type_tag, 10 | 0xb | 0xc) && rec_1d & 8 != 0;
+        if wide_scalar && (m == 3 || m == 4) {
+            merged + 6
+        } else {
+            merged
+        }
+    }
+
+    /// Complete the call site according to the finalize emit mode.
+    fn finish_call_by_mode(&mut self, desc: &CallDescriptor, rec_1d: u8, emit_mode: i32, context: u32) {
         match emit_mode {
             // Common path: the finalize step emits the member-id word, then the
             // per-type tail.
@@ -135,14 +151,13 @@ impl<'a> Emitter<'a> {
                 self.finalize_call(desc, rec_1d, trailing, context);
             }
             // Result-descriptor path: unreachable while the type-expression
-            // argument gate above (flag 0x800) is the only site that selects
-            // this mode — it throws before emit_mode is ever set to 2.
+            // argument gate (flag 0x800) is the only site that selects this
+            // mode — it throws before the mode is ever set to 2.
             _ => unimplemented!(
                 "call result-descriptor path (emit mode 2): needs the struct-size / \
                  member-type model; Phase 5"
             ),
         }
-        0
     }
 
     /// The call-site finalize step: emit the caller-supplied `trailing` word,

@@ -3,7 +3,7 @@ use super::*;
 impl<'a> Emitter<'a> {
     // ── Resolved-reference emission ──────────────────────────────────────────
 
-    /// Port of `EbSetupBinaryOperation` (`EbResolveReference2`'s 0x69 path):
+    /// Operator-reference setup (the 0x69 reference path):
     /// traverse + emit the two operands, then build the operator descriptor
     /// (kind 9/0xa/0xb) the value-emitter consumes.
     ///
@@ -58,123 +58,18 @@ impl<'a> Emitter<'a> {
     /// base by kind: local = `0x1e0`, argument = `0x210`, kind-7 = `0x240`,
     /// kind-6 = `0x3d0`, kind-3 = `0x270`, kind-5 = `0x2a0`, kind-0xa = `0x190`.
     pub fn emit_reference(&mut self, desc: &RefDescriptor, n_op_in: i32, f_flags: u32, n_type_in: i32) {
-        let mut n_op = n_op_in;
         let n_type = n_type_in;
-        // Final-emit selector: 1 = opcode + 2-byte operand, 2 = opcode + operand
-        // + trailing word, 0 = opcode only. The trailing-word path is only
-        // reached via the deferred nType==0x17 chain, so it is always 1 here.
-        let emit_mode: i16 = 1;
-        // The operand word fed to the final emit. Kinds 1/2/6/7 (and the
-        // default fallback) use the descriptor's canonical `operand`; a few
-        // kinds source a different descriptor field instead — overridden
-        // per-kind in the `opcode_base` match below.
-        let mut operand_word: u16 = desc.operand;
 
         // Operator-reference descriptor kinds (8/9/0xb) emit their opcode
         // directly from the descriptor (no resolver-supplied base) and finish
         // through the shared finalize tail.
-        match desc.kind {
-            // kind 8: typed coercion reference. Opcode `0x3ca`/`0x3cb` by nOp,
-            // operand = descriptor `+6`; then the `+8` low word and the `+10`
-            // operand word.
-            8 => {
-                self.emit_opcode2(((n_op != 5) as i32 + 0x3ca) as usize, desc.word6);
-                self.emit_word2(desc.word8);
-                self.emit_word2(desc.operand);
-                self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
-                return;
-            }
-            // kind 9: operator reference. nOp is normalized first; opcode
-            // `0x18d`/`0x18e` by nOp, operand = descriptor `+6`.
-            9 => {
-                Self::map_operator_type(n_type, &mut n_op);
-                self.emit_opcode2(((n_op == 5) as i32 + 0x18d) as usize, desc.word6);
-                self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
-                return;
-            }
-            // kind 0xb: typed operator reference. nOp normalized; opcode
-            // `0x406`/`0x407` by nOp, operand = descriptor `+8` low word; then
-            // the `+6` word.
-            0xb => {
-                Self::map_operator_type(n_type, &mut n_op);
-                self.emit_opcode2(((n_op == 5) as i32 + 0x406) as usize, desc.word8);
-                self.emit_word2(desc.word6);
-                self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
-                return;
-            }
-            _ => {}
+        if self.emit_operator_reference(desc, n_op_in, f_flags, n_type) {
+            return;
         }
 
-        let opcode_base: i32;
-
-        match desc.kind {
-            // kind 1: local variable.
-            1 => opcode_base = 0x1e0,
-            // kind 2: argument/parameter. A ByRef slot (word6 bit 0) forces the
-            // ByRef operation before the operation switch.
-            2 => {
-                opcode_base = 0x210;
-                if desc.word6 & 1 != 0 {
-                    n_op = 2;
-                }
-            }
-            // kind 7: indirect module-level variable. Same ByRef promotion.
-            7 => {
-                opcode_base = 0x240;
-                if desc.word6 & 1 != 0 {
-                    n_op = 2;
-                }
-            }
-            // kind 6: indirect module-level variable, ByRef form (the
-            // by-reference counterpart of kind 7). Unconditional — no ByRef
-            // promotion branch.
-            6 => opcode_base = 0x3d0,
-            // kind 3: opcode base 0x270; the operand is the descriptor's `+6`
-            // field (not the canonical `+0xa` operand), unconditional.
-            3 => {
-                opcode_base = 0x270;
-                operand_word = desc.word6;
-            }
-            // kind 5: opcode base 0x2a0; same shape as kind 3 (operand from
-            // `+6`, unconditional), different template constant.
-            5 => {
-                opcode_base = 0x2a0;
-                operand_word = desc.word6;
-            }
-            // kind 0xa: opcode base 0x190. The `+6` field's low bit selects
-            // the operand source: set -> the descriptor's `+8` field. Clear
-            // -> a distinct fallback shape (the raw nType argument doubles as
-            // both the opcode base and the operand) whose downstream byte
-            // consumption was not captured in the available trace; gated
-            // rather than guessed.
-            0xa => {
-                opcode_base = 0x190;
-                if desc.word6 & 1 != 0 {
-                    operand_word = desc.word8;
-                } else {
-                    unimplemented!(
-                        "reference kind 0xa, +6 field bit 0 clear: the \
-                         nType-as-operand fallback shape is not captured on disk"
-                    );
-                }
-            }
-            // kind 4: needs a second stashed operand word the descriptor has
-            // no field for, plus a non-default finalize-emit mode whose
-            // downstream byte consumption was not captured in the available
-            // trace; gated rather than guessed.
-            4 => unimplemented!(
-                "reference kind 4: second operand word / finalize-emit mode \
-                 not captured on disk"
-            ),
-            // kinds 8/9/0xb handled above (operator-reference direct emission).
-            8 | 9 | 0xb => unreachable!(),
-            // default (kind 0 / out of range): both the opcode base and the
-            // operand are the raw nType argument itself.
-            _ => {
-                opcode_base = n_type;
-                operand_word = n_type as u16;
-            }
-        }
+        // The operand word fed to the final emit, and the opcode base, come from
+        // the descriptor kind; the ByRef promotion may change the operation.
+        let (opcode_base, operand_word, mut n_op) = Self::reference_base(desc, n_op_in, n_type);
 
         // When nType==0x12 the usage-context flag may promote it to 0x17; that
         // flag is not threaded through this entry point.
@@ -185,179 +80,111 @@ impl<'a> Emitter<'a> {
             );
         }
         // Map nType 0x11/0x12 with nOp in {1,2,3} → nOp 5.
-        if (n_type == 0x12 || n_type == 0x11) && (n_op == 1 || n_op == 2 || n_op == 3) {
-            n_op = 5;
-        }
+        Self::map_operator_type(n_type, &mut n_op);
 
-        let opcode_index: i32 = match n_op {
-            1 => {
-                if f_flags & 0x4000 != 0 {
-                    // Object / type-expression path.
-                    if n_type == 0x10 {
-                        0x23f
-                    } else if n_type == 0x17 {
-                        unimplemented!(
-                            "Variant-with-type expression: needs the type-pool emit \
-                             path"
-                        );
-                    } else {
-                        0x262
-                    }
-                } else if f_flags & 0x1000 != 0 {
-                    0x1b2
-                } else {
-                    let off = RT_TYPE_OFFSET[n_type as usize];
-                    if off == 10 {
-                        opcode_base | 4
-                    } else if off == 9 {
-                        opcode_base | 1
-                    } else {
-                        opcode_base | off
-                    }
-                }
+        let opcode_index = self.reference_opcode_index(desc, n_op, f_flags, n_type, opcode_base, operand_word);
+        self.emit_opcode2(opcode_index as usize, operand_word);
+    }
+
+    /// Emit the operator-reference kinds (8/9/0xb); returns whether the
+    /// descriptor was one of them.
+    fn emit_operator_reference(&mut self, desc: &RefDescriptor, n_op: i32, f_flags: u32, n_type: i32) -> bool {
+        let mut n_op = n_op;
+        match desc.kind {
+            // kind 8: typed coercion reference. Opcode `0x3ca`/`0x3cb` by nOp,
+            // operand = descriptor `+6`; then the `+8` low word and the `+10`
+            // operand word.
+            8 => {
+                self.emit_opcode2(((n_op != 5) as i32 + 0x3ca) as usize, desc.word6);
+                self.emit_word2(desc.word8);
+                self.emit_word2(desc.operand);
             }
+            // kind 9: operator reference. nOp is normalized first; opcode
+            // `0x18d`/`0x18e` by nOp, operand = descriptor `+6`.
+            9 => {
+                Self::map_operator_type(n_type, &mut n_op);
+                self.emit_opcode2(((n_op == 5) as i32 + 0x18d) as usize, desc.word6);
+            }
+            // kind 0xb: typed operator reference. nOp normalized; opcode
+            // `0x406`/`0x407` by nOp, operand = descriptor `+8` low word; then
+            // the `+6` word.
+            0xb => {
+                Self::map_operator_type(n_type, &mut n_op);
+                self.emit_opcode2(((n_op == 5) as i32 + 0x406) as usize, desc.word8);
+                self.emit_word2(desc.word6);
+            }
+            _ => return false,
+        }
+        self.expr2_finalize_tail(n_op, f_flags, n_type, desc.flags1);
+        true
+    }
+
+    /// The opcode base, operand word and (possibly promoted) operation for a
+    /// resolver-supplied descriptor kind.
+    fn reference_base(desc: &RefDescriptor, n_op: i32, n_type: i32) -> (i32, u16, i32) {
+        // Kinds 1/2/6/7 (and the default fallback) use the descriptor's
+        // canonical `operand`; a few kinds source a different descriptor field.
+        let by_ref_op = if desc.word6 & 1 != 0 { 2 } else { n_op };
+        match desc.kind {
+            // kind 1: local variable.
+            1 => (0x1e0, desc.operand, n_op),
+            // kind 2: argument/parameter. A ByRef slot (word6 bit 0) forces the
+            // ByRef operation before the operation switch.
+            2 => (0x210, desc.operand, by_ref_op),
+            // kind 7: indirect module-level variable. Same ByRef promotion.
+            7 => (0x240, desc.operand, by_ref_op),
+            // kind 6: indirect module-level variable, ByRef form (the
+            // by-reference counterpart of kind 7). Unconditional — no ByRef
+            // promotion branch.
+            6 => (0x3d0, desc.operand, n_op),
+            // kind 3: opcode base 0x270; the operand is the descriptor's `+6`
+            // field (not the canonical `+0xa` operand), unconditional.
+            3 => (0x270, desc.word6, n_op),
+            // kind 5: opcode base 0x2a0; same shape as kind 3 (operand from
+            // `+6`, unconditional), different template constant.
+            5 => (0x2a0, desc.word6, n_op),
+            // kind 0xa: opcode base 0x190. The `+6` field's low bit selects
+            // the operand source: set -> the descriptor's `+8` field. Clear
+            // -> a distinct fallback shape that is gated.
+            0xa => {
+                if desc.word6 & 1 == 0 {
+                    unimplemented!(
+                        "reference kind 0xa, +6 field bit 0 clear: the \
+                         nType-as-operand fallback shape is not captured on disk"
+                    );
+                }
+                (0x190, desc.word8, n_op)
+            }
+            // kind 4: needs a second stashed operand word the descriptor has
+            // no field for, plus a non-default finalize-emit mode; gated.
+            4 => unimplemented!(
+                "reference kind 4: second operand word / finalize-emit mode \
+                 not captured on disk"
+            ),
+            // kinds 8/9/0xb handled by the operator-reference emission.
+            8 | 9 | 0xb => unreachable!(),
+            // default (kind 0 / out of range): both the opcode base and the
+            // operand are the raw nType argument itself.
+            _ => (n_type, n_type as u16, n_op),
+        }
+    }
+
+    /// The opcode index for the resolved operation.
+    fn reference_opcode_index(
+        &mut self,
+        desc: &RefDescriptor,
+        n_op: i32,
+        f_flags: u32,
+        n_type: i32,
+        opcode_base: i32,
+        operand_word: u16,
+    ) -> i32 {
+        match n_op {
+            1 => Self::ref_load_index(f_flags, n_type, opcode_base),
             // nOp 2 shares the 0x4000 path with nOp 1.
-            2 => {
-                if f_flags & 0x4000 != 0 {
-                    if n_type == 0x10 {
-                        0x23f
-                    } else if n_type == 0x17 {
-                        unimplemented!(
-                            "Variant-with-type expression: needs the type-pool emit \
-                             path"
-                        );
-                    } else {
-                        0x262
-                    }
-                } else if f_flags & 0x1000 != 0 {
-                    0x1b2
-                } else {
-                    let mut off = RT_TYPE_OFFSET[n_type as usize];
-                    if off == 10 {
-                        off = 4;
-                    } else if off == 9 {
-                        off = 1;
-                    }
-                    let mut v = off | opcode_base;
-                    if off == 3 || off == 4 {
-                        v += 6;
-                    }
-                    v
-                }
-            }
-            3 => {
-                if f_flags & 0x1000 != 0 {
-                    (if f_flags & 0x2000 != 0 { 1 } else { 0 }) + 0x1b3
-                } else if n_type == 0xf {
-                    opcode_base + 0xd
-                } else {
-                    let off = RT_TYPE_OFFSET[n_type as usize];
-                    if off == 10 {
-                        opcode_base | 4
-                    } else if off == 9 {
-                        opcode_base | 1
-                    } else {
-                        opcode_base | off
-                    }
-                }
-            }
-            4 => {
-                let off3 = RT_TYPE_OFFSET[n_type as usize];
-                let base_off = if off3 == 10 {
-                    4
-                } else if off3 == 9 {
-                    1
-                } else {
-                    off3
-                };
-                let mut v = (opcode_base + 0x10) | base_off;
-                if f_flags & 0x8000 == 0 {
-                    if f_flags & 0x20 != 0 {
-                        v = (if f_flags & 0x1000 != 0 { 1 } else { 0 }) + 0x1b5;
-                    } else if f_flags & 0x80 != 0 {
-                        v += 6;
-                    } else if f_flags & 0x200 != 0 {
-                        v = (if v != 0x1f6 { 0x11 } else { 0 }) + 0x3f8;
-                    } else if f_flags & 0x400 != 0 {
-                        v = 0x3f7;
-                    } else if f_flags & 0x1000 != 0 {
-                        if n_type == 0x10 || n_type == 0xf {
-                            v += 10;
-                        }
-                    } else if f_flags & 0x800 != 0 {
-                        v = 0x439;
-                    } else if off3 == 3 || off3 == 4 {
-                        // A field whose RAW (pre-remap) RT_TYPE_OFFSET class
-                        // is directly 3 or 4 needs +6 on the plain scalar-
-                        // store index — the same adjustment the sibling
-                        // nOp-2 branch above already applies. Gated on the
-                        // RAW `off3`, not the post-remap `base_off`: a field
-                        // whose raw class is 10 (remapped to base_off == 4)
-                        // must NOT get +6 — `ref_store_currency` oracle-
-                        // confirms that case stays at the unadjusted index
-                        // (byte `0x72`). A UDT Double field store (`t.C =
-                        // 3`), whose raw class is directly 4, oracle-
-                        // confirms it DOES need +6 (index `0x1fa`, byte
-                        // `0x74`, `RT_STORE_BY_CTX`'s own Double entry) — no
-                        // capture had exercised a raw-off3-4 field through
-                        // this branch until an 8-byte UDT field reached the
-                        // real pipeline (only Integer/Long UDT fields were
-                        // tested before).
-                        v += 6;
-                    }
-                } else if f_flags & 0x20 == 0 {
-                    // Store with conversion: opcode = base + 0x10 +
-                    // EXPR_STORE_CONV[type offset][sub], where sub combines the
-                    // inverted flag bits 0x1000 and 0x800. The table's confirmed
-                    // exact extent is offsets 2..=9 (RT_TYPE_OFFSET's raw range
-                    // also includes 0/1/10/12/14, which real destination/source
-                    // type combinations CAN produce here — this is a genuine,
-                    // unresolved gap, not a dead default; needs its own
-                    // extraction, not guessed).
-                    use crate::tables::EXPR_STORE_CONV;
-                    if !(2..=9).contains(&off3) {
-                        unimplemented!(
-                            "store conversion (0x8000 path) for type offset {off3}: \
-                             outside the conversion table's confirmed 2..=9 extent"
-                        );
-                    }
-                    let inv12 = 1 - ((f_flags >> 0xc) & 1) as i32;
-                    let inv11 = 1 - ((f_flags >> 0xb) & 1) as i32;
-                    let sub = (2 * inv12 + inv11) as usize;
-                    let conv = EXPR_STORE_CONV[(off3 - 2) as usize][sub] as i32;
-                    v = conv + 0x10 + opcode_base;
-                } else {
-                    v = (if f_flags & 0x800 != 0 { 2 } else { 0 }) + 0x1b7;
-                }
-                // (f_flags & 0x40) with a local descriptor: opcode remap for
-                // some non-scalar-store variants. `0x1f2` (the plain scalar
-                // Long/Integer/small-type store) does NOT remap — oracle-
-                // confirmed (e2e_udt_field_scalar_access: `t.X = 1` emits a
-                // bare `71 <offset>` store, no trailing reload; the earlier
-                // `0x1f2 => { emit 0x1f2; 0x1e2 }` arm produced a spurious
-                // extra `6c <offset>` load that no capture had caught until
-                // this fixture reached the real pipeline). The other arms
-                // (String/Variant-shaped classes) are unverified by any
-                // oracle fixture yet — left as ported, not re-derived here.
-                if f_flags & 0x40 != 0 && desc.kind == 1 {
-                    v = match v {
-                        0x1f6 => 0x263,
-                        0x1f7 => 0x264,
-                        0x1f8 => 0x29c,
-                        0x1ff => 0x29d,
-                        0x200 => {
-                            self.emit_opcode2(v as usize, operand_word);
-                            0x1ec
-                        }
-                        0x201 => {
-                            self.emit_opcode2(v as usize, operand_word);
-                            0x1e7
-                        }
-                        other => other,
-                    };
-                }
-                v
-            }
+            2 => Self::ref_byref_index(f_flags, n_type, opcode_base),
+            3 => Self::ref_coerce_index(f_flags, n_type, opcode_base),
+            4 => self.ref_store_index(desc, f_flags, n_type, opcode_base, operand_word),
             5 => {
                 if f_flags & 0x1000 == 0 {
                     opcode_base + 0xc
@@ -367,17 +194,158 @@ impl<'a> Emitter<'a> {
             }
             6 => opcode_base + 0xb,
             _ => unimplemented!("reference operation {} not handled", n_op),
-        };
+        }
+    }
 
-        // The trailing-word emit mode (opcode + operand + extra word) is only
-        // reached via the deferred nType==0x17 chain; emit_mode is always 1 here.
-        if emit_mode == 0 {
-            self.emit_value2(opcode_index as usize);
+    /// Opcode index shared by the load and ByRef operations when a flag selects
+    /// a fixed opcode (object / type-expression path or the `0x1000` form).
+    fn ref_flagged_index(f_flags: u32, n_type: i32) -> Option<i32> {
+        if f_flags & 0x4000 != 0 {
+            // Object / type-expression path.
+            return Some(match n_type {
+                0x10 => 0x23f,
+                0x17 => unimplemented!(
+                    "Variant-with-type expression: needs the type-pool emit \
+                     path"
+                ),
+                _ => 0x262,
+            });
+        }
+        if f_flags & 0x1000 != 0 {
+            return Some(0x1b2);
+        }
+        None
+    }
+
+    /// Opcode index for the value-load operation (nOp 1).
+    fn ref_load_index(f_flags: u32, n_type: i32, opcode_base: i32) -> i32 {
+        match Self::ref_flagged_index(f_flags, n_type) {
+            Some(index) => index,
+            None => opcode_base | Self::map_type_code3(RT_TYPE_OFFSET[n_type as usize]),
+        }
+    }
+
+    /// Opcode index for the ByRef operation (nOp 2).
+    fn ref_byref_index(f_flags: u32, n_type: i32, opcode_base: i32) -> i32 {
+        if let Some(index) = Self::ref_flagged_index(f_flags, n_type) {
+            return index;
+        }
+        let off = Self::map_type_code3(RT_TYPE_OFFSET[n_type as usize]);
+        let v = off | opcode_base;
+        if off == 3 || off == 4 {
+            v + 6
         } else {
-            self.emit_opcode2(opcode_index as usize, operand_word);
-            if emit_mode == 2 {
-                self.stream.emit_word(desc.word8);
+            v
+        }
+    }
+
+    /// Opcode index for the coercion operation (nOp 3).
+    fn ref_coerce_index(f_flags: u32, n_type: i32, opcode_base: i32) -> i32 {
+        if f_flags & 0x1000 != 0 {
+            return (if f_flags & 0x2000 != 0 { 1 } else { 0 }) + 0x1b3;
+        }
+        if n_type == 0xf {
+            return opcode_base + 0xd;
+        }
+        opcode_base | Self::map_type_code3(RT_TYPE_OFFSET[n_type as usize])
+    }
+
+    /// Opcode index for the store operation (nOp 4); may emit a preliminary
+    /// opcode for the local-variable remap variants.
+    fn ref_store_index(
+        &mut self,
+        desc: &RefDescriptor,
+        f_flags: u32,
+        n_type: i32,
+        opcode_base: i32,
+        operand_word: u16,
+    ) -> i32 {
+        let off3 = RT_TYPE_OFFSET[n_type as usize];
+        let v = (opcode_base + 0x10) | Self::map_type_code3(off3);
+        let v = if f_flags & 0x8000 == 0 {
+            Self::ref_store_plain_index(v, f_flags, n_type, off3)
+        } else {
+            Self::ref_store_conv_index(f_flags, off3, opcode_base)
+        };
+        // (f_flags & 0x40) with a local descriptor: opcode remap for some
+        // non-scalar-store variants. The plain scalar store index does not
+        // remap.
+        if f_flags & 0x40 != 0 && desc.kind == 1 {
+            return self.ref_store_local_remap(v, operand_word);
+        }
+        v
+    }
+
+    /// Store index when the `0x8000` flag is clear.
+    fn ref_store_plain_index(v: i32, f_flags: u32, n_type: i32, off3: i32) -> i32 {
+        if f_flags & 0x20 != 0 {
+            return (if f_flags & 0x1000 != 0 { 1 } else { 0 }) + 0x1b5;
+        }
+        if f_flags & 0x80 != 0 {
+            return v + 6;
+        }
+        if f_flags & 0x200 != 0 {
+            return (if v != 0x1f6 { 0x11 } else { 0 }) + 0x3f8;
+        }
+        if f_flags & 0x400 != 0 {
+            return 0x3f7;
+        }
+        if f_flags & 0x1000 != 0 {
+            return if n_type == 0x10 || n_type == 0xf { v + 10 } else { v };
+        }
+        if f_flags & 0x800 != 0 {
+            return 0x439;
+        }
+        // A field whose raw type-offset class is directly 3 or 4 needs +6 on
+        // the plain scalar-store index. This is gated on the raw class, not the
+        // remapped one: a raw class of 10 (remapped to 4) must not get +6.
+        if off3 == 3 || off3 == 4 {
+            v + 6
+        } else {
+            v
+        }
+    }
+
+    /// Store index when the `0x8000` flag is set.
+    fn ref_store_conv_index(f_flags: u32, off3: i32, opcode_base: i32) -> i32 {
+        use crate::tables::EXPR_STORE_CONV;
+        if f_flags & 0x20 != 0 {
+            return (if f_flags & 0x800 != 0 { 2 } else { 0 }) + 0x1b7;
+        }
+        // Store with conversion: opcode = base + 0x10 +
+        // EXPR_STORE_CONV[type offset][sub], where sub combines the inverted
+        // flag bits 0x1000 and 0x800. The table's confirmed exact extent is
+        // offsets 2..=9; other offsets are not covered.
+        if !(2..=9).contains(&off3) {
+            unimplemented!(
+                "store conversion (0x8000 path) for type offset {off3}: \
+                 outside the conversion table's confirmed 2..=9 extent"
+            );
+        }
+        let inv12 = 1 - ((f_flags >> 0xc) & 1) as i32;
+        let inv11 = 1 - ((f_flags >> 0xb) & 1) as i32;
+        let sub = (2 * inv12 + inv11) as usize;
+        let conv = EXPR_STORE_CONV[(off3 - 2) as usize][sub] as i32;
+        conv + 0x10 + opcode_base
+    }
+
+    /// Remap a store opcode for a local descriptor with the `0x40` flag; two of
+    /// the variants first emit the original opcode.
+    fn ref_store_local_remap(&mut self, v: i32, operand_word: u16) -> i32 {
+        match v {
+            0x1f6 => 0x263,
+            0x1f7 => 0x264,
+            0x1f8 => 0x29c,
+            0x1ff => 0x29d,
+            0x200 => {
+                self.emit_opcode2(v as usize, operand_word);
+                0x1ec
             }
+            0x201 => {
+                self.emit_opcode2(v as usize, operand_word);
+                0x1e7
+            }
+            other => other,
         }
     }
 
@@ -412,7 +380,7 @@ impl<'a> Emitter<'a> {
         self.emit_reference(&coercion_desc, n_op, f_flags, n_type);
     }
 
-    /// Port of `ConvertExpressionType`: propagates coercion flags/offsets
+    /// Propagates coercion flags/offsets
     /// between a type-descriptor node and an expression-result node (both a
     /// 4-word shape: `word0`=kind 1..=0xb, `word1` low16=flags, `word1`
     /// high16=an accumulator field, `word2` high16=another accumulator
@@ -533,7 +501,7 @@ impl<'a> Emitter<'a> {
         }
     }
 
-    /// Port of `EbEmitBinaryOpCode`'s scratch-descriptor construction and
+    /// Scratch-descriptor construction and
     /// its re-entry into the value emitter (`emit_reference`, n_op 6):
     /// builds a kind-1 descriptor with the constant operand `8` when either
     /// of `type_desc_word4`'s bits `0x100`/`0x200` is clear, else a kind-5
