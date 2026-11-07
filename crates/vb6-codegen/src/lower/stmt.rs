@@ -109,9 +109,14 @@ pub(super) fn lower_stmt(
             lower_do(ctx, kind, cond_id, body_id, expr_arena, out)
         }
         ExprNode::For { var, start, end, step, body, .. } => {
-            let (var_id, start_id, end_id, step_id, body_id) =
-                (*var, *start, *end, *step, *body);
-            lower_for(ctx, var_id, start_id, end_id, step_id, body_id, expr_arena, out)
+            let parts = ForParts {
+                var_id: *var,
+                start_id: *start,
+                end_id: *end,
+                step_id: *step,
+                body_id: *body,
+            };
+            lower_for(ctx, &parts, expr_arena, out)
         }
         ExprNode::SelectCase { subject, pre, cases } => {
             if !pre.is_empty() {
@@ -130,69 +135,12 @@ pub(super) fn lower_stmt(
         // backpatched at proc end (the target may be a forward reference).
         ExprNode::GoTo { target } => {
             out.push(0x1e);
-            let patch = out.len();
-            out.push(0x00);
-            out.push(0x00);
-            ctx.goto_patches.borrow_mut().push((*target, patch));
+            push_label_patch(ctx, out, *target);
             Ok(())
         }
-        // `Exit For`/`Exit Do` = unconditional jump (0x1e) to the enclosing
-        // loop's end offset, backpatched when the loop finishes emitting.
-        ExprNode::ExitStmt { kind } => match kind {
-            ExitKind::For | ExitKind::Do => {
-                out.push(0x1e);
-                let patch = out.len();
-                out.push(0x00);
-                out.push(0x00);
-                ctx.exit_stack
-                    .borrow_mut()
-                    .last_mut()
-                    .ok_or(LowerError::UnsupportedNode)?
-                    .push(patch);
-                Ok(())
-            }
-            // Exit Sub / Exit Function = the procedure-return opcode 0x14.
-            ExitKind::Sub | ExitKind::Function => {
-                out.push(0x14);
-                Ok(())
-            }
-            _ => Err(LowerError::UnsupportedNode),
-        },
-        // `Mid(s, start[, len]) = value`: LdAddr the target string, push start and
-        // (optional) len as Long, push the replacement string, then the Mid opcode
-        // 0x4f. (The byte-oriented `MidB` / `$` spellings are gated.)
+        ExprNode::ExitStmt { kind } => lower_exit(ctx, kind, out),
         ExprNode::MidAssign { byte_oriented, args, value, .. } => {
-            let arg_ids = match expr_arena.get(*args) {
-                ExprNode::ArgList { args } => args.clone(),
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            if arg_ids.len() < 2 {
-                return Err(LowerError::UnsupportedNode);
-            }
-            let s_off = match ctx.module.resolutions.get(&arg_ids[0].0) {
-                Some(NameResolution::Local { local_idx, .. }) => {
-                    ctx.local_slots[*local_idx].frame_offset
-                }
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            out.push(0x04);
-            out.extend_from_slice(&s_off.to_le_bytes());
-            out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[1], expr_arena, Some(8))?);
-            if arg_ids.len() >= 3 {
-                out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[2], expr_arena, Some(8))?);
-            }
-            out.extend_from_slice(&lower_expr_to_bytes(ctx, *value, expr_arena)?);
-            // Character-oriented Mid/Mid$ use opcode 0x4f; the byte-oriented MidB
-            // family uses the escaped opcode 0xfc 0xbe. The `$` spelling does not
-            // change the opcode.
-            if *byte_oriented {
-                out.extend_from_slice(&[0xfc, 0xbe]);
-            } else {
-                out.push(0x4f);
-            }
-            out.push(0x00);
-            out.push(0x00);
-            Ok(())
+            lower_mid_assign(ctx, *byte_oriented, *args, *value, expr_arena, out)
         }
         // `LSet`/`RSet target = value` (range-copy assignment): load the value, load
         // the target, then the justify opcode — LSet 0x47, RSet 0xfe 0x1e.
@@ -208,158 +156,24 @@ pub(super) fn lower_stmt(
             out.push(0x00);
             Ok(())
         }
-        // `ReDim a(bounds)`: push each dimension's lower and upper bound (Long),
-        // LdAddr the array pointer, then the ReDim opcode (0xfe 0x8e) followed by
-        // dim-count, element VARTYPE, element size, and flags.
         // A member array (`ReDim udt.Field(n)`) has no lowering yet.
         ExprNode::ReDimItem { base: Some(_), .. } => Err(LowerError::UnsupportedNode),
         ExprNode::ReDimItem { name, bounds, preserve, base: None, .. } => {
-            let local_idx = ctx
-                .proc
-                .locals
-                .iter()
-                .position(|v| v.sym_id == *name)
-                .ok_or(LowerError::Unresolved)?;
-            let elem = match &ctx.proc.locals[local_idx].vba_type {
-                VbaType::Array(e) => (**e).clone(),
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            let (vartype, size): (u16, u16) = match elem {
-                VbaType::Long => (3, 4),
-                VbaType::Integer => (2, 2),
-                VbaType::Double => (5, 8),
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            let arr_off = ctx.local_slots[local_idx].frame_offset;
-            let bounds_id = bounds.ok_or(LowerError::UnsupportedNode)?;
-            let dim_ids = match expr_arena.get(bounds_id) {
-                ExprNode::ArgList { args } => args.clone(),
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            // The FIRST `ReDim`/`ReDim Preserve` of a given array (textual
-            // order) is tracked separately from every later one — see
-            // `LowerCtx::redimmed_arrays`'s own doc comment for the oracle
-            // evidence a lone `ReDim Preserve` (no earlier ReDim of that
-            // array in this proc) omits the bare-bound's explicit
-            // lower-bound-0 push that every other captured shape has.
-            let is_first_redim = ctx.redimmed_arrays.borrow_mut().insert(local_idx);
-            for &d in &dim_ids {
-                match expr_arena.get(d) {
-                    ExprNode::RangeTo { lo, hi } => {
-                        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *lo, expr_arena, Some(8))?);
-                        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *hi, expr_arena, Some(8))?);
-                    }
-                    // Bare upper bound — the lower bound defaults to 0, pushed
-                    // explicitly EXCEPT for a `Preserve` that is this array's
-                    // very first `ReDim` in the proc (oracle-confirmed:
-                    // `oracle_bank/c20_redim_preserve_first_use`).
-                    _ => {
-                        if !(*preserve && is_first_redim) {
-                            out.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
-                        }
-                        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, d, expr_arena, Some(8))?);
-                    }
-                }
-            }
-            out.push(0x04);
-            out.extend_from_slice(&arr_off.to_le_bytes());
-            out.push(0xfe);
-            // `ReDim Preserve` reallocates while copying existing elements: opcode
-            // 0x8f; a plain `ReDim` discards them: opcode 0x8e.
-            out.push(if *preserve { 0x8f } else { 0x8e });
-            out.extend_from_slice(&(dim_ids.len() as u16).to_le_bytes());
-            out.extend_from_slice(&vartype.to_le_bytes());
-            out.extend_from_slice(&size.to_le_bytes());
-            out.extend_from_slice(&0x80u16.to_le_bytes());
-            Ok(())
+            lower_redim(ctx, *name, *bounds, *preserve, expr_arena, out)
         }
-        // `On Error GoTo label` = opcode 0x4b + the (backpatched) label offset.
-        // `On Error GoTo 0` disables the handler: opcode 0x4b with the sentinel
-        // target 0xfffe.
-        ExprNode::OnError { kind } => match kind {
-            OnErrorKind::Goto(target) => {
-                out.push(0x4b);
-                let patch = out.len();
-                out.push(0x00);
-                out.push(0x00);
-                ctx.goto_patches.borrow_mut().push((*target, patch));
-                Ok(())
-            }
-            // `On Error GoTo -1` has no encoding here yet.
-            OnErrorKind::ClearError => Err(LowerError::UnsupportedNode),
-            OnErrorKind::Disable => {
-                out.push(0x4b);
-                out.extend_from_slice(&0xfffe_u16.to_le_bytes());
-                Ok(())
-            }
-            // `On Error Resume Next` = opcode 0x4b with the sentinel target 0xffff.
-            // (This statement makes the procedure need the line-number table.)
-            OnErrorKind::ResumeNext => {
-                out.push(0x4b);
-                out.extend_from_slice(&0xffff_u16.to_le_bytes());
-                Ok(())
-            }
-        },
-        // `Resume` / `Resume Next` / `Resume label`: opcode 0xfd 0x0c + target.
-        // Retry (`Resume`) = sentinel 0xfffe; `Resume Next` = 0xffff; a label/line
-        // target is the (backpatched) byte offset.
-        ExprNode::Resume { target } => {
-            out.extend_from_slice(&[0xfd, 0x0c]);
-            match target {
-                ResumeTarget::Retry => out.extend_from_slice(&0xfffe_u16.to_le_bytes()),
-                ResumeTarget::Next => out.extend_from_slice(&0xffff_u16.to_le_bytes()),
-                ResumeTarget::At(lref) => {
-                    let patch = out.len();
-                    out.push(0x00);
-                    out.push(0x00);
-                    ctx.goto_patches.borrow_mut().push((*lref, patch));
-                }
-            }
-            Ok(())
-        }
-        // `Stop` — break to the debugger: escaped opcode 0xfc 0xc2.
-        // `Call Foo(args)` — an intra-module Sub call (or a Function call whose
-        // result is discarded): statement-form call opcode 0x0a. `Call Foo(5)`
-        // parses the arguments into a `Call` expression at `callee`; `Call Foo`
-        // keeps the callee and (statement) arg list separate.
+        ExprNode::OnError { kind } => lower_on_error(ctx, kind, out),
+        ExprNode::Resume { target } => lower_resume(ctx, target, out),
         ExprNode::CallStmt { callee, args } => {
-            let (callee_ref, args_ref) = match expr_arena.get(*callee) {
-                ExprNode::Call { func, args: inner } => (*func, *inner),
-                _ => (*callee, *args),
-            };
-            if let ExprNode::MemberAccess { base, .. } = expr_arena.get(callee_ref) {
-                let base = *base;
-                if member_access_base_is_class(ctx.module, base) {
-                    return lower_class_method_call(
-                        ctx, base, callee_ref, args_ref, false, false, expr_arena, out,
-                    )
-                    .map(|_| ());
-                }
-            }
-            lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
+            lower_call_stmt(ctx, *callee, *args, expr_arena, out)
         }
         // Implicit Sub call with parenthesised args as a statement: `Foo(5)`
-        // (parses to a bare `Call` node) — statement-form call, result discarded.
-        ExprNode::Call { func, args }
-            if matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_))) =>
-        {
-            lower_call(ctx, *func, *args, false, expr_arena, out)
-        }
-        // A class-member `Sub`/`Function` called as a bare statement with
-        // parenthesised args: `o.Method(args)` (result discarded).
-        ExprNode::Call { func, args }
-            if matches!(expr_arena.get(*func), ExprNode::MemberAccess { base, .. }
-                if member_access_base_is_class(ctx.module, *base)) =>
-        {
-            let ExprNode::MemberAccess { base, .. } = expr_arena.get(*func) else { unreachable!() };
-            lower_class_method_call(ctx, *base, *func, *args, false, false, expr_arena, out).map(|_| ())
-        }
+        // (parses to a bare `Call` node), or a class-member call `o.Method(args)`
+        // — statement-form call, result discarded.
+        ExprNode::Call { func, args } => lower_call_expr_stmt(ctx, *func, *args, expr_arena, out),
         // Bare implicit Sub call with no arguments as a statement: `Foo`
         // (parses to a bare `NameRef`). Passing the node itself as the arg list
         // yields no arguments (it is not an ArgList).
-        ExprNode::NameRef { .. }
-            if matches!(ctx.module.resolutions.get(&node_id.0), Some(NameResolution::Proc(_))) =>
-        {
+        ExprNode::NameRef { .. } if resolves_to_proc(ctx, node_id) => {
             lower_call(ctx, node_id, node_id, false, expr_arena, out)
         }
         // A class-member `Sub`/`Function` called as a bare statement with NO
@@ -375,6 +189,7 @@ pub(super) fn lower_stmt(
             let base = *base;
             lower_class_method_call(ctx, base, node_id, node_id, false, false, expr_arena, out).map(|_| ())
         }
+        // `Stop` — break to the debugger: escaped opcode 0xfc 0xc2.
         ExprNode::Stop => {
             out.extend_from_slice(&[0xfc, 0xc2]);
             Ok(())
@@ -396,94 +211,17 @@ pub(super) fn lower_stmt(
             out.push(0x45);
             Ok(())
         }
-        // `Erase var1[, var2...]`: for each array, LdAddr the array slot then the
-        // erase opcode. A dynamic array is freed (0x5a); a fixed array is
-        // reinitialized in place, which needs its type-descriptor offset — gated.
-        ExprNode::Erase { vars } => {
-            for &v in vars {
-                let (arr_off, _elem, _dims) =
-                    array_local_info(ctx, v).ok_or(LowerError::UnsupportedNode)?;
-                let is_dynamic = match ctx.module.resolutions.get(&v.0) {
-                    Some(NameResolution::Local { local_idx, .. }) => {
-                        ctx.proc.locals[*local_idx].array_dims.is_none()
-                    }
-                    _ => return Err(LowerError::UnsupportedNode),
-                };
-                out.push(0x04);
-                out.extend_from_slice(&arr_off.to_le_bytes());
-                if !is_dynamic {
-                    // A fixed array is reinitialized in place: 0x59 with the array's
-                    // data offset (the LdAddr target minus 8), then 0x5a.
-                    out.push(0x59);
-                    out.extend_from_slice(&(arr_off - 8).to_le_bytes());
-                }
-                out.push(0x5a);
-            }
-            Ok(())
-        }
-        // `On expr GoTo/GoSub label-list`: emit the selector coerced to Integer,
-        // then the dispatch opcode (0xfe 0x96 GoTo / 0xfe 0x95 GoSub), the table
-        // byte length (labels * 2), then one 2-byte (backpatched) offset per label.
+        ExprNode::Erase { vars } => lower_erase(ctx, vars, out),
         ExprNode::OnGo { is_gosub, expr, labels } => {
-            let mut arena = NodeArena::new();
-            let root = lower_expr(ctx, *expr, expr_arena, &mut arena)?;
-            // The selector is converted to Integer (e.g. Long selector → 0xe4).
-            let root = coerce_operand(ctx, *expr, root, Some(6), expr_arena, &mut arena);
-            let mut emitter = Emitter::new(&arena);
-            emitter.emit_expr(root, 2);
-            out.extend(emitter.into_bytes());
-            out.push(0xfe);
-            out.push(if *is_gosub { 0x95 } else { 0x96 });
-            out.extend_from_slice(&((labels.len() * 2) as u16).to_le_bytes());
-            for &lbl in labels {
-                let target = match expr_arena.get(lbl) {
-                    ExprNode::JumpTarget { target } => *target,
-                    _ => return Err(LowerError::UnsupportedNode),
-                };
-                let patch = out.len();
-                out.push(0x00);
-                out.push(0x00);
-                ctx.goto_patches.borrow_mut().push((target, patch));
-            }
-            Ok(())
+            lower_on_go(ctx, *is_gosub, *expr, labels, expr_arena, out)
         }
         // `GoSub label` — push a return address and jump: opcode 0xfd 0x0a + the
         // (backpatched) label byte offset.
         ExprNode::GoSub { target } => {
             out.extend_from_slice(&[0xfd, 0x0a]);
-            let patch = out.len();
-            out.push(0x00);
-            out.push(0x00);
-            ctx.goto_patches.borrow_mut().push((*target, patch));
+            push_label_patch(ctx, out, *target);
             Ok(())
         }
-        // `Close #n` (a SINGLE literal file number): `0xf4 <n>` (the file
-        // number as a direct 1-byte immediate operand, not a general stack
-        // push) then `0xfd 0x3d` (the Close runtime call), no further
-        // operand. Oracle-confirmed: `oracle_bank/c23_fileio_close`
-        // (`Close #1`) and `oracle_bank/c23_fileio_close_chan5` (`Close
-        // #5`, confirming the operand tracks the literal channel number,
-        // not some other fixed value). `Close #expr` (a non-literal channel
-        // expression) and `Close #a, #b` (2+ channels) are BOTH gated — no
-        // capture distinguishes either shape from this one, and a channel
-        // expression can't be a compile-time immediate operand the way a
-        // literal can, so the mechanism for that shape is presumably
-        // different, not merely "evaluate then use the same fixed form."
-        // `Open path For mode [Access access] [Lock lock | Shared] As #n`
-        // (a literal string path and a literal file number, no `Len=`
-        // clause): `1b <pool idx (2 bytes)>` pushes the interned path
-        // string, `f4 <n>` pushes the file number as a direct 1-byte
-        // immediate (same convention as Close), `f4 ff` pushes a fixed
-        // sentinel byte (invariant across every mode/access/lock
-        // combination captured; the `Len=` clause is a separate, ungrounded
-        // mechanism so is gated off rather than guessed), then `fe 5d
-        // <mode> <flags>` is the Open runtime call: `mode` is the file-mode
-        // byte and `flags` packs `(lock_code << 4) | access_code` exactly
-        // as `open_mode`/`open_flags` are encoded on the AST node.
-        // Oracle-confirmed across eleven captures spanning every mode
-        // (Input/Output/Random/Append/Binary), every Access combination
-        // (Read/Write/ReadWrite), and every Lock/Shared combination —
-        // `oracle_bank/c24_fileio_open_*`.
         ExprNode::FileIoStmt {
             kind: FileIoKind::Open,
             channel: Some(channel),
@@ -491,45 +229,9 @@ pub(super) fn lower_stmt(
             channel_marks: _,
             open_mode,
             open_flags,
-        } => {
-            if args.len() != 1 || *open_flags == 0xf {
-                return Err(LowerError::UnsupportedNode);
-            }
-            let path = match expr_arena.get(args[0]) {
-                ExprNode::Literal { lit: AstLit::Str(s) } => s.clone(),
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            let n = match expr_arena.get(*channel) {
-                ExprNode::Literal { lit: AstLit::Int(v) } if (0..=255).contains(v) => *v as u8,
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            let idx = ctx.intern_string(&path);
-            ctx.call_next.set(ctx.call_next.get() + 1);
-            out.push(0x1b);
-            out.extend_from_slice(&idx.to_le_bytes());
-            out.push(0xf4);
-            out.push(n);
-            out.push(0xf4);
-            out.push(0xff);
-            out.push(0xfe);
-            out.push(0x5d);
-            out.push(*open_mode);
-            out.push(*open_flags);
-            Ok(())
-        }
+        } => lower_file_open(ctx, *channel, args, *open_mode, *open_flags, expr_arena, out),
         ExprNode::FileIoStmt { kind: FileIoKind::Close, args, .. } => {
-            if args.len() != 1 {
-                return Err(LowerError::UnsupportedNode);
-            }
-            let n = match expr_arena.get(args[0]) {
-                ExprNode::Literal { lit: AstLit::Int(v) } if (0..=255).contains(v) => *v as u8,
-                _ => return Err(LowerError::UnsupportedNode),
-            };
-            out.push(0xf4);
-            out.push(n);
-            out.push(0xfd);
-            out.push(0x3d);
-            Ok(())
+            lower_file_close(args, expr_arena, out)
         }
         // `Debug.Print`/`Debug.Assert`/any other `Debug.X` statement: the
         // real VB6 compiler strips the ENTIRE construct at compile time —
@@ -545,6 +247,382 @@ pub(super) fn lower_stmt(
         ExprNode::DebugPrint { .. } | ExprNode::DebugAssert { .. } => Ok(()),
         _ => Err(LowerError::UnsupportedNode),
     }
+}
+
+/// Emit a 2-byte placeholder and record it for backpatching to `target`'s
+/// byte offset at procedure end.
+fn push_label_patch(ctx: &LowerCtx, out: &mut Vec<u8>, target: LabelRef) {
+    let patch = out.len();
+    out.extend_from_slice(&[0x00, 0x00]);
+    ctx.goto_patches.borrow_mut().push((target, patch));
+}
+
+/// Whether `id` was resolved to an intra-module procedure.
+fn resolves_to_proc(ctx: &LowerCtx, id: NodeId) -> bool {
+    matches!(ctx.module.resolutions.get(&id.0), Some(NameResolution::Proc(_)))
+}
+
+/// The base of `id` when it is a member access whose base is a class object.
+fn class_member_access_base(ctx: &LowerCtx, expr_arena: &ExprArena, id: NodeId) -> Option<NodeId> {
+    match expr_arena.get(id) {
+        ExprNode::MemberAccess { base, .. } if member_access_base_is_class(ctx.module, *base) => {
+            Some(*base)
+        }
+        _ => None,
+    }
+}
+
+/// `Exit For`/`Exit Do` = unconditional jump (0x1e) to the enclosing loop's end
+/// offset, backpatched when the loop finishes emitting; `Exit Sub`/`Exit
+/// Function` = the procedure-return opcode 0x14.
+fn lower_exit(ctx: &LowerCtx, kind: &ExitKind, out: &mut Vec<u8>) -> Result<(), LowerError> {
+    match kind {
+        ExitKind::For | ExitKind::Do => {
+            let patch = emit_branch_placeholder(out, 0x1e);
+            ctx.exit_stack
+                .borrow_mut()
+                .last_mut()
+                .ok_or(LowerError::UnsupportedNode)?
+                .push(patch);
+            Ok(())
+        }
+        ExitKind::Sub | ExitKind::Function => {
+            out.push(0x14);
+            Ok(())
+        }
+        _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// `Mid(s, start[, len]) = value`: LdAddr the target string, push start and
+/// (optional) len as Long, push the replacement string, then the Mid opcode
+/// 0x4f. (The byte-oriented `MidB` / `$` spellings are gated.)
+fn lower_mid_assign(
+    ctx: &LowerCtx,
+    byte_oriented: bool,
+    args: NodeId,
+    value: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let arg_ids = match expr_arena.get(args) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    if arg_ids.len() < 2 {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let s_off = match ctx.module.resolutions.get(&arg_ids[0].0) {
+        Some(NameResolution::Local { local_idx, .. }) => ctx.local_slots[*local_idx].frame_offset,
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    out.push(0x04);
+    out.extend_from_slice(&s_off.to_le_bytes());
+    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[1], expr_arena, Some(8))?);
+    if arg_ids.len() >= 3 {
+        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, arg_ids[2], expr_arena, Some(8))?);
+    }
+    out.extend_from_slice(&lower_expr_to_bytes(ctx, value, expr_arena)?);
+    // Character-oriented Mid/Mid$ use opcode 0x4f; the byte-oriented MidB
+    // family uses the escaped opcode 0xfc 0xbe. The `$` spelling does not
+    // change the opcode.
+    if byte_oriented {
+        out.extend_from_slice(&[0xfc, 0xbe]);
+    } else {
+        out.push(0x4f);
+    }
+    out.extend_from_slice(&[0x00, 0x00]);
+    Ok(())
+}
+
+/// Resolve a `ReDim` target to `(local index, element VARTYPE, element size)`.
+fn redim_target(ctx: &LowerCtx, name: u32) -> Result<(usize, u16, u16), LowerError> {
+    let local_idx = ctx
+        .proc
+        .locals
+        .iter()
+        .position(|v| v.sym_id == name)
+        .ok_or(LowerError::Unresolved)?;
+    let elem = match &ctx.proc.locals[local_idx].vba_type {
+        VbaType::Array(e) => (**e).clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let (vartype, size): (u16, u16) = match elem {
+        VbaType::Long => (3, 4),
+        VbaType::Integer => (2, 2),
+        VbaType::Double => (5, 8),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    Ok((local_idx, vartype, size))
+}
+
+/// `ReDim a(bounds)`: push each dimension's lower and upper bound (Long),
+/// LdAddr the array pointer, then the ReDim opcode (0xfe 0x8e) followed by
+/// dim-count, element VARTYPE, element size, and flags.
+fn lower_redim(
+    ctx: &LowerCtx,
+    name: u32,
+    bounds: Option<NodeId>,
+    preserve: bool,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let (local_idx, vartype, size) = redim_target(ctx, name)?;
+    let arr_off = ctx.local_slots[local_idx].frame_offset;
+    let bounds_id = bounds.ok_or(LowerError::UnsupportedNode)?;
+    let dim_ids = match expr_arena.get(bounds_id) {
+        ExprNode::ArgList { args } => args.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    // The FIRST `ReDim`/`ReDim Preserve` of a given array (textual
+    // order) is tracked separately from every later one — see
+    // `LowerCtx::redimmed_arrays`'s own doc comment for the oracle
+    // evidence a lone `ReDim Preserve` (no earlier ReDim of that
+    // array in this proc) omits the bare-bound's explicit
+    // lower-bound-0 push that every other captured shape has.
+    let is_first_redim = ctx.redimmed_arrays.borrow_mut().insert(local_idx);
+    for &d in &dim_ids {
+        lower_redim_dimension(ctx, d, preserve && is_first_redim, expr_arena, out)?;
+    }
+    out.push(0x04);
+    out.extend_from_slice(&arr_off.to_le_bytes());
+    out.push(0xfe);
+    // `ReDim Preserve` reallocates while copying existing elements: opcode
+    // 0x8f; a plain `ReDim` discards them: opcode 0x8e.
+    out.push(if preserve { 0x8f } else { 0x8e });
+    out.extend_from_slice(&(dim_ids.len() as u16).to_le_bytes());
+    out.extend_from_slice(&vartype.to_le_bytes());
+    out.extend_from_slice(&size.to_le_bytes());
+    out.extend_from_slice(&0x80u16.to_le_bytes());
+    Ok(())
+}
+
+/// Push one `ReDim` dimension's bounds. A bare upper bound's lower bound
+/// defaults to 0, pushed explicitly EXCEPT for a `Preserve` that is this
+/// array's very first `ReDim` in the proc (`skip_zero_lower`; oracle-confirmed:
+/// `oracle_bank/c20_redim_preserve_first_use`).
+fn lower_redim_dimension(
+    ctx: &LowerCtx,
+    dim: NodeId,
+    skip_zero_lower: bool,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    if let ExprNode::RangeTo { lo, hi } = expr_arena.get(dim) {
+        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *lo, expr_arena, Some(8))?);
+        out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, *hi, expr_arena, Some(8))?);
+        return Ok(());
+    }
+    if !skip_zero_lower {
+        out.extend_from_slice(&[0xf5, 0x00, 0x00, 0x00, 0x00]);
+    }
+    out.extend_from_slice(&lower_expr_to_bytes_coerced(ctx, dim, expr_arena, Some(8))?);
+    Ok(())
+}
+
+/// `On Error GoTo label` = opcode 0x4b + the (backpatched) label offset.
+/// `On Error GoTo 0` disables the handler: opcode 0x4b with the sentinel
+/// target 0xfffe. `On Error Resume Next` = opcode 0x4b with the sentinel target
+/// 0xffff (this statement makes the procedure need the line-number table).
+fn lower_on_error(ctx: &LowerCtx, kind: &OnErrorKind, out: &mut Vec<u8>) -> Result<(), LowerError> {
+    match kind {
+        OnErrorKind::Goto(target) => {
+            out.push(0x4b);
+            push_label_patch(ctx, out, *target);
+            Ok(())
+        }
+        // `On Error GoTo -1` has no encoding here yet.
+        OnErrorKind::ClearError => Err(LowerError::UnsupportedNode),
+        OnErrorKind::Disable => {
+            out.push(0x4b);
+            out.extend_from_slice(&0xfffe_u16.to_le_bytes());
+            Ok(())
+        }
+        OnErrorKind::ResumeNext => {
+            out.push(0x4b);
+            out.extend_from_slice(&0xffff_u16.to_le_bytes());
+            Ok(())
+        }
+    }
+}
+
+/// `Resume` / `Resume Next` / `Resume label`: opcode 0xfd 0x0c + target.
+/// Retry (`Resume`) = sentinel 0xfffe; `Resume Next` = 0xffff; a label/line
+/// target is the (backpatched) byte offset.
+fn lower_resume(ctx: &LowerCtx, target: &ResumeTarget, out: &mut Vec<u8>) -> Result<(), LowerError> {
+    out.extend_from_slice(&[0xfd, 0x0c]);
+    match target {
+        ResumeTarget::Retry => out.extend_from_slice(&0xfffe_u16.to_le_bytes()),
+        ResumeTarget::Next => out.extend_from_slice(&0xffff_u16.to_le_bytes()),
+        ResumeTarget::At(lref) => push_label_patch(ctx, out, *lref),
+    }
+    Ok(())
+}
+
+/// `Call Foo(args)` — an intra-module Sub call (or a Function call whose
+/// result is discarded): statement-form call opcode 0x0a. `Call Foo(5)`
+/// parses the arguments into a `Call` expression at `callee`; `Call Foo`
+/// keeps the callee and (statement) arg list separate.
+fn lower_call_stmt(
+    ctx: &LowerCtx,
+    callee: NodeId,
+    args: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let (callee_ref, args_ref) = match expr_arena.get(callee) {
+        ExprNode::Call { func, args: inner } => (*func, *inner),
+        _ => (callee, args),
+    };
+    if let Some(base) = class_member_access_base(ctx, expr_arena, callee_ref) {
+        return lower_class_method_call(ctx, base, callee_ref, args_ref, false, false, expr_arena, out)
+            .map(|_| ());
+    }
+    lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
+}
+
+/// A bare `Call` expression used as a statement: an intra-module `Sub`/
+/// `Function` call, or a class-member `Sub`/`Function` call with parenthesised
+/// arguments (`o.Method(args)`); the result is discarded.
+fn lower_call_expr_stmt(
+    ctx: &LowerCtx,
+    func: NodeId,
+    args: NodeId,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    if resolves_to_proc(ctx, func) {
+        return lower_call(ctx, func, args, false, expr_arena, out);
+    }
+    match class_member_access_base(ctx, expr_arena, func) {
+        Some(base) => {
+            lower_class_method_call(ctx, base, func, args, false, false, expr_arena, out).map(|_| ())
+        }
+        None => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// `Erase var1[, var2...]`: for each array, LdAddr the array slot then the
+/// erase opcode. A dynamic array is freed (0x5a); a fixed array is
+/// reinitialized in place, which needs its type-descriptor offset — gated.
+fn lower_erase(ctx: &LowerCtx, vars: &[NodeId], out: &mut Vec<u8>) -> Result<(), LowerError> {
+    for &v in vars {
+        let (arr_off, _elem, _dims) =
+            array_local_info(ctx, v).ok_or(LowerError::UnsupportedNode)?;
+        let is_dynamic = match ctx.module.resolutions.get(&v.0) {
+            Some(NameResolution::Local { local_idx, .. }) => {
+                ctx.proc.locals[*local_idx].array_dims.is_none()
+            }
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        out.push(0x04);
+        out.extend_from_slice(&arr_off.to_le_bytes());
+        if !is_dynamic {
+            // A fixed array is reinitialized in place: 0x59 with the array's
+            // data offset (the LdAddr target minus 8), then 0x5a.
+            out.push(0x59);
+            out.extend_from_slice(&(arr_off - 8).to_le_bytes());
+        }
+        out.push(0x5a);
+    }
+    Ok(())
+}
+
+/// `On expr GoTo/GoSub label-list`: emit the selector coerced to Integer,
+/// then the dispatch opcode (0xfe 0x96 GoTo / 0xfe 0x95 GoSub), the table
+/// byte length (labels * 2), then one 2-byte (backpatched) offset per label.
+fn lower_on_go(
+    ctx: &LowerCtx,
+    is_gosub: bool,
+    expr: NodeId,
+    labels: &[NodeId],
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    let mut arena = NodeArena::new();
+    let root = lower_expr(ctx, expr, expr_arena, &mut arena)?;
+    // The selector is converted to Integer (e.g. Long selector → 0xe4).
+    let root = coerce_operand(ctx, expr, root, Some(6), expr_arena, &mut arena);
+    let mut emitter = Emitter::new(&arena);
+    emitter.emit_expr(root, 2);
+    out.extend(emitter.into_bytes());
+    out.push(0xfe);
+    out.push(if is_gosub { 0x95 } else { 0x96 });
+    out.extend_from_slice(&((labels.len() * 2) as u16).to_le_bytes());
+    for &lbl in labels {
+        let target = match expr_arena.get(lbl) {
+            ExprNode::JumpTarget { target } => *target,
+            _ => return Err(LowerError::UnsupportedNode),
+        };
+        push_label_patch(ctx, out, target);
+    }
+    Ok(())
+}
+
+/// A literal file number usable as a direct 1-byte immediate operand.
+fn literal_file_number(expr_arena: &ExprArena, id: NodeId) -> Result<u8, LowerError> {
+    match expr_arena.get(id) {
+        ExprNode::Literal { lit: AstLit::Int(v) } if (0..=255).contains(v) => Ok(*v as u8),
+        _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// `Open path For mode [Access access] [Lock lock | Shared] As #n`
+/// (a literal string path and a literal file number, no `Len=`
+/// clause): `1b <pool idx (2 bytes)>` pushes the interned path
+/// string, `f4 <n>` pushes the file number as a direct 1-byte
+/// immediate (same convention as Close), `f4 ff` pushes a fixed
+/// sentinel byte (invariant across every mode/access/lock
+/// combination captured; the `Len=` clause is a separate, ungrounded
+/// mechanism so is gated off rather than guessed), then `fe 5d
+/// <mode> <flags>` is the Open runtime call: `mode` is the file-mode
+/// byte and `flags` packs `(lock_code << 4) | access_code` exactly
+/// as `open_mode`/`open_flags` are encoded on the AST node.
+/// Oracle-confirmed across eleven captures spanning every mode
+/// (Input/Output/Random/Append/Binary), every Access combination
+/// (Read/Write/ReadWrite), and every Lock/Shared combination —
+/// `oracle_bank/c24_fileio_open_*`.
+fn lower_file_open(
+    ctx: &LowerCtx,
+    channel: NodeId,
+    args: &[NodeId],
+    open_mode: u8,
+    open_flags: u8,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(), LowerError> {
+    if args.len() != 1 || open_flags == 0xf {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let path = match expr_arena.get(args[0]) {
+        ExprNode::Literal { lit: AstLit::Str(s) } => s.clone(),
+        _ => return Err(LowerError::UnsupportedNode),
+    };
+    let n = literal_file_number(expr_arena, channel)?;
+    let idx = ctx.intern_string(&path);
+    ctx.call_next.set(ctx.call_next.get() + 1);
+    out.push(0x1b);
+    out.extend_from_slice(&idx.to_le_bytes());
+    out.extend_from_slice(&[0xf4, n, 0xf4, 0xff, 0xfe, 0x5d, open_mode, open_flags]);
+    Ok(())
+}
+
+/// `Close #n` (a SINGLE literal file number): `0xf4 <n>` (the file
+/// number as a direct 1-byte immediate operand, not a general stack
+/// push) then `0xfd 0x3d` (the Close runtime call), no further
+/// operand. Oracle-confirmed: `oracle_bank/c23_fileio_close`
+/// (`Close #1`) and `oracle_bank/c23_fileio_close_chan5` (`Close
+/// #5`, confirming the operand tracks the literal channel number,
+/// not some other fixed value). `Close #expr` (a non-literal channel
+/// expression) and `Close #a, #b` (2+ channels) are BOTH gated — no
+/// capture distinguishes either shape from this one.
+fn lower_file_close(args: &[NodeId], expr_arena: &ExprArena, out: &mut Vec<u8>) -> Result<(), LowerError> {
+    if args.len() != 1 {
+        return Err(LowerError::UnsupportedNode);
+    }
+    let n = literal_file_number(expr_arena, args[0])?;
+    out.extend_from_slice(&[0xf4, n, 0xfd, 0x3d]);
+    Ok(())
 }
 
 // ── Control-flow helpers ──────────────────────────────────────────────────────
@@ -572,8 +650,14 @@ pub(super) fn emit_branch_placeholder(out: &mut Vec<u8>, opcode: u8) -> usize {
 }
 
 /// Backpatch a 2-byte LE u16 at the given byte offset with the given value.
-pub(super) fn patch_u16(out: &mut Vec<u8>, patch: usize, value: u16) {
+pub(super) fn patch_u16(out: &mut [u8], patch: usize, value: u16) {
     out[patch..patch + 2].copy_from_slice(&value.to_le_bytes());
+}
+
+/// Backpatch the 2-byte LE u16 at `patch` with the current end-of-output offset.
+pub(super) fn patch_to_here(out: &mut [u8], patch: usize) {
+    let here = out.len() as u16;
+    patch_u16(out, patch, here);
 }
 
 /// `If cond Then then_body [Else else_body] End If`
@@ -605,15 +689,15 @@ pub(super) fn lower_if(
         let jump_patch = emit_branch_placeholder(out, 0x1e);
 
         // BranchFalse target = start of else body
-        patch_u16(out, branch_false_patch, out.len() as u16);
+        patch_to_here(out, branch_false_patch);
 
         lower_block(ctx, e_id, expr_arena, out)?;
 
         // Jump target = end
-        patch_u16(out, jump_patch, out.len() as u16);
+        patch_to_here(out, jump_patch);
     } else {
         // BranchFalse target = end of If block
-        patch_u16(out, branch_false_patch, out.len() as u16);
+        patch_to_here(out, branch_false_patch);
     }
 
     Ok(())
@@ -648,7 +732,7 @@ pub(super) fn lower_while(
     out.extend_from_slice(&loop_start.to_le_bytes());
 
     // BranchFalse target = past end of jump instruction (current position)
-    patch_u16(out, branch_false_patch, out.len() as u16);
+    patch_to_here(out, branch_false_patch);
 
     Ok(())
 }
@@ -745,7 +829,7 @@ pub(super) fn lower_do_inner(
                 lower_block(ctx, body_id, expr_arena, out)?;
                 out.push(0x1e);
                 out.extend_from_slice(&loop_start.to_le_bytes());
-                patch_u16(out, branch_false_patch, out.len() as u16);
+                patch_to_here(out, branch_false_patch);
                 return Ok(());
             }
 
@@ -756,7 +840,7 @@ pub(super) fn lower_do_inner(
             lower_block(ctx, body_id, expr_arena, out)?;
             out.push(0x1e);
             out.extend_from_slice(&loop_start.to_le_bytes());
-            patch_u16(out, branch_true_patch, out.len() as u16);
+            patch_to_here(out, branch_true_patch);
             Ok(())
         }
         DoKind::PostWhile => {
@@ -819,6 +903,16 @@ pub(super) fn lower_expr_to_bytes_coerced(
     Ok(emitter.into_bytes())
 }
 
+/// The child nodes of a `For` statement.
+#[derive(Clone, Copy)]
+pub(super) struct ForParts {
+    pub(super) var_id: NodeId,
+    pub(super) start_id: NodeId,
+    pub(super) end_id: NodeId,
+    pub(super) step_id: Option<NodeId>,
+    pub(super) body_id: NodeId,
+}
+
 /// `For var = start To end [Step step] ... Next`
 ///
 /// Opcode layout (oracle-confirmed for Long counter, no-step):
@@ -837,14 +931,11 @@ pub(super) fn lower_expr_to_bytes_coerced(
 /// this For loop (user_local_count + 2*pair + 1).
 pub(super) fn lower_for(
     ctx: &LowerCtx,
-    var_id: NodeId,
-    start_id: NodeId,
-    end_id: NodeId,
-    step_id: Option<NodeId>,
-    body_id: NodeId,
+    parts: &ForParts,
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<(), LowerError> {
+    let ForParts { var_id, start_id, end_id, step_id, body_id } = *parts;
     // Resolve counter variable to its frame offset and type.
     let resolution = ctx
         .module
@@ -998,56 +1089,13 @@ pub(super) fn lower_select(
         out.extend_from_slice(&emitter.into_bytes());
     }
 
+    let subject = SelectSubject { tag: subj_tag, lctx, temp_offset };
     let mut end_patches = Vec::new();
     let case_count = cases.len();
     for (case_idx, &case_id) in cases.iter().enumerate() {
-        match expr_arena.get(case_id) {
-            ExprNode::CaseBlock { test, body } => {
-                // `test` is an ArgList of clauses (values / ranges / `Is` tests).
-                // A match on ANY clause enters the body: every clause but the last
-                // branches TRUE to the body; the last branches FALSE to the next
-                // case (so the single-clause form is just compare + BranchFalse).
-                let clauses = match expr_arena.get(*test) {
-                    ExprNode::ArgList { args } => args.clone(),
-                    _ => return Err(LowerError::UnsupportedNode),
-                };
-                if clauses.is_empty() {
-                    return Err(LowerError::UnsupportedNode);
-                }
-                let mut body_patches = Vec::new();
-                let mut next_patch = 0usize;
-                let last = clauses.len() - 1;
-                for (i, &clause) in clauses.iter().enumerate() {
-                    out.extend_from_slice(&emit_clause_test(
-                        ctx, clause, subj_tag, lctx, temp_offset, expr_arena,
-                    )?);
-                    if i < last {
-                        body_patches.push(emit_branch_placeholder(out, 0x1d));
-                    } else {
-                        next_patch = emit_branch_placeholder(out, 0x1c);
-                    }
-                }
-                let body_start = out.len() as u16;
-                for p in body_patches {
-                    patch_u16(out, p, body_start);
-                }
-                lower_block(ctx, *body, expr_arena, out)?;
-                // A matched body jumps to the Select end only when a later case
-                // follows it; the last case-arm falls through to the end.
-                if case_idx + 1 < case_count {
-                    out.push(0x1e);
-                    let end_patch = out.len();
-                    out.push(0x00);
-                    out.push(0x00);
-                    end_patches.push(end_patch);
-                }
-                // The final BranchFalse lands at the next case (or the end).
-                patch_u16(out, next_patch, out.len() as u16);
-            }
-            ExprNode::CaseElse { body } => {
-                lower_block(ctx, *body, expr_arena, out)?;
-            }
-            _ => return Err(LowerError::UnsupportedNode),
+        let is_last = case_idx + 1 == case_count;
+        if let Some(end_patch) = lower_select_case(ctx, case_id, &subject, is_last, expr_arena, out)? {
+            end_patches.push(end_patch);
         }
     }
     let end = out.len() as u16;
@@ -1055,6 +1103,84 @@ pub(super) fn lower_select(
         patch_u16(out, patch, end);
     }
     Ok(())
+}
+
+/// The hidden temp a `Select Case` subject is stored in, with the node tag
+/// and load/store context of the subject's type.
+struct SelectSubject {
+    tag: u16,
+    lctx: usize,
+    temp_offset: i16,
+}
+
+/// Lower one `Case` arm. Returns the backpatch offset of the jump to the
+/// Select end, which is emitted only for a `Case` block that a later arm
+/// follows.
+fn lower_select_case(
+    ctx: &LowerCtx,
+    case_id: NodeId,
+    subject: &SelectSubject,
+    is_last: bool,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<Option<usize>, LowerError> {
+    match expr_arena.get(case_id) {
+        ExprNode::CaseBlock { test, body } => {
+            // `test` is an ArgList of clauses (values / ranges / `Is` tests).
+            // A match on ANY clause enters the body: every clause but the last
+            // branches TRUE to the body; the last branches FALSE to the next
+            // case (so the single-clause form is just compare + BranchFalse).
+            let clauses = match expr_arena.get(*test) {
+                ExprNode::ArgList { args } => args.clone(),
+                _ => return Err(LowerError::UnsupportedNode),
+            };
+            if clauses.is_empty() {
+                return Err(LowerError::UnsupportedNode);
+            }
+            let (body_patches, next_patch) = lower_case_clauses(ctx, &clauses, subject, expr_arena, out)?;
+            let body_start = out.len() as u16;
+            for p in body_patches {
+                patch_u16(out, p, body_start);
+            }
+            lower_block(ctx, *body, expr_arena, out)?;
+            // A matched body jumps to the Select end only when a later case
+            // follows it; the last case-arm falls through to the end.
+            let end_patch = if is_last { None } else { Some(emit_branch_placeholder(out, 0x1e)) };
+            // The final BranchFalse lands at the next case (or the end).
+            patch_to_here(out, next_patch);
+            Ok(end_patch)
+        }
+        ExprNode::CaseElse { body } => {
+            lower_block(ctx, *body, expr_arena, out)?;
+            Ok(None)
+        }
+        _ => Err(LowerError::UnsupportedNode),
+    }
+}
+
+/// Emit each clause's test of a `Case` arm (`clauses` is non-empty). Returns
+/// the patches of the branch-true jumps into the body and the patch of the
+/// final branch-false jump to the next case.
+fn lower_case_clauses(
+    ctx: &LowerCtx,
+    clauses: &[NodeId],
+    subject: &SelectSubject,
+    expr_arena: &ExprArena,
+    out: &mut Vec<u8>,
+) -> Result<(Vec<usize>, usize), LowerError> {
+    let mut body_patches = Vec::new();
+    let last = clauses.len() - 1;
+    for &clause in &clauses[..last] {
+        out.extend_from_slice(&emit_clause_test(
+            ctx, clause, subject.tag, subject.lctx, subject.temp_offset, expr_arena,
+        )?);
+        body_patches.push(emit_branch_placeholder(out, 0x1d));
+    }
+    out.extend_from_slice(&emit_clause_test(
+        ctx, clauses[last], subject.tag, subject.lctx, subject.temp_offset, expr_arena,
+    )?);
+    let next_patch = emit_branch_placeholder(out, 0x1c);
+    Ok((body_patches, next_patch))
 }
 
 /// Array element store `a(i…) = v`: push the value (element-typed), push each Long
