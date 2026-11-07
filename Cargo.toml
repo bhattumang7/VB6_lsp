@@ -70,6 +70,11 @@ encoding_rs = "0.8"  # Character encoding detection and conversion (Windows-1252
 byteorder = "1"  # Binary reading/writing for resource files
 base64 = "0.22"  # Base64 encoding for JSON resource data
 
+[target.'cfg(windows)'.dependencies]
+# COM type-library access (ITypeLib/ITypeInfo) for the libraries a project references
+windows = { version = "0.62", features = ["Win32_Foundation", "Win32_System_Com", "Win32_System_Ole", "Win32_System_Variant", "Win32_System_Registry"] }
+windows-registry = "0.6"  # locating a registered type library by its GUID
+
 [dev-dependencies]
 tokio-test = "0.4"
 pretty_assertions = "1"

@@ -4,8 +4,12 @@
 
 mod capabilities;
 mod handlers;
+mod projects;
 
-use std::sync::{Arc, RwLock};
+pub use projects::{ProjectStatus, ProjectStatusNotification};
+
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, RwLock};
 
 use dashmap::DashMap;
 use ropey::Rope;
@@ -32,6 +36,15 @@ impl std::fmt::Debug for Document {
     }
 }
 
+/// Open a `.vbp` or `.vbg` as the project; argument: its path or `file:` URI.
+pub const COMMAND_OPEN_PROJECT: &str = "vb6.openProject";
+/// Stop analysing the opened project.
+pub const COMMAND_CLOSE_PROJECT: &str = "vb6.closeProject";
+/// Describe the opened project (members, references, problems), or null.
+pub const COMMAND_PROJECT_INFO: &str = "vb6.projectInfo";
+/// Describe a `.vbp` or `.vbg` without opening it; argument: its path or `file:` URI.
+pub const COMMAND_PROJECT_PREVIEW: &str = "vb6.projectPreview";
+
 /// The VB6 Language Server
 pub struct Vb6LanguageServer {
     /// LSP client for sending notifications
@@ -40,9 +53,16 @@ pub struct Vb6LanguageServer {
     documents: DashMap<Url, Document>,
     /// Workspace manager for multi-project support (VBP discovery)
     workspace: Arc<RwLock<WorkspaceManager>>,
-    /// VB6 analysis engine. Holds the project's parsed/bound state
-    /// and answers navigation/diagnostics queries.
-    engine: Arc<RwLock<vb6_engine::session::Session>>,
+    /// Analysis of the open documents that no opened project lists.
+    loose: Arc<RwLock<vb6_engine::session::Session>>,
+    /// The opened project or group, one analysis per project.
+    selection: Arc<RwLock<Option<crate::project::Selection>>>,
+    /// The diagnostics the editor currently has, per file.
+    published: DashMap<Url, Vec<Diagnostic>>,
+    /// A project to open as soon as the handshake is complete.
+    initial_project: Mutex<Option<PathBuf>>,
+    /// Opening or closing a project is one at a time.
+    load_lock: tokio::sync::Mutex<()>,
 }
 
 impl Vb6LanguageServer {
@@ -51,30 +71,12 @@ impl Vb6LanguageServer {
             client,
             documents: DashMap::new(),
             workspace: Arc::new(RwLock::new(WorkspaceManager::new())),
-            engine: Arc::new(RwLock::new(vb6_engine::session::Session::from_sources(Vec::new()))),
+            loose: Arc::new(RwLock::new(vb6_engine::session::Session::from_sources(Vec::new()))),
+            selection: Arc::new(RwLock::new(None)),
+            published: DashMap::new(),
+            initial_project: Mutex::new(None),
+            load_lock: tokio::sync::Mutex::new(()),
         }
-    }
-
-    /// Update the engine with the document's current content and publish diagnostics.
-    async fn parse_and_diagnose(&self, uri: &Url) {
-        let (content, version) = match self.documents.get(uri) {
-            Some(doc) => (doc.content.to_string(), doc.version),
-            None => return,
-        };
-        let key = crate::engine_glue::doc_key(uri);
-
-        {
-            let mut engine = self.engine.write().unwrap();
-            engine.update_file(&key, crate::engine_glue::to_cp1252(&content));
-        }
-        let diagnostics = {
-            let engine = self.engine.read().unwrap();
-            crate::engine_glue::diagnostics_for(&engine, &key)
-        };
-
-        self.client
-            .publish_diagnostics(uri.clone(), diagnostics, Some(version))
-            .await;
     }
 }
 
@@ -193,6 +195,15 @@ impl LanguageServer for Vb6LanguageServer {
     async fn initialize(&self, params: InitializeParams) -> Result<InitializeResult> {
         tracing::info!("Initializing VB6 Language Server");
 
+        if let Some(path) = params
+            .initialization_options
+            .as_ref()
+            .and_then(|o| o.get("project"))
+            .and_then(projects::path_argument)
+        {
+            *self.initial_project.lock().unwrap() = Some(path);
+        }
+
         if let Some(workspace_folders) = params.workspace_folders {
             let mut workspace = self.workspace.write().unwrap();
             for folder in workspace_folders {
@@ -258,6 +269,16 @@ impl LanguageServer for Vb6LanguageServer {
 
                 code_action_provider: Some(CodeActionProviderCapability::Simple(true)),
 
+                execute_command_provider: Some(ExecuteCommandOptions {
+                    commands: vec![
+                        COMMAND_OPEN_PROJECT.to_string(),
+                        COMMAND_CLOSE_PROJECT.to_string(),
+                        COMMAND_PROJECT_INFO.to_string(),
+                        COMMAND_PROJECT_PREVIEW.to_string(),
+                    ],
+                    work_done_progress_options: Default::default(),
+                }),
+
                 document_formatting_provider: Some(OneOf::Left(true)),
 
                 folding_range_provider: Some(FoldingRangeProviderCapability::Simple(true)),
@@ -309,6 +330,11 @@ impl LanguageServer for Vb6LanguageServer {
         self.client
             .log_message(MessageType::INFO, "VB6 Language Server ready!")
             .await;
+
+        let initial = self.initial_project.lock().unwrap().take();
+        if let Some(path) = initial {
+            let _ = self.open_selection(path).await;
+        }
     }
 
     async fn shutdown(&self) -> Result<()> {
@@ -331,7 +357,7 @@ impl LanguageServer for Vb6LanguageServer {
             },
         );
 
-        self.parse_and_diagnose(&uri).await;
+        self.sync_document(&uri).await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
@@ -358,25 +384,79 @@ impl LanguageServer for Vb6LanguageServer {
             }
         }
 
-        self.parse_and_diagnose(&uri).await;
+        self.sync_document(&uri).await;
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
         tracing::debug!("Document closed: {}", uri);
+        self.close_document(&uri).await;
+    }
 
-        {
-            let mut engine = self.engine.write().unwrap();
-            engine.remove_file(&crate::engine_glue::doc_key(&uri));
+    async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {
+        let changes = params
+            .changes
+            .into_iter()
+            .map(|c| {
+                let change = if c.typ == FileChangeType::DELETED {
+                    projects::DiskChange::Deleted
+                } else {
+                    projects::DiskChange::Written
+                };
+                (c.uri, change)
+            })
+            .collect();
+        self.apply_disk_changes(changes).await;
+    }
+
+    async fn execute_command(
+        &self,
+        params: ExecuteCommandParams,
+    ) -> Result<Option<serde_json::Value>> {
+        match params.command.as_str() {
+            COMMAND_OPEN_PROJECT => {
+                let Some(path) = params.arguments.first().and_then(projects::path_argument) else {
+                    return Err(tower_lsp::jsonrpc::Error::invalid_params(
+                        "vb6.openProject takes the path of a .vbp or .vbg file",
+                    ));
+                };
+                match self.open_selection(path).await {
+                    Ok(info) => Ok(serde_json::to_value(info).ok()),
+                    Err(error) => {
+                        let mut e = tower_lsp::jsonrpc::Error::invalid_params(error.to_string());
+                        e.code = tower_lsp::jsonrpc::ErrorCode::ServerError(1);
+                        Err(e)
+                    }
+                }
+            }
+            COMMAND_CLOSE_PROJECT => {
+                self.close_selection().await;
+                Ok(None)
+            }
+            COMMAND_PROJECT_INFO => Ok(self.project_info().and_then(|i| serde_json::to_value(i).ok())),
+            COMMAND_PROJECT_PREVIEW => {
+                let Some(path) = params.arguments.first().and_then(projects::path_argument) else {
+                    return Err(tower_lsp::jsonrpc::Error::invalid_params(
+                        "vb6.projectPreview takes the path of a .vbp or .vbg file",
+                    ));
+                };
+                match crate::project::Selection::preview(&path) {
+                    Ok(info) => Ok(serde_json::to_value(info).ok()),
+                    Err(error) => {
+                        let mut e = tower_lsp::jsonrpc::Error::invalid_params(error.to_string());
+                        e.code = tower_lsp::jsonrpc::ErrorCode::ServerError(1);
+                        Err(e)
+                    }
+                }
+            }
+            other => Err(tower_lsp::jsonrpc::Error::invalid_params(format!("unknown command {other}"))),
         }
-
-        self.documents.remove(&uri);
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
         let uri = params.text_document.uri;
         tracing::debug!("Document saved: {}", uri);
-        self.parse_and_diagnose(&uri).await;
+        self.sync_document(&uri).await;
     }
 
     // Hover
@@ -391,9 +471,9 @@ impl LanguageServer for Vb6LanguageServer {
             }
         }
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         Ok(g.hover(m, off).map(|h| crate::engine_glue::hover(&g, m, h)))
     }
@@ -406,12 +486,16 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
-        Ok(g.definition(m, off)
-            .and_then(|loc| crate::engine_glue::location(&g, loc))
+        if let Some(loc) = g.definition(m, off) {
+            return Ok(crate::engine_glue::location(&g, loc).map(GotoDefinitionResponse::Scalar));
+        }
+        // A name from a referenced project is declared in that project's own files.
+        Ok(g.external_target_at(m, off)
+            .and_then(|target| self.external_definition(&route, &target))
             .map(GotoDefinitionResponse::Scalar))
     }
 
@@ -421,9 +505,9 @@ impl LanguageServer for Vb6LanguageServer {
         let position = params.text_document_position.position;
         let include_decl = params.context.include_declaration;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         let locations = g
             .references(m, off, include_decl)
@@ -439,9 +523,9 @@ impl LanguageServer for Vb6LanguageServer {
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
         let uri = &params.text_document.uri;
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         Ok(Some(DocumentSymbolResponse::Nested(
             crate::engine_glue::document_symbols(&g, m),
         )))
@@ -452,8 +536,17 @@ impl LanguageServer for Vb6LanguageServer {
         &self,
         params: WorkspaceSymbolParams,
     ) -> Result<Option<Vec<SymbolInformation>>> {
-        let g = self.engine.read().unwrap();
-        Ok(Some(crate::engine_glue::workspace_symbols(&g, &params.query)))
+        let mut symbols = {
+            let g = self.loose.read().unwrap();
+            crate::engine_glue::workspace_symbols(&g, &params.query)
+        };
+        if let Some(selection) = self.selection.read().unwrap().as_ref() {
+            for unit in selection.units.iter().filter(|u| u.listed) {
+                let g = unit.session.read().unwrap();
+                symbols.extend(crate::engine_glue::workspace_symbols(&g, &params.query));
+            }
+        }
+        Ok(Some(symbols))
     }
 
     // Semantic tokens (syntax highlighting)
@@ -462,9 +555,9 @@ impl LanguageServer for Vb6LanguageServer {
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
         let uri = &params.text_document.uri;
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         Ok(Some(SemanticTokensResult::Tokens(
             crate::engine_glue::semantic_tokens(&g, m),
         )))
@@ -475,9 +568,9 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document.uri;
         let range = params.range;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let actions = crate::engine_glue::code_actions(&g, m, range);
         if actions.is_empty() {
             return Ok(None);
@@ -489,9 +582,9 @@ impl LanguageServer for Vb6LanguageServer {
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
         let uri = &params.text_document.uri;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let edits = crate::engine_glue::formatting(&g, m);
         if edits.is_empty() {
             return Ok(None);
@@ -505,9 +598,9 @@ impl LanguageServer for Vb6LanguageServer {
         let position = params.text_document_position.position;
         let new_name = params.new_name;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         let edits = g.rename(m, off, &new_name);
         if edits.is_empty() {
@@ -521,9 +614,9 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         Ok(crate::engine_glue::sig_help(&g, m, off))
     }
@@ -536,9 +629,9 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         let spans = g.document_highlights(m, off);
         if spans.is_empty() {
@@ -553,9 +646,9 @@ impl LanguageServer for Vb6LanguageServer {
         params: FoldingRangeParams,
     ) -> Result<Option<Vec<FoldingRange>>> {
         let uri = &params.text_document.uri;
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let ranges = crate::engine_glue::folding_ranges(&g, m);
         if ranges.is_empty() {
             Ok(None)
@@ -569,9 +662,9 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document_position.text_document.uri;
         let position = params.text_document_position.position;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         let items = crate::engine_glue::completion_items(&g, m, off);
         Ok(Some(CompletionResponse::Array(items)))
@@ -585,9 +678,9 @@ impl LanguageServer for Vb6LanguageServer {
         let uri = &params.text_document_position_params.text_document.uri;
         let position = params.text_document_position_params.position;
 
-        let key = crate::engine_glue::doc_key(uri);
-        let g = self.engine.read().unwrap();
-        let Some(m) = g.module_of(&key) else { return Ok(None) };
+        let route = self.route(uri);
+        let g = route.session.read().unwrap();
+        let Some(m) = g.module_of(&route.key) else { return Ok(None) };
         let Some(off) = crate::engine_glue::offset_at(&g, m, position) else { return Ok(None) };
         let items = crate::engine_glue::prepare_call_hierarchy(&g, m, off);
         if items.is_empty() {
@@ -602,7 +695,8 @@ impl LanguageServer for Vb6LanguageServer {
         &self,
         params: CallHierarchyIncomingCallsParams,
     ) -> Result<Option<Vec<CallHierarchyIncomingCall>>> {
-        let g = self.engine.read().unwrap();
+        let route = self.route(&params.item.uri);
+        let g = route.session.read().unwrap();
         let calls = crate::engine_glue::incoming_calls(&g, &params.item);
         Ok(Some(calls))
     }
@@ -612,7 +706,8 @@ impl LanguageServer for Vb6LanguageServer {
         &self,
         params: CallHierarchyOutgoingCallsParams,
     ) -> Result<Option<Vec<CallHierarchyOutgoingCall>>> {
-        let g = self.engine.read().unwrap();
+        let route = self.route(&params.item.uri);
+        let g = route.session.read().unwrap();
         let calls = crate::engine_glue::outgoing_calls(&g, &params.item);
         Ok(Some(calls))
     }

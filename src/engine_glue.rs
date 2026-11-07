@@ -8,9 +8,14 @@
 use tower_lsp::lsp_types as lsp;
 use vb6_engine::session::Session;
 
-/// Stable key for a document in the engine (the URI string).
+/// Stable key for a document in the engine: the URI of its normalized path, so the editor's
+/// spellings of one file (`file:///c%3A/p/a.bas`, `file:///C:/p/../p/a.bas`) agree. A URI that
+/// names no path is keyed by its text.
 pub fn doc_key(uri: &lsp::Url) -> String {
-    uri.to_string()
+    match crate::project::paths::path_for_uri(uri) {
+        Some(path) => crate::project::paths::engine_key_for_path(&path),
+        None => uri.to_string(),
+    }
 }
 
 /// Encode editor text (UTF-8) to the Windows-1252 bytes the engine scans.

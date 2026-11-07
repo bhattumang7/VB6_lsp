@@ -6,10 +6,12 @@ mod project;
 mod res_parser;
 pub mod res_json;
 mod vbp_parser;
+mod vbg_parser;
 
 use vbp_parser::TypeLibReference;
 #[allow(unused_imports)]
 pub use vbp_parser::VbpParseError;
+pub use vbg_parser::{GroupProject, VbgFile, VbgParseError};
 pub use res_parser::{
     parse_string_table, read_res_file, write_res_file, ResourceEntry, ResourceId, ResourceType,
 };
