@@ -278,42 +278,43 @@ impl Piece {
     }
 }
 
-/// Reads `src`.
-pub fn read(src: &[u8]) -> ReadText<'_> {
-    // A 0x1A that ends the last line of the text is read as a NUL. A carriage return that is
-    // the last byte leaves its line open (a line feed might follow), so that line is the last.
+/// The text with a 0x1A that ends its last line read as a NUL. A carriage return that is the
+/// last byte leaves its line open (a line feed might follow), so that line is the last.
+fn final_substitute_as_nul(src: &[u8]) -> Cow<'_, [u8]> {
     let last_line_end = match src.last() {
         Some(b'\r') => src.len() - 1,
         _ => src.len(),
     };
-    let base: Cow<[u8]> = if last_line_end > 0 && src[last_line_end - 1] == 0x1a {
+    if last_line_end > 0 && src[last_line_end - 1] == 0x1a {
         let mut v = src.to_vec();
         v[last_line_end - 1] = 0;
         Cow::Owned(v)
     } else {
         Cow::Borrowed(src)
-    };
-    let bytes: &[u8] = &base;
-
-    let mut pieces: Vec<Piece> = Vec::new();
-    for line in physical_lines(bytes) {
-        let mut start = line.start;
-        let mut column = 0usize;
-        for i in line.start..line.end {
-            let mut width = if bytes[i] == b'\t' { 8 - column % 8 } else { 1 };
-            if column + width > PIECE_COLUMNS {
-                pieces.push(Piece { start, end: i, inner: true, marked: false });
-                start = i;
-                column = 0;
-                width = if bytes[i] == b'\t' { 8 } else { 1 };
-            }
-            column += width;
-        }
-        let marked = ends_in_continuation_mark(&bytes[start..line.end]);
-        pieces.push(Piece { start, end: line.end, inner: false, marked });
     }
+}
 
-    // The logical lines, and the limits on them.
+/// Splits one physical line into pieces of at most [`PIECE_COLUMNS`] columns.
+fn split_physical_line(bytes: &[u8], line: PhysicalLine, pieces: &mut Vec<Piece>) {
+    let mut start = line.start;
+    let mut column = 0usize;
+    for i in line.start..line.end {
+        let mut width = if bytes[i] == b'\t' { 8 - column % 8 } else { 1 };
+        if column + width > PIECE_COLUMNS {
+            pieces.push(Piece { start, end: i, inner: true, marked: false });
+            start = i;
+            column = 0;
+            width = if bytes[i] == b'\t' { 8 } else { 1 };
+        }
+        column += width;
+    }
+    let marked = ends_in_continuation_mark(&bytes[start..line.end]);
+    pieces.push(Piece { start, end: line.end, inner: false, marked });
+}
+
+/// The logical lines of the pieces, and the limits on them. Returns the table, the limits and
+/// the index of the first piece of the last logical line.
+fn build_logical_lines(bytes: &[u8], pieces: &[Piece]) -> (LineTable, LineLimits, usize) {
     let mut table = LineTable::default();
     let mut limits = LineLimits::default();
     let mut header = HeaderState::default();
@@ -332,6 +333,20 @@ pub fn read(src: &[u8]) -> ReadText<'_> {
             limits.counted.push((pieces[first].start as u32, piece.start as u32));
         }
     }
+    (table, limits, first)
+}
+
+/// Reads `src`.
+pub fn read(src: &[u8]) -> ReadText<'_> {
+    let base = final_substitute_as_nul(src);
+    let bytes: &[u8] = &base;
+
+    let mut pieces: Vec<Piece> = Vec::new();
+    for line in physical_lines(bytes) {
+        split_physical_line(bytes, line, &mut pieces);
+    }
+
+    let (mut table, limits, first) = build_logical_lines(bytes, &pieces);
     let problem = limits.problem(0);
 
     // A logical line that ends in a continuation mark at the end of the text is not read.
@@ -353,15 +368,21 @@ pub fn read(src: &[u8]) -> ReadText<'_> {
     if splits.is_empty() && read_end == bytes.len() {
         return ReadText { text: base, separators: Vec::new(), problem, limits, table };
     }
+    let (out, separators) = insert_separators(bytes, read_end, &splits);
+    ReadText { text: Cow::Owned(out), separators, problem, limits, table }
+}
+
+/// The text up to `read_end` with a NUL inserted at each of `splits`, and where the NULs are.
+fn insert_separators(bytes: &[u8], read_end: usize, splits: &[usize]) -> (Vec<u8>, Vec<u32>) {
     let mut out = Vec::with_capacity(read_end + splits.len());
     let mut separators = Vec::with_capacity(splits.len());
     let mut copied = 0;
-    for &s in &splits {
+    for &s in splits {
         out.extend_from_slice(&bytes[copied..s]);
         separators.push(out.len() as u32);
         out.push(0);
         copied = s;
     }
     out.extend_from_slice(&bytes[copied..read_end]);
-    ReadText { text: Cow::Owned(out), separators, problem, limits, table }
+    (out, separators)
 }

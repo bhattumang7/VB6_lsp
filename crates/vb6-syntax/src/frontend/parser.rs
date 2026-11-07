@@ -26,6 +26,7 @@ use crate::frontend::scanner::{fold_name, OrdinalStart, Scanner, ScannerContext}
 use crate::frontend::token::{Kw, Lit, NumberFailure, Span, Token, TokenKind, TypeSuffix};
 
 mod graphics;
+mod param_rules;
 use graphics::{ChainStart, GraphicsWord};
 
 // ── Binding-power table (Pratt) ───────────────────────────────────────────────
@@ -522,6 +523,14 @@ struct CcFrame {
     taken: bool,
 }
 
+/// Which `Option` statement has been read before.
+#[derive(Clone, Copy)]
+enum OptionSeen {
+    Explicit,
+    Compare,
+    Private,
+}
+
 impl<'src> Parser<'src> {
     /// Construct a parser over `src` using the provided scanner context.
     pub fn new(ctx: &'src mut ScannerContext, src: &'src [u8]) -> Self {
@@ -757,6 +766,55 @@ impl<'src> Parser<'src> {
         }
     }
 
+    /// Skips the rest of the current line of the conditional compilation stream.
+    fn skip_cc_line(&mut self) {
+        while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
+            self.cc_advance();
+        }
+    }
+
+    /// A conditional compilation word that is read as a directive at the start of a line; elsewhere
+    /// it is an ordinary word, and no word of that kind begins a statement.
+    fn cc_word(&mut self, kw: Kw, tok: &Token, first_on_line: bool) {
+        if first_on_line {
+            self.cc_directive(kw, tok.span, tok.lit.is_some());
+            return;
+        }
+        if !self.cc_active() {
+            return;
+        }
+        // On a continued line the error is on the line the statement began.
+        let began = self.logical_line_start as usize;
+        let continued = self.src[began..tok.span.start as usize].contains(&b'\n');
+        let span = if continued { Span { start: self.logical_line_start, len: tok.span.len } } else { tok.span };
+        self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        self.skip_cc_line();
+    }
+
+    /// At the end of the text, reports the `#If` blocks left open; reports a name that cannot be
+    /// kept because the table of names is full.
+    fn note_stream_end_or_full_table(&mut self, tok: &Token) {
+        if tok.kind == TokenKind::Eof {
+            self.report_open_cc_blocks();
+        }
+        if tok.kind == TokenKind::Error && self.scanner.symbol_table_full() && self.cc_active() {
+            // The table of names is full: the name cannot be kept.
+            self.diagnostics.push(ERR_OUT_OF_MEMORY, tok.span);
+        }
+    }
+
+    /// Reports an identifier longer than the language allows.
+    fn check_identifier_length(&mut self, tok: &Token) {
+        if tok.kind != TokenKind::Ident {
+            return;
+        }
+        let too_long =
+            tok.sym.is_some_and(|id| self.scanner.sym_name(id as u32).chars().count() > MAX_IDENTIFIER_LEN);
+        if too_long {
+            self.diagnostics.push(ERR_IDENTIFIER_TOO_LONG, tok.span);
+        }
+    }
+
     fn fetch_logical(&mut self) -> Token {
         loop {
             let tok = self.next_physical();
@@ -764,53 +822,23 @@ impl<'src> Parser<'src> {
             if let TokenKind::Kw(kw @ (Kw::CcIf | Kw::CcElseIf | Kw::CcElse | Kw::CcEnd | Kw::CcConst)) =
                 tok.kind
             {
-                if first_on_line {
-                    self.cc_directive(kw, tok.span, tok.lit.is_some());
-                } else {
-                    // A directive is only read at the start of a line; elsewhere it is an
-                    // ordinary word, and no word of that kind begins a statement.
-                    if self.cc_active() {
-                        // On a continued line the error is on the line the statement began.
-                        let began = self.logical_line_start as usize;
-                        let continued = self.src[began..tok.span.start as usize].contains(&b'\n');
-                        let span = if continued { Span { start: self.logical_line_start, len: tok.span.len } } else { tok.span };
-                        self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                        while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
-                            self.cc_advance();
-                        }
-                    }
-                }
+                self.cc_word(kw, &tok, first_on_line);
                 continue;
             }
             if first_on_line && tok.kind == TokenKind::Kw(Kw::Hash) && self.cc_active() && !self.procedure_seen {
                 // A line that opens with a number sign names a directive.
                 self.report_expected(tok.span, "If or Else or ElseIf or End or EndIf or Const");
-                while !matches!(self.cc_peek().kind, TokenKind::Eol | TokenKind::Eof) {
-                    self.cc_advance();
-                }
+                self.skip_cc_line();
                 continue;
             }
-            if tok.kind == TokenKind::Eof {
-                self.report_open_cc_blocks();
-            }
-            if tok.kind == TokenKind::Error && self.scanner.symbol_table_full() && self.cc_active() {
-                // The table of names is full: the name cannot be kept.
-                self.diagnostics.push(ERR_OUT_OF_MEMORY, tok.span);
-            }
+            self.note_stream_end_or_full_table(&tok);
             if !self.cc_active() {
                 if tok.kind == TokenKind::Eof {
                     return tok;
                 }
                 continue;
             }
-            if tok.kind == TokenKind::Ident {
-                let too_long = tok
-                    .sym
-                    .is_some_and(|id| self.scanner.sym_name(id as u32).chars().count() > MAX_IDENTIFIER_LEN);
-                if too_long {
-                    self.diagnostics.push(ERR_IDENTIFIER_TOO_LONG, tok.span);
-                }
-            }
+            self.check_identifier_length(&tok);
             return tok;
         }
     }
@@ -1147,25 +1175,7 @@ impl<'src> Parser<'src> {
             return base;
         }
         self.advance(); // (
-        let mut args = Vec::new();
-        let mut bad = false;
-        if self.peek().kind != TokenKind::Kw(Kw::RParen) {
-            loop {
-                if matches!(self.peek().kind, TokenKind::Kw(Kw::Comma) | TokenKind::Kw(Kw::RParen)) {
-                    bad = true; // an argument left out
-                    break;
-                }
-                if let Some(named) = self.try_parse_named_arg(arena) {
-                    bad = true; // a named argument
-                    args.push(named);
-                } else {
-                    args.push(self.parse_expr(arena, 0));
-                }
-                if !self.eat(TokenKind::Kw(Kw::Comma)) {
-                    break;
-                }
-            }
-        }
+        let (args, mut bad) = self.parse_intrinsic_args(arena);
         self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
         if args.len() < shape.min || args.len() > shape.max {
             bad = true;
@@ -1184,6 +1194,32 @@ impl<'src> Parser<'src> {
         }
         let args = arena.alloc(ExprNode::ArgList { args });
         arena.alloc(ExprNode::Call { func: base, args })
+    }
+
+    /// The comma-separated arguments of an intrinsic call, after its `(`, and whether any of them
+    /// is left out or named.
+    fn parse_intrinsic_args(&mut self, arena: &mut ExprArena) -> (Vec<NodeId>, bool) {
+        let mut args = Vec::new();
+        let mut bad = false;
+        if self.peek().kind == TokenKind::Kw(Kw::RParen) {
+            return (args, bad);
+        }
+        loop {
+            if matches!(self.peek().kind, TokenKind::Kw(Kw::Comma) | TokenKind::Kw(Kw::RParen)) {
+                bad = true; // an argument left out
+                break;
+            }
+            if let Some(named) = self.try_parse_named_arg(arena) {
+                bad = true; // a named argument
+                args.push(named);
+            } else {
+                args.push(self.parse_expr(arena, 0));
+            }
+            if !self.eat(TokenKind::Kw(Kw::Comma)) {
+                break;
+            }
+        }
+        (args, bad)
     }
 
     /// A keyword that begins a statement of its own, met where that statement's
@@ -1573,199 +1609,188 @@ impl<'src> Parser<'src> {
         let mut nodes = Vec::new();
         loop {
             self.skip_module_blank_lines();
-            if self.peek().kind == TokenKind::Eof { break; }
-
-            // `Else` or a line number in front of an attribute line does not change it.
-            if self.at_prefixed_attribute_line() {
-                self.advance();
-                self.eat(TokenKind::Kw(Kw::Colon));
-                let n = self.parse_attribute_stmt(arena);
-                nodes.push(n);
-                continue;
+            if self.peek().kind == TokenKind::Eof {
+                break;
             }
-
-            // A colon that starts the line cannot precede the declaration of a procedure,
-            // a `Declare` or an `Event`.
-            if self.after_colon && self.starts_procedure_like_declaration() {
-                let span = self.current_span();
-                self.diagnostics.push_labeled(0x9c6f, span, "statement or end of statement");
-            }
-
-            // An `Attribute` line after a colon takes the whole line: what stands before it is
-            // read for its errors only. A procedure, `Type` or `Enum` header before it opens
-            // nothing.
-            let trailing_attribute = self.trailing_attribute_line_at();
-            if trailing_attribute.is_some() && self.starts_module_block() {
-                for _ in 0..trailing_attribute.unwrap_or(0) {
-                    self.advance();
-                }
-                continue;
-            }
-            let head_mark = nodes.len();
-            let mut line_taken = false;
-
-            // After a procedure a standard module takes no `Event` or `Implements`. A class module
-            // takes `Implements`, and an `Event` there is text after the procedure's end.
-            if self.procedure_seen
-                && self.module_kind == ModuleKind::Standard
-                && trailing_attribute.is_none()
-                && self.starts_event_or_implements()
-            {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                continue;
-            }
-
-            // After a procedure a line that is neither a procedure, an attribute line nor
-            // a declaration is read as a statement; it is rejected whether or not it reads.
-            if self.procedure_seen && trailing_attribute.is_none() && self.is_statement_line_after_procedure() {
-                self.scan_line_after_procedure(arena);
-                continue;
-            }
-
-            // After a procedure only procedures (and attribute lines, conditional compilation)
-            // may stand; any other declaration is reported alone.
-            let late_declaration = if self.procedure_seen && self.starts_module_declaration() && trailing_attribute.is_none() {
-                self.eol_watch = true;
-                self.first_eol_start = u32::MAX;
-                Some((self.diagnostics.len(), self.current_span()))
-            } else {
-                None
-            };
-
-            match self.peek().kind.clone() {
-                // Procedure declarations
-                TokenKind::Kw(Kw::Sub)      => {
-                    let n = self.parse_proc_decl(arena, ProcKind::Sub);
-                    nodes.push(n);
-                }
-                TokenKind::Kw(Kw::Function) => {
-                    let n = self.parse_proc_decl(arena, ProcKind::Function);
-                    nodes.push(n);
-                }
-                TokenKind::Kw(Kw::Property) => {
-                    let n = self.parse_property_decl(arena);
-                    nodes.push(n);
-                }
-                // Declaration modifiers that precede Sub/Function/Property/Declare
-                // or a variable/constant list. `Global` is `Public`.
-                TokenKind::Kw(Kw::Public)
-                | TokenKind::Kw(Kw::Global)
-                | TokenKind::Kw(Kw::Private)
-                | TokenKind::Kw(Kw::Friend)
-                | TokenKind::Kw(Kw::Static) => {
-                    let n = self.parse_access_decl(arena);
-                    nodes.push(n);
-                }
-                // Type / Enum declarations
-                TokenKind::Kw(Kw::Type)  => {
-                    let at = self.current_span();
-                    let n = self.parse_type_decl(arena);
-                    self.check_public_in_object_module(arena, n, at, true);
-                    nodes.push(n);
-                }
-                TokenKind::Kw(Kw::Enum)  => {
-                    let n = self.parse_enum_decl(arena);
-                    nodes.push(n);
-                }
-                // External declarations
-                TokenKind::Kw(Kw::Declare) => {
-                    let at = self.current_span();
-                    let n = self.parse_declare_stmt(arena);
-                    self.check_public_in_object_module(arena, n, at, true);
-                    nodes.push(n);
-                }
-                // Event declarations — class-module-only
-                TokenKind::Kw(Kw::Event) => {
-                    let n = self.parse_event_decl(arena);
-                    nodes.push(n);
-                }
-                // Implements — class-module-only
-                TokenKind::Kw(Kw::Implements) => {
-                    let n = self.parse_implements_stmt(arena);
-                    nodes.push(n);
-                }
-                // Option statements
-                TokenKind::Kw(Kw::Option) => {
-                    let n = self.parse_option_stmt(arena);
-                    nodes.push(n);
-                }
-                // Module-level Dim / Const
-                TokenKind::Kw(Kw::Dim)
-                | TokenKind::Kw(Kw::Const) => {
-                    if let Some(n) = self.parse_stmt(arena) {
-                        nodes.push(n);
-                    }
-                }
-                // Def<Type> default-type declarations (DefInt A-Z, …).
-                TokenKind::Kw(k) if def_type_kw(k).is_some() => {
-                    let n = self.parse_def_stmt(arena);
-                    nodes.push(n);
-                }
-                // Attribute metadata lines (hosts embed these in module text).
-                TokenKind::Kw(Kw::Attribute) => {
-                    let n = self.parse_attribute_stmt(arena);
-                    nodes.push(n);
-                }
-                // `BEGIN ... END` designer-metadata block and `VERSION x.y CLASS`
-                // header line embedded in .cls/.frm files.  Neither `BEGIN` nor
-                // `VERSION` is a VB6 keyword; both appear as Ident at module level.
-                // Skip them without emitting diagnostics.
-                TokenKind::Ident => {
-                    let name = self.peek().sym
-                        .map(|id| self.scanner.sym_name(id as u32).to_ascii_lowercase())
-                        .unwrap_or_default();
-                    if name == "begin" {
-                        self.skip_begin_end_block();
-                    } else if name == "version" {
-                        // VERSION x.y CLASS / VERSION 5.00 — file-format header; skip entire line.
-                        self.skip_line();
-                    } else {
-                        line_taken = true;
-                        nodes.extend(self.skip_executable_statement(arena));
-                    }
-                }
-                TokenKind::Kw(k) if starts_executable_statement(k) => {
-                    line_taken = true;
-                    nodes.extend(self.skip_executable_statement(arena));
-                }
-                TokenKind::IntLit | TokenKind::LongLit => {
-                    line_taken = true;
-                    nodes.extend(self.skip_executable_statement(arena));
-                }
-                // `End Type` with no `Type` block open.
-                TokenKind::Kw(Kw::End) if self.peek2().kind == TokenKind::Kw(Kw::Type) => {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_END_TYPE_OUTSIDE_TYPE, span);
-                    self.skip_line();
-                }
-                _ => self.recover_module_unexpected(),
-            }
-            if let Some((mark, span)) = late_declaration {
-                self.eol_watch = false;
-                // A declaration line that does not read is reported as it is; one that reads
-                // is text after the procedure's end (errors inside a block it opens count
-                // for nothing).
-                let first_line_end = self.first_eol_start;
-                let failed = self.diagnostics.items()[mark..]
-                    .iter()
-                    .position(|d| d.span.start <= first_line_end && matches!(d.code, 0x9c6f | 0x9c70));
-                match failed {
-                    Some(i) => self.diagnostics.keep_one_from(mark, mark + i),
-                    None => {
-                        self.diagnostics.truncate(mark);
-                        self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
-                    }
-                }
-            }
-            if trailing_attribute.is_some() && !line_taken {
-                nodes.truncate(head_mark);
-            }
+            self.parse_module_line(arena, &mut nodes);
         }
         self.check_declarations(arena, &nodes);
         self.diagnostics.merge_directive_pass();
         nodes
+    }
+
+    /// Reads the declaration or statement line at the start of a line of the module into `nodes`.
+    fn parse_module_line(&mut self, arena: &mut ExprArena, nodes: &mut Vec<NodeId>) {
+        // `Else` or a line number in front of an attribute line does not change it.
+        if self.at_prefixed_attribute_line() {
+            self.advance();
+            self.eat(TokenKind::Kw(Kw::Colon));
+            let n = self.parse_attribute_stmt(arena);
+            nodes.push(n);
+            return;
+        }
+
+        // A colon that starts the line cannot precede the declaration of a procedure,
+        // a `Declare` or an `Event`.
+        if self.after_colon && self.starts_procedure_like_declaration() {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(0x9c6f, span, "statement or end of statement");
+        }
+
+        // An `Attribute` line after a colon takes the whole line: what stands before it is
+        // read for its errors only. A procedure, `Type` or `Enum` header before it opens
+        // nothing.
+        let trailing_attribute = self.trailing_attribute_line_at();
+        if trailing_attribute.is_some() && self.starts_module_block() {
+            for _ in 0..trailing_attribute.unwrap_or(0) {
+                self.advance();
+            }
+            return;
+        }
+        let head_mark = nodes.len();
+        if self.reject_line_after_procedure(arena, trailing_attribute.is_some()) {
+            return;
+        }
+
+        // After a procedure only procedures (and attribute lines, conditional compilation)
+        // may stand; any other declaration is reported alone.
+        let late_declaration = if self.procedure_seen && self.starts_module_declaration() && trailing_attribute.is_none() {
+            self.eol_watch = true;
+            self.first_eol_start = u32::MAX;
+            Some((self.diagnostics.len(), self.current_span()))
+        } else {
+            None
+        };
+
+        let line_taken = self.parse_module_member(arena, nodes);
+        if let Some((mark, span)) = late_declaration {
+            self.finish_late_declaration(mark, span);
+        }
+        if trailing_attribute.is_some() && !line_taken {
+            nodes.truncate(head_mark);
+        }
+    }
+
+    /// After a procedure, a line that a module does not take there is reported and read away.
+    /// Returns true when the line has been dealt with.
+    fn reject_line_after_procedure(&mut self, arena: &mut ExprArena, has_trailing_attribute: bool) -> bool {
+        if !self.procedure_seen || has_trailing_attribute {
+            return false;
+        }
+        // After a procedure a standard module takes no `Event` or `Implements`. A class module
+        // takes `Implements`, and an `Event` there is text after the procedure's end.
+        if self.module_kind == ModuleKind::Standard && self.starts_event_or_implements() {
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return true;
+        }
+
+        // After a procedure a line that is neither a procedure, an attribute line nor
+        // a declaration is read as a statement; it is rejected whether or not it reads.
+        if self.is_statement_line_after_procedure() {
+            self.scan_line_after_procedure(arena);
+            return true;
+        }
+        false
+    }
+
+    /// Settles the diagnostics of a declaration that stands after the end of a procedure.
+    fn finish_late_declaration(&mut self, mark: usize, span: Span) {
+        self.eol_watch = false;
+        // A declaration line that does not read is reported as it is; one that reads
+        // is text after the procedure's end (errors inside a block it opens count
+        // for nothing).
+        let first_line_end = self.first_eol_start;
+        let failed = self.diagnostics.items()[mark..]
+            .iter()
+            .position(|d| d.span.start <= first_line_end && matches!(d.code, 0x9c6f | 0x9c70));
+        match failed {
+            Some(i) => self.diagnostics.keep_one_from(mark, mark + i),
+            None => {
+                self.diagnostics.truncate(mark);
+                self.diagnostics.push(ERR_AFTER_END_OF_PROCEDURE, span);
+            }
+        }
+    }
+
+    /// A word that starts a module line as a plain name: the `BEGIN ... END` designer block and
+    /// the `VERSION` header line embedded in .cls/.frm files are skipped without diagnostics
+    /// (neither is a keyword; both appear as names at module level); anything else is read as
+    /// a statement. Returns true when the line was read as a statement.
+    fn parse_module_name_line(&mut self, arena: &mut ExprArena, nodes: &mut Vec<NodeId>) -> bool {
+        let name = self.peek().sym
+            .map(|id| self.scanner.sym_name(id as u32).to_ascii_lowercase())
+            .unwrap_or_default();
+        if name == "begin" {
+            self.skip_begin_end_block();
+            return false;
+        }
+        if name == "version" {
+            // VERSION x.y CLASS / VERSION 5.00 — file-format header; skip entire line.
+            self.skip_line();
+            return false;
+        }
+        nodes.extend(self.skip_executable_statement(arena));
+        true
+    }
+
+    /// Reads the member that starts at the current token of a module line. Returns true when the
+    /// line was read as an executable statement.
+    fn parse_module_member(&mut self, arena: &mut ExprArena, nodes: &mut Vec<NodeId>) -> bool {
+        match self.peek().kind.clone() {
+            // Procedure declarations
+            TokenKind::Kw(Kw::Sub) => nodes.push(self.parse_proc_decl(arena, ProcKind::Sub)),
+            TokenKind::Kw(Kw::Function) => nodes.push(self.parse_proc_decl(arena, ProcKind::Function)),
+            TokenKind::Kw(Kw::Property) => nodes.push(self.parse_property_decl(arena)),
+            // Declaration modifiers that precede Sub/Function/Property/Declare
+            // or a variable/constant list. `Global` is `Public`.
+            TokenKind::Kw(Kw::Public)
+            | TokenKind::Kw(Kw::Global)
+            | TokenKind::Kw(Kw::Private)
+            | TokenKind::Kw(Kw::Friend)
+            | TokenKind::Kw(Kw::Static) => nodes.push(self.parse_access_decl(arena)),
+            // Type / Enum declarations
+            TokenKind::Kw(Kw::Type) => {
+                let at = self.current_span();
+                let n = self.parse_type_decl(arena);
+                self.check_public_in_object_module(arena, n, at, true);
+                nodes.push(n);
+            }
+            TokenKind::Kw(Kw::Enum) => nodes.push(self.parse_enum_decl(arena)),
+            // External declarations
+            TokenKind::Kw(Kw::Declare) => {
+                let at = self.current_span();
+                let n = self.parse_declare_stmt(arena);
+                self.check_public_in_object_module(arena, n, at, true);
+                nodes.push(n);
+            }
+            // Event declarations — class-module-only
+            TokenKind::Kw(Kw::Event) => nodes.push(self.parse_event_decl(arena)),
+            // Implements — class-module-only
+            TokenKind::Kw(Kw::Implements) => nodes.push(self.parse_implements_stmt(arena)),
+            // Option statements
+            TokenKind::Kw(Kw::Option) => nodes.push(self.parse_option_stmt(arena)),
+            // Module-level Dim / Const
+            TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::Const) => nodes.extend(self.parse_stmt(arena)),
+            // Def<Type> default-type declarations (DefInt A-Z, …).
+            TokenKind::Kw(k) if def_type_kw(k).is_some() => nodes.push(self.parse_def_stmt(arena)),
+            // Attribute metadata lines (hosts embed these in module text).
+            TokenKind::Kw(Kw::Attribute) => nodes.push(self.parse_attribute_stmt(arena)),
+            TokenKind::Ident => return self.parse_module_name_line(arena, nodes),
+            TokenKind::Kw(k) if starts_executable_statement(k) => {
+                nodes.extend(self.skip_executable_statement(arena));
+                return true;
+            }
+            TokenKind::IntLit | TokenKind::LongLit => {
+                nodes.extend(self.skip_executable_statement(arena));
+                return true;
+            }
+            // `End Type` with no `Type` block open.
+            TokenKind::Kw(Kw::End) if self.peek2().kind == TokenKind::Kw(Kw::Type) => {
+                self.error_and_skip_line(ERR_END_TYPE_OUTSIDE_TYPE);
+            }
+            _ => self.recover_module_unexpected(),
+        }
+        false
     }
 
     /// True when the next tokens begin the header of a procedure, a `Type` or an `Enum`, with or
@@ -1914,9 +1939,7 @@ impl<'src> Parser<'src> {
                 self.parse_case_clause(arena);
             }
             None => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                self.skip_line();
+                self.error_and_skip_line(ERR_UNEXPECTED_TOKEN);
             }
         }
         None
@@ -2342,9 +2365,7 @@ impl<'src> Parser<'src> {
             });
         }
         // `Name <path>` must go on to `As`.
-        let span = self.current_span();
-        self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-        self.skip_line();
+        self.error_and_skip_line(ERR_SYNTAX_ERROR);
         old_path
     }
 
@@ -2399,17 +2420,7 @@ impl<'src> Parser<'src> {
         if self.read_statement_word() {
             return None;
         }
-        // A statement that follows another on a line adds to the line's compiled size only when
-        // the one before it was an assignment whose size is known.
-        if self.peek().kind != TokenKind::Kw(Kw::Colon) {
-            if !self.colon_on_line {
-                self.line_cost = 0;
-                self.line_cost_valid = true;
-            } else if !self.stmt_measured {
-                self.line_cost_valid = false;
-            }
-            self.stmt_measured = false;
-        }
+        self.begin_statement_cost();
 
         // `Else` or a line number in front of an attribute line does not change it.
         if self.at_prefixed_attribute_line() {
@@ -2417,332 +2428,353 @@ impl<'src> Parser<'src> {
             self.eat(TokenKind::Kw(Kw::Colon));
             return Some(self.parse_attribute_stmt(arena));
         }
-        // An `Attribute` line after a colon takes the whole line: what stands before it is read
-        // for its errors only, and a block it opens is not opened.
-        if !self.in_attribute_head {
-            if let Some(at) = self.trailing_attribute_line_at() {
-                if matches!(
-                    self.peek().kind,
-                    TokenKind::Kw(Kw::Do | Kw::For | Kw::While | Kw::With | Kw::Select)
-                ) {
-                    for _ in 0..at {
-                        self.advance();
-                    }
-                    return Some(self.parse_attribute_stmt(arena));
-                }
-                self.in_attribute_head = true;
-                let _ = self.parse_stmt(arena);
-                self.in_attribute_head = false;
-                return None;
-            }
+        if let Some(result) = self.parse_trailing_attribute_line(arena) {
+            return result;
         }
 
         self.promote_bracketed_graphics_word();
         let kind = self.peek().kind.clone();
-        let node = match &kind {
-            // A keyword that is not reserved names a line label like any name;
-            // a reserved word that starts a statement is that statement.
-            TokenKind::Kw(_)
-                if self.peek().sym.is_some()
-                    && self.peek2().kind == TokenKind::Kw(Kw::Colon)
-                    && !self.line_has_content
-                    && self.peek().kind != TokenKind::Kw(Kw::Randomize)
-                    && !self.at_reserved_word() =>
-            {
-                let name = self.advance();
-                self.advance(); // colon
-                self.after_colon = false; // the colon belongs to the label
-                self.colon_on_line = false;
-                let sym = name.sym.map(|s| s as u32).unwrap_or(0);
-                self.define_label(LabelRef::Name(sym), name.span);
-                let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
-                self.set_span(id, name.span);
-                id
+        match kind {
+            TokenKind::Kw(kw) => self.parse_keyword_stmt(arena, kw),
+            TokenKind::Ident => self.parse_name_start_stmt(arena),
+            TokenKind::IntLit | TokenKind::LongLit => self.parse_line_number_stmt(arena),
+            // Anything else is unexpected
+            _ => {
+                self.error_and_skip_to_stmt_end(ERR_UNEXPECTED_TOKEN);
+                None
             }
+        }
+    }
+
+    /// A statement that follows another on a line adds to the line's compiled size only when
+    /// the one before it was an assignment whose size is known.
+    fn begin_statement_cost(&mut self) {
+        if self.peek().kind == TokenKind::Kw(Kw::Colon) {
+            return;
+        }
+        if !self.colon_on_line {
+            self.line_cost = 0;
+            self.line_cost_valid = true;
+        } else if !self.stmt_measured {
+            self.line_cost_valid = false;
+        }
+        self.stmt_measured = false;
+    }
+
+    /// An `Attribute` line after a colon takes the whole line: what stands before it is read
+    /// for its errors only, and a block it opens is not opened. `None` when there is no such
+    /// line; otherwise the result of the statement.
+    fn parse_trailing_attribute_line(&mut self, arena: &mut ExprArena) -> Option<Option<NodeId>> {
+        if self.in_attribute_head {
+            return None;
+        }
+        let at = self.trailing_attribute_line_at()?;
+        if matches!(self.peek().kind, TokenKind::Kw(Kw::Do | Kw::For | Kw::While | Kw::With | Kw::Select)) {
+            for _ in 0..at {
+                self.advance();
+            }
+            return Some(Some(self.parse_attribute_stmt(arena)));
+        }
+        self.in_attribute_head = true;
+        let _ = self.parse_stmt(arena);
+        self.in_attribute_head = false;
+        Some(None)
+    }
+
+    /// Reports `code` at the current token and skips the rest of the line.
+    fn error_and_skip_line(&mut self, code: u32) {
+        let span = self.current_span();
+        self.diagnostics.push(code, span);
+        self.skip_line();
+    }
+
+    /// Reports `code` at the current token and skips to the end of the statement.
+    fn error_and_skip_to_stmt_end(&mut self, code: u32) {
+        let span = self.current_span();
+        self.diagnostics.push(code, span);
+        self.skip_to_stmt_end();
+    }
+
+    /// A name and a colon that start a line: a line label. The name has been checked.
+    fn parse_name_label(&mut self, arena: &mut ExprArena) -> NodeId {
+        let name = self.advance();
+        self.advance(); // colon
+        self.after_colon = false; // the colon belongs to the label
+        self.colon_on_line = false;
+        let sym = name.sym.map(|s| s as u32).unwrap_or(0);
+        self.define_label(LabelRef::Name(sym), name.span);
+        let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
+        self.set_span(id, name.span);
+        id
+    }
+
+    /// A statement that starts with the keyword `kw`.
+    fn parse_keyword_stmt(&mut self, arena: &mut ExprArena, kw: Kw) -> Option<NodeId> {
+        // A keyword that is not reserved names a line label like any name;
+        // a reserved word that starts a statement is that statement.
+        if self.peek().sym.is_some()
+            && self.peek2().kind == TokenKind::Kw(Kw::Colon)
+            && !self.line_has_content
+            && kw != Kw::Randomize
+            && !self.at_reserved_word()
+        {
+            return Some(self.parse_name_label(arena));
+        }
+        self.parse_declaration_keyword_stmt(arena, kw)
+    }
+
+    /// Statements that declare or that cannot be in a procedure.
+    fn parse_declaration_keyword_stmt(&mut self, arena: &mut ExprArena, kw: Kw) -> Option<NodeId> {
+        match kw {
             // Variable / constant declarations
             // An access word has no place in a procedure body.
-            TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Global) => {
-                let span = self.current_span();
+            Kw::Public | Kw::Private | Kw::Global => {
                 // An access word used as a name (`Global.Print`), or alone, is no declaration.
-                let code = if self.peek2().kind == TokenKind::Kw(Kw::Dot) || self.peek2().kind == TokenKind::Kw(Kw::Bang) {
+                let code = if matches!(self.peek2().kind, TokenKind::Kw(Kw::Dot | Kw::Bang)) {
                     ERR_SYNTAX_ERROR
                 } else {
                     ERR_INVALID_ATTRIBUTE_IN_PROCEDURE
                 };
-                self.diagnostics.push(code, span);
-                self.skip_line();
-                return None;
+                self.error_and_skip_line(code);
+                None
             }
-            TokenKind::Kw(Kw::Dim) | TokenKind::Kw(Kw::Static) => {
-                let is_static = matches!(kind, TokenKind::Kw(Kw::Static));
+            Kw::Dim | Kw::Static => {
                 self.advance();
-                self.parse_dim_list_static(arena, false, is_static)
+                Some(self.parse_dim_list_static(arena, false, kw == Kw::Static))
             }
-            TokenKind::Kw(Kw::Const) => {
+            Kw::Const => {
                 self.advance();
-                self.parse_const_list(arena)
+                Some(self.parse_const_list(arena))
             }
-            // ReDim
-            TokenKind::Kw(Kw::ReDim) => self.parse_redim_stmt(arena),
-            // Control flow
-            TokenKind::Kw(Kw::If)     => self.parse_if_stmt(arena),
-            TokenKind::Kw(Kw::For)    => self.parse_for_stmt(arena),
-            TokenKind::Kw(Kw::Do)     => self.parse_do_stmt(arena),
-            TokenKind::Kw(Kw::While)  => self.parse_while_stmt(arena),
-            TokenKind::Kw(Kw::Select) => self.parse_select_stmt(arena),
-            TokenKind::Kw(Kw::With)   => self.parse_with_stmt(arena),
-            // Assignment keywords
-            TokenKind::Kw(Kw::Let)    => self.parse_let_stmt(arena),
-            TokenKind::Kw(Kw::Set)    => self.parse_set_stmt(arena),
-            // Call / exit / goto
-            TokenKind::Kw(Kw::Call)   => self.parse_call_stmt(arena),
-            TokenKind::Kw(Kw::Exit)   => self.parse_exit_stmt(arena),
-            TokenKind::Kw(Kw::Return) => {
-                self.advance();
-                self.end_stmt();
-                arena.alloc(ExprNode::ReturnStmt)
-            }
-            TokenKind::Kw(Kw::GoTo)   => self.parse_goto_stmt(arena, false),
-            TokenKind::Kw(Kw::GoSub)  => self.parse_goto_stmt(arena, true),
-            // Space-separated `Go To` / `Go Sub` — the second keyword selects
-            // the kind. VB6 accepts both spellings (oracle-confirmed).
-            TokenKind::Kw(Kw::Go)
-                if matches!(
-                    self.peek2().kind,
-                    TokenKind::Kw(Kw::Eq) | TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang)
-                ) =>
-            {
-                self.parse_ident_stmt(arena)
-            }
-            // `Go` is a jump only as `Go To` or `Go Sub`.
-            TokenKind::Kw(Kw::Go)
-                if !matches!(self.peek2().kind, TokenKind::Kw(Kw::To) | TokenKind::Kw(Kw::Sub)) =>
-            {
-                self.advance();
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return None;
-            }
-            TokenKind::Kw(Kw::Go)     => self.parse_goto_stmt(arena, false),
-            TokenKind::Kw(Kw::Resume) => self.parse_resume_stmt(arena),
-            TokenKind::Kw(Kw::On)     => self.parse_on_stmt(arena),
-            // Error
-            TokenKind::Kw(Kw::Error) if self.error_starts_target() => self.parse_ident_stmt(arena),
-            TokenKind::Kw(Kw::Error) => {
-                self.advance();
-                let expr = self.parse_expr(arena, 0);
-                self.end_stmt();
-                arena.alloc(ExprNode::ErrorStmt { expr })
-            }
-            // Misc
-            TokenKind::Kw(Kw::Stop) => {
-                self.advance(); self.end_stmt();
-                arena.alloc(ExprNode::Stop)
-            }
-            TokenKind::Kw(Kw::End) => return self.parse_end_stmt(arena),
-            // A block terminator that does not close the innermost open block.
-            TokenKind::Kw(Kw::Else)
-            | TokenKind::Kw(Kw::ElseIf)
-            | TokenKind::Kw(Kw::EndIf)
-            | TokenKind::Kw(Kw::Next)
-            | TokenKind::Kw(Kw::Loop)
-            | TokenKind::Kw(Kw::Wend)
-            | TokenKind::Kw(Kw::Case) => return self.stray_terminator(arena),
-            TokenKind::Kw(Kw::Erase)  => self.parse_erase_stmt(arena),
-            TokenKind::Kw(Kw::RaiseEvent) => self.parse_raise_event(arena),
-            TokenKind::Kw(Kw::Debug)  => self.parse_debug_stmt(arena),
-
+            Kw::ReDim => Some(self.parse_redim_stmt(arena)),
+            Kw::Erase => Some(self.parse_erase_stmt(arena)),
+            Kw::RaiseEvent => Some(self.parse_raise_event(arena)),
+            Kw::Debug => Some(self.parse_debug_stmt(arena)),
             // Attribute metadata line
-            TokenKind::Kw(Kw::Attribute) => self.parse_attribute_stmt(arena),
-            // File I/O statements
-            TokenKind::Kw(Kw::Open)   => self.parse_file_open(arena),
-            TokenKind::Kw(Kw::Close)  => self.parse_file_close(arena),
-            TokenKind::Kw(Kw::Print)  => self.parse_print_keyword_stmt(arena),
-            TokenKind::Kw(Kw::Write)  => self.parse_write_keyword_stmt(arena),
-            TokenKind::Kw(Kw::Input)  => self.parse_input_keyword_stmt(arena),
-            TokenKind::Kw(Kw::Line)   => self.parse_line_keyword_stmt(arena),
-            TokenKind::Kw(Kw::Get)    => self.parse_get_put_keyword_stmt(arena, FileIoKind::Get),
-            TokenKind::Kw(Kw::Put)    => self.parse_get_put_keyword_stmt(arena, FileIoKind::Put),
-            TokenKind::Kw(Kw::Seek)   => {
-                self.parse_channel_expr_keyword_stmt(arena, FileIoKind::Seek)
-            }
-            TokenKind::Kw(Kw::Lock)   => self.parse_lock_keyword_stmt(arena, FileIoKind::Lock),
-            TokenKind::Kw(Kw::Unlock) => self.parse_lock_keyword_stmt(arena, FileIoKind::Unlock),
-            TokenKind::Kw(Kw::Width)  => {
-                self.parse_channel_expr_keyword_stmt(arena, FileIoKind::Width)
-            }
-            TokenKind::Kw(Kw::Name)   => self.parse_name_keyword_stmt(arena),
-            // Mid / Mid$ / MidB / MidB$ statement: `Mid(s, start[, len]) = value`.
-            // The spelling selects the variant flag.
-            TokenKind::Kw(Kw::Mid) | TokenKind::Kw(Kw::MidS)
-            | TokenKind::Kw(Kw::MidB) | TokenKind::Kw(Kw::MidBS) => {
-                if self.peek2().kind == TokenKind::Kw(Kw::LParen) {
-                    self.parse_mid_assign(arena)
-                } else {
-                    let t = self.advance();
-                    self.keyword_as_name_stmt(arena, t)
-                }
-            }
-            // `LSet target = expr` / `RSet target = expr` — range-copy assignment.
-            // The justification side is preserved.
-            TokenKind::Kw(Kw::LSet) | TokenKind::Kw(Kw::RSet) => {
-                self.parse_range_assign_stmt(arena)
-            }
-            // `?` is the `Print` shortcut.
-            // It parses identically to `Print`: `? #n, args` writes
-            // to a file, bare `? args` writes to the immediate window.
-            TokenKind::Kw(Kw::Question) => self.parse_print_keyword_stmt(arena),
-            // `Input$ #n, vars` / `InputB #n, vars` / `InputB$ #n, vars` —
-            // same file-read semantics as `Input #n, vars`.
-            TokenKind::Kw(Kw::InputS) | TokenKind::Kw(Kw::InputB) | TokenKind::Kw(Kw::InputBS) => {
-                self.parse_input_keyword_stmt(arena)
-            }
-            // `Property` used as a name: assigned, or with a member.
-            TokenKind::Kw(Kw::Property)
-                if matches!(
-                    self.peek2().kind,
-                    TokenKind::Kw(Kw::Eq) | TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang)
-                ) =>
-            {
-                let t = self.advance();
-                self.parse_ident_stmt_with_tok(arena, t)
-            }
-            // `Scale` alone, or with a coordinate pair, is the graphics method.
-            // `PSet`, `Circle` and `Scale` are reserved: they name no variable, only the statement.
-            TokenKind::Kw(Kw::PSet) | TokenKind::Kw(Kw::Circle) | TokenKind::Kw(Kw::Scale) => {
-                let t = self.advance();
-                self.parse_bare_graphics_stmt(arena, t)
-            }
+            Kw::Attribute => Some(self.parse_attribute_stmt(arena)),
             // `Implements` is read wherever it stands; whether it is allowed there is the binder's
             // question.
-            TokenKind::Kw(Kw::Implements) => self.parse_implements_stmt(arena),
+            Kw::Implements => Some(self.parse_implements_stmt(arena)),
+            // `Property` used as a name: assigned, or with a member.
+            Kw::Property if matches!(self.peek2().kind, TokenKind::Kw(Kw::Eq | Kw::Dot | Kw::Bang)) => {
+                let t = self.advance();
+                Some(self.parse_ident_stmt_with_tok(arena, t))
+            }
             // Sub / Function / Property — nested (error but recover)
-            TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
-            | TokenKind::Kw(Kw::Declare) | TokenKind::Kw(Kw::Event)
-            | TokenKind::Kw(Kw::Option) => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
-                self.skip_line();
-                return None;
+            Kw::Sub | Kw::Function | Kw::Property | Kw::Declare | Kw::Event | Kw::Option => {
+                self.error_and_skip_line(ERR_INVALID_IN_PROCEDURE);
+                None
             }
             // A `Type` or `Enum` block cannot be declared inside a procedure; the
             // whole block is consumed so its members are not read as statements.
-            TokenKind::Kw(Kw::Type) | TokenKind::Kw(Kw::Enum) => {
+            Kw::Type | Kw::Enum => {
                 let span = self.current_span();
                 let mark = self.diagnostics.len();
-                if kind == TokenKind::Kw(Kw::Type) {
+                if kw == Kw::Type {
                     self.parse_type_decl(arena);
                 } else {
                     self.parse_enum_decl(arena);
                 }
                 self.diagnostics.truncate(mark);
                 self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
-                return None;
+                None
             }
-            TokenKind::Kw(k) if def_type_kw(*k).is_some() => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
-                self.skip_line();
-                return None;
+            k if def_type_kw(k).is_some() => {
+                self.error_and_skip_line(ERR_INVALID_IN_PROCEDURE);
+                None
             }
-            // Comment tokens — consume and return None
-            TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) => {
-                self.advance(); // skip to EOL is implicit (scanner stops at Apos)
-                return None;
-            }
-            // Identifier — could be a line label (`Foo:`), assignment, or implicit call.
-            TokenKind::Ident if self.peek2().kind == TokenKind::Kw(Kw::Colon) && !self.line_has_content => {
-                let name = self.advance(); // identifier
-                self.advance();            // colon
-                self.after_colon = false;  // the colon belongs to the label
-                self.colon_on_line = false;
-                let sym = name.sym.map(|s| s as u32).unwrap_or(0);
-                self.define_label(LabelRef::Name(sym), name.span);
-                let id = arena.alloc(ExprNode::Label { target: LabelRef::Name(sym) });
-                self.set_span(id, name.span);
-                id
-            }
-            TokenKind::Ident => self.parse_ident_stmt(arena),
-            // Leading dot — With-block member access (.Member = expr or .Method args)
-            TokenKind::Kw(Kw::Dot) => self.parse_ident_stmt(arena),
-            // Colon — empty statement separator
-            TokenKind::Kw(Kw::Colon) => {
+            _ => self.parse_flow_keyword_stmt(arena, kw),
+        }
+    }
+
+    /// Control flow, assignment keywords, jumps and block terminators.
+    fn parse_flow_keyword_stmt(&mut self, arena: &mut ExprArena, kw: Kw) -> Option<NodeId> {
+        match kw {
+            Kw::If => Some(self.parse_if_stmt(arena)),
+            Kw::For => Some(self.parse_for_stmt(arena)),
+            Kw::Do => Some(self.parse_do_stmt(arena)),
+            Kw::While => Some(self.parse_while_stmt(arena)),
+            Kw::Select => Some(self.parse_select_stmt(arena)),
+            Kw::With => Some(self.parse_with_stmt(arena)),
+            // Assignment keywords
+            Kw::Let => Some(self.parse_let_stmt(arena)),
+            Kw::Set => Some(self.parse_set_stmt(arena)),
+            // Call / exit / goto
+            Kw::Call => Some(self.parse_call_stmt(arena)),
+            Kw::Exit => Some(self.parse_exit_stmt(arena)),
+            Kw::Return => {
                 self.advance();
-                return None;
+                self.end_stmt();
+                Some(arena.alloc(ExprNode::ReturnStmt))
             }
-            // Numeric line label: `10  stmt` or `10: stmt`. The label is a
-            // jump target in its own right (e.g. `GoTo 10`), so it is emitted
-            // as a `Label` node carrying the line number; any statement that
-            // follows on the same line is parsed by the enclosing block loop.
-            TokenKind::IntLit | TokenKind::LongLit => {
-                if self.line_started {
-                    // A line number only starts a line.
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                    self.skip_line();
-                    return None;
-                }
-                let tok = self.advance(); // consume the line number
-                if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                    self.skip_line();
-                    return None;
-                }
-                let line = line_label_value(&tok.lit);
-                if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
-                    self.after_colon = false;
-                    self.colon_on_line = false;
-                } else {
-                    // A line number alone does not make a later `Name:` a mid-line label.
-                    self.line_has_content = false;
-                }
-                self.define_label(LabelRef::Line(line), tok.span);
-                let id = arena.alloc(ExprNode::Label { target: LabelRef::Line(line) });
-                self.set_span(id, tok.span);
-                id
+            Kw::GoTo => Some(self.parse_goto_stmt(arena, false)),
+            Kw::GoSub => Some(self.parse_goto_stmt(arena, true)),
+            Kw::Go => self.parse_go_stmt(arena),
+            Kw::Resume => Some(self.parse_resume_stmt(arena)),
+            Kw::On => Some(self.parse_on_stmt(arena)),
+            // Error
+            Kw::Error if self.error_starts_target() => Some(self.parse_ident_stmt(arena)),
+            Kw::Error => {
+                self.advance();
+                let expr = self.parse_expr(arena, 0);
+                self.end_stmt();
+                Some(arena.alloc(ExprNode::ErrorStmt { expr }))
             }
-            // `Me` starts a statement only as the object of a member, an element or an assignment.
-            TokenKind::Kw(Kw::Me)
-                if matches!(
-                    self.peek2().kind,
-                    TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang) | TokenKind::Kw(Kw::LParen) | TokenKind::Kw(Kw::Eq)
-                ) =>
-            {
-                // `Me` and its member access are written together.
-                let me_end = self.peek().span.start + self.peek().span.len;
-                let next = self.peek2().clone();
-                if matches!(next.kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang))
-                    && next.span.start > me_end
-                    && !self.src[me_end as usize..next.span.start as usize].iter().any(|&b| b == 10 || b == 13)
-                {
-                    self.diagnostics.push(ERR_SYNTAX_ERROR, next.span);
-                    self.skip_line();
-                    return None;
-                }
-                self.parse_ident_stmt(arena)
+            Kw::Stop => {
+                self.advance();
+                self.end_stmt();
+                Some(arena.alloc(ExprNode::Stop))
             }
-            // A leading `!` is a With-object key.
-            TokenKind::Kw(Kw::Bang) => self.parse_ident_stmt(arena),
-            // Punctuation, operators and reserved words that name no statement cannot
-            // start one; any other keyword is an ordinary name.
-            TokenKind::Kw(_) if !self.starts_name_statement() => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return None;
+            Kw::End => self.parse_end_stmt(arena),
+            // A block terminator that does not close the innermost open block.
+            Kw::Else | Kw::ElseIf | Kw::EndIf | Kw::Next | Kw::Loop | Kw::Wend | Kw::Case => {
+                self.stray_terminator(arena)
             }
-            TokenKind::Kw(_) => self.parse_ident_stmt(arena),
-            // Anything else is unexpected
-            _ => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                self.skip_to_stmt_end();
-                return None;
-            }
+            _ => self.parse_file_keyword_stmt(arena, kw),
+        }
+    }
+
+    /// `Go` as the start of a statement: a name, or a space-separated `Go To` / `Go Sub`, where
+    /// the second keyword selects the kind. `Go` is a jump only as `Go To` or `Go Sub`.
+    fn parse_go_stmt(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        let next = self.peek2().kind.clone();
+        if matches!(next, TokenKind::Kw(Kw::Eq | Kw::Dot | Kw::Bang)) {
+            return Some(self.parse_ident_stmt(arena));
+        }
+        if !matches!(next, TokenKind::Kw(Kw::To | Kw::Sub)) {
+            self.advance();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return None;
+        }
+        Some(self.parse_goto_stmt(arena, false))
+    }
+
+    /// File I/O statements.
+    fn parse_file_keyword_stmt(&mut self, arena: &mut ExprArena, kw: Kw) -> Option<NodeId> {
+        let node = match kw {
+            Kw::Open => self.parse_file_open(arena),
+            Kw::Close => self.parse_file_close(arena),
+            // `?` is the `Print` shortcut.
+            // It parses identically to `Print`: `? #n, args` writes
+            // to a file, bare `? args` writes to the immediate window.
+            Kw::Print | Kw::Question => self.parse_print_keyword_stmt(arena),
+            Kw::Write => self.parse_write_keyword_stmt(arena),
+            // `Input$ #n, vars` / `InputB #n, vars` / `InputB$ #n, vars` —
+            // same file-read semantics as `Input #n, vars`.
+            Kw::Input | Kw::InputS | Kw::InputB | Kw::InputBS => self.parse_input_keyword_stmt(arena),
+            Kw::Line => self.parse_line_keyword_stmt(arena),
+            Kw::Get => self.parse_get_put_keyword_stmt(arena, FileIoKind::Get),
+            Kw::Put => self.parse_get_put_keyword_stmt(arena, FileIoKind::Put),
+            Kw::Seek => self.parse_channel_expr_keyword_stmt(arena, FileIoKind::Seek),
+            Kw::Lock => self.parse_lock_keyword_stmt(arena, FileIoKind::Lock),
+            Kw::Unlock => self.parse_lock_keyword_stmt(arena, FileIoKind::Unlock),
+            Kw::Width => self.parse_channel_expr_keyword_stmt(arena, FileIoKind::Width),
+            Kw::Name => self.parse_name_keyword_stmt(arena),
+            _ => return self.parse_name_like_keyword_stmt(arena, kw),
         };
         Some(node)
+    }
+
+    /// Keywords that also act as names, punctuation and comments.
+    fn parse_name_like_keyword_stmt(&mut self, arena: &mut ExprArena, kw: Kw) -> Option<NodeId> {
+        match kw {
+            // Mid / Mid$ / MidB / MidB$ statement: `Mid(s, start[, len]) = value`.
+            // The spelling selects the variant flag.
+            Kw::Mid | Kw::MidS | Kw::MidB | Kw::MidBS => {
+                if self.peek2().kind == TokenKind::Kw(Kw::LParen) {
+                    return Some(self.parse_mid_assign(arena));
+                }
+                let t = self.advance();
+                Some(self.keyword_as_name_stmt(arena, t))
+            }
+            // `LSet target = expr` / `RSet target = expr` — range-copy assignment.
+            // The justification side is preserved.
+            Kw::LSet | Kw::RSet => Some(self.parse_range_assign_stmt(arena)),
+            // `Scale` alone, or with a coordinate pair, is the graphics method.
+            // `PSet`, `Circle` and `Scale` are reserved: they name no variable, only the statement.
+            Kw::PSet | Kw::Circle | Kw::Scale => {
+                let t = self.advance();
+                Some(self.parse_bare_graphics_stmt(arena, t))
+            }
+            // Comment tokens — consume and return None
+            Kw::Apos | Kw::Rem => {
+                self.advance(); // skip to EOL is implicit (scanner stops at Apos)
+                None
+            }
+            // Leading dot — With-block member access (.Member = expr or .Method args);
+            // a leading `!` is a With-object key.
+            Kw::Dot | Kw::Bang => Some(self.parse_ident_stmt(arena)),
+            // Colon — empty statement separator
+            Kw::Colon => {
+                self.advance();
+                None
+            }
+            // `Me` starts a statement only as the object of a member, an element or an assignment.
+            Kw::Me if matches!(
+                self.peek2().kind,
+                TokenKind::Kw(Kw::Dot | Kw::Bang | Kw::LParen | Kw::Eq)
+            ) => self.parse_me_stmt(arena),
+            // Punctuation, operators and reserved words that name no statement cannot
+            // start one; any other keyword is an ordinary name.
+            _ if !self.starts_name_statement() => {
+                self.error_and_skip_line(ERR_SYNTAX_ERROR);
+                None
+            }
+            _ => Some(self.parse_ident_stmt(arena)),
+        }
+    }
+
+    /// `Me` followed by a member, an element or an assignment.
+    fn parse_me_stmt(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        // `Me` and its member access are written together.
+        let me_end = self.peek().span.start + self.peek().span.len;
+        let next = self.peek2().clone();
+        if matches!(next.kind, TokenKind::Kw(Kw::Dot) | TokenKind::Kw(Kw::Bang))
+            && next.span.start > me_end
+            && !self.src[me_end as usize..next.span.start as usize].iter().any(|&b| b == 10 || b == 13)
+        {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, next.span);
+            self.skip_line();
+            return None;
+        }
+        Some(self.parse_ident_stmt(arena))
+    }
+
+    /// A statement that starts with a name: a line label (`Foo:`), an assignment or an implicit
+    /// call.
+    fn parse_name_start_stmt(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        if self.peek2().kind == TokenKind::Kw(Kw::Colon) && !self.line_has_content {
+            return Some(self.parse_name_label(arena));
+        }
+        Some(self.parse_ident_stmt(arena))
+    }
+
+    /// Numeric line label: `10  stmt` or `10: stmt`. The label is a jump target in its own
+    /// right (e.g. `GoTo 10`), so it is emitted as a `Label` node carrying the line number;
+    /// any statement that follows on the same line is parsed by the enclosing block loop.
+    fn parse_line_number_stmt(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        if self.line_started {
+            // A line number only starts a line.
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return None;
+        }
+        let tok = self.advance(); // consume the line number
+        if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return None;
+        }
+        let line = line_label_value(&tok.lit);
+        if self.eat(TokenKind::Kw(Kw::Colon)) { // optional colon
+            self.after_colon = false;
+            self.colon_on_line = false;
+        } else {
+            // A line number alone does not make a later `Name:` a mid-line label.
+            self.line_has_content = false;
+        }
+        self.define_label(LabelRef::Line(line), tok.span);
+        let id = arena.alloc(ExprNode::Label { target: LabelRef::Line(line) });
+        self.set_span(id, tok.span);
+        Some(id)
     }
 
     // ── Individual statement parsers ──────────────────────────────────────────
@@ -2784,120 +2816,147 @@ impl<'src> Parser<'src> {
         }
         let eq_span = self.current_span();
         if self.eat(TokenKind::Kw(Kw::Eq)) {
-            let value = self.parse_expr(arena, 0);
-            // A line of compiled code holds 0x3c00 bytes: the assignments before this one on the
-            // line (each followed by its 2-byte separator), this one, and 4 for each physical line.
-            if self.peek().kind == TokenKind::Eol {
-                let (before, valid) = (self.line_cost, self.line_cost_valid);
-                let lines = self.line_continuations as usize + 1;
-                if valid {
-                    if let Some(size) = line_size::assignment_size(arena, lhs, value, lines) {
-                        if before + size > MAX_LINE_CODE_SIZE {
-                            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, eq_span);
-                        }
-                    }
-                }
-            } else if self.peek().kind == TokenKind::Kw(Kw::Colon) {
-                match line_size::assignment_size(arena, lhs, value, 0) {
-                    Some(size) => {
-                        self.line_cost += size + cost::OPERATOR;
-                        self.stmt_measured = true;
-                    }
-                    None => self.line_cost_valid = false,
-                }
-            }
-            self.end_stmt();
-            arena.alloc(ExprNode::Assign { target: lhs, value })
-        } else if self.peek().kind == TokenKind::Kw(Kw::ColonEq) {
+            return self.finish_assignment(arena, lhs, eq_span);
+        }
+        if self.peek().kind == TokenKind::Kw(Kw::ColonEq) {
             // A named argument is only meaningful inside an argument list, never as a statement.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
-            lhs
-        } else if let Some((callee, arg)) = self.paren_first_argument(arena, lhs) {
-            // `Foo (a) - (b), c` / `Foo (a), b`: in a call statement the
-            // parenthesised group after the callee begins the first argument
-            // expression; it is not the argument list.
-            let first = arena.alloc(ExprNode::Paren { inner: arg });
-            let first = self.parse_infix(arena, first, 0);
-            let mut args = vec![first];
-            if self.eat(TokenKind::Kw(Kw::Comma)) {
-                // A comma needs another argument after it, empty or not, before the line ends.
-                if self.peek().is_stmt_end()
-                    || matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
-                {
-                    let span = self.current_span();
-                    self.report_expected(span, "expression");
-                    self.skip_line();
-                } else {
-                    args.extend(self.parse_stmt_arg_list(arena));
-                    self.end_stmt();
-                }
-            } else {
-                self.end_stmt();
-            }
-            let args = arena.alloc(ExprNode::ArgList { args });
-            arena.alloc(ExprNode::CallStmt { callee, args })
-        } else if self.has_empty_call(arena, lhs)
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return lhs;
+        }
+        if let Some((callee, arg)) = self.paren_first_argument(arena, lhs) {
+            return self.finish_paren_call_stmt(arena, callee, arg);
+        }
+        if self.is_call_that_needs_call_keyword(arena, lhs) {
+            // `Foo()`, `Foo(AddressOf Bar)`, `Foo(a, b)` and `Foo(a)(b)` are not statements: `Call` is needed for them.
+            self.report_expected_and_skip_line("end of statement");
+            return lhs;
+        }
+        self.finish_implicit_call(arena, lhs)
+    }
+
+    /// Reports that `what` was expected at the current token and skips the rest of the line.
+    fn report_expected_and_skip_line(&mut self, what: &'static str) {
+        let span = self.current_span();
+        self.report_expected(span, what);
+        self.skip_line();
+    }
+
+    /// True when `lhs` is a bracketed call that is not a statement without `Call`.
+    fn is_call_that_needs_call_keyword(&self, arena: &ExprArena, lhs: NodeId) -> bool {
+        self.has_empty_call(arena, lhs)
             || self.call_with_address_of_argument(arena, lhs)
             || self.call_with_several_arguments(arena, lhs)
             || matches!(arena.get(lhs), ExprNode::Call { func, .. } if matches!(arena.get(*func), ExprNode::Call { .. }))
-        {
-            // `Foo()`, `Foo(AddressOf Bar)`, `Foo(a, b)` and `Foo(a)(b)` are not statements: `Call` is needed for them.
-            let span = self.current_span();
-            self.report_expected(span, "end of statement");
-            self.skip_line();
-            lhs
-        } else {
-            // After a plain name `As` opens an As clause, so it cannot name the first argument.
-            if matches!(arena.get(lhs), ExprNode::NameRef { .. })
-                && self.peek().kind == TokenKind::Kw(Kw::As)
-                && self.peek2().kind == TokenKind::Kw(Kw::ColonEq)
-            {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return lhs;
-            }
-            // Implicit call with optional trailing arguments: `Foo a, b`. After
-            // a parenthesised coordinate pair (`PSet (x, y), color`) the comma
-            // only separates the pair from the remaining arguments.
-            if matches!(arena.get(lhs), ExprNode::Call { .. }) {
-                let at_end = self.peek().is_stmt_end()
-                    || matches!(
-                        self.peek().kind,
-                        TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else) | TokenKind::Eof
-                    );
-                if !at_end && !self.eat(TokenKind::Kw(Kw::Comma)) {
-                    let span = self.current_span();
-                    self.report_expected(span, "end of statement");
-                    self.skip_line();
-                    return lhs;
+    }
+
+    /// The value of an assignment `lhs = value`, after the `=`.
+    fn finish_assignment(&mut self, arena: &mut ExprArena, lhs: NodeId, eq_span: Span) -> NodeId {
+        let value = self.parse_expr(arena, 0);
+        self.measure_assignment(arena, lhs, value, eq_span);
+        self.end_stmt();
+        arena.alloc(ExprNode::Assign { target: lhs, value })
+    }
+
+    /// Adds the assignment to the compiled size of its line. A line of compiled code holds
+    /// 0x3c00 bytes: the assignments before this one on the line (each followed by its 2-byte
+    /// separator), this one, and 4 for each physical line.
+    fn measure_assignment(&mut self, arena: &ExprArena, lhs: NodeId, value: NodeId, eq_span: Span) {
+        match self.peek().kind {
+            TokenKind::Eol => self.check_line_code_size(arena, lhs, value, eq_span),
+            TokenKind::Kw(Kw::Colon) => match line_size::assignment_size(arena, lhs, value, 0) {
+                Some(size) => {
+                    self.line_cost += size + cost::OPERATOR;
+                    self.stmt_measured = true;
                 }
-            }
-            // A statement cannot end in a bang access, with or without arguments.
-            if self.ends_in_bang_member(arena, lhs) {
-                let span = if self.peek().is_stmt_end() { self.chain_span(arena, lhs) } else { self.current_span() };
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return lhs;
-            }
-            let call_span = self.current_span();
-            let args = self.parse_stmt_arg_list(arena);
-            // `Randomize seed` costs 2 over an assignment of the seed.
-            if let (ExprNode::NameRef { sym, .. }, [seed]) = (arena.get(lhs), args.as_slice()) {
-                if self.scanner.sym_name(*sym).eq_ignore_ascii_case("Randomize") {
-                    let parts = line_size::expression_part(arena, *seed).map(|part| cost::RANDOMIZE + part);
-                    self.check_parts_size(parts, call_span);
-                }
-            }
+                None => self.line_cost_valid = false,
+            },
+            _ => {}
+        }
+    }
+
+    /// Reports an assignment that ends its line when the line passes the size limit.
+    fn check_line_code_size(&mut self, arena: &ExprArena, lhs: NodeId, value: NodeId, eq_span: Span) {
+        let (before, valid) = (self.line_cost, self.line_cost_valid);
+        let lines = self.line_continuations as usize + 1;
+        if !valid {
+            return;
+        }
+        let Some(size) = line_size::assignment_size(arena, lhs, value, lines) else { return };
+        if before + size > MAX_LINE_CODE_SIZE {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, eq_span);
+        }
+    }
+
+    /// `Foo (a) - (b), c` / `Foo (a), b`: in a call statement the
+    /// parenthesised group after the callee begins the first argument
+    /// expression; it is not the argument list.
+    fn finish_paren_call_stmt(&mut self, arena: &mut ExprArena, callee: NodeId, arg: NodeId) -> NodeId {
+        let first = arena.alloc(ExprNode::Paren { inner: arg });
+        let first = self.parse_infix(arena, first, 0);
+        let mut args = vec![first];
+        if !self.eat(TokenKind::Kw(Kw::Comma)) {
             self.end_stmt();
-            if args.is_empty() {
-                lhs
-            } else {
-                let args = arena.alloc(ExprNode::ArgList { args });
-                arena.alloc(ExprNode::CallStmt { callee: lhs, args })
-            }
+        } else if self.at_call_arguments_end() {
+            // A comma needs another argument after it, empty or not, before the line ends.
+            self.report_expected_and_skip_line("expression");
+        } else {
+            args.extend(self.parse_stmt_arg_list(arena));
+            self.end_stmt();
+        }
+        let args = arena.alloc(ExprNode::ArgList { args });
+        arena.alloc(ExprNode::CallStmt { callee, args })
+    }
+
+    /// Whether the line, after a bracketed call, goes on with arguments: it does after a comma.
+    fn call_goes_on_with_arguments(&mut self) -> bool {
+        let at_end = self.peek().is_stmt_end()
+            || matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else) | TokenKind::Eof
+            );
+        at_end || self.eat(TokenKind::Kw(Kw::Comma))
+    }
+
+    /// Implicit call with optional trailing arguments: `Foo a, b`.
+    fn finish_implicit_call(&mut self, arena: &mut ExprArena, lhs: NodeId) -> NodeId {
+        // After a plain name `As` opens an As clause, so it cannot name the first argument.
+        if matches!(arena.get(lhs), ExprNode::NameRef { .. })
+            && self.peek().kind == TokenKind::Kw(Kw::As)
+            && self.peek2().kind == TokenKind::Kw(Kw::ColonEq)
+        {
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return lhs;
+        }
+        // After a parenthesised coordinate pair (`PSet (x, y), color`) the comma
+        // only separates the pair from the remaining arguments.
+        if matches!(arena.get(lhs), ExprNode::Call { .. }) && !self.call_goes_on_with_arguments() {
+            self.report_expected_and_skip_line("end of statement");
+            return lhs;
+        }
+        // A statement cannot end in a bang access, with or without arguments.
+        if self.ends_in_bang_member(arena, lhs) {
+            let span = if self.peek().is_stmt_end() { self.chain_span(arena, lhs) } else { self.current_span() };
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+            self.skip_line();
+            return lhs;
+        }
+        let call_span = self.current_span();
+        let args = self.parse_stmt_arg_list(arena);
+        self.measure_randomize(arena, lhs, &args, call_span);
+        self.end_stmt();
+        if args.is_empty() {
+            return lhs;
+        }
+        let args = arena.alloc(ExprNode::ArgList { args });
+        arena.alloc(ExprNode::CallStmt { callee: lhs, args })
+    }
+
+    /// `Randomize seed` costs 2 over an assignment of the seed.
+    fn measure_randomize(&mut self, arena: &ExprArena, lhs: NodeId, args: &[NodeId], call_span: Span) {
+        let (ExprNode::NameRef { sym, .. }, [seed]) = (arena.get(lhs), args) else { return };
+        if self.scanner.sym_name(*sym).eq_ignore_ascii_case("Randomize") {
+            let parts = line_size::expression_part(arena, *seed).map(|part| cost::RANDOMIZE + part);
+            self.check_parts_size(parts, call_span);
         }
     }
 
@@ -2997,20 +3056,22 @@ impl<'src> Parser<'src> {
 
     /// Parses a `Let` assignment statement.
     fn parse_let_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.advance(); // consume Let
-        let target = match self.parse_assignment_target(arena) {
-            Ok(target) => target,
-            Err(reported) => return reported,
-        };
-        self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
-        let value = self.parse_expr(arena, 0);
-        self.end_stmt();
-        arena.alloc(ExprNode::Assign { target, value })
+        self.parse_keyword_assignment(arena, |target, value| ExprNode::Assign { target, value })
     }
 
     /// Parses a `Set` assignment statement.
     fn parse_set_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
-        self.advance(); // consume Set
+        self.parse_keyword_assignment(arena, |target, value| ExprNode::SetAssign { target, value })
+    }
+
+    /// An assignment that starts with the keyword `Let` or `Set` (the current token), built by
+    /// `build` from the target and the value.
+    fn parse_keyword_assignment(
+        &mut self,
+        arena: &mut ExprArena,
+        build: impl FnOnce(NodeId, NodeId) -> ExprNode,
+    ) -> NodeId {
+        self.advance(); // consume Let / Set
         let target = match self.parse_assignment_target(arena) {
             Ok(target) => target,
             Err(reported) => return reported,
@@ -3018,7 +3079,7 @@ impl<'src> Parser<'src> {
         self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
         let value = self.parse_expr(arena, 0);
         self.end_stmt();
-        arena.alloc(ExprNode::SetAssign { target, value })
+        arena.alloc(build(target, value))
     }
 
     /// `Mid`/`Mid$` string-replacement statement: `Mid(s, start[, len]) = value`.
@@ -3051,9 +3112,7 @@ impl<'src> Parser<'src> {
         let args = arena.alloc(ExprNode::ArgList { args: items });
         if !well_formed {
             // The statement is abandoned at the first operand error, as the compiler does.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-            self.skip_to_stmt_end();
+            self.error_and_skip_to_stmt_end(ERR_UNEXPECTED_TOKEN);
             let value = self.parse_primary_placeholder(arena);
             return arena.alloc(ExprNode::MidAssign { byte_oriented, dollar, args, value });
         }
@@ -3115,9 +3174,7 @@ impl<'src> Parser<'src> {
         }
         if is_static && self.in_procedure && self.peek().kind == TokenKind::Kw(Kw::Property) {
             // After `Static` a `Property` starts a property procedure, which a procedure body cannot hold.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
         let mut stmts = Vec::new();
@@ -3155,35 +3212,19 @@ impl<'src> Parser<'src> {
         array_suffix_ok: bool,
         value_required: bool,
     ) -> NodeId {
-        // A member named `WithEvents` is followed by its type, not by a name.
         // The first item of a `Const` statement starts the sum of its items' bytes.
         if is_const && matches!(self.last_consumed, TokenKind::Kw(Kw::Const)) {
             self.const_items_cost = Some(0);
         }
         let item_span = self.current_span();
-        let with_events = !is_const
-            && self.peek().kind == TokenKind::Kw(Kw::WithEvents)
-            && !matches!(self.peek2().kind, TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen));
-        if with_events {
-            self.reject_in_standard_module();
-            if self.in_procedure {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
-            }
-            self.advance();
-        }
+        let with_events = self.parse_with_events_prefix(is_const);
         let name = self.expect_decl_name();
         self.note_declared_name(&name, !self.in_procedure);
         let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
-        if is_const && !self.in_enum_member && self.peek().kind == TokenKind::Kw(Kw::LParen) {
-            let span = self.current_span();
-            self.report_expected(span, "As or =");
-        }
+        self.reject_const_brackets(is_const);
         if with_events && self.peek().kind == TokenKind::Kw(Kw::LParen) {
             // An event source is one object variable: it takes no array bounds.
-            let span = self.current_span();
-            self.report_expected(span, "As");
-            self.skip_line();
+            self.report_expected_and_skip_line("As");
             let id = arena.alloc(ExprNode::DimItem {
                 name: name_id, is_const, is_static, is_new: false, with_events, bounds: None, type_node: None, init: None,
             });
@@ -3197,15 +3238,67 @@ impl<'src> Parser<'src> {
         } else {
             None
         };
-        if !self.in_procedure {
-            self.module_decl_seen = true;
-            if !is_const {
-                self.module_array_seen |= bounds.is_some();
-            }
-        }
+        self.note_module_declaration(is_const, bounds.is_some());
         self.reject_suffix_with_as(&name, "end of statement");
-        // `Dir$` is the one built-in `$` name that a variable or member declaration still reads
-        // as `Dir` with a type-declaration character.
+        self.reject_dir_name_with_as(&name, is_const);
+        self.last_item_had_as = self.peek().kind == TokenKind::Kw(Kw::As);
+        if with_events && !self.last_item_had_as {
+            let span = self.current_span();
+            self.report_expected(span, "As");
+        }
+        let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
+            let (is_new, ty) = self.parse_dim_as_type(arena, is_const, with_events, array_suffix_ok);
+            (is_new, Some(ty))
+        } else {
+            // `Dim x%` ≡ `Dim x As Integer`
+            (false, self.type_node_from_suffix(arena, name.type_suffix))
+        };
+        // Only a constant has an initial value.
+        let init = if is_const { self.parse_const_value(arena, value_required, item_span) } else { None };
+        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, with_events, bounds, type_node, init });
+        self.set_span(id, name.span);
+        id
+    }
+
+    /// A constant is not an array: brackets after its name are reported.
+    fn reject_const_brackets(&mut self, is_const: bool) {
+        if is_const && !self.in_enum_member && self.peek().kind == TokenKind::Kw(Kw::LParen) {
+            let span = self.current_span();
+            self.report_expected(span, "As or =");
+        }
+    }
+
+    /// Notes a declaration at module level, and whether it declares an array.
+    fn note_module_declaration(&mut self, is_const: bool, is_array: bool) {
+        if self.in_procedure {
+            return;
+        }
+        self.module_decl_seen = true;
+        if !is_const {
+            self.module_array_seen |= is_array;
+        }
+    }
+
+    /// A member named `WithEvents` is followed by its type, not by a name. Reads the word when
+    /// it starts a variable of events, and says whether it did.
+    fn parse_with_events_prefix(&mut self, is_const: bool) -> bool {
+        let with_events = !is_const
+            && self.peek().kind == TokenKind::Kw(Kw::WithEvents)
+            && !matches!(self.peek2().kind, TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen));
+        if with_events {
+            self.reject_in_standard_module();
+            if self.in_procedure {
+                let span = self.current_span();
+                self.diagnostics.push(ERR_INVALID_IN_PROCEDURE, span);
+            }
+            self.advance();
+        }
+        with_events
+    }
+
+    /// `Dir$` is the one built-in `$` name that a variable or member declaration still reads
+    /// as `Dir` with a type-declaration character.
+    fn reject_dir_name_with_as(&mut self, name: &Token, is_const: bool) {
         if !is_const
             && name.sym.is_some_and(|s| self.scanner.sym_name(s as u32).eq_ignore_ascii_case("Dir$"))
             && self.peek().kind == TokenKind::Kw(Kw::As)
@@ -3213,70 +3306,74 @@ impl<'src> Parser<'src> {
             let span = self.current_span();
             self.report_expected(span, "end of statement");
         }
-        self.last_item_had_as = self.peek().kind == TokenKind::Kw(Kw::As);
-        if with_events && !self.last_item_had_as {
-            let span = self.current_span();
-            self.report_expected(span, "As");
+    }
+
+    /// The type after `As` in a variable or constant declaration (the `As` is read): whether it
+    /// is created with `New`, and the type node.
+    fn parse_dim_as_type(
+        &mut self,
+        arena: &mut ExprArena,
+        is_const: bool,
+        with_events: bool,
+        array_suffix_ok: bool,
+    ) -> (bool, NodeId) {
+        if with_events {
+            self.check_event_source_type();
         }
-        let (is_new, type_node) = if self.eat(TokenKind::Kw(Kw::As)) {
-            if with_events {
-                // An event source is a named class: `New` and the built-in types are out.
-                let span = self.current_span();
-                if self.peek().kind == TokenKind::Kw(Kw::New) {
-                    self.diagnostics.push(ERR_INVALID_NEW_KEYWORD, span);
-                } else if matches!(
-                    self.peek_word(),
-                    Some(
-                        Kw::Integer | Kw::Long | Kw::Single | Kw::Double | Kw::Currency | Kw::Date | Kw::Byte
-                            | Kw::Boolean | Kw::Variant | Kw::Object | Kw::String | Kw::Decimal
-                    )
-                ) {
-                    self.report_expected(span, "identifier");
-                }
-            }
-            let is_new = self.eat(TokenKind::Kw(Kw::New));
-            // `Object` is not a creatable class.
-            if is_new && (self.at_word(Kw::Object) || self.at_reserved_word()) {
-                // `New` takes a class name only.
-                let span = self.current_span();
-                self.report_expected(span, "identifier");
-            }
-            let type_span = self.current_span();
-            self.type_after_new = is_new;
-            let ty = self.parse_type_spec(arena, array_suffix_ok);
-            // A constant has a built-in type: a class or user type name does not fit.
-            if is_const && (is_new || matches!(arena.get(ty), ExprNode::UserType { .. })) {
-                self.report_expected(type_span, "type name");
-            }
-            (is_new, Some(ty))
+        let is_new = self.eat(TokenKind::Kw(Kw::New));
+        // `Object` is not a creatable class.
+        if is_new && (self.at_word(Kw::Object) || self.at_reserved_word()) {
+            // `New` takes a class name only.
+            let span = self.current_span();
+            self.report_expected(span, "identifier");
+        }
+        let type_span = self.current_span();
+        self.type_after_new = is_new;
+        let ty = self.parse_type_spec(arena, array_suffix_ok);
+        // A constant has a built-in type: a class or user type name does not fit.
+        if is_const && (is_new || matches!(arena.get(ty), ExprNode::UserType { .. })) {
+            self.report_expected(type_span, "type name");
+        }
+        (is_new, ty)
+    }
+
+    /// An event source is a named class: `New` and the built-in types are out.
+    fn check_event_source_type(&mut self) {
+        let span = self.current_span();
+        if self.peek().kind == TokenKind::Kw(Kw::New) {
+            self.diagnostics.push(ERR_INVALID_NEW_KEYWORD, span);
+        } else if matches!(
+            self.peek_word(),
+            Some(
+                Kw::Integer | Kw::Long | Kw::Single | Kw::Double | Kw::Currency | Kw::Date | Kw::Byte
+                    | Kw::Boolean | Kw::Variant | Kw::Object | Kw::String | Kw::Decimal
+            )
+        ) {
+            self.report_expected(span, "identifier");
+        }
+    }
+
+    /// The value of a constant, and the account of its size. `value_required` makes `= value`
+    /// mandatory (a `Const` declaration, as opposed to an `Enum` member).
+    fn parse_const_value(&mut self, arena: &mut ExprArena, value_required: bool, item_span: Span) -> Option<NodeId> {
+        let value = if value_required {
+            self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
+            Some(self.parse_expr(arena, 0))
+        } else if self.eat(TokenKind::Kw(Kw::Eq)) {
+            Some(self.parse_expr(arena, 0))
         } else {
-            // `Dim x%` ≡ `Dim x As Integer`
-            (false, self.type_node_from_suffix(arena, name.type_suffix))
+            None
         };
-        // Only a constant has an initial value.
-        let init = if is_const {
-            let value = if value_required {
-                self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
-                Some(self.parse_expr(arena, 0))
-            } else if self.eat(TokenKind::Kw(Kw::Eq)) {
-                Some(self.parse_expr(arena, 0))
-            } else { None };
-            if is_const {
-                // Each item costs its name and its value; items are separated by 2 bytes.
-                let item = value.and_then(|v| line_size::expression_part(arena, v)).map(|part| cost::CONST + part);
-                self.const_items_cost = self.const_items_cost.zip(item).map(|(total, item)| total + item);
-                if self.peek().kind == TokenKind::Kw(Kw::Comma) {
-                    self.const_items_cost = self.const_items_cost.map(|total| total + cost::ITEM_SEPARATOR);
-                } else {
-                    let total = self.const_items_cost.take();
-                    self.check_parts_size(total, item_span);
-                }
-            }
-            value
-        } else { None };
-        let id = arena.alloc(ExprNode::DimItem { name: name_id, is_const, is_static, is_new, with_events, bounds, type_node, init });
-        self.set_span(id, name.span);
-        id
+        // Each item costs its name and its value; items are separated by 2 bytes.
+        let item = value.and_then(|v| line_size::expression_part(arena, v)).map(|part| cost::CONST + part);
+        self.const_items_cost = self.const_items_cost.zip(item).map(|(total, item)| total + item);
+        if self.peek().kind == TokenKind::Kw(Kw::Comma) {
+            self.const_items_cost = self.const_items_cost.map(|total| total + cost::ITEM_SEPARATOR);
+        } else {
+            let total = self.const_items_cost.take();
+            self.check_parts_size(total, item_span);
+        }
+        value
     }
 
     /// Parses array bounds. Returns the bounds-list `ArgList` node. A dynamic
@@ -3313,88 +3410,104 @@ impl<'src> Parser<'src> {
         let preserve = self.eat(TokenKind::Kw(Kw::Preserve));
         let mut stmts = Vec::new();
         loop {
-            // `a(...)`, a member array `a.b.c(...)`, or an element's member
-            // array `a(i).b(...)`: everything before the last name is the base
-            // it belongs to. A parenthesised list followed by `.` indexes the
-            // base; the last list holds the bounds.
-            // A leading `.` names a member of the innermost `With` object.
-            let mut base: Option<NodeId> = None;
-            if self.peek().kind == TokenKind::Kw(Kw::Dot) {
-                let dot_span = self.current_span();
-                self.advance();
-                let with_ctx = arena.alloc(ExprNode::WithContext);
-                self.set_span(with_ctx, dot_span);
-                base = Some(with_ctx);
-            }
-            // `ReDim` names an existing array, so a bracketed name is allowed.
-            self.bracketed_name_ok = true;
-            let mut name = self.expect_decl_name();
-            self.bracketed_name_ok = false;
-            let mut bounds: Option<NodeId> = None;
-            loop {
-                let sym = name.sym.map(|s| s as u32).unwrap_or(0);
-                if self.peek().kind == TokenKind::Kw(Kw::LParen) {
-                    self.advance();
-                    let list = self.parse_array_bounds(arena);
-                    let bounds_given = list.is_some_and(|l| {
-                        matches!(arena.get(l), ExprNode::ArgList { args }
-                            if !args.is_empty() && args.iter().all(|a| !matches!(arena.get(*a), ExprNode::MissingArg)))
-                    });
-                    if !bounds_given && self.peek().kind == TokenKind::Kw(Kw::RParen) {
-                        let span = self.current_span();
-                        self.report_expected(span, "expression");
-                    }
-                    self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
-                    if self.peek().kind != TokenKind::Kw(Kw::Dot) {
-                        bounds = list;
-                        break;
-                    }
-                    // An index into the element named so far.
-                    let element = match base {
-                        None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
-                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false, bracketed: self.is_bracketed(&name) }),
-                    };
-                    self.set_span(element, name.span);
-                    let args = list.unwrap_or_else(|| arena.alloc(ExprNode::ArgList { args: vec![] }));
-                    base = Some(arena.alloc(ExprNode::Call { func: element, args }));
-                    self.advance(); // `.`
-                    name = self.expect_ident();
-                } else if self.eat(TokenKind::Kw(Kw::Dot)) {
-                    let node = match base {
-                        None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
-                        Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false, bracketed: self.is_bracketed(&name) }),
-                    };
-                    self.set_span(node, name.span);
-                    base = Some(node);
-                    name = self.expect_ident();
-                } else {
-                    self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
-                    break;
-                }
-            }
-            let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
-            self.reject_suffix_with_as(&name, "end of statement");
-            let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
-                Some(self.parse_type_spec(arena, false))
-            } else { None };
-            let item = arena.alloc(ExprNode::ReDimItem { preserve, base, name: name_id, bounds, type_node });
-            self.set_span(item, name.span);
-            stmts.push(item);
+            stmts.push(self.parse_redim_item(arena, preserve));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
-        // `ReDim a(n)` of one array with one bound costs 8 over an assignment of the bound.
-        if let [only] = stmts.as_slice() {
-            if let ExprNode::ReDimItem { preserve: false, base: None, bounds: Some(list), type_node: None, .. } = arena.get(*only) {
-                if let ExprNode::ArgList { args } = arena.get(*list) {
-                    if let [bound] = args.as_slice() {
-                        let parts = line_size::expression_part(arena, *bound).map(|part| cost::REDIM + part);
-                        self.check_parts_size(parts, redim_span);
-                    }
-                }
-            }
-        }
+        self.check_redim_size(arena, &stmts, redim_span);
         self.end_stmt();
         arena.alloc(ExprNode::Block { stmts })
+    }
+
+    /// One array of a ReDim statement.
+    fn parse_redim_item(&mut self, arena: &mut ExprArena, preserve: bool) -> NodeId {
+        // `a(...)`, a member array `a.b.c(...)`, or an element's member
+        // array `a(i).b(...)`: everything before the last name is the base
+        // it belongs to. A parenthesised list followed by `.` indexes the
+        // base; the last list holds the bounds.
+        // A leading `.` names a member of the innermost `With` object.
+        let mut base: Option<NodeId> = None;
+        if self.peek().kind == TokenKind::Kw(Kw::Dot) {
+            let dot_span = self.current_span();
+            self.advance();
+            let with_ctx = arena.alloc(ExprNode::WithContext);
+            self.set_span(with_ctx, dot_span);
+            base = Some(with_ctx);
+        }
+        // `ReDim` names an existing array, so a bracketed name is allowed.
+        self.bracketed_name_ok = true;
+        let mut name = self.expect_decl_name();
+        self.bracketed_name_ok = false;
+        let bounds = self.parse_redim_name_chain(arena, &mut base, &mut name);
+        let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
+        self.reject_suffix_with_as(&name, "end of statement");
+        let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
+            Some(self.parse_type_spec(arena, false))
+        } else { None };
+        let item = arena.alloc(ExprNode::ReDimItem { preserve, base, name: name_id, bounds, type_node });
+        self.set_span(item, name.span);
+        item
+    }
+
+    /// The name of a ReDim item is the last of a chain of members and elements; reads the chain
+    /// into `base` and `name`, and returns the bounds list that follows the last name.
+    fn parse_redim_name_chain(&mut self, arena: &mut ExprArena, base: &mut Option<NodeId>, name: &mut Token) -> Option<NodeId> {
+        loop {
+            if self.peek().kind == TokenKind::Kw(Kw::LParen) {
+                self.advance();
+                let list = self.parse_array_bounds(arena);
+                self.check_redim_bounds_given(arena, list);
+                self.expect(TokenKind::Kw(Kw::RParen), ERR_EXPECTED_RPAREN);
+                if self.peek().kind != TokenKind::Kw(Kw::Dot) {
+                    return list;
+                }
+                // An index into the element named so far.
+                let element = self.redim_chain_node(arena, *base, name);
+                let args = list.unwrap_or_else(|| arena.alloc(ExprNode::ArgList { args: vec![] }));
+                *base = Some(arena.alloc(ExprNode::Call { func: element, args }));
+                self.advance(); // `.`
+                *name = self.expect_ident();
+            } else if self.eat(TokenKind::Kw(Kw::Dot)) {
+                *base = Some(self.redim_chain_node(arena, *base, name));
+                *name = self.expect_ident();
+            } else {
+                self.expect(TokenKind::Kw(Kw::LParen), ERR_EXPECTED_LPAREN);
+                return None;
+            }
+        }
+    }
+
+    /// The name of a link of a ReDim chain: a plain name, or a member of what stands before it.
+    fn redim_chain_node(&mut self, arena: &mut ExprArena, base: Option<NodeId>, name: &Token) -> NodeId {
+        let sym = name.sym.map(|s| s as u32).unwrap_or(0);
+        let node = match base {
+            None => arena.alloc(ExprNode::NameRef { sym, suffix: name.type_suffix }),
+            Some(b) => arena.alloc(ExprNode::MemberAccess { base: b, member: sym, bang: false, bracketed: self.is_bracketed(name) }),
+        };
+        self.set_span(node, name.span);
+        node
+    }
+
+    /// Reports empty brackets or a left out bound in the bounds list of a ReDim item.
+    fn check_redim_bounds_given(&mut self, arena: &ExprArena, list: Option<NodeId>) {
+        let bounds_given = list.is_some_and(|l| {
+            matches!(arena.get(l), ExprNode::ArgList { args }
+                if !args.is_empty() && args.iter().all(|a| !matches!(arena.get(*a), ExprNode::MissingArg)))
+        });
+        if !bounds_given && self.peek().kind == TokenKind::Kw(Kw::RParen) {
+            let span = self.current_span();
+            self.report_expected(span, "expression");
+        }
+    }
+
+    /// `ReDim a(n)` of one array with one bound costs 8 over an assignment of the bound.
+    fn check_redim_size(&mut self, arena: &ExprArena, stmts: &[NodeId], redim_span: Span) {
+        let [only] = stmts else { return };
+        let ExprNode::ReDimItem { preserve: false, base: None, bounds: Some(list), type_node: None, .. } = arena.get(*only)
+        else { return };
+        let ExprNode::ArgList { args } = arena.get(*list) else { return };
+        let [bound] = args.as_slice() else { return };
+        let parts = line_size::expression_part(arena, *bound).map(|part| cost::REDIM + part);
+        self.check_parts_size(parts, redim_span);
     }
 
     /// Parses a For loop.
@@ -3485,6 +3598,19 @@ impl<'src> Parser<'src> {
             return None;
         }
         self.advance(); // Next
+        let names = self.parse_next_variables(arena);
+        if names.is_empty() && self.peek().kind == TokenKind::Kw(Kw::Else) {
+            // `Next` alone does not end a single-line `If` part; `Next i` does.
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        }
+        self.end_stmt();
+        self.close_next_names(names)
+    }
+
+    /// The variables after `Next`: each with its symbol (when it is a plain name), its span and
+    /// its node.
+    fn parse_next_variables(&mut self, arena: &mut ExprArena) -> Vec<(Option<u32>, Span, NodeId)> {
         let mut names: Vec<(Option<u32>, Span, NodeId)> = Vec::new();
         while !self.peek().is_stmt_end() {
             if matches!(self.peek().kind, TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else)) {
@@ -3505,14 +3631,12 @@ impl<'src> Parser<'src> {
                 self.report_expected(span, "variable");
             }
         }
-        if names.is_empty() && self.peek().kind == TokenKind::Kw(Kw::Else) {
-            // `Next` alone does not end a single-line `If` part; `Next i` does.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-        }
-        self.end_stmt();
-        // Each further name closes the next enclosing `For`, provided the
-        // `For` blocks are directly nested.
+        names
+    }
+
+    /// The first name closes this loop; each further name closes the next enclosing `For`,
+    /// provided the `For` blocks are directly nested. Returns the node of the first name.
+    fn close_next_names(&mut self, names: Vec<(Option<u32>, Span, NodeId)>) -> Option<NodeId> {
         let directly_nested = self.blocks.iter().rev().take_while(|b| matches!(b, Block::For(_))).count();
         let mut names = names.into_iter();
         let mut mine = None;
@@ -3543,51 +3667,57 @@ impl<'src> Parser<'src> {
     fn parse_do_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let do_span = self.current_span();
         self.advance(); // consume Do
-        let pre = match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::While) => { self.advance(); Some((DoKind::PreWhile, self.parse_expr(arena, 0))) }
-            TokenKind::Kw(Kw::Until) => { self.advance(); Some((DoKind::PreUntil, self.parse_expr(arena, 0))) }
-            _ => None,
-        };
+        let pre = self.parse_do_condition(arena, DoKind::PreWhile, DoKind::PreUntil);
         if let Some((_, cond)) = pre {
             self.check_condition_size(arena, cond, do_span);
         }
         self.end_stmt();
         if self.line_scan {
             let body = self.parse_block(arena);
-            let (kind, cond) = match pre {
-                Some((k, c)) => (k, Some(c)),
-                None => (DoKind::Inf, None),
-            };
-            return arena.alloc(ExprNode::Do { kind, cond, body });
+            return Self::alloc_do(arena, pre, body);
         }
         self.blocks.push(Block::Do { pre_test: pre.is_some() });
         let body = self.parse_block(arena);
         let loop_span = self.current_span();
         let post = if self.close_block(ERR_DO_WITHOUT_LOOP) {
-            let p = match self.peek().kind.clone() {
-                TokenKind::Kw(Kw::While) => { self.advance(); Some((DoKind::PostWhile, self.parse_expr(arena, 0))) }
-                TokenKind::Kw(Kw::Until) => { self.advance(); Some((DoKind::PostUntil, self.parse_expr(arena, 0))) }
-                _ => None,
-            };
-            // A loop tests its condition at the top or at the bottom, not both.
-            if p.is_some() && pre.is_some() {
-                self.diagnostics.push(ERR_LOOP_WITHOUT_DO, loop_span);
-            }
-            if let Some((_, cond)) = p {
-                self.check_condition_size(arena, cond, loop_span);
-            }
-            self.end_stmt();
-            p
+            self.parse_do_loop_condition(arena, pre.is_some(), loop_span)
         } else {
             None
         };
         self.blocks.pop();
-        let (kind, cond) = if let Some((k, c)) = post {
-            (k, Some(c))
-        } else if let Some((k, c)) = pre {
-            (k, Some(c))
-        } else {
-            (DoKind::Inf, None)
+        Self::alloc_do(arena, post.or(pre), body)
+    }
+
+    /// The `While` or `Until` condition of a `Do` or a `Loop`, if there is one.
+    fn parse_do_condition(&mut self, arena: &mut ExprArena, while_kind: DoKind, until_kind: DoKind) -> Option<(DoKind, NodeId)> {
+        let kind = match self.peek().kind {
+            TokenKind::Kw(Kw::While) => while_kind,
+            TokenKind::Kw(Kw::Until) => until_kind,
+            _ => return None,
+        };
+        self.advance();
+        Some((kind, self.parse_expr(arena, 0)))
+    }
+
+    /// The condition after `Loop`, and the end of its statement.
+    fn parse_do_loop_condition(&mut self, arena: &mut ExprArena, has_pre_test: bool, loop_span: Span) -> Option<(DoKind, NodeId)> {
+        let post = self.parse_do_condition(arena, DoKind::PostWhile, DoKind::PostUntil);
+        // A loop tests its condition at the top or at the bottom, not both.
+        if post.is_some() && has_pre_test {
+            self.diagnostics.push(ERR_LOOP_WITHOUT_DO, loop_span);
+        }
+        if let Some((_, cond)) = post {
+            self.check_condition_size(arena, cond, loop_span);
+        }
+        self.end_stmt();
+        post
+    }
+
+    /// The `Do` node of a loop with the given test (none: a loop without a condition).
+    fn alloc_do(arena: &mut ExprArena, test: Option<(DoKind, NodeId)>, body: NodeId) -> NodeId {
+        let (kind, cond) = match test {
+            Some((k, c)) => (k, Some(c)),
+            None => (DoKind::Inf, None),
         };
         arena.alloc(ExprNode::Do { kind, cond, body })
     }
@@ -3639,42 +3769,59 @@ impl<'src> Parser<'src> {
 
         // Legacy single-line form `If <cond> GoTo <label>` (no `Then`).
         let legacy_goto = self.peek().kind == TokenKind::Kw(Kw::GoTo);
-        let has_then = if legacy_goto {
-            false
-        } else {
+        let has_then = !legacy_goto;
+        if has_then {
             self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
-            true
-        };
-
-        // A `Dim` cannot be the statement after `Then`.
-        if has_then && self.peek().kind == TokenKind::Kw(Kw::Dim) {
-            let span = self.current_span();
-            self.report_expected(span, "statement");
+            self.check_statement_after_then();
         }
         // Single-line If: a `Then` followed immediately by a statement (not Eol),
         // or the legacy `GoTo` form.
-        if has_then && self.peek().kind == TokenKind::Kw(Kw::Rem) {
-            // A comment cannot stand in for the statement after `Then`.
+        if legacy_goto || (has_then && !self.peek().is_stmt_end()) {
+            return self.parse_single_line_if(arena, cond, if_span, not_first_on_line, has_then);
+        }
+        self.parse_block_if(arena, cond, if_span, not_first_on_line)
+    }
+
+    /// What follows `Then`: a `Dim` cannot be the statement after it, and a comment cannot
+    /// stand in for the statement.
+    fn check_statement_after_then(&mut self) {
+        if self.peek().kind == TokenKind::Kw(Kw::Dim) {
+            let span = self.current_span();
+            self.report_expected(span, "statement");
+        }
+        if self.peek().kind == TokenKind::Kw(Kw::Rem) {
             let span = self.current_span();
             self.diagnostics.push(ERR_SYNTAX_ERROR, span);
         }
-        if legacy_goto || (has_then && !self.peek().is_stmt_end()) {
-            // `Then` straight followed by a colon opens the statements of the line as a
-            // colon-led list: it may not follow other statements, a line number is no jump
-            // in it, and an `Else` follows a statement only after a colon.
-            let colon_led = has_then && self.peek().kind == TokenKind::Kw(Kw::Colon);
-            if colon_led && not_first_on_line {
-                self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
-            }
-            let stmts = self.parse_inline_statements(arena, InlineList::Then { colon_led });
-            let then_body = arena.alloc(ExprNode::Block { stmts });
-            let else_body = if !self.last_was_eol && self.eat(TokenKind::Kw(Kw::Else)) {
-                let stmts = self.parse_inline_statements(arena, InlineList::Else { colon_led });
-                Some(arena.alloc(ExprNode::Block { stmts }))
-            } else { None };
-            return arena.alloc(ExprNode::If { cond, then_body, else_body });
+    }
+
+    /// A single-line `If`: the statements after `Then` (or the legacy `GoTo`), and its `Else`.
+    fn parse_single_line_if(
+        &mut self,
+        arena: &mut ExprArena,
+        cond: NodeId,
+        if_span: Span,
+        not_first_on_line: bool,
+        has_then: bool,
+    ) -> NodeId {
+        // `Then` straight followed by a colon opens the statements of the line as a
+        // colon-led list: it may not follow other statements, a line number is no jump
+        // in it, and an `Else` follows a statement only after a colon.
+        let colon_led = has_then && self.peek().kind == TokenKind::Kw(Kw::Colon);
+        if colon_led && not_first_on_line {
+            self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
         }
-        // A block `If` (`Then` ends the line) must start its line.
+        let stmts = self.parse_inline_statements(arena, InlineList::Then { colon_led });
+        let then_body = arena.alloc(ExprNode::Block { stmts });
+        let else_body = if !self.last_was_eol && self.eat(TokenKind::Kw(Kw::Else)) {
+            let stmts = self.parse_inline_statements(arena, InlineList::Else { colon_led });
+            Some(arena.alloc(ExprNode::Block { stmts }))
+        } else { None };
+        arena.alloc(ExprNode::If { cond, then_body, else_body })
+    }
+
+    /// A block `If` (`Then` ends the line), which must start its line.
+    fn parse_block_if(&mut self, arena: &mut ExprArena, cond: NodeId, if_span: Span, not_first_on_line: bool) -> NodeId {
         if not_first_on_line {
             self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, if_span);
         }
@@ -3720,14 +3867,7 @@ impl<'src> Parser<'src> {
         // `If c Then 10`: a line number straight after `Then` / `Else` is a jump, unless the
         // list is colon-led.
         if part.jump_allowed() && matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
-            let tok = self.advance();
-            let target = LabelRef::Line(line_label_value(&tok.lit));
-            self.label_refs.push((target, tok.span));
-            let jump = arena.alloc(ExprNode::GoTo { target });
-            self.set_span(jump, tok.span);
-            stmts.push(jump);
-            // The jump is a statement like any other: a separator must follow it.
-            self.end_stmt();
+            stmts.push(self.parse_inline_jump(arena));
         }
         loop {
             while self.eat(TokenKind::Kw(Kw::Colon)) {}
@@ -3738,16 +3878,10 @@ impl<'src> Parser<'src> {
             {
                 // Only the statements of a `Then` (or of an enclosing one) are followed by an
                 // `Else`.
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
+                self.error_and_skip_line(ERR_SYNTAX_ERROR);
                 break;
             }
-            if self.last_was_eol
-                || self.peek().is_stmt_end()
-                || self.peek().kind == TokenKind::Kw(Kw::Else)
-                || (!stmts.is_empty() && self.peek().kind == TokenKind::Kw(Kw::Rem))
-            {
+            if self.inline_list_ends(!stmts.is_empty()) {
                 break;
             }
             let opener = self.peek().kind.clone();
@@ -3756,17 +3890,7 @@ impl<'src> Parser<'src> {
             if let Some(n) = self.parse_stmt(arena) {
                 stmts.push(n);
             }
-            // A loop, `With` or `Select Case` opened here is closed when the line ends, so
-            // its terminator on a later line has nothing to close.
-            if self.eols_read > eols_before + 1
-                && matches!(
-                    opener,
-                    TokenKind::Kw(Kw::For) | TokenKind::Kw(Kw::Do) | TokenKind::Kw(Kw::While)
-                        | TokenKind::Kw(Kw::With) | TokenKind::Kw(Kw::Select)
-                )
-            {
-                self.diagnostics.push(ERR_END_IF_WITHOUT_BLOCK_IF, opener_span);
-            }
+            self.check_block_opened_inline(&opener, opener_span, eols_before);
             if self.last_was_eol {
                 break;
             }
@@ -3774,13 +3898,52 @@ impl<'src> Parser<'src> {
         stmts
     }
 
+    /// A line number straight after `Then` / `Else`, read as a jump to that line.
+    fn parse_inline_jump(&mut self, arena: &mut ExprArena) -> NodeId {
+        let tok = self.advance();
+        let target = LabelRef::Line(line_label_value(&tok.lit));
+        self.label_refs.push((target, tok.span));
+        let jump = arena.alloc(ExprNode::GoTo { target });
+        self.set_span(jump, tok.span);
+        // The jump is a statement like any other: a separator must follow it.
+        self.end_stmt();
+        jump
+    }
+
+    /// Whether the statements of a part of a single-line `If` end here.
+    fn inline_list_ends(&mut self, has_statements: bool) -> bool {
+        self.last_was_eol
+            || self.peek().is_stmt_end()
+            || self.peek().kind == TokenKind::Kw(Kw::Else)
+            || (has_statements && self.peek().kind == TokenKind::Kw(Kw::Rem))
+    }
+
+    /// A loop, `With` or `Select Case` opened here is closed when the line ends, so
+    /// its terminator on a later line has nothing to close.
+    fn check_block_opened_inline(&mut self, opener: &TokenKind, opener_span: Span, eols_before: u32) {
+        if self.eols_read > eols_before + 1
+            && matches!(
+                opener,
+                TokenKind::Kw(Kw::For) | TokenKind::Kw(Kw::Do) | TokenKind::Kw(Kw::While)
+                    | TokenKind::Kw(Kw::With) | TokenKind::Kw(Kw::Select)
+            )
+        {
+            self.diagnostics.push(ERR_END_IF_WITHOUT_BLOCK_IF, opener_span);
+        }
+    }
+
+    /// Reports an `Else` or `ElseIf` that follows a colon.
+    fn check_else_first_on_line(&mut self) {
+        if self.after_colon {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
+        }
+    }
+
     fn parse_else_clause(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
         match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Else) => {
-                if self.after_colon {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
-                }
+                self.check_else_first_on_line();
                 self.advance();
                 // A statement on the `Else` line does not start a line of its own.
                 if !self.peek().is_stmt_end() {
@@ -3792,39 +3955,39 @@ impl<'src> Parser<'src> {
                 }
                 Some(self.parse_block(arena))
             }
-            TokenKind::Kw(Kw::ElseIf) => {
-                if self.after_colon {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_MUST_BE_FIRST_ON_LINE, span);
-                }
-                let elseif_span = self.current_span();
-                self.advance();
-                let cond = self.parse_expr(arena, 0);
-                self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
-                self.check_condition_size(arena, cond, elseif_span);
-                if self.peek().kind == TokenKind::Kw(Kw::Rem) {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                }
-                // Statements written after `Then` on the `ElseIf` line are read as those of a
-                // single-line `If`; the lines that follow belong to the same branch.
-                let then_body = if self.peek().is_stmt_end() {
-                    self.eat_eol();
-                    self.parse_block(arena)
-                } else {
-                    let colon_led = self.peek().kind == TokenKind::Kw(Kw::Colon);
-                    let mut stmts = self.parse_inline_statements(arena, InlineList::ElseIf { colon_led });
-                    let rest = self.parse_block(arena);
-                    if let ExprNode::Block { stmts: more } = arena.get(rest) {
-                        stmts.extend(more.iter().copied());
-                    }
-                    arena.alloc(ExprNode::Block { stmts })
-                };
-                let else_body = self.parse_else_clause(arena);
-                Some(arena.alloc(ExprNode::If { cond, then_body, else_body }))
-            }
+            TokenKind::Kw(Kw::ElseIf) => Some(self.parse_elseif_clause(arena)),
             _ => None,
         }
+    }
+
+    /// An `ElseIf` branch of a block `If`; the rest of the `If` is its else part.
+    fn parse_elseif_clause(&mut self, arena: &mut ExprArena) -> NodeId {
+        self.check_else_first_on_line();
+        let elseif_span = self.current_span();
+        self.advance();
+        let cond = self.parse_expr(arena, 0);
+        self.expect(TokenKind::Kw(Kw::Then), ERR_EXPECTED_THEN);
+        self.check_condition_size(arena, cond, elseif_span);
+        if self.peek().kind == TokenKind::Kw(Kw::Rem) {
+            let span = self.current_span();
+            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+        }
+        // Statements written after `Then` on the `ElseIf` line are read as those of a
+        // single-line `If`; the lines that follow belong to the same branch.
+        let then_body = if self.peek().is_stmt_end() {
+            self.eat_eol();
+            self.parse_block(arena)
+        } else {
+            let colon_led = self.peek().kind == TokenKind::Kw(Kw::Colon);
+            let mut stmts = self.parse_inline_statements(arena, InlineList::ElseIf { colon_led });
+            let rest = self.parse_block(arena);
+            if let ExprNode::Block { stmts: more } = arena.get(rest) {
+                stmts.extend(more.iter().copied());
+            }
+            arena.alloc(ExprNode::Block { stmts })
+        };
+        let else_body = self.parse_else_clause(arena);
+        arena.alloc(ExprNode::If { cond, then_body, else_body })
     }
 
     /// Parses a Select Case statement.
@@ -3844,67 +4007,87 @@ impl<'src> Parser<'src> {
         let mut seen_else = false;
         loop {
             while self.eat(TokenKind::Eol) {}
-            match self.peek().kind.clone() {
-                TokenKind::Kw(Kw::Case) => {
-                    let case_span = self.current_span();
-                    self.advance();
-                    if seen_else {
-                        // `Case Else` is the last clause.
-                        self.diagnostics.push(ERR_CASE_WITHOUT_SELECT, case_span);
-                    }
-                    let clause = self.parse_case_clause(arena);
-                    seen_else |= matches!(arena.get(clause), ExprNode::CaseElse { .. });
-                    cases.push(clause);
-                }
-                TokenKind::Kw(Kw::End) if self.terminator() == Some(Term::EndSelect) => {
-                    self.close_block(ERR_SELECT_WITHOUT_END_SELECT);
-                    self.end_stmt();
-                    break;
-                }
-                TokenKind::Eof => break,
-                _ if self.at_proc_end() => {
-                    self.report_unclosed(ERR_SELECT_WITHOUT_END_SELECT);
-                    break;
-                }
-                _ => {
-                    // Statements before the first Case clause.
-                    if self.peek().is_stmt_end() {
-                        self.advance();
-                    } else if self.peek().kind == TokenKind::Kw(Kw::Loop)
-                        && matches!(self.peek2().kind, TokenKind::Kw(Kw::While) | TokenKind::Kw(Kw::Until))
-                    {
-                        // A `Loop` that carries a condition is a statement like any other here, not
-                        // a stray block end.
-                        let span = self.current_span();
-                        self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
-                        self.skip_line();
-                    } else {
-                        let span = self.current_span();
-                        // An attribute line is read like anywhere else and is no statement.
-                        let attribute_line = self.at_attribute_line();
-                        let first = self.peek().kind.clone();
-                        let mark = self.diagnostics.len();
-                        if let Some(stmt) = self.parse_stmt(arena) {
-                            if !attribute_line {
-                                match self.preamble_rule(arena, &first, stmt) {
-                                    PreambleRule::Allowed => {}
-                                    PreambleRule::Reported => {
-                                        self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
-                                    }
-                                    PreambleRule::ReportedInstead => {
-                                        self.diagnostics.truncate(mark);
-                                        self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
-                                    }
-                                }
-                                pre.push(stmt);
-                            }
-                        }
-                    }
-                }
+            if !self.parse_select_part(arena, &mut pre, &mut cases, &mut seen_else) {
+                break;
             }
         }
         self.blocks.pop();
         arena.alloc(ExprNode::SelectCase { subject, pre, cases })
+    }
+
+    /// One part of the body of a `Select Case`: a `Case` clause, the end of the block, or
+    /// a statement before the first `Case`. Returns false when the block has ended.
+    fn parse_select_part(
+        &mut self,
+        arena: &mut ExprArena,
+        pre: &mut Vec<NodeId>,
+        cases: &mut Vec<NodeId>,
+        seen_else: &mut bool,
+    ) -> bool {
+        match self.peek().kind.clone() {
+            TokenKind::Kw(Kw::Case) => {
+                let case_span = self.current_span();
+                self.advance();
+                if *seen_else {
+                    // `Case Else` is the last clause.
+                    self.diagnostics.push(ERR_CASE_WITHOUT_SELECT, case_span);
+                }
+                let clause = self.parse_case_clause(arena);
+                *seen_else |= matches!(arena.get(clause), ExprNode::CaseElse { .. });
+                cases.push(clause);
+                true
+            }
+            TokenKind::Kw(Kw::End) if self.terminator() == Some(Term::EndSelect) => {
+                self.close_block(ERR_SELECT_WITHOUT_END_SELECT);
+                self.end_stmt();
+                false
+            }
+            TokenKind::Eof => false,
+            _ if self.at_proc_end() => {
+                self.report_unclosed(ERR_SELECT_WITHOUT_END_SELECT);
+                false
+            }
+            _ => {
+                self.parse_select_preamble_part(arena, pre);
+                true
+            }
+        }
+    }
+
+    /// Statements before the first Case clause.
+    fn parse_select_preamble_part(&mut self, arena: &mut ExprArena, pre: &mut Vec<NodeId>) {
+        if self.peek().is_stmt_end() {
+            self.advance();
+            return;
+        }
+        if self.peek().kind == TokenKind::Kw(Kw::Loop)
+            && matches!(self.peek2().kind, TokenKind::Kw(Kw::While) | TokenKind::Kw(Kw::Until))
+        {
+            // A `Loop` that carries a condition is a statement like any other here, not
+            // a stray block end.
+            self.error_and_skip_line(ERR_STATEMENT_BEFORE_FIRST_CASE);
+            return;
+        }
+        let span = self.current_span();
+        // An attribute line is read like anywhere else and is no statement.
+        let attribute_line = self.at_attribute_line();
+        let first = self.peek().kind.clone();
+        let mark = self.diagnostics.len();
+        let Some(stmt) = self.parse_stmt(arena) else { return };
+        if attribute_line {
+            return;
+        }
+        match self.preamble_rule(arena, &first, stmt) {
+            PreambleRule::Allowed => {}
+            PreambleRule::Reported => {
+                self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+            }
+            PreambleRule::ReportedInstead => {
+                self.diagnostics.truncate(mark);
+                self.diagnostics.push(ERR_STATEMENT_BEFORE_FIRST_CASE, span);
+            }
+        }
+        pre.push(stmt);
     }
 
     /// What a statement parsed between `Select Case` and the first `Case` may be. Declarations
@@ -4006,9 +4189,7 @@ impl<'src> Parser<'src> {
     fn parse_call_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // consume Call
         if self.peek().kind == TokenKind::Kw(Kw::Rem) {
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
         if self.at_reserved_word() && self.peek().kind != TokenKind::Kw(Kw::Me) {
@@ -4166,55 +4347,64 @@ impl<'src> Parser<'src> {
         // unambiguous and leaves the handler form unchanged.
         if self.eat(TokenKind::Kw(Kw::Local)) && !self.at_word(Kw::Error) {
             // `Local` only qualifies `Error`.
-            let span = self.current_span();
-            self.report_expected(span, "Error");
-            self.skip_line();
+            self.report_expected_and_skip_line("Error");
             return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Disable });
         }
         if self.eat_word(Kw::Error) {
-            if self.eat(TokenKind::Kw(Kw::Resume)) {
-                self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
-                self.end_stmt();
-                return arena.alloc(ExprNode::OnError { kind: OnErrorKind::ResumeNext });
-            }
-            if self.eat(TokenKind::Kw(Kw::GoTo)) {
-                // `On Error GoTo -1` leaves the error state of the handler.
-                if self.peek().kind == TokenKind::Kw(Kw::Minus)
-                    && matches!(self.peek2().kind, TokenKind::IntLit | TokenKind::LongLit)
-                    && line_label_value(&self.peek2().lit) == 1
-                {
-                    self.advance();
-                    self.advance();
-                    self.end_stmt();
-                    return arena.alloc(ExprNode::OnError { kind: OnErrorKind::ClearError });
-                }
-                if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
-                    let tok = self.advance();
-                    let line = line_label_value(&tok.lit);
-                    self.end_stmt();
-                    // Only `On Error GoTo 0` disables the handler; any nonzero
-                    // line number installs a handler at that numeric line label.
-                    let kind = if line == 0 {
-                        OnErrorKind::Disable
-                    } else {
-                        self.label_refs.push((LabelRef::Line(line), tok.span));
-                        OnErrorKind::Goto(LabelRef::Line(line))
-                    };
-                    return arena.alloc(ExprNode::OnError { kind });
-                }
-                let lbl = self.expect_ident();
-                let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
-                self.label_refs.push((LabelRef::Name(lid), lbl.span));
-                self.end_stmt();
-                return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Goto(LabelRef::Name(lid)) });
-            }
-            // After `Error` only `Resume Next` and `GoTo` follow.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-            self.skip_line();
-            return arena.alloc(ExprNode::OnError { kind: OnErrorKind::Disable });
+            return self.parse_on_error_stmt(arena);
         }
-        // On <expr> GoTo / GoSub label-list
+        self.parse_on_go_stmt(arena)
+    }
+
+    /// `On Error Resume Next` or `On Error GoTo target`, after `On Error`.
+    fn parse_on_error_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
+        if self.eat(TokenKind::Kw(Kw::Resume)) {
+            self.expect(TokenKind::Kw(Kw::Next), ERR_EXPECTED_NEXT);
+            self.end_stmt();
+            return arena.alloc(ExprNode::OnError { kind: OnErrorKind::ResumeNext });
+        }
+        if self.eat(TokenKind::Kw(Kw::GoTo)) {
+            let kind = self.parse_on_error_goto_kind();
+            return arena.alloc(ExprNode::OnError { kind });
+        }
+        // After `Error` only `Resume Next` and `GoTo` follow.
+        self.error_and_skip_line(ERR_UNEXPECTED_TOKEN);
+        arena.alloc(ExprNode::OnError { kind: OnErrorKind::Disable })
+    }
+
+    /// The target of `On Error GoTo`.
+    fn parse_on_error_goto_kind(&mut self) -> OnErrorKind {
+        // `On Error GoTo -1` leaves the error state of the handler.
+        if self.peek().kind == TokenKind::Kw(Kw::Minus)
+            && matches!(self.peek2().kind, TokenKind::IntLit | TokenKind::LongLit)
+            && line_label_value(&self.peek2().lit) == 1
+        {
+            self.advance();
+            self.advance();
+            self.end_stmt();
+            return OnErrorKind::ClearError;
+        }
+        if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
+            let tok = self.advance();
+            let line = line_label_value(&tok.lit);
+            self.end_stmt();
+            // Only `On Error GoTo 0` disables the handler; any nonzero
+            // line number installs a handler at that numeric line label.
+            if line == 0 {
+                return OnErrorKind::Disable;
+            }
+            self.label_refs.push((LabelRef::Line(line), tok.span));
+            return OnErrorKind::Goto(LabelRef::Line(line));
+        }
+        let lbl = self.expect_ident();
+        let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
+        self.label_refs.push((LabelRef::Name(lid), lbl.span));
+        self.end_stmt();
+        OnErrorKind::Goto(LabelRef::Name(lid))
+    }
+
+    /// `On <expr> GoTo / GoSub label-list`
+    fn parse_on_go_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         let expr = self.parse_expr(arena, 0);
         let is_gosub = match self.peek().kind {
             TokenKind::Kw(Kw::GoTo)  => { self.advance(); false }
@@ -4229,27 +4419,26 @@ impl<'src> Parser<'src> {
         // or a numeric line label; both forms appear in real VB6.
         let mut labels = Vec::new();
         loop {
-            let lref = if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
-                let tok = self.advance();
-                self.label_refs.push((LabelRef::Line(line_label_value(&tok.lit)), tok.span));
-                let n = arena.alloc(ExprNode::JumpTarget {
-                    target: LabelRef::Line(line_label_value(&tok.lit)),
-                });
-                self.set_span(n, tok.span);
-                n
-            } else {
-                let lbl = self.expect_ident();
-                let lid = lbl.sym.map(|s| s as u32).unwrap_or(0);
-                self.label_refs.push((LabelRef::Name(lid), lbl.span));
-                let nref = arena.alloc(ExprNode::JumpTarget { target: LabelRef::Name(lid) });
-                self.set_span(nref, lbl.span);
-                nref
-            };
-            labels.push(lref);
+            labels.push(self.parse_jump_target(arena));
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
         self.end_stmt();
         arena.alloc(ExprNode::OnGo { is_gosub, expr, labels })
+    }
+
+    /// One target of an `On ... GoTo` list: a numeric line label or a named label.
+    fn parse_jump_target(&mut self, arena: &mut ExprArena) -> NodeId {
+        let (target, span) = if matches!(self.peek().kind, TokenKind::IntLit | TokenKind::LongLit) {
+            let tok = self.advance();
+            (LabelRef::Line(line_label_value(&tok.lit)), tok.span)
+        } else {
+            let lbl = self.expect_ident();
+            (LabelRef::Name(lbl.sym.map(|s| s as u32).unwrap_or(0)), lbl.span)
+        };
+        self.label_refs.push((target, span));
+        let node = arena.alloc(ExprNode::JumpTarget { target });
+        self.set_span(node, span);
+        node
     }
 
     fn parse_erase_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
@@ -4272,9 +4461,7 @@ impl<'src> Parser<'src> {
     fn parse_raise_event(&mut self, arena: &mut ExprArena) -> NodeId {
         if self.module_kind == ModuleKind::Standard {
             // Events belong to object modules; elsewhere the word starts nothing.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
             return arena.alloc(ExprNode::Block { stmts: Vec::new() });
         }
         self.advance(); // consume RaiseEvent
@@ -4289,9 +4476,7 @@ impl<'src> Parser<'src> {
             ExprNode::NameRef { sym, .. } => (*sym, None),
             ExprNode::MemberAccess { base, member, bang: false, .. } => (*member, Some(*base)),
             _ => {
-                let span = self.current_span();
-                self.report_expected(span, "end of statement");
-                self.skip_line();
+                self.report_expected_and_skip_line("end of statement");
                 return arena.alloc(ExprNode::Block { stmts: Vec::new() });
             }
         };
@@ -4325,9 +4510,7 @@ impl<'src> Parser<'src> {
         let is_member = is_print
             || self.peek().sym.is_some_and(|sym| self.scanner.sym_name(sym as u32).eq_ignore_ascii_case("Assert"));
         if !is_member {
-            let span = self.current_span();
-            self.report_expected(span, "Print or Assert");
-            self.skip_line();
+            self.report_expected_and_skip_line("Print or Assert");
             return arena.alloc(ExprNode::DebugPrint { channel: None, args: Vec::new() });
         }
         self.advance(); // consume Print / ? / Assert
@@ -4490,49 +4673,7 @@ impl<'src> Parser<'src> {
 
     fn cc_directive_line(&mut self, kind: Kw, span: Span, one_word: bool) {
         match kind {
-            Kw::CcConst => {
-                {
-                    let name_tok = self.cc_peek().clone();
-                    let name_ok = name_tok.kind == TokenKind::Ident
-                        || (matches!(name_tok.kind, TokenKind::Kw(_))
-                            && name_tok.sym.is_some_and(|sym| {
-                                let sym = sym as u32;
-                                !self.scanner.is_reserved(sym) && !is_header_word(self.scanner.sym_name(sym))
-                            }));
-                    if !name_ok {
-                        self.report_expected(name_tok.span, "identifier");
-                        self.cc_skip_line();
-                        return;
-                    }
-                    self.cc_advance();
-                    let name = name_tok
-                        .sym
-                        .map(|id| fold_name(self.scanner.sym_name(id as u32)))
-                        .unwrap_or_default();
-                    if self.cc_peek().kind == TokenKind::Kw(Kw::Eq) {
-                        self.cc_advance();
-                    } else {
-                        let span = self.cc_peek().span;
-                        self.report_expected(span, "=");
-                    }
-                    let value = match self.eval_cc_expr(0) {
-                        Ok(v) => v,
-                        Err(code) => {
-                            self.diagnostics.push(code, span);
-                            self.cc_skip_line();
-                            return;
-                        }
-                    };
-                    // A `#Const` is defined whether or not its block is active.
-                    if self.cc_module_consts.contains(&name) {
-                        self.diagnostics.push(ERR_CC_DUPLICATE_DEFINITION, span);
-                    } else {
-                        self.cc_module_consts.push(name.clone());
-                    }
-                    self.cc_set(&name, value);
-                    self.cc_end_of_directive();
-                }
-            }
+            Kw::CcConst => self.cc_const_directive(span),
             Kw::CcIf => {
                 let parent_active = self.cc_active();
                 let taken = self.cc_condition(parent_active, span);
@@ -4542,61 +4683,122 @@ impl<'src> Parser<'src> {
                 }
                 self.cc_stack.push(CcFrame { else_seen: false, parent_active, active: taken, taken });
             }
-            Kw::CcElseIf => {
-                let Some(frame) = self.cc_stack.last().copied() else {
-                    // No `#If` is open: the lone `#ElseIf` is reported as one that follows an `#Else`.
-                    self.diagnostics.push(ERR_CC_ELSEIF_AFTER_ELSE, span);
-                    self.cc_skip_line();
-                    return;
-                };
-                if frame.else_seen {
-                    self.diagnostics.push(ERR_CC_ELSEIF_AFTER_ELSE, span);
-                    self.cc_skip_line();
-                    return;
-                }
-                let evaluate = frame.parent_active && !frame.taken;
-                // A branch that cannot be taken is still read as a directive.
-                let cond = self.cc_condition(evaluate, span);
-                let top = self.cc_stack.last_mut().unwrap();
-                top.active = cond;
-                top.taken |= cond;
+            Kw::CcElseIf => self.cc_elseif_directive(span),
+            Kw::CcElse => self.cc_else_directive(span),
+            // `#End If`, or the one-word `#EndIf`.
+            _ => self.cc_end_directive(span, one_word),
+        }
+    }
+
+    /// Whether the token can be the name of a `#Const`.
+    fn cc_const_name_ok(&self, name_tok: &Token) -> bool {
+        name_tok.kind == TokenKind::Ident
+            || (matches!(name_tok.kind, TokenKind::Kw(_))
+                && name_tok.sym.is_some_and(|sym| {
+                    let sym = sym as u32;
+                    !self.scanner.is_reserved(sym) && !is_header_word(self.scanner.sym_name(sym))
+                }))
+    }
+
+    /// `#Const name = value`, after the directive word.
+    fn cc_const_directive(&mut self, span: Span) {
+        let name_tok = self.cc_peek().clone();
+        if !self.cc_const_name_ok(&name_tok) {
+            self.report_expected(name_tok.span, "identifier");
+            self.cc_skip_line();
+            return;
+        }
+        self.cc_advance();
+        let name = name_tok
+            .sym
+            .map(|id| fold_name(self.scanner.sym_name(id as u32)))
+            .unwrap_or_default();
+        if self.cc_peek().kind == TokenKind::Kw(Kw::Eq) {
+            self.cc_advance();
+        } else {
+            let span = self.cc_peek().span;
+            self.report_expected(span, "=");
+        }
+        let value = match self.eval_cc_expr(0) {
+            Ok(v) => v,
+            Err(code) => {
+                self.diagnostics.push(code, span);
+                self.cc_skip_line();
+                return;
             }
-            Kw::CcElse => {
-                if self.cc_active() || self.cc_stack.last().is_some_and(|f| f.parent_active) {
-                    self.cc_end_of_directive();
-                } else {
-                    self.cc_skip_line();
-                }
-                match self.cc_stack.last_mut() {
-                    // No `#If` is open: the lone `#Else` is reported as a repeated one.
-                    None => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
-                    Some(top) if top.else_seen => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
-                    Some(top) => {
-                        top.else_seen = true;
-                        top.active = top.parent_active && !top.taken;
-                        top.taken = true;
-                    }
-                }
+        };
+        // A `#Const` is defined whether or not its block is active.
+        if self.cc_module_consts.contains(&name) {
+            self.diagnostics.push(ERR_CC_DUPLICATE_DEFINITION, span);
+        } else {
+            self.cc_module_consts.push(name.clone());
+        }
+        self.cc_set(&name, value);
+        self.cc_end_of_directive();
+    }
+
+    /// `#ElseIf condition Then`, after the directive word.
+    fn cc_elseif_directive(&mut self, span: Span) {
+        let Some(frame) = self.cc_stack.last().copied() else {
+            // No `#If` is open: the lone `#ElseIf` is reported as one that follows an `#Else`.
+            self.diagnostics.push(ERR_CC_ELSEIF_AFTER_ELSE, span);
+            self.cc_skip_line();
+            return;
+        };
+        if frame.else_seen {
+            self.diagnostics.push(ERR_CC_ELSEIF_AFTER_ELSE, span);
+            self.cc_skip_line();
+            return;
+        }
+        let evaluate = frame.parent_active && !frame.taken;
+        // A branch that cannot be taken is still read as a directive.
+        let cond = self.cc_condition(evaluate, span);
+        let top = self.cc_stack.last_mut().unwrap();
+        top.active = cond;
+        top.taken |= cond;
+    }
+
+    /// `#Else`, after the directive word.
+    fn cc_else_directive(&mut self, span: Span) {
+        if self.cc_active() || self.cc_stack.last().is_some_and(|f| f.parent_active) {
+            self.cc_end_of_directive();
+        } else {
+            self.cc_skip_line();
+        }
+        match self.cc_stack.last_mut() {
+            // No `#If` is open: the lone `#Else` is reported as a repeated one.
+            None => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
+            Some(top) if top.else_seen => self.diagnostics.push(ERR_CC_DUPLICATE_ELSE, span),
+            Some(top) => {
+                top.else_seen = true;
+                top.active = top.parent_active && !top.taken;
+                top.taken = true;
             }
-            _ => {
-                // `#End If`, or the one-word `#EndIf`.
-                if !one_word {
-                    if self.cc_peek().kind == TokenKind::Kw(Kw::If) {
-                        self.cc_advance();
-                    } else if self.cc_stack.last().is_some_and(|f| f.parent_active) {
-                        let span = self.cc_peek().span;
-                        self.report_expected(span, "If");
-                    }
-                }
-                if self.cc_stack.last().is_some_and(|f| f.parent_active) {
-                    self.cc_end_of_directive();
-                } else {
-                    self.cc_skip_line();
-                }
-                if self.cc_stack.pop().is_none() {
-                    self.diagnostics.push(ERR_CC_WITHOUT_IF, span);
-                }
-            }
+        }
+    }
+
+    /// `#End If`, or the one-word `#EndIf`, after the directive word.
+    fn cc_end_directive(&mut self, span: Span, one_word: bool) {
+        if !one_word {
+            self.cc_read_if_after_end();
+        }
+        if self.cc_stack.last().is_some_and(|f| f.parent_active) {
+            self.cc_end_of_directive();
+        } else {
+            self.cc_skip_line();
+        }
+        if self.cc_stack.pop().is_none() {
+            self.diagnostics.push(ERR_CC_WITHOUT_IF, span);
+        }
+    }
+
+    /// The `If` of `#End If`; reported when missing where the block is read.
+    fn cc_read_if_after_end(&mut self) {
+        if self.cc_peek().kind == TokenKind::Kw(Kw::If) {
+            self.cc_advance();
+        } else if self.cc_stack.last().is_some_and(|f| f.parent_active) {
+            let span = self.cc_peek().span;
+            self.report_expected(span, "If");
         }
     }
 
@@ -4718,51 +4920,22 @@ impl<'src> Parser<'src> {
     }
 
     fn eval_cc_primary(&mut self) -> CcResult {
-        use crate::frontend::token::Lit;
         match self.cc_peek().kind.clone() {
             TokenKind::Kw(Kw::LParen) => {
                 self.cc_advance();
                 let v = self.eval_cc_expr(0)?;
-                if self.cc_peek().kind == TokenKind::Kw(Kw::RParen) {
-                    self.cc_advance();
-                } else {
-                    let span = self.cc_peek().span;
-                    self.diagnostics.push(ERR_EXPECTED_RPAREN, span);
-                }
+                self.cc_close_paren();
                 Ok(v)
             }
-            TokenKind::IntLit | TokenKind::LongLit => {
+            TokenKind::IntLit
+            | TokenKind::LongLit
+            | TokenKind::SngLit
+            | TokenKind::DblLit
+            | TokenKind::DateLit
+            | TokenKind::CurLit
+            | TokenKind::StrLit => {
                 let tok = self.cc_advance();
-                Ok(match tok.lit {
-                    Some(Lit::Int(n)) | Some(Lit::Long(n)) => match i16::try_from(n) {
-                        Ok(i) if tok.kind == TokenKind::IntLit => CcValue::Integer(i),
-                        _ => CcValue::Long(n),
-                    },
-                    _ => CcValue::Integer(0),
-                })
-            }
-            TokenKind::SngLit | TokenKind::DblLit | TokenKind::DateLit => {
-                let tok = self.cc_advance();
-                Ok(match tok.lit {
-                    Some(Lit::Single(f)) => CcValue::Single(f),
-                    Some(Lit::Double(d)) => CcValue::Double(d),
-                    Some(Lit::Date(d)) => CcValue::Date(d),
-                    _ => CcValue::Integer(0),
-                })
-            }
-            TokenKind::CurLit => {
-                let tok = self.cc_advance();
-                Ok(match tok.lit {
-                    Some(Lit::Currency(c)) => CcValue::Currency(c),
-                    _ => CcValue::Integer(0),
-                })
-            }
-            TokenKind::StrLit => {
-                let tok = self.cc_advance();
-                Ok(match tok.lit {
-                    Some(Lit::Str(s)) => CcValue::Str(s.to_string()),
-                    _ => CcValue::Str(String::new()),
-                })
+                Ok(Self::cc_literal_value(tok))
             }
             TokenKind::Kw(Kw::True)  => { self.cc_advance(); Ok(CcValue::TRUE) }
             TokenKind::Kw(Kw::False) => { self.cc_advance(); Ok(CcValue::FALSE) }
@@ -4782,45 +4955,92 @@ impl<'src> Parser<'src> {
                 self.report_expected(span, "expression");
                 Ok(CcValue::Empty)
             }
-            _ => {
-                let tok = self.cc_advance();
-                let is_word = tok.kind == TokenKind::Ident || matches!(tok.kind, TokenKind::Kw(_));
-                let Some(id) = tok.sym.filter(|_| is_word) else {
-                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
-                    return Ok(CcValue::Empty);
-                };
-                let name = self.scanner.sym_name(id as u32).to_string();
-                if self.cc_peek().kind == TokenKind::Kw(Kw::LParen) {
-                    // A call: only the built-in conversion and numeric functions exist.
+            _ => self.eval_cc_name(),
+        }
+    }
+
+    /// Consumes the `)` that closes a bracketed group of a directive, or reports it missing.
+    fn cc_close_paren(&mut self) {
+        if self.cc_peek().kind == TokenKind::Kw(Kw::RParen) {
+            self.cc_advance();
+        } else {
+            let span = self.cc_peek().span;
+            self.diagnostics.push(ERR_EXPECTED_RPAREN, span);
+        }
+    }
+
+    /// The value of a literal token of a directive.
+    fn cc_literal_value(tok: Token) -> CcValue {
+        match tok.kind {
+            TokenKind::IntLit | TokenKind::LongLit => Self::cc_integer_value(tok),
+            TokenKind::SngLit | TokenKind::DblLit | TokenKind::DateLit => Self::cc_float_or_date_value(tok),
+            TokenKind::CurLit => match tok.lit {
+                Some(Lit::Currency(c)) => CcValue::Currency(c),
+                _ => CcValue::Integer(0),
+            },
+            _ => match tok.lit {
+                Some(Lit::Str(s)) => CcValue::Str(s.to_string()),
+                _ => CcValue::Str(String::new()),
+            },
+        }
+    }
+
+    fn cc_integer_value(tok: Token) -> CcValue {
+        match tok.lit {
+            Some(Lit::Int(n)) | Some(Lit::Long(n)) => match i16::try_from(n) {
+                Ok(i) if tok.kind == TokenKind::IntLit => CcValue::Integer(i),
+                _ => CcValue::Long(n),
+            },
+            _ => CcValue::Integer(0),
+        }
+    }
+
+    fn cc_float_or_date_value(tok: Token) -> CcValue {
+        match tok.lit {
+            Some(Lit::Single(f)) => CcValue::Single(f),
+            Some(Lit::Double(d)) => CcValue::Double(d),
+            Some(Lit::Date(d)) => CcValue::Date(d),
+            _ => CcValue::Integer(0),
+        }
+    }
+
+    /// A word in a directive expression: a name, or a call of a built-in function.
+    fn eval_cc_name(&mut self) -> CcResult {
+        let tok = self.cc_advance();
+        let is_word = tok.kind == TokenKind::Ident || matches!(tok.kind, TokenKind::Kw(_));
+        let Some(id) = tok.sym.filter(|_| is_word) else {
+            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
+            return Ok(CcValue::Empty);
+        };
+        let name = self.scanner.sym_name(id as u32).to_string();
+        if self.cc_peek().kind == TokenKind::Kw(Kw::LParen) {
+            return self.eval_cc_call(&name);
+        }
+        if CcValue::is_function_name(&name) || !self.cc_word_is_name(&tok) {
+            // A function name without its brackets, or a reserved word.
+            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
+            return Ok(CcValue::Empty);
+        }
+        self.cc_names_read += 1;
+        Ok(self.cc_lookup(&fold_name(&name)))
+    }
+
+    /// A call: only the built-in conversion and numeric functions exist.
+    fn eval_cc_call(&mut self, name: &str) -> CcResult {
+        self.cc_advance();
+        let mut args = Vec::new();
+        if self.cc_peek().kind != TokenKind::Kw(Kw::RParen) {
+            loop {
+                args.push(self.eval_cc_expr(0)?);
+                if self.cc_peek().kind == TokenKind::Kw(Kw::Comma) {
                     self.cc_advance();
-                    let mut args = Vec::new();
-                    if self.cc_peek().kind != TokenKind::Kw(Kw::RParen) {
-                        loop {
-                            args.push(self.eval_cc_expr(0)?);
-                            if self.cc_peek().kind == TokenKind::Kw(Kw::Comma) {
-                                self.cc_advance();
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                    if self.cc_peek().kind == TokenKind::Kw(Kw::RParen) {
-                        self.cc_advance();
-                    } else {
-                        let span = self.cc_peek().span;
-                        self.diagnostics.push(ERR_EXPECTED_RPAREN, span);
-                    }
-                    return CcValue::call(&name, &args).unwrap_or(Err(CC_ERR_VARIABLE_NOT_DEFINED));
+                } else {
+                    break;
                 }
-                if CcValue::is_function_name(&name) || !self.cc_word_is_name(&tok) {
-                    // A function name without its brackets, or a reserved word.
-                    self.diagnostics.push(ERR_UNEXPECTED_TOKEN, tok.span);
-                    return Ok(CcValue::Empty);
-                }
-                self.cc_names_read += 1;
-                Ok(self.cc_lookup(&fold_name(&name)))
             }
         }
+        self.cc_close_paren();
+        CcValue::call(name, &args).unwrap_or(Err(CC_ERR_VARIABLE_NOT_DEFINED))
     }
 
     // ── Option statement parser ───────────────────────────────────────────────
@@ -4833,80 +5053,91 @@ impl<'src> Parser<'src> {
         let private = self.peek().kind == TokenKind::Kw(Kw::Private);
         match if private { None } else { self.peek_word() } {
             Some(Kw::Explicit) => {
-                if std::mem::replace(&mut self.seen_option_explicit, true) {
-                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
-                }
+                self.note_option_seen(OptionSeen::Explicit, option_span);
                 self.advance();
                 self.end_stmt();
                 arena.alloc(ExprNode::OptionExplicit)
             }
-            Some(Kw::Base) => {
-                if std::mem::replace(&mut self.seen_option_base, true) {
-                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
-                } else if self.module_array_seen {
-                    self.diagnostics.push(ERR_ARRAY_ALREADY_DIMENSIONED, option_span);
-                }
-                self.advance();
-                // The base is the literal 0 or 1.
-                let value = match (self.peek().kind.clone(), self.peek().lit.clone()) {
-                    (TokenKind::IntLit, Some(crate::frontend::token::Lit::Int(n))) if n == 0 || n == 1 => {
-                        self.advance();
-                        n as u8
-                    }
-                    _ => {
-                        let span = self.current_span();
-                        self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                        self.skip_line();
-                        return arena.alloc(ExprNode::Block { stmts: vec![] });
-                    }
-                };
-                self.end_stmt();
-                arena.alloc(ExprNode::OptionBase { value })
-            }
-            Some(Kw::Compare) => {
-                if std::mem::replace(&mut self.seen_option_compare, true) {
-                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
-                }
-                self.advance();
-                let mode = if self.eat_word(Kw::Binary) {
-                    0u8
-                } else if self.eat_word(Kw::Text) {
-                    1u8
-                } else {
-                    let span = self.current_span();
-                    self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Text or Binary");
-                    self.skip_line();
-                    return arena.alloc(ExprNode::Block { stmts: vec![] });
-                };
-                self.end_stmt();
-                arena.alloc(ExprNode::OptionCompare { mode })
-            }
-            None if private => {
-                if std::mem::replace(&mut self.seen_option_private, true) {
-                    self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
-                }
-                self.advance(); // consume Private
-                if self.eat_word(Kw::Module) {
-                    // Only a standard module can be private; that is found once the whole
-                    // statement has been read.
-                    if self.module_kind != ModuleKind::Standard {
-                        self.diagnostics.push(ERR_OPTION_PRIVATE_IN_OBJECT_MODULE, option_span);
-                    }
-                    self.end_stmt();
-                } else {
-                    let span = self.current_span();
-                    self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Module");
-                    self.skip_line();
-                }
-                arena.alloc(ExprNode::Block { stmts: vec![] })
-            }
+            Some(Kw::Base) => self.parse_option_base(arena, option_span),
+            Some(Kw::Compare) => self.parse_option_compare(arena, option_span),
+            None if private => self.parse_option_private(arena, option_span),
             _ => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                self.skip_line();
+                self.error_and_skip_line(ERR_UNEXPECTED_TOKEN);
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
         }
+    }
+
+    /// Reports an `Option` statement of a kind that has been read before.
+    fn note_option_seen(&mut self, which: OptionSeen, option_span: Span) {
+        let seen = match which {
+            OptionSeen::Explicit => &mut self.seen_option_explicit,
+            OptionSeen::Compare => &mut self.seen_option_compare,
+            OptionSeen::Private => &mut self.seen_option_private,
+        };
+        if std::mem::replace(seen, true) {
+            self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
+        }
+    }
+
+    /// `Option Base 0` / `Option Base 1`, at the word `Base`.
+    fn parse_option_base(&mut self, arena: &mut ExprArena, option_span: Span) -> NodeId {
+        if std::mem::replace(&mut self.seen_option_base, true) {
+            self.diagnostics.push(ERR_DUPLICATE_OPTION, option_span);
+        } else if self.module_array_seen {
+            self.diagnostics.push(ERR_ARRAY_ALREADY_DIMENSIONED, option_span);
+        }
+        self.advance();
+        // The base is the literal 0 or 1.
+        let value = match (self.peek().kind.clone(), self.peek().lit.clone()) {
+            (TokenKind::IntLit, Some(crate::frontend::token::Lit::Int(n))) if n == 0 || n == 1 => {
+                self.advance();
+                n as u8
+            }
+            _ => {
+                self.error_and_skip_line(ERR_UNEXPECTED_TOKEN);
+                return arena.alloc(ExprNode::Block { stmts: vec![] });
+            }
+        };
+        self.end_stmt();
+        arena.alloc(ExprNode::OptionBase { value })
+    }
+
+    /// `Option Compare Binary` / `Option Compare Text`, at the word `Compare`.
+    fn parse_option_compare(&mut self, arena: &mut ExprArena, option_span: Span) -> NodeId {
+        self.note_option_seen(OptionSeen::Compare, option_span);
+        self.advance();
+        let mode = if self.eat_word(Kw::Binary) {
+            0u8
+        } else if self.eat_word(Kw::Text) {
+            1u8
+        } else {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Text or Binary");
+            self.skip_line();
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        };
+        self.end_stmt();
+        arena.alloc(ExprNode::OptionCompare { mode })
+    }
+
+    /// `Option Private Module`, at the word `Private`.
+    fn parse_option_private(&mut self, arena: &mut ExprArena, option_span: Span) -> NodeId {
+        self.note_option_seen(OptionSeen::Private, option_span);
+        self.advance(); // consume Private
+        if self.eat_word(Kw::Module) {
+            // Only a standard module can be private; that is found once the whole
+            // statement has been read.
+            if self.module_kind != ModuleKind::Standard {
+                self.diagnostics.push(ERR_OPTION_PRIVATE_IN_OBJECT_MODULE, option_span);
+            }
+            self.end_stmt();
+        } else {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Module");
+            self.skip_line();
+        }
+        arena.alloc(ExprNode::Block { stmts: vec![] })
     }
 
     // ── Implements ───────────────────────────────────────────────────────────
@@ -5024,70 +5255,13 @@ impl<'src> Parser<'src> {
         self.advance(); // Open
         let path = self.parse_expr(arena, 0);
 
-        let mut open_mode: u8 = 4; // default: Random
-        if self.eat(TokenKind::Kw(Kw::For)) {
-            open_mode = match self.peek_word() {
-                Some(Kw::Input) => { self.advance(); 1 }
-                Some(Kw::Output) => { self.advance(); 2 }
-                Some(Kw::Random) => { self.advance(); 4 }
-                Some(Kw::Append) => { self.advance(); 8 }
-                Some(Kw::Binary) => { self.advance(); 0x20 }
-                _ => {
-                    // `For` needs a mode word.
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                    open_mode
-                }
-            };
-        }
-
-        let mut access_code: u8 = 0;
-        let access_span = self.current_span();
-        if self.eat_word(Kw::Access) {
-            let (has_read, has_write) = self.read_write_words();
-            // `Access` names what the file is opened for.
-            if !has_read && !has_write {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                self.skip_line();
-                return arena.alloc(ExprNode::Block { stmts: Vec::new() });
-            }
-            // The access must be possible in the open mode: Read is not
-            // available to Output, Write not to Input, and Read Write to
-            // neither Input nor Output.
-            let conflict = (has_read && open_mode == 2)
-                || (has_write && open_mode == 1)
-                || (has_read && has_write && open_mode == 2)
-                // Append writes, so read-only access cannot go with it.
-                || (has_read && !has_write && open_mode == 8);
-            if conflict {
-                self.diagnostics.push(ERR_SYNTAX_ERROR, access_span);
-            }
-            access_code = match (has_read, has_write) {
-                (true, true) => 3,
-                (true, false) => 1,
-                (false, true) => 2,
-                (false, false) => 0,
-            };
-        }
-
-        let mut lock_code: u8 = 0;
-        if self.eat(TokenKind::Kw(Kw::Shared)) {
-            lock_code = 4;
-        } else if self.eat(TokenKind::Kw(Kw::Lock)) {
-            let (has_read, has_write) = self.read_write_words();
-            lock_code = match (has_read, has_write) {
-                (true, true) => 1,
-                (true, false) => 3,
-                (false, true) => 2,
-                (false, false) => {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-                    self.skip_line();
-                    return arena.alloc(ExprNode::Block { stmts: Vec::new() });
-                }
-            };
-        }
+        let open_mode = self.parse_open_mode();
+        let Some(access_code) = self.parse_open_access(open_mode) else {
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        };
+        let Some(lock_code) = self.parse_open_lock() else {
+            return arena.alloc(ExprNode::Block { stmts: Vec::new() });
+        };
         let open_flags = (lock_code << 4) | access_code;
 
         if !self.eat(TokenKind::Kw(Kw::As)) {
@@ -5102,17 +5276,7 @@ impl<'src> Parser<'src> {
             self.expect(TokenKind::Kw(Kw::Eq), ERR_EXPECTED_EQ);
             args.push(self.parse_expr(arena, 0)); // `Len = <expr>` is a real use site
         }
-        // The clauses of an `Open` of a path expression cost 8 more than an assignment of it.
-        let channel_is_simple =
-            matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
-        if channel_is_simple && args.len() == 1 && self.output_list_too_complex(arena, &args, cost::OPEN) {
-            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, open_span);
-        }
-        // With `Len = n` the clauses and the path cost 10 more than assigning `n` when the
-        // path is a name, and the path's own bytes differ from a name's by as much as its size.
-        if channel_is_simple && args.len() == 2 && matches!(arena.get(args[0]), ExprNode::NameRef { .. }) {
-            self.length_clause_too_complex(arena, args[1], cost::OPEN_WITH_LENGTH, open_span);
-        }
+        self.check_open_size(arena, ch, &args, open_span);
         self.end_stmt();
         arena.alloc(ExprNode::FileIoStmt {
             kind: FileIoKind::Open,
@@ -5122,6 +5286,100 @@ impl<'src> Parser<'src> {
             open_mode,
             open_flags,
         })
+    }
+
+    /// The `For mode` clause of an `Open`; the default mode is Random.
+    fn parse_open_mode(&mut self) -> u8 {
+        let default_mode: u8 = 4;
+        if !self.eat(TokenKind::Kw(Kw::For)) {
+            return default_mode;
+        }
+        let mode = match self.peek_word() {
+            Some(Kw::Input) => 1,
+            Some(Kw::Output) => 2,
+            Some(Kw::Random) => 4,
+            Some(Kw::Append) => 8,
+            Some(Kw::Binary) => 0x20,
+            _ => {
+                // `For` needs a mode word.
+                let span = self.current_span();
+                self.diagnostics.push(ERR_SYNTAX_ERROR, span);
+                return default_mode;
+            }
+        };
+        self.advance();
+        mode
+    }
+
+    /// The `Access` clause of an `Open`: its code (0 when absent), or `None` when the clause is
+    /// wrong and the line has been skipped.
+    fn parse_open_access(&mut self, open_mode: u8) -> Option<u8> {
+        let access_span = self.current_span();
+        if !self.eat_word(Kw::Access) {
+            return Some(0);
+        }
+        let (has_read, has_write) = self.read_write_words();
+        // `Access` names what the file is opened for.
+        if !has_read && !has_write {
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
+            return None;
+        }
+        if Self::open_access_conflicts(has_read, has_write, open_mode) {
+            self.diagnostics.push(ERR_SYNTAX_ERROR, access_span);
+        }
+        Some(match (has_read, has_write) {
+            (true, true) => 3,
+            (true, false) => 1,
+            (false, true) => 2,
+            (false, false) => 0,
+        })
+    }
+
+    /// The access must be possible in the open mode: Read is not
+    /// available to Output, Write not to Input, and Read Write to
+    /// neither Input nor Output.
+    fn open_access_conflicts(has_read: bool, has_write: bool, open_mode: u8) -> bool {
+        (has_read && open_mode == 2)
+            || (has_write && open_mode == 1)
+            || (has_read && has_write && open_mode == 2)
+            // Append writes, so read-only access cannot go with it.
+            || (has_read && !has_write && open_mode == 8)
+    }
+
+    /// The `Shared` or `Lock` clause of an `Open`: its code (0 when absent), or `None` when the
+    /// clause is wrong and the line has been skipped.
+    fn parse_open_lock(&mut self) -> Option<u8> {
+        if self.eat(TokenKind::Kw(Kw::Shared)) {
+            return Some(4);
+        }
+        if !self.eat(TokenKind::Kw(Kw::Lock)) {
+            return Some(0);
+        }
+        let (has_read, has_write) = self.read_write_words();
+        match (has_read, has_write) {
+            (true, true) => Some(1),
+            (true, false) => Some(3),
+            (false, true) => Some(2),
+            (false, false) => {
+                self.error_and_skip_line(ERR_SYNTAX_ERROR);
+                None
+            }
+        }
+    }
+
+    /// The size accounting of an `Open`.
+    fn check_open_size(&mut self, arena: &ExprArena, ch: NodeId, args: &[NodeId], open_span: Span) {
+        // The clauses of an `Open` of a path expression cost 8 more than an assignment of it.
+        let channel_is_simple =
+            matches!(arena.get(ch), ExprNode::NameRef { .. } | ExprNode::Literal { lit: AstLit::Int(_) });
+        if channel_is_simple && args.len() == 1 && self.output_list_too_complex(arena, args, cost::OPEN) {
+            self.diagnostics.push(ERR_STATEMENT_TOO_COMPLEX, open_span);
+        }
+        // With `Len = n` the clauses and the path cost 10 more than assigning `n` when the
+        // path is a name, and the path's own bytes differ from a name's by as much as its size.
+        if channel_is_simple && args.len() == 2 && matches!(arena.get(args[0]), ExprNode::NameRef { .. }) {
+            self.length_clause_too_complex(arena, args[1], cost::OPEN_WITH_LENGTH, open_span);
+        }
     }
 
     /// The words after `Access` or `Lock` in an `Open`: `Read`, `Write`, or `Read Write`.
@@ -5145,9 +5403,7 @@ impl<'src> Parser<'src> {
         // An empty list ends at the end of the statement or a colon; an `Else` ends the list
         // only behind a channel.
         if self.peek().kind == TokenKind::Kw(Kw::Else) {
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
             return arena.alloc(ExprNode::FileIoStmt { kind: FileIoKind::Close, channel: None, args: chs, channel_marks: marks, open_mode: 0, open_flags: 0 });
         }
         while !self.peek().is_stmt_end()
@@ -5316,6 +5572,48 @@ impl<'src> Parser<'src> {
     /// Parse an access-modifier prefix (Public/Private/Friend/Static) then dispatch.
     fn parse_access_decl(&mut self, arena: &mut ExprArena) -> NodeId {
         let first = self.advance();
+        let (access_tok, static_proc, access_span) = self.read_access_words(&first);
+        // `Static` outside a procedure only qualifies a procedure. What follows it is read as
+        // the list of variables it would declare, so a name or declarator that is wrong is
+        // reported first; a list that reads well is refused as a whole.
+        if access_tok == TokenKind::Kw(Kw::Static) && !self.at_procedure_keyword() {
+            let reported = self.diagnostics.len();
+            self.parse_dim_list_static(arena, false, true);
+            if self.diagnostics.len() == reported {
+                self.diagnostics.push(ERR_INVALID_OUTSIDE_PROCEDURE, first.span);
+            }
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        }
+        let is_friend = access_tok == TokenKind::Kw(Kw::Friend);
+        if is_friend {
+            self.reject_in_standard_module_at(access_span);
+        }
+        // `Friend` and a combined `Static` only qualify a procedure.
+        let procedure_only = is_friend || (static_proc && access_tok != TokenKind::Kw(Kw::Static));
+        if procedure_only && !self.at_procedure_keyword() {
+            let span = self.current_span();
+            self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Function or Sub or Property");
+            self.skip_to_stmt_end();
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        }
+        // An event is always public.
+        if self.peek().kind == TokenKind::Kw(Kw::Event)
+            && matches!(access_tok, TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Friend))
+        {
+            self.error_and_skip_to_stmt_end(ERR_UNEXPECTED_TOKEN);
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        }
+        self.static_prefix = static_proc;
+        let node = self.parse_access_member(arena, static_proc);
+        self.static_prefix = false;
+        self.record_access_decl(arena, node, &access_tok, access_span, static_proc);
+        node
+    }
+
+    /// The access words before a declaration. `first` is the first, already read. Returns the
+    /// access word that decides the visibility, whether the declaration is `Static`, and where
+    /// the access word is.
+    fn read_access_words(&mut self, first: &Token) -> (TokenKind, bool, Span) {
         let mut access_tok = first.kind.clone();
         // `Static` and an access modifier combine in either order
         // (`Static Private Sub`, `Private Static Sub`): every local of the
@@ -5333,22 +5631,19 @@ impl<'src> Parser<'src> {
         } else if self.eat(TokenKind::Kw(Kw::Static)) {
             static_proc = true;
         }
-        // `Static` outside a procedure only qualifies a procedure. What follows it is read as
-        // the list of variables it would declare, so a name or declarator that is wrong is
-        // reported first; a list that reads well is refused as a whole.
-        if access_tok == TokenKind::Kw(Kw::Static)
-            && !matches!(
-                self.peek().kind,
-                TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
-            )
-        {
-            let reported = self.diagnostics.len();
-            self.parse_dim_list_static(arena, false, true);
-            if self.diagnostics.len() == reported {
-                self.diagnostics.push(ERR_INVALID_OUTSIDE_PROCEDURE, first.span);
-            }
-            return arena.alloc(ExprNode::Block { stmts: vec![] });
-        }
+        (access_tok, static_proc, access_span)
+    }
+
+    /// Records the visibility and the qualifiers of a declaration that follows access words, and
+    /// reports what an object module does not allow to be public.
+    fn record_access_decl(
+        &mut self,
+        arena: &ExprArena,
+        node: NodeId,
+        access_tok: &TokenKind,
+        access_span: Span,
+        static_proc: bool,
+    ) {
         let vis = match access_tok {
             TokenKind::Kw(Kw::Public) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Friend) => {
                 Some(true)
@@ -5356,34 +5651,33 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(Kw::Private) => Some(false),
             _ => None,
         };
-        let is_friend = access_tok == TokenKind::Kw(Kw::Friend);
-        if is_friend {
-            self.reject_in_standard_module_at(access_span);
+        if let Some(is_public) = vis {
+            self.mark_decl_visibility(arena, node, is_public);
         }
-        // `Friend` and a combined `Static` only qualify a procedure.
-        let procedure_only = is_friend || (static_proc && access_tok != TokenKind::Kw(Kw::Static));
-        if procedure_only
-            && !matches!(
-                self.peek().kind,
-                TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
-            )
-        {
-            let span = self.current_span();
-            self.diagnostics.push_labeled(ERR_UNEXPECTED_TOKEN, span, "Function or Sub or Property");
-            self.skip_to_stmt_end();
-            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        if *access_tok == TokenKind::Kw(Kw::Global) && self.module_kind != ModuleKind::Standard && !self.in_procedure {
+            self.diagnostics.push(ERR_PUBLIC_MEMBER_NOT_ALLOWED, access_span);
+        } else {
+            self.check_public_in_object_module(arena, node, access_span, vis == Some(true));
         }
-        // An event is always public.
-        if self.peek().kind == TokenKind::Kw(Kw::Event)
-            && matches!(access_tok, TokenKind::Kw(Kw::Private) | TokenKind::Kw(Kw::Global) | TokenKind::Kw(Kw::Friend))
-        {
-            let span = self.current_span();
-            self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-            self.skip_to_stmt_end();
-            return arena.alloc(ExprNode::Block { stmts: vec![] });
+        if *access_tok == TokenKind::Kw(Kw::Friend) {
+            self.decl_friend.insert(node.0);
         }
-        self.static_prefix = static_proc;
-        let node = match self.peek().kind.clone() {
+        if static_proc && matches!(arena.get(node), ExprNode::ProcDecl { .. }) {
+            self.decl_static.insert(node.0);
+        }
+    }
+
+    /// Whether the next token is `Sub`, `Function` or `Property`.
+    fn at_procedure_keyword(&mut self) -> bool {
+        matches!(
+            self.peek().kind,
+            TokenKind::Kw(Kw::Sub) | TokenKind::Kw(Kw::Function) | TokenKind::Kw(Kw::Property)
+        )
+    }
+
+    /// The declaration that follows the access words.
+    fn parse_access_member(&mut self, arena: &mut ExprArena, static_proc: bool) -> NodeId {
+        match self.peek().kind.clone() {
             TokenKind::Kw(Kw::Sub)      => self.parse_proc_decl(arena, ProcKind::Sub),
             TokenKind::Kw(Kw::Function) => self.parse_proc_decl(arena, ProcKind::Function),
             TokenKind::Kw(Kw::Property) => self.parse_property_decl(arena),
@@ -5415,23 +5709,7 @@ impl<'src> Parser<'src> {
                 self.skip_to_stmt_end();
                 arena.alloc(ExprNode::Block { stmts: vec![] })
             }
-        };
-        self.static_prefix = false;
-        if let Some(is_public) = vis {
-            self.mark_decl_visibility(arena, node, is_public);
         }
-        if access_tok == TokenKind::Kw(Kw::Global) && self.module_kind != ModuleKind::Standard && !self.in_procedure {
-            self.diagnostics.push(ERR_PUBLIC_MEMBER_NOT_ALLOWED, access_span);
-        } else {
-            self.check_public_in_object_module(arena, node, access_span, vis == Some(true));
-        }
-        if access_tok == TokenKind::Kw(Kw::Friend) {
-            self.decl_friend.insert(node.0);
-        }
-        if static_proc && matches!(arena.get(node), ExprNode::ProcDecl { .. }) {
-            self.decl_static.insert(node.0);
-        }
-        node
     }
 
     /// In an object module, constants, arrays, fixed-length strings, `Declare` statements and
@@ -5481,7 +5759,6 @@ impl<'src> Parser<'src> {
         self.module_decl_seen = true;
         self.error_var_local = false;
         let name = self.expect_decl_name();
-        let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         // Parameter list
         let params = if self.eat(TokenKind::Kw(Kw::LParen)) {
             let p = self.parse_param_list(arena);
@@ -5505,6 +5782,19 @@ impl<'src> Parser<'src> {
                 None
             }
         } else { None };
+        self.finish_proc_decl(arena, kind, &name, params, ret_type)
+    }
+
+    /// The end of a procedure's header (a trailing `Static`) and its body.
+    fn finish_proc_decl(
+        &mut self,
+        arena: &mut ExprArena,
+        kind: ProcKind,
+        name: &Token,
+        params: Option<NodeId>,
+        ret_type: Option<NodeId>,
+    ) -> NodeId {
+        let name_id = name.sym.map(|s| s as u32).unwrap_or(0);
         let static_span = self.current_span();
         let trailing_static = self.eat(TokenKind::Kw(Kw::Static));
         if trailing_static && self.static_prefix {
@@ -5570,9 +5860,7 @@ impl<'src> Parser<'src> {
         } else {
             // The closing line is a statement of its own: anything but a comment after it is
             // a syntax error.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
         }
         body
     }
@@ -5744,16 +6032,8 @@ impl<'src> Parser<'src> {
     fn parse_declare_stmt(&mut self, arena: &mut ExprArena) -> NodeId {
         self.advance(); // Declare
         self.module_decl_seen = true;
-        let kind = match self.peek().kind.clone() {
-            TokenKind::Kw(Kw::Function) => { self.advance(); ProcKind::Function }
-            TokenKind::Kw(Kw::Sub)      => { self.advance(); ProcKind::Sub }
-            _ => {
-                let span = self.current_span();
-                self.diagnostics.push(ERR_UNEXPECTED_TOKEN, span);
-                self.skip_to_stmt_end();
-                self.end_stmt();
-                return arena.alloc(ExprNode::Block { stmts: vec![] });
-            }
+        let Some(kind) = self.parse_declare_kind() else {
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
         };
         let name_tok = self.expect_decl_name();
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
@@ -5778,24 +6058,8 @@ impl<'src> Parser<'src> {
             arena.alloc(ExprNode::Literal { lit: crate::frontend::ast::AstLit::Str("".into()) })
         };
         // Optional Alias "aliasname"
-        let alias = if self.eat(TokenKind::Kw(Kw::Alias)) {
-            let alias_span = self.current_span();
-            match self.declare_string_operand(arena) {
-                Some(s) => {
-                    if let ExprNode::Literal { lit: AstLit::Str(text) } = arena.get(s) {
-                        if let Some(ordinal) = text.strip_prefix('#') {
-                            self.check_alias_ordinal(ordinal, alias_span);
-                        }
-                    }
-                    Some(s)
-                }
-                None => {
-                    self.skip_line();
-                    return arena.alloc(ExprNode::Block { stmts: vec![] });
-                }
-            }
-        } else {
-            None
+        let Ok(alias) = self.parse_declare_alias(arena) else {
+            return arena.alloc(ExprNode::Block { stmts: vec![] });
         };
         // Optional parameter list
         let params = if self.eat(TokenKind::Kw(Kw::LParen)) {
@@ -5819,6 +6083,44 @@ impl<'src> Parser<'src> {
         let id = arena.alloc(ExprNode::DeclareDecl { kind, name, lib, alias, params, ret_type });
         self.set_span(id, name_tok.span);
         id
+    }
+
+    /// `Function` or `Sub` after `Declare`; anything else is reported and the statement ended.
+    fn parse_declare_kind(&mut self) -> Option<ProcKind> {
+        match self.peek().kind {
+            TokenKind::Kw(Kw::Function) => {
+                self.advance();
+                Some(ProcKind::Function)
+            }
+            TokenKind::Kw(Kw::Sub) => {
+                self.advance();
+                Some(ProcKind::Sub)
+            }
+            _ => {
+                self.error_and_skip_to_stmt_end(ERR_UNEXPECTED_TOKEN);
+                self.end_stmt();
+                None
+            }
+        }
+    }
+
+    /// The optional `Alias "name"` of a `Declare`. `Err` when the operand is wrong and the line
+    /// has been skipped.
+    fn parse_declare_alias(&mut self, arena: &mut ExprArena) -> Result<Option<NodeId>, ()> {
+        if !self.eat(TokenKind::Kw(Kw::Alias)) {
+            return Ok(None);
+        }
+        let alias_span = self.current_span();
+        let Some(s) = self.declare_string_operand(arena) else {
+            self.skip_line();
+            return Err(());
+        };
+        if let ExprNode::Literal { lit: AstLit::Str(text) } = arena.get(s) {
+            if let Some(ordinal) = text.strip_prefix('#') {
+                self.check_alias_ordinal(ordinal, alias_span);
+            }
+        }
+        Ok(Some(s))
     }
 
     /// The string literal operand of `Lib` / `Alias`; anything else is reported.
@@ -5845,82 +6147,18 @@ impl<'src> Parser<'src> {
         let ExprNode::ArgList { args } = arena.get(list) else { return };
         // 0 = none yet, 1 = an Optional seen, 2 = a ParamArray seen.
         let mut section = 0;
-        for (i, &param) in args.iter().enumerate() {
+        for (index, &param) in args.iter().enumerate() {
             let ExprNode::ParamDef { flags, .. } = arena.get(param) else { continue };
-            let flags = *flags;
-            let span = self.node_spans.get(param);
-            let is_optional = flags & 0x01 != 0;
-            let is_param_array = flags & 0x20 != 0;
-            let is_array = flags & 0x08 != 0;
-            let is_value_owner = matches!(owner, ParamOwner::PropertyValue | ParamOwner::PropertySet);
-            let value_param = is_value_owner && i + 1 == args.len();
-            // A name already used by an earlier parameter.
-            let ExprNode::ParamDef { name: param_name, type_node: param_type, .. } = arena.get(param) else { continue };
-            if matches!(owner, ParamOwner::Procedure | ParamOwner::PropertyValue | ParamOwner::PropertySet)
-                && args[..i].iter().any(|&earlier| {
-                matches!(arena.get(earlier), ExprNode::ParamDef { name, .. } if name == param_name)
-            }) {
-                self.diagnostics.push(ERR_DUPLICATE_DECLARATION, span);
-                return;
-            }
-            // The value of a `Property Set` is an object: untyped, Variant, Object or a class.
-            if owner == ParamOwner::PropertySet && value_param && !is_optional && !is_param_array {
-                let object_typed = !is_array
-                    && param_type.map_or(true, |t| {
-                        matches!(arena.get(t), ExprNode::BuiltinType { kind: 12 | 9 } | ExprNode::UserType { .. })
-                    });
-                if !object_typed {
-                    self.diagnostics.push(ERR_PROPERTY_PROCEDURES_INCONSISTENT, span);
-                    return;
-                }
-            }
-            let violation: Option<(u32, Option<&'static str>)> = if owner == ParamOwner::Event
-                && (is_optional || is_param_array)
-            {
-                Some((ERR_SYNTAX_ERROR, None))
-            } else if is_param_array {
-                if section == 2 {
-                    Some((ERR_UNEXPECTED_TOKEN, Some("identifier")))
-                } else if section == 1 {
-                    Some((ERR_PARAM_ARRAY_WITH_OPTIONAL, None))
-                } else if !is_array || (!is_value_owner && !param_type_is_variant(arena, param)) {
-                    Some((ERR_PARAM_ARRAY_NOT_ARRAY, None))
-                } else if i + 1 < args.len() && !is_value_owner {
-                    Some((ERR_UNEXPECTED_TOKEN, Some(")")))
-                } else {
-                    None
-                }
-            } else if is_optional {
-                if section == 2 {
-                    Some((ERR_UNEXPECTED_TOKEN, Some(")")))
-                } else if is_array {
-                    Some((ERR_OPTIONAL_ARRAY, None))
-                } else {
-                    None
-                }
-            } else if section != 0 && !value_param {
-                Some((ERR_UNEXPECTED_TOKEN, Some(if section == 1 { "Optional" } else { ")" })))
-            } else if is_array && flags & 0x02 != 0 {
-                Some((ERR_ARRAY_ARGUMENT_MUST_BE_BYREF, None))
-            } else {
-                None
-            };
-            if let Some((code, label)) = violation {
+            let slot = param_rules::ParamSlot { owner, flags: *flags, index, count: args.len() };
+            if let Some((code, label)) = param_rules::first_violation(arena, args, param, &slot, section) {
+                let span = self.node_spans.get(param);
                 match label {
                     Some(label) => self.diagnostics.push_labeled(code, span, label),
                     None => self.diagnostics.push(code, span),
                 }
                 return;
             }
-            if is_array && flags & 0x02 != 0 {
-                self.diagnostics.push(ERR_ARRAY_ARGUMENT_MUST_BE_BYREF, span);
-                return;
-            }
-            if is_param_array {
-                section = 2;
-            } else if is_optional {
-                section = section.max(1);
-            }
+            section = slot.section_after(section);
         }
     }
 
@@ -5952,13 +6190,7 @@ impl<'src> Parser<'src> {
                 too_many = Some(self.current_span());
             }
             let param = self.parse_param(arena, in_declare);
-            if let ExprNode::ParamDef { flags, .. } = arena.get(param) {
-                if flags & 0x21 != 0 {
-                    section = true;
-                } else if section {
-                    required_after = true;
-                }
-            }
+            Self::note_value_parameter(arena, param, &mut section, &mut required_after);
             args.push(param);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             if self.peek().kind == TokenKind::Kw(Kw::RParen) {
@@ -5979,29 +6211,18 @@ impl<'src> Parser<'src> {
         arena.alloc(ExprNode::ArgList { args })
     }
 
+    /// Tracks whether a required parameter follows an `Optional` or `ParamArray` one.
+    fn note_value_parameter(arena: &ExprArena, param: NodeId, section: &mut bool, required_after: &mut bool) {
+        let ExprNode::ParamDef { flags, .. } = arena.get(param) else { return };
+        if flags & 0x21 != 0 {
+            *section = true;
+        } else if *section {
+            *required_after = true;
+        }
+    }
+
     fn parse_param(&mut self, arena: &mut ExprArena, in_declare: bool) -> NodeId {
-        let mut flags: u16 = 0;
-        // `ByVal` or `ByRef` may come before `Optional` as well as after it.
-        let mut by_first = true;
-        match self.peek().kind {
-            TokenKind::Kw(Kw::ByVal) => { self.advance(); flags |= 0x02; }
-            TokenKind::Kw(Kw::ByRef) => { self.advance(); flags |= 0x04; }
-            _ => by_first = false,
-        }
-        if self.eat(TokenKind::Kw(Kw::Optional)) { flags |= 0x01; }
-        // ParamArray must precede the parameter name; mutually exclusive with ByVal/ByRef and
-        // with Optional.
-        if by_first || flags & 0x01 != 0 && self.peek().kind != TokenKind::Kw(Kw::ByVal) && self.peek().kind != TokenKind::Kw(Kw::ByRef) {
-            // The pass-mode word was given already.
-        } else if self.eat(TokenKind::Kw(Kw::ParamArray)) {
-            flags |= 0x20;
-        } else {
-            match self.peek().kind {
-                TokenKind::Kw(Kw::ByVal) => { self.advance(); flags |= 0x02; }
-                TokenKind::Kw(Kw::ByRef) => { self.advance(); flags |= 0x04; }
-                _ => {}
-            }
-        }
+        let mut flags = self.parse_param_modifiers();
         let name = self.expect_decl_name();
         self.note_declared_name(&name, false);
         let nid = name.sym.map(|s| s as u32).unwrap_or(0);
@@ -6011,25 +6232,7 @@ impl<'src> Parser<'src> {
         }
         self.reject_suffix_with_as(&name, "list separator or )");
         let type_node = if self.eat(TokenKind::Kw(Kw::As)) {
-            if self.peek().kind == TokenKind::Kw(Kw::New) {
-                // A parameter cannot be a new object.
-                let span = self.current_span();
-                self.report_expected(span, "type name");
-                self.advance();
-                flags |= 0x10;
-                self.require_class_name_after_new("type name");
-            }
-            if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
-                Some(arena.alloc(ExprNode::AnyType))
-            } else {
-                let type_span = self.current_span();
-                let t = self.parse_type_spec(arena, false);
-                // A fixed-length string can only be passed as an array.
-                if flags & 0x08 == 0 && matches!(arena.get(t), ExprNode::StringType { fixed_len: Some(_) }) {
-                    self.diagnostics.push(ERR_EXPECTED_ARRAY, type_span);
-                }
-                Some(t)
-            }
+            Some(self.parse_param_type(arena, in_declare, &mut flags))
         } else {
             // `Sub F(count%)` ≡ `count As Integer`
             self.type_node_from_suffix(arena, name.type_suffix)
@@ -6043,21 +6246,81 @@ impl<'src> Parser<'src> {
         // In a property assignment an Optional parameter is an error once its type and default
         // are read; whatever else stands in the parameter is not read.
         if self.value_owner_params && flags & 0x01 != 0 {
-            let mut depth = 0;
-            while !self.peek().is_stmt_end()
-                && !(depth == 0 && matches!(self.peek().kind, TokenKind::Kw(Kw::RParen) | TokenKind::Kw(Kw::Comma)))
-            {
-                match self.peek().kind {
-                    TokenKind::Kw(Kw::LParen) => depth += 1,
-                    TokenKind::Kw(Kw::RParen) => depth -= 1,
-                    _ => {}
-                }
-                self.advance();
-            }
+            self.skip_rest_of_parameter();
         }
         let id = arena.alloc(ExprNode::ParamDef { flags, name: nid, type_node, default });
         self.set_span(id, name.span);
         id
+    }
+
+    /// The pass-mode and `Optional` / `ParamArray` words before a parameter name, as flags.
+    fn parse_param_modifiers(&mut self) -> u16 {
+        // `ByVal` or `ByRef` may come before `Optional` as well as after it.
+        let mut flags = self.take_pass_mode_word();
+        let by_first = flags != 0;
+        if self.eat(TokenKind::Kw(Kw::Optional)) { flags |= 0x01; }
+        // ParamArray must precede the parameter name; mutually exclusive with ByVal/ByRef and
+        // with Optional.
+        if by_first || flags & 0x01 != 0 && !self.at_pass_mode_word() {
+            // The pass-mode word was given already.
+            return flags;
+        }
+        if self.eat(TokenKind::Kw(Kw::ParamArray)) {
+            return flags | 0x20;
+        }
+        flags | self.take_pass_mode_word()
+    }
+
+    fn at_pass_mode_word(&mut self) -> bool {
+        matches!(self.peek().kind, TokenKind::Kw(Kw::ByVal) | TokenKind::Kw(Kw::ByRef))
+    }
+
+    /// Reads a `ByVal` or `ByRef` and returns its flag (0 when there is none).
+    fn take_pass_mode_word(&mut self) -> u16 {
+        let flag = match self.peek().kind {
+            TokenKind::Kw(Kw::ByVal) => 0x02,
+            TokenKind::Kw(Kw::ByRef) => 0x04,
+            _ => return 0,
+        };
+        self.advance();
+        flag
+    }
+
+    /// The type after `As` of a parameter; sets the flag of a parameter that is a new object.
+    fn parse_param_type(&mut self, arena: &mut ExprArena, in_declare: bool, flags: &mut u16) -> NodeId {
+        if self.peek().kind == TokenKind::Kw(Kw::New) {
+            // A parameter cannot be a new object.
+            let span = self.current_span();
+            self.report_expected(span, "type name");
+            self.advance();
+            *flags |= 0x10;
+            self.require_class_name_after_new("type name");
+        }
+        if in_declare && self.eat(TokenKind::Kw(Kw::Any)) {
+            return arena.alloc(ExprNode::AnyType);
+        }
+        let type_span = self.current_span();
+        let t = self.parse_type_spec(arena, false);
+        // A fixed-length string can only be passed as an array.
+        if *flags & 0x08 == 0 && matches!(arena.get(t), ExprNode::StringType { fixed_len: Some(_) }) {
+            self.diagnostics.push(ERR_EXPECTED_ARRAY, type_span);
+        }
+        t
+    }
+
+    /// Skips what stands in a parameter up to the comma or bracket that ends it.
+    fn skip_rest_of_parameter(&mut self) {
+        let mut depth = 0;
+        while !self.peek().is_stmt_end()
+            && !(depth == 0 && matches!(self.peek().kind, TokenKind::Kw(Kw::RParen) | TokenKind::Kw(Kw::Comma)))
+        {
+            match self.peek().kind {
+                TokenKind::Kw(Kw::LParen) => depth += 1,
+                TokenKind::Kw(Kw::RParen) => depth -= 1,
+                _ => {}
+            }
+            self.advance();
+        }
     }
 
     /// Build a `UserType` from its already-consumed first name token, taking an
@@ -6126,25 +6389,22 @@ impl<'src> Parser<'src> {
                 }
                 node
             }
-            TokenKind::Ident => {
-                let tok = self.advance();
-                let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
-                let name = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
-                self.set_span(name, tok.span);
-                name
-            }
-            TokenKind::Kw(_) if contextual => {
-                let tok = self.advance();
-                let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
-                let name = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
-                self.set_span(name, tok.span);
-                name
-            }
+            TokenKind::Ident => self.parse_length_constant_name(arena),
+            TokenKind::Kw(_) if contextual => self.parse_length_constant_name(arena),
             _ => {
                 self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, len_span, "Identifier");
                 arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
             }
         }
+    }
+
+    /// A constant name as the length of a fixed-length string.
+    fn parse_length_constant_name(&mut self, arena: &mut ExprArena) -> NodeId {
+        let tok = self.advance();
+        let sym = tok.sym.map(|s| s as u32).unwrap_or(0);
+        let name = arena.alloc(ExprNode::NameRef { sym, suffix: tok.type_suffix });
+        self.set_span(name, tok.span);
+        name
     }
 
     fn parse_type_spec(&mut self, arena: &mut ExprArena, allow_array_suffix: bool) -> NodeId {
@@ -6217,102 +6477,132 @@ impl<'src> Parser<'src> {
         self.end_stmt();
         let mut members = Vec::new();
         loop {
-            while self.eat(TokenKind::Eol) {}
-            let after_member = match self.take_body_attribute_line(arena) {
-                attribute::BodyAttribute::Taken => continue,
-                attribute::BodyAttribute::AfterMember => true,
-                attribute::BodyAttribute::None => false,
-            };
+            let Some(after_member) = self.start_block_member(arena) else { continue };
             if self.peek2().kind != TokenKind::Kw(Kw::As) && self.read_statement_word() {
                 continue;
             }
-            match self.peek().kind.clone() {
-                // `End` followed by `As` or `(` is a member named `End`.
-                TokenKind::Kw(Kw::End)
-                    if !matches!(
-                        self.peek2().kind,
-                        TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen)
-                    ) =>
-                {
-                    self.advance();
-                    self.expect(TokenKind::Kw(Kw::Type), ERR_UNEXPECTED_TOKEN);
-                    if members.is_empty() {
-                        // A type without members is reported where the type starts.
-                        self.diagnostics.push(ERR_TYPE_WITHOUT_MEMBERS, type_span);
-                    }
-                    self.end_stmt();
-                    break;
-                }
-                TokenKind::Eof => {
-                    // The file ended inside the block.
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_STATEMENT_IN_TYPE, span);
-                    break;
-                }
-                // A comment line between members is a blank line, and so is a lone colon.
-                TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => { self.advance(); }
-                // A statement keyword cannot start a member. A keyword followed by
-                // `As` is a member that happens to be named like one, and so is one of
-                // the few reserved words that also name callable things when bounds follow.
-                TokenKind::Kw(_)
-                    if !self.at_contextual_keyword()
-                        && !matches!(self.peek2().kind, TokenKind::Kw(Kw::As))
-                        && !(self.peek2().kind == TokenKind::Kw(Kw::LParen) && self.at_callable_reserved_word()) =>
-                {
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_STATEMENT_IN_TYPE, span);
-                    self.skip_line();
-                }
-                _ => {
-                    let line_span = self.current_span();
-                    // A keyword that starts a statement of its own cannot take bounds as a member.
-                    if self.peek2().kind == TokenKind::Kw(Kw::LParen) && self.at_statement_word() {
-                        self.report_expected(line_span, "end of statement");
-                        self.skip_line();
-                        continue;
-                    }
-                    // A bracketed name is a member only when bounds follow it.
-                    let bracketed = self.peek().bracketed;
-                    if bracketed && self.peek2().kind != TokenKind::Kw(Kw::LParen) {
-                        if self.peek2().kind == TokenKind::Kw(Kw::As) {
-                            self.report_expected(line_span, "expression");
-                        } else {
-                            self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
-                        }
-                        self.skip_line();
-                        continue;
-                    }
-                    self.reserved_names_allowed = true;
-                    self.bracketed_name_ok = bracketed;
-                    self.last_item_had_as = false;
-                    let m = self.parse_dim_item(arena, false, false, false);
-                    self.bracketed_name_ok = false;
-                    self.reserved_names_allowed = false;
-                    // A member whose bounds give a range needs no `As`: it is an array of Variant.
-                    let has_bounds = matches!(arena.get(m), ExprNode::DimItem { bounds: Some(b), .. }
-                        if matches!(arena.get(*b), ExprNode::ArgList { args }
-                            if args.iter().any(|a| matches!(arena.get(*a), ExprNode::RangeTo { .. }))));
-                    if !self.last_item_had_as && !has_bounds && self.peek().kind != TokenKind::Kw(Kw::Eq) {
-                        self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
-                        self.skip_line();
-                        continue;
-                    }
-                    // `name = value` is a statement, not a member.
-                    if self.peek().kind == TokenKind::Kw(Kw::Eq) {
-                        self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
-                        self.skip_line();
-                    } else {
-                        self.end_stmt();
-                    }
-                    if !after_member {
-                        members.push(m);
-                    }
-                }
+            if !self.parse_type_part(arena, type_span, &mut members, after_member) {
+                break;
             }
         }
         let id = arena.alloc(ExprNode::TypeDecl { name: nid, members });
         self.set_span(id, name.span);
         id
+    }
+
+    /// The start of a line in the body of a `Type` or `Enum` block: blank lines are passed, and
+    /// an attribute line is read. `None` when an attribute line has taken the line; otherwise
+    /// whether an attribute line follows the member on this line.
+    fn start_block_member(&mut self, arena: &mut ExprArena) -> Option<bool> {
+        while self.eat(TokenKind::Eol) {}
+        match self.take_body_attribute_line(arena) {
+            attribute::BodyAttribute::Taken => None,
+            attribute::BodyAttribute::AfterMember => Some(true),
+            attribute::BodyAttribute::None => Some(false),
+        }
+    }
+
+    /// One part of the body of a `Type` block. Returns false when the block has ended.
+    fn parse_type_part(
+        &mut self,
+        arena: &mut ExprArena,
+        type_span: Span,
+        members: &mut Vec<NodeId>,
+        after_member: bool,
+    ) -> bool {
+        match self.peek().kind.clone() {
+            // `End` followed by `As` or `(` is a member named `End`.
+            TokenKind::Kw(Kw::End)
+                if !matches!(
+                    self.peek2().kind,
+                    TokenKind::Kw(Kw::As) | TokenKind::Kw(Kw::LParen)
+                ) =>
+            {
+                self.advance();
+                self.expect(TokenKind::Kw(Kw::Type), ERR_UNEXPECTED_TOKEN);
+                if members.is_empty() {
+                    // A type without members is reported where the type starts.
+                    self.diagnostics.push(ERR_TYPE_WITHOUT_MEMBERS, type_span);
+                }
+                self.end_stmt();
+                false
+            }
+            TokenKind::Eof => {
+                // The file ended inside the block.
+                let span = self.current_span();
+                self.diagnostics.push(ERR_STATEMENT_IN_TYPE, span);
+                false
+            }
+            // A comment line between members is a blank line, and so is a lone colon.
+            TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => {
+                self.advance();
+                true
+            }
+            // A statement keyword cannot start a member. A keyword followed by
+            // `As` is a member that happens to be named like one, and so is one of
+            // the few reserved words that also name callable things when bounds follow.
+            TokenKind::Kw(_)
+                if !self.at_contextual_keyword()
+                    && !matches!(self.peek2().kind, TokenKind::Kw(Kw::As))
+                    && !(self.peek2().kind == TokenKind::Kw(Kw::LParen) && self.at_callable_reserved_word()) =>
+            {
+                self.error_and_skip_line(ERR_STATEMENT_IN_TYPE);
+                true
+            }
+            _ => {
+                if let Some(member) = self.parse_type_member(arena) {
+                    if !after_member {
+                        members.push(member);
+                    }
+                }
+                true
+            }
+        }
+    }
+
+    /// A member line of a `Type` block. `None` when the line is not a member and has been
+    /// skipped.
+    fn parse_type_member(&mut self, arena: &mut ExprArena) -> Option<NodeId> {
+        let line_span = self.current_span();
+        // A keyword that starts a statement of its own cannot take bounds as a member.
+        if self.peek2().kind == TokenKind::Kw(Kw::LParen) && self.at_statement_word() {
+            self.report_expected_and_skip_line("end of statement");
+            return None;
+        }
+        // A bracketed name is a member only when bounds follow it.
+        let bracketed = self.peek().bracketed;
+        if bracketed && self.peek2().kind != TokenKind::Kw(Kw::LParen) {
+            if self.peek2().kind == TokenKind::Kw(Kw::As) {
+                self.report_expected(line_span, "expression");
+            } else {
+                self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+            }
+            self.skip_line();
+            return None;
+        }
+        self.reserved_names_allowed = true;
+        self.bracketed_name_ok = bracketed;
+        self.last_item_had_as = false;
+        let m = self.parse_dim_item(arena, false, false, false);
+        self.bracketed_name_ok = false;
+        self.reserved_names_allowed = false;
+        // A member whose bounds give a range needs no `As`: it is an array of Variant.
+        let has_bounds = matches!(arena.get(m), ExprNode::DimItem { bounds: Some(b), .. }
+            if matches!(arena.get(*b), ExprNode::ArgList { args }
+                if args.iter().any(|a| matches!(arena.get(*a), ExprNode::RangeTo { .. }))));
+        if !self.last_item_had_as && !has_bounds && self.peek().kind != TokenKind::Kw(Kw::Eq) {
+            self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+            self.skip_line();
+            return None;
+        }
+        // `name = value` is a statement, not a member.
+        if self.peek().kind == TokenKind::Kw(Kw::Eq) {
+            self.diagnostics.push(ERR_STATEMENT_IN_TYPE, line_span);
+            self.skip_line();
+        } else {
+            self.end_stmt();
+        }
+        Some(m)
     }
 
     /// Parse an Enum declaration block.
@@ -6336,94 +6626,96 @@ impl<'src> Parser<'src> {
         }
         let mut members = Vec::new();
         loop {
-            while self.eat(TokenKind::Eol) {}
-            let after_member = match self.take_body_attribute_line(arena) {
-                attribute::BodyAttribute::Taken => continue,
-                attribute::BodyAttribute::AfterMember => true,
-                attribute::BodyAttribute::None => false,
-            };
+            let Some(after_member) = self.start_block_member(arena) else { continue };
             if self.read_statement_word() {
                 continue;
             }
-            match self.peek().kind.clone() {
-                TokenKind::Kw(Kw::End) => {
-                    let end_span = self.current_span();
-                    self.advance();
-                    // Inside an Enum the closing words must share one physical line.
-                    let gap_start = (end_span.start + end_span.len) as usize;
-                    let gap_end = self.peek().span.start as usize;
-                    if self.peek().kind == TokenKind::Kw(Kw::Enum)
-                        && self.src.get(gap_start..gap_end).is_some_and(|gap| gap.iter().any(|&b| b == b'\n' || b == b'\r'))
-                    {
-                        let span = self.current_span();
-                        self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
-                        self.skip_line();
-                        continue;
-                    }
-                    self.expect(TokenKind::Kw(Kw::Enum), ERR_UNEXPECTED_TOKEN);
-                    if members.is_empty() {
-                        self.diagnostics.push(ERR_ENUM_WITHOUT_MEMBERS, end_span);
-                    }
-                    self.end_stmt();
-                    break;
-                }
-                TokenKind::Eof => {
-                    // The file ended inside the block.
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
-                    break;
-                }
-                // A comment line between members is a blank line, and so is a lone colon.
-                TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => {
-                    self.advance();
-                }
-                TokenKind::Ident => {
-                    let start = self.current_span();
-                    let name_tok = self.peek().clone();
-                    self.bracketed_name_ok = name_tok.bracketed;
-                    self.in_enum_member = true;
-                    let m = self.parse_dim_item(arena, true, false, false);
-                    self.in_enum_member = false;
-                    self.bracketed_name_ok = false;
-                    self.check_enum_member_suffix(arena, m, &name_tok);
-                    self.finish_enum_member(arena, m, start, after_member);
-                    if !after_member {
-                        members.push(m);
-                    }
-                }
-                // A non-reserved keyword (`Text`, `Key`) can name a member, unless it
-                // starts a statement that needs operands (`Name`, `Width`, ...).
-                // `Date`, `DoEvents` and `CDec` are reserved but name a member too.
-                TokenKind::Kw(_) if self.names_enum_member() => {
-                    let start = self.current_span();
-                    let name_tok = self.peek().clone();
-                    self.reserved_names_allowed = true;
-                    self.in_enum_member = true;
-                    let m = self.parse_dim_item(arena, true, false, false);
-                    self.in_enum_member = false;
-                    self.reserved_names_allowed = false;
-                    self.check_enum_member_suffix(arena, m, &name_tok);
-                    self.finish_enum_member(arena, m, start, after_member);
-                    if !after_member {
-                        members.push(m);
-                    }
-                }
-                TokenKind::Error if self.at_underscore_word() => {
-                    let span = self.current_span();
-                    self.report_invalid_character(span);
-                    self.skip_line();
-                }
-                _ => {
-                    // Not a member: report it and resume on the next line.
-                    let span = self.current_span();
-                    self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
-                    self.skip_line();
-                }
+            if !self.parse_enum_part(arena, &mut members, after_member) {
+                break;
             }
         }
         let id = arena.alloc(ExprNode::EnumDecl { name: nid, members });
         self.set_span(id, name.span);
         id
+    }
+
+    /// One part of the body of an `Enum` block. Returns false when the block has ended.
+    fn parse_enum_part(&mut self, arena: &mut ExprArena, members: &mut Vec<NodeId>, after_member: bool) -> bool {
+        match self.peek().kind.clone() {
+            TokenKind::Kw(Kw::End) => return !self.parse_enum_end(members.is_empty()),
+            TokenKind::Eof => {
+                // The file ended inside the block.
+                let span = self.current_span();
+                self.diagnostics.push(ERR_INVALID_IN_ENUM, span);
+                return false;
+            }
+            // A comment line between members is a blank line, and so is a lone colon.
+            TokenKind::Kw(Kw::Apos) | TokenKind::Kw(Kw::Rem) | TokenKind::Kw(Kw::Colon) => {
+                self.advance();
+            }
+            TokenKind::Ident => self.parse_enum_member(arena, members, after_member, false),
+            // A non-reserved keyword (`Text`, `Key`) can name a member, unless it
+            // starts a statement that needs operands (`Name`, `Width`, ...).
+            // `Date`, `DoEvents` and `CDec` are reserved but name a member too.
+            TokenKind::Kw(_) if self.names_enum_member() => {
+                self.parse_enum_member(arena, members, after_member, true);
+            }
+            TokenKind::Error if self.at_underscore_word() => {
+                let span = self.current_span();
+                self.report_invalid_character(span);
+                self.skip_line();
+            }
+            // Not a member: report it and resume on the next line.
+            _ => self.error_and_skip_line(ERR_INVALID_IN_ENUM),
+        }
+        true
+    }
+
+    /// The `End` of an `Enum` block. Returns true when the block has ended, and false when the
+    /// closing words are not on one physical line: the line is then reported and skipped and
+    /// the block goes on.
+    fn parse_enum_end(&mut self, no_members: bool) -> bool {
+        let end_span = self.current_span();
+        self.advance();
+        // Inside an Enum the closing words must share one physical line.
+        let gap_start = (end_span.start + end_span.len) as usize;
+        let gap_end = self.peek().span.start as usize;
+        if self.peek().kind == TokenKind::Kw(Kw::Enum)
+            && self.src.get(gap_start..gap_end).is_some_and(|gap| gap.iter().any(|&b| b == b'\n' || b == b'\r'))
+        {
+            self.error_and_skip_line(ERR_INVALID_IN_ENUM);
+            return false;
+        }
+        self.expect(TokenKind::Kw(Kw::Enum), ERR_UNEXPECTED_TOKEN);
+        if no_members {
+            self.diagnostics.push(ERR_ENUM_WITHOUT_MEMBERS, end_span);
+        }
+        self.end_stmt();
+        true
+    }
+
+    /// A member of an `Enum` block: a name, or (`reserved_word`) a keyword that names one.
+    fn parse_enum_member(&mut self, arena: &mut ExprArena, members: &mut Vec<NodeId>, after_member: bool, reserved_word: bool) {
+        let start = self.current_span();
+        let name_tok = self.peek().clone();
+        if reserved_word {
+            self.reserved_names_allowed = true;
+        } else {
+            self.bracketed_name_ok = name_tok.bracketed;
+        }
+        self.in_enum_member = true;
+        let m = self.parse_dim_item(arena, true, false, false);
+        self.in_enum_member = false;
+        if reserved_word {
+            self.reserved_names_allowed = false;
+        } else {
+            self.bracketed_name_ok = false;
+        }
+        self.check_enum_member_suffix(arena, m, &name_tok);
+        self.finish_enum_member(arena, m, start, after_member);
+        if !after_member {
+            members.push(m);
+        }
     }
 
     /// A member of an enumeration is a `Long`: given a value, its name may carry no
@@ -6587,13 +6879,7 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Paren { inner })
             }
             // Numeric / string / date literals
-            TokenKind::IntLit
-            | TokenKind::LongLit
-            | TokenKind::SngLit
-            | TokenKind::DblLit
-            | TokenKind::CurLit
-            | TokenKind::StrLit
-            | TokenKind::DateLit => {
+            ref kind if is_number_or_string_literal(kind) => {
                 let tok = self.advance();
                 self.literal_node(arena, &tok)
             }
@@ -6627,23 +6913,7 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Literal { lit: AstLit::Null })
             }
             // Identifier or qualified name
-            TokenKind::Ident => {
-                let tok = self.advance();
-                let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
-                let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
-                self.set_span(base, tok.span);
-                // A name that spells one of these four built-in functions keeps their argument
-                // grammar, bracketed or not; every other bracketed word is an ordinary name.
-                if !self.in_target
-                    && matches!(self.word_of(&tok), Some(Kw::CByte | Kw::InStr | Kw::InStrB | Kw::StrComp))
-                {
-                    let name = self.scanner.sym_name(sym_id).to_string();
-                    if let Some(shape) = INTRINSIC_SHAPES.iter().find(|s| name.eq_ignore_ascii_case(s.name)) {
-                        return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
-                    }
-                }
-                { self.graphics_chain = chain; self.parse_postfix(arena, base) }
-            }
+            TokenKind::Ident => self.parse_name_primary(arena, chain),
             // `AddressOf proc` — function-pointer operand.
             TokenKind::Kw(Kw::AddressOf) => {
                 let at = self.advance();
@@ -6666,47 +6936,9 @@ impl<'src> Parser<'src> {
             }
             // A literal the scanner rejected (out of range, no digits). Inside a procedure
             // every such failure is a syntax error; outside one the kind of failure shows.
-            TokenKind::Error => {
-                let tok = self.advance();
-                match tok.lit {
-                    Some(Lit::Failed(NumberFailure::Overflow)) if !self.in_procedure => {
-                        self.diagnostics.push(ERR_OVERFLOW, tok.span);
-                    }
-                    Some(Lit::Failed(NumberFailure::Unreadable)) => self.report_expected(tok.span, "expression"),
-                    _ => self.diagnostics.push(ERR_SYNTAX_ERROR, tok.span),
-                }
-                arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
-            }
+            TokenKind::Error => self.parse_failed_literal(arena),
             // Keyword that can start a primary (e.g. built-in functions)
-            TokenKind::Kw(k) => {
-                let tok = self.advance();
-                let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
-                let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
-                self.set_span(base, tok.span);
-                let name = self.scanner.sym_name(sym_id).to_string();
-                if let Some(shape) = INTRINSIC_SHAPES
-                    .iter()
-                    .find(|s| !self.in_target && name.trim_end_matches('$').eq_ignore_ascii_case(s.name))
-                {
-                    return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
-                }
-                if name.eq_ignore_ascii_case("Array") && self.peek().kind != TokenKind::Kw(Kw::LParen) {
-                    // `Array` is a function: brackets are not optional.
-                    self.report_expected(tok.span, "(");
-                    return base;
-                }
-                let is_input_fn = matches!(k, Kw::Input | Kw::InputS | Kw::InputB | Kw::InputBS);
-                if is_input_fn && self.peek().kind == TokenKind::Kw(Kw::LParen) {
-                    // Nothing joins to the result of `Input(n, file)`.
-                    self.parse_input_fn_call(arena, base)
-                } else if is_input_fn {
-                    // `Input` is a function: its brackets are not optional.
-                    self.report_expected(tok.span, "(");
-                    base
-                } else {
-                    { self.graphics_chain = chain; self.parse_postfix(arena, base) }
-                }
-            }
+            TokenKind::Kw(k) => self.parse_keyword_primary(arena, k, chain),
             // Unexpected — emit error, return placeholder
             _ => {
                 let span = self.current_span();
@@ -6714,6 +6946,72 @@ impl<'src> Parser<'src> {
                 arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
             }
         }
+    }
+
+    /// A name as a primary: a call of one of the built-in functions with their own argument
+    /// grammar, or a name with its member accesses and calls.
+    fn parse_name_primary(&mut self, arena: &mut ExprArena, chain: Option<ChainStart>) -> NodeId {
+        let tok = self.advance();
+        let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
+        let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
+        self.set_span(base, tok.span);
+        // A name that spells one of these four built-in functions keeps their argument
+        // grammar, bracketed or not; every other bracketed word is an ordinary name.
+        if !self.in_target
+            && matches!(self.word_of(&tok), Some(Kw::CByte | Kw::InStr | Kw::InStrB | Kw::StrComp))
+        {
+            let name = self.scanner.sym_name(sym_id).to_string();
+            if let Some(shape) = INTRINSIC_SHAPES.iter().find(|s| name.eq_ignore_ascii_case(s.name)) {
+                return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
+            }
+        }
+        self.graphics_chain = chain;
+        self.parse_postfix(arena, base)
+    }
+
+    /// A literal the scanner rejected (out of range, no digits). Inside a procedure
+    /// every such failure is a syntax error; outside one the kind of failure shows.
+    fn parse_failed_literal(&mut self, arena: &mut ExprArena) -> NodeId {
+        let tok = self.advance();
+        match tok.lit {
+            Some(Lit::Failed(NumberFailure::Overflow)) if !self.in_procedure => {
+                self.diagnostics.push(ERR_OVERFLOW, tok.span);
+            }
+            Some(Lit::Failed(NumberFailure::Unreadable)) => self.report_expected(tok.span, "expression"),
+            _ => self.diagnostics.push(ERR_SYNTAX_ERROR, tok.span),
+        }
+        arena.alloc(ExprNode::Literal { lit: AstLit::Int(0) })
+    }
+
+    /// A keyword that can start a primary (e.g. a built-in function).
+    fn parse_keyword_primary(&mut self, arena: &mut ExprArena, k: Kw, chain: Option<ChainStart>) -> NodeId {
+        let tok = self.advance();
+        let sym_id = tok.sym.map(|s| s as u32).unwrap_or(0);
+        let base = arena.alloc(ExprNode::NameRef { sym: sym_id, suffix: tok.type_suffix });
+        self.set_span(base, tok.span);
+        let name = self.scanner.sym_name(sym_id).to_string();
+        if let Some(shape) = INTRINSIC_SHAPES
+            .iter()
+            .find(|s| !self.in_target && name.trim_end_matches('$').eq_ignore_ascii_case(s.name))
+        {
+            return self.parse_shaped_intrinsic_call(arena, base, tok.span, shape);
+        }
+        if name.eq_ignore_ascii_case("Array") && self.peek().kind != TokenKind::Kw(Kw::LParen) {
+            // `Array` is a function: brackets are not optional.
+            self.report_expected(tok.span, "(");
+            return base;
+        }
+        if !matches!(k, Kw::Input | Kw::InputS | Kw::InputB | Kw::InputBS) {
+            self.graphics_chain = chain;
+            return self.parse_postfix(arena, base);
+        }
+        if self.peek().kind != TokenKind::Kw(Kw::LParen) {
+            // `Input` is a function: its brackets are not optional.
+            self.report_expected(tok.span, "(");
+            return base;
+        }
+        // Nothing joins to the result of `Input(n, file)`.
+        self.parse_input_fn_call(arena, base)
     }
 
     /// `Input(count, [#]filenumber)` and its `InputB`/`$` forms: the file
@@ -6759,10 +7057,7 @@ impl<'src> Parser<'src> {
                         self.graphics_stop = Some(word);
                         break;
                     }
-                    let member = self.expect_ident();
-                    let mid = member.sym.map(|s| s as u32).unwrap_or(0);
-                    base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false, bracketed: self.is_bracketed(&member) });
-                    self.set_span(base, member.span);
+                    base = self.parse_member_access(arena, base, false);
                 }
                 TokenKind::Kw(Kw::Bang) => {
                     self.advance();
@@ -6771,10 +7066,7 @@ impl<'src> Parser<'src> {
                         let span = self.current_span();
                         self.diagnostics.push(ERR_SYNTAX_ERROR, span);
                     }
-                    let member = self.expect_ident();
-                    let mid = member.sym.map(|s| s as u32).unwrap_or(0);
-                    base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: true, bracketed: self.is_bracketed(&member) });
-                    self.set_span(base, member.span);
+                    base = self.parse_member_access(arena, base, true);
                 }
                 TokenKind::Kw(Kw::LParen) => {
                     self.advance();
@@ -6789,6 +7081,15 @@ impl<'src> Parser<'src> {
         base
     }
 
+    /// The member name that follows a `.` or `!` after `base`, as a member access of it.
+    fn parse_member_access(&mut self, arena: &mut ExprArena, base: NodeId, bang: bool) -> NodeId {
+        let member = self.expect_ident();
+        let mid = member.sym.map(|s| s as u32).unwrap_or(0);
+        let access = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang, bracketed: self.is_bracketed(&member) });
+        self.set_span(access, member.span);
+        access
+    }
+
     /// The qualified name of a procedure after `AddressOf`: names joined by dots.
     fn parse_procedure_name(&mut self, arena: &mut ExprArena) -> NodeId {
         // A bracketed name is read as written: it names a procedure declared elsewhere.
@@ -6800,10 +7101,7 @@ impl<'src> Parser<'src> {
         self.set_span(base, first.span);
         while self.peek().kind == TokenKind::Kw(Kw::Dot) && !self.blank_before_next() {
             self.advance();
-            let member = self.expect_ident();
-            let mid = member.sym.map(|s| s as u32).unwrap_or(0);
-            base = arena.alloc(ExprNode::MemberAccess { base, member: mid, bang: false, bracketed: self.is_bracketed(&member) });
-            self.set_span(base, member.span);
+            base = self.parse_member_access(arena, base, false);
         }
         base
     }
@@ -6851,9 +7149,7 @@ impl<'src> Parser<'src> {
         let at_start = std::mem::take(&mut self.target_at_statement_start);
         if self.peek().kind == TokenKind::Kw(Kw::Rem) {
             // A comment cannot stand where a target belongs.
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
             return self.parse_primary_placeholder(arena);
         }
         if self.at_reserved_word()
@@ -6865,9 +7161,7 @@ impl<'src> Parser<'src> {
         }
         // A target names something: a bracket or an operator does not.
         if self.at_stray_punctuation() {
-            let span = self.current_span();
-            self.diagnostics.push(ERR_SYNTAX_ERROR, span);
-            self.skip_line();
+            self.error_and_skip_line(ERR_SYNTAX_ERROR);
             return self.parse_primary_placeholder(arena);
         }
         let was_target = std::mem::replace(&mut self.in_target, true);
@@ -6879,21 +7173,16 @@ impl<'src> Parser<'src> {
     /// The part of a target that is not a leading member reference.
     fn parse_target_primary(&mut self, arena: &mut ExprArena) -> NodeId {
         // A target names something: a literal does not.
-        if matches!(
-            self.peek().kind,
-            TokenKind::IntLit
-                | TokenKind::LongLit
-                | TokenKind::SngLit
-                | TokenKind::DblLit
-                | TokenKind::CurLit
-                | TokenKind::StrLit
-                | TokenKind::DateLit
-                | TokenKind::Kw(Kw::True)
-                | TokenKind::Kw(Kw::False)
-                | TokenKind::Kw(Kw::Nothing)
-                | TokenKind::Kw(Kw::Empty)
-                | TokenKind::Kw(Kw::Null)
-        ) {
+        if is_number_or_string_literal(&self.peek().kind)
+            || matches!(
+                self.peek().kind,
+                TokenKind::Kw(Kw::True)
+                    | TokenKind::Kw(Kw::False)
+                    | TokenKind::Kw(Kw::Nothing)
+                    | TokenKind::Kw(Kw::Empty)
+                    | TokenKind::Kw(Kw::Null)
+            )
+        {
             let span = self.current_span();
             self.diagnostics.push_labeled(ERR_EXPECTED_IDENT, span, "Identifier");
             self.advance();
@@ -6966,41 +7255,54 @@ impl<'src> Parser<'src> {
         // A list that follows another takes neither an omitted argument nor a `ByVal`.
         let later = std::mem::take(&mut self.later_group);
         loop {
-            // Missing argument.
-            if self.peek().kind == TokenKind::Kw(Kw::Comma) {
-                if later {
-                    let span = self.current_span();
-                    self.report_expected(span, "expression");
-                }
-                args.push(arena.alloc(ExprNode::MissingArg));
-            } else if self.peek().kind == TokenKind::Kw(Kw::RParen) {
-                // A comma was the last thing before the bracket.
-                let span = self.current_span();
-                self.report_expected(span, "expression");
-                break;
-            } else if let Some(named) = self.try_parse_named_arg(arena) {
-                seen_named = true;
-                args.push(named);
-            } else {
-                if seen_named {
-                    // After a named argument every argument is named.
-                    let span = self.current_span();
-                    self.report_expected(span, "named argument");
-                }
-                if later && self.peek().kind == TokenKind::Kw(Kw::ByVal) {
-                    let span = self.current_span();
-                    self.report_expected(span, "expression");
-                }
-                let by_val = self.argument_operand_prefix();
-                let value = self.parse_expr(arena, 0);
-                if by_val {
-                    self.by_val_args.push(value);
-                }
-                args.push(value);
-            }
+            let Some(arg) = self.parse_arg_list_item(arena, later, &mut seen_named) else { break };
+            args.push(arg);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
         arena.alloc(ExprNode::ArgList { args })
+    }
+
+    /// One argument of a bracketed list. `None` when a comma was the last thing before the
+    /// bracket, which is reported.
+    fn parse_arg_list_item(&mut self, arena: &mut ExprArena, later: bool, seen_named: &mut bool) -> Option<NodeId> {
+        // Missing argument.
+        if self.peek().kind == TokenKind::Kw(Kw::Comma) {
+            if later {
+                let span = self.current_span();
+                self.report_expected(span, "expression");
+            }
+            return Some(arena.alloc(ExprNode::MissingArg));
+        }
+        if self.peek().kind == TokenKind::Kw(Kw::RParen) {
+            // A comma was the last thing before the bracket.
+            let span = self.current_span();
+            self.report_expected(span, "expression");
+            return None;
+        }
+        if let Some(named) = self.try_parse_named_arg(arena) {
+            *seen_named = true;
+            return Some(named);
+        }
+        if *seen_named {
+            // After a named argument every argument is named.
+            let span = self.current_span();
+            self.report_expected(span, "named argument");
+        }
+        if later && self.peek().kind == TokenKind::Kw(Kw::ByVal) {
+            let span = self.current_span();
+            self.report_expected(span, "expression");
+        }
+        Some(self.parse_argument_value(arena))
+    }
+
+    /// The value of an argument, after any call-site `ByVal`, which is noted.
+    fn parse_argument_value(&mut self, arena: &mut ExprArena) -> NodeId {
+        let by_val = self.argument_operand_prefix();
+        let value = self.parse_expr(arena, 0);
+        if by_val {
+            self.by_val_args.push(value);
+        }
+        value
     }
 
     /// Argument list on a call statement line (no surrounding parens).
@@ -7012,39 +7314,46 @@ impl<'src> Parser<'src> {
             if self.peek().kind == TokenKind::Kw(Kw::Else) {
                 break;
             }
-            let a = if self.peek().kind == TokenKind::Kw(Kw::Comma) {
-                arena.alloc(ExprNode::MissingArg)
-            } else if let Some(named) = self.try_parse_named_arg(arena) {
-                seen_named = true;
-                named
-            } else {
-                if seen_named {
-                    // After a named argument every argument is named.
-                    let span = self.current_span();
-                    self.report_expected(span, "named argument");
-                }
-                let by_val = self.argument_operand_prefix();
-                if let Some(expr) = self.try_parse_expr(arena) {
-                    if by_val {
-                        self.by_val_args.push(expr);
-                    }
-                    expr
-                } else {
-                    break;
-                }
-            };
+            let Some(a) = self.parse_stmt_arg(arena, &mut seen_named) else { break };
             args.push(a);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
             // A comma needs another argument after it, empty or not, before the line ends.
-            if self.peek().is_stmt_end()
-                || matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
-            {
+            if self.at_call_arguments_end() {
                 let span = self.current_span();
                 self.report_expected(span, "expression");
                 break;
             }
         }
         args
+    }
+
+    /// Whether the arguments of a call statement end here: the statement ends, or a colon or
+    /// an `Else` follows.
+    fn at_call_arguments_end(&mut self) -> bool {
+        self.peek().is_stmt_end()
+            || matches!(self.peek().kind, TokenKind::Kw(Kw::Colon) | TokenKind::Kw(Kw::Else))
+    }
+
+    /// One argument of a call statement. `None` when no expression follows.
+    fn parse_stmt_arg(&mut self, arena: &mut ExprArena, seen_named: &mut bool) -> Option<NodeId> {
+        if self.peek().kind == TokenKind::Kw(Kw::Comma) {
+            return Some(arena.alloc(ExprNode::MissingArg));
+        }
+        if let Some(named) = self.try_parse_named_arg(arena) {
+            *seen_named = true;
+            return Some(named);
+        }
+        if *seen_named {
+            // After a named argument every argument is named.
+            let span = self.current_span();
+            self.report_expected(span, "named argument");
+        }
+        let by_val = self.argument_operand_prefix();
+        let expr = self.try_parse_expr(arena)?;
+        if by_val {
+            self.by_val_args.push(expr);
+        }
+        Some(expr)
     }
 
     /// If the next tokens are `ident :=`, consume them and return a `NamedArg`
@@ -7077,11 +7386,7 @@ impl<'src> Parser<'src> {
         }
         let name = name_tok.sym.map(|s| s as u32).unwrap_or(0);
         self.advance(); // `:=`
-        let by_val = self.argument_operand_prefix();
-        let value = self.parse_expr(arena, 0);
-        if by_val {
-            self.by_val_args.push(value);
-        }
+        let value = self.parse_argument_value(arena);
         let id = arena.alloc(ExprNode::NamedArg { name, value });
         self.set_span(id, name_tok.span);
         Some(id)
@@ -7132,6 +7437,20 @@ const ERR_EXPECTED_IN:          u32 = 0x9c6f;
 
 /// Return a human-readable label for a token kind, used as the `label` of an
 /// `0x9c6f` ("Expected: X") diagnostic.
+/// Whether the token is a number, string or date literal.
+fn is_number_or_string_literal(kind: &TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::IntLit
+            | TokenKind::LongLit
+            | TokenKind::SngLit
+            | TokenKind::DblLit
+            | TokenKind::CurLit
+            | TokenKind::StrLit
+            | TokenKind::DateLit
+    )
+}
+
 fn token_kind_label(kind: &TokenKind) -> &'static str {
     match kind {
         TokenKind::Kw(Kw::Then)     => "Then",

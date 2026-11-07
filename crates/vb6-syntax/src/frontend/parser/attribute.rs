@@ -93,57 +93,48 @@ impl<'src> Parser<'src> {
         start > end && start <= self.src.len() && !self.src[end..start].iter().any(|b| *b == b'\n' || *b == b'\r')
     }
 
-    /// Reads the tokens of an `Attribute` line that follow the word `Attribute`; `toks` ends with
-    /// the terminator of the line.
-    fn read_attribute(&self, toks: &[Token]) -> AttributeRead {
+    /// The member name (if the word is qualified by one) and the position of the attribute word
+    /// of an `Attribute` line; the other outcomes of the line are returned as `Err`.
+    fn attribute_member_and_word(&self, toks: &[Token]) -> Result<(Option<usize>, usize), AttributeRead> {
         let last = toks.len() - 1;
         let at = |i: usize| &toks[i.min(last)];
-        let ends = |i: usize| matches!(at(i).kind, TokenKind::Eol | TokenKind::Eof | TokenKind::Kw(Kw::Apos));
-        if at(0).kind == TokenKind::Kw(Kw::As) {
-            return AttributeRead::TypeClause;
-        }
-        let (member, word_at) = match self.attribute_line_word(at(0)) {
-            Word::Attribute(_) => (None, 0),
+        match self.attribute_line_word(at(0)) {
+            Word::Attribute(_) => Ok((None, 0)),
             Word::Name => {
                 // The dot joins the name to the word only when it follows the name directly.
                 if at(1).kind != TokenKind::Kw(Kw::Dot) || self.blank_between(at(0), at(1)) {
-                    return AttributeRead::Wrong(1.min(last));
+                    return Err(AttributeRead::Wrong(1.min(last)));
                 }
-                (Some(0), 2)
+                Ok((Some(0), 2))
             }
-            Word::Other => return AttributeRead::Passed,
-        };
-        let Word::Attribute(word) = self.attribute_line_word(at(word_at)) else {
-            return AttributeRead::Passed;
-        };
-        if is_invoke_word(word) {
-            return AttributeRead::Passed;
+            Word::Other => Err(AttributeRead::Passed),
         }
-        let mut i = word_at + 1;
-        if word == Kw::VbExtKey {
-            return self.read_extended_key(toks, member, word_at);
-        }
-        if word == Kw::VbProcData {
-            // One token is passed over without being looked at, and then one of the four
-            // invoke words has to follow.
-            if ends(i) {
-                return AttributeRead::Wrong(i.min(last));
-            }
-            i += 1;
-            match attribute_word(&at(i).kind) {
-                Some(k) if is_invoke_word(k) => i += 1,
-                _ => return AttributeRead::Wrong(i.min(last)),
-            }
-        }
-        if at(i).kind != TokenKind::Kw(Kw::Eq) {
-            return AttributeRead::Wrong(i.min(last));
+    }
+
+    /// For the procedure-data word: one token is passed over without being looked at, and then
+    /// one of the four invoke words has to follow. Returns the position after them.
+    fn skip_proc_data_prefix(toks: &[Token], mut i: usize) -> Result<usize, AttributeRead> {
+        let last = toks.len() - 1;
+        let at = |i: usize| &toks[i.min(last)];
+        if matches!(at(i).kind, TokenKind::Eol | TokenKind::Eof | TokenKind::Kw(Kw::Apos)) {
+            return Err(AttributeRead::Wrong(i.min(last)));
         }
         i += 1;
-        let value = match at(i).kind {
+        match attribute_word(&at(i).kind) {
+            Some(k) if is_invoke_word(k) => Ok(i + 1),
+            _ => Err(AttributeRead::Wrong(i.min(last))),
+        }
+    }
+
+    /// The value after the `=` of an `Attribute` line, starting at `toks[i]`.
+    fn read_attribute_value(toks: &[Token], i: usize) -> Result<Value, AttributeRead> {
+        let last = toks.len() - 1;
+        let at = |i: usize| &toks[i.min(last)];
+        Ok(match at(i).kind {
             // A minus sign is followed by an integer literal.
             TokenKind::Kw(Kw::Minus) => {
                 if !matches!(at(i + 1).kind, TokenKind::IntLit | TokenKind::LongLit) {
-                    return AttributeRead::Wrong((i + 1).min(last));
+                    return Err(AttributeRead::Wrong((i + 1).min(last)));
                 }
                 Value::Negated(i)
             }
@@ -157,8 +148,42 @@ impl<'src> Parser<'src> {
             | TokenKind::Kw(Kw::True)
             | TokenKind::Kw(Kw::False) => Value::Literal(i),
             _ => Value::None(i),
+        })
+    }
+
+    /// Reads the tokens of an `Attribute` line that follow the word `Attribute`; `toks` ends with
+    /// the terminator of the line.
+    fn read_attribute(&self, toks: &[Token]) -> AttributeRead {
+        match self.read_attribute_checked(toks) {
+            Ok(read) | Err(read) => read,
+        }
+    }
+
+    fn read_attribute_checked(&self, toks: &[Token]) -> Result<AttributeRead, AttributeRead> {
+        let last = toks.len() - 1;
+        let at = |i: usize| &toks[i.min(last)];
+        if at(0).kind == TokenKind::Kw(Kw::As) {
+            return Err(AttributeRead::TypeClause);
+        }
+        let (member, word_at) = self.attribute_member_and_word(toks)?;
+        let Word::Attribute(word) = self.attribute_line_word(at(word_at)) else {
+            return Err(AttributeRead::Passed);
         };
-        AttributeRead::Applied { member, word: word_at, value }
+        if is_invoke_word(word) {
+            return Err(AttributeRead::Passed);
+        }
+        if word == Kw::VbExtKey {
+            return Err(self.read_extended_key(toks, member, word_at));
+        }
+        let mut i = word_at + 1;
+        if word == Kw::VbProcData {
+            i = Self::skip_proc_data_prefix(toks, i)?;
+        }
+        if at(i).kind != TokenKind::Kw(Kw::Eq) {
+            return Err(AttributeRead::Wrong(i.min(last)));
+        }
+        let value = Self::read_attribute_value(toks, i + 1)?;
+        Ok(AttributeRead::Applied { member, word: word_at, value })
     }
 
     /// `VB_Ext_KEY = "key", "value"`: two strings and the end of the line.
