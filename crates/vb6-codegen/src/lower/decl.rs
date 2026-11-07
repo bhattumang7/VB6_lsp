@@ -342,11 +342,17 @@ pub(super) struct ClassMemberRegion {
 /// meaning it was allocated LAST, i.e. after the args. Returns the
 /// per-argument assignment (`None` for an arg needing no staging), each
 /// bucket's final size in creation order, and the result's own assignment.
+pub(super) type BucketSlot = (usize, usize);
+
+/// The result of [`bucket_method_call_slots`]: the per-argument assignment, each
+/// bucket's final size in creation order, and the result's own assignment.
+pub(super) type BucketedSlots = (Vec<Option<BucketSlot>>, Vec<(usize, usize)>, Option<BucketSlot>);
+
 pub(super) fn bucket_method_call_slots(
     params: &[(VbaType, bool)],
     needs_staging: &[bool],
     result_ctx: Option<usize>,
-) -> Result<(Vec<Option<(usize, usize)>>, Vec<(usize, usize)>, Option<(usize, usize)>), LowerError> {
+) -> Result<BucketedSlots, LowerError> {
     fn claim(ctx: usize, order: &mut Vec<usize>, counts: &mut Vec<usize>) -> usize {
         let bucket = match order.iter().position(|&c| c == ctx) {
             Some(i) => i,

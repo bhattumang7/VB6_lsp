@@ -96,12 +96,15 @@ fn rename_a_class_member_edits_declaration_and_member_uses() {
     assert!(edits.iter().all(|e| e.span.len == 4));
 }
 
+/// A callee's name, module and start, with its call sites as `(module, start)`.
+type OutgoingCall = (String, usize, u32, Vec<(usize, u32)>);
+
 #[test]
 fn outgoing_calls_include_member_calls_and_property_reads() {
     let s = world();
     // `Run` is procedure 0 of module 1.
     let out = s.outgoing_calls_from(1, 0);
-    let got: Vec<(String, usize, u32, Vec<(usize, u32)>)> = out
+    let got: Vec<OutgoingCall> = out
         .iter()
         .map(|c| {
             (

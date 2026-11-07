@@ -518,6 +518,31 @@ fn block_contains(arena: &crate::frontend::ast::ExprArena, id: u32) -> bool {
     false
 }
 
+/// Decide whether an undefined call should be created as a `Function` (used in
+/// value position) or a `Sub` (called as a statement), and its argument count.
+fn call_shape(m: &super::ModuleData, node: u32) -> (bool, usize) {
+    let arena = &m.arena;
+    let mut arity = 0;
+    let mut call_node = None;
+    for i in 0..arena.len() as u32 {
+        match arena.get(NodeId(i)) {
+            ExprNode::Call { func, args } if func.0 == node => {
+                call_node = Some(i);
+                arity = arglist_len(arena, *args);
+            }
+            ExprNode::CallStmt { callee, args } if callee.0 == node => {
+                // Explicit `Call` keyword is always a statement → Sub.
+                return (false, arglist_len(arena, *args));
+            }
+            _ => {}
+        }
+    }
+    // Bare name as a statement, or a call expression used as a statement → Sub.
+    let is_stmt = block_contains(arena, node)
+        || call_node.map(|c| block_contains(arena, c)).unwrap_or(false);
+    (!is_stmt, arity)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::session::{CodeAction, Session, TextEdit};
@@ -607,29 +632,4 @@ mod tests {
         let out = apply(src, &a.edits);
         assert_eq!(out, "If x > 1 Then y = 2\n");
     }
-}
-
-/// Decide whether an undefined call should be created as a `Function` (used in
-/// value position) or a `Sub` (called as a statement), and its argument count.
-fn call_shape(m: &super::ModuleData, node: u32) -> (bool, usize) {
-    let arena = &m.arena;
-    let mut arity = 0;
-    let mut call_node = None;
-    for i in 0..arena.len() as u32 {
-        match arena.get(NodeId(i)) {
-            ExprNode::Call { func, args } if func.0 == node => {
-                call_node = Some(i);
-                arity = arglist_len(arena, *args);
-            }
-            ExprNode::CallStmt { callee, args } if callee.0 == node => {
-                // Explicit `Call` keyword is always a statement → Sub.
-                return (false, arglist_len(arena, *args));
-            }
-            _ => {}
-        }
-    }
-    // Bare name as a statement, or a call expression used as a statement → Sub.
-    let is_stmt = block_contains(arena, node)
-        || call_node.map(|c| block_contains(arena, c)).unwrap_or(false);
-    (!is_stmt, arity)
 }

@@ -46,7 +46,7 @@ async fn main() -> anyhow::Result<()> {
     let stdin = tokio::io::stdin();
     let stdout = tokio::io::stdout();
 
-    let (service, socket) = LspService::new(|client| Vb6LanguageServer::new(client));
+    let (service, socket) = LspService::new(Vb6LanguageServer::new);
 
     // Run the server
     Server::new(stdin, stdout, socket).serve(service).await;

@@ -154,7 +154,7 @@ impl<'a> Emitter<'a> {
             0x24 => self.op_is(n, context),
             0x2c => self.op_assign_stmt(n, context),
             0x2d => self.op_typed_assign(n),
-            0x2f | 0x30 | 0x31 => self.op_sequence(n, context),
+            0x2f..=0x31 => self.op_sequence(n, context),
             // type coercion (opcode by flag byte bit 0x80).
             0x32 => {
                 let target = if (n.w[1] >> 8) & 0x80 == 0 { 0x40d } else { 0x40e };

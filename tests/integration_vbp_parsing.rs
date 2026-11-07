@@ -22,7 +22,7 @@ fn test_parse_real_vbp_file() {
 
     // Verify references were parsed
     println!("References found: {}", vbp.references.len());
-    assert!(vbp.references.len() > 0, "Should have references");
+    assert!(!vbp.references.is_empty(), "Should have references");
 
     // Check for sub-project references
     let subprojects = vbp.get_subproject_references();
@@ -31,7 +31,7 @@ fn test_parse_real_vbp_file() {
     // Check for compiled references
     let compiled = vbp.get_compiled_references();
     println!("Compiled references: {}", compiled.len());
-    assert!(compiled.len() > 0, "Should have compiled type library references");
+    assert!(!compiled.is_empty(), "Should have compiled type library references");
 
     // Verify UUID validation worked
     for reference in &compiled {
@@ -42,7 +42,7 @@ fn test_parse_real_vbp_file() {
 
     // Verify objects were parsed
     println!("Objects found: {}", vbp.objects.len());
-    assert!(vbp.objects.len() > 0, "Should have ActiveX objects");
+    assert!(!vbp.objects.is_empty(), "Should have ActiveX objects");
 
     // Verify modules were parsed
     println!("Modules found: {}", vbp.modules.len());

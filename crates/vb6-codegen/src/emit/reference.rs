@@ -12,6 +12,7 @@ impl<'a> Emitter<'a> {
     /// * else `node[8]` low word == 1 → kind `0xa` (with flag `0x8000` and a
     ///   `node[6]` type: `word6` bit 0 set, `word8` = its size).
     /// * else → kind `9` (operator): `word6` = `node[8]`.
+    ///
     /// A `0x160000`-region node additionally sets `flags1` bits `0x05`.
     pub(super) fn emit_setup_binary_operation(&mut self, node: NodeRef) -> RefDescriptor {
         let n = *self.arena.get(node);
@@ -35,7 +36,7 @@ impl<'a> Emitter<'a> {
         } else {
             desc.kind = 0xb;
             desc.word6 = w8;
-            desc.word8 = self.type_pool.extract_type_value2(n.w[6]) as u16;
+            desc.word8 = self.type_pool.extract_type_value2(n.w[6]);
         }
         if n.w[0] & 0xffff_0000 == 0x16_0000 {
             desc.flags1 |= 5;
@@ -388,6 +389,8 @@ impl<'a> Emitter<'a> {
     /// (`emit_reference`, n_op 6) on several arms. `ctx_flag_c` is byte
     /// `+0xc` of the compiler context — the same field [`resolve_ident_ref`]
     /// already threads through; only bit 1 (`&2`) is read here.
+    #[cfg(test)]
+    #[cfg(test)]
     pub(super) fn convert_expression_type(
         &mut self,
         type_desc: &mut RawNode,
@@ -460,7 +463,7 @@ impl<'a> Emitter<'a> {
                 self.convert_expr_type_direct_emit(type_desc, ctx_flag_c);
             }
             // kinds 8/9/10/0xb: bare re-emit, no flag propagation.
-            8 | 9 | 10 | 0xb => {
+            8..=0xb => {
                 let desc = ref_descriptor_from_node(type_desc);
                 self.emit_reference(&desc, 6, 0, 0);
             }
@@ -475,6 +478,8 @@ impl<'a> Emitter<'a> {
     /// word6 into `type_desc`'s word3 (low 16 bits), merge flag bits 0/2,
     /// then copy `type_desc` into `expr_desc` wholesale. Otherwise falls
     /// through to a bare re-emit (the switch's own `break` case).
+    #[cfg(test)]
+    #[cfg(test)]
     fn convert_expr_type_settype4(&mut self, type_desc: &mut RawNode, expr_desc: &mut RawNode, _ctx_flag_c: u8) {
         if expr_desc.w[0] as i32 == 3 || flags1_byte(expr_desc) & 8 != 0 {
             let s = hi1(expr_desc);
@@ -493,6 +498,8 @@ impl<'a> Emitter<'a> {
     /// The shared direct-emit block (kind 2/4's bit-2-set arm and kind 6's
     /// bit-2-set arm): re-emit `type_desc`, then emit `0x408` when both
     /// `ctx_flag_c` bit 1 and `type_desc`'s own flags-byte bit 0 are set.
+    #[cfg(test)]
+    #[cfg(test)]
     fn convert_expr_type_direct_emit(&mut self, type_desc: &RawNode, ctx_flag_c: u8) {
         let desc = ref_descriptor_from_node(type_desc);
         self.emit_reference(&desc, 6, 0, 0);
@@ -515,6 +522,8 @@ impl<'a> Emitter<'a> {
     /// located via a pointer stored in the module heap (byte offset `0x1c`)
     /// that this pipeline has no model for; that part is not ported (see
     /// the private note), never guessed.
+    #[cfg(test)]
+    #[cfg(test)]
     pub(super) fn emit_binary_op_code_temp_descriptor(
         &mut self,
         type_desc_word4: u16,
@@ -550,34 +559,50 @@ impl<'a> Emitter<'a> {
 // accumulator field; word2 high16 = the `+0xa` accumulator field (also
 // `RefDescriptor::operand`'s convention); word3 = an opaque payload word.
 
+#[cfg(test)]
+#[cfg(test)]
 fn flags_lo(n: &RawNode) -> u16 {
     (n.w[1] & 0xffff) as u16
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn flags1_byte(n: &RawNode) -> u8 {
     (n.w[1] & 0xff) as u8
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn set_flags_lo(n: &mut RawNode, v: u16) {
     n.w[1] = (n.w[1] & 0xffff_0000) | v as u32;
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn hi1(n: &RawNode) -> i16 {
     (n.w[1] >> 16) as u16 as i16
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn hi2(n: &RawNode) -> i16 {
     (n.w[2] >> 16) as u16 as i16
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn set_hi1(n: &mut RawNode, v: i16) {
     n.w[1] = (n.w[1] & 0xffff) | ((v as u16 as u32) << 16);
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn set_hi2(n: &mut RawNode, v: i16) {
     n.w[2] = (n.w[2] & 0xffff) | ((v as u16 as u32) << 16);
 }
 
+#[cfg(test)]
+#[cfg(test)]
 fn copy_wholesale(dst: &mut RawNode, src: &RawNode) {
     dst.w[0] = src.w[0];
     dst.w[1] = src.w[1];
@@ -586,6 +611,8 @@ fn copy_wholesale(dst: &mut RawNode, src: &RawNode) {
 }
 
 /// Copy bits 0 and 2 from `b` into `a` (the repeated `(b^a)&mask ^ a` idiom).
+#[cfg(test)]
+#[cfg(test)]
 fn merge_flag_bits(a: u16, b: u8) -> u16 {
     let a1 = (((b ^ (a as u8)) & 4) as u16) ^ a;
     (((a1 as u8 ^ b) & 1) as u16) ^ a1
@@ -593,6 +620,8 @@ fn merge_flag_bits(a: u16, b: u8) -> u16 {
 
 /// Build the [`RefDescriptor`] `emit_reference` expects from a 4-word node
 /// (the same field mapping `flags1_byte`/`hi1`/`hi2` document above).
+#[cfg(test)]
+#[cfg(test)]
 fn ref_descriptor_from_node(n: &RawNode) -> RefDescriptor {
     RefDescriptor {
         kind: n.w[0] as i32,

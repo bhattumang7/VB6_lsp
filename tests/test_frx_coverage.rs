@@ -81,7 +81,7 @@ fn corpus_byte_accounting_report() {
     } else {
         100.0
     };
-    worst.sort_by(|a, b| b.1.cmp(&a.1));
+    worst.sort_by_key(|b| std::cmp::Reverse(b.1));
 
     eprintln!("=== FRX/CTX BYTE-ACCOUNTING (re_lab/corpus) ===");
     eprintln!("forms/ctls scanned  : {}", forms.len());

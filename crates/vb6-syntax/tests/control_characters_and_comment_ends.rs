@@ -70,7 +70,7 @@ fn identifier_length_counts_source_bytes_not_utf8_bytes() {
     use vb6_syntax::frontend::scanner::ScannerContext;
     // 130 accented letters are 130 bytes of source text.
     let mut src = b"Dim ".to_vec();
-    src.extend(std::iter::repeat(0xE9u8).take(130));
+    src.extend(std::iter::repeat_n(0xE9u8, 130));
     src.extend_from_slice(b" As Long
 ");
     let mut ctx = ScannerContext::new(1, 1, 0x0409);

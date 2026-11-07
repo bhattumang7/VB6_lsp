@@ -68,7 +68,7 @@ impl Session {
             name: m.module_name.clone(),
             kind: LibraryTypeKind::Class,
             interfaces,
-            is_global: instancing.map_or(false, |i| matches!(i, Instancing::GlobalMultiUse | Instancing::GlobalSingleUse)),
+            is_global: instancing.is_some_and(|i| matches!(i, Instancing::GlobalMultiUse | Instancing::GlobalSingleUse)),
             instancing,
             members,
             ..Default::default()

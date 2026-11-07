@@ -1,12 +1,12 @@
 //! Structural tests for VB6 semantic analysis.
 
-use vb6_core::frontend::ast::{ExprArena, NodeId};
-use vb6_core::frontend::parser::{Parser, ModuleKind};
+use vb6_core::frontend::ast::ExprArena;
+use vb6_core::frontend::parser::Parser;
 use vb6_core::frontend::scanner::ScannerContext;
 use vb6_core::context::CompilerContext;
 
 fn analyze(src: &[u8]) -> CompilerContext {
-    let mut ctx = CompilerContext::new();
+    let ctx = CompilerContext::new();
     let mut sc = ScannerContext::new(1, 1, 0x0409);
     sc.intern_keywords();
     let mut arena = ExprArena::new();

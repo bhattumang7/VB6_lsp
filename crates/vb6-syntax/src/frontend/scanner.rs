@@ -990,7 +990,7 @@ impl<'a> Scanner<'a> {
     /// True if the symbol is a reserved word (which can never name a
     /// variable or a type); false for identifiers and contextual keywords.
     pub fn is_reserved(&self, id: u32) -> bool {
-        self.ctx.symbols.get(id as usize).map_or(false, |s| s.flags & 4 != 0)
+        self.ctx.symbols.get(id as usize).is_some_and(|s| s.flags & 4 != 0)
     }
 
     /// The keyword a symbol spells, or `None` for a name that is no keyword.
@@ -1002,7 +1002,7 @@ impl<'a> Scanner<'a> {
     /// True if the symbol is a keyword spelled with a trailing `$` (`Mid$`, `Date$`): a
     /// name of that kind is a keyword word, never a name with a type-declaration character.
     pub fn is_dollar_word(&self, id: u32) -> bool {
-        self.ctx.symbols.get(id as usize).map_or(false, |s| s.flags & 1 != 0)
+        self.ctx.symbols.get(id as usize).is_some_and(|s| s.flags & 1 != 0)
     }
 
     /// The first limit the text breaks (too many pieces in a logical line, too many
@@ -1341,8 +1341,7 @@ impl<'a> Scanner<'a> {
         let mut has_decimal = first == b'.';
         let mut has_exp = false;
 
-        loop {
-            let Some(&raw) = self.src.get(self.pos) else { break };
+        while let Some(&raw) = self.src.get(self.pos) {
             // A full-width digit or point is the ASCII one.
             let (b, width) = self.full_width_at(self.pos).unwrap_or((raw, 1));
             match b {
@@ -1390,9 +1389,9 @@ impl<'a> Scanner<'a> {
     fn try_consume_exponent(&mut self) -> bool {
         let exp_start = self.pos + 1;
         let sign_off = if self.src.get(exp_start)
-            .map_or(false, |&s| s == b'+' || s == b'-') { 1 } else { 0 };
+            .is_some_and(|&s| s == b'+' || s == b'-') { 1 } else { 0 };
         if !self.src.get(exp_start + sign_off)
-            .map_or(false, |&d| d.is_ascii_digit())
+            .is_some_and(|&d| d.is_ascii_digit())
         {
             return false;
         }
@@ -1591,7 +1590,7 @@ impl<'a> Scanner<'a> {
 
     /// Handle `'.'`: float literal or Dot.
     fn scan_dot(&mut self, start: usize) -> Token {
-        if self.peek().map_or(false, |b| b.is_ascii_digit()) {
+        if self.peek().is_some_and(|b| b.is_ascii_digit()) {
             self.scan_number(b'.', start)
         } else {
             Token::op(Kw::Dot, self.span(start))
@@ -1766,7 +1765,7 @@ impl<'a> Scanner<'a> {
 
     /// Handle `'_'`: line-continuation marker or identifier start.
     fn scan_underscore(&mut self, first: u8, start: usize) -> Token {
-        if self.peek().map_or(true, |b| !is_ident_continue(b)) {
+        if self.peek().is_none_or(|b| !is_ident_continue(b)) {
             // A continuation mark must follow a blank; at the start of a line or against another
             // token it is an invalid character.
             let after_blank = start > 0 && matches!(self.src[start - 1], b' ' | b'\t');
@@ -1843,7 +1842,7 @@ impl<'a> Scanner<'a> {
         let folds_to_keyword = matches!(suffix, b'$' | b'%' | b'!' | b'#' | b'@') && {
             let mut with_suffix = self.tok_buf.clone();
             with_suffix.push(suffix as char);
-            self.ctx.lookup(&with_suffix).map_or(false, |s| s.token > 0)
+            self.ctx.lookup(&with_suffix).is_some_and(|s| s.token > 0)
         };
         if folds_to_keyword {
             self.tok_buf.push(suffix as char);
@@ -1851,7 +1850,7 @@ impl<'a> Scanner<'a> {
             return TypeSuffix::None;
         }
         let is_bang_member = suffix == b'!'
-            && self.src.get(self.pos + 1).map_or(false, |&n| is_ident_start(n) && n != b'_');
+            && self.src.get(self.pos + 1).is_some_and(|&n| is_ident_start(n) && n != b'_');
         let ts = TypeSuffix::from_byte(suffix);
         if ts != TypeSuffix::None && !is_bang_member {
             self.pos += 1;

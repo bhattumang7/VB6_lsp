@@ -534,7 +534,7 @@ enum OptionSeen {
 impl<'src> Parser<'src> {
     /// Construct a parser over `src` using the provided scanner context.
     pub fn new(ctx: &'src mut ScannerContext, src: &'src [u8]) -> Self {
-        let mut parser = Self {
+        let parser = Self {
             scanner:     Scanner::new(ctx, src),
             src,
             peeked:      None,
@@ -1455,7 +1455,7 @@ impl<'src> Parser<'src> {
     fn note_declared_name(&mut self, name: &Token, module_level: bool) {
         let is_error = name
             .sym
-            .map_or(false, |s| self.scanner.sym_name(s as u32).eq_ignore_ascii_case("error"));
+            .is_some_and(|s| self.scanner.sym_name(s as u32).eq_ignore_ascii_case("error"));
         if is_error {
             if module_level {
                 self.error_var_module = true;
@@ -4583,7 +4583,7 @@ impl<'src> Parser<'src> {
     }
 
     fn cc_active(&self) -> bool {
-        self.cc_stack.last().map_or(true, |f| f.active)
+        self.cc_stack.last().is_none_or(|f| f.active)
     }
 
     /// Define the project's conditional-compilation arguments, which are
@@ -4807,7 +4807,7 @@ impl<'src> Parser<'src> {
     fn report_open_cc_blocks(&mut self) {
         if self.cc_stack.last().is_some() {
             // Reported once, on the last line of the module.
-            let text = &self.src[..];
+            let text = self.src;
             let end = text.iter().rposition(|b| !matches!(b, b'\r' | b'\n')).map_or(0, |i| i + 1);
             let start = text[..end].iter().rposition(|b| *b == b'\n').map_or(0, |i| i + 1);
             let span = Span { start: start as u32, len: (end - start) as u32 };
@@ -4891,8 +4891,7 @@ impl<'src> Parser<'src> {
         let named_start = self.cc_names_read;
         let mut lhs = self.eval_cc_prefix()?;
         let mut lhs_named = self.cc_names_read != named_start;
-        loop {
-            let Some((l_bp, r_bp, op)) = self.cc_infix_op() else { break };
+        while let Some((l_bp, r_bp, op)) = self.cc_infix_op() {
             if l_bp <= min_bp { break; }
             self.cc_advance();
             let named_before = self.cc_names_read;
@@ -5341,7 +5340,6 @@ impl<'src> Parser<'src> {
     fn open_access_conflicts(has_read: bool, has_write: bool, open_mode: u8) -> bool {
         (has_read && open_mode == 2)
             || (has_write && open_mode == 1)
-            || (has_read && has_write && open_mode == 2)
             // Append writes, so read-only access cannot go with it.
             || (has_read && !has_write && open_mode == 8)
     }
@@ -5408,7 +5406,7 @@ impl<'src> Parser<'src> {
         }
         while !self.peek().is_stmt_end()
             && self.peek().kind != TokenKind::Kw(Kw::Colon)
-            && !(self.peek().kind == TokenKind::Kw(Kw::Else) && !chs.is_empty())
+            && (self.peek().kind != TokenKind::Kw(Kw::Else) || chs.is_empty())
         {
             marks.push(self.eat(TokenKind::Kw(Kw::Hash)));
             chs.push(self.parse_expr(arena, 0));
@@ -6299,7 +6297,7 @@ impl<'src> Parser<'src> {
     fn skip_rest_of_parameter(&mut self) {
         let mut depth = 0;
         while !self.peek().is_stmt_end()
-            && !(depth == 0 && matches!(self.peek().kind, TokenKind::Kw(Kw::RParen) | TokenKind::Kw(Kw::Comma)))
+            && (depth != 0 || !matches!(self.peek().kind, TokenKind::Kw(Kw::RParen) | TokenKind::Kw(Kw::Comma)))
         {
             match self.peek().kind {
                 TokenKind::Kw(Kw::LParen) => depth += 1,
@@ -6531,7 +6529,7 @@ impl<'src> Parser<'src> {
             TokenKind::Kw(_)
                 if !self.at_contextual_keyword()
                     && !matches!(self.peek2().kind, TokenKind::Kw(Kw::As))
-                    && !(self.peek2().kind == TokenKind::Kw(Kw::LParen) && self.at_callable_reserved_word()) =>
+                    && (self.peek2().kind != TokenKind::Kw(Kw::LParen) || !self.at_callable_reserved_word()) =>
             {
                 self.error_and_skip_line(ERR_STATEMENT_IN_TYPE);
                 true
@@ -7241,8 +7239,7 @@ impl<'src> Parser<'src> {
         let mut seen_named = false;
         // A list that follows another takes neither an omitted argument nor a `ByVal`.
         let later = std::mem::take(&mut self.later_group);
-        loop {
-            let Some(arg) = self.parse_arg_list_item(arena, later, &mut seen_named) else { break };
+        while let Some(arg) = self.parse_arg_list_item(arena, later, &mut seen_named) {
             args.push(arg);
             if !self.eat(TokenKind::Kw(Kw::Comma)) { break; }
         }
@@ -7359,7 +7356,7 @@ impl<'src> Parser<'src> {
                     .sym_name(sym as u32)
                     .chars()
                     .next()
-                    .map_or(false, |c| c.is_alphabetic() || c == '_'),
+                    .is_some_and(|c| c.is_alphabetic() || c == '_'),
                 None => false,
             },
             _ => false,

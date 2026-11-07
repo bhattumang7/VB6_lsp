@@ -244,16 +244,33 @@ fn build_byval_call_arg(
 /// analogue, `c11_set_get_to_specific_class_target`, proving a `Set`
 /// target's read-back convention depends on the TARGET's type, not on
 /// whether the source is a Get or a method call).
+#[derive(Clone, Copy)]
+pub(super) struct ClassCallMode {
+    /// The call's result is consumed as a value (a `Function`/`Get`), not discarded.
+    pub(super) is_value: bool,
+    /// Read an Object result back with the generic 4-byte load instead of the plain-pointer read.
+    pub(super) object_raw_load: bool,
+}
+
+impl ClassCallMode {
+    /// A statement-form call whose result is discarded.
+    pub(super) const STATEMENT: Self = Self { is_value: false, object_raw_load: false };
+    /// A value-producing call read back with the plain-pointer Object read.
+    pub(super) const VALUE: Self = Self { is_value: true, object_raw_load: false };
+    /// A value-producing call read back with the generic 4-byte Object load.
+    pub(super) const VALUE_RAW_LOAD: Self = Self { is_value: true, object_raw_load: true };
+}
+
 pub(super) fn lower_class_method_call(
     ctx: &LowerCtx,
     base: NodeId,
     func_access_id: NodeId,
     args_id: NodeId,
-    is_value: bool,
-    object_raw_load: bool,
+    mode: ClassCallMode,
     expr_arena: &ExprArena,
     out: &mut Vec<u8>,
 ) -> Result<ClassCallOutcome, LowerError> {
+    let ClassCallMode { is_value, object_raw_load } = mode;
     let plan = resolve_class_call(ctx, base, func_access_id, args_id, is_value, expr_arena)?;
 
     // Assign each argument that actually needs a pool temp its own

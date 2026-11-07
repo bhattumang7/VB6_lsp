@@ -20,7 +20,7 @@ fn at(arena: &ExprArena, id: NodeId) -> &ExprNode {
 }
 
 /// Assert the node at `id` is a `Block` and return its statement ids.
-fn block_stmts<'a>(arena: &'a ExprArena, id: NodeId) -> &'a [NodeId] {
+fn block_stmts(arena: &ExprArena, id: NodeId) -> &[NodeId] {
     match arena.get(id) {
         ExprNode::Block { stmts } => stmts,
         other => panic!("expected Block, got {}", kind_name(other)),
@@ -28,7 +28,7 @@ fn block_stmts<'a>(arena: &'a ExprArena, id: NodeId) -> &'a [NodeId] {
 }
 
 /// Assert the node at `id` is an `ArgList` and return its arg ids.
-fn arglist_args<'a>(arena: &'a ExprArena, id: NodeId) -> &'a [NodeId] {
+fn arglist_args(arena: &ExprArena, id: NodeId) -> &[NodeId] {
     match arena.get(id) {
         ExprNode::ArgList { args } => args,
         other => panic!("expected ArgList, got {}", kind_name(other)),
@@ -151,7 +151,7 @@ fn parse_stmts(src: &[u8]) -> (Vec<NodeId>, ExprArena, bool) {
     parse_module(wrapped.as_bytes())
 }
 
-fn find_node<'a>(arena: &'a ExprArena, pred: impl Fn(&ExprNode) -> bool) -> Option<&'a ExprNode> {
+fn find_node(arena: &ExprArena, pred: impl Fn(&ExprNode) -> bool) -> Option<&ExprNode> {
     (0..arena.len())
         .map(|i| arena.get(NodeId(i as u32)))
         .find(|n| pred(n))

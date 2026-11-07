@@ -6,7 +6,9 @@
 /// narrows it.  This enum tracks the declared (static) type; untyped
 /// expressions carry `Variant`.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default)]
 pub enum VbaType {
+    #[default]
     Variant,
     Integer,
     Long,
@@ -52,8 +54,3 @@ impl VbaType {
     }
 }
 
-impl Default for VbaType {
-    fn default() -> Self {
-        VbaType::Variant
-    }
-}

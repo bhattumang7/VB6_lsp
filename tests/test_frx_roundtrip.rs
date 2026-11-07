@@ -105,7 +105,7 @@ fn check_form(form: &Path, outcome: &mut Outcome) {
 fn print_report(outcome: &Outcome) {
     eprintln!("=== FRX/CTX BYTE-EXACT ROUND-TRIP (re_lab/corpus) ===");
     let mut kinds: Vec<_> = outcome.tally.iter().collect();
-    kinds.sort_by(|a, b| b.1 .1.cmp(&a.1 .1));
+    kinds.sort_by_key(|b| std::cmp::Reverse(b.1 .1));
     for (k, (pass, total)) in kinds {
         eprintln!("  {:<14} {}/{} byte-exact", k, pass, total);
     }

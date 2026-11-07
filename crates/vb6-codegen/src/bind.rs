@@ -352,7 +352,7 @@ impl ProcFrame {
     /// [`Self::declare_udt_local`]).
     fn alloc_bytes(&mut self, size: i16) -> i16 {
         if size >= 4 {
-            let rem = self.cursor.rem_euclid(4) as i16;
+            let rem = self.cursor.rem_euclid(4);
             if rem != 0 {
                 self.cursor -= rem;
             }
@@ -406,7 +406,7 @@ impl ProcFrame {
         if size >= 4 {
             // Align cursor down to the nearest multiple of 4.
             // rem_euclid gives a non-negative remainder in [0, 4).
-            let rem = self.cursor.rem_euclid(4) as i16;
+            let rem = self.cursor.rem_euclid(4);
             if rem != 0 {
                 self.cursor -= rem;
             }
@@ -479,7 +479,7 @@ pub const PROC_PARAM_BASE: i16 = 12;
 fn param_step(type_ctx: usize) -> i16 {
     let sz = frame_size_of_ctx(type_ctx);
     // DWORD-align upward: sizes ≤ 4 become 4, sizes > 4 are already multiples of 4.
-    ((sz as i16 + 3) & !3).max(4)
+    ((sz + 3) & !3).max(4)
 }
 
 /// One parameter's binding: its type context, frame offset, and whether it is

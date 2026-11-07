@@ -177,17 +177,17 @@ fn eb_normalize_type_reference_variant_case_confirmed_noop() {
     // word1=1 -> opcode=0x60, byte5=0 -> the iVar7==0xf branch's own inner
     // goto condition is true -> shared no-op tail).
     assert_eq!(
-        eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x60, 0),
+        eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop(0x60, 0),
         Some(true)
     );
     // opcode==0xf is a distinct early-return outcome, not modeled.
-    assert_eq!(eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0xf, 0), None);
+    assert_eq!(eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop(0xf, 0), None);
     // opcode==0x6b/0x6a route through EbFinalizeExpression(...,1), not modeled.
-    assert_eq!(eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x6b, 0), None);
-    assert_eq!(eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x6a, 0), None);
+    assert_eq!(eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop(0x6b, 0), None);
+    assert_eq!(eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop(0x6a, 0), None);
     // opcode==0x60 with byte5 bit 0x20 set fails clause_a -> EbFinalizeExpression(...,0), not modeled.
     assert_eq!(
-        eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(0x60, 0x20),
+        eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop(0x60, 0x20),
         None
     );
 }

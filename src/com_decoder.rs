@@ -223,7 +223,7 @@ fn parse_guid(s: &str) -> Option<[u8; 16]> {
 }
 
 fn parse_hex_bytes(s: &str) -> Option<Vec<u8>> {
-    if s.len() % 2 != 0 {
+    if !s.len().is_multiple_of(2) {
         return None;
     }
     (0..s.len())

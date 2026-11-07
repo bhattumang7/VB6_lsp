@@ -217,7 +217,7 @@ impl ProjectModel {
     /// visibility and types, and the same name, kind and controls. When it
     /// does, nothing another module's binding depends on has changed.
     pub(super) fn module_interface_is(&self, idx: usize, module: &ModuleData) -> bool {
-        self.modules.get(idx).map_or(false, |s| *s == summarize(module))
+        self.modules.get(idx).is_some_and(|s| *s == summarize(module))
     }
 
     pub(super) fn build(

@@ -5,8 +5,11 @@ use vb6_core::frontend::ast::{AstLit, ExprArena, ExprNode, NodeId};
 use vb6_core::frontend::parser::{ModuleKind, Parser};
 use vb6_core::frontend::scanner::ScannerContext;
 
+/// One Attribute node: its target, name and values.
+type AttributeNode = (Option<String>, String, Vec<AstLit>);
+
 /// Every Attribute node as (target, name, values) in arena order.
-fn attributes(src: &str) -> (usize, Vec<(Option<String>, String, Vec<AstLit>)>) {
+fn attributes(src: &str) -> (usize, Vec<AttributeNode>) {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();

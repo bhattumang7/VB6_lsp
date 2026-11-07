@@ -18,7 +18,7 @@ fn at(src: &str, needle: &str) -> u32 {
     (src.find(needle).expect("needle not found") + 1) as u32
 }
 
-fn text<'a>(src: &'a str, loc: Location) -> &'a str {
+fn text(src: &str, loc: Location) -> &str {
     let lo = loc.span.start as usize;
     &src[lo..lo + loc.span.len as usize]
 }

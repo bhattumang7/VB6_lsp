@@ -363,7 +363,7 @@ fn logic_result(l: &CcValue, r: &CcValue, v: i32) -> CcValue {
     if matches!((l, r), (CcValue::Boolean(_), CcValue::Boolean(_))) {
         return CcValue::Boolean(v != 0);
     }
-    let small = |x: &CcValue| x.num().map_or(false, |n| n.rank == Rank::Integer);
+    let small = |x: &CcValue| x.num().is_ok_and(|n| n.rank == Rank::Integer);
     if small(l) && small(r) { CcValue::Integer(v as i16) } else { CcValue::Long(v) }
 }
 
@@ -556,7 +556,7 @@ pub(crate) fn parse_number(s: &str) -> Option<f64> {
 /// A hexadecimal or octal number of up to four (six) digits is an Integer, so one that
 /// sets the top bit is negative.
 fn radix_value(v: i64, digits: usize, integer_digits: usize) -> f64 {
-    if digits <= integer_digits && v >= 0x8000 && v <= 0xFFFF { (v - 0x10000) as f64 } else { v as f64 }
+    if digits <= integer_digits && (0x8000..=0xFFFF).contains(&v) { (v - 0x10000) as f64 } else { v as f64 }
 }
 
 pub(crate) fn round_half_even(n: f64) -> f64 {

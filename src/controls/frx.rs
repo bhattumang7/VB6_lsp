@@ -298,9 +298,9 @@ fn picture_span(buf: &[u8], offset: usize) -> Result<(FrxValue, usize), FrxError
     let body = offset + 4;
     // The "lt\0\0" magic is either directly after the length (standard) or after a
     // 16-byte StdPicture class id (the form used inside ImageList/collection bags).
-    let lt = if buf.get(body..body + 4).map_or(false, |s| s == b"lt\0\0") {
+    let lt = if buf.get(body..body + 4).is_some_and(|s| s == b"lt\0\0") {
         body
-    } else if buf.get(body + 16..body + 20).map_or(false, |s| s == b"lt\0\0") {
+    } else if buf.get(body + 16..body + 20).is_some_and(|s| s == b"lt\0\0") {
         body + 16
     } else {
         return Err(FrxError::BadPictureHeader { offset });
@@ -407,10 +407,10 @@ pub fn decode_list(buf: &[u8], offset: usize) -> Result<FrxValue, FrxError> {
 ///   `[u16 count]` — and only when count>0 — `[u16 sig]` then `count` items,
 ///   each `[u16 len][len bytes]`. An empty collection is just the 2-byte count
 ///   (no signature), so the returned span is 2 in that case.
-fn count_sig_items<'a>(
-    buf: &'a [u8],
+fn count_sig_items(
+    buf: &[u8],
     offset: usize,
-) -> Result<(u16, Vec<&'a [u8]>, usize), FrxError> {
+) -> Result<(u16, Vec<&[u8]>, usize), FrxError> {
     let count = rd_u16(buf, offset)? as usize;
     if count == 0 {
         return Ok((0, Vec::new(), 2));
@@ -674,7 +674,7 @@ fn decode_text(bytes: &[u8]) -> String {
 
 /// Heuristic: even length and a high proportion of zero high-bytes => UTF-16LE.
 fn is_utf16le(bytes: &[u8]) -> bool {
-    if bytes.len() < 4 || bytes.len() % 2 != 0 {
+    if bytes.len() < 4 || !bytes.len().is_multiple_of(2) {
         return false;
     }
     let pairs = bytes.len() / 2;

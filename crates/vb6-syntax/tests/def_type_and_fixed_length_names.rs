@@ -14,7 +14,8 @@ fn def_statement_may_end_with_a_comma() {
 
 #[test]
 fn fixed_length_may_be_a_word_that_is_not_reserved() {
-    for word in ["Step"] {
+    {
+        let word = "Step";
         let text = format!("Type T\n  a As String * {word}\nEnd Type\n");
         let p = parse(&text);
         assert_eq!(p.found, vec![], "{word}");

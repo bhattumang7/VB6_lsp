@@ -129,7 +129,7 @@ impl<'a> Emitter<'a> {
         let type_tag = (desc.node_word0 as i32) >> 16;
         let m = Self::map_type_code3(RT_TYPE_OFFSET[type_tag as usize]);
         let merged = call_op | m;
-        let wide_scalar = matches!(type_tag, 10 | 0xb | 0xc) && rec_1d & 8 != 0;
+        let wide_scalar = matches!(type_tag, 10..=0xc) && rec_1d & 8 != 0;
         if wide_scalar && (m == 3 || m == 4) {
             merged + 6
         } else {

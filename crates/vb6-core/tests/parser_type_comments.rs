@@ -5,8 +5,11 @@ use vb6_core::frontend::ast::{ExprArena, ExprNode, NodeId};
 use vb6_core::frontend::parser::Parser;
 use vb6_core::frontend::scanner::ScannerContext;
 
+/// The diagnostics `(code, start, length)`, the type's name, and its `(member, type)` pairs.
+type TypeDecl = (Vec<(u32, u32, u32)>, String, Vec<(String, String)>);
+
 /// `(type name, [(member, type)])` of the only top-level node, plus diagnostics.
-fn type_decl(src: &str) -> (Vec<(u32, u32, u32)>, String, Vec<(String, String)>) {
+fn type_decl(src: &str) -> TypeDecl {
     let mut ctx = ScannerContext::new(1, 1, 0x0409);
     ctx.intern_keywords();
     let mut arena = ExprArena::new();

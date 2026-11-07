@@ -5,7 +5,7 @@ mod common;
 use common::{offset_of, parse};
 use vb6_syntax::frontend::ast::ExprNode;
 
-fn assigned_name<'a>(p: &'a common::Parsed, id: vb6_syntax::frontend::ast::NodeId) -> &'a str {
+fn assigned_name(p: &common::Parsed, id: vb6_syntax::frontend::ast::NodeId) -> &str {
     let ExprNode::Assign { target, .. } = p.node(id) else { panic!("expected assignment") };
     let ExprNode::NameRef { sym, .. } = p.node(*target) else { panic!("expected name") };
     p.name(*sym)

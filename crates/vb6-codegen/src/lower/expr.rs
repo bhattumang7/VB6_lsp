@@ -119,7 +119,7 @@ fn lower_call_expr(
     // A user Function call used as an expression operand: emit the call
     // (0x5e, result left on the stack) into a byte blob wrapped in a 0x7e
     // node, so it composes with the enclosing operator.
-    if ctx.module.builtins.get(&node_id.0).is_none()
+    if !ctx.module.builtins.contains_key(&node_id.0)
         && matches!(ctx.module.resolutions.get(&func.0), Some(NameResolution::Proc(_)))
     {
         return lower_user_function_operand(ctx, node_id, func, args_id, expr_arena, arena);

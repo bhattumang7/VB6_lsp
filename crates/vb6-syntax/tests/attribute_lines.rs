@@ -96,7 +96,8 @@ fn a_plain_name_before_the_equals_sign_is_a_syntax_error() {
     }
     // A dotted name is fine; an attribute word not in the table is an error at the line that follows.
     assert_eq!(parse("Attribute VB_Anything = 1\n").found, vec![(0x9c70, 26, 0)]);
-    for src in ["Attribute Foo.x = \"m\"\n"] {
+    {
+        let src = "Attribute Foo.x = \"m\"\n";
         assert_eq!(parse(src).found, vec![], "{src:?}");
     }
 }

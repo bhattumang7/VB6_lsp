@@ -28,7 +28,7 @@ pub fn nth(src: &str, needle: &str, n: usize) -> u32 {
     src.match_indices(needle).nth(n).unwrap_or_else(|| panic!("`{needle}` #{n} not in source")).0 as u32
 }
 
-pub fn text<'a>(src: &'a str, loc: Location) -> &'a str {
+pub fn text(src: &str, loc: Location) -> &str {
     &src[loc.span.start as usize..(loc.span.start + loc.span.len) as usize]
 }
 

@@ -52,10 +52,6 @@ pub(super) enum UnportedCallee {
     /// `EbValidateArgumentType @0faecb32` (783B, `vba6_part0003.c:14997`) —
     /// the `local_c == 0x1b` (array-type-node) path's validator.
     ValidateArgumentType,
-    /// `EbCheckDispatchProperty @0fac1458` (132B, `vba6_part0002.c:11890`) —
-    /// gates the `local_10 != 0` (source was a `0x71`-wrapped node) path for
-    /// `local_18 == 7`.
-    CheckDispatchProperty,
     /// `EbResolveTypeBinding2 @0fabde33` (1044B, `vba6_part0002.c:8018`) —
     /// the `local_18 == 7` (by far the most common — plain value/reference
     /// type) path's core binding resolver. The single highest-value callee
@@ -64,28 +60,6 @@ pub(super) enum UnportedCallee {
     /// handles empirically — porting this would let the two implementations
     /// be cross-checked against each other.
     ResolveTypeBinding2,
-    /// `EbProcessArrayNode @0fafe90e` (339B, `vba6_part0003.c:41957`) — the
-    /// `local_18 == 8` (array-type argument) path.
-    ProcessArrayNode,
-    /// `EbResolveSetNode @0facb5cc` (567B, `vba6_part0002.c:24580`) — the
-    /// `local_18 == 0xc` (Variant/object-slot) path's non-`0x71`-wrapped case.
-    ResolveSetNode,
-    /// `EbCheckSetBinding @0fac09f2` (81B, `vba6_part0002.c:11206`) +
-    /// `EbEmitPropertyExpr @0fac0a2d` (960B, `vba6_part0002.c:11224`) — the
-    /// `local_18 == 9` (`0x1d`-taggable) shared tail every `0x1d`/object-slot
-    /// path funnels through.
-    SetBindingAndPropertyExpr,
-    /// `EbBuildTypeCoercion @0fabdb91` (355B, `vba6_part0002.c:7819`) — the
-    /// final explicit-conversion wrap applied when `flags & 2 == 0`.
-    BuildTypeCoercion,
-    /// `EbCompileTypeExpression2 @0fac6df0` (582B, `vba6_part0002.c:18715`)
-    /// — the `flags & 0x200` ("compile as a type expression") alternate tail.
-    CompileTypeExpression2,
-    /// `EbGetTypePropertyFromWalk @0fabcb68` (46B, `vba6_part0002.c:6457`) +
-    /// `EbProcessOperatorTree @0faed45b` (402B, `vba6_part0003.c:15829`) —
-    /// the final operator-tree post-pass (`LAB_0fabc2e6`'s tail), run on
-    /// every path's result before returning.
-    FinalOperatorTreeWalk,
 }
 
 impl UnportedCallee {
@@ -118,11 +92,11 @@ enum ExprTypeClass {
     /// see [`UnportedCallee::ResolveTypeBinding2`].
     Common = 7,
     /// `local_18 == 8`: array-typed argument — see
-    /// [`UnportedCallee::ProcessArrayNode`].
+    /// the array-node callee.
     Array = 8,
     /// `local_18 == 9` / `0xc`: Variant/object-slot argument — see
-    /// [`UnportedCallee::ResolveSetNode`] /
-    /// [`UnportedCallee::SetBindingAndPropertyExpr`].
+    /// the set-node callee /
+    /// the set-binding callee.
     ObjectSlot9 = 9,
     ObjectSlotC = 0xc,
 }
@@ -217,7 +191,7 @@ pub(super) fn eb_emit_arg_coerce(
     // Reference` (Integer's type tag `6` skips its `9 < iVar7` dispatch
     // entirely; Variant's type tag `0xf` enters it but its own inner `goto`
     // condition still lands on the shared no-op tail — see
-    // `eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop`). Both
+    // `eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop`). Both
     // confirmed chains (`EbEmitExpression4` → `EbCoerceExpressionType2`
     // [no-op, types already match] → `EbProcessType2` →
     // `EbNormalizeTypeReference` [no-op, node unchanged] → `EbBuildBinaryOp`
@@ -320,7 +294,7 @@ pub(super) fn eb_emit_arg_coerce(
 /// - `(Variant, ByRef)` → 7, `(Variant, ByVal)` → 4 — recorded from a
 ///   dedicated `argvariant_probe` compile-time trace; ByVal's
 ///   `EbEmitExpression4` chain is now fully traced too (see
-///   `eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop`) and
+///   `eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop`) and
 ///   wired; ByRef's `EbResolveTypeBinding2` chain is only classified, not
 ///   traced (same as Integer/String ByRef).
 ///
@@ -343,7 +317,7 @@ pub(super) fn known_local18_for_grounded_case(param_ty: &VbaType, by_val: bool) 
 /// **PORTED, verified — fully static, no `unaff_*` involved.**
 /// `EbEmitArgCoerce`'s own `local_18 == 9` dispatch (`vba6_part0002.c:
 /// 6063-6089`), the call-site logic that feeds `EbCheckSetBinding`/
-/// `EbEmitPropertyExpr` (`UnportedCallee::SetBindingAndPropertyExpr`). Unlike
+/// `EbEmitPropertyExpr` (the set-binding callee). Unlike
 /// several other branches of this function, this slice never reads an
 /// `unaff_ESI`/`unaff_EBX` register — it is fully determined by `local_c`
 /// (`EbGetCurrentExpression()`'s type-class byte, already computed earlier in
@@ -362,6 +336,7 @@ pub(super) fn known_local18_for_grounded_case(param_ty: &VbaType, by_val: bool) 
 /// argument), `local_c == 9` is the expected/only observed case — the
 /// argument's own current expression type IS Object. Returns `None` for the
 /// `0x1d` case since its `flags` value depends on an unported callee.
+#[cfg(test)]
 pub(super) fn eb_emit_property_expr_call_args_for_object_case(local_c: i32) -> Option<(i32, u32)> {
     if local_c == 9 {
         Some((1, 0))
@@ -385,6 +360,7 @@ pub(super) fn eb_emit_property_expr_call_args_for_object_case(local_c: i32) -> O
 /// locals) — consistent with this codebase's own `0x60`-node convention
 /// (`expr.rs:474`, where `word[7]` holds a UDT FIELD OFFSET for member-access
 /// nodes, never the sentinel `2`).
+#[cfg(test)]
 pub(super) fn eb_check_member_type_is_zero(word7: i32) -> Option<bool> {
     if word7 == 2 {
         None
@@ -409,6 +385,7 @@ pub(super) fn eb_check_member_type_is_zero(word7: i32) -> Option<bool> {
 /// `bVar2 = false` UNCONDITIONALLY. The short-circuit means the third
 /// (vtable-flag) clause's read never has to happen for this case; that
 /// clause remains genuinely unmodeled/unneeded here.
+#[cfg(test)]
 pub(super) fn eb_property_expr_bvar2_for_plain_local(word7: i32) -> Option<bool> {
     match eb_check_member_type_is_zero(word7) {
         Some(true) => Some(false),
@@ -450,6 +427,7 @@ pub(super) fn eb_property_expr_bvar2_for_plain_local(word7: i32) -> Option<bool>
 /// still bottoms out in `EbNormalizeTypeReference`'s `iVar7==0x16` branch,
 /// genuinely unported — this function documents ONLY the tail dispatch
 /// AFTER that call, confirmed to contribute nothing further once it runs.
+#[cfg(test)]
 pub(super) fn eb_property_expr_object_bval_let_tail_is_noop() -> bool {
     true
 }
@@ -522,6 +500,7 @@ pub(super) fn eb_normalize_type_reference_object_case_is_noop_for_plain_var() ->
 /// an unverified byte, not a grounded port. Gates via
 /// `UnportedCallee::ResolveTypeBinding2` until that equivalence is either
 /// confirmed or a genuine independent emitter is built.
+#[cfg(test)]
 pub(super) fn eb_resolve_type_binding2_reaches_evaluate_expression3(
     node_type_tag: i32,
     requested_type_class: i32,
@@ -592,6 +571,7 @@ pub(super) fn eb_resolve_type_binding2_reaches_evaluate_expression3(
 /// established yet, so this remains a documented, verified STRUCTURAL fact
 /// without a live caller, exactly like the rest of this file's discipline
 /// requires when a byte-level mapping isn't actually confirmed.
+#[cfg(test)]
 pub(super) fn eb_build_node_output_shape_for_plain_scalar(
     source_word1_high16: u16,
     source_word2: u32,
@@ -636,7 +616,8 @@ pub(super) fn eb_build_node_output_shape_for_plain_scalar(
 /// → THIS finding → no-op — Variant ByVal's entire `EbEmitExpression4`
 /// chain is now traced end-to-end, reaching the identical outcome as
 /// Integer ByVal.
-pub(super) fn eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(
+#[cfg(test)]
+pub(super) fn eb_normalize_type_reference_variant_ivar7_0xf_case_is_noop(
     opcode: u16,
     byte5: u8,
 ) -> Option<bool> {
@@ -695,6 +676,7 @@ pub(super) fn eb_normalize_type_reference_variant_iVar7_0xf_case_is_noop(
 /// case for real is now a scoped, well-understood remaining step (route to
 /// whatever this codebase's existing address-taking mechanism is, NOT
 /// `lower_expr_coerced`) rather than an open architectural question.
+#[cfg(test)]
 pub(super) fn eb_emit_expr_0x11_node_is_unhandled_no_op(opcode: u16) -> Option<bool> {
     if opcode == 0x11 {
         Some(true)
@@ -712,6 +694,7 @@ pub(super) fn eb_emit_expr_0x11_node_is_unhandled_no_op(opcode: u16) -> Option<b
 /// `eb_emit_arg_coerce` above (that requires `EbGetExpressionType2`'s
 /// call-argument-context classification to be traced first, to know what
 /// index to pass in), but this piece itself is complete and trustworthy.
+#[cfg(test)]
 pub(super) fn eb_get_type_code2(index: u8) -> u8 {
     if index == 0x13 {
         0
@@ -754,6 +737,7 @@ pub(super) fn eb_get_type_code2(index: u8) -> u8 {
 /// observed. Returns `Some(0)` for the four grounded cases; `None`
 /// (unverified) for anything else — do NOT extend this to other types
 /// without a matching live observation.
+#[cfg(test)]
 pub(super) fn arg_coerce_type_code_for_grounded_case(param_ty: &VbaType) -> Option<u8> {
     match param_ty {
         VbaType::Integer | VbaType::String | VbaType::Object => Some(eb_get_type_code2(0x13)),
@@ -787,6 +771,7 @@ pub(super) fn arg_coerce_type_code_for_grounded_case(param_ty: &VbaType) -> Opti
 /// produces it) — this function does the `RT_TYPE_OFFSET` lookup itself
 /// (including the source's `0xe`→`7` special case), the caller does not
 /// pre-map it.
+#[cfg(test)]
 pub(super) fn eb_coerce_expression_type2_is_match(target_type: i32, node_type_tag: i32) -> Option<bool> {
     if !(0..28).contains(&node_type_tag) {
         return None;
@@ -814,6 +799,7 @@ pub(super) fn eb_coerce_expression_type2_is_match(target_type: i32, node_type_ta
 /// `word[1]=1` (so `byte5=0`) — the wrap condition is false, so
 /// `EbNormalizeTypeReference` is the confirmed next call (not
 /// `EbWrapExpressionNode`, which remains completely unported/untraced).
+#[cfg(test)]
 pub(super) fn eb_process_type2_wraps(opcode: u16, word1: u32) -> bool {
     let byte5 = ((word1 >> 8) & 0xff) as u8;
     (opcode == 0x60 && byte5 & 0x20 != 0) || (opcode == 0x69 && byte5 & 0x80 != 0) || opcode == 0x5e
@@ -832,6 +818,7 @@ pub(super) fn eb_process_type2_wraps(opcode: u16, word1: u32) -> bool {
 /// return the SAME node pointer unchanged otherwise. `Some(true)` for that
 /// confirmed-plain-no-op range; `None` (gate the caller) for `iVar7==2` or
 /// `iVar7>9`, where real (unported) work happens.
+#[cfg(test)]
 pub(super) fn eb_normalize_type_reference_is_plain_noop(type_tag_high: i32) -> Option<bool> {
     if type_tag_high == 2 || type_tag_high > 9 {
         None

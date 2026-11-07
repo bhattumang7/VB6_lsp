@@ -371,7 +371,7 @@ fn assign_class_method_result(site: &AssignSite, out: &mut Vec<u8>) -> Result<bo
         return Err(LowerError::UnsupportedNode);
     }
     let (pending_releases, pending_object_releases, _) =
-        lower_class_method_call(ctx, base, func, args, true, false, expr_arena, out)?;
+        lower_class_method_call(ctx, base, func, args, ClassCallMode::VALUE, expr_arena, out)?;
     // A String result's temp is read back via the `0x3e`
     // steal-load (see `lower_class_method_call`) — it must be
     // consumed with the move-store (ctx 9), the same rule
@@ -803,7 +803,7 @@ fn lower_set_class_get_to_specific_class_target(
     // `oracle_bank/c13_set_call_to_specific_class_target`.
     if let Some((base, func, args)) = class_object_method_call(ctx, value_id, expr_arena) {
         let (pending_releases, pending_object_releases, result_temp) =
-            lower_class_method_call(ctx, base, func, args, true, true, expr_arena, out)?;
+            lower_class_method_call(ctx, base, func, args, ClassCallMode::VALUE_RAW_LOAD, expr_arena, out)?;
         let temp_off = result_temp.expect("is_value implies a result temp");
         out.push(0x3d);
         out.extend_from_slice(&ctx.intern_member_type_const(target_class).to_le_bytes());
@@ -875,7 +875,7 @@ fn lower_set_from_class_get(
     // class-member slot instead.
     if let Some((base, func, args)) = class_object_method_call(ctx, value_id, expr_arena) {
         let (pending_releases, pending_object_releases, _) =
-            lower_class_method_call(ctx, base, func, args, true, false, expr_arena, out)?;
+            lower_class_method_call(ctx, base, func, args, ClassCallMode::VALUE, expr_arena, out)?;
         out.push(0x19);
         out.extend_from_slice(&(dest_off as u16).to_le_bytes());
         return emit_pending_temp_releases(&pending_releases, &pending_object_releases, out);

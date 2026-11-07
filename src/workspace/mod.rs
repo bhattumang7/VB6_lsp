@@ -92,7 +92,7 @@ impl WorkspaceManager {
             let path = entry.path();
             if path
                 .extension()
-                .map_or(false, |ext| ext.eq_ignore_ascii_case("vbp"))
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("vbp"))
             {
                 vbp_files.push(path.to_path_buf());
             }

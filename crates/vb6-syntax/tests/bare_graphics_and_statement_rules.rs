@@ -93,7 +93,7 @@ fn a_bracketed_graphics_word_that_starts_a_statement_is_the_statement() {
 fn bare_circle_pset_and_scale_name_nothing_but_the_statement() {
     for stmt in ["Circle = 1", "Circle.x = 1", "PSet = 1", "PSet!x = 1", "Scale = 1", "Scale.x", "Circle(1) = 2"] {
         let src = in_sub(stmt);
-        let word = stmt.split(|c| c == ' ' || c == '.' || c == '!' || c == '(').next().unwrap();
+        let word = stmt.split([' ', '.', '!', '(']).next().unwrap();
         assert_eq!(
             parse_kind(&src, ModuleKind::Class).found,
             vec![(SYNTAX_ERROR, offset_of(&src, word, 0), word.len() as u32)],

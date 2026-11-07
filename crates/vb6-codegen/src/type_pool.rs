@@ -53,7 +53,7 @@ impl TypePool {
     /// Port of `EbExtractTypeValue2`: intern the type value and return its index
     /// truncated to 16 bits (the value emitted as a coercion/conversion operand).
     pub fn extract_type_value2(&mut self, type_value: u32) -> u16 {
-        self.intern(type_value) & 0xffff
+        self.intern(type_value)
     }
 }
 

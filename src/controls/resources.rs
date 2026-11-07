@@ -15,18 +15,15 @@ use super::frx::{self, FrxError, FrxValue, PropKind};
 
 /// How to treat a proprietary (vendor) control bag.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Default)]
 pub enum OcxBagPolicy {
     /// Surface the raw bytes opaquely (works everywhere, needs no control).
+    #[default]
     Opaque,
     /// Decode via the live control (COM). Requires the control + its license.
     ComDecode,
 }
 
-impl Default for OcxBagPolicy {
-    fn default() -> Self {
-        OcxBagPolicy::Opaque
-    }
-}
 
 /// Everything we know about the control that produced a bag, used by a
 /// [`ComDecoder`] to instantiate the right coclass.

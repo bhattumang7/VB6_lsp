@@ -207,7 +207,7 @@ pub fn lower_module_with_classes(
     module: &BoundModule,
     expr_arena: &ExprArena,
     module_desc: u16,
-    known_classes: &HashMap<String, ExternalClass>,
+    _known_classes: &HashMap<String, ExternalClass>,
 ) -> Result<Vec<Vec<u8>>, LowerError> {
     let mut pool: Vec<ModuleConstEntry> = Vec::new();
     let mut static_base: u16 = 0;
@@ -228,7 +228,7 @@ pub fn lower_module_with_classes(
             continue;
         }
         let (bytes, next_pool, next_static) = lower_proc_pooled(
-            module, idx, expr_arena, module_desc, pool, static_base, known_classes,
+            module, idx, expr_arena, module_desc, pool, static_base,
         )?;
         pool = next_pool;
         static_base = next_static;
@@ -254,11 +254,11 @@ pub fn lower_proc_with_classes(
     proc_idx: usize,
     expr_arena: &ExprArena,
     module_desc: u16,
-    known_classes: &HashMap<String, ExternalClass>,
+    _known_classes: &HashMap<String, ExternalClass>,
 ) -> Result<Vec<u8>, LowerError> {
     // A standalone single-procedure lowering starts with an empty string pool.
     let (bytes, _pool, _static) = lower_proc_pooled(
-        module, proc_idx, expr_arena, module_desc, Vec::new(), 0, known_classes,
+        module, proc_idx, expr_arena, module_desc, Vec::new(), 0,
     )?;
     Ok(bytes)
 }
@@ -275,7 +275,6 @@ fn lower_proc_pooled(
     module_desc: u16,
     pool_in: Vec<ModuleConstEntry>,
     static_base: u16,
-    known_classes: &HashMap<String, ExternalClass>,
 ) -> Result<(Vec<u8>, Vec<ModuleConstEntry>, u16), LowerError> {
     let proc = module.procs.get(proc_idx).ok_or(LowerError::ProcIndexOutOfRange)?;
 
@@ -369,7 +368,6 @@ fn lower_proc_pooled(
         local_slots,
         local_udts: udts,
         local_classes: classes,
-        known_classes,
         param_slots,
         global_slots,
         user_local_count,
@@ -611,10 +609,6 @@ struct LowerCtx<'m> {
     /// A class-instance local's field list, parallel to `local_slots` (`None`
     /// for every non-class local).
     local_classes: Vec<Option<ExternalClass>>,
-    /// The known-external-classes table this proc was lowered with (see
-    /// [`lower_module_with_classes`]) — not indexed by local, kept for
-    /// completeness/future multi-class lookups.
-    known_classes: &'m HashMap<String, ExternalClass>,
     param_slots: Vec<ParamVar>,
     global_slots: Vec<GlobalVar>,
     /// Number of user-declared locals (hidden For-loop slots come after).
@@ -747,8 +741,8 @@ pub(super) enum ModuleConstEntry {
     /// involved ONE class) was disproved by a fresh two-class capture: `Sub
     /// Main` creating a `Class1` instance and a `Class2` instance, each
     /// calling its own `DoIt(x As Long)`, shows the FIRST call's operand at
-    /// index 1 and the SECOND call's operand at index 3 (not both at index
-    /// 1) — genuinely different indices for genuinely different classes.
+    /// index 1 and the SECOND call's operand at index 3 (not both at
+    /// index 1) — genuinely different indices for genuinely different classes.
     /// Every prior "shared index" finding (the Double/Sub-call pair, the
     /// Long-Get/String-Get pair, `c2_let_string`'s index-2 landing,
     /// `e2e_class_multi_field_and_property`'s six same-typed accesses

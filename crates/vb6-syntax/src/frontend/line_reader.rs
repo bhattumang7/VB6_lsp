@@ -298,13 +298,13 @@ fn final_substitute_as_nul(src: &[u8]) -> Cow<'_, [u8]> {
 fn split_physical_line(bytes: &[u8], line: PhysicalLine, pieces: &mut Vec<Piece>) {
     let mut start = line.start;
     let mut column = 0usize;
-    for i in line.start..line.end {
-        let mut width = if bytes[i] == b'\t' { 8 - column % 8 } else { 1 };
+    for (i, &byte) in bytes.iter().enumerate().take(line.end).skip(line.start) {
+        let mut width = if byte == b'\t' { 8 - column % 8 } else { 1 };
         if column + width > PIECE_COLUMNS {
             pieces.push(Piece { start, end: i, inner: true, marked: false });
             start = i;
             column = 0;
-            width = if bytes[i] == b'\t' { 8 } else { 1 };
+            width = if byte == b'\t' { 8 } else { 1 };
         }
         column += width;
     }

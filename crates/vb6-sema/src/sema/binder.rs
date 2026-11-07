@@ -484,7 +484,7 @@ impl<'a> Binder<'a> {
         match child.map(|c| self.arena.get(c)) {
             Some(ExprNode::NameRef { sym, .. }) => {
                 let last = self.name_of(*sym);
-                (!last.is_empty()).then(|| TypeName { qualifier: Some(first), name: last })
+                (!last.is_empty()).then_some(TypeName { qualifier: Some(first), name: last })
             }
             _ => Some(TypeName { qualifier: None, name: first }),
         }
@@ -724,8 +724,8 @@ impl<'a> Binder<'a> {
                     self.collect_top_decl(sid);
                 }
             }
-            ExprNode::DimItem { name, is_const, is_new, bounds, type_node, init, .. } => {
-                self.collect_top_var(id, *name, *is_const, *is_new, bounds.is_some(), *type_node, *init);
+            ExprNode::DimItem { name, .. } => {
+                self.collect_top_var(id, *name);
             }
             ExprNode::TypeDecl { name, members } => {
                 let sym_id = *name;
@@ -787,10 +787,7 @@ impl<'a> Binder<'a> {
         ret_type_id: Option<NodeId>,
         body_id: NodeId,
     ) {
-        let name_span = self.spans.get(id);
-        let is_public = self.vis(id, true);
-        let proc =
-            self.collect_proc(sym_id, kind, params_id, ret_type_id, body_id, name_span, is_public);
+        let proc = self.collect_proc(id, sym_id, kind, params_id, ret_type_id, body_id);
         let ret_name = self.type_name_of(ret_type_id);
         self.decl_types.proc_rets.push(ret_name);
         let names = self.param_type_names(params_id);
@@ -814,16 +811,12 @@ impl<'a> Binder<'a> {
     /// variable (a bogus load through an unused frame slot, wrong bytes) —
     /// oracle-confirmed broken (`oracle_bank/c21_module_const`) before this
     /// fix.
-    fn collect_top_var(
-        &mut self,
-        id: NodeId,
-        sym_id: u32,
-        is_const: bool,
-        is_new: bool,
-        has_bounds: bool,
-        type_node: Option<NodeId>,
-        init: Option<NodeId>,
-    ) {
+    fn collect_top_var(&mut self, id: NodeId, sym_id: u32) {
+        let ExprNode::DimItem { is_const, is_new, bounds, type_node, init, .. } = self.arena.get(id) else {
+            return;
+        };
+        let (is_const, is_new, has_bounds, type_node, init) =
+            (*is_const, *is_new, bounds.is_some(), *type_node, *init);
         let const_value = if is_const { init.and_then(|i| self.eval_const_i64(i)) } else { None };
         let const_lit = if is_const && const_value.is_none() {
             init.and_then(|i| self.eval_const_lit(i))
@@ -855,14 +848,15 @@ impl<'a> Binder<'a> {
 
     fn collect_proc(
         &self,
+        id: NodeId,
         sym_id: u32,
         kind: ProcKind,
         params_id: Option<NodeId>,
         ret_type_id: Option<NodeId>,
         body_id: NodeId,
-        name_span: Span,
-        is_public: bool,
     ) -> BoundProc {
+        let name_span = self.spans.get(id);
+        let is_public = self.vis(id, true);
         let ret_type = self.extract_type(ret_type_id);
         let params = match params_id {
             Some(p) => self.collect_params(p),
@@ -1092,7 +1086,7 @@ impl<'a> Binder<'a> {
             }
             // A value-typed `Let` is harmless; a `Let` of anything else may
             // copy an object in.
-            let lets_unknown = scan.lets.get(&local).map_or(false, |vs| {
+            let lets_unknown = scan.lets.get(&local).is_some_and(|vs| {
                 vs.iter().any(|v| !matches!(self.sem_of_node(*v), SemType::Value(_)))
             });
             if lets_unknown {
@@ -1274,7 +1268,7 @@ impl<'a> Binder<'a> {
             let Some(&l) = candidates.get(&self.name_of(*sym)) else { continue };
             let by_val = own
                 .and_then(|p| p.params.get(i))
-                .map_or(false, |prm| prm.flags.by_val);
+                .is_some_and(|prm| prm.flags.by_val);
             if !(builtin || by_val) {
                 scan.blocked.insert(l);
             }

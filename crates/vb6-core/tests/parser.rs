@@ -40,7 +40,7 @@ fn parse_stmts(src: &[u8]) -> (Vec<NodeId>, ExprArena, bool) {
 }
 
 /// First node matching `pred`.
-fn find_node<'a>(arena: &'a ExprArena, pred: impl Fn(&ExprNode) -> bool) -> Option<&'a ExprNode> {
+fn find_node(arena: &ExprArena, pred: impl Fn(&ExprNode) -> bool) -> Option<&ExprNode> {
     (0..arena.len()).map(|i| arena.get(NodeId(i as u32))).find(|n| pred(n))
 }
 
@@ -509,7 +509,7 @@ fn paren_expr_no_error() {
         ExprNode::Paren { inner } => {
             expect_binop(&a, *inner, BinOpKind::Add);
         }
-        other => panic!("expected Paren"),
+        _other => panic!("expected Paren"),
     }
 }
 
@@ -527,7 +527,7 @@ fn chained_member_access() {
         ExprNode::MemberAccess { base, .. } => {
             assert!(matches!(a.get(*base), ExprNode::MemberAccess { .. }));
         }
-        other => panic!("expected MemberAccess"),
+        _other => panic!("expected MemberAccess"),
     }
     assert_eq!(count_nodes(&a, |n| matches!(n, ExprNode::MemberAccess { .. })), 2);
 }
@@ -539,9 +539,9 @@ fn function_call_no_error() {
     match a.get(v) {
         ExprNode::Call { args, .. } => match a.get(*args) {
             ExprNode::ArgList { args } => assert_eq!(args.len(), 3),
-            other => panic!("Call args must be ArgList"),
+            _other => panic!("Call args must be ArgList"),
         },
-        other => panic!("expected Call"),
+        _other => panic!("expected Call"),
     }
 }
 
@@ -710,7 +710,7 @@ fn assignment_produces_node() {
         ExprNode::Assign { value, .. } => {
             assert!(matches!(arena.get(*value), ExprNode::Literal { lit: AstLit::Int(1) }));
         }
-        other => panic!("expected Assign"),
+        _other => panic!("expected Assign"),
     }
 }
 
@@ -1153,7 +1153,7 @@ fn addressof_builds_typed_node() {
 fn ident_300_chars_is_reported_and_kept() {
     // An identifier over 255 bytes is an error, but the declaration is still
     // built with the full name.
-    let name: String = std::iter::repeat('a').take(300).collect();
+    let name: String = std::iter::repeat_n('a', 300).collect();
     let src = format!("Dim {name} As Integer");
     let (_, arena, errors) = parse_stmts(src.as_bytes());
     assert!(errors, "300-char identifier must be reported");
@@ -1169,6 +1169,6 @@ fn d_exponent_is_double_literal() {
             let s = format!("{lit:?}");
             assert!(s.contains("1000"), "expected 1d3 to be the literal 1000.0, got {s}");
         }
-        other => panic!("expected a single Literal for 1d3"),
+        _other => panic!("expected a single Literal for 1d3"),
     }
 }

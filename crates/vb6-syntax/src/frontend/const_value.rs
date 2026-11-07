@@ -140,7 +140,7 @@ impl Operand {
 const DATE_MIN: f64 = -657_434.0;
 const DATE_MAX: f64 = 2_958_465.999_999_99;
 /// The Currency range in ten-thousandths is that of an `i64`.
-const CURRENCY_LIMIT: f64 = 922_337_203_685_477.580_7;
+const CURRENCY_LIMIT: f64 = 922_337_203_685_477.6;
 
 impl ConstValue {
     /// The operand as a number. Empty and Boolean are Integer; numeric text is Double.
@@ -603,7 +603,7 @@ fn logic_result(l: &ConstValue, r: &ConstValue, v: i32) -> ConstValue {
     if matches!((l, r), (ConstValue::Byte(_), ConstValue::Byte(_))) {
         return ConstValue::Byte(v as u8);
     }
-    let small = |x: &ConstValue| x.num().map_or(false, |n| n.rank <= Rank::Integer);
+    let small = |x: &ConstValue| x.num().is_ok_and(|n| n.rank <= Rank::Integer);
     if small(l) && small(r) { ConstValue::Integer(v as i16) } else { ConstValue::Long(v) }
 }
 

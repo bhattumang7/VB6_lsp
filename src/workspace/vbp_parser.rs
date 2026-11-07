@@ -352,7 +352,7 @@ impl VbpFile {
 
         let mut current_section: Option<String> = None;
 
-        for (_line_num, line) in content.lines().enumerate() {
+        for line in content.lines() {
             let line = line.trim();
 
             // Skip empty lines
@@ -364,7 +364,7 @@ impl VbpFile {
             if let Some(section_name) = parse_section_header(line) {
                 vbp.custom_sections
                     .entry(section_name.clone())
-                    .or_insert_with(HashMap::new);
+                    .or_default();
                 current_section = Some(section_name);
                 continue;
             }

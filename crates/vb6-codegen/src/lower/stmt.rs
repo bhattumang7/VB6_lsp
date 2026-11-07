@@ -187,7 +187,7 @@ pub(super) fn lower_stmt(
         // Oracle-confirmed: `oracle_bank/c10_bare_0arg_method_call`.
         ExprNode::MemberAccess { base, .. } if member_access_base_is_class(ctx.module, *base) => {
             let base = *base;
-            lower_class_method_call(ctx, base, node_id, node_id, false, false, expr_arena, out).map(|_| ())
+            lower_class_method_call(ctx, base, node_id, node_id, ClassCallMode::STATEMENT, expr_arena, out).map(|_| ())
         }
         // `Stop` — break to the debugger: escaped opcode 0xfc 0xc2.
         ExprNode::Stop => {
@@ -475,7 +475,7 @@ fn lower_call_stmt(
         _ => (callee, args),
     };
     if let Some(base) = class_member_access_base(ctx, expr_arena, callee_ref) {
-        return lower_class_method_call(ctx, base, callee_ref, args_ref, false, false, expr_arena, out)
+        return lower_class_method_call(ctx, base, callee_ref, args_ref, ClassCallMode::STATEMENT, expr_arena, out)
             .map(|_| ());
     }
     lower_call(ctx, callee_ref, args_ref, false, expr_arena, out)
@@ -496,7 +496,7 @@ fn lower_call_expr_stmt(
     }
     match class_member_access_base(ctx, expr_arena, func) {
         Some(base) => {
-            lower_class_method_call(ctx, base, func, args, false, false, expr_arena, out).map(|_| ())
+            lower_class_method_call(ctx, base, func, args, ClassCallMode::STATEMENT, expr_arena, out).map(|_| ())
         }
         None => Err(LowerError::UnsupportedNode),
     }

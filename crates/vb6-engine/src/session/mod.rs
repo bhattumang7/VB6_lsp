@@ -326,7 +326,7 @@ impl Session {
         match self.path_to_module.get(path).copied() {
             Some(i) => {
                 let same_interface =
-                    self.model.as_ref().map_or(false, |m| m.module_interface_is(i, &md));
+                    self.model.as_ref().is_some_and(|m| m.module_interface_is(i, &md));
                 self.modules[i] = md;
                 if same_interface {
                     self.relink_module(i);
@@ -731,7 +731,7 @@ impl Session {
     /// format requires. When they are not, the project cannot be built and no argument
     /// is defined.
     pub fn conditional_compilation_is_valid(&self) -> bool {
-        self.config.conditional_compilation.as_deref().map_or(true, |text| parse_cond_comp_args(text).is_ok())
+        self.config.conditional_compilation.as_deref().is_none_or(|text| parse_cond_comp_args(text).is_ok())
     }
 
     /// All diagnostics for a module: parse errors plus semantic diagnostics.
@@ -1117,7 +1117,7 @@ impl Session {
                 return Some(DeclId::Control { module, idx: ci });
             }
         }
-        if m.vb_name_span.map_or(false, |s| span_contains(s, offset)) {
+        if m.vb_name_span.is_some_and(|s| span_contains(s, offset)) {
             return Some(DeclId::Module { module });
         }
         // A control type written on a designer's `Begin` line.
@@ -1451,7 +1451,7 @@ fn analyze_module_inline(path: String, raw: Vec<u8>, conditional: &[(String, CcV
         line_index,
         kind,
         standard: kind == ModuleKind::Standard,
-        predeclared: raw_bound.predeclared_id || kind == ModuleKind::Form && base_type.as_ref().map_or(false, |t| t.name == "form" || t.name == "mdiform"),
+        predeclared: raw_bound.predeclared_id || kind == ModuleKind::Form && base_type.as_ref().is_some_and(|t| t.name == "form" || t.name == "mdiform"),
         raw_bound,
         use_index: Default::default(),
         bound,

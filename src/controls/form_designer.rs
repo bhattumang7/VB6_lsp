@@ -212,7 +212,7 @@ fn handle_designer_line(
 /// Case-insensitive prefix test that is safe on non-ASCII byte boundaries.
 fn starts_with_ci(line: &str, prefix: &str) -> bool {
     line.get(..prefix.len())
-        .map_or(false, |s| s.eq_ignore_ascii_case(prefix))
+        .is_some_and(|s| s.eq_ignore_ascii_case(prefix))
 }
 
 /// Close the current control on `End`. Pushes it onto its parent, or sets it as

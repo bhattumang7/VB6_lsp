@@ -2,10 +2,18 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+/// A snake-case identifier for a fixture directory name: every character that
+/// is not alphanumeric becomes `_`, and a run of underscores collapses to one.
 fn sanitize(name: &str) -> String {
-    name.chars()
-        .map(|c| if c.is_ascii_alphanumeric() || c == '_' { c } else { '_' })
-        .collect()
+    let mut out = String::with_capacity(name.len());
+    for c in name.chars() {
+        let c = if c.is_ascii_alphanumeric() { c } else { '_' };
+        if c == '_' && out.ends_with('_') {
+            continue;
+        }
+        out.push(c);
+    }
+    out
 }
 
 fn main() {
@@ -18,6 +26,7 @@ fn main() {
 
     let mut generated = String::new();
     let mut count = 0usize;
+    let mut seen_names = std::collections::HashSet::new();
 
     if fixtures_dir.is_dir() {
         let mut entries: Vec<PathBuf> = fs::read_dir(&fixtures_dir)
@@ -46,6 +55,10 @@ fn main() {
             }
             let case_name = dir.file_name().unwrap().to_string_lossy().to_string();
             let fn_name = sanitize(&case_name);
+            assert!(
+                seen_names.insert(fn_name.clone()),
+                "fixture directories {case_name:?} and another map to the same test name {fn_name:?}"
+            );
             count += 1;
             generated.push_str(&format!(
                 "#[test]\nfn fixture_{fn_name}() {{\n    run_fixture({case_name:?});\n}}\n\n"

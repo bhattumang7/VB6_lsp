@@ -144,7 +144,7 @@ fn enum_members_keep_an_optional_value() {
 fn assignment_and_loop_targets_name_something() {
     for body in ["For Each 5 In c\nNext", "Erase 5", "Erase \"a\"", "Set 5 = x"] {
         let (src, found) = in_sub(body);
-        let at = body.find(|c: char| c == '5' || c == '"').unwrap() as u32 + 8;
+        let at = body.find(['5', '"']).unwrap() as u32 + 8;
         assert_eq!(found[0].0, 0x9c6f, "{body}: {src:?}");
         assert_eq!(found[0].1, at, "{body}");
     }
