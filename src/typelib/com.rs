@@ -332,6 +332,9 @@ impl Reader {
         let mut params: Vec<LibraryParam> = Vec::new();
         let mut result: Option<String> = None;
         let mut returned_through_param = false;
+        let last_visible = elems.iter().rposition(|elem| {
+            (elem.Anonymous.paramdesc.wParamFlags.0 as u16) & (PARAMFLAG_FLCID | PARAMFLAG_FRETVAL) == 0
+        });
         for (i, elem) in elems.iter().enumerate() {
             let flags = elem.Anonymous.paramdesc.wParamFlags.0 as u16;
             if flags & PARAMFLAG_FLCID != 0 {
@@ -350,7 +353,7 @@ impl Reader {
             } else {
                 None
             };
-            let param_array = f.cParamsOpt == -1 && i + 1 == count;
+            let param_array = f.cParamsOpt == -1 && Some(i) == last_visible;
             params.push(LibraryParam {
                 name: names.get(i + 1).cloned().unwrap_or_default(),
                 type_name,

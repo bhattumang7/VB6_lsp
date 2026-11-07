@@ -164,9 +164,9 @@ The language server analyses one project (`.vbp`) or group (`.vbg`) at a time: e
 - **Opening a `.vbp`/`.vbg` file** shows a project page (files, references, problems) with **Load Project** and **Edit as Text** buttons.
 - The **VB6 sidebar** shows the open project like the VB6 Project Explorer (forms, modules, classes, references; missing files are marked), and the **status bar** shows the open project and its problem count.
 
-The choice is stored in the `vb6.project` setting (relative to the folder). When it is empty and the folder has exactly one group, or exactly one project, that one opens automatically (`vb6.project.autoLoad`).
+The choice is stored in the `vb6.project` setting (relative to the folder). When it is empty and the folder has exactly one group, or exactly one project, that one opens automatically (`vb6.autoLoadProject`).
 
-**References.** `Reference=` and `Object=` lines of a project make that library's types visible to the analysis: a type library or control library is found by its GUID and version in the registry (the 32-bit registration first, as VB6 uses), else at the file the project names, and read through the automation type-information interfaces. Reading type libraries needs Windows, where these libraries are installed; on other platforms such a reference is reported as unreadable and its types are not available. A reference to another project (`*\A...`) makes that project's public classes visible, and **Go to Definition** on one of their names opens the declaration in the referenced project's own source.
+**References.** `Reference=` and `Object=` lines of a project make that library's types visible to the analysis. On Windows a type library or control library is found by its GUID and version in the registry (the 32-bit registration first, as VB6 uses), else at the file the project names, and read through the system's type-information interfaces. On other platforms there is no registry: the library is read directly from the file the project names (a `.tlb`/`.olb`, or the type library inside a `.dll`/`.ocx`), with `\` separators and the case of the path matched to the files on disk, so the files must be present at the paths the project gives. A library that takes types from another library needs that library's file beside it; when it is not found, a warning on the `.vbp` line says which file, and the types taken from it are not available. A reference to another project (`*\A...`) makes that project's public classes visible, and **Go to Definition** on one of their names opens the declaration in the referenced project's own source.
 
 Problems in the project files themselves — a listed file that is missing, a referenced project that is not found or that references itself, a reference whose types are not available — appear in the Problems panel on the line of the `.vbp`/`.vbg` that declares them.
 
@@ -309,7 +309,6 @@ vb6-lsp/
 
 ## Limitations
 
-- Type libraries and ActiveX / OCX control libraries are read on Windows only (they are read through the operating system's type-information interfaces)
 - Visual form layout not integrated into LSP features
 
 ## License

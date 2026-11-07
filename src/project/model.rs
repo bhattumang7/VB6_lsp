@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use serde::Serialize;
-use crate::typelib::{load_library, TypeLibraryRequest};
+use crate::typelib::{load_library_noted, TypeLibraryRequest};
 use vb6_engine::session::{Library, ProjectKind, Session, SessionConfig};
 
 use super::paths::{engine_key_for_path, lookup_key, normalize};
@@ -350,7 +350,7 @@ impl Selection {
                 file: drafts[di].path.clone(),
                 line,
                 severity: Severity::Error,
-                message: "Circular project reference".to_string(),
+                message: "Cyclic reference of projects not allowed".to_string(),
             });
             if let Some(info) = drafts[di].references.iter_mut().find(|i| i.line == line) {
                 info.status = ReferenceStatus::ProjectCircular;
@@ -368,10 +368,10 @@ impl Selection {
                 problems.push(Problem {
                     file: drafts[di].path.clone(),
                     line,
-                    severity: Severity::Warning,
+                    severity: Severity::Error,
                     message: format!(
-                        "Project '{}' is a Standard EXE and exposes no types to other projects",
-                        drafts[dep].vbp.name
+                        "Project '{}' can not be referenced because it's project type is EXE.",
+                        drafts[dep].path.display()
                     ),
                 });
                 if let Some(info) = drafts[di].references.iter_mut().find(|i| i.line == line) {
@@ -485,21 +485,31 @@ impl Selection {
                 line: e.line,
                 message: e.message,
             })?;
-            let mut listed: Vec<(PathBuf, usize)> =
-                group.projects.iter().map(|p| (normalize(&p.absolute_path), p.line)).collect();
-            if let Some(startup) = &group.startup {
-                let key = lookup_key(startup);
-                match listed.iter().position(|(p, _)| lookup_key(p) == key) {
-                    Some(at) => {
-                        let entry = listed.remove(at);
-                        listed.insert(0, entry);
-                    }
-                    None => problems.push(Problem {
+            // The startup project is a member of the group in its own right: it is listed on the
+            // `StartupProject=` line and not again. A project listed twice is refused by VB6.
+            let mut entries: Vec<(usize, PathBuf)> =
+                group.projects.iter().map(|p| (p.line, normalize(&p.absolute_path))).collect();
+            if let (Some(startup), Some(line)) = (&group.startup, group.startup_line) {
+                entries.push((line, normalize(startup)));
+            }
+            entries.sort_by_key(|(line, _)| *line);
+            let startup_key = group.startup.as_ref().map(|s| lookup_key(&normalize(s)));
+            let mut listed: Vec<(PathBuf, usize)> = Vec::new();
+            for (line, project) in entries {
+                let key = lookup_key(&project);
+                if listed.iter().any(|(p, _)| lookup_key(p) == key) {
+                    problems.push(Problem {
                         file: path.to_path_buf(),
-                        line: group.startup_line.unwrap_or(0),
+                        line,
                         severity: Severity::Error,
-                        message: "The startup project is not listed in the group".to_string(),
-                    }),
+                        message: format!("The file '{}' is already open.", project.display()),
+                    });
+                    continue;
+                }
+                if startup_key.as_deref() == Some(key.as_str()) {
+                    listed.insert(0, (project, line));
+                } else {
+                    listed.push((project, line));
                 }
             }
             let name = path.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
@@ -536,6 +546,17 @@ impl Selection {
                     let status = match index.get(&lookup_key(&target)) {
                         Some(&to) => {
                             edges.push((ri, to));
+                            if !drafts[to].listed {
+                                problems.push(Problem {
+                                    file: vbp_path.clone(),
+                                    line: *line,
+                                    severity: Severity::Warning,
+                                    message: format!(
+                                        "Can't find project or library: {} is not part of the opened project group",
+                                        target.display()
+                                    ),
+                                });
+                            }
                             ReferenceStatus::ProjectLoaded
                         }
                         None => {
@@ -546,7 +567,7 @@ impl Selection {
                                 message: if target.exists() {
                                     format!("Cannot read referenced project {}", target.display())
                                 } else {
-                                    format!("Referenced project not found: {}", target.display())
+                                    format!("Can't find project or library: {}", target.display())
                                 },
                             });
                             ReferenceStatus::ProjectMissing
@@ -625,10 +646,21 @@ impl Selection {
         line: usize,
         problems: &mut Vec<Problem>,
     ) -> ReferenceStatus {
-        match load_library(request) {
-            Ok(library) => {
-                if !libraries.iter().any(|l| l.name.eq_ignore_ascii_case(&library.name)) {
-                    libraries.push(library);
+        match load_library_noted(request) {
+            Ok(loaded) => {
+                for file in &loaded.missing_imports {
+                    problems.push(Problem {
+                        file: vbp_path.to_path_buf(),
+                        line,
+                        severity: Severity::Warning,
+                        message: format!(
+                            "Type library {} takes types from {file}, which was not found. Those types are not available to the analysis",
+                            request.display_name()
+                        ),
+                    });
+                }
+                if !libraries.iter().any(|l| l.name.eq_ignore_ascii_case(&loaded.library.name)) {
+                    libraries.push(loaded.library);
                 }
                 ReferenceStatus::Loaded
             }

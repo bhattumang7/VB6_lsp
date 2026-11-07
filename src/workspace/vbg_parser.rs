@@ -1,8 +1,9 @@
 //! VBG project-group file parser.
 //!
-//! A `.vbg` file is a line-oriented text file: a `VBGROUP 5.0` header, an optional
-//! `StartupProject=` line and one `Project=` line per project in the group. Paths
-//! are relative to the group file unless absolute.
+//! A `.vbg` file is a line-oriented text file: a `VBGROUP 5.0` header, one `Project=` line per
+//! project and an optional `StartupProject=` line. The startup project is a member of the group
+//! in its own right and is not listed again on a `Project=` line. Paths are relative to the
+//! group file unless absolute.
 
 use std::path::{Path, PathBuf};
 
@@ -24,7 +25,8 @@ pub struct GroupProject {
 pub struct VbgFile {
     /// The version in the header (`5.0`).
     pub version: String,
-    /// The projects of the group, in file order.
+    /// The projects of the `Project=` lines, in file order (the startup project is not among
+    /// them).
     pub projects: Vec<GroupProject>,
     /// The `StartupProject=` entry, resolved; `None` when the file has none.
     pub startup: Option<PathBuf>,

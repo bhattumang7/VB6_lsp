@@ -69,6 +69,7 @@ uuid = "1"  # UUID parsing and validation for type library references
 encoding_rs = "0.8"  # Character encoding detection and conversion (Windows-1252 support)
 byteorder = "1"  # Binary reading/writing for resource files
 base64 = "0.22"  # Base64 encoding for JSON resource data
+msft-typelib = "0.2"  # Reading the MSFT type-library format (.tlb, and the TYPELIB resource of DLL/OCX files)
 
 [target.'cfg(windows)'.dependencies]
 # COM type-library access (ITypeLib/ITypeInfo) for the libraries a project references

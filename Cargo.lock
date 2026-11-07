@@ -853,6 +853,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "msft-typelib"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e512f180d2ef529bfc4bb9354857f3cd2f9e8da320d74d8fc177c8cd0ce48aa1"
+
+[[package]]
 name = "native-tls"
 version = "0.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1940,6 +1946,7 @@ dependencies = [
  "byteorder",
  "dashmap 6.2.1",
  "encoding_rs",
+ "msft-typelib",
  "once_cell",
  "pretty_assertions",
  "reqwest",

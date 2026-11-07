@@ -129,7 +129,7 @@ fn a_group_lists_its_projects_startup_first_and_wires_project_references() {
     let dir = TempDir::new("group");
     let vbg = dir.write(
         "All.vbg",
-        "VBGROUP 5.0\nStartupProject=App\\App.vbp\nProject=Lib\\Lib.vbp\nProject=App\\App.vbp\n",
+        "VBGROUP 5.0\nProject=Lib\\Lib.vbp\nStartupProject=App\\App.vbp\n",
     );
     dir.write(
         "Lib/Lib.vbp",
@@ -202,6 +202,18 @@ fn a_project_reached_only_by_reference_is_analysed_but_not_listed() {
     let listed: Vec<(&str, bool)> = s.units.iter().map(|u| (u.name.as_str(), u.listed)).collect();
     assert_eq!(listed, vec![("App", true), ("Lib", false)]);
     assert_eq!(s.units[0].dependencies, vec![1]);
+    assert_eq!(
+        s.problems,
+        vec![Problem {
+            file: vbp.clone(),
+            line: 2,
+            severity: Severity::Warning,
+            message: format!(
+                "Can't find project or library: {} is not part of the opened project group",
+                vb6_lsp::project::paths::normalize(&dir.path("App/../Lib/Lib.vbp")).display()
+            ),
+        }]
+    );
 }
 
 #[test]
@@ -222,7 +234,7 @@ fn a_reference_to_a_project_that_is_not_there_is_reported_on_its_line() {
             file: vbp.clone(),
             line: 3,
             severity: Severity::Error,
-            message: format!("Referenced project not found: {}", missing.display()),
+            message: format!("Can't find project or library: {}", missing.display()),
         }]
     );
     assert_eq!(s.units[0].references[0].status, ReferenceStatus::ProjectMissing);
@@ -244,7 +256,7 @@ fn projects_that_reference_each_other_are_reported_where_the_cycle_closes() {
             file: b,
             line: 4,
             severity: Severity::Error,
-            message: "Circular project reference".to_string(),
+            message: "Cyclic reference of projects not allowed".to_string(),
         }]
     );
     let a = &s.units[0];
@@ -259,7 +271,7 @@ fn a_standard_exe_exposes_nothing_to_a_project_that_references_it() {
     let dir = TempDir::new("exeref");
     let vbg = dir.write("All.vbg", "VBGROUP 5.0\nProject=Main.vbp\nProject=Tool.vbp\n");
     let main = dir.write("Main.vbp", "Type=Exe\nName=\"Main\"\nReference=*\\ATool.vbp\n");
-    dir.write("Tool.vbp", "Type=Exe\nName=\"Tool\"\n");
+    let tool = dir.write("Tool.vbp", "Type=Exe\nName=\"Tool\"\n");
 
     let s = Selection::load(&vbg, &no_overlay).unwrap();
 
@@ -268,8 +280,8 @@ fn a_standard_exe_exposes_nothing_to_a_project_that_references_it() {
         vec![Problem {
             file: main,
             line: 3,
-            severity: Severity::Warning,
-            message: "Project 'Tool' is a Standard EXE and exposes no types to other projects".to_string(),
+            severity: Severity::Error,
+            message: format!("Project '{}' can not be referenced because it's project type is EXE.", tool.display()),
         }]
     );
     assert_eq!(s.units[0].references[0].status, ReferenceStatus::ProjectNotExposed);
@@ -331,10 +343,25 @@ Name=\"App\"\n",
 }
 
 #[test]
-fn a_group_without_the_startup_project_listed_says_so() {
-    let dir = TempDir::new("badstartup");
-    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nStartupProject=Other.vbp\nProject=A.vbp\n");
-    dir.write("A.vbp", "Type=Exe\nName=\"A\"\n");
+fn the_startup_project_is_a_member_of_the_group_listed_on_its_own_line() {
+    let dir = TempDir::new("startupmember");
+    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nProject=Lib.vbp\nStartupProject=App.vbp\n");
+    dir.write("Lib.vbp", "Type=OleDll\nName=\"Lib\"\n");
+    dir.write("App.vbp", "Type=Exe\nName=\"App\"\n");
+
+    let s = Selection::load(&vbg, &no_overlay).unwrap();
+
+    assert_eq!(s.problems, Vec::<Problem>::new());
+    let names: Vec<(&str, bool)> = s.units.iter().map(|u| (u.name.as_str(), u.listed)).collect();
+    assert_eq!(names, vec![("App", true), ("Lib", true)]);
+}
+
+#[test]
+fn a_project_listed_twice_in_a_group_is_refused_on_the_second_line_and_loaded_once() {
+    let dir = TempDir::new("twice");
+    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nStartupProject=App.vbp\nProject=Lib.vbp\nProject=App.vbp\n");
+    let app = dir.write("App.vbp", "Type=Exe\nName=\"App\"\n");
+    dir.write("Lib.vbp", "Type=OleDll\nName=\"Lib\"\n");
 
     let s = Selection::load(&vbg, &no_overlay).unwrap();
 
@@ -342,11 +369,53 @@ fn a_group_without_the_startup_project_listed_says_so() {
         s.problems,
         vec![Problem {
             file: vbg.clone(),
-            line: 2,
+            line: 4,
             severity: Severity::Error,
-            message: "The startup project is not listed in the group".to_string(),
+            message: format!("The file '{}' is already open.", app.display()),
         }]
     );
+    let names: Vec<&str> = s.units.iter().map(|u| u.name.as_str()).collect();
+    assert_eq!(names, vec!["App", "Lib"]);
+}
+
+#[test]
+fn a_startup_project_that_is_not_there_is_reported_on_its_line() {
+    let dir = TempDir::new("badstartup");
+    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nStartupProject=Other.vbp\nProject=A.vbp\n");
+    dir.write("A.vbp", "Type=Exe\nName=\"A\"\n");
+
+    let s = Selection::load(&vbg, &no_overlay).unwrap();
+
+    assert_eq!(s.problems.len(), 1);
+    assert_eq!(s.problems[0].file, vbg);
+    assert_eq!(s.problems[0].line, 2);
+    assert_eq!(s.problems[0].severity, Severity::Error);
+    assert!(
+        s.problems[0].message.starts_with(&format!("Cannot read project {}: ", dir.path("Other.vbp").display())),
+        "{}",
+        s.problems[0].message
+    );
+    let names: Vec<&str> = s.units.iter().map(|u| u.name.as_str()).collect();
+    assert_eq!(names, vec!["A"]);
+}
+
+#[test]
+fn a_project_that_references_itself_is_cyclic() {
+    let dir = TempDir::new("selfref");
+    let vbp = dir.write("Own.vbp", "Type=OleDll\nName=\"Own\"\nReference=*\\AOwn.vbp\n");
+
+    let s = Selection::load(&vbp, &no_overlay).unwrap();
+
+    assert_eq!(
+        s.problems,
+        vec![Problem {
+            file: vbp,
+            line: 3,
+            severity: Severity::Error,
+            message: "Cyclic reference of projects not allowed".to_string(),
+        }]
+    );
+    assert_eq!(s.units[0].references[0].status, ReferenceStatus::ProjectCircular);
 }
 
 #[test]

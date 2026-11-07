@@ -342,12 +342,19 @@ mod windows_only {
 
 #[cfg(not(windows))]
 #[test]
-fn reading_a_type_library_is_reported_as_unsupported_on_this_platform() {
+fn without_a_registry_a_library_the_project_names_no_file_for_is_not_found() {
     let err = load_library(&request(OLE_AUTOMATION, 2, 0, Vec::new())).unwrap_err();
 
-    assert_eq!(err, TypeLibraryError::Unsupported { what: "{00020430-0000-0000-C000-000000000046} 2.0".into() });
+    assert_eq!(
+        err,
+        TypeLibraryError::NotFound {
+            what: "{00020430-0000-0000-C000-000000000046} 2.0".into(),
+            tried: Vec::new(),
+            reason: String::new(),
+        }
+    );
     assert_eq!(
         err.to_string(),
-        "Type library {00020430-0000-0000-C000-000000000046} 2.0 cannot be read on this platform"
+        "Type library {00020430-0000-0000-C000-000000000046} 2.0 is not registered and the project names no file for it"
     );
 }

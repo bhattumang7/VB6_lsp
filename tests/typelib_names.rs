@@ -6,7 +6,7 @@ use vb6_lsp::typelib::names::*;
 fn plain_types_have_their_vb6_spelling() {
     let spelled: Vec<(u16, Option<&str>)> = [
         VT_I2, VT_I4, VT_R4, VT_R8, VT_CY, VT_DATE, VT_BSTR, VT_BOOL, VT_VARIANT, VT_DISPATCH, VT_UNKNOWN,
-        VT_DECIMAL, VT_UI1, VT_INT, VT_ERROR, VT_LPSTR, VT_LPWSTR, VT_I8, VT_UI8,
+        VT_DECIMAL, VT_UI1, VT_INT, VT_UI4, VT_UINT, VT_ERROR, VT_LPSTR, VT_LPWSTR, VT_I8, VT_UI8,
     ]
     .into_iter()
     .map(|vt| (vt, plain_type_name(vt)))
@@ -28,6 +28,8 @@ fn plain_types_have_their_vb6_spelling() {
             (VT_DECIMAL, Some("Decimal")),
             (VT_UI1, Some("Byte")),
             (VT_INT, Some("Long")),
+            (VT_UI4, Some("Long")),
+            (VT_UINT, Some("Long")),
             (VT_ERROR, Some("Long")),
             (VT_LPSTR, Some("String")),
             (VT_LPWSTR, Some("String")),
@@ -40,7 +42,7 @@ fn plain_types_have_their_vb6_spelling() {
 #[test]
 fn types_without_a_vb6_spelling_have_none() {
     let none: Vec<u16> = [
-        VT_EMPTY, VT_NULL, VT_I1, VT_UI2, VT_UI4, VT_UINT, VT_VOID, VT_HRESULT, VT_PTR, VT_SAFEARRAY, VT_CARRAY,
+        VT_EMPTY, VT_NULL, VT_I1, VT_UI2, VT_VOID, VT_HRESULT, VT_PTR, VT_SAFEARRAY, VT_CARRAY,
         VT_USERDEFINED,
     ]
     .into_iter()
@@ -48,7 +50,7 @@ fn types_without_a_vb6_spelling_have_none() {
     .collect();
     assert_eq!(
         none,
-        vec![VT_EMPTY, VT_NULL, VT_I1, VT_UI2, VT_UI4, VT_UINT, VT_VOID, VT_HRESULT, VT_PTR, VT_SAFEARRAY, VT_CARRAY, VT_USERDEFINED]
+        vec![VT_EMPTY, VT_NULL, VT_I1, VT_UI2, VT_VOID, VT_HRESULT, VT_PTR, VT_SAFEARRAY, VT_CARRAY, VT_USERDEFINED]
     );
 }
 

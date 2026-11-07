@@ -482,7 +482,7 @@ End Sub
 ";
     dir.write("App/modMain.bas", main);
     dir.write("App/App.vbp", "Type=Exe\nReference=*\\A..\\Lib\\Lib.vbp\nModule=modMain; modMain.bas\nName=\"App\"\n");
-    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nStartupProject=App\\App.vbp\nProject=App\\App.vbp\nProject=Lib\\Lib.vbp\n");
+    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nProject=Lib\\Lib.vbp\nStartupProject=App\\App.vbp\n");
     let (mut h, _) = Harness::start().await;
     let resp = h.execute("vb6.openProject", Some(&vbg.to_string_lossy())).await;
     assert_eq!(resp["result"]["isGroup"], json!(true));
@@ -609,7 +609,7 @@ async fn open_group_with_library(dir: &TempDir, app_source: &str) -> (Harness, S
     dir.write("Lib/Lib.vbp", "Type=OleDll\nName=\"Lib\"\nClass=clsThing; clsThing.cls\nClass=clsKinds; clsKinds.cls\n");
     dir.write("App/modMain.bas", app_source);
     dir.write("App/App.vbp", "Type=Exe\nReference=*\\A..\\Lib\\Lib.vbp\nModule=modMain; modMain.bas\nName=\"App\"\n");
-    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nStartupProject=App\\App.vbp\nProject=App\\App.vbp\nProject=Lib\\Lib.vbp\n");
+    let vbg = dir.write("All.vbg", "VBGROUP 5.0\nProject=Lib\\Lib.vbp\nStartupProject=App\\App.vbp\n");
     let (mut h, _) = Harness::start().await;
     h.execute("vb6.openProject", Some(&vbg.to_string_lossy())).await;
     let uri = dir.uri("App/modMain.bas");

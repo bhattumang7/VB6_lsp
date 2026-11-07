@@ -2,11 +2,17 @@
 //! lines of a `.vbp`) so the analysis sees their types.
 //!
 //! A library is located by its GUID and version in the registry, else by the file the project
-//! names, and described as an engine [`Library`]. Reading uses the automation type-information
-//! interfaces, so it is available on Windows, where these libraries are installed.
+//! names, and described as an engine [`Library`]. On Windows the registry locates the library and
+//! the automation type-information interfaces read it; elsewhere the file the project names is
+//! read directly (a `.tlb`, or the `TYPELIB` resource of a DLL or OCX).
 
+pub mod files;
+pub mod imports;
 pub mod locate;
+pub mod msft;
 pub mod names;
+pub mod pe;
+mod stdole_table;
 
 #[cfg(windows)]
 mod com;
@@ -17,6 +23,8 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex, OnceLock};
 use vb6_engine::session::Library;
+
+pub use stdole_table::stdole_type;
 
 /// A library a project references.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -61,8 +69,6 @@ pub enum TypeLibraryError {
     NotFound { what: String, tried: Vec<String>, reason: String },
     /// The library was found but its description could not be read.
     Unreadable { what: String, reason: String },
-    /// This platform cannot read type libraries.
-    Unsupported { what: String },
 }
 
 impl std::fmt::Display for TypeLibraryError {
@@ -80,9 +86,6 @@ impl std::fmt::Display for TypeLibraryError {
             TypeLibraryError::Unreadable { what, reason } => {
                 write!(f, "Type library {what} could not be read: {reason}")
             }
-            TypeLibraryError::Unsupported { what } => {
-                write!(f, "Type library {what} cannot be read on this platform")
-            }
         }
     }
 }
@@ -91,30 +94,45 @@ impl std::error::Error for TypeLibraryError {}
 
 type Key = (String, u16, u16, u32, Vec<PathBuf>);
 
-fn cache() -> &'static Mutex<HashMap<Key, Arc<Library>>> {
-    static CACHE: OnceLock<Mutex<HashMap<Key, Arc<Library>>>> = OnceLock::new();
+/// A library read, with what the reader could not describe.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LoadedLibrary {
+    pub library: Arc<Library>,
+    /// Files of libraries this one takes types from that were not found: the types taken from
+    /// them are left undescribed.
+    pub missing_imports: Vec<String>,
+}
+
+fn cache() -> &'static Mutex<HashMap<Key, LoadedLibrary>> {
+    static CACHE: OnceLock<Mutex<HashMap<Key, LoadedLibrary>>> = OnceLock::new();
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
 /// Read the library `request` names. A library read once is kept for the life of the process,
 /// and two requests for the same library never read it twice at the same time.
-pub fn load_library(request: &TypeLibraryRequest) -> Result<Arc<Library>, TypeLibraryError> {
+pub fn load_library_noted(request: &TypeLibraryRequest) -> Result<LoadedLibrary, TypeLibraryError> {
     let key = request.cache_key();
     let mut kept = cache().lock().unwrap_or_else(|poisoned| poisoned.into_inner());
     if let Some(found) = kept.get(&key) {
         return Ok(found.clone());
     }
-    let library = Arc::new(read(request)?);
-    kept.insert(key, library.clone());
-    Ok(library)
+    let (library, missing_imports) = read(request)?;
+    let loaded = LoadedLibrary { library: Arc::new(library), missing_imports };
+    kept.insert(key, loaded.clone());
+    Ok(loaded)
+}
+
+/// As [`load_library_noted`], without the notes.
+pub fn load_library(request: &TypeLibraryRequest) -> Result<Arc<Library>, TypeLibraryError> {
+    load_library_noted(request).map(|loaded| loaded.library)
 }
 
 #[cfg(windows)]
-fn read(request: &TypeLibraryRequest) -> Result<Library, TypeLibraryError> {
-    com::read(request)
+fn read(request: &TypeLibraryRequest) -> Result<(Library, Vec<String>), TypeLibraryError> {
+    com::read(request).map(|library| (library, Vec::new()))
 }
 
 #[cfg(not(windows))]
-fn read(request: &TypeLibraryRequest) -> Result<Library, TypeLibraryError> {
-    Err(TypeLibraryError::Unsupported { what: request.display_name() })
+fn read(request: &TypeLibraryRequest) -> Result<(Library, Vec<String>), TypeLibraryError> {
+    files::read_from_files(request)
 }

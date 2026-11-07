@@ -50,12 +50,11 @@ pub const PARAMFLAG_FHASDEFAULT: u16 = 0x0020;
 
 /// The VB6 spelling of a plain automation type, or `None` for a type that has
 /// no VB6 spelling on its own (a pointer, an array, a user-defined type), no
-/// value (`void`, `HRESULT`), or that VB6 cannot use (`char`, unsigned 16 and
-/// 32-bit integers).
+/// value (`void`, `HRESULT`), or that VB6 cannot use (`char`, unsigned 16-bit integers).
 pub fn plain_type_name(vt: u16) -> Option<&'static str> {
     Some(match vt {
         VT_I2 => "Integer",
-        VT_I4 | VT_INT | VT_ERROR => "Long",
+        VT_I4 | VT_INT | VT_UI4 | VT_UINT | VT_ERROR => "Long",
         VT_R4 => "Single",
         VT_R8 => "Double",
         VT_CY => "Currency",
