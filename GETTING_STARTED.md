@@ -161,53 +161,6 @@ Install LSP package, then add to `LSP.sublime-settings`:
 }
 ```
 
-## Enabling Claude AI Features
-
-### 1. Get an API Key
-
-1. Visit https://console.anthropic.com
-2. Sign up or log in
-3. Navigate to API Keys
-4. Create a new key
-5. Copy the key (starts with `sk-ant-...`)
-
-### 2. Set Environment Variable
-
-**Windows (PowerShell):**
-```powershell
-# Temporary (current session only)
-$env:ANTHROPIC_API_KEY = "sk-ant-api03-your-key-here"
-
-# Permanent (system-wide)
-[System.Environment]::SetEnvironmentVariable('ANTHROPIC_API_KEY', 'sk-ant-api03-your-key-here', 'User')
-```
-
-**Windows (Command Prompt):**
-```cmd
-setx ANTHROPIC_API_KEY "sk-ant-api03-your-key-here"
-```
-
-**Linux/Mac:**
-```bash
-# Add to ~/.bashrc or ~/.zshrc
-export ANTHROPIC_API_KEY="sk-ant-api03-your-key-here"
-
-# Reload
-source ~/.bashrc
-```
-
-### 3. Verify
-
-When you start the LSP, you should see:
-```
-[INFO] Claude AI integration enabled
-```
-
-Instead of:
-```
-[INFO] Claude AI integration disabled (no ANTHROPIC_API_KEY)
-```
-
 ## Testing the Setup
 
 ### 1. Open Example File
@@ -297,20 +250,6 @@ Get-Process | Where-Object {$_.ProcessName -like "*vb6-lsp*"}
 Stop-Process -Name vb6-lsp
 ```
 
-### Issue: Claude features not working
-
-**Solutions**:
-1. Verify API key is set:
-   ```powershell
-   $env:ANTHROPIC_API_KEY
-   ```
-
-2. Check logs for Claude errors:
-   ```
-   RUST_LOG=vb6_lsp=debug cargo run
-   ```
-
-3. Verify API key is valid at https://console.anthropic.com
 
 ### Issue: No syntax highlighting
 
@@ -341,9 +280,8 @@ Stop-Process -Name vb6-lsp
 
 1. **Try the Examples**: Open files in `examples/` directory
 2. **Read Documentation**: Check [README.md](README.md) for full feature list
-3. **Explore AI Features**: Use Claude for code explanations
-4. **Report Issues**: https://github.com/yourusername/vb6-lsp/issues
-5. **Contribute**: See [CONTRIBUTING.md](CONTRIBUTING.md)
+3. **Report Issues**: https://github.com/yourusername/vb6-lsp/issues
+4. **Contribute**: See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Debugging
 
@@ -404,17 +342,6 @@ strip = true        # Remove debug symbols
 Rebuild:
 ```powershell
 cargo build --release
-```
-
-### Reduce Memory Usage
-
-Limit Claude API response size in `src/claude/mod.rs`:
-```rust
-let request = ClaudeRequest {
-    model: self.model.clone(),
-    max_tokens: 512,  // Reduce from 1024
-    // ...
-};
 ```
 
 ## Getting Help

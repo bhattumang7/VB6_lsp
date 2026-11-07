@@ -6,7 +6,7 @@ A Language Server Protocol implementation for Visual Basic 6, written entirely i
 
 This started as a "scratch your own itch" project — maintaining a large VB6 codebase with no modern tooling is painful, and every existing solution was either incomplete or long abandoned. The parser and analysis engine are built to closely match real VB6 syntax and semantics, not just approximate them.
 
-The most widely-used public VB6 grammar is the ANTLR4 grammar at [antlr/grammars-v4](https://github.com/antlr/grammars-v4/tree/master/vb6). It is a useful reference but has a number of correctness issues — missing `#Const` support, broken statement-separator colon, wrong operator associativity for `^`, accepting VBA7/VB.NET-only syntax like `+=` and inline `For` type declarations, and more. The Rust parser in this project fixes all of them. A full writeup is in [`antlr parser/BUGS.md`](antlr%20parser/BUGS.md).
+The most widely-used public VB6 grammar is the ANTLR4 grammar at [antlr/grammars-v4](https://github.com/antlr/grammars-v4/tree/master/vb6). It is a useful reference but has a number of correctness issues — missing `#Const` support, broken statement-separator colon, wrong operator associativity for `^`, accepting VBA7/VB.NET-only syntax like `+=` and inline `For` type declarations, and more. The Rust parser in this project fixes all of them. A full writeup is in [`docs/antlr-grammar-bugs.md`](docs/antlr-grammar-bugs.md).
 
 ## Features
 

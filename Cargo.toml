@@ -26,7 +26,7 @@ resolver = "2"
 name = "vb6-lsp"
 version = "0.1.0"
 edition = "2021"
-description = "A Language Server Protocol implementation for Visual Basic 6 with Claude AI integration"
+description = "A Language Server Protocol implementation for Visual Basic 6"
 license = "MIT"
 authors = ["Umang Bhatt <bhatt.umang7@gmail.com>"]
 repository = "https://github.com/bhattumang7/VB6_lsp"
@@ -42,8 +42,6 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
-# HTTP Client for Claude API
-reqwest = { version = "0.12", features = ["json"] }
 
 # Concurrent data structures
 dashmap = "6"
@@ -62,7 +60,6 @@ vb6-engine = { path = "crates/vb6-engine" }
 rmcp = { version = "1", features = ["server", "transport-io"] }
 
 # Utilities
-once_cell = "1"
 ropey = "1"  # Efficient text rope for document handling
 walkdir = "2"  # Directory traversal for VBP discovery
 uuid = "1"  # UUID parsing and validation for type library references
