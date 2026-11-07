@@ -117,21 +117,23 @@ if ($SkipCoverage) {
     # the scanner container, so the Clippy sensor must read a pre-generated file.
     # Exit code is intentionally ignored: clippy warnings return non-zero but we
     # always want the report regardless of lint outcome. Runs over the default
-    # workspace members (vb6-core is excluded from default-members and does not
-    # build on the host).
+    # workspace members (vb6-core is not a default member).
     Write-Host "`n==> Running Clippy (generating report for SonarQube)..."
     cargo clippy --all-targets --message-format=json 2>$null | Set-Content -Path $clippyReport -Encoding utf8
     Write-Host "  Clippy report written to target\clippy-report.json"
 
     # Run the default-member test suite under llvm-cov and emit LCOV.
     # The packages are listed explicitly (rather than --workspace, which would
-    # pull in the broken vb6-core crate). Listing every default member is
+    # pull in the 32-bit runtime tests of vb6-core). vb6-core is listed because
+    # its frontend/sema/session tests exercise code that lives in the analysis
+    # crates; without it that code is reported as uncovered. Listing every
+    # package that owns tests for measured code is
     # REQUIRED: a bare `cargo llvm-cov` only reports coverage for the root
     # vb6-lsp package, leaving the analysis crates with no LCOV data — SonarQube
     # would then count them as 0% covered and understate project coverage.
     Write-Host "`n==> Running tests with coverage (cargo llvm-cov)..."
     cargo llvm-cov --lcov --output-path $coverageLcov `
-        -p vb6-lsp -p vb6-ast-derive -p vb6-syntax -p vb6-sema -p vb6-engine -p vb6-codegen
+        -p vb6-lsp -p vb6-ast-derive -p vb6-syntax -p vb6-sema -p vb6-engine -p vb6-codegen -p vb6-core
     if ($LASTEXITCODE -ne 0) {
         Write-Error "cargo llvm-cov failed — fix test failures before scanning."
         exit 1
