@@ -32,7 +32,8 @@ The most widely-used public VB6 grammar is the ANTLR4 grammar at [antlr/grammars
 | `.ctl` | UserControls (companion `.frx` parsed automatically) |
 | `.pag` | PropertyPages (companion `.frx` parsed automatically) |
 | `.dob` | UserDocuments (companion `.frx` parsed automatically) |
-| `.vbp` | Project files — drives workspace-wide symbol resolution |
+| `.vbp` | Project files — list the files analysed together (see [Opening a project](#4--open-a-vb6-project-or-group)) |
+| `.vbg` | Project groups — several projects analysed together, each seeing the public classes of the projects it references |
 | `.res` | Compiled Win32 resource files (read/write via CLI) |
 
 ## Architecture
@@ -154,9 +155,22 @@ Open VS Code settings (`Ctrl+,`) and set:
 
 Or set it in `.vscode/settings.json` inside your VB6 project folder so the path is checked in alongside the code.
 
-### 4 — Open a VB6 project
+### 4 — Open a VB6 project or group
 
-Open the folder that contains your `.vbp` file. The extension activates automatically for `.bas`, `.cls`, `.frm`, `.ctl`, and `.vb` files.
+The language server analyses one project (`.vbp`) or group (`.vbg`) at a time: every file the project lists is analysed together, whether or not the editor has it open, so names resolve across files, closing a file goes back to what is on disk, and an edit that affects other files refreshes their diagnostics.
+
+- **Command Palette → `VB6: Open Project or Group…`** lists the projects found in the folder (or browse for one). Opening a project from an empty window opens its folder first.
+- **Right-click a `.vbp`/`.vbg` in the Explorer → `Open as VB6 Project`.**
+- **Opening a `.vbp`/`.vbg` file** shows a project page (files, references, problems) with **Load Project** and **Edit as Text** buttons.
+- The **VB6 sidebar** shows the open project like the VB6 Project Explorer (forms, modules, classes, references; missing files are marked), and the **status bar** shows the open project and its problem count.
+
+The choice is stored in the `vb6.project` setting (relative to the folder). When it is empty and the folder has exactly one group, or exactly one project, that one opens automatically (`vb6.project.autoLoad`).
+
+**References.** `Reference=` and `Object=` lines of a project make that library's types visible to the analysis: a type library or control library is found by its GUID and version in the registry (the 32-bit registration first, as VB6 uses), else at the file the project names, and read through the automation type-information interfaces. Reading type libraries needs Windows, where these libraries are installed; on other platforms such a reference is reported as unreadable and its types are not available. A reference to another project (`*\A...`) makes that project's public classes visible, and **Go to Definition** on one of their names opens the declaration in the referenced project's own source.
+
+Problems in the project files themselves — a listed file that is missing, a referenced project that is not found or that references itself, a reference whose types are not available — appear in the Problems panel on the line of the `.vbp`/`.vbg` that declares them.
+
+Other editors can use the same features through the server: pass `initializationOptions: { "project": "<path to .vbp or .vbg>" }`, or run the `workspace/executeCommand` commands `vb6.openProject`, `vb6.closeProject`, `vb6.projectInfo` and `vb6.projectPreview`; the server reports its state with the `vb6/projectStatus` notification.
 
 **Tip:** setting `"vb6.lsp.trace.server": "verbose"` in settings shows the full LSP traffic in the Output panel (select "VB6 Language Server" from the drop-down).
 
@@ -295,8 +309,7 @@ vb6-lsp/
 
 ## Limitations
 
-- Type library (`.tlb` / `.olb`) references are parsed but not yet resolved for IntelliSense
-- ActiveX / OCX control type definitions not yet loaded from the registered type library
+- Type libraries and ActiveX / OCX control libraries are read on Windows only (they are read through the operating system's type-information interfaces)
 - Visual form layout not integrated into LSP features
 
 ## License

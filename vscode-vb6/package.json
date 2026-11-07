@@ -11,7 +11,9 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "onLanguage:vb6"
+    "onLanguage:vb6",
+    "workspaceContains:**/*.vbp",
+    "workspaceContains:**/*.vbg"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -19,18 +21,97 @@
       {
         "id": "vb6",
         "aliases": ["Visual Basic 6", "VB6", "vb6"],
-        "extensions": [".bas", ".cls", ".frm", ".vb", ".ctl"],
+        "extensions": [".bas", ".cls", ".frm", ".vb", ".ctl", ".pag", ".dob", ".dsr"],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "vb6-project",
+        "aliases": ["VB6 Project", "vb6-project"],
+        "extensions": [".vbp", ".vbg"],
         "configuration": "./language-configuration.json"
       }
     ],
+    "customEditors": [
+      {
+        "viewType": "vb6.projectEditor",
+        "displayName": "VB6 Project",
+        "selector": [
+          { "filenamePattern": "*.vbp" },
+          { "filenamePattern": "*.vbg" }
+        ],
+        "priority": "default"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "vb6",
+          "title": "VB6",
+          "icon": "$(project)"
+        }
+      ]
+    },
+    "views": {
+      "vb6": [
+        {
+          "id": "vb6.projectExplorer",
+          "name": "Project"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "vb6.projectExplorer",
+        "contents": "No VB6 project is open.\n[Open Project or Group…](command:vb6.project.select)"
+      }
+    ],
+    "commands": [
+      { "command": "vb6.project.select", "title": "Open Project or Group…", "category": "VB6" },
+      { "command": "vb6.project.open", "title": "Browse for Project or Group…", "category": "VB6" },
+      { "command": "vb6.project.openFile", "title": "Open as VB6 Project", "category": "VB6" },
+      { "command": "vb6.project.close", "title": "Close Project", "category": "VB6", "enablement": "vb6.projectLoaded" },
+      { "command": "vb6.project.reload", "title": "Reload Project", "category": "VB6", "enablement": "vb6.projectLoaded", "icon": "$(refresh)" },
+      { "command": "vb6.project.showProblems", "title": "Show Project Problems", "category": "VB6" },
+      { "command": "vb6.project.openAsText", "title": "Open as Text", "category": "VB6" }
+    ],
+    "menus": {
+      "explorer/context": [
+        { "command": "vb6.project.openFile", "when": "resourceExtname == .vbp || resourceExtname == .vbg", "group": "navigation@1" },
+        { "command": "vb6.project.openAsText", "when": "resourceExtname == .vbp || resourceExtname == .vbg", "group": "navigation@2" }
+      ],
+      "editor/title": [
+        { "command": "vb6.project.openFile", "when": "resourceExtname == .vbp || resourceExtname == .vbg", "group": "navigation" }
+      ],
+      "view/title": [
+        { "command": "vb6.project.reload", "when": "view == vb6.projectExplorer", "group": "navigation@1" },
+        { "command": "vb6.project.select", "when": "view == vb6.projectExplorer", "group": "navigation@2" },
+        { "command": "vb6.project.close", "when": "view == vb6.projectExplorer && vb6.projectLoaded", "group": "overflow@1" }
+      ],
+      "commandPalette": [
+        { "command": "vb6.project.openFile", "when": "false" },
+        { "command": "vb6.project.openAsText", "when": "false" }
+      ]
+    },
     "configuration": {
       "type": "object",
       "title": "VB6 LSP",
       "properties": {
+        "vb6.project": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "The VB6 project (.vbp) or group (.vbg) this folder works on, relative to the folder. Set by the Open Project command."
+        },
+        "vb6.project.autoLoad": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "description": "Open the folder's only project group, or its only project, when no project is chosen in vb6.project."
+        },
         "vb6.lsp.serverPath": {
           "type": "string",
           "default": "",
-          "description": "Path to the VB6 LSP server executable"
+          "description": "Path to the VB6 LSP server executable. When empty, the server bundled with the extension is used, else vb6-lsp on the PATH."
         },
         "vb6.lsp.trace.server": {
           "type": "string",
@@ -43,7 +124,8 @@
   },
   "scripts": {
     "build": "esbuild src/extension.js --bundle --outfile=dist/extension.js --external:vscode --platform=node --target=node18 --minify",
-    "package": "npm run build && vsce package --no-dependencies"
+    "package": "npm run build && vsce package --no-dependencies",
+    "test": "node --test \"test/*.test.js\""
   },
   "devDependencies": {
     "@vscode/vsce": "^3.0.0",
