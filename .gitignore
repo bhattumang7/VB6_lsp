@@ -57,3 +57,5 @@ tree-sitter-vb6/*.lib
 tree-sitter-vb6/*.exp
 tree-sitter-vb6/test/*.exe
 .githooks/commit-msg
+
+.claude/settings.local.json
