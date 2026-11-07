@@ -40,7 +40,7 @@ fn eb_process_type2_wraps_matches_traced_integer_case() {
     // -> EbNormalizeTypeReference is called next (confirmed: that IS
     // what the live trace's control flow implies — EbProcessType2 was
     // the branch taken, and EbWrapExpressionNode was never observed).
-    assert_eq!(eb_process_type2_wraps(0x60, 1), false);
+    assert!(!eb_process_type2_wraps(0x60, 1));
 }
 
 #[test]
