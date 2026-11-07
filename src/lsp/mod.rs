@@ -129,6 +129,7 @@ fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<H
 
 /// One-line summary of a decoded FRX value for hover display.
 fn format_frx_value(value: &vb6_formats::frx::FrxValue) -> String {
+    use vb6_formats::controls::export::format_guid;
     use vb6_formats::frx::FrxValue;
     match value {
         FrxValue::Picture { format, data, .. } => {
@@ -144,6 +145,9 @@ fn format_frx_value(value: &vb6_formats::frx::FrxValue) -> String {
             }
             if f.underline {
                 style.push_str(" underline");
+            }
+            if f.strikethrough {
+                style.push_str(" strikethrough");
             }
             format!("🔤 Font `{}` · {}pt{}", f.name, f.size_pt, style)
         }
@@ -174,17 +178,6 @@ fn format_frx_value(value: &vb6_formats::frx::FrxValue) -> String {
         }
         FrxValue::Empty => "∅ empty resource".to_string(),
     }
-}
-
-/// Format a 16-byte COM GUID (Data1/2/3 little-endian, Data4 big-endian).
-fn format_guid(g: [u8; 16]) -> String {
-    let d1 = u32::from_le_bytes([g[0], g[1], g[2], g[3]]);
-    let d2 = u16::from_le_bytes([g[4], g[5]]);
-    let d3 = u16::from_le_bytes([g[6], g[7]]);
-    format!(
-        "{{{:08X}-{:04X}-{:04X}-{:02X}{:02X}-{:02X}{:02X}{:02X}{:02X}{:02X}{:02X}}}",
-        d1, d2, d3, g[8], g[9], g[10], g[11], g[12], g[13], g[14], g[15]
-    )
 }
 
 #[tower_lsp::async_trait]

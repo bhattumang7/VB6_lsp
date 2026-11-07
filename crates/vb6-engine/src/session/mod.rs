@@ -41,7 +41,7 @@ pub use call_hierarchy::{CallHierarchyDecl, IncomingCall, OutgoingCall};
 pub use completion::{CompletionEntry, CompletionKind};
 pub use external::ExternalTarget;
 pub use folding::FoldRange;
-pub use forms::{describe_frx_reference, form_controls, form_controls_from_bytes, FormControl};
+pub use forms::{form_controls, form_controls_from_bytes, FormControl};
 pub use library::{
     Instancing, Library, LibraryMember, LibraryMemberKind, LibraryParam, LibraryType,
     LibraryTypeKind, ProjectKind, SessionConfig,
