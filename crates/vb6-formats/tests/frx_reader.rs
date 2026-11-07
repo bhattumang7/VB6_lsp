@@ -1,4 +1,4 @@
-use vb6_core::frx::{FrxError, FrxReader};
+use vb6_formats::frx::{FrxError, FrxReader};
 
 // --- seek -------------------------------------------------------------------
 

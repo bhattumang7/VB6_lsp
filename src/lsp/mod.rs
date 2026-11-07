@@ -89,7 +89,7 @@ fn line_text(content: &str, line: u32) -> Option<&str> {
 /// When the cursor is on a line like `Icon = "Form1.frx":0000`, this reads the
 /// referenced companion blob and summarises what it decodes to.
 fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<Hover> {
-    use vb6_formats::controls::frx;
+    use vb6_formats::frx;
 
     let path = uri.to_file_path().ok()?;
     let ext = path.extension()?.to_string_lossy().to_ascii_lowercase();
@@ -128,8 +128,8 @@ fn frx_reference_hover(uri: &Url, content: &str, position: Position) -> Option<H
 }
 
 /// One-line summary of a decoded FRX value for hover display.
-fn format_frx_value(value: &vb6_formats::controls::frx::FrxValue) -> String {
-    use vb6_formats::controls::frx::FrxValue;
+fn format_frx_value(value: &vb6_formats::frx::FrxValue) -> String {
+    use vb6_formats::frx::FrxValue;
     match value {
         FrxValue::Picture { format, data, .. } => {
             format!("🖼 {:?} image · {} bytes", format, data.len())

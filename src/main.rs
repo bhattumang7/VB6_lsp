@@ -169,7 +169,7 @@ fn cmd_read_bags(args: &[String]) -> anyhow::Result<()> {
     let resolved = resolve_form_cli(path, false)?;
     let mut bags: Vec<serde_json::Value> = Vec::new();
     for r in &resolved {
-        if let Ok(controls::frx::FrxValue::OcxBag { clsid, data }) = &r.value {
+        if let Ok(vb6_formats::frx::FrxValue::OcxBag { clsid, data }) = &r.value {
             let decoded = controls::propbag::decode(data);
             bags.push(serde_json::json!({
                 "control": r.reference.control_path,
@@ -222,7 +222,7 @@ fn extract_resource(
 ) -> anyhow::Result<Option<serde_json::Value>> {
     let base = format!("{}.{}", r.reference.control_path, r.reference.property);
     let entry = match &r.value {
-        Ok(controls::frx::FrxValue::Picture { format, data, .. }) => {
+        Ok(vb6_formats::frx::FrxValue::Picture { format, data, .. }) => {
             let fname = format!("{}.{}", base, format.ext());
             std::fs::write(outdir.join(&fname), data)?;
             serde_json::json!({
@@ -230,7 +230,7 @@ fn extract_resource(
                 "format": format!("{:?}", format), "file": fname, "bytes": data.len()
             })
         }
-        Ok(controls::frx::FrxValue::OcxBag { clsid, data }) => {
+        Ok(vb6_formats::frx::FrxValue::OcxBag { clsid, data }) => {
             let fname = format!("{}.bin", base);
             std::fs::write(outdir.join(&fname), data)?;
             if let Some(g) = clsid {
@@ -245,7 +245,7 @@ fn extract_resource(
                 "file": fname, "bytes": data.len()
             })
         }
-        Ok(controls::frx::FrxValue::DecodedBag { clsid, properties }) => {
+        Ok(vb6_formats::frx::FrxValue::DecodedBag { clsid, properties }) => {
             let fname = format!("{}.properties.json", base);
             let doc = serde_json::json!({
                 "clsid": (*clsid).map(controls::export::format_guid),
@@ -261,7 +261,7 @@ fn extract_resource(
                 "file": fname, "properties": properties.len()
             })
         }
-        Ok(controls::frx::FrxValue::Text(s)) => {
+        Ok(vb6_formats::frx::FrxValue::Text(s)) => {
             let fname = format!("{}.txt", base);
             std::fs::write(outdir.join(&fname), s)?;
             serde_json::json!({

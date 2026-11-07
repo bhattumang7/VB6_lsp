@@ -22,9 +22,9 @@
 //!
 //! This parser recovers the control tree, the `Object=` type-library declarations
 //! (CLSID + companion OCX), and every property value — flagging the ones that are
-//! references into the `.frx`/`.ctx` companion (see [`super::frx`]).
+//! references into the `.frx`/`.ctx` companion (see [`crate::frx`]).
 
-use super::frx::{self, FrxRef};
+use crate::frx::{self, FrxRef};
 
 /// A type-library declaration from an `Object =` header line.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -107,7 +107,7 @@ fn collect_refs(ctl: &DesignerControl, path: &mut Vec<String>, out: &mut Vec<Res
                 control_path: path.join("."),
                 control_type: ctl.type_name.clone(),
                 property: p.name.clone(),
-                frx: FrxRef { property: p.name.clone(), ..frx.clone() },
+                frx: frx.clone(),
             });
         }
     }
@@ -239,22 +239,18 @@ fn push_property(
     name: &str,
     value: &str,
 ) {
-    let mut fref = frx::parse_frx_reference(value);
+    let fref = frx::parse_frx_reference(value);
     if prop_group_stack.is_empty() {
         // Top-level control property: keep all (frx or not).
-        if let Some(r) = &mut fref {
-            r.property = name.to_string();
-        }
         ctl.properties.push(DesignerProp {
             name: name.to_string(),
             value: value.to_string(),
             frx: fref,
         });
-    } else if let Some(mut r) = fref {
+    } else if let Some(r) = fref {
         // Inside a BeginProperty group: harvest only references, with a qualified
         // path (e.g. Images.ListImage1.Picture).
         let qualified = format!("{}.{}", prop_group_stack.join("."), name);
-        r.property = qualified.clone();
         ctl.properties.push(DesignerProp {
             name: qualified,
             value: value.to_string(),

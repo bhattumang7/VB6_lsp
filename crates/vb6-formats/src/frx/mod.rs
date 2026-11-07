@@ -9,7 +9,12 @@
 pub mod reader;
 pub mod records;
 pub mod reference;
+pub mod value;
 
 pub use reader::{FrxError, FrxReader};
 pub use records::{FrxRecord, RecordKind};
 pub use reference::{FrxRef, PropKind, kind_for_property, parse_frx_reference};
+pub use value::{
+    decode, decode_ocx_bag, decode_span, detect_image_format, encode, itemdata_value, FontInfo, FrxValue,
+    ImageFormat,
+};

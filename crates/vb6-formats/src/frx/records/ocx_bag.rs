@@ -31,6 +31,12 @@ impl<'a> OcxBagRecord<'a> {
             });
         }
         let body = r.read_bytes(outer)?;
+        Ok(Self::from_body(body))
+    }
+
+    /// A bag whose body bytes are already framed: the class id is taken from the start of
+    /// the body when it looks like one.
+    pub fn from_body(body: &'a [u8]) -> Self {
         let clsid = if body.len() >= 16 && looks_like_guid(&body[..16]) {
             let mut g = [0u8; 16];
             g.copy_from_slice(&body[..16]);
@@ -38,7 +44,7 @@ impl<'a> OcxBagRecord<'a> {
         } else {
             None
         };
-        Ok(OcxBagRecord { clsid, data: body })
+        OcxBagRecord { clsid, data: body }
     }
 
     pub fn write(&self, out: &mut Vec<u8>) {

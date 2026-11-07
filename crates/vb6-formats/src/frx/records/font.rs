@@ -10,7 +10,7 @@ use crate::frx::{FrxError, FrxReader};
 /// ```text
 /// version:  u8             — always 1
 /// charset:  u16 LE         — ANSI_CHARSET=0, SYMBOL_CHARSET=2, …
-/// flags:    u8             — bit 0=italic, bit 1=underline, bit 2=strikethrough
+/// flags:    u8             — bit 1=italic, bit 2=underline, bit 3=strikethrough
 /// weight:   u16 LE         — FW_NORMAL=400, FW_BOLD=700
 /// size:     u32 LE         — point size × 10000 (e.g. 8.25pt → 82500)
 /// name_len: u8             — byte length of font name
@@ -21,7 +21,8 @@ use crate::frx::{FrxError, FrxReader};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct StdFontRecord {
     pub charset: u16,
-    /// bit 0 = italic, bit 1 = underline, bit 2 = strikethrough
+    /// bit 1 = italic, bit 2 = underline, bit 3 = strikethrough (bit 0 is not used
+    /// for bold: that is carried by the weight)
     pub flags: u8,
     /// Font weight: 400 = normal, 700 = bold.
     pub weight: u16,
@@ -34,9 +35,9 @@ pub struct StdFontRecord {
 impl StdFontRecord {
     pub const VERSION: u8 = 1;
 
-    pub fn is_italic(&self) -> bool { self.flags & 0x01 != 0 }
-    pub fn is_underline(&self) -> bool { self.flags & 0x02 != 0 }
-    pub fn is_strikethrough(&self) -> bool { self.flags & 0x04 != 0 }
+    pub fn is_italic(&self) -> bool { self.flags & 0x02 != 0 }
+    pub fn is_underline(&self) -> bool { self.flags & 0x04 != 0 }
+    pub fn is_strikethrough(&self) -> bool { self.flags & 0x08 != 0 }
     pub fn is_bold(&self) -> bool { self.weight >= 700 }
 
     /// Parse a StdFont record from the current stream position.

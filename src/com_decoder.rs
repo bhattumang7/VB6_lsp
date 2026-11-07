@@ -14,7 +14,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
 
-use vb6_formats::controls::frx::FrxValue;
+use vb6_formats::frx::FrxValue;
 use vb6_formats::controls::resources::{BagControl, ComDecoder, ResolveError};
 
 /// Decodes OCX bags by driving the control via 32-bit PowerShell + COM.

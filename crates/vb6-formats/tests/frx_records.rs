@@ -1,10 +1,10 @@
-use vb6_core::frx::{FrxError, FrxReader, FrxRecord, RecordKind};
-use vb6_core::frx::records::{
+use vb6_formats::frx::{FrxError, FrxReader, FrxRecord, RecordKind};
+use vb6_formats::frx::records::{
     Clsid, ControlCreateRecord, ControlPersistRecord, ItemDataRecord, LenPrefixedBytes,
     ListRecord, OcxBagRecord, OleStorageRecord, PictureRecord, PropertyBagRecord,
     PropertyPagesRecord, StdFontRecord, StringShortBytes,
 };
-use vb6_core::frx::records::ole_storage::PersistMechanism;
+use vb6_formats::frx::records::ole_storage::PersistMechanism;
 
 // ============================================================================
 // helpers
@@ -151,7 +151,7 @@ fn font_normal() {
 
 #[test]
 fn font_bold_italic() {
-    let bytes = font_bytes(0, 0b0001, 700, 120000, b"Times New Roman");
+    let bytes = font_bytes(0, 0b0010, 700, 120000, b"Times New Roman");
     let mut r = reader(&bytes);
     let f = StdFontRecord::read(&mut r).unwrap();
     assert!(f.is_bold());
@@ -189,7 +189,7 @@ fn font_via_frxrecord() {
 
 #[test]
 fn font_strikethrough() {
-    let bytes = font_bytes(0, 0b0100, 400, 100000, b"Arial");
+    let bytes = font_bytes(0, 0b1000, 400, 100000, b"Arial");
     let mut r = reader(&bytes);
     let f = StdFontRecord::read(&mut r).unwrap();
     assert!(f.is_strikethrough());
@@ -199,7 +199,7 @@ fn font_strikethrough() {
 
 #[test]
 fn font_all_flags() {
-    let bytes = font_bytes(0, 0b0111, 400, 100000, b"Arial");
+    let bytes = font_bytes(0, 0b1110, 400, 100000, b"Arial");
     let mut r = reader(&bytes);
     let f = StdFontRecord::read(&mut r).unwrap();
     assert!(f.is_italic());
@@ -366,16 +366,15 @@ fn picture_async() {
 
 #[test]
 fn picture_bad_magic() {
-    // Build a buffer where: after outer(4), the first 4 bytes are not "lt\0\0"
-    // (triggering the CLSID-read path), the next 16 bytes are consumed as CLSID,
-    // and the 4 bytes that should be "lt\0\0" are also wrong → BadMagic.
+    // Neither directly after the length nor after a 16-byte class id is there an
+    // `lt\0\0` marker: the framing is not a picture.
     let mut v = Vec::new();
-    v.extend_from_slice(&28u32.to_le_bytes()); // outer (value not checked by reader)
-    v.extend_from_slice(&[0x01u8; 16]);        // 16 "CLSID" bytes (0x01010101 ≠ LT_MAGIC)
-    v.extend_from_slice(b"XX\0\0");            // bad magic where "lt\0\0" should be
-    v.extend_from_slice(&0u32.to_le_bytes());  // 4 dummy bytes for data_len
+    v.extend_from_slice(&28u32.to_le_bytes());
+    v.extend_from_slice(&[0x01u8; 16]);
+    v.extend_from_slice(b"XX\0\0");
+    v.extend_from_slice(&0u32.to_le_bytes());
     let mut r = reader(&v);
-    assert!(matches!(PictureRecord::read(&mut r), Err(FrxError::BadMagic { .. })));
+    assert_eq!(PictureRecord::read(&mut r).unwrap_err(), FrxError::BadPictureHeader { pos: 0 });
 }
 
 // ============================================================================

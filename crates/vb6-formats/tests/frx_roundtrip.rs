@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use vb6_formats::controls::form_designer;
-use vb6_formats::controls::frx::{self, PropKind};
+use vb6_formats::frx::{self, PropKind};
 
 mod common;
 use common::{collect_forms, corpus_dir};

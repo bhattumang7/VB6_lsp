@@ -56,7 +56,7 @@
     fn describes_font_reference() {
         let font = FrxRecord::Font(StdFontRecord {
             charset: 0,
-            flags: 0x01, // italic
+            flags: 0x02, // italic
             weight: 700, // bold
             size_times_10k: 82_500,
             name: b"MS Sans Serif".to_vec(),
