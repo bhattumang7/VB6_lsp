@@ -262,22 +262,27 @@ impl ProjectModel {
         // A library class a designer places on a form is a control, whatever the library's flags say
         // (a .NET control exported to COM does not carry `TYPEFLAG_FCONTROL`): the container
         // gives it the extender's members.
+        model.mark_placed_library_controls();
+        model
+    }
+
+    /// The library types the modules' designers place as controls.
+    fn placed_library_controls(&self) -> Vec<(usize, usize)> {
         let mut placed: Vec<(usize, usize)> = Vec::new();
-        for (from, m) in model.modules.iter().enumerate() {
+        for (from, m) in self.modules.iter().enumerate() {
             for c in &m.controls {
-                let (q, n) = match c.control_type.split_once('.') {
-                    Some((q, n)) => (Some(lc(q)), lc(n)),
-                    None => (None, lc(&c.control_type)),
-                };
-                if let TypeRef::Lib { lib, ty } = model.type_ref(from, &TypeName { qualifier: q, name: n }) {
+                if let TypeRef::Lib { lib, ty } = self.type_ref(from, &control_type_name(&c.control_type)) {
                     placed.push((lib, ty));
                 }
             }
         }
-        for (lib, ty) in placed {
-            model.libraries[lib].types[ty].is_control = true;
+        placed
+    }
+
+    fn mark_placed_library_controls(&mut self) {
+        for (lib, ty) in self.placed_library_controls() {
+            self.libraries[lib].types[ty].is_control = true;
         }
-        model
     }
 
     // ── Declared types ──────────────────────────────────────────────────────
@@ -338,54 +343,48 @@ impl ProjectModel {
     /// the project, a module or a library, only that scope is searched; a
     /// qualifier that is none of them names a library that is not loaded.
     fn type_ref(&self, from: usize, tn: &TypeName) -> TypeRef {
-        let name = tn.name.as_str();
-        let unknown = || TypeRef::Unknown(name.to_string());
         match tn.qualifier.as_deref() {
-            None => {
-                if let Some(t) = self.find_type_in(from, name) {
-                    return t;
-                }
-                if let Some(m) = self.class_module(name) {
-                    return TypeRef::Class { module: m };
-                }
-                for m in 0..self.modules.len() {
-                    if let Some(t) = self.find_public_type_in(m, name) {
-                        return t;
-                    }
-                }
-                for l in 0..self.libraries.len() {
-                    if let Some(t) = self.lib_type(l, name) {
-                        return t;
-                    }
-                }
-                unknown()
-            }
-            Some(q) => {
-                if self.is_project(q) {
-                    if let Some(m) = self.class_module(name) {
-                        return TypeRef::Class { module: m };
-                    }
-                    for m in 0..self.modules.len() {
-                        if let Some(t) = self.find_public_type_in(m, name) {
-                            return t;
-                        }
-                    }
-                    return unknown();
-                }
-                if let Some(&m) = self.module_by_name.get(q) {
-                    return self.find_public_type_in(m, name).unwrap_or_else(unknown);
-                }
-                if let Some(&l) = self.library_by_name.get(q) {
-                    return self.lib_type(l, name).unwrap_or_else(unknown);
-                }
-                // The form designer writes a control by its component's library name plus `Ctl`
-                // (`ActiveBar2LibraryCtl.ActiveBar2`, `SHDocVwCtl.WebBrowser`).
-                if let Some(&l) = q.strip_suffix("ctl").and_then(|lib| self.library_by_name.get(lib)) {
-                    return self.lib_type(l, name).unwrap_or_else(unknown);
-                }
-                TypeRef::NotLoaded(q.to_string())
-            }
+            None => self.unqualified_type_ref(from, &tn.name),
+            Some(q) => self.qualified_type_ref(q, &tn.name),
         }
+    }
+
+    fn class_type(&self, name: &str) -> Option<TypeRef> {
+        self.class_module(name).map(|module| TypeRef::Class { module })
+    }
+
+    fn public_type_anywhere(&self, name: &str) -> Option<TypeRef> {
+        (0..self.modules.len()).find_map(|m| self.find_public_type_in(m, name))
+    }
+
+    fn unqualified_type_ref(&self, from: usize, name: &str) -> TypeRef {
+        self.find_type_in(from, name)
+            .or_else(|| self.class_type(name))
+            .or_else(|| self.public_type_anywhere(name))
+            .or_else(|| (0..self.libraries.len()).find_map(|l| self.lib_type(l, name)))
+            .unwrap_or_else(|| TypeRef::Unknown(name.to_string()))
+    }
+
+    fn qualified_type_ref(&self, q: &str, name: &str) -> TypeRef {
+        let unknown = || TypeRef::Unknown(name.to_string());
+        if self.is_project(q) {
+            return self
+                .class_type(name)
+                .or_else(|| self.public_type_anywhere(name))
+                .unwrap_or_else(unknown);
+        }
+        if let Some(&m) = self.module_by_name.get(q) {
+            return self.find_public_type_in(m, name).unwrap_or_else(unknown);
+        }
+        if let Some(&l) = self.library_by_name.get(q) {
+            return self.lib_type(l, name).unwrap_or_else(unknown);
+        }
+        // The form designer writes a control by its component's library name plus `Ctl`
+        // (`ActiveBar2LibraryCtl.ActiveBar2`, `SHDocVwCtl.WebBrowser`).
+        if let Some(&l) = q.strip_suffix("ctl").and_then(|lib| self.library_by_name.get(lib)) {
+            return self.lib_type(l, name).unwrap_or_else(unknown);
+        }
+        TypeRef::NotLoaded(q.to_string())
     }
 
     /// The library whose type an unqualified type name written in `from`
@@ -471,16 +470,18 @@ impl ProjectModel {
     }
 
     fn lib_member(&self, lib: usize, ty: usize, name: &str, access: Access) -> MemberLookup {
+        let chain = self.lib_chain(lib, ty);
         let mut named_somewhere = false;
-        for (l, t) in self.lib_chain(lib, ty) {
+        for &(l, t) in &chain {
             let ty_data = &self.libraries[l].types[t];
-            let mut named: Vec<usize> = Vec::new();
-            for (mi, m) in ty_data.members.iter().enumerate() {
-                if m.name == name && m.kind != LibraryMemberKind::Event {
-                    named.push(mi);
-                    named_somewhere = true;
-                }
-            }
+            let named: Vec<usize> = ty_data
+                .members
+                .iter()
+                .enumerate()
+                .filter(|(_, m)| m.name == name && m.kind != LibraryMemberKind::Event)
+                .map(|(mi, _)| mi)
+                .collect();
+            named_somewhere |= !named.is_empty();
             if let Some(&mi) = named.iter().find(|&&mi| lib_serves(ty_data.members[mi].kind, access)) {
                 let m = &ty_data.members[mi];
                 return MemberLookup::Found(MemberHit {
@@ -490,27 +491,28 @@ impl ProjectModel {
                 });
             }
         }
-        if !named_somewhere
-            && self.lib_chain(lib, ty).iter().any(|&(l, t)| self.libraries[l].types[t].is_control)
-        {
-            if let Some(&vb) = self.library_by_name.get("vb") {
-                if let Some(&ext) = self.libraries[vb].type_by_name.get("_vbcontrolextender") {
-                    if let found @ MemberLookup::Found(_) = self.lib_member(vb, ext, name, access) {
-                        return found;
-                    }
-                }
+        if !named_somewhere && chain.iter().any(|&(l, t)| self.libraries[l].types[t].is_control) {
+            if let Some(found) = self.extender_member(name, access) {
+                return found;
             }
         }
         if named_somewhere {
             MemberLookup::MissingAccessor(access)
-        } else if self
-            .lib_chain(lib, ty)
-            .iter()
-            .any(|&(l, t)| self.libraries[l].types[t].extensible)
-        {
+        } else if chain.iter().any(|&(l, t)| self.libraries[l].types[t].extensible) {
             MemberLookup::LateBound
         } else {
             MemberLookup::NoSuchMember
+        }
+    }
+
+    /// A member the container gives every control, found on the runtime
+    /// library's control-extender type.
+    fn extender_member(&self, name: &str, access: Access) -> Option<MemberLookup> {
+        let vb = *self.library_by_name.get("vb")?;
+        let ext = *self.libraries[vb].type_by_name.get("_vbcontrolextender")?;
+        match self.lib_member(vb, ext, name, access) {
+            found @ MemberLookup::Found(_) => Some(found),
+            _ => None,
         }
     }
 
@@ -765,6 +767,15 @@ fn summarize(m: &ModuleData) -> ModuleSummary {
     }
 }
 
+/// The type name a designer writes for a control (`Library.Class` or a bare
+/// class name), lower-cased.
+fn control_type_name(control_type: &str) -> TypeName {
+    match control_type.split_once('.') {
+        Some((q, n)) => TypeName { qualifier: Some(lc(q)), name: lc(n) },
+        None => TypeName { qualifier: None, name: lc(control_type) },
+    }
+}
+
 fn summarize_library(l: &Library) -> LibSummary {
     let types: Vec<LibType> = l.types.iter().map(summarize_lib_type).collect();
     let mut type_by_name = HashMap::new();
@@ -779,24 +790,33 @@ fn summarize_library(l: &Library) -> LibSummary {
     }
     for (ti, t) in l.types.iter().enumerate() {
         let global = matches!(t.kind, LibraryTypeKind::Module | LibraryTypeKind::Enum) || t.is_global;
-        if !global {
-            continue;
-        }
-        // The members of a global coclass are those of the interfaces it
-        // exposes; each is recorded under the type that declares it.
-        for owner in interface_closure(l, &type_by_name, ti) {
-            for (mi, m) in l.types[owner].members.iter().enumerate() {
-                if m.kind == LibraryMemberKind::Event {
-                    continue;
-                }
-                for key in global_keys(&m.name) {
-                    globals.entry(key).or_insert(LibGlobal::Member { ty: owner, member: mi });
-                }
-            }
+        if global {
+            add_global_type_members(l, &type_by_name, ti, &mut globals);
         }
     }
     let type_names = l.types.iter().map(|t| t.name.clone()).collect();
     LibSummary { name: lc(&l.name), type_names, types, type_by_name, globals }
+}
+
+/// Record the members of global type `ti` as library globals. The members of
+/// a global coclass are those of the interfaces it exposes; each is recorded
+/// under the type that declares it.
+fn add_global_type_members(
+    l: &Library,
+    type_by_name: &HashMap<String, usize>,
+    ti: usize,
+    globals: &mut HashMap<String, LibGlobal>,
+) {
+    for owner in interface_closure(l, type_by_name, ti) {
+        for (mi, m) in l.types[owner].members.iter().enumerate() {
+            if m.kind == LibraryMemberKind::Event {
+                continue;
+            }
+            for key in global_keys(&m.name) {
+                globals.entry(key).or_insert(LibGlobal::Member { ty: owner, member: mi });
+            }
+        }
+    }
 }
 
 /// Type `ti` and, transitively, the types of the same library it lists as its
@@ -854,6 +874,176 @@ fn summarize_lib_type(t: &LibraryType) -> LibType {
                 param_count: m.param_count,
             })
             .collect(),
+    }
+}
+
+impl ProjectModel {
+    fn lookup_udt_member(&self, module: usize, idx: usize, name: &str) -> MemberLookup {
+        let t = &self.modules[module].types[idx];
+        match t.members.iter().position(|(n, _)| n == name) {
+            Some(mi) => MemberLookup::Found(MemberHit {
+                resolution: NameResolution::External {
+                    module,
+                    decl: ExternalDecl::TypeMember { type_idx: idx, member_idx: mi },
+                },
+                sem: self.declared_sem(module, &t.members[mi].1),
+                callable: None,
+            }),
+            None => MemberLookup::NoSuchMember,
+        }
+    }
+
+    /// A member of a class module's object, seen from module `from`.
+    fn lookup_class_member(&self, from: usize, module: usize, name: &str, access: Access) -> MemberLookup {
+        let m = &self.modules[module];
+        let control = m
+            .controls
+            .iter()
+            .position(|c| c.name == name)
+            .and_then(|ci| self.lookup_module_scope(module, &m.controls[ci].name, access));
+        if let Some(hit) = control {
+            return MemberLookup::Found(hit);
+        }
+        if let Some(found) = something_found(self.module_member(usize::MAX, module, name, access)) {
+            return found;
+        }
+        if let Some(hit) = self.enum_namespace_or_member(usize::MAX, module, name) {
+            return MemberLookup::Found(hit);
+        }
+        if let Some(found) = self.class_extender_member(from, module, name, access) {
+            return found;
+        }
+        match &m.base_type {
+            // A designer's own members were searched; the rest come from
+            // the library type it extends (`VB.Form`).
+            Some(base) => self.class_base_member(module, base, name, access),
+            None => MemberLookup::NoSuchMember,
+        }
+    }
+
+    /// A UserControl seen from outside also has the members its container
+    /// gives every control (position, visibility, ...).
+    fn class_extender_member(
+        &self,
+        from: usize,
+        module: usize,
+        name: &str,
+        access: Access,
+    ) -> Option<MemberLookup> {
+        if from == module {
+            return None;
+        }
+        let (lib, ty) = self.extender_type(module)?;
+        match self.lib_member(lib, ty, name, access) {
+            found @ MemberLookup::Found(_) => Some(found),
+            _ => None,
+        }
+    }
+
+    /// A member a class module inherits from the library type its designer
+    /// extends.
+    fn class_base_member(&self, module: usize, base: &TypeName, name: &str, access: Access) -> MemberLookup {
+        match self.sem_of_type_name(module, base) {
+            // The module's own class is closed: only a variable
+            // declared with the generic library type (`As Form`)
+            // looks members up at run time.
+            SemType::Lib { lib, ty } => match self.lib_member(lib, ty, name, access) {
+                MemberLookup::LateBound => MemberLookup::NoSuchMember,
+                other => other,
+            },
+            _ => MemberLookup::LibraryNotLoaded(match &base.qualifier {
+                Some(q) => format!("{q}.{}", base.name),
+                None => base.name.clone(),
+            }),
+        }
+    }
+
+    fn lookup_module_namespace_member(
+        &self,
+        from: usize,
+        module: usize,
+        name: &str,
+        access: Access,
+    ) -> MemberLookup {
+        if self.modules[module].standard {
+            if let Some(found) = something_found(self.module_member(from, module, name, access)) {
+                return found;
+            }
+        }
+        match self.enum_namespace_or_member(from, module, name) {
+            Some(hit) => MemberLookup::Found(hit),
+            None => MemberLookup::NoSuchMember,
+        }
+    }
+
+    fn lookup_project_member(&self, name: &str, access: Access) -> MemberLookup {
+        if let Some(&m) = self.module_by_name.get(name) {
+            return MemberLookup::Found(self.module_name_hit(m));
+        }
+        for (i, m) in self.modules.iter().enumerate() {
+            if m.standard || m.global_namespace {
+                if let Some(found) = something_found(self.module_member(usize::MAX, i, name, access)) {
+                    return found;
+                }
+            }
+            if let Some(hit) = self.enum_namespace_or_member(usize::MAX, i, name) {
+                return MemberLookup::Found(hit);
+            }
+        }
+        MemberLookup::NoSuchMember
+    }
+
+    fn lookup_library_namespace_member(&self, lib: usize, name: &str) -> MemberLookup {
+        match self.libraries[lib].type_by_name.get(name) {
+            Some(&ty) => MemberLookup::Found(MemberHit {
+                resolution: NameResolution::LibraryType { lib, ty },
+                sem: match self.libraries[lib].types[ty].kind {
+                    LibraryTypeKind::Enum => SemType::Namespace(Qualifier::LibraryEnum { lib, ty }),
+                    _ => SemType::Lib { lib, ty },
+                },
+                callable: None,
+            }),
+            // A global member of the library, qualified by its name.
+            None => match self.library_member_global(lib, name) {
+                Some(hit) => MemberLookup::Found(hit),
+                None => MemberLookup::NoSuchMember,
+            },
+        }
+    }
+
+    fn lookup_library_enum_member(&self, lib: usize, ty: usize, name: &str) -> MemberLookup {
+        let t = &self.libraries[lib].types[ty];
+        match t.members.iter().position(|m| m.name == name) {
+            Some(mi) => MemberLookup::Found(MemberHit {
+                resolution: NameResolution::LibraryMember { lib, ty, member: mi },
+                sem: SemType::Value(VbaType::Long),
+                callable: None,
+            }),
+            None => MemberLookup::NoSuchMember,
+        }
+    }
+
+    fn lookup_enum_member(&self, module: usize, idx: usize, name: &str) -> MemberLookup {
+        let e = &self.modules[module].enums[idx];
+        match e.members.iter().position(|n| n == name) {
+            Some(mi) => MemberLookup::Found(MemberHit {
+                resolution: NameResolution::External {
+                    module,
+                    decl: ExternalDecl::EnumMember { enum_idx: idx, member_idx: mi },
+                },
+                sem: SemType::Value(VbaType::Long),
+                callable: None,
+            }),
+            None => MemberLookup::NoSuchMember,
+        }
+    }
+}
+
+/// `Some(lookup)` unless the lookup found no such member.
+fn something_found(lookup: MemberLookup) -> Option<MemberLookup> {
+    match lookup {
+        MemberLookup::NoSuchMember => None,
+        other => Some(other),
     }
 }
 
@@ -950,11 +1140,7 @@ impl ProjectScope for ProjectModel {
             };
         };
         let c = &m.controls[idx];
-        let (q, n) = match c.control_type.split_once('.') {
-            Some((q, n)) => (Some(lc(q)), lc(n)),
-            None => (None, lc(&c.control_type)),
-        };
-        let elem = self.sem_of_type_name(from, &TypeName { qualifier: q, name: n });
+        let elem = self.sem_of_type_name(from, &control_type_name(&c.control_type));
         let sem = if c.is_array { SemType::Array(Box::new(elem)) } else { elem };
         Some(MemberHit {
             resolution: NameResolution::External { module: from, decl: ExternalDecl::Control(idx) },
@@ -1016,138 +1202,19 @@ impl ProjectScope for ProjectModel {
 
     fn lookup_member(&self, from: usize, base: &SemType, name: &str, access: Access) -> MemberLookup {
         match base {
-            SemType::Udt { module, idx } => {
-                let t = &self.modules[*module].types[*idx];
-                match t.members.iter().position(|(n, _)| n == name) {
-                    Some(mi) => MemberLookup::Found(MemberHit {
-                        resolution: NameResolution::External {
-                            module: *module,
-                            decl: ExternalDecl::TypeMember { type_idx: *idx, member_idx: mi },
-                        },
-                        sem: self.declared_sem(*module, &t.members[mi].1),
-                        callable: None,
-                    }),
-                    None => MemberLookup::NoSuchMember,
-                }
-            }
-            SemType::Class { module } => {
-                let m = &self.modules[*module];
-                if let Some(ci) = m.controls.iter().position(|c| c.name == name) {
-                    if let Some(hit) =
-                        self.lookup_module_scope(*module, &m.controls[ci].name, access)
-                    {
-                        return MemberLookup::Found(hit);
-                    }
-                }
-                match self.module_member(usize::MAX, *module, name, access) {
-                    MemberLookup::NoSuchMember => {}
-                    other => return other,
-                }
-                if let Some(hit) = self.enum_namespace_or_member(usize::MAX, *module, name) {
-                    return MemberLookup::Found(hit);
-                }
-                // A UserControl seen from outside also has the members its
-                // container gives every control (position, visibility, ...).
-                if from != *module {
-                    if let Some((lib, ty)) = self.extender_type(*module) {
-                        if let found @ MemberLookup::Found(_) = self.lib_member(lib, ty, name, access) {
-                            return found;
-                        }
-                    }
-                }
-                match &m.base_type {
-                    // A designer's own members were searched; the rest come from
-                    // the library type it extends (`VB.Form`).
-                    Some(base) => match self.sem_of_type_name(*module, base) {
-                        // The module's own class is closed: only a variable
-                        // declared with the generic library type (`As Form`)
-                        // looks members up at run time.
-                        SemType::Lib { lib, ty } => match self.lib_member(lib, ty, name, access) {
-                            MemberLookup::LateBound => MemberLookup::NoSuchMember,
-                            other => other,
-                        },
-                        _ => MemberLookup::LibraryNotLoaded(match &base.qualifier {
-                            Some(q) => format!("{q}.{}", base.name),
-                            None => base.name.clone(),
-                        }),
-                    },
-                    None => MemberLookup::NoSuchMember,
-                }
-            }
+            SemType::Udt { module, idx } => self.lookup_udt_member(*module, *idx, name),
+            SemType::Class { module } => self.lookup_class_member(from, *module, name, access),
             SemType::Lib { lib, ty } => self.lib_member(*lib, *ty, name, access),
             SemType::Namespace(Qualifier::Module(module)) => {
-                let m = &self.modules[*module];
-                if m.standard {
-                    match self.module_member(from, *module, name, access) {
-                        MemberLookup::NoSuchMember => {}
-                        other => return other,
-                    }
-                }
-                match self.enum_namespace_or_member(from, *module, name) {
-                    Some(hit) => MemberLookup::Found(hit),
-                    None => MemberLookup::NoSuchMember,
-                }
+                self.lookup_module_namespace_member(from, *module, name, access)
             }
-            SemType::Namespace(Qualifier::Project) => {
-                if let Some(&m) = self.module_by_name.get(name) {
-                    return MemberLookup::Found(self.module_name_hit(m));
-                }
-                for (i, m) in self.modules.iter().enumerate() {
-                    if m.standard || m.global_namespace {
-                        match self.module_member(usize::MAX, i, name, access) {
-                            MemberLookup::NoSuchMember => {}
-                            other => return other,
-                        }
-                    }
-                    if let Some(hit) = self.enum_namespace_or_member(usize::MAX, i, name) {
-                        return MemberLookup::Found(hit);
-                    }
-                }
-                MemberLookup::NoSuchMember
-            }
-            SemType::Namespace(Qualifier::Library(lib)) => {
-                match self.libraries[*lib].type_by_name.get(name) {
-                    Some(&ty) => MemberLookup::Found(MemberHit {
-                        resolution: NameResolution::LibraryType { lib: *lib, ty },
-                        sem: match self.libraries[*lib].types[ty].kind {
-                            LibraryTypeKind::Enum => {
-                                SemType::Namespace(Qualifier::LibraryEnum { lib: *lib, ty })
-                            }
-                            _ => SemType::Lib { lib: *lib, ty },
-                        },
-                        callable: None,
-                    }),
-                    // A global member of the library, qualified by its name.
-                    None => match self.library_member_global(*lib, name) {
-                        Some(hit) => MemberLookup::Found(hit),
-                        None => MemberLookup::NoSuchMember,
-                    },
-                }
-            }
+            SemType::Namespace(Qualifier::Project) => self.lookup_project_member(name, access),
+            SemType::Namespace(Qualifier::Library(lib)) => self.lookup_library_namespace_member(*lib, name),
             SemType::Namespace(Qualifier::LibraryEnum { lib, ty }) => {
-                let t = &self.libraries[*lib].types[*ty];
-                match t.members.iter().position(|m| m.name == name) {
-                    Some(mi) => MemberLookup::Found(MemberHit {
-                        resolution: NameResolution::LibraryMember { lib: *lib, ty: *ty, member: mi },
-                        sem: SemType::Value(VbaType::Long),
-                        callable: None,
-                    }),
-                    None => MemberLookup::NoSuchMember,
-                }
+                self.lookup_library_enum_member(*lib, *ty, name)
             }
             SemType::Namespace(Qualifier::Enum { module, idx }) => {
-                let e = &self.modules[*module].enums[*idx];
-                match e.members.iter().position(|n| n == name) {
-                    Some(mi) => MemberLookup::Found(MemberHit {
-                        resolution: NameResolution::External {
-                            module: *module,
-                            decl: ExternalDecl::EnumMember { enum_idx: *idx, member_idx: mi },
-                        },
-                        sem: SemType::Value(VbaType::Long),
-                        callable: None,
-                    }),
-                    None => MemberLookup::NoSuchMember,
-                }
+                self.lookup_enum_member(*module, *idx, name)
             }
             SemType::Value(_)
             | SemType::LateBound

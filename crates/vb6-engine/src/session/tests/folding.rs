@@ -50,6 +50,27 @@
     }
 
     #[test]
+    fn closer_keywords_must_end_at_a_word_boundary() {
+        // `NEXTVAR`, `LOOPS`, `WENDY` and `END SUBX` close nothing.
+        let src = "For i = 1 To 3\nNEXTVAR = 1\nNext\nDo\nLOOPS = 2\nLoop Until x\nWhile y\nWENDY = 3\nWend\nSub S()\nEND SUBX\nEnd Sub\n";
+        assert_eq!(fold(src), vec![(0, 2), (3, 5), (6, 8), (9, 11)]);
+    }
+
+    #[test]
+    fn every_block_kind_folds() {
+        let src = "Type T\nx As Long\nEnd Type\nEnum E\nA\nEnd Enum\nProperty Get P()\nEnd Property\nWith o\nx\nEnd With\nSelect Case 1\nCase 1\nEnd Select\n";
+        assert_eq!(fold(src), vec![(0, 2), (3, 5), (6, 7), (8, 10), (11, 13)]);
+    }
+
+    #[test]
+    fn openers_need_a_word_boundary_and_modifiers_are_stripped() {
+        // A bare `Sub`/`Function`/`Do` opens a block; the others need a
+        // following space.
+        let src = "Public Static Sub\nEnd Sub\nDo\nLoop\nDoIt\nFunction\nEnd Function\nSubway = 1\n";
+        assert_eq!(fold(src), vec![(0, 1), (2, 3), (5, 6)]);
+    }
+
+    #[test]
     fn a_lone_carriage_return_ends_a_line() {
         let src = "Sub A()\r    If x Then\r        y = 1\r    End If\rEnd Sub\r";
         assert_eq!(fold(src), vec![(1, 3), (0, 4)]);

@@ -1,3 +1,4 @@
+use super::counted_items::{read_counted_items, write_counted_items};
 use crate::frx::{FrxError, FrxReader};
 
 /// A ListBox / ComboBox `ItemData` record.
@@ -27,37 +28,12 @@ pub struct ItemDataRecord {
 
 impl ItemDataRecord {
     pub fn read(r: &mut FrxReader<'_>) -> Result<Self, FrxError> {
-        let count = r.read_u16_le()? as usize;
-        if count == 0 {
-            return Ok(ItemDataRecord { sig: 0, items: Vec::new() });
-        }
-        let sig = r.read_u16_le()?;
-        let mut items = Vec::with_capacity(count);
-        for _ in 0..count {
-            let len_pos = r.pos();
-            let len = r.read_u16_le()? as usize;
-            if len > r.remaining() {
-                return Err(FrxError::LengthOverflow {
-                    pos: len_pos,
-                    declared: len as u32,
-                    remaining: r.remaining(),
-                });
-            }
-            let bytes = r.read_bytes(len)?;
-            items.push(bytes.to_vec());
-        }
+        let (sig, items) = read_counted_items(r)?;
         Ok(ItemDataRecord { sig, items })
     }
 
     pub fn write(&self, out: &mut Vec<u8>) {
-        out.extend_from_slice(&(self.items.len() as u16).to_le_bytes());
-        if !self.items.is_empty() {
-            out.extend_from_slice(&self.sig.to_le_bytes());
-            for item in &self.items {
-                out.extend_from_slice(&(item.len() as u16).to_le_bytes());
-                out.extend_from_slice(item);
-            }
-        }
+        write_counted_items(self.sig, &self.items, out);
     }
 
     /// Interpret a raw item (little-endian, 1–4 bytes) as a signed 32-bit integer.

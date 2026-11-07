@@ -75,30 +75,47 @@ pub fn lex_line(line: &str) -> Vec<Token<'_>> {
 
             // GUID / ProgID in curly braces: {xxxxxxxx-...}
             b'{' => {
-                pos += 1;
-                let start = pos;
-                while pos < b.len() && b[pos] != b'}' {
-                    pos += 1;
-                }
-                tokens.push(Token::Curly(&line[start..pos]));
-                if pos < b.len() { pos += 1; } // skip '}'
+                let (content, end) = read_curly(line, pos + 1);
+                tokens.push(Token::Curly(content));
+                pos = end;
             }
 
             // Word: identifier, keyword, number, hex literal, &H..., #...
             _ => {
-                let start = pos;
-                while pos < b.len() {
-                    match b[pos] {
-                        b' ' | b'\t' | b'\r' | b'\n' | b'=' | b';' | b'\'' | b'"' | b':' | b'{' => break,
-                        _ => pos += 1,
-                    }
-                }
-                tokens.push(Token::Word(&line[start..pos]));
+                let (content, end) = read_word(line, pos);
+                tokens.push(Token::Word(content));
+                pos = end;
             }
         }
     }
 
     tokens
+}
+
+/// Read a brace-delimited body starting at `pos` (after the opening `{`).
+/// Returns (content_slice, pos_after_closing_brace); an unterminated body
+/// runs to the end of the line.
+fn read_curly(line: &str, pos: usize) -> (&str, usize) {
+    let b = line.as_bytes();
+    let mut end = pos;
+    while end < b.len() && b[end] != b'}' {
+        end += 1;
+    }
+    let next = if end < b.len() { end + 1 } else { end };
+    (&line[pos..end], next)
+}
+
+/// Read a bare word starting at `pos`; returns (word_slice, pos_after_word).
+fn read_word(line: &str, pos: usize) -> (&str, usize) {
+    let b = line.as_bytes();
+    let mut end = pos;
+    while end < b.len() {
+        match b[end] {
+            b' ' | b'\t' | b'\r' | b'\n' | b'=' | b';' | b'\'' | b'"' | b':' | b'{' => break,
+            _ => end += 1,
+        }
+    }
+    (&line[pos..end], end)
 }
 
 /// Read a quoted-string body starting at `pos` (after the opening `"`).
@@ -131,80 +148,5 @@ fn read_quoted(line: &str, pos: usize) -> (&str, usize) {
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn lex_simple_property() {
-        let toks = lex_line("   BackColor       =   &H80000005&");
-        assert_eq!(toks[0], Token::Word("BackColor"));
-        assert_eq!(toks[1], Token::Equals);
-        assert_eq!(toks[2], Token::Word("&H80000005&"));
-    }
-
-    #[test]
-    fn lex_quoted_value() {
-        let toks = lex_line(r#"Caption         =   "Hello World""#);
-        assert_eq!(toks[0], Token::Word("Caption"));
-        assert_eq!(toks[1], Token::Equals);
-        assert_eq!(toks[2], Token::Quoted("Hello World"));
-    }
-
-    #[test]
-    fn lex_comment_stripped() {
-        let toks = lex_line("  Begin  ' this is a comment");
-        assert_eq!(toks.len(), 1);
-        assert_eq!(toks[0], Token::Word("Begin"));
-    }
-
-    #[test]
-    fn lex_begin_line() {
-        let toks = lex_line("   Begin VB.Form Form1");
-        assert_eq!(toks[0], Token::Word("Begin"));
-        assert_eq!(toks[1], Token::Word("VB.Form"));
-        assert_eq!(toks[2], Token::Word("Form1"));
-    }
-
-    #[test]
-    fn lex_object_line() {
-        // In .frm files the progid is in double quotes: Object = "...#ver#lcid"
-        let toks = lex_line(
-            r#"Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCTL.OCX""#,
-        );
-        assert_eq!(toks[0], Token::Word("Object"));
-        assert_eq!(toks[1], Token::Equals);
-        // The entire progid is inside outer double-quotes → Quoted token
-        match &toks[2] {
-            Token::Quoted(s) => assert!(s.contains("831FDD16")),
-            other => panic!("expected Quoted, got {:?}", other),
-        }
-        assert_eq!(toks[3], Token::Semi);
-        assert_eq!(toks[4], Token::Quoted("MSCOMCTL.OCX"));
-    }
-
-    #[test]
-    fn lex_object_line_unquoted() {
-        // In .vbp files the progid is bare: Object={GUID}#ver#lcid ; filename
-        let toks = lex_line(
-            "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.0#0; MSCOMCTL.OCX",
-        );
-        match &toks[0] {
-            Token::Curly(s) => assert!(s.contains("831FDD16")),
-            other => panic!("expected Curly, got {:?}", other),
-        }
-        // #2.0#0 follows as Word
-        assert_eq!(toks[1], Token::Word("#2.0#0"));
-    }
-
-    #[test]
-    fn lex_dollar_string() {
-        let toks = lex_line(r#"Caption         =   $"Hello""#);
-        assert_eq!(toks[2], Token::DollarStr("Hello"));
-    }
-
-    #[test]
-    fn lex_escaped_quote_in_string() {
-        let toks = lex_line(r#"Caption = "say ""hi""  ""#);
-        assert_eq!(toks[2], Token::Quoted(r#"say ""hi""  "#));
-    }
-}
+#[path = "tests/lexer.rs"]
+mod tests;

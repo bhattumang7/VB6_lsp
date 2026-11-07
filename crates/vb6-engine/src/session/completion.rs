@@ -48,138 +48,16 @@ impl Session {
         }
 
         let mut out = Vec::new();
-
-        // 1. Locals + params from the containing proc (innermost scope first)
-        if let Some(proc_idx) = proc_containing(m, offset) {
-            let p = &m.bound.procs[proc_idx];
-            for param in &p.params {
-                let name = hover::name_at(&m.source, param.name_span);
-                if name.is_empty() { continue; }
-                out.push(CompletionEntry {
-                    detail: Some(format!(
-                        "{} As {}",
-                        name,
-                        hover::type_str(&m.ctx, &param.vba_type)
-                    )),
-                    name,
-                    kind: CompletionKind::Parameter,
-                });
-            }
-            for local in &p.locals {
-                let name = hover::name_at(&m.source, local.name_span);
-                if name.is_empty() { continue; }
-                let kind = if local.is_const { CompletionKind::Constant } else { CompletionKind::Variable };
-                out.push(CompletionEntry {
-                    detail: Some(hover::var_signature(&m.ctx, &m.source, local)),
-                    name,
-                    kind,
-                });
-            }
-        }
-
-        // 2. Module-level variables and constants
-        for var in &m.bound.module_vars {
-            let name = hover::name_at(&m.source, var.name_span);
-            if name.is_empty() { continue; }
-            let kind = if var.is_const { CompletionKind::Constant } else { CompletionKind::Variable };
-            out.push(CompletionEntry {
-                detail: Some(hover::var_signature(&m.ctx, &m.source, var)),
-                name,
-                kind,
-            });
-        }
-
-        // 3. Procedures in this module
-        for p in &m.bound.procs {
-            let name = hover::name_at(&m.source, p.name_span);
-            if name.is_empty() { continue; }
-            let kind = proc_completion_kind(p.kind);
-            out.push(CompletionEntry {
-                detail: Some(hover::proc_signature(&m.ctx, &m.source, p)),
-                name,
-                kind,
-            });
-        }
-
-        // 4. Types and enums in this module
-        for t in &m.bound.type_decls {
-            let name = hover::name_at(&m.source, t.name_span);
-            if name.is_empty() { continue; }
-            out.push(CompletionEntry { name, kind: CompletionKind::Type, detail: None });
-        }
-        for e in &m.bound.enum_decls {
-            let ename = hover::name_at(&m.source, e.name_span);
-            if !ename.is_empty() {
-                out.push(CompletionEntry { name: ename.clone(), kind: CompletionKind::Enum, detail: None });
-            }
-            for mem in &e.members {
-                let mname = hover::name_at(&m.source, mem.name_span);
-                if mname.is_empty() { continue; }
-                out.push(CompletionEntry {
-                    detail: Some(format!("{}.{} = {}", ename, mname, mem.value)),
-                    name: mname,
-                    kind: CompletionKind::EnumMember,
-                });
-            }
-        }
-
-        // 5. Public names from other modules
+        push_local_entries(m, offset, &mut out);
+        push_module_var_entries(m, &mut out);
+        push_proc_entries(m, &mut out);
+        push_type_and_enum_entries(m, &mut out);
         for (i, other) in self.modules.iter().enumerate() {
-            if i == module { continue; }
-            for p in &other.bound.procs {
-                if !p.is_public { continue; }
-                let name = hover::name_at(&other.source, p.name_span);
-                if name.is_empty() { continue; }
-                out.push(CompletionEntry {
-                    detail: Some(hover::proc_signature(&other.ctx, &other.source, p)),
-                    name,
-                    kind: proc_completion_kind(p.kind),
-                });
-            }
-            for v in &other.bound.module_vars {
-                if !v.is_public { continue; }
-                let name = hover::name_at(&other.source, v.name_span);
-                if name.is_empty() { continue; }
-                let kind = if v.is_const { CompletionKind::Constant } else { CompletionKind::Variable };
-                out.push(CompletionEntry {
-                    detail: Some(hover::var_signature(&other.ctx, &other.source, v)),
-                    name,
-                    kind,
-                });
-            }
-            for e in &other.bound.enum_decls {
-                if !e.is_public { continue; }
-                let ename = hover::name_at(&other.source, e.name_span);
-                for mem in &e.members {
-                    let mname = hover::name_at(&other.source, mem.name_span);
-                    if mname.is_empty() { continue; }
-                    out.push(CompletionEntry {
-                        detail: Some(format!("{}.{} = {}", ename, mname, mem.value)),
-                        name: mname,
-                        kind: CompletionKind::EnumMember,
-                    });
-                }
+            if i != module {
+                push_public_entries(other, &mut out);
             }
         }
-
-        // 6. Built-in functions/statements
-        for &name in crate::sema::builtins::builtin_names() {
-            out.push(CompletionEntry {
-                name: name.to_string(),
-                kind: CompletionKind::Builtin,
-                detail: None,
-            });
-        }
-
-        // 7. VB6 keywords
-        for &kw in VB6_KEYWORDS {
-            out.push(CompletionEntry {
-                name: kw.to_string(),
-                kind: CompletionKind::Keyword,
-                detail: None,
-            });
-        }
-
+        push_builtin_and_keyword_entries(&mut out);
         dedup(out)
     }
 
@@ -228,6 +106,146 @@ impl Session {
             }
         }
         None
+    }
+}
+
+/// Constant or variable kind for a declared variable.
+fn var_completion_kind(is_const: bool) -> CompletionKind {
+    if is_const { CompletionKind::Constant } else { CompletionKind::Variable }
+}
+
+/// Locals and parameters of the procedure containing `offset` (innermost
+/// scope first).
+fn push_local_entries(m: &ModuleData, offset: u32, out: &mut Vec<CompletionEntry>) {
+    let Some(proc_idx) = proc_containing(m, offset) else { return };
+    let p = &m.bound.procs[proc_idx];
+    for param in &p.params {
+        let name = hover::name_at(&m.source, param.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(format!(
+                "{} As {}",
+                name,
+                hover::type_str(&m.ctx, &param.vba_type)
+            )),
+            name,
+            kind: CompletionKind::Parameter,
+        });
+    }
+    for local in &p.locals {
+        let name = hover::name_at(&m.source, local.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(hover::var_signature(&m.ctx, &m.source, local)),
+            name,
+            kind: var_completion_kind(local.is_const),
+        });
+    }
+}
+
+/// Module-level variables and constants.
+fn push_module_var_entries(m: &ModuleData, out: &mut Vec<CompletionEntry>) {
+    for var in &m.bound.module_vars {
+        let name = hover::name_at(&m.source, var.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(hover::var_signature(&m.ctx, &m.source, var)),
+            name,
+            kind: var_completion_kind(var.is_const),
+        });
+    }
+}
+
+/// Procedures declared in the module.
+fn push_proc_entries(m: &ModuleData, out: &mut Vec<CompletionEntry>) {
+    for p in &m.bound.procs {
+        let name = hover::name_at(&m.source, p.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(hover::proc_signature(&m.ctx, &m.source, p)),
+            name,
+            kind: proc_completion_kind(p.kind),
+        });
+    }
+}
+
+/// User-defined types, enums and enum members declared in the module.
+fn push_type_and_enum_entries(m: &ModuleData, out: &mut Vec<CompletionEntry>) {
+    for t in &m.bound.type_decls {
+        let name = hover::name_at(&m.source, t.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry { name, kind: CompletionKind::Type, detail: None });
+    }
+    for e in &m.bound.enum_decls {
+        let ename = hover::name_at(&m.source, e.name_span);
+        if !ename.is_empty() {
+            out.push(CompletionEntry { name: ename.clone(), kind: CompletionKind::Enum, detail: None });
+        }
+        push_enum_member_entries(m, e, &ename, out);
+    }
+}
+
+/// Members of one enum declaration.
+fn push_enum_member_entries(
+    m: &ModuleData,
+    e: &crate::sema::symbol::BoundEnumDecl,
+    ename: &str,
+    out: &mut Vec<CompletionEntry>,
+) {
+    for mem in &e.members {
+        let mname = hover::name_at(&m.source, mem.name_span);
+        if mname.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(format!("{}.{} = {}", ename, mname, mem.value)),
+            name: mname,
+            kind: CompletionKind::EnumMember,
+        });
+    }
+}
+
+/// Public procedures, variables and enum members of another module.
+fn push_public_entries(other: &ModuleData, out: &mut Vec<CompletionEntry>) {
+    for p in &other.bound.procs {
+        if !p.is_public { continue; }
+        let name = hover::name_at(&other.source, p.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(hover::proc_signature(&other.ctx, &other.source, p)),
+            name,
+            kind: proc_completion_kind(p.kind),
+        });
+    }
+    for v in &other.bound.module_vars {
+        if !v.is_public { continue; }
+        let name = hover::name_at(&other.source, v.name_span);
+        if name.is_empty() { continue; }
+        out.push(CompletionEntry {
+            detail: Some(hover::var_signature(&other.ctx, &other.source, v)),
+            name,
+            kind: var_completion_kind(v.is_const),
+        });
+    }
+    for e in other.bound.enum_decls.iter().filter(|e| e.is_public) {
+        let ename = hover::name_at(&other.source, e.name_span);
+        push_enum_member_entries(other, e, &ename, out);
+    }
+}
+
+/// Built-in functions/statements followed by the VB6 keywords.
+fn push_builtin_and_keyword_entries(out: &mut Vec<CompletionEntry>) {
+    for &name in crate::sema::builtins::builtin_names() {
+        out.push(CompletionEntry {
+            name: name.to_string(),
+            kind: CompletionKind::Builtin,
+            detail: None,
+        });
+    }
+    for &kw in VB6_KEYWORDS {
+        out.push(CompletionEntry {
+            name: kw.to_string(),
+            kind: CompletionKind::Keyword,
+            detail: None,
+        });
     }
 }
 

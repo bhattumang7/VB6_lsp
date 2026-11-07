@@ -119,43 +119,59 @@ fn strip_modifiers(up: &str) -> &str {
     s
 }
 
+/// Block openers recognised by their leading keyword: the keyword with a
+/// trailing space, whether the bare keyword alone also opens the block, and
+/// the block opened.
+const SIMPLE_OPENERS: &[(&str, bool, Block)] = &[
+    ("SUB ", true, Block::Sub),
+    ("FUNCTION ", true, Block::Function),
+    ("PROPERTY ", false, Block::Property),
+    ("TYPE ", false, Block::Type),
+    ("ENUM ", false, Block::Enum),
+    ("FOR ", false, Block::For),
+    ("DO ", true, Block::Do),
+    ("WHILE ", false, Block::While),
+    ("WITH ", false, Block::With),
+    ("SELECT ", false, Block::Select),
+];
+
 fn block_open(up: &str) -> Option<Block> {
     let s = strip_modifiers(up);
-    if s.starts_with("SUB ") || s == "SUB" { return Some(Block::Sub); }
-    if s.starts_with("FUNCTION ") || s == "FUNCTION" { return Some(Block::Function); }
-    if s.starts_with("PROPERTY ") { return Some(Block::Property); }
-    if s.starts_with("TYPE ") { return Some(Block::Type); }
-    if s.starts_with("ENUM ") { return Some(Block::Enum); }
+    if let Some(&(_, _, blk)) = SIMPLE_OPENERS
+        .iter()
+        .find(|(pfx, bare_ok, _)| s.starts_with(pfx) || (*bare_ok && s == pfx.trim_end()))
+    {
+        return Some(blk);
+    }
     // Block If: line ends with THEN (nothing executable follows)
     if (s.starts_with("IF ") || s.starts_with("IF(")) && is_block_if(s) {
         return Some(Block::If);
     }
-    if s.starts_with("FOR ") { return Some(Block::For); }
-    if s == "DO" || s.starts_with("DO ") { return Some(Block::Do); }
-    if s.starts_with("WHILE ") { return Some(Block::While); }
-    if s.starts_with("WITH ") { return Some(Block::With); }
-    if s.starts_with("SELECT ") { return Some(Block::Select); }
     None
 }
 
-fn block_close(up: &str) -> Option<Close> {
-    if up == "END SUB" || up.starts_with("END SUB ") { return Some(Close::Sub); }
-    if up == "END FUNCTION" || up.starts_with("END FUNCTION ") { return Some(Close::Function); }
-    if up == "END PROPERTY" || up.starts_with("END PROPERTY ") { return Some(Close::Property); }
-    if up == "END IF" || up.starts_with("END IF ") { return Some(Close::If); }
-    if up == "END TYPE" || up.starts_with("END TYPE ") { return Some(Close::Type); }
-    if up == "END ENUM" || up.starts_with("END ENUM ") { return Some(Close::Enum); }
-    if up == "END WITH" || up.starts_with("END WITH ") { return Some(Close::With); }
-    if up == "END SELECT" || up.starts_with("END SELECT ") { return Some(Close::Select); }
+/// Block closers: the closing keyword (alone or followed by a space) and the
+/// block it closes.
+const CLOSERS: &[(&str, Close)] = &[
+    ("END SUB", Close::Sub),
+    ("END FUNCTION", Close::Function),
+    ("END PROPERTY", Close::Property),
+    ("END IF", Close::If),
+    ("END TYPE", Close::Type),
+    ("END ENUM", Close::Enum),
+    ("END WITH", Close::With),
+    ("END SELECT", Close::Select),
     // Loop closers (no "END" prefix)
-    if up.starts_with("NEXT") && (up.len() == 4 || up.as_bytes()[4] == b' ') {
-        return Some(Close::For);
-    }
-    if up.starts_with("LOOP") && (up.len() == 4 || up.as_bytes()[4] == b' ') {
-        return Some(Close::Do);
-    }
-    if up == "WEND" || up.starts_with("WEND ") { return Some(Close::While); }
-    None
+    ("NEXT", Close::For),
+    ("LOOP", Close::Do),
+    ("WEND", Close::While),
+];
+
+fn block_close(up: &str) -> Option<Close> {
+    CLOSERS
+        .iter()
+        .find(|(kw, _)| up.strip_prefix(kw).is_some_and(|rest| rest.is_empty() || rest.starts_with(' ')))
+        .map(|&(_, close)| close)
 }
 
 /// A block `If` has nothing executable after `THEN` (comments are fine).

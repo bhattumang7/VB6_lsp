@@ -204,44 +204,10 @@ impl Exporter<'_> {
                 }
             }
             ExprNode::ProcDecl { kind, name, params, ret_type, .. } => {
-                if !self.is_public(id, true) {
-                    return;
-                }
-                let span = m.spans.get(id);
-                let Some((pi, proc)) = m.raw_bound.procs.iter().enumerate().find(|(_, p)| p.name_span == span) else {
-                    return;
-                };
-                let member_kind = match kind {
-                    ProcKind::Sub | ProcKind::Function => LibraryMemberKind::Method,
-                    ProcKind::PropGet => LibraryMemberKind::PropertyGet,
-                    ProcKind::PropLet => LibraryMemberKind::PropertyLet,
-                    ProcKind::PropSet => LibraryMemberKind::PropertySet,
-                };
-                let return_type = match kind {
-                    ProcKind::Function | ProcKind::PropGet => self.type_text(*ret_type, &proc.ret_type, true),
-                    _ => None,
-                };
-                let params = self.params(*params, Some((pi, proc)));
-                members.push(LibraryMember {
-                    return_type,
-                    param_count: Some(params.len()),
-                    params,
-                    ..self.member(self.declared(proc.name_span, *name), member_kind)
-                });
+                self.collect_proc(id, *kind, *name, *params, *ret_type, members);
             }
             ExprNode::DimItem { name, is_const: false, type_node, bounds, .. } => {
-                if !self.is_public(id, false) {
-                    return;
-                }
-                let vba = match m.raw_bound.module_vars.iter().find(|v| v.name_span == m.spans.get(id)) {
-                    Some(v) => v.vba_type.clone(),
-                    None => VbaType::Variant,
-                };
-                let mut ty = self.type_text(*type_node, &vba, false);
-                if bounds.is_some() && type_node.is_some() {
-                    ty = ty.map(|t| if t.ends_with("()") { t } else { format!("{t}()") });
-                }
-                members.push(LibraryMember { return_type: ty, ..self.member(self.declared_at(id, *name), LibraryMemberKind::Field) });
+                self.collect_field(id, *name, *type_node, bounds.is_some(), members);
             }
             ExprNode::EventDecl { name, params } => {
                 let params = self.params(Some(*params), None);
@@ -252,45 +218,115 @@ impl Exporter<'_> {
                 });
             }
             ExprNode::Implements { library, name } => {
-                let tn = TypeName {
-                    qualifier: library.map(|l| self.spell(l).to_ascii_lowercase()),
-                    name: self.spell(*name).to_ascii_lowercase(),
-                };
-                let written = match library {
-                    Some(l) => format!("{}.{}", self.spell(*l), self.spell(*name)),
-                    None => self.spell(*name),
-                };
-                interfaces.push(self.qualify(&tn, written));
+                interfaces.push(self.implemented_interface(*library, *name));
             }
             ExprNode::TypeDecl { name, members: fields } => {
-                if !self.is_public(id, true) {
-                    return;
-                }
-                let decl = m.raw_bound.type_decls.iter().find(|t| t.name_span == m.spans.get(id));
-                let mut out = Vec::new();
-                for (fi, &f) in fields.iter().enumerate() {
-                    let ExprNode::DimItem { name: fname, type_node, bounds, .. } = m.arena.get(f) else { continue };
-                    let vba = decl.and_then(|d| d.members.get(fi)).map(|x| x.vba_type.clone()).unwrap_or(VbaType::Variant);
-                    let mut ty = self.type_text(*type_node, &vba, false);
-                    if bounds.is_some() && type_node.is_some() {
-                        ty = ty.map(|t| if t.ends_with("()") { t } else { format!("{t}()") });
-                    }
-                    out.push(LibraryMember {
-                        name: self.declared_at(f, *fname),
-                        kind: LibraryMemberKind::Field,
-                        return_type: ty,
-                        ..Default::default()
-                    });
-                }
-                records.push(LibraryType {
-                    name: self.declared_at(id, *name),
-                    kind: LibraryTypeKind::Record,
-                    members: out,
-                    ..Default::default()
-                });
+                self.collect_record(id, *name, fields, records);
             }
             _ => {}
         }
+    }
+
+    fn collect_proc(
+        &self,
+        id: NodeId,
+        kind: ProcKind,
+        name: u32,
+        params: Option<NodeId>,
+        ret_type: Option<NodeId>,
+        members: &mut Vec<LibraryMember>,
+    ) {
+        let m = self.m;
+        if !self.is_public(id, true) {
+            return;
+        }
+        let span = m.spans.get(id);
+        let Some((pi, proc)) = m.raw_bound.procs.iter().enumerate().find(|(_, p)| p.name_span == span) else {
+            return;
+        };
+        let member_kind = match kind {
+            ProcKind::Sub | ProcKind::Function => LibraryMemberKind::Method,
+            ProcKind::PropGet => LibraryMemberKind::PropertyGet,
+            ProcKind::PropLet => LibraryMemberKind::PropertyLet,
+            ProcKind::PropSet => LibraryMemberKind::PropertySet,
+        };
+        let return_type = match kind {
+            ProcKind::Function | ProcKind::PropGet => self.type_text(ret_type, &proc.ret_type, true),
+            _ => None,
+        };
+        let params = self.params(params, Some((pi, proc)));
+        members.push(LibraryMember {
+            return_type,
+            param_count: Some(params.len()),
+            params,
+            ..self.member(self.declared(proc.name_span, name), member_kind)
+        });
+    }
+
+    fn collect_field(
+        &self,
+        id: NodeId,
+        name: u32,
+        type_node: Option<NodeId>,
+        has_bounds: bool,
+        members: &mut Vec<LibraryMember>,
+    ) {
+        let m = self.m;
+        if !self.is_public(id, false) {
+            return;
+        }
+        let vba = match m.raw_bound.module_vars.iter().find(|v| v.name_span == m.spans.get(id)) {
+            Some(v) => v.vba_type.clone(),
+            None => VbaType::Variant,
+        };
+        let ty = self.field_type_text(type_node, &vba, has_bounds);
+        members.push(LibraryMember { return_type: ty, ..self.member(self.declared_at(id, name), LibraryMemberKind::Field) });
+    }
+
+    /// The type text of a field; a bounded field with a stated type is an array.
+    fn field_type_text(&self, type_node: Option<NodeId>, vba: &VbaType, has_bounds: bool) -> Option<String> {
+        let ty = self.type_text(type_node, vba, false);
+        if has_bounds && type_node.is_some() {
+            return ty.map(|t| if t.ends_with("()") { t } else { format!("{t}()") });
+        }
+        ty
+    }
+
+    fn implemented_interface(&self, library: Option<u32>, name: u32) -> String {
+        let tn = TypeName {
+            qualifier: library.map(|l| self.spell(l).to_ascii_lowercase()),
+            name: self.spell(name).to_ascii_lowercase(),
+        };
+        let written = match library {
+            Some(l) => format!("{}.{}", self.spell(l), self.spell(name)),
+            None => self.spell(name),
+        };
+        self.qualify(&tn, written)
+    }
+
+    fn collect_record(&self, id: NodeId, name: u32, fields: &[NodeId], records: &mut Vec<LibraryType>) {
+        let m = self.m;
+        if !self.is_public(id, true) {
+            return;
+        }
+        let decl = m.raw_bound.type_decls.iter().find(|t| t.name_span == m.spans.get(id));
+        let mut out = Vec::new();
+        for (fi, &f) in fields.iter().enumerate() {
+            let ExprNode::DimItem { name: fname, type_node, bounds, .. } = m.arena.get(f) else { continue };
+            let vba = decl.and_then(|d| d.members.get(fi)).map(|x| x.vba_type.clone()).unwrap_or(VbaType::Variant);
+            out.push(LibraryMember {
+                name: self.declared_at(f, *fname),
+                kind: LibraryMemberKind::Field,
+                return_type: self.field_type_text(*type_node, &vba, bounds.is_some()),
+                ..Default::default()
+            });
+        }
+        records.push(LibraryType {
+            name: self.declared_at(id, name),
+            kind: LibraryTypeKind::Record,
+            members: out,
+            ..Default::default()
+        });
     }
 
     /// The parameters of a procedure (bound, for its types) or an event (from

@@ -21,7 +21,7 @@
 
 use std::collections::HashMap;
 
-use crate::sema::symbol::{BoundModule, ExternalDecl};
+use crate::sema::symbol::{BoundEnumDecl, BoundModule, ExternalDecl};
 
 /// A resolved location of a public declaration: which module, and which decl.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -60,15 +60,8 @@ impl ModuleIndex {
         members_global: bool,
     ) {
         // Only public declarations are visible to other modules in the project.
-        for (i, p) in module.procs.iter().enumerate() {
-            if members_global && p.is_public {
-                self.insert(name_of(p.sym_id), module_idx, ExternalDecl::Proc(i));
-            }
-        }
-        for (i, v) in module.module_vars.iter().enumerate() {
-            if members_global && v.is_public {
-                self.insert(name_of(v.sym_id), module_idx, ExternalDecl::Var(i));
-            }
+        if members_global {
+            self.add_global_members(module_idx, module, &name_of);
         }
         for (i, t) in module.type_decls.iter().enumerate() {
             if t.is_public {
@@ -76,19 +69,49 @@ impl ModuleIndex {
             }
         }
         for (i, e) in module.enum_decls.iter().enumerate() {
-            if !e.is_public {
-                continue;
+            if e.is_public {
+                self.add_enum(module_idx, i, e, &name_of);
             }
-            self.insert(name_of(e.sym_id), module_idx, ExternalDecl::Enum(i));
-            // Enum members are project-scoped constants accessible unqualified
-            // (when the enum itself is public).
-            for (mi, member) in e.members.iter().enumerate() {
-                self.insert(
-                    name_of(member.sym_id),
-                    module_idx,
-                    ExternalDecl::EnumMember { enum_idx: i, member_idx: mi },
-                );
+        }
+    }
+
+    /// Index the public procedures and variables of a module whose members
+    /// are project-wide names.
+    fn add_global_members(
+        &mut self,
+        module_idx: usize,
+        module: &BoundModule,
+        name_of: &impl Fn(u32) -> String,
+    ) {
+        for (i, p) in module.procs.iter().enumerate() {
+            if p.is_public {
+                self.insert(name_of(p.sym_id), module_idx, ExternalDecl::Proc(i));
             }
+        }
+        for (i, v) in module.module_vars.iter().enumerate() {
+            if v.is_public {
+                self.insert(name_of(v.sym_id), module_idx, ExternalDecl::Var(i));
+            }
+        }
+    }
+
+    /// Index a public enum and its members.
+    fn add_enum(
+        &mut self,
+        module_idx: usize,
+        enum_idx: usize,
+        e: &BoundEnumDecl,
+        name_of: &impl Fn(u32) -> String,
+    ) {
+        self.insert(name_of(e.sym_id), module_idx, ExternalDecl::Enum(enum_idx));
+        // Enum members are project-scoped constants accessible unqualified
+        // (when the enum itself is public).
+        for (mi, member) in e.members.iter().enumerate() {
+            self.insert(
+                name_of(member.sym_id),
+                module_idx,
+                ExternalDecl::EnumMember { enum_idx, member_idx: mi },
+            );
         }
     }
 
@@ -117,66 +140,5 @@ impl ModuleIndex {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::frontend::ast::ExprArena;
-    use crate::frontend::parser::Parser;
-    use crate::frontend::scanner::ScannerContext;
-    use crate::sema::bind;
-
-    /// Parse+bind one module, returning its bound form plus a name resolver.
-    fn bind_module(src: &str) -> (BoundModule, ScannerContext) {
-        let mut ctx = ScannerContext::new(1, 1, 0x0409);
-        ctx.intern_keywords();
-        let mut arena = ExprArena::new();
-        let mut parser = Parser::new(&mut ctx, src.as_bytes());
-        let top = parser.parse_module(&mut arena);
-        let spans = std::mem::take(&mut parser.node_spans);
-        let vis = std::mem::take(&mut parser.decl_public);
-        drop(parser);
-        let m = bind(&ctx, &arena, &top, &spans, &vis);
-        (m, ctx)
-    }
-
-    #[test]
-    fn indexes_public_procs_and_vars() {
-        let (m, ctx) = bind_module(
-            "Public gConfig As Long\nPublic Sub DoThing()\nEnd Sub\nFunction Calc() As Long\nEnd Function\n",
-        );
-        let mut idx = ModuleIndex::new();
-        idx.add_module(0, &m, |s| ctx.symbol(s as usize).name.to_ascii_lowercase(), true);
-
-        // Case-insensitive lookup.
-        assert_eq!(idx.lookup("dothing").map(|r| r.decl), Some(ExternalDecl::Proc(0)));
-        assert_eq!(idx.lookup("CALC").map(|r| r.decl), Some(ExternalDecl::Proc(1)));
-        assert_eq!(idx.lookup("gconfig").map(|r| r.decl), Some(ExternalDecl::Var(0)));
-        assert!(idx.lookup("missing").is_none());
-    }
-
-    #[test]
-    fn indexes_enum_members() {
-        let (m, ctx) = bind_module(
-            "Public Enum Color\n    Red\n    Green\n    Blue\nEnd Enum\n",
-        );
-        let mut idx = ModuleIndex::new();
-        idx.add_module(2, &m, |s| ctx.symbol(s as usize).name.to_ascii_lowercase(), true);
-
-        assert_eq!(idx.lookup("color").map(|r| r.decl), Some(ExternalDecl::Enum(0)));
-        assert_eq!(
-            idx.lookup("green").map(|r| r.decl),
-            Some(ExternalDecl::EnumMember { enum_idx: 0, member_idx: 1 }),
-        );
-        // The referenced module index is propagated.
-        assert_eq!(idx.lookup("red").map(|r| r.module), Some(2));
-    }
-
-    #[test]
-    fn first_module_wins_on_clash() {
-        let (m0, c0) = bind_module("Public Sub Shared()\nEnd Sub\n");
-        let (m1, c1) = bind_module("Public Sub Shared()\nEnd Sub\n");
-        let mut idx = ModuleIndex::new();
-        idx.add_module(0, &m0, |s| c0.symbol(s as usize).name.to_ascii_lowercase(), true);
-        idx.add_module(1, &m1, |s| c1.symbol(s as usize).name.to_ascii_lowercase(), true);
-        assert_eq!(idx.lookup("shared").map(|r| r.module), Some(0));
-    }
-}
+#[path = "tests/module_index.rs"]
+mod tests;

@@ -1,4 +1,5 @@
 pub mod clsid;
+pub(crate) mod counted_items;
 pub mod control_create;
 pub mod control_persist;
 pub mod font;

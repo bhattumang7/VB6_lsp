@@ -1109,32 +1109,8 @@ impl Session {
     /// Find a declaration whose name identifier covers `offset`.
     fn decl_at(&self, module: usize, offset: u32) -> Option<DeclId> {
         let m = self.modules.get(module)?;
-        for (i, p) in m.bound.procs.iter().enumerate() {
-            if let Some(id) = proc_decl_at(module, i, p, offset) {
-                return Some(id);
-            }
-        }
-        for (i, v) in m.bound.module_vars.iter().enumerate() {
-            if span_contains(v.name_span, offset) {
-                return Some(DeclId::ModuleVar { module, idx: i });
-            }
-        }
-        for (i, t) in m.bound.type_decls.iter().enumerate() {
-            if span_contains(t.name_span, offset) {
-                return Some(DeclId::Type { module, idx: i });
-            }
-        }
-        for (i, e) in m.bound.enum_decls.iter().enumerate() {
-            if let Some(id) = enum_decl_at(module, i, e, offset) {
-                return Some(id);
-            }
-        }
-        for (ti, t) in m.bound.type_decls.iter().enumerate() {
-            for (mi, member) in t.members.iter().enumerate() {
-                if span_contains(member.name_span, offset) {
-                    return Some(DeclId::TypeMember { module, type_idx: ti, member_idx: mi });
-                }
-            }
+        if let Some(id) = bound_decl_at(module, m, offset) {
+            return Some(id);
         }
         for (ci, c) in m.controls.iter().enumerate() {
             if c.spans.iter().any(|s| span_contains(*s, offset)) {
@@ -1229,6 +1205,44 @@ impl Session {
 }
 
 // ── Free helpers ────────────────────────────────────────────────────────────────
+
+/// The `DeclId` of a bound declaration (proc, variable, type, enum, or type
+/// member) whose name covers `offset`.
+fn bound_decl_at(module: usize, m: &ModuleData, offset: u32) -> Option<DeclId> {
+    for (i, p) in m.bound.procs.iter().enumerate() {
+        if let Some(id) = proc_decl_at(module, i, p, offset) {
+            return Some(id);
+        }
+    }
+    for (i, v) in m.bound.module_vars.iter().enumerate() {
+        if span_contains(v.name_span, offset) {
+            return Some(DeclId::ModuleVar { module, idx: i });
+        }
+    }
+    for (i, t) in m.bound.type_decls.iter().enumerate() {
+        if span_contains(t.name_span, offset) {
+            return Some(DeclId::Type { module, idx: i });
+        }
+    }
+    for (i, e) in m.bound.enum_decls.iter().enumerate() {
+        if let Some(id) = enum_decl_at(module, i, e, offset) {
+            return Some(id);
+        }
+    }
+    type_member_decl_at(module, m, offset)
+}
+
+/// The `DeclId` of a UDT member whose name covers `offset`.
+fn type_member_decl_at(module: usize, m: &ModuleData, offset: u32) -> Option<DeclId> {
+    for (ti, t) in m.bound.type_decls.iter().enumerate() {
+        for (mi, member) in t.members.iter().enumerate() {
+            if span_contains(member.name_span, offset) {
+                return Some(DeclId::TypeMember { module, type_idx: ti, member_idx: mi });
+            }
+        }
+    }
+    None
+}
 
 /// The `DeclId` for a proc, parameter, or local whose name span covers `offset`.
 fn proc_decl_at(module: usize, proc_idx: usize, p: &BoundProc, offset: u32) -> Option<DeclId> {
